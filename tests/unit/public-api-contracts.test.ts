@@ -296,9 +296,17 @@ function isLocalExampleImport(file: string, specifier: string): boolean {
   // modules. A copy would stop proving the game's real programs. No other example may reach into apps/ source.
   const fromRoot = relative(process.cwd(), file).replaceAll("\\", "/");
   if (fromRoot === "examples/wgsl-twins-lab/main.ts" && /^apps\/showcase-roadster-rush\/src\/(?:art|render)\/[a-z0-9-]+$/.test(relativeToRoot)) return true;
+  // The shared Idol humanoid shims re-export the one retargeter `aura3d animation import` also uses, so the games and the
+  // CLI cannot drift; its quaternion/driver toolkit is deliberately not on the public @aura3d/animation barrel. Only these
+  // two shim files may reach these two modules.
+  if (/^apps\/showcase-port-shared\/idol\/(humanoid|smplMotion)\.ts$/.test(fromRoot) && /^packages\/animation\/src\/smpl\/(humanoid|smplMotion)$/.test(relativeToRoot)) return true;
   return relativeToRoot === "src/aura-assets" || relativeToRoot === "src/aura-assets.js"
     || relativeToRoot.startsWith("apps/showcase-port-shared/")
     || /^apps\/[a-z0-9-]+\/src\/aura-assets(?:\.js)?$/.test(relativeToRoot)
+    // Same artifact kinds from the port's showcase app: its route-local Idol typed asset subset (`assets.<key>` picks from
+    // aura-assets.route) and its tools/idol/motion.mjs clip table (generated data). Still never app source.
+    || /^apps\/[a-z0-9-]+\/src\/idol-assets(?:\.js)?$/.test(relativeToRoot)
+    || /^apps\/[a-z0-9-]+\/src\/(?:[a-z0-9-]+\/)?motion\.generated(?:\.js)?$/.test(relativeToRoot)
     || relativeToRoot === "examples" || relativeToRoot.startsWith("examples/");
 }
 

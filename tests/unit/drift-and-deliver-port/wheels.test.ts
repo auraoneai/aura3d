@@ -87,7 +87,7 @@ describe("Gridlock Courier Idol moving parts: separate spinning wheels on wheel-
         shown[3 * i + 1] += Math.cos(shown[3 * i + 2]!) * 0.04;
       }
       const t = stepTrafficWheels(rig, shown);
-      angles.push(t.map((x) => (x.rotation as number[])[2]!));
+      angles.push(t.map((x) => (x.rotation as readonly number[])[2]!));
     }
     for (let i = 0; i < traffic.length; i++) {
       const r = rig.entries.find((e) => e.car === i)!.radius;
@@ -98,7 +98,7 @@ describe("Gridlock Courier Idol moving parts: separate spinning wheels on wheel-
     // wheels sit at the car's hubs (rotated by its yaw)
     rig.entries.forEach((e, n) => {
       const x = shown[3 * e.car]!, z = shown[3 * e.car + 1]!, yaw = shown[3 * e.car + 2]!;
-      const p = rig.transforms[n]!.position as number[];
+      const p = rig.transforms[n]!.position as readonly number[];
       expect(p[0]).toBeCloseTo(x + e.hub.x * Math.cos(yaw) + e.hub.z * Math.sin(yaw), 6);
       expect(p[2]).toBeCloseTo(z - e.hub.x * Math.sin(yaw) + e.hub.z * Math.cos(yaw), 6);
       expect(p[1]).toBeCloseTo(e.radius - TYRE_SINK, 6);

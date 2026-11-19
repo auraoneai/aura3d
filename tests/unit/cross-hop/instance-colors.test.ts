@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 // Instanced movers take their colour from the per-instance colour list, which multiplies the base colour. Since the Idol
 // pass the log, lily-pad and lava-stone pools draw textured Idol GLBs, so their instances must be submitted white (a
 // tint would darken the baked bark, leaf and basalt textures).
+// invariant: every instanced pool in core.ts must go through instIdol/idolPool with its CAP so per-instance colours reach the Idol meshes; plain inst() drops them.
 const core = readFileSync(path.resolve("apps/showcase-cross-hop/src/game/core.ts"), "utf8");
 
 describe("cross hop instanced mover materials", () => {

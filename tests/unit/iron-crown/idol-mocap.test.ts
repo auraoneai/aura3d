@@ -12,6 +12,7 @@ const state = (clip: string, extra: Record<string, number> = {}) => ({ clip, tim
 
 describe("Iron Crown Idol fighters play generated motion clips (owner: real hand and weapon motion, no Meshy)", () => {
   it("ships the fal text-to-motion set; every fighter maps every logical state to a shipped clip, with its own moves", () => {
+    // invariant: the fighter clip table must stay fal text-to-motion provenance (no Meshy, owner rule); the toContain checks are on the exported clip-name list.
     const src = readFileSync("apps/showcase-iron-crown/src/game/idol-mocap.ts", "utf8");
     expect(src).toMatch(/fal-ai\/hunyuan-motion/);
     expect(src).not.toMatch(/meshy/i);

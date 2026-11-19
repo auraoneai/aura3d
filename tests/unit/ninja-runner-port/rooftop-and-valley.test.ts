@@ -62,7 +62,7 @@ describe("Shadowstep rooftop run", () => {
       const key = IDOL_PROP_KEYS[id as keyof typeof IDOL_PROP_KEYS];
       if (!idolAsset(key)) continue;
       for (const p of sink[id] ?? []) {
-        const s = idolPropTransform(id as keyof typeof IDOL_PROP_KEYS, p).scale as number[];
+        const s = idolPropTransform(id as keyof typeof IDOL_PROP_KEYS, p).scale as readonly number[];
         worst = Math.max(worst, Math.max(...s) / Math.min(...s));
       }
     }

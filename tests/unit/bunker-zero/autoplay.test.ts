@@ -10,6 +10,7 @@ import {
 
 // Owner addendum 2 (2026-11-18): `?autoplay=1` plays hands-free and loops forever. This driver mirrors main.ts's
 // checkOutcome / tickPending / runPending / showResults with the real sim and the real autopilot (no renderer).
+// invariant: main.ts owns the autopilot boot flag and the results->descent hand-off; the pure autoplay helpers tested above are dead unless main.ts calls them this way.
 const MAIN = readFileSync(path.resolve("apps/showcase-bunker-zero/src/main.ts"), "utf8");
 const DT = 1 / 60;
 

@@ -59,6 +59,7 @@ describe("help --json catalog", () => {
 
   it("is stable: same input, same JSON; schema, package and version from package.json", () => {
     expect(JSON.stringify(cliCatalog(PROFILE))).toBe(JSON.stringify(catalog));
+    // invariant: help --json must report the published package name/version from packages/aura3d-cli/package.json; the toContain checks are on the help catalog, not on source text.
     const pkg = JSON.parse(readFileSync(new URL("../../../../packages/aura3d-cli/package.json", import.meta.url), "utf8")) as { name: string; version: string };
     expect(catalog.schema).toBe("aura3d.cli-help/1");
     expect(readCliVersion()).toEqual({ name: pkg.name, version: pkg.version });

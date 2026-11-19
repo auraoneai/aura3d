@@ -23,7 +23,9 @@ vi.mock("../../../packages/create-aura3d/src/showcase-spec-replacement-manifest"
 });
 
 type SkylineSpec = ShowcaseSpec & { readonly platformer: NonNullable<ShowcaseSpec["platformer"]> };
-const SHOWCASE_SPEC_COMPILER_TEST_TIMEOUT_MS = 15000;
+// The compiler parses the real GLBs synchronously: ~3 s locally, ~18 s on the 2 vCPU ACR source runner (5.6.0 run 002),
+// so the source pass (AURA3D_SOURCE_MANIFEST) gets the same 60 s the vitest config gives every unit test there.
+const SHOWCASE_SPEC_COMPILER_TEST_TIMEOUT_MS = process.env.AURA3D_SOURCE_MANIFEST ? 60_000 : 15_000;
 
 describe("showcase platformer spec compiler", () => {
   it("requires platformer specs to declare a character hero and world or stage assets", () => {

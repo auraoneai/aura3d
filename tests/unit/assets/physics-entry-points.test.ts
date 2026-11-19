@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { execFile } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -23,9 +23,15 @@ function appUsing(entry: string): string {
 }
 
 describe("generated physics entry points", () => {
-  it("is up to date with the engine sources (regenerate with node packages/assets/scripts/gen-physics-entry-points.mjs)", () => {
-    const result = spawnSync(process.execPath, [GENERATOR, "--check"], { cwd: ROOT, encoding: "utf8" });
-    expect(`${result.stdout}${result.stderr}`.trim()).toMatch(/is up to date$/);
+  it("is up to date with the engine sources (regenerate with node packages/assets/scripts/gen-physics-entry-points.mjs)", async () => {
+    // Async child: the generator walks every engine source (~60 s on the 2 vCPU ACR runner); spawnSync blocked this worker
+    // that long, past vitest's 60 s worker RPC timeout ("Timeout calling onTaskUpdate", 5.6.0 run 002 shard 5).
+    const result = await new Promise<{ status: number; output: string }>((resolve) => {
+      execFile(process.execPath, [GENERATOR, "--check"], { cwd: ROOT, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 }, (error, stdout, stderr) => {
+        resolve({ status: error ? (typeof error.code === "number" ? error.code : 1) : 0, output: `${stdout}${stderr}` });
+      });
+    });
+    expect(result.output.trim()).toMatch(/is up to date$/);
     expect(result.status).toBe(0);
   }, 600_000);
 

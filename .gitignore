@@ -283,6 +283,14 @@ release-artifacts/external-demos/
 !vite.aliases.generated.ts
 !tsconfig.paths.generated.ts
 !tools/bench-vs-threejs/**/assets.generated.ts
+# Idol motion/bind/asset tables are generated from fal artifacts and Idol GLBs that are not
+# in Git (artifacts/idol/, assets/idol/); game sources import them, so they are committed
+# or fresh checkouts and the ACR source pass cannot load the games.
+!apps/**/motion.generated.ts
+!examples/**/motion.generated.ts
+!apps/showcase-aura-diamond-3d/src/idol/bind.generated.ts
+!examples/aura-slam/view/idolBind.generated.ts
+!examples/aura-slam/view/idolAssets.generated.ts
 
 # Shader compilation cache
 shader-cache/
@@ -355,6 +363,8 @@ fixtures/
 !/fixtures/asset-corpus/decoders/
 /fixtures/asset-corpus/decoders/*
 !/fixtures/asset-corpus/decoders/LICENSE-basis.txt
+# HY-Motion source clip the animation-import tests read (committed so the ACR source pass has it).
+!tests/unit/aura3d-cli/animation-io/fixtures/
 !/fixtures/asset-corpus/decoders/LICENSE-zstd.txt
 !/fixtures/asset-corpus/decoders/LICENSE-draco.txt
 !/fixtures/asset-corpus/decoders/LICENSE-meshopt.txt

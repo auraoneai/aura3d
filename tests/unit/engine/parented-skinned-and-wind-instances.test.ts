@@ -21,7 +21,7 @@ import { createProductionRuntimeRendererInput } from "../../../packages/engine/s
 import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
 import { instances, labelInstanceWindItems } from "../../../packages/engine/src/agent-api/nodes/instances";
 import { auraAssetRefBrand } from "../../../packages/engine/src/agent-api/nodes/assets";
-import type { AuraModelNode, AuraSceneNode, AuraSceneSnapshot, ProductionRuntimeActorEntry } from "../../../packages/engine/src/agent-api/nodes/types";
+import type { AuraSceneNode, AuraSceneSnapshot, ProductionRuntimeActorEntry } from "../../../packages/engine/src/agent-api/nodes/types";
 import type { RenderItem } from "@aura3d/rendering";
 
 const flags = resolveQrFlags({ options: ["core"], env: {} });
@@ -165,7 +165,7 @@ describe("(b) wind-swayed instances.model under a parent group", () => {
   });
 
   it("batches with other packed world options still reject live instance changes", () => {
-    const { flat, registry } = mount([windTrees({ static: true }).runtime({ id: "packed" }).toJSON() as AuraModelNode]);
+    const { flat, registry } = mount([windTrees({ static: true }).runtime({ id: "packed" }).toJSON()]);
     void flat;
     try {
       expect(() => registry.require("packed").setInstances([{ position: [3, 0, 0] }])).toThrow(/INSTANCE_SCATTER_RUNTIME_UNSUPPORTED/);

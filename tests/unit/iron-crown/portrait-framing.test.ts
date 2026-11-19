@@ -35,7 +35,7 @@ import { FIGHTERS } from "../../../apps/showcase-iron-crown/src/game/fighters";
 import { ATMOSPHERE_FLOOR_CLEAR_Y, backRimPose, LETTERBOX_BAR, lightConeMinY, STAGE_LOOKS } from "../../../apps/showcase-iron-crown/src/game/look";
 import { STAGES } from "../../../apps/showcase-iron-crown/src/game/stages";
 
-type V3 = [number, number, number];
+type V3 = readonly [number, number, number];
 
 const PORTRAIT = 390 / 844;
 const MIN_SEPARATION = 1.45; // main.ts MIN_FIGHTER_SEPARATION (push-box)

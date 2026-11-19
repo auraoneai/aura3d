@@ -40,9 +40,9 @@ describe("beat-hopper Idol skater readability and spinning skates", () => {
     for (const foot of IDOL_SKATE.feet) {
       const k = idx.get(foot.bone)!;
       // bind world = inverse(IBM); IBM is rigid (+uniform scale)
-      const m = Array.from(ibm.slice(k * 16, k * 16 + 16));
+      const m = Array.from(ibm.slice(k * 16, k * 16 + 16), Number);
       const s2 = m[0]! * m[0]! + m[1]! * m[1]! + m[2]! * m[2]!;
-      const inv = new Array(16).fill(0);
+      const inv: number[] = new Array<number>(16).fill(0);
       for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) inv[c * 4 + r] = m[r * 4 + c]! / s2;
       for (let r = 0; r < 3; r++) inv[12 + r] = -(inv[r]! * m[12]! + inv[4 + r]! * m[13]! + inv[8 + r]! * m[14]!);
       inv[15] = 1;

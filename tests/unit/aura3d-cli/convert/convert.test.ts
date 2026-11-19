@@ -240,7 +240,7 @@ function expectStrictInspect(file: string, textured: boolean): void {
   expect(report.format).toBe("glb");
   expect(report.vertexCount).toBeGreaterThan(0);
   expect(report.boundsMetadata?.maxDimension).toBeGreaterThan(0);
-  expect(report.materialMetadata.every((material) => material.visible && material.readable)).toBe(true);
+  expect(report.materialMetadata?.every((material) => material.visible && material.readable)).toBe(true);
   expect(report.orientation).toMatchObject({ source: "gltf-extras", upAxis: "+y" });
   expect(report.warnings).toEqual(textured ? [] : ["no texture references detected"]);
 }

@@ -196,8 +196,8 @@ describe("(c) players stay out of the posts, the goal box and the cage", () => {
     const cases: [string, (p: MatchState["players"][number]) => void][] = [
       ["stunned, drifting into the side netting", (p) => { p.x = PITCH_HX - 0.2; p.z = GOAL_HALF_W + 0.5; p.vx = 8; p.vz = -6; p.stunT = 1; }],
       ["celebrating, drifting through the back net", (p) => { p.x = PITCH_HX - 0.5; p.z = 0; p.vx = 14; p.vz = 0; p.celebrateT = 2; }],
-      ["sliding into a post", (p) => { p.x = PITCH_HX - 1.5; p.z = POST_Z; p.slideT = 0.55; p.slideDir = [1, 0]; p.slideWon = true; }],
-      ["sliding along the goal line beside the goal", (p) => { p.x = PITCH_HX + 0.4; p.z = GOAL_HALF_W + 2; p.slideT = 0.55; p.slideDir = [0, -1]; p.slideWon = true; }],
+      ["sliding into a post", (p) => { p.x = PITCH_HX - 1.5; p.z = POST_Z; p.slideT = 0.55; p.slideDir = [1, 0]; (p as typeof p & { slideWon: boolean }).slideWon = true; }],
+      ["sliding along the goal line beside the goal", (p) => { p.x = PITCH_HX + 0.4; p.z = GOAL_HALF_W + 2; p.slideT = 0.55; p.slideDir = [0, -1]; (p as typeof p & { slideWon: boolean }).slideWon = true; }],
       ["inside the goal, drifting out through the side netting", (p) => { p.x = PITCH_HX + 1; p.z = 2; p.vx = 0; p.vz = 10; p.stunT = 1; }]
     ];
     for (const venue of ["munich", "favela"] as const) {

@@ -43,10 +43,10 @@ function runAutoplay(seconds: number, difficulty = "beginner"): Run {
   let progressed = false;
   let playerHits = 0, aiHits = 0, playerPoints = 0, aiPoints = 0, hitsThisStep = 0, longestRally = 0;
   engine = createMatchEngine({
-    readInput: (side) => (side === "player"
-      ? playerFrame(mapper, { keys, stick: { x: 0, y: 0 }, inputBlocked: false, modernServe: Boolean(engine.capabilities?.serveTargeting), strategic: false, state: engine.state as never })
+    readInput: (side: string) => (side === "player"
+      ? playerFrame(mapper, { keys, stick: { x: 0, y: 0 }, inputBlocked: false, modernServe: Boolean((engine as { capabilities?: { serveTargeting?: unknown } }).capabilities?.serveTargeting), strategic: false, state: engine.state as never })
       : undefined),
-    onEvent: (event) => {
+    onEvent: (event: unknown) => {
       const e = event as { type: string; side?: string; winner?: string };
       if (e.type === "hit" || e.type === "bounce" || e.type === "serve" || e.type === "point") progressed = true;
       if (e.type === "hit") hitsThisStep++;

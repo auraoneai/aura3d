@@ -78,7 +78,7 @@ function drawn(id: string, p: ModelPlacement): { hx: number; hz: number; h: numb
   const b = key ? (idolAsset(key) as { bounds?: number[] } | undefined)?.bounds : undefined;
   if (key && b) {
     const t = idolPropTransform(id as keyof typeof IDOL_PROP_KEYS, p);
-    const s = t.scale as number[];
+    const s = t.scale as readonly number[];
     return { hx: (b[0]! * s[0]!) / 2, hz: (b[2]! * s[2]!) / 2, h: b[1]! * s[1]!, base: t.position as [number, number, number] };
   }
   const m = (MESHY_MANIFEST as Record<string, { size: readonly number[] }>)[id]!.size;

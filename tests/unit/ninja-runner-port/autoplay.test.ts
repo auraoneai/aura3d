@@ -37,7 +37,8 @@ describe("Shadowstep autoplay", () => {
         worstStall = Math.max(worstStall, stalled);
         lastS = z.s;
         best = Math.max(best, z.s);
-        if (z.phase === "won" || z.phase === "lost") { finished++; kills = Math.max(kills, z.kills); resultsShown = 0; }
+        const ended: string = (z as { phase: string }).phase; // stepSim/drainEvents may end the run (TS keeps the "running" narrowing)
+        if (ended === "won" || ended === "lost") { finished++; kills = Math.max(kills, z.kills); resultsShown = 0; }
       } else {
         resultsShown += SIM_STEP;
         // the results card holds ~3 s, never longer than a frame past it

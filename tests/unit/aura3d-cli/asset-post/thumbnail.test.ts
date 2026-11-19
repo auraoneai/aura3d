@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { addAsset, createAssetThumbnails } from "../../../../packages/aura3d-cli/src/index.js";
+import { addAsset, createAssetThumbnailsAsync } from "../../../../packages/aura3d-cli/src/index.js";
 import { cliCommandFor } from "../../../../packages/aura3d-cli/src/contracts/commands.js";
 import "../../../../packages/aura3d-cli/src/commands/registry.js";
 import { captureIo, cleanupTmp, tmp, writeFixture } from "./fixtures.js";
@@ -31,7 +31,7 @@ async function project(): Promise<string> {
 
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
-describe("assets thumbnail (createAssetThumbnails)", () => {
+describe("assets thumbnail (createAssetThumbnailsAsync)", () => {
   it("--help writes nothing and leaves the manifest untouched", async () => {
     const dir = await project();
     const before = snapshot(dir);
@@ -51,7 +51,7 @@ describe("assets thumbnail (createAssetThumbnails)", () => {
     const outputDir = manifestBefore.outputDir as string;
     expect(existsSync(join(dir, outputDir, "car.thumb.svg"))).toBe(true);
 
-    const result = await createAssetThumbnails({ projectDir: dir, size: 64 });
+    const result = await createAssetThumbnailsAsync({ projectDir: dir, size: 64 });
     expect(result.ok).toBe(true);
     expect(result.kind).toBe("cpu-base-colour-preview");
     expect(result.thumbnails.map((t) => t.id)).toEqual(["car"]);

@@ -6,6 +6,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
+// invariant: main.ts must prefetch the Idol model URLs at boot (modelUrls(idolAssets...)) or the first frame shows unloaded critters.
 const main = readFileSync("apps/showcase-cross-hop/src/main.ts", "utf8");
 
 describe("Cross Hop Idol start", () => {

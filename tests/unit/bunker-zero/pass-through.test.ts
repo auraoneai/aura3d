@@ -12,6 +12,7 @@ const STEP = 5.2 / 60; // one tick of full-speed movement
 const NO = { moveX: 0, moveZ: 0, turn: 0, pitchDelta: 0, fire: false, firePressed: false, reload: false, use: false };
 const ALL: FloorDef[] = [...FLOORS, KILL_HOUSE];
 const wallHOf = (def: FloorDef) => (def.id === 5 ? SILO_H : WALL_H);
+// invariant: main.ts must draw the column from BZ_COLUMN_SIDE and props unrotated at the cell centre, or the sim footprints proved above stop matching what is drawn.
 const MAIN = readFileSync(path.resolve("apps/showcase-bunker-zero/src/main.ts"), "utf8");
 
 function calmSim(def: FloorDef): Sim {

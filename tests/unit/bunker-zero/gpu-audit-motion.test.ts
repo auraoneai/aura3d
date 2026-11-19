@@ -11,6 +11,7 @@ import {
 
 // Real-GPU audit (2026-11-18): (1) the player's bullet tracer read as an upright shell beside the pistol and its trail
 // streaked up from where the dart was parked; (2) soldiers waiting out an attack cooldown played the run clip in place.
+// invariant: main.ts is where tracer scale and the drawn enemy pose state are applied; the real-GPU audit fixes are only live if main.ts keeps these calls.
 const MAIN = readFileSync(path.resolve("apps/showcase-bunker-zero/src/main.ts"), "utf8");
 const DT = 1 / 60;
 

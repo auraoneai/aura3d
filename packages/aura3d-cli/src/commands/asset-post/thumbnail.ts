@@ -48,8 +48,11 @@ export function thumbnailUsage(): string {
 
 const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
 
-/** Render PNG thumbnails for the manifest's model assets and point their thumbnailUrl at them. */
-export async function createAssetThumbnails(options: CreateAssetThumbnailsOptions = {}): Promise<AssetThumbnailsResult> {
+/**
+ * Render PNG thumbnails for the manifest's model assets and point their thumbnailUrl at them (`aura3d assets thumbnail`).
+ * The synchronous 5.5 `createAssetThumbnails` export keeps its placeholder-card contract; this is the real-thumbnail API.
+ */
+export async function createAssetThumbnailsAsync(options: CreateAssetThumbnailsOptions = {}): Promise<AssetThumbnailsResult> {
   const projectDir = resolve(options.projectDir ?? process.cwd());
   const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
   if (!existsSync(manifestPath)) throw new Error(`No ${DEFAULT_AURA_ASSET_MANIFEST} in ${projectDir}. Admit a model first: aura3d assets add <file.glb> --name <key>`);

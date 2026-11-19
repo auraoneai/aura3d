@@ -60,6 +60,7 @@ describe("Cumulus Dash autoplay", () => {
     expect(main).toMatch(/params\.get\("autoplay"\) === "1" \|\| params\.get\("autopilot"\) === "1"/);
     expect(main).toContain('e.code === "KeyO"');
     expect(readFileSync("examples/kid-goku-beyond-the-clouds-port/ui.ts", "utf8")).toContain("<kbd>O</kbd>autoplay");
+    // invariant: the showcase app must mount this example's main and the O-key autoplay toggle must stay bound and labelled in the HUD; no runtime seam exposes either.
     expect(readFileSync("apps/showcase-cloud-runner-port/src/main.ts", "utf8")).toContain("examples/kid-goku-beyond-the-clouds-port/main");
   });
 });

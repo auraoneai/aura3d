@@ -12,7 +12,7 @@ import { readAssetManifest } from "../../asset-manifest.js";
 import { normalizeGlb, normalizeUsage, type NormalizeSize } from "./normalize.js";
 import { slimGlb, slimUsage } from "./slim.js";
 import { parsePreviewViews, renderPreview, previewUsage } from "./preview.js";
-import { createAssetThumbnails, thumbnailUsage } from "./thumbnail.js";
+import { createAssetThumbnailsAsync, thumbnailUsage } from "./thumbnail.js";
 
 export { normalizeGlb, normalizeUsage, NORMALIZE_FRONT_YAW } from "./normalize.js";
 export type { NormalizeFront, NormalizeGlbOptions, NormalizeGlbResult, NormalizeSize } from "./normalize.js";
@@ -20,7 +20,7 @@ export { slimGlb, slimUsage, SLIM_DEFAULT_QUALITY } from "./slim.js";
 export type { SlimGlbOptions, SlimGlbResult } from "./slim.js";
 export { renderPreview, renderPreviewPng, parsePreviewViews, previewUsage, DEFAULT_PREVIEW_VIEWS, PREVIEW_KIND, PREVIEW_NOTE, PREVIEW_VIEWS } from "./preview.js";
 export type { PreviewPng, PreviewView, RenderPreviewOptions, RenderPreviewResult } from "./preview.js";
-export { createAssetThumbnails, thumbnailUsage } from "./thumbnail.js";
+export { createAssetThumbnailsAsync, thumbnailUsage } from "./thumbnail.js";
 export type { AssetThumbnailRecord, AssetThumbnailsResult, CreateAssetThumbnailsOptions } from "./thumbnail.js";
 
 type Io = Parameters<Parameters<typeof registerCliCommand>[0]["run"]>[1];
@@ -195,7 +195,7 @@ registerCliCommand({
     if (extra.length > 0) throw new UsageError(`Unexpected argument(s): ${extra.join(" ")}. Select assets with --asset id.`);
     const assetIds = argv.flatMap((arg, i) => (arg === "--asset" ? (option(argv.slice(i), "--asset") ?? "").split(",").map((s) => s.trim()).filter(Boolean) : []));
     const size = numberOption(argv, "--size", (n) => Number.isInteger(n) && n >= 32 && n <= 2048);
-    const result = await createAssetThumbnails({ projectDir: io.cwd, ...(assetIds.length ? { assetIds } : {}), ...(size ? { size } : {}) });
+    const result = await createAssetThumbnailsAsync({ projectDir: io.cwd, ...(assetIds.length ? { assetIds } : {}), ...(size ? { size } : {}) });
     const { manifest: _manifest, ...summary } = result;
     return { ok: result.ok, json: summary, lines: [...result.thumbnails.map((t) => `${t.id} -> ${t.thumbnailUrl}`), ...result.messages] };
   })

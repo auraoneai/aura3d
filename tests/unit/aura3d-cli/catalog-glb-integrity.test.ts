@@ -72,7 +72,7 @@ describe("catalog-wide GLB provenance digests", () => {
         problems.push(...checked.failures.map((failure) => `${file}: ${failure}`));
         if (checked.uris.length > 0) {
           withSidecars++;
-          if (typed !== undefined && !typedHasIntegrityMap(typed, asset.id, expected, checked.uris)) {
+          if (typed !== undefined && expected !== undefined && !typedHasIntegrityMap(typed, asset.id, expected, checked.uris)) {
             problems.push(`${file} ${asset.id}: typed source lacks the dependency integrity map`);
           }
         }

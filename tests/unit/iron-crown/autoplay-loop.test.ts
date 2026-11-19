@@ -148,7 +148,7 @@ function runAutoplay(seconds: number) {
     if (!ko && !stunned && !f.guard && intent.attack) tryAttack(f, foe, intent.attack);
   };
 
-  let phase: Phase = "fight", phaseT = 0, timer = ROUND_SECONDS, pips = { p1: 0, cpu: 0 }, roundWinner: "p1" | "cpu" | "draw" = "draw";
+  let phase = "fight" as Phase, phaseT = 0, timer = ROUND_SECONDS, pips = { p1: 0, cpu: 0 }, roundWinner: "p1" | "cpu" | "draw" = "draw";
   let resultAt = -1, clock = 0, sinceProgress = 0, maxStall = 0, firstStrikeRangeAt = -1;
   const bouts: Array<{ stage: StageId; p1Won: boolean; p1Hits: number; cpuHits: number }> = [];
   const stages: StageId[] = [stage];

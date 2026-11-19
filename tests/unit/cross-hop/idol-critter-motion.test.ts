@@ -100,6 +100,7 @@ describe("cross hop Idol critter body animation", () => {
   }
 
   it("core.ts poses the player, the spectators and the hawk every frame", () => {
+    // invariant: core.ts is the only caller that poses the player, spectator and hawk Idol bodies each frame; the pose maths tested above is dead unless these calls stay.
     const core = readFileSync("apps/showcase-cross-hop/src/game/core.ts", "utf8");
     expect(core).toContain('poseCritterParts(nodes.get("player-body"), idolCritterKey(st.critter.asset)');
     expect(core).toContain("poseCritterParts(nodes.get(`spectator-${idx}-body`)");

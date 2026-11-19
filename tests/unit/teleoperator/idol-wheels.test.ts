@@ -121,7 +121,7 @@ describe("Grid Dispatch road wheels turn about their hubs and never strobe (owne
       for (let step = 0; step < 16; step++) {
         const w = vehicleWheels(layout, pose, (step / 16) * 2 * Math.PI * layout.radius, steer)[0]!;
         const m = ZYX(w.rotation![0], w.rotation![1], w.rotation![2]);
-        const s = w.scale as number[];
+        const s = w.scale as readonly number[];
         // bounds in the steered wheel frame (body * steer), relative to the vehicle
         const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
         for (let i = 0; i < p.length; i += 3) {

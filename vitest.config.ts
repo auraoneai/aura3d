@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
+import { BaseSequencer, type TestSpecification } from "vitest/node";
 
 type ResolutionRow = readonly [string, string, unknown?];
 const registry = JSON.parse(readFileSync(new URL("./aura.exports.json", import.meta.url), "utf8")) as {
@@ -12,6 +13,31 @@ export const sourceAliases = registry.paths
   .filter(([specifier, target]) => !specifier.includes("*") && !target.includes("*"))
   .map(([find, target]) => ({ find, replacement: fileURLToPath(new URL(`./${target}`, import.meta.url)) }))
   .sort((a, b) => b.find.length - a.find.length);
+
+/** Largest per-test timeout a file declares as `}, <ms>)` (0 when none); reading only orders files, it never filters. */
+function declaredTimeoutMs(file: string): number {
+  let source: string;
+  try { source = readFileSync(file, "utf8"); } catch { return 0; }
+  let max = 0;
+  for (const match of source.matchAll(/\},\s*(\d[\d_]{5,})\s*\)/g)) max = Math.max(max, Number(match[1]!.replaceAll("_", "")));
+  return max;
+}
+
+/**
+ * Vitest's default order on a cold cache is "largest file first", so a tiny file that runs a 10-minute simulation
+ * (slingshot-siege/autoplay-campaign-*.test.ts: 22 lines, ~600 s on the 2 vCPU ACR runner) starts last and the shard
+ * blows its 1620 s stage budget (5.6.0 run 002, unit 1/6: campaign slices 1 and 3 hash into the same shard and were
+ * still running at the limit). Files that declare a per-test timeout of 5 minutes or more start first, longest first;
+ * everything else keeps the default order. Order only: every file still runs.
+ */
+class LongRunningFirstSequencer extends BaseSequencer {
+  override async sort(files: TestSpecification[]): Promise<TestSpecification[]> {
+    const sorted = await super.sort(files);
+    const budget = new Map(sorted.map((spec) => [spec, declaredTimeoutMs(spec.moduleId)] as const));
+    const long = sorted.filter((spec) => budget.get(spec)! >= 300_000).sort((a, b) => budget.get(b)! - budget.get(a)!);
+    return [...long, ...sorted.filter((spec) => budget.get(spec)! < 300_000)];
+  }
+}
 
 export default defineConfig({
   test: {
@@ -36,6 +62,7 @@ export default defineConfig({
       "tests/qr/**/*.test.ts"
     ],
     setupFiles: [],
+    sequence: { sequencer: LongRunningFirstSequencer },
     // Workspace packages publish `exports` to ./dist, which does not exist in a
     // source checkout; externalizing them would bypass the resolve.alias entries
     // below that map every @aura3d specifier to src/. Inline so aliases win.

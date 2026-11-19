@@ -54,7 +54,7 @@ describe("Idol tram moving parts (moving-parts pass)", () => {
     expect(advanceWheelSpin(spin, 0, dt)).toBe(spin);
     const a = tramWheelTransforms(tramRotation([0, 0, 1], 0), [0, 0, 0], 0.2);
     const b = tramWheelTransforms(tramRotation([0, 0, 1], 0), [0, 0, 0], 0.9);
-    expect(a[0]!.rotation[0]).not.toBeCloseTo(b[0]!.rotation[0]!, 3);
+    expect(a[0]!.rotation![0]).not.toBeCloseTo(b[0]!.rotation![0]!, 3);
     expect(a[0]!.position).toEqual(b[0]!.position);
   });
 

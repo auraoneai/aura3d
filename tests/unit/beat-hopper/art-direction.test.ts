@@ -31,8 +31,12 @@ describe("beat-hopper art direction", () => {
     expect(snapshot.hasAmbient).toBe(false);
     expect(snapshot.environment.kind).toBe("preset");
     // Idol wow pass: the hero, palms and concert dressing are Idol GLBs (tools/idol/specs/beat-hopper.json).
+    // One serialisation without the vertex/index buffers: with them the scene JSON is ~280 MB and stringifying it per
+    // key cost ~25 s on the ACR runner. Asset keys are strings, so dropping numeric arrays cannot hide one.
+    const sceneText = JSON.stringify(nodes, (_key, value: unknown) =>
+      ArrayBuffer.isView(value) || (Array.isArray(value) && value.length > 32 && typeof value[0] === "number") ? undefined : value);
     for (const key of ["bhSkaterBot", "bhPalm", "bhSpeakerTower", "bhSynthStack", "bhDjConsole"]) {
-      expect(JSON.stringify(nodes)).toContain(key);
+      expect(sceneText).toContain(key);
     }
     expect(nodes.some((n) => n.name === "grp-dress-stacks")).toBe(true);
     expect(nodes.some((n) => n.name === "grp-dress-decks")).toBe(true);

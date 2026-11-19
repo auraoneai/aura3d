@@ -20,6 +20,7 @@ import {
   wheelRoll
 } from "../../../apps/showcase-roadster-rush/src/render/idolWheels";
 
+// invariant: main.ts must create the wheel/blur/fan instance pools by these ids; the spin maths tested above only reaches the GPU through them.
 const main = readFileSync(resolve(__dirname, "../../../apps/showcase-roadster-rush/src/main.ts"), "utf8");
 const TYPES = Object.keys(VEHICLE_SPECS) as VehicleType[];
 

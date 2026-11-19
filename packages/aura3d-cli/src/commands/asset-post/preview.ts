@@ -333,7 +333,8 @@ function escapeXml(value: string): string {
 }
 
 export interface PreviewPng {
-  readonly png: Buffer;
+  /** PNG bytes (a Node Buffer at runtime; typed as Uint8Array so the public declarations need no Node types). */
+  readonly png: Uint8Array;
   readonly width: number;
   readonly height: number;
   readonly views: readonly PreviewView[];

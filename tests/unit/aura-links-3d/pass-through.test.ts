@@ -147,6 +147,7 @@ describe("tree colliders are the drawn trees, minus the hidden ones", () => {
   }
 
   it("the sim's tree list is the drawn list: main.ts draws courseTreeSpots with the scene rng (trees are its first draws)", () => {
+    // invariant: main.ts draws the trees from courseTreeSpots with the scene rng and threads the obstacles into every shot path; the sim-side collider proofs only cover what main.ts actually draws if these calls stay.
     const src = readFileSync("apps/showcase-aura-links-3d/src/main.ts", "utf8");
     expect(src).toMatch(/const rng = makeRng\(hole\.number \* 7919 \+ course\.id\.length \* 131\);/);
     expect(src).toMatch(/const treeSpots = courseTreeSpots\(course, hole, terrain, rng\);/);

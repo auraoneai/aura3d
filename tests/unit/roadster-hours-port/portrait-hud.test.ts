@@ -61,7 +61,7 @@ describe("Saltwind Highway portrait HUD layout", () => {
       const career = { ...defaultCareer(), unlocked: LEVELS.length - 1 };
       const run = createRun(li, career);
       const director = createCameraDirector({ eyeRate: 9, lookRate: 12, fovRate: 4 });
-      for (let i = 0; i < 120 * 40 && run.phase !== "finished"; i++) {
+      for (let i = 0; i < 120 * 40 && run.phase !== "complete"; i++) {
         stepRun(run, run.phase === "running" ? autopilot(run, DEFAULT_PARAMS) : {}, SIM_STEP, career);
         const cam = director.step(cameraRun(level, run), [], SIM_STEP);
         // on the suction banks the frame rolls with the road and the car stays on it (the HUD-safe pitch is off there)

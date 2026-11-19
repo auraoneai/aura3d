@@ -109,6 +109,7 @@ describe("bunker zero Idol moving parts + idle life (GPU QA)", () => {
 
   it("drone rotors are static slot nodes, so a floor start re-shows them (real-GPU audit: hideAllRuntime left the ducts empty)", async () => {
     const { readFileSync } = await import("node:fs");
+    // invariant: main.ts's hideAllRuntime/slotNode wiring decides whether drone rotors re-show on a floor start (real-GPU audit bug); no runtime seam exposes it.
     const main = readFileSync("apps/showcase-bunker-zero/src/main.ts", "utf8");
     // hideAllRuntime hides every SLOT_IDS node and re-shows only SLOT_STATIC_IDS of the active slot
     expect(main).toMatch(/for \(const id of SLOT_IDS\[s\]!\) opt\(id\)\?\.setVisible\(false\);\s*if \(s === slot\) for \(const id of SLOT_STATIC_IDS\[s\]!\) opt\(id\)\?\.setVisible\(true\);/);

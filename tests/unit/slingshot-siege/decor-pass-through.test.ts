@@ -151,7 +151,7 @@ describe("slingshot-siege decor pass-through", () => {
     }
   });
 
-  it("no decor (visual or collider) and no windmill sail sweep stands in the shot lane or any level's fortress", () => {
+  it("no decor (visual or collider) and no windmill sail sweep stands in the shot lane or any level's fortress", async () => {
     const hits: string[] = [];
     const things: { name: string; box: Box }[] = [
       ...ch0.visuals.map((v) => ({ name: `${v.name} (visual)`, box: v.box })),
@@ -159,6 +159,9 @@ describe("slingshot-siege decor pass-through", () => {
       { name: "windmill sails (swept)", box: ch0.sails }
     ];
     for (const level of LEVELS) {
+      // Each level builds a warm-started SiegeSim (~2 s on the 2 vCPU ACR runner, 61 s for the sweep): yield between
+      // levels so the vitest worker answers its RPC (a synchronous block past 60 s fails with "Timeout calling onTaskUpdate").
+      await new Promise<void>((resolve) => setImmediate(resolve));
       for (const vol of playVolume(level)) {
         for (const t of things) {
           // Clearance around every fortress body as it spawns: 10 cm from a static collider (levels.ts keeps 15 cm),

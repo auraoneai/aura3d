@@ -34,6 +34,7 @@ import { SET_PIECE_PLACEMENTS } from "../../../apps/showcase-aura-hoops-3d/src/s
 import { BLEACHER_STANDS } from "../../../apps/showcase-aura-hoops-3d/src/courtRigs";
 
 const ROOT = path.resolve(__dirname, "../../..");
+// invariant: main.ts is the only place the rim/net are drawn from RING_R/TUBE_R and passes are checked against defenders; the collider proofs below only hold if main wires these exact calls.
 const MAIN = readFileSync(path.join(ROOT, "apps/showcase-aura-hoops-3d/src/main.ts"), "utf8");
 const GRAVITY = -10.4;
 const RIM: [number, number, number] = [0, 3.05, 0];

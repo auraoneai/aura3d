@@ -104,6 +104,7 @@ describe("bunker zero autopilot never stalls (many seeds, variable frame time)",
 });
 
 describe("bunker zero F6 perf + autoplay wiring (main.ts)", () => {
+  // invariant: these boot flags and the descent/warm-up guards live only in main.ts; a refactor that drops them reintroduces the real-GPU blocking stalls this file pins.
   const MAIN = readFileSync(path.resolve("apps/showcase-bunker-zero/src/main.ts"), "utf8");
   it("mounts every floor's surfaces at boot (runtime adds make every node write rebuild the scene) unless ?deferfloors=1", () => {
     expect(MAIN).toContain('const DEFER_FLOOR_SURFACES = bootParams.get("deferfloors") === "1" &&');

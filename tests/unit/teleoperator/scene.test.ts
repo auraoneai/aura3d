@@ -117,7 +117,7 @@ describe("grid dispatch renderer options (wave 2, E1 handoff)", () => {
     expect(app.nodes.has("taxi-passenger")).toBe(true);
     const h = app.nodes.require("taxi-passenger");
     h.setPosition(4.5, 0.18, -30);
-    expect((h.snapshot() as { position?: number[] }).position).toEqual([4.5, 0.18, -30]);
+    expect((h.snapshot() as { position?: readonly number[] }).position).toEqual([4.5, 0.18, -30]);
     app.dispose?.();
   });
 });

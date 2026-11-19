@@ -102,6 +102,7 @@ describe("Serpentine Idol runner motion clips", () => {
   });
 
   it("the live pose reaches the shipped runner's skinning palette with no clip clock", async () => {
+    // invariant: world.ts must drive runner.animate from the sim each frame; the clip sampling tested above is dead unless world.ts calls it.
     const bytes = readFileSync("apps/showcase-serpentine-sky-run-port/assets/idol/ssrHeroViolet.glb");
     vi.stubGlobal("fetch", async () => new Response(new Uint8Array(bytes), { status: 200 }));
     const actor = await createTypedGLBActor({

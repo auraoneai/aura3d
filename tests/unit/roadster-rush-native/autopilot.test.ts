@@ -12,8 +12,12 @@ function makeGame(seed: number): RoadsterGame {
   return game;
 }
 
+// The pilot's look-ahead makes these runs CPU-heavy (36-45 s per test on the 2 vCPU ACR runner); yield every simulated
+// 10 s so the vitest worker can answer its RPC (a synchronous block past 60 s fails the run with "Timeout calling onTaskUpdate").
+const yieldToLoop = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
+
 /** Runs the real sim hands-free under the autoplay pilot for `seconds`, ticking it every fixed step. */
-function autoplayRun(seed: number, seconds: number) {
+async function autoplayRun(seed: number, seconds: number) {
   const game = makeGame(seed) as any;
   const state = { lastTickMs: 0, lastStuntMs: 0, gameOverSinceMs: 0, stats: { ticks: 0, steps: 0 } };
   const tick = createFreewayAutopilot(state);
@@ -21,7 +25,9 @@ function autoplayRun(seed: number, seconds: number) {
   let now = 1000;
   const crashes: { t: number; what: string; z: number }[] = [];
   let restarts = 0, maxDistance = 0, lastMode = game.mode, stuckFor = 0, lastZ = game.player.position.z, maxStuck = 0, playSeconds = 0;
+  const yieldEvery = Math.max(1, Math.round(10 / FIXED_DT));
   for (let i = 0; i < Math.round(seconds / FIXED_DT); i++) {
+    if (i % yieldEvery === yieldEvery - 1) await yieldToLoop();
     tick(game, now);
     game.simStep(FIXED_DT);
     now += FIXED_DT * 1000;
@@ -41,9 +47,9 @@ function autoplayRun(seed: number, seconds: number) {
 }
 
 describe("Apex Overdrive ?autoplay=1 pilot drives the real sim hands-free", () => {
-  it("makes progress, survives long stretches, and restarts after a wreck", () => {
+  it("makes progress, survives long stretches, and restarts after a wreck", async () => {
     for (const seed of [1, 2, 3]) {
-      const r = autoplayRun(seed, 180);
+      const r = await autoplayRun(seed, 180);
       // every run makes real progress, never stalls 5 s, and a wreck always leads to a fresh run (looping forever)
       expect(r.maxDistance).toBeGreaterThan(900);
       expect(r.maxStuck).toBeLessThan(5);
@@ -53,14 +59,14 @@ describe("Apex Overdrive ?autoplay=1 pilot drives the real sim hands-free", () =
     }
   }, 300000);
 
-  it("drives like a careful human: at most one wreck per 3 simulated minutes, no sign wrecks, a bounded CPU budget", () => {
+  it("drives like a careful human: at most one wreck per 3 simulated minutes, no sign wrecks, a bounded CPU budget", async () => {
     // owner QA Nov 19: the rule-based pilot wrecked every 30-60 s (signs, rear-ends, sky roadsters); the look-ahead
     // planner predicts ~2 s for every candidate manoeuvre and must keep wrecks rare across seeds
     let crashes = 0;
     let minutes = 0;
     const what: string[] = [];
     for (const seed of [4, 5, 9]) {
-      const r = autoplayRun(seed, 240);
+      const r = await autoplayRun(seed, 240);
       crashes += r.crashes.length;
       minutes += r.playSeconds / 60;
       what.push(...r.crashes.map((c) => c.what));

@@ -302,7 +302,7 @@
     "test:performance": "pnpm exec tsx --tsconfig tsconfig.base.json tools/performance/native-benchmark.ts",
     "test:unit": "vitest run tests/unit --maxWorkers=2 --reporter=default --reporter=json --outputFile=tests/reports/unit.json",
     "test:visual": "node scripts/visual-qa.mjs --routes scripts/visual-qa.routes.json --static-dir marketing/dist --port 3180",
-    "typecheck": "node --max-old-space-size=8192 ./node_modules/typescript/lib/tsc.js -p tsconfig.check.json --noEmit",
+    "typecheck": "node tools/typecheck/sharded.mjs --project tsconfig.check.json",
     "typecheck:raw": "node --max-old-space-size=8192 ./node_modules/typescript/lib/tsc.js -p tsconfig.check.json --noEmit",
     "typecheck:tests": "node --max-old-space-size=8192 ./node_modules/typescript/lib/tsc.js -p tsconfig.check.json --noEmit",
     "verify:architecture": "pnpm arch:check",

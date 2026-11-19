@@ -20,6 +20,7 @@ const change = (a: Bones, b: Bones) => Math.max(...Object.keys(a).map((k) => Mat
 
 describe("bunker zero Idol enemies play generated motion clips (fal text-to-motion, no Meshy)", () => {
   it("every sim state maps to a shipped clip: rifle soldier for the guard and gunner, heavy brute for the Warden", () => {
+    // invariant: the clip table must stay fal text-to-motion provenance (no Meshy/Sketchfab, owner rule); the toContain checks are on the exported clip-name list.
     const src = readFileSync("apps/showcase-bunker-zero/src/art/idol-mocap.ts", "utf8");
     expect(src).toMatch(/fal-ai\/hunyuan-motion/);
     expect(src).not.toMatch(/meshy|sketchfab/i);

@@ -36,8 +36,14 @@ describe("slingshot-siege fort stability", () => {
     expect(hits).toEqual([]);
   });
 
-  it("the warm start barely moves any fort (the layouts are stable, not just hidden by the settle)", () => {
-    const drift = LEVELS.map((level) => ({ id: level.id + 1, d: new SiegeSim({ level, seed: 7, decor: DECOR_COLLIDERS }).spawnDrift() }));
+  it("the warm start barely moves any fort (the layouts are stable, not just hidden by the settle)", async () => {
+    // 54 s of warm starts on the 2 vCPU ACR runner: yield per level so the vitest worker can answer its RPC
+    // (a synchronous block past 60 s fails the run with "Timeout calling onTaskUpdate").
+    const drift: { id: number; d: number }[] = [];
+    for (const level of LEVELS) {
+      drift.push({ id: level.id + 1, d: new SiegeSim({ level, seed: 7, decor: DECOR_COLLIDERS }).spawnDrift() });
+      await yieldToLoop();
+    }
     expect(drift.filter((r) => r.d > 0.05)).toEqual([]);
   }, 600_000);
 

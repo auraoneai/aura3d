@@ -35,6 +35,9 @@ const idolAssets: Plugin = {
   configurePreviewServer(server) { server.middlewares.use("/aura-assets", serveIdolAsset); },
   generateBundle() {
     for (const name of idolAssetFiles()) {
+      // A copy in this app's own public/aura-assets (the packed example harness stages the named root files there)
+      // is already copied into dist by Vite's publicDir; emit only what the root tree alone holds.
+      if (fs.existsSync(path.join(appDir, "public", "aura-assets", name))) continue;
       const file = path.join(sharedAuraAssetsDir, name);
       if (!fs.existsSync(file)) this.error(`Idol asset missing from public/aura-assets: ${name} (re-run tools/idol/admit.sh)`);
       this.emitFile({ type: "asset", fileName: `aura-assets/${name}`, source: fs.readFileSync(file) });

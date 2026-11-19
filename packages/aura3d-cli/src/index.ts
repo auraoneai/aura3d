@@ -439,10 +439,10 @@ async function withAdmissionThumbnail(options: AddAssetOptions, result: AssetCli
   if (!result.ok) return result;
   const entry = result.manifest.assets.find((asset) => asset.id === options.name);
   if (!entry || !entry.thumbnailUrl?.endsWith(`${entry.id}.thumb.svg`)) return result;
-  const { canThumbnailAsset, createAssetThumbnails } = await import("./commands/asset-post/thumbnail.js");
+  const { canThumbnailAsset, createAssetThumbnailsAsync } = await import("./commands/asset-post/thumbnail.js");
   if (!canThumbnailAsset(entry)) return result;
   try {
-    const thumbs = await createAssetThumbnails({ projectDir: options.projectDir ?? process.cwd(), assetIds: [entry.id] });
+    const thumbs = await createAssetThumbnailsAsync({ projectDir: options.projectDir ?? process.cwd(), assetIds: [entry.id] });
     if (thumbs.thumbnails.length === 0) {
       return { ...result, messages: [...result.messages, `Thumbnail: kept the placeholder card (${thumbs.failures.join("; ") || "nothing rendered"}); retry with aura3d assets thumbnail --asset ${entry.id}.`] };
     }
@@ -1568,7 +1568,31 @@ function validateScalarVolumeNamespace(projectDir: string, outputDir: string, as
 }
 
 // `assets thumbnail` lives in commands/asset-post (real PNG thumbnails from the CPU preview renderer; async).
-export { createAssetThumbnails } from "./commands/asset-post/thumbnail.js";
+export { createAssetThumbnailsAsync } from "./commands/asset-post/thumbnail.js";
+
+/**
+ * 5.5 contract, kept for compatibility: rewrites every manifest asset's thumbnail as the SVG placeholder card,
+ * synchronously. It draws nothing from the model; use {@link createAssetThumbnailsAsync} (what `aura3d assets thumbnail`
+ * runs) for real PNG thumbnails.
+ * @deprecated Use createAssetThumbnailsAsync.
+ */
+export function createAssetThumbnails(options: { readonly projectDir?: string } = {}): AssetCliResult {
+  const projectDir = resolve(options.projectDir ?? process.cwd());
+  const manifest = readAssetManifest(projectDir);
+  const assets = manifest.assets.map((asset) => ({
+    ...asset,
+    thumbnailUrl: writeAdmissionPlaceholderThumbnail(projectDir, manifest.outputDir, manifest.assetBasePath, asset.id, asset.bounds)
+  }));
+  const next = sortManifest({ ...manifest, assets });
+  writeAssetManifest(projectDir, next);
+  writeTypedAssets(projectDir, next);
+  return {
+    ok: true,
+    manifestPath: resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST),
+    manifest: next,
+    messages: [`Generated ${next.assets.length} thumbnails.`]
+  };
+}
 export type { AssetThumbnailRecord, AssetThumbnailsResult, CreateAssetThumbnailsOptions } from "./commands/asset-post/thumbnail.js";
 
 export function doctor(options: { readonly projectDir?: string } = {}): AssetValidationResult {

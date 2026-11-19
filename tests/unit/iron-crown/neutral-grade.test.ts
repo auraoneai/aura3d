@@ -171,8 +171,8 @@ describe("iron-crown neutral-grade pass (owner: too much orange / sun-bright fad
           expect(rim, side).toBeDefined();
           expect(Number(rim!.intensity), side).toBeGreaterThanOrEqual(RIM_MIN_INTENSITY);
           // Behind the fighter, aimed forward at the shoulders: a back light, not a fill.
-          expect((rim!.position as number[])[2], side).toBeLessThan(FIGHT_LANE_BACK_Z);
-          expect((rim!.target as number[])[2], side).toBeGreaterThan((rim!.position as number[])[2]);
+          expect((rim!.position as readonly number[])[2], side).toBeLessThan(FIGHT_LANE_BACK_Z);
+          expect((rim!.target as readonly number[])[2], side).toBeGreaterThan((rim!.position as readonly number[])[2]);
           // The refined venues rim both fighters in one cool-neutral colour; the GU47 rows keep each fighter's own colour.
           if (refined) expect(warmth(String(rim!.color)), side).toBeLessThanOrEqual(1);
         }

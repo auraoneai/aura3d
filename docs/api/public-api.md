@@ -16,134 +16,134 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.5.6` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.5.6` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.5.6` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.5.6` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.5.6` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.5.6` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.5.6` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.5.6` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.5.6` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.5.6` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.5.6` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.5.6` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.5.6` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.5.6` | `./dist/index.d.ts` | 372 |
-| `@aura3d/animation/contracts` | `5.5.6` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.5.6` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.5.6` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.5.6` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.5.6` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.5.6` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.5.6` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.5.6` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.5.6` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.5.6` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.5.6` | `./dist/vite/auraDecoders.d.ts` | 27 |
-| `@aura3d/assets/vite-client` | `5.5.6` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.5.6` | `./dist/index.d.ts` | 310 |
-| `@aura3d/cli` | `5.5.6` | `./dist/index.d.ts` | 299 |
-| `@aura3d/controls` | `5.5.6` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.5.6` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.5.6` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.5.6` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.5.6` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.5.6` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.5.6` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.5.6` | `./dist/engine/public/index.d.ts` | 11206 |
-| `@aura3d/engine/animation` | `5.5.6` | `./dist/animation/index.d.ts` | 372 |
-| `@aura3d/engine/assets` | `5.5.6` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.5.6` | `./dist/audio/index.d.ts` | 310 |
-| `@aura3d/engine/controls` | `5.5.6` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.5.6` | `./dist/engine/public/devtools.d.ts` | 10875 |
-| `@aura3d/engine/ecs` | `5.5.6` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.5.6` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.5.6` | `./dist/game/index.d.ts` | 11626 |
-| `@aura3d/engine/game/art` | `5.5.6` | `./dist/game/art/index.d.ts` | 334 |
-| `@aura3d/engine/game/capture` | `5.5.6` | `./dist/game/capture/index.d.ts` | 11155 |
-| `@aura3d/engine/game/styles.css` | `5.5.6` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.5.6` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.5.6` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.5.6` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.5.6` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.5.6` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.5.6` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.5.6` | `./dist/physics/index.d.ts` | 285 |
-| `@aura3d/engine/physics/solverless` | `5.5.6` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.5.6` | `./dist/physics/world.d.ts` | 16 |
-| `@aura3d/engine/procedural` | `5.5.6` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.5.6` | `./dist/engine/public/renderer.d.ts` | 11132 |
-| `@aura3d/engine/scatter` | `5.5.6` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.5.6` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.5.6` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.5.6` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/sculpt` | `5.5.6` | `./dist/engine/public/sculpt.d.ts` | 82 |
-| `@aura3d/engine/shader-graph-runtime` | `5.5.6` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
-| `@aura3d/engine/v5` | `5.5.6` | `./dist/engine/public/v5.d.ts` | 8615 |
-| `@aura3d/engine/v5/context` | `5.5.6` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.5.6` | `./dist/game/v5.d.ts` | 11622 |
-| `@aura3d/engine/v5/internal` | `5.5.6` | `./dist/engine/public/v5-internal.d.ts` | 435 |
-| `@aura3d/engine/v5/math/hull` | `5.5.6` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.5.6` | `./dist/engine/public/worker.d.ts` | 88 |
-| `@aura3d/engine/workflows` | `5.5.6` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.5.6` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.5.6` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.5.6` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.5.6` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.5.6` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.5.6` | `./dist/index.d.ts` | 35 |
-| `@aura3d/physics/solverless` | `5.5.6` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.5.6` | `./dist/world.d.ts` | 16 |
-| `@aura3d/product-studio` | `5.5.6` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.5.6` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.5.6` | `./dist/index.d.ts` | 4352 |
-| `@aura3d/rendering/contracts` | `5.5.6` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.5.6` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.5.6` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.5.6` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.5.6` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.5.6` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.5.6` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.5.6` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.5.6` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.5.6` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.5.6` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.5.6` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.5.6` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.5.6` | `./dist/contracts/output.d.ts` | 9 |
-| `@aura3d/rendering/contracts/particles` | `5.5.6` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.5.6` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.5.6` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.5.6` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.5.6` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.5.6` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.5.6` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.5.6` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.5.6` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.5.6` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.5.6` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.5.6` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.5.6` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.5.6` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.5.6` | `./dist/lanes/index.d.ts` | 1055 |
-| `@aura3d/rendering/lighting` | `5.5.6` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.5.6` | `./dist/production-runtime/index.d.ts` | 417 |
-| `@aura3d/rendering/reference` | `5.5.6` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.5.6` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.5.6` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.5.6` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.5.6` | `./dist/webgpu.d.ts` | 225 |
-| `@aura3d/rendering/world` | `5.5.6` | `./dist/world/index.d.ts` | 174 |
-| `@aura3d/scene` | `5.5.6` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.5.6` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.5.6` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.5.6` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.6.0` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.6.0` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.6.0` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.6.0` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.6.0` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.6.0` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.6.0` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.6.0` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.6.0` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.6.0` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.6.0` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.6.0` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.6.0` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.6.0` | `./dist/index.d.ts` | 449 |
+| `@aura3d/animation/contracts` | `5.6.0` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.6.0` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.6.0` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.6.0` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.6.0` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.6.0` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.6.0` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.6.0` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.6.0` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.6.0` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.6.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
+| `@aura3d/assets/vite-client` | `5.6.0` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.6.0` | `./dist/index.d.ts` | 310 |
+| `@aura3d/cli` | `5.6.0` | `./dist/index.d.ts` | 308 |
+| `@aura3d/controls` | `5.6.0` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.6.0` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.6.0` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.6.0` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.6.0` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.6.0` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.6.0` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.6.0` | `./dist/engine/public/index.d.ts` | 11284 |
+| `@aura3d/engine/animation` | `5.6.0` | `./dist/animation/index.d.ts` | 449 |
+| `@aura3d/engine/assets` | `5.6.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.6.0` | `./dist/audio/index.d.ts` | 310 |
+| `@aura3d/engine/controls` | `5.6.0` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.6.0` | `./dist/engine/public/devtools.d.ts` | 10953 |
+| `@aura3d/engine/ecs` | `5.6.0` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.6.0` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.6.0` | `./dist/game/index.d.ts` | 11704 |
+| `@aura3d/engine/game/art` | `5.6.0` | `./dist/game/art/index.d.ts` | 334 |
+| `@aura3d/engine/game/capture` | `5.6.0` | `./dist/game/capture/index.d.ts` | 11233 |
+| `@aura3d/engine/game/styles.css` | `5.6.0` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.6.0` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.6.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.6.0` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.6.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.6.0` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.6.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.6.0` | `./dist/physics/index.d.ts` | 285 |
+| `@aura3d/engine/physics/solverless` | `5.6.0` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.6.0` | `./dist/physics/world.d.ts` | 16 |
+| `@aura3d/engine/procedural` | `5.6.0` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.6.0` | `./dist/engine/public/renderer.d.ts` | 11210 |
+| `@aura3d/engine/scatter` | `5.6.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.6.0` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.6.0` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.6.0` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/sculpt` | `5.6.0` | `./dist/engine/public/sculpt.d.ts` | 82 |
+| `@aura3d/engine/shader-graph-runtime` | `5.6.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
+| `@aura3d/engine/v5` | `5.6.0` | `./dist/engine/public/v5.d.ts` | 8692 |
+| `@aura3d/engine/v5/context` | `5.6.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.6.0` | `./dist/game/v5.d.ts` | 11700 |
+| `@aura3d/engine/v5/internal` | `5.6.0` | `./dist/engine/public/v5-internal.d.ts` | 435 |
+| `@aura3d/engine/v5/math/hull` | `5.6.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.6.0` | `./dist/engine/public/worker.d.ts` | 88 |
+| `@aura3d/engine/workflows` | `5.6.0` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.6.0` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.6.0` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.6.0` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.6.0` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.6.0` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.6.0` | `./dist/index.d.ts` | 35 |
+| `@aura3d/physics/solverless` | `5.6.0` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.6.0` | `./dist/world.d.ts` | 16 |
+| `@aura3d/product-studio` | `5.6.0` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.6.0` | `./dist/index.d.ts` | 51 |
+| `@aura3d/rendering` | `5.6.0` | `./dist/index.d.ts` | 4352 |
+| `@aura3d/rendering/contracts` | `5.6.0` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.6.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.6.0` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.6.0` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.6.0` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.6.0` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.6.0` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.6.0` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.6.0` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.6.0` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.6.0` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.6.0` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.6.0` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.6.0` | `./dist/contracts/output.d.ts` | 9 |
+| `@aura3d/rendering/contracts/particles` | `5.6.0` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.6.0` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.6.0` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.6.0` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.6.0` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.6.0` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.6.0` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.6.0` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.6.0` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.6.0` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.6.0` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.6.0` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.6.0` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.6.0` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.6.0` | `./dist/lanes/index.d.ts` | 1055 |
+| `@aura3d/rendering/lighting` | `5.6.0` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.6.0` | `./dist/production-runtime/index.d.ts` | 417 |
+| `@aura3d/rendering/reference` | `5.6.0` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.6.0` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.6.0` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.6.0` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.6.0` | `./dist/webgpu.d.ts` | 225 |
+| `@aura3d/rendering/world` | `5.6.0` | `./dist/world/index.d.ts` | 174 |
+| `@aura3d/scene` | `5.6.0` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.6.0` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.6.0` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.6.0` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -1272,8 +1272,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -1349,8 +1349,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -1424,8 +1424,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -1547,8 +1547,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -1664,8 +1664,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -1761,8 +1761,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -1928,8 +1928,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -2021,8 +2021,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -2136,8 +2136,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -2240,8 +2240,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -2341,8 +2341,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -2405,8 +2405,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
 
 ### Export conditions
 
@@ -2515,8 +2515,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/animation@5.5.6#contents-sha256=b06eac2545795fa2b2b647a5ea9135f6b96b4124b705713e2d1650d0d2fd0c92`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/animation@5.6.0#contents-sha256=07415569728e7d08cad0fa741d48c59f60945f4193ec0f685ff674766de9c253`
 
 ### Export conditions
 
@@ -2564,6 +2564,7 @@ export * from "./HumanoidBoneInference.js";
 export * from "./RigQuality.js";
 export * from "./library/standardHumanoidClips.js";
 export * from "./library/performanceStateGraph.js";
+export * from "./smpl/index.js";
 export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
 export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
 export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";
@@ -5248,6 +5249,452 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 //# sourceMappingURL=performanceStateGraph.d.ts.map
 ```
 
+### `./dist/smpl/index.d.ts`
+
+```ts
+/**
+ * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
+ * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
+ * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ */
+export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
+export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
+export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/smpl/humanoid.d.ts`
+
+```ts
+/**
+ * Humanoid role mapping, driver and canonical clips (moved from apps/showcase-port-shared/idol/humanoid.ts, which now
+ * re-exports this module; the games import it unchanged). Used by `aura3d animation import` to retarget clips onto any
+ * rigged humanoid GLB, including Idol's unnamed `bone_N` rigs.
+ *
+ * Idol humanoid driver — drive a rigged Idol GLB (unnamed bones `bone_0..N`) from a game's own code-built joint pose.
+ *
+ * Idol (`speridlabs/idol/max`, `rig: true`) ships a 28–34 bone skeleton in a T-pose with no bone names. Games here already
+ * animate their athletes in code: every frame they compute per-joint local rotations for a procedural rig whose rest pose
+ * is "standing, arms hanging straight down, legs straight down, facing +Z, +Y up, character's left = +X". This module maps
+ * the Idol bones to humanoid roles by hierarchy and rest positions, then turns that same per-joint pose into an
+ * `AnimationPose` for `handle.setAnimationPose(...)` on the `model(assets.<key>)` node — so gameplay animation is
+ * unchanged and only the body that renders it is new.
+ *
+ * API (dependency-free; runs in the browser, in vitest and under plain `node`):
+ *   parseGlbJson(bytes)                -> glTF JSON chunk of a .glb
+ *   readIdolSkeleton(gltf)             -> IdolSkeleton (joint names, parents, rest local TRS, fixed parent-chain transform)
+ *   mapHumanoid(skeleton, opts?)       -> HumanoidMap (role -> bone name, spine/neck chains, diagnostics)
+ *   createHumanoidDriver(skeleton, o?) -> { map, pose(input) } ; pose() returns `{ bones, mode: "replace" }` with
+ *                                         object-form `{x,y,z,w}` / `{x,y,z}` transforms (tuples do not survive the
+ *                                         runtime handle's pose clone; see HumanoidBonePose)
+ *   driver.modelPositions / palmPoints -> model-space joint and palm-centre positions for a pose (prop anchoring)
+ *   loadIdolHumanoid(url, o?)          -> Promise<HumanoidDriver>, cached per URL (fetch + the three calls above)
+ *   eulerZYX(x, y, z)                  -> quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx)
+ *
+ * Input pose (`HumanoidPoseInput`): `rotations[role]` = LOCAL rotation of that joint relative to its parent joint, in the
+ * canonical rest frame above; source hierarchy is hips → spine → chest → neck → head, chest → {l,r}Shoulder → UpperArm →
+ * LowerArm → Hand, hips → {l,r}UpperLeg → LowerLeg → Foot. Omitted roles are identity (a rig with only a "chest" joint
+ * just omits spine). `hipsOffset` is the hips displacement from rest in units of rest hip height (FC: offset / 0.96).
+ *
+ * Retargeting rule per mapped bone: world = G_src · A · R_rest, where G_src is the source joint's accumulated rotation,
+ * R_rest the Idol bone's rest world rotation and A the shortest-arc turn that points the Idol limb straight down (arms
+ * and legs only — the T-pose arms become hanging arms; torso, neck, head and feet keep Idol's natural rest posture).
+ * The source torso rotation (spine·chest) is spread evenly over Idol's spine chain, neck·head over its neck chain.
+ * Clavicles take `shoulderDrop` (default 0.3) of their arm's A so the lowered shoulders do not bunch up.
+ * Unmapped bones (clavicles without a source, fingers, toes, head ends) follow their parent at their rest local rotation.
+ */
+export type Vec3 = readonly [number, number, number];
+/** Quaternion `[x, y, z, w]` (glTF / engine order). */
+export type Quat = readonly [number, number, number, number];
+export declare const HUMANOID_ROLES: readonly ["hips", "spine", "chest", "neck", "head", "leftShoulder", "leftUpperArm", "leftLowerArm", "leftHand", "rightShoulder", "rightUpperArm", "rightLowerArm", "rightHand", "leftUpperLeg", "leftLowerLeg", "leftFoot", "rightUpperLeg", "rightLowerLeg", "rightFoot"];
+export type HumanoidRole = (typeof HUMANOID_ROLES)[number];
+export interface IdolBone {
+    readonly name: string;
+    /** Index into `bones` of the parent joint, or -1 when the parent is not a joint. */
+    readonly parent: number;
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: Vec3;
+}
+export interface IdolSkeleton {
+    readonly bones: readonly IdolBone[];
+    /** World transform of the (non-joint) parent chain above each root joint, keyed by bone index. */
+    readonly rootParents: Readonly<Record<number, {
+        readonly t: Vec3;
+        readonly r: Quat;
+        readonly s: number;
+    }>>;
+}
+export interface HumanoidMap {
+    readonly roles: Partial<Record<HumanoidRole, string>>;
+    /** Idol bones from the first spine bone up to the bone the arms hang from (inclusive). */
+    readonly spineChain: readonly string[];
+    /** Idol bones above the arm branch up to and including the head bone. */
+    readonly neckChain: readonly string[];
+    /** Rest height of the hips joint above the lowest joint, in model units. */
+    readonly hipHeight: number;
+    readonly missing: readonly HumanoidRole[];
+    readonly ok: boolean;
+}
+export interface HumanoidPoseInput {
+    readonly rotations: Partial<Record<HumanoidRole, Quat>>;
+    /** Hips displacement from rest, in units of rest hip height, in the canonical frame (+Y up, +Z forward). */
+    readonly hipsOffset?: Vec3;
+    /**
+     * Optional model-space palm targets (e.g. a held ball's anchor from the procedural rig). The arm is bent and swung
+     * with two-bone IK (bend plane taken from the posed arm) so the drawn palm lands on the target when it is in reach;
+     * Idol arm proportions differ from the procedural rig's, so the same joint angles alone miss by 10-20 cm.
+     */
+    readonly handTargets?: {
+        readonly left?: Vec3;
+        readonly right?: Vec3;
+    };
+}
+/**
+ * One bone's local transform in OBJECT form. The runtime handle clones poses with object spread
+ * (`{ ...transform.rotation }`), which turns a tuple into `{ 0, 1, 2, 3 }` and makes the glTF runtime reject the whole
+ * pose (every body then renders its bind T-pose); `{ x, y, z, w }` survives the clone.
+ */
+export interface HumanoidBonePose {
+    readonly rotation: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+        readonly w: number;
+    };
+    readonly position?: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+    };
+}
+/** Structurally an engine `AnimationPose` (`handle.setAnimationPose(pose)`). */
+export interface HumanoidAnimationPose {
+    readonly bones: Record<string, HumanoidBonePose>;
+    readonly mode: "replace";
+}
+export interface HumanoidDriverOptions {
+    /** Which model-space axis the character faces. Generator output (normalised) faces +Z (default); raw Idol faces +X. */
+    readonly facing?: "+z" | "-z" | "+x" | "-x";
+    /**
+     * Share (0..1) of the T-pose -> hanging-arm turn the clavicle bones take (default 0.3), so lowered arms hang from a
+     * dropped shoulder instead of bunching the deltoid. Arm directions are unaffected (they are solved in world space).
+     */
+    readonly shoulderDrop?: number;
+    /**
+     * Explicit role -> bone-name assignments that override the automatic mapping (`aura3d animation import --map`).
+     * Spine and neck chains are re-derived from the overridden hips/spine/chest/neck/head bones.
+     */
+    readonly roles?: Partial<Record<HumanoidRole, string>>;
+    /** Largest forearm twist about its own axis relative to the upper arm, degrees (default 75; candy-wrapper guard). */
+    readonly maxForearmTwistDeg?: number;
+    /** Largest hand twist about its own axis relative to the forearm, degrees (default 60). */
+    readonly maxWristTwistDeg?: number;
+}
+/** Split `q` into swing * twist about unit `axis` and clamp the twist angle to +-`max` radians. */
+export declare function clampTwist(q: Quat, axis: Vec3, max: number): Quat;
+export interface HumanoidDriver {
+    readonly map: HumanoidMap;
+    readonly skeleton: IdolSkeleton;
+    /** Bone transforms for one frame. Every joint gets a rotation; the hips also get a position. */
+    pose(input: HumanoidPoseInput): HumanoidAnimationPose;
+    /** Model-space joint positions for a pose (debug, tests, foot-plant checks). */
+    modelPositions(input: HumanoidPoseInput): Record<string, Vec3>;
+    /**
+     * Model-space palm centres for a pose: 60% of the way from each wrist (hand bone) to the mean of its child (finger)
+     * joints. Use these, not the procedural rig's palm, to anchor held props (balls) to the hand that is drawn.
+     */
+    palmPoints(input: HumanoidPoseInput): {
+        readonly left: Vec3;
+        readonly right: Vec3;
+    };
+}
+export declare const QUAT_IDENTITY: Quat;
+export declare function quatMul(a: Quat, b: Quat): Quat;
+export declare function quatInv(q: Quat): Quat;
+export declare function quatNorm(q: Quat): Quat;
+export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+export declare function rotateVec(q: Quat, v: Vec3): Vec3;
+/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+export declare function eulerZYX(x: number, y: number, z: number): Quat;
+/** `q` raised to `t` (slerp from identity). */
+export declare function quatPow(q: Quat, t: number): Quat;
+/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
+interface GltfNode {
+    readonly name?: string;
+    readonly children?: readonly number[];
+    readonly translation?: readonly number[];
+    readonly rotation?: readonly number[];
+    readonly scale?: readonly number[];
+    readonly matrix?: readonly number[];
+}
+export interface GltfJsonLike {
+    readonly nodes?: readonly GltfNode[];
+    readonly skins?: readonly {
+        readonly joints: readonly number[];
+    }[];
+}
+/** The JSON chunk of a binary glTF. */
+export declare function parseGlbJson(bytes: ArrayBuffer | Uint8Array): GltfJsonLike;
+/** Joint table of the first skin plus the fixed transform chain above each root joint (e.g. the generator's `auraRoot`). */
+export declare function readIdolSkeleton(gltf: GltfJsonLike): IdolSkeleton;
+/** Map Idol bones to humanoid roles by hierarchy and rest positions. */
+export declare function mapHumanoid(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidMap;
+export declare function createHumanoidDriver(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidDriver;
+/** Canonical-frame world rotations per role -> the per-role LOCAL rotations HumanoidPoseInput takes (missing parents skip up). */
+export declare function globalsToLocals(globals: Partial<Record<HumanoidRole, Quat>>): Partial<Record<HumanoidRole, Quat>>;
+export interface HumanoidSource {
+    readonly map: HumanoidMap;
+    /**
+     * One frame of a source rig (any humanoid skeleton, e.g. a mocap rig) as a canonical pose. `worldRot[i]` is bone i's
+     * model-space world rotation this frame, `hipsPos` the hips world position; both in the source skeleton's model space.
+     */
+    toCanonical(worldRot: readonly Quat[], hipsPos: Vec3): HumanoidPoseInput;
+}
+/**
+ * Inverse of the driver: reads a source rig's motion into the canonical frame (arms-down rest, facing +Z) with the same
+ * role mapping and limb alignment rules, so a clip recorded on one rig plays on every Idol body. The source `skeleton`'s
+ * rest must be its bind pose.
+ */
+export declare function createHumanoidSource(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidSource;
+/** A baked canonical clip: `frames` holds, per frame, one quaternion per `roles` entry followed by the 3 hips-offset values. */
+export interface HumanoidClip {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly roles: readonly HumanoidRole[];
+    readonly frameCount: number;
+    /** Int16 little-endian, base64: quaternion components * 32767, hips offset * 8192. */
+    readonly data: string;
+    /** Free-form timing facts measured at bake time (stance speed, contact time, side, ...). */
+    readonly meta?: Readonly<Record<string, number | string>>;
+}
+/** Pack canonical frames into a HumanoidClip (bake tools). */
+export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
+/** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
+export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
+    readonly loop?: boolean;
+}): HumanoidPoseInput;
+/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
+/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
+/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+export declare const ARM_ROLES: readonly HumanoidRole[];
+/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
+export {};
+//# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/smpl/smplMotion.d.ts`
+
+```ts
+/**
+ * fal `fal-ai/hunyuan-motion` (HY-Motion) dict output -> canonical humanoid frames / a HumanoidClip (moved from
+ * apps/showcase-port-shared/idol/smplMotion.ts, which re-exports this module). `aura3d animation import motion.json`
+ * bakes the frames into glTF channels on a rigged GLB (./bake.ts).
+ *
+ * Format (verified Nov 2026 against keypoints3d: FK of these rotations over the rest offsets reproduces every keypoint):
+ *   rot6d [1][F][22][6]  LOCAL joint rotations, SMPL 22-joint body order (SMPL_JOINTS); each 6-vector is a 3x2 matrix
+ *                        flattened row-major, i.e. columns = (v[0],v[2],v[4]) and (v[1],v[3],v[5]), Gram-Schmidt.
+ *                        Joint 0 (pelvis) is the global root orientation (== root_rotations_mat).
+ *   transl [1][F][3]     root translation (metres, Y up); keypoints3d [1][F][52][3] joint positions without transl
+ *                        (pelvis world height = transl.y + keypoints3d.pelvis.y).
+ *   30 fps. Rest pose = T-pose, Y up, character facing +Z, its left = +X: exactly the canonical humanoid frame.
+ * Root motion is stripped (horizontal translation and the clip's mean heading); the vertical hip bob is kept. Loop clips
+ * are made seamless by cross-fading their last `loopBlend` seconds into the start.
+ */
+import { HUMANOID_ROLES, type HumanoidClip, type HumanoidPoseInput, type Vec3 } from "./humanoid.js";
+export declare const SMPL_JOINTS: readonly ["pelvis", "L_hip", "R_hip", "spine1", "L_knee", "R_knee", "spine2", "L_ankle", "R_ankle", "spine3", "L_foot", "R_foot", "neck", "L_collar", "R_collar", "head", "L_shoulder", "R_shoulder", "L_elbow", "R_elbow", "L_wrist", "R_wrist"];
+export declare const SMPL_PARENTS: readonly [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19];
+export interface HyMotionDict {
+    readonly rot6d: readonly (readonly (readonly (readonly number[])[])[])[];
+    readonly transl: readonly (readonly (readonly number[])[])[];
+    readonly keypoints3d: readonly (readonly (readonly (readonly number[])[])[])[];
+}
+export interface SmplClipOptions {
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    /** Remove the clip's mean heading so it faces +Z (default true). Event clips that turn keep their turn. */
+    readonly faceForward?: boolean;
+    /**
+     * Root translation: "in-place" (default) strips horizontal travel and keeps the vertical hip bob; "keep" also keeps
+     * the horizontal travel (relative to the first frame, in the face-forward frame); "strip" removes all of it.
+     */
+    readonly rootMotion?: "in-place" | "keep" | "strip";
+}
+/** Canonical frames (30 fps) of one HY-Motion dict, before packing into a HumanoidClip. */
+export interface SmplFramesResult {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly (typeof HUMANOID_ROLES)[number][];
+    readonly meta: Readonly<Record<string, number | string>>;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+export interface SmplClipResult {
+    readonly clip: HumanoidClip;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+/** Convert one HY-Motion dict to a canonical clip with timing facts in `meta` (ground speed, contacts, apex, ...). */
+export declare function smplMotionToClip(name: string, dict: HyMotionDict, opts?: SmplClipOptions): SmplClipResult;
+/** True when `value` has the HY-Motion dict shape (rot6d [1][F][22][6], transl [1][F][3], keypoints3d [1][F][J][3]). */
+export declare function isHyMotionDict(value: unknown): value is HyMotionDict;
+/** Convert one HY-Motion dict to canonical frames (30 fps) with timing facts in `meta`. */
+export declare function smplMotionToFrames(dict: HyMotionDict, opts?: SmplClipOptions): SmplFramesResult;
+//# sourceMappingURL=smplMotion.d.ts.map
+```
+
+### `./dist/smpl/skeletalMotion.d.ts`
+
+```ts
+/**
+ * Any humanoid skeleton's sampled motion (BVH, FBX, glTF clips) -> canonical humanoid frames, with the same role mapping
+ * and limb-alignment rules the Idol driver uses (./humanoid.ts). Format readers (the CLI's `animation import`) produce a
+ * `SkeletalMotion`: a joint table with rest local TRS plus per-frame local rotations/translations. This module maps it
+ * (names first for facing, geometry for roles), removes the clip's mean heading, grounds the hips, applies the
+ * root-motion mode and loop cross-fade, and returns frames that ./bake.ts writes onto a target rig.
+ *
+ * Extensionless relative imports on purpose: tools that load these sources directly under `node` resolve them to .ts.
+ */
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+export type HumanoidFacing = "+z" | "-z" | "+x" | "-x";
+export type RootMotionMode = "in-place" | "keep" | "strip";
+export interface SkeletalMotionFrame {
+    /** LOCAL rotation per joint (same order as `skeleton.bones`). */
+    readonly r: readonly Quat[];
+    /** LOCAL translation per joint (rest translation where the clip does not animate it). */
+    readonly t: readonly Vec3[];
+}
+export interface SkeletalMotion {
+    readonly skeleton: IdolSkeleton;
+    readonly fps: number;
+    readonly frames: readonly SkeletalMotionFrame[];
+}
+export interface CanonicalMotionOptions {
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Remove the clip's mean heading so it faces +Z (default true). */
+    readonly faceForward?: boolean;
+    readonly rootMotion?: RootMotionMode;
+    /** Model-space axis the source character faces; "auto" (default) detects it from bone names, then toes. */
+    readonly facing?: HumanoidFacing | "auto";
+    /** Role -> bone-name overrides for the source skeleton. */
+    readonly roles?: HumanoidDriverOptions["roles"];
+}
+export interface CanonicalMotion {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly HumanoidRole[];
+    readonly meta: Readonly<Record<string, number | string>>;
+    readonly map: HumanoidMap;
+    readonly facing: HumanoidFacing;
+    readonly facingMethod: FacingDetection["method"];
+}
+export interface FacingDetection {
+    readonly facing: HumanoidFacing;
+    readonly method: "names" | "toes" | "default" | "explicit";
+}
+interface Xf {
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: number;
+}
+/** World transform of every joint for local rotations/translations (rest where omitted). */
+export declare function skeletonWorld(sk: IdolSkeleton, r?: readonly Quat[], t?: readonly Vec3[], order?: number[]): Xf[];
+/** Side of a bone name: "left" for LeftArm / L_hip / thigh.L / lUpLeg-style tokens, "right" likewise, else null. */
+export declare function boneSide(name: string): "left" | "right" | null;
+/**
+ * Which model-space axis a humanoid skeleton faces in its rest pose: from sided bone names (left minus right is the
+ * character's left), else from the feet (foot -> toe points forward), else +Z.
+ */
+export declare function detectHumanoidFacing(sk: IdolSkeleton): FacingDetection;
+/** Per-frame cross-fade of a loop's last `blend` seconds into its start (same rule as the HY-Motion converter). */
+export declare function crossfadeLoop(frames: readonly HumanoidPoseInput[], fps: number, blend?: number): HumanoidPoseInput[];
+/** Resample canonical frames to another rate (per-role slerp, hips lerp). Duration is preserved to the last frame. */
+export declare function resampleCanonicalFrames(frames: readonly HumanoidPoseInput[], fromFps: number, toFps: number): HumanoidPoseInput[];
+/** A sampled skeletal clip as canonical humanoid frames (see the module comment). */
+export declare function skeletalMotionToFrames(motion: SkeletalMotion, opts?: CanonicalMotionOptions): CanonicalMotion;
+export {};
+//# sourceMappingURL=skeletalMotion.d.ts.map
+```
+
+### `./dist/smpl/bake.d.ts`
+
+```ts
+/**
+ * Canonical humanoid frames -> glTF animation channel data on a target skeleton (any rigged humanoid GLB, including
+ * Idol's unnamed `bone_N` rigs). Each frame goes through the same driver the games use at runtime
+ * (`createHumanoidDriver(...).pose(frame)`), so a baked clip plays exactly like the live pose did. The bake reports:
+ *
+ *   - `flips`: rotation keys swinging more than `flipThresholdDeg` in one frame (the engine's `LimbFlip` shape; the
+ *     swing is the shortest-arc angle 2·acos(|q0·q1|) between consecutive keys);
+ *   - `limbError`: angle between each limb segment the target draws and the source's canonical limb direction
+ *     (upper/lower arms and legs; ~0 for a correct retarget, float noise only);
+ *   - `motionDeg`: the largest angle any limb moves away from the target's bind pose (0 = a silent T-pose).
+ *
+ * Callers fail on flips, on a limb error above their bound and on `motionDeg` near zero instead of writing a clip that
+ * renders a broken or frozen body.
+ */
+import type { LimbFlip } from "../pose/Retarget.js";
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+/** Limb segments checked for retarget error: role -> the role at the segment's far end. */
+export declare const LIMB_SEGMENTS: readonly (readonly [HumanoidRole, HumanoidRole])[];
+/** Facing rotation (model space) for a driver `facing` option. */
+export declare function facingQuat(facing: HumanoidDriverOptions["facing"]): Quat;
+/** Canonical-frame direction of every limb segment in a frame (accumulated role rotations applied to straight down). */
+export declare function canonicalLimbDirections(frame: HumanoidPoseInput): Partial<Record<HumanoidRole, Vec3>>;
+export declare function angleDeg(a: Vec3, b: Vec3): number;
+export interface GltfChannelData {
+    /** Target joint name and index in `skeleton.bones`. */
+    readonly bone: string;
+    readonly boneIndex: number;
+    readonly path: "rotation" | "translation";
+    /** Flat values, 4 (rotation) or 3 (translation) per key, one key per entry of `times`. */
+    readonly values: Float32Array;
+}
+export interface BakeHumanoidGltfOptions extends HumanoidDriverOptions {
+    /** Single-key swing that counts as a limb flip (default 120 degrees, the engine detector's default). */
+    readonly flipThresholdDeg?: number;
+}
+export interface HumanoidGltfBake {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly times: Float32Array;
+    readonly channels: readonly GltfChannelData[];
+    readonly flips: readonly LimbFlip[];
+    readonly limbError: {
+        readonly maxDeg: number;
+        readonly meanDeg: number;
+    };
+    readonly motionDeg: number;
+    readonly map: HumanoidMap;
+    /** Expected model-space limb directions per frame (for verifying a written file): role -> unit vector. */
+    readonly expected: readonly Partial<Record<HumanoidRole, Vec3>>[];
+}
+/** Bake canonical frames (at `fps`) into per-joint glTF rotation channels plus the hips translation channel. */
+export declare function bakeHumanoidFramesToGltf(name: string, target: IdolSkeleton, frames: readonly HumanoidPoseInput[], fps: number, opts?: BakeHumanoidGltfOptions): HumanoidGltfBake;
+/**
+ * Rotation keys whose single-key swing exceeds `thresholdDeg`. The swing between unit quaternions a, b is
+ * 2·acos(|a·b|), so the test is |a·b| < cos(threshold / 2).
+ */
+export declare function detectKeyFlips(channels: readonly GltfChannelData[], thresholdDeg?: number): LimbFlip[];
+//# sourceMappingURL=bake.d.ts.map
+```
+
 ### `./dist/threejs-compatibility/AnimationClip.d.ts`
 
 ```ts
@@ -5399,8 +5846,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/animation@5.5.6#contents-sha256=b06eac2545795fa2b2b647a5ea9135f6b96b4124b705713e2d1650d0d2fd0c92`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/animation@5.6.0#contents-sha256=07415569728e7d08cad0fa741d48c59f60945f4193ec0f685ff674766de9c253`
 
 ### Export conditions
 
@@ -5446,8 +5893,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/animation@5.5.6#contents-sha256=b06eac2545795fa2b2b647a5ea9135f6b96b4124b705713e2d1650d0d2fd0c92`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/animation@5.6.0#contents-sha256=07415569728e7d08cad0fa741d48c59f60945f4193ec0f685ff674766de9c253`
 
 ### Export conditions
 
@@ -7220,8 +7667,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/animation@5.5.6#contents-sha256=b06eac2545795fa2b2b647a5ea9135f6b96b4124b705713e2d1650d0d2fd0c92`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/animation@5.6.0#contents-sha256=07415569728e7d08cad0fa741d48c59f60945f4193ec0f685ff674766de9c253`
 
 ### Export conditions
 
@@ -7260,8 +7707,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/apps@5.5.6#contents-sha256=a281565808a1acf69882a3aa103ac10dfd9da70e9317b888b109e9d1d696ea5e`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/apps@5.6.0#contents-sha256=b0716a3927f53bad3096c7e4663e085a0b0c3905694b60d2bdfb265b064efcf0`
 
 ### Export conditions
 
@@ -7325,8 +7772,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/asset-index@5.5.6#contents-sha256=fa3195cf7dce1b0eade73b2fb9b55d2f7f039a218cb86e2acdce6346fde27378`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/asset-index@5.6.0#contents-sha256=3b58b37bd81661363aaf2762f7ae1663095756801228438d230923143ae87269`
 
 ### Export conditions
 
@@ -8063,8 +8510,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
 
 ### Export conditions
 
@@ -13788,8 +14235,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
 
 ### Export conditions
 
@@ -18491,8 +18938,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
 
 ### Export conditions
 
@@ -19400,8 +19847,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
 
 ### Export conditions
 
@@ -21835,8 +22282,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
 
 ### Export conditions
 
@@ -23595,8 +24042,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
 
 ### Export conditions
 
@@ -23881,8 +24328,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
 
 ### Export conditions
 
@@ -23901,8 +24348,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/audio@5.5.6#contents-sha256=21b6f77f89de3c4535c98d692e114fb65f3866631115a9162399d89bb21e4d4e`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/audio@5.6.0#contents-sha256=c08842a913a78c072880f9a6088bfb74fd96dc948b7ecde1800cd4baae5f6212`
 
 ### Export conditions
 
@@ -26568,8 +27015,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/cli@5.5.6#contents-sha256=6260040ea891a9610447678d3b0ce06b21e8b3977c9a45c2f9c39b0e27c4fcdb`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/cli@5.6.0#contents-sha256=b01837bcf33fa24780322c57694d5ef0e041409c373e33c4a40be2e1fbba90aa`
 
 ### Export conditions
 
@@ -26619,7 +27066,7 @@ export type { CharacterAssemblyPartInput, CharacterAssemblyPlanOptions, Characte
 export declare function readRenderedProbeMetadata(options: ReadRenderedProbeMetadataOptions): AuraCliRenderedProbe;
 /** Synchronous admission remains available where inspection is synchronous. */
 export declare function addAsset(options: AddAssetOptions): AssetCliResult;
-/** Inspect asynchronous formats before publishing any asset, manifest or generated source. */
+/** Inspect asynchronous formats before publishing any asset, manifest or generated source. Non-glTF models get an `assets convert` hint. */
 export declare function addAssetAsync(options: AddAssetOptions): Promise<AssetCliResult>;
 export declare function bindGameRouteEvidence(options: BindGameRouteEvidenceOptions): BindGameRouteEvidenceResult;
 export declare function certifyGameGeometry(options: CertifyGameGeometryOptions): Promise<GameGeometryCertificationResult>;
@@ -26629,9 +27076,17 @@ export declare function scanAssets(options: {
 }): AssetCliResult;
 export declare function inspectAsset(options: InspectAssetOptions): AssetInspectionReport;
 export declare function validateAssets(options?: AssetValidationOptions): AssetValidationResult;
+export { createAssetThumbnailsAsync } from "./commands/asset-post/thumbnail.js";
+/**
+ * 5.5 contract, kept for compatibility: rewrites every manifest asset's thumbnail as the SVG placeholder card,
+ * synchronously. It draws nothing from the model; use {@link createAssetThumbnailsAsync} (what `aura3d assets thumbnail`
+ * runs) for real PNG thumbnails.
+ * @deprecated Use createAssetThumbnailsAsync.
+ */
 export declare function createAssetThumbnails(options?: {
     readonly projectDir?: string;
 }): AssetCliResult;
+export type { AssetThumbnailRecord, AssetThumbnailsResult, CreateAssetThumbnailsOptions } from "./commands/asset-post/thumbnail.js";
 export declare function doctor(options?: {
     readonly projectDir?: string;
 }): AssetValidationResult;
@@ -26880,7 +27335,7 @@ export declare function samplePoses(glb: GlbData, hierarchy: Hierarchy, clips: r
     poses: WorldPose[];
     clipOfPose: string[];
 };
-export declare function triangleStretch(skin: SkinInfo, prim: SkinnedPrimitive, poses: readonly WorldPose[], flapEdge: number, flapThin: number, flapOutlier?: number): {
+export declare function triangleStretch(skin: SkinInfo, prim: SkinnedPrimitive, poses: readonly WorldPose[], flapEdge: number, flapThin: number, flapOutlier?: number, restPose?: WorldPose): {
     worst: Float32Array;
     flap: Uint8Array;
     flapEdgeMax: number;
@@ -27089,7 +27544,7 @@ export declare function runRepairSkin(projectDir: string, target: string, option
     readonly messages: readonly string[];
     readonly report: unknown;
 };
-export declare const SKIN_HELP = "aura3d assets validate --skin [file.glb] [--asset id[,id]] [--clips Walk,Run] [--samples 10] [--stretch-limit 1.6] [--strict] [--warn-only CODE,CODE] [--json]\n  Poses every rigged GLB through the clips it ships and fails on stretched triangles (SKIN_STRETCH), thin long flaps (SKIN_FLAP), bad weights (SKIN_WEIGHT_SUM), distant influences (SKIN_WEIGHT_DISTANT), a mesh not in its skeleton's pose (SKIN_BIND_MISMATCH, warning unless --strict) and impossible joint ranges (SKIN_JOINT_RANGE).\n  Known defects that ship are listed with a reason in aura.skin-allow.json.\naura3d assets repair-skin <file.glb|assetId> [--out file.glb] [--normalize] [--max-influences 4] [--prune-distant] [--smooth-bridges] [--cut-stretch 2] [--rebuild-limbs [--material-map skin=skin,shorts=short,socks=sock,boots=dark]] [--json]\n  Every step is opt-in. --rebuild-limbs rebuilds the legs of a recognised humanoid in the pose its skeleton assumes (generalised from the Aura FC fix). --refit-skeleton moves the joints to where the mesh actually bends and re-targets the clips (for a textured mesh you cannot rebuild); --keep-clips drops the clips the game does not play; --smooth-rounds/--smooth-rings/--smooth-threshold tune --smooth-bridges.";
+export declare const SKIN_HELP = "aura3d assets validate --skin [file.glb] [--asset id[,id]] [--clips Walk,Run] [--samples 10] [--stretch-limit 1.6] [--strict] [--warn-only CODE,CODE] [--json]\n  Poses every rigged GLB through the clips it ships and fails on stretched triangles (SKIN_STRETCH), thin long flaps (SKIN_FLAP), bad weights (SKIN_WEIGHT_SUM), distant influences (SKIN_WEIGHT_DISTANT), a mesh not in its skeleton's pose (SKIN_BIND_MISMATCH, warning unless --strict) and impossible joint ranges (SKIN_JOINT_RANGE).\n  Known defects that ship are listed with a reason in aura.skin-allow.json.\naura3d assets repair-skin <file.glb|assetId> [--out file.glb] [--normalize] [--max-influences 4] [--prune-distant] [--smooth-bridges] [--smooth-threshold 1.5] [--smooth-rounds 1] [--smooth-rings 4] [--cut-stretch 2] [--rebuild-limbs [--material-map skin=skin,shorts=short,socks=sock,boots=dark]] [--refit-skeleton] [--keep-clips Idle_Loop,Walk_Loop] [--json]\n  Every step is opt-in; the repaired GLB is written next to the input (<name>.repaired.glb) unless --out is given, and the skin check runs again on it.\n  --out FILE              where to write the repaired GLB.\n  --normalize             renormalise skin weights so each vertex sums to 1.\n  --max-influences N      keep the N strongest joint influences per vertex (1-4, default 4).\n  --prune-distant         drop influences from joints far from the vertex.\n  --smooth-bridges        smooth the weights of triangles that stretch between limbs.\n  --smooth-threshold X    triangles stretched past X times their rest size form the smoothing region (default 1.5).\n  --smooth-rounds N       smoothing rounds; each re-measures the stretch with the new weights (default 1).\n  --smooth-rings N        rings of neighbouring vertices smoothed around a stretched triangle (default 4).\n  --cut-stretch X         last resort: remove triangles still stretched past X after the other steps (leaves holes).\n  --rebuild-limbs         rebuild the legs of a recognised humanoid in the pose its skeleton assumes; --material-map maps its material slots.\n  --refit-skeleton        move the joints to where the mesh actually bends and re-target the clips (for a textured mesh you cannot rebuild).\n  --keep-clips A,B        keep only these clips and drop the ones the game does not play.\n  --json                  print the full before/after report as JSON.";
 export { DEFAULT_SKIN_THRESHOLDS };
 //# sourceMappingURL=command.d.ts.map
 ```
@@ -28737,10 +29192,59 @@ export interface CharacterAssemblyResolvedPart {
 //# sourceMappingURL=character-assembly-types.d.ts.map
 ```
 
+### `./dist/commands/asset-post/thumbnail.d.ts`
+
+```ts
+/**
+ * `aura3d assets thumbnail [--asset id] [--size 256]` — real PNG thumbnails for admitted model assets, drawn by the CPU
+ * preview renderer (one three-quarter view, no label). Replaces the old SVG-card writer: nothing is invented for
+ * assets the renderer cannot draw; they are reported as skipped and keep their current thumbnailUrl.
+ */
+import type { AssetCliResult, AuraCliAssetEntry } from "../../asset-core-types.js";
+import { type GltfToolkit } from "../assets/gltfToolkit.js";
+import { PREVIEW_KIND, type PreviewView } from "./preview.js";
+export interface CreateAssetThumbnailsOptions {
+    readonly projectDir?: string;
+    /** Only these asset ids (default: every model asset in the manifest). */
+    readonly assetIds?: readonly string[];
+    /** Square thumbnail size in pixels (default 256). */
+    readonly size?: number;
+    readonly view?: PreviewView;
+    readonly toolkit?: GltfToolkit;
+}
+export interface AssetThumbnailRecord {
+    readonly id: string;
+    readonly thumbnailUrl: string;
+    readonly path: string;
+    readonly bytes: number;
+    readonly triangles: number;
+}
+export interface AssetThumbnailsResult extends AssetCliResult {
+    readonly kind: typeof PREVIEW_KIND;
+    readonly thumbnails: readonly AssetThumbnailRecord[];
+    readonly skipped: readonly {
+        readonly id: string;
+        readonly reason: string;
+    }[];
+    readonly failures: readonly string[];
+}
+export declare function thumbnailUsage(): string;
+/**
+ * Render PNG thumbnails for the manifest's model assets and point their thumbnailUrl at them (`aura3d assets thumbnail`).
+ * The synchronous 5.5 `createAssetThumbnails` export keeps its placeholder-card contract; this is the real-thumbnail API.
+ */
+export declare function createAssetThumbnailsAsync(options?: CreateAssetThumbnailsOptions): Promise<AssetThumbnailsResult>;
+/** Raster texture formats the thumbnail downscales directly (sharp); other textures (HDR, KTX2, PVR...) are skipped. */
+export declare const RASTER_TEXTURE_FORMATS: ReadonlySet<string>;
+/** Whether `assets thumbnail` (and `assets add`) can draw a real PNG for this asset. */
+export declare function canThumbnailAsset(asset: Pick<AuraCliAssetEntry, "id" | "type" | "format">): boolean;
+//# sourceMappingURL=thumbnail.d.ts.map
+```
+
 ## @aura3d/controls
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/controls@5.5.6#contents-sha256=ca11c8053eacdc7ea0de1996bab73fc4a06e3fae8a86ba892fa1bead8d86f1fd`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/controls@5.6.0#contents-sha256=3ddf66c55380d566c9d874f6e49ecea5512bf95fb35947d17b9458ab2ba0f8d9`
 
 ### Export conditions
 
@@ -30542,8 +31046,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/core@5.5.6#contents-sha256=0ac87652ec81aaaa560853363f724b3fee899c6edc1e928f166e363955120c54`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/core@5.6.0#contents-sha256=ee0dd7390318179f43b9a472cba76b78ed1e827a9d79e63c8ca3eb441bf733fe`
 
 ### Export conditions
 
@@ -31057,8 +31561,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.5.6`
-- Packed identity: `archive:create-aura3d@5.5.6#contents-sha256=071237454eb6b4c647ae7f325e7b8bf51b0087f4d30a7b016c932def1e59d8e7`
+- Version: `5.6.0`
+- Packed identity: `archive:create-aura3d@5.6.0#contents-sha256=486cc4cbf09ff0bbf2ca6091e8c1cae0c931ee5c6232643f0cc99979ded5c905`
 
 ### Export conditions
 
@@ -31827,8 +32331,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/debug@5.5.6#contents-sha256=25ccf07840310de13b4610ef6312b514b636b3e5d388679d084cdd5dfcd0d39f`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/debug@5.6.0#contents-sha256=a96c61e8eab371a34960259a59d52d4d3b7c8ec28ff8e3c836f10ccf941a9e7a`
 
 ### Export conditions
 
@@ -33207,8 +33711,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/debug@5.5.6#contents-sha256=25ccf07840310de13b4610ef6312b514b636b3e5d388679d084cdd5dfcd0d39f`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/debug@5.6.0#contents-sha256=a96c61e8eab371a34960259a59d52d4d3b7c8ec28ff8e3c836f10ccf941a9e7a`
 
 ### Export conditions
 
@@ -33415,8 +33919,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/ecs@5.5.6#contents-sha256=7eebc70115a061b58e40ec81293108578ba00cc62fe6031972573b762572dd77`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/ecs@5.6.0#contents-sha256=b6b7380e1a159b0c788da01249d7ca207946bdee95055fd894e00a7271b70587`
 
 ### Export conditions
 
@@ -34083,8 +34587,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/editor-runtime@5.5.6#contents-sha256=1db2499263db0624d5cd3d52a24ae0d81d17989f66c40dd9d84abc6cc1399e75`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/editor-runtime@5.6.0#contents-sha256=1055cfe9dfd28a35dccb400a9cc2c25edae0ae00a2daed62a446c774f7fdf1b8`
 
 ### Export conditions
 
@@ -36666,8 +37170,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -38029,6 +38533,7 @@ export * from "./HumanoidBoneInference.js";
 export * from "./RigQuality.js";
 export * from "./library/standardHumanoidClips.js";
 export * from "./library/performanceStateGraph.js";
+export * from "./smpl/index.js";
 export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
 export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
 export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";
@@ -40711,6 +41216,452 @@ export declare function createPerformanceStateGraph(options?: PerformanceStateGr
 /** The full set of state names the performance graph exposes (equals the standard clip vocabulary). */
 export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 //# sourceMappingURL=performanceStateGraph.d.ts.map
+```
+
+### `./dist/animation/smpl/index.d.ts`
+
+```ts
+/**
+ * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
+ * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
+ * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ */
+export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
+export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
+export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/animation/smpl/humanoid.d.ts`
+
+```ts
+/**
+ * Humanoid role mapping, driver and canonical clips (moved from apps/showcase-port-shared/idol/humanoid.ts, which now
+ * re-exports this module; the games import it unchanged). Used by `aura3d animation import` to retarget clips onto any
+ * rigged humanoid GLB, including Idol's unnamed `bone_N` rigs.
+ *
+ * Idol humanoid driver — drive a rigged Idol GLB (unnamed bones `bone_0..N`) from a game's own code-built joint pose.
+ *
+ * Idol (`speridlabs/idol/max`, `rig: true`) ships a 28–34 bone skeleton in a T-pose with no bone names. Games here already
+ * animate their athletes in code: every frame they compute per-joint local rotations for a procedural rig whose rest pose
+ * is "standing, arms hanging straight down, legs straight down, facing +Z, +Y up, character's left = +X". This module maps
+ * the Idol bones to humanoid roles by hierarchy and rest positions, then turns that same per-joint pose into an
+ * `AnimationPose` for `handle.setAnimationPose(...)` on the `model(assets.<key>)` node — so gameplay animation is
+ * unchanged and only the body that renders it is new.
+ *
+ * API (dependency-free; runs in the browser, in vitest and under plain `node`):
+ *   parseGlbJson(bytes)                -> glTF JSON chunk of a .glb
+ *   readIdolSkeleton(gltf)             -> IdolSkeleton (joint names, parents, rest local TRS, fixed parent-chain transform)
+ *   mapHumanoid(skeleton, opts?)       -> HumanoidMap (role -> bone name, spine/neck chains, diagnostics)
+ *   createHumanoidDriver(skeleton, o?) -> { map, pose(input) } ; pose() returns `{ bones, mode: "replace" }` with
+ *                                         object-form `{x,y,z,w}` / `{x,y,z}` transforms (tuples do not survive the
+ *                                         runtime handle's pose clone; see HumanoidBonePose)
+ *   driver.modelPositions / palmPoints -> model-space joint and palm-centre positions for a pose (prop anchoring)
+ *   loadIdolHumanoid(url, o?)          -> Promise<HumanoidDriver>, cached per URL (fetch + the three calls above)
+ *   eulerZYX(x, y, z)                  -> quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx)
+ *
+ * Input pose (`HumanoidPoseInput`): `rotations[role]` = LOCAL rotation of that joint relative to its parent joint, in the
+ * canonical rest frame above; source hierarchy is hips → spine → chest → neck → head, chest → {l,r}Shoulder → UpperArm →
+ * LowerArm → Hand, hips → {l,r}UpperLeg → LowerLeg → Foot. Omitted roles are identity (a rig with only a "chest" joint
+ * just omits spine). `hipsOffset` is the hips displacement from rest in units of rest hip height (FC: offset / 0.96).
+ *
+ * Retargeting rule per mapped bone: world = G_src · A · R_rest, where G_src is the source joint's accumulated rotation,
+ * R_rest the Idol bone's rest world rotation and A the shortest-arc turn that points the Idol limb straight down (arms
+ * and legs only — the T-pose arms become hanging arms; torso, neck, head and feet keep Idol's natural rest posture).
+ * The source torso rotation (spine·chest) is spread evenly over Idol's spine chain, neck·head over its neck chain.
+ * Clavicles take `shoulderDrop` (default 0.3) of their arm's A so the lowered shoulders do not bunch up.
+ * Unmapped bones (clavicles without a source, fingers, toes, head ends) follow their parent at their rest local rotation.
+ */
+export type Vec3 = readonly [number, number, number];
+/** Quaternion `[x, y, z, w]` (glTF / engine order). */
+export type Quat = readonly [number, number, number, number];
+export declare const HUMANOID_ROLES: readonly ["hips", "spine", "chest", "neck", "head", "leftShoulder", "leftUpperArm", "leftLowerArm", "leftHand", "rightShoulder", "rightUpperArm", "rightLowerArm", "rightHand", "leftUpperLeg", "leftLowerLeg", "leftFoot", "rightUpperLeg", "rightLowerLeg", "rightFoot"];
+export type HumanoidRole = (typeof HUMANOID_ROLES)[number];
+export interface IdolBone {
+    readonly name: string;
+    /** Index into `bones` of the parent joint, or -1 when the parent is not a joint. */
+    readonly parent: number;
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: Vec3;
+}
+export interface IdolSkeleton {
+    readonly bones: readonly IdolBone[];
+    /** World transform of the (non-joint) parent chain above each root joint, keyed by bone index. */
+    readonly rootParents: Readonly<Record<number, {
+        readonly t: Vec3;
+        readonly r: Quat;
+        readonly s: number;
+    }>>;
+}
+export interface HumanoidMap {
+    readonly roles: Partial<Record<HumanoidRole, string>>;
+    /** Idol bones from the first spine bone up to the bone the arms hang from (inclusive). */
+    readonly spineChain: readonly string[];
+    /** Idol bones above the arm branch up to and including the head bone. */
+    readonly neckChain: readonly string[];
+    /** Rest height of the hips joint above the lowest joint, in model units. */
+    readonly hipHeight: number;
+    readonly missing: readonly HumanoidRole[];
+    readonly ok: boolean;
+}
+export interface HumanoidPoseInput {
+    readonly rotations: Partial<Record<HumanoidRole, Quat>>;
+    /** Hips displacement from rest, in units of rest hip height, in the canonical frame (+Y up, +Z forward). */
+    readonly hipsOffset?: Vec3;
+    /**
+     * Optional model-space palm targets (e.g. a held ball's anchor from the procedural rig). The arm is bent and swung
+     * with two-bone IK (bend plane taken from the posed arm) so the drawn palm lands on the target when it is in reach;
+     * Idol arm proportions differ from the procedural rig's, so the same joint angles alone miss by 10-20 cm.
+     */
+    readonly handTargets?: {
+        readonly left?: Vec3;
+        readonly right?: Vec3;
+    };
+}
+/**
+ * One bone's local transform in OBJECT form. The runtime handle clones poses with object spread
+ * (`{ ...transform.rotation }`), which turns a tuple into `{ 0, 1, 2, 3 }` and makes the glTF runtime reject the whole
+ * pose (every body then renders its bind T-pose); `{ x, y, z, w }` survives the clone.
+ */
+export interface HumanoidBonePose {
+    readonly rotation: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+        readonly w: number;
+    };
+    readonly position?: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+    };
+}
+/** Structurally an engine `AnimationPose` (`handle.setAnimationPose(pose)`). */
+export interface HumanoidAnimationPose {
+    readonly bones: Record<string, HumanoidBonePose>;
+    readonly mode: "replace";
+}
+export interface HumanoidDriverOptions {
+    /** Which model-space axis the character faces. Generator output (normalised) faces +Z (default); raw Idol faces +X. */
+    readonly facing?: "+z" | "-z" | "+x" | "-x";
+    /**
+     * Share (0..1) of the T-pose -> hanging-arm turn the clavicle bones take (default 0.3), so lowered arms hang from a
+     * dropped shoulder instead of bunching the deltoid. Arm directions are unaffected (they are solved in world space).
+     */
+    readonly shoulderDrop?: number;
+    /**
+     * Explicit role -> bone-name assignments that override the automatic mapping (`aura3d animation import --map`).
+     * Spine and neck chains are re-derived from the overridden hips/spine/chest/neck/head bones.
+     */
+    readonly roles?: Partial<Record<HumanoidRole, string>>;
+    /** Largest forearm twist about its own axis relative to the upper arm, degrees (default 75; candy-wrapper guard). */
+    readonly maxForearmTwistDeg?: number;
+    /** Largest hand twist about its own axis relative to the forearm, degrees (default 60). */
+    readonly maxWristTwistDeg?: number;
+}
+/** Split `q` into swing * twist about unit `axis` and clamp the twist angle to +-`max` radians. */
+export declare function clampTwist(q: Quat, axis: Vec3, max: number): Quat;
+export interface HumanoidDriver {
+    readonly map: HumanoidMap;
+    readonly skeleton: IdolSkeleton;
+    /** Bone transforms for one frame. Every joint gets a rotation; the hips also get a position. */
+    pose(input: HumanoidPoseInput): HumanoidAnimationPose;
+    /** Model-space joint positions for a pose (debug, tests, foot-plant checks). */
+    modelPositions(input: HumanoidPoseInput): Record<string, Vec3>;
+    /**
+     * Model-space palm centres for a pose: 60% of the way from each wrist (hand bone) to the mean of its child (finger)
+     * joints. Use these, not the procedural rig's palm, to anchor held props (balls) to the hand that is drawn.
+     */
+    palmPoints(input: HumanoidPoseInput): {
+        readonly left: Vec3;
+        readonly right: Vec3;
+    };
+}
+export declare const QUAT_IDENTITY: Quat;
+export declare function quatMul(a: Quat, b: Quat): Quat;
+export declare function quatInv(q: Quat): Quat;
+export declare function quatNorm(q: Quat): Quat;
+export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+export declare function rotateVec(q: Quat, v: Vec3): Vec3;
+/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+export declare function eulerZYX(x: number, y: number, z: number): Quat;
+/** `q` raised to `t` (slerp from identity). */
+export declare function quatPow(q: Quat, t: number): Quat;
+/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
+interface GltfNode {
+    readonly name?: string;
+    readonly children?: readonly number[];
+    readonly translation?: readonly number[];
+    readonly rotation?: readonly number[];
+    readonly scale?: readonly number[];
+    readonly matrix?: readonly number[];
+}
+export interface GltfJsonLike {
+    readonly nodes?: readonly GltfNode[];
+    readonly skins?: readonly {
+        readonly joints: readonly number[];
+    }[];
+}
+/** The JSON chunk of a binary glTF. */
+export declare function parseGlbJson(bytes: ArrayBuffer | Uint8Array): GltfJsonLike;
+/** Joint table of the first skin plus the fixed transform chain above each root joint (e.g. the generator's `auraRoot`). */
+export declare function readIdolSkeleton(gltf: GltfJsonLike): IdolSkeleton;
+/** Map Idol bones to humanoid roles by hierarchy and rest positions. */
+export declare function mapHumanoid(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidMap;
+export declare function createHumanoidDriver(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidDriver;
+/** Canonical-frame world rotations per role -> the per-role LOCAL rotations HumanoidPoseInput takes (missing parents skip up). */
+export declare function globalsToLocals(globals: Partial<Record<HumanoidRole, Quat>>): Partial<Record<HumanoidRole, Quat>>;
+export interface HumanoidSource {
+    readonly map: HumanoidMap;
+    /**
+     * One frame of a source rig (any humanoid skeleton, e.g. a mocap rig) as a canonical pose. `worldRot[i]` is bone i's
+     * model-space world rotation this frame, `hipsPos` the hips world position; both in the source skeleton's model space.
+     */
+    toCanonical(worldRot: readonly Quat[], hipsPos: Vec3): HumanoidPoseInput;
+}
+/**
+ * Inverse of the driver: reads a source rig's motion into the canonical frame (arms-down rest, facing +Z) with the same
+ * role mapping and limb alignment rules, so a clip recorded on one rig plays on every Idol body. The source `skeleton`'s
+ * rest must be its bind pose.
+ */
+export declare function createHumanoidSource(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidSource;
+/** A baked canonical clip: `frames` holds, per frame, one quaternion per `roles` entry followed by the 3 hips-offset values. */
+export interface HumanoidClip {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly roles: readonly HumanoidRole[];
+    readonly frameCount: number;
+    /** Int16 little-endian, base64: quaternion components * 32767, hips offset * 8192. */
+    readonly data: string;
+    /** Free-form timing facts measured at bake time (stance speed, contact time, side, ...). */
+    readonly meta?: Readonly<Record<string, number | string>>;
+}
+/** Pack canonical frames into a HumanoidClip (bake tools). */
+export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
+/** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
+export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
+    readonly loop?: boolean;
+}): HumanoidPoseInput;
+/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
+/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
+/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+export declare const ARM_ROLES: readonly HumanoidRole[];
+/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
+export {};
+//# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/smplMotion.d.ts`
+
+```ts
+/**
+ * fal `fal-ai/hunyuan-motion` (HY-Motion) dict output -> canonical humanoid frames / a HumanoidClip (moved from
+ * apps/showcase-port-shared/idol/smplMotion.ts, which re-exports this module). `aura3d animation import motion.json`
+ * bakes the frames into glTF channels on a rigged GLB (./bake.ts).
+ *
+ * Format (verified Nov 2026 against keypoints3d: FK of these rotations over the rest offsets reproduces every keypoint):
+ *   rot6d [1][F][22][6]  LOCAL joint rotations, SMPL 22-joint body order (SMPL_JOINTS); each 6-vector is a 3x2 matrix
+ *                        flattened row-major, i.e. columns = (v[0],v[2],v[4]) and (v[1],v[3],v[5]), Gram-Schmidt.
+ *                        Joint 0 (pelvis) is the global root orientation (== root_rotations_mat).
+ *   transl [1][F][3]     root translation (metres, Y up); keypoints3d [1][F][52][3] joint positions without transl
+ *                        (pelvis world height = transl.y + keypoints3d.pelvis.y).
+ *   30 fps. Rest pose = T-pose, Y up, character facing +Z, its left = +X: exactly the canonical humanoid frame.
+ * Root motion is stripped (horizontal translation and the clip's mean heading); the vertical hip bob is kept. Loop clips
+ * are made seamless by cross-fading their last `loopBlend` seconds into the start.
+ */
+import { HUMANOID_ROLES, type HumanoidClip, type HumanoidPoseInput, type Vec3 } from "./humanoid.js";
+export declare const SMPL_JOINTS: readonly ["pelvis", "L_hip", "R_hip", "spine1", "L_knee", "R_knee", "spine2", "L_ankle", "R_ankle", "spine3", "L_foot", "R_foot", "neck", "L_collar", "R_collar", "head", "L_shoulder", "R_shoulder", "L_elbow", "R_elbow", "L_wrist", "R_wrist"];
+export declare const SMPL_PARENTS: readonly [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19];
+export interface HyMotionDict {
+    readonly rot6d: readonly (readonly (readonly (readonly number[])[])[])[];
+    readonly transl: readonly (readonly (readonly number[])[])[];
+    readonly keypoints3d: readonly (readonly (readonly (readonly number[])[])[])[];
+}
+export interface SmplClipOptions {
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    /** Remove the clip's mean heading so it faces +Z (default true). Event clips that turn keep their turn. */
+    readonly faceForward?: boolean;
+    /**
+     * Root translation: "in-place" (default) strips horizontal travel and keeps the vertical hip bob; "keep" also keeps
+     * the horizontal travel (relative to the first frame, in the face-forward frame); "strip" removes all of it.
+     */
+    readonly rootMotion?: "in-place" | "keep" | "strip";
+}
+/** Canonical frames (30 fps) of one HY-Motion dict, before packing into a HumanoidClip. */
+export interface SmplFramesResult {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly (typeof HUMANOID_ROLES)[number][];
+    readonly meta: Readonly<Record<string, number | string>>;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+export interface SmplClipResult {
+    readonly clip: HumanoidClip;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+/** Convert one HY-Motion dict to a canonical clip with timing facts in `meta` (ground speed, contacts, apex, ...). */
+export declare function smplMotionToClip(name: string, dict: HyMotionDict, opts?: SmplClipOptions): SmplClipResult;
+/** True when `value` has the HY-Motion dict shape (rot6d [1][F][22][6], transl [1][F][3], keypoints3d [1][F][J][3]). */
+export declare function isHyMotionDict(value: unknown): value is HyMotionDict;
+/** Convert one HY-Motion dict to canonical frames (30 fps) with timing facts in `meta`. */
+export declare function smplMotionToFrames(dict: HyMotionDict, opts?: SmplClipOptions): SmplFramesResult;
+//# sourceMappingURL=smplMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/skeletalMotion.d.ts`
+
+```ts
+/**
+ * Any humanoid skeleton's sampled motion (BVH, FBX, glTF clips) -> canonical humanoid frames, with the same role mapping
+ * and limb-alignment rules the Idol driver uses (./humanoid.ts). Format readers (the CLI's `animation import`) produce a
+ * `SkeletalMotion`: a joint table with rest local TRS plus per-frame local rotations/translations. This module maps it
+ * (names first for facing, geometry for roles), removes the clip's mean heading, grounds the hips, applies the
+ * root-motion mode and loop cross-fade, and returns frames that ./bake.ts writes onto a target rig.
+ *
+ * Extensionless relative imports on purpose: tools that load these sources directly under `node` resolve them to .ts.
+ */
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+export type HumanoidFacing = "+z" | "-z" | "+x" | "-x";
+export type RootMotionMode = "in-place" | "keep" | "strip";
+export interface SkeletalMotionFrame {
+    /** LOCAL rotation per joint (same order as `skeleton.bones`). */
+    readonly r: readonly Quat[];
+    /** LOCAL translation per joint (rest translation where the clip does not animate it). */
+    readonly t: readonly Vec3[];
+}
+export interface SkeletalMotion {
+    readonly skeleton: IdolSkeleton;
+    readonly fps: number;
+    readonly frames: readonly SkeletalMotionFrame[];
+}
+export interface CanonicalMotionOptions {
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Remove the clip's mean heading so it faces +Z (default true). */
+    readonly faceForward?: boolean;
+    readonly rootMotion?: RootMotionMode;
+    /** Model-space axis the source character faces; "auto" (default) detects it from bone names, then toes. */
+    readonly facing?: HumanoidFacing | "auto";
+    /** Role -> bone-name overrides for the source skeleton. */
+    readonly roles?: HumanoidDriverOptions["roles"];
+}
+export interface CanonicalMotion {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly HumanoidRole[];
+    readonly meta: Readonly<Record<string, number | string>>;
+    readonly map: HumanoidMap;
+    readonly facing: HumanoidFacing;
+    readonly facingMethod: FacingDetection["method"];
+}
+export interface FacingDetection {
+    readonly facing: HumanoidFacing;
+    readonly method: "names" | "toes" | "default" | "explicit";
+}
+interface Xf {
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: number;
+}
+/** World transform of every joint for local rotations/translations (rest where omitted). */
+export declare function skeletonWorld(sk: IdolSkeleton, r?: readonly Quat[], t?: readonly Vec3[], order?: number[]): Xf[];
+/** Side of a bone name: "left" for LeftArm / L_hip / thigh.L / lUpLeg-style tokens, "right" likewise, else null. */
+export declare function boneSide(name: string): "left" | "right" | null;
+/**
+ * Which model-space axis a humanoid skeleton faces in its rest pose: from sided bone names (left minus right is the
+ * character's left), else from the feet (foot -> toe points forward), else +Z.
+ */
+export declare function detectHumanoidFacing(sk: IdolSkeleton): FacingDetection;
+/** Per-frame cross-fade of a loop's last `blend` seconds into its start (same rule as the HY-Motion converter). */
+export declare function crossfadeLoop(frames: readonly HumanoidPoseInput[], fps: number, blend?: number): HumanoidPoseInput[];
+/** Resample canonical frames to another rate (per-role slerp, hips lerp). Duration is preserved to the last frame. */
+export declare function resampleCanonicalFrames(frames: readonly HumanoidPoseInput[], fromFps: number, toFps: number): HumanoidPoseInput[];
+/** A sampled skeletal clip as canonical humanoid frames (see the module comment). */
+export declare function skeletalMotionToFrames(motion: SkeletalMotion, opts?: CanonicalMotionOptions): CanonicalMotion;
+export {};
+//# sourceMappingURL=skeletalMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/bake.d.ts`
+
+```ts
+/**
+ * Canonical humanoid frames -> glTF animation channel data on a target skeleton (any rigged humanoid GLB, including
+ * Idol's unnamed `bone_N` rigs). Each frame goes through the same driver the games use at runtime
+ * (`createHumanoidDriver(...).pose(frame)`), so a baked clip plays exactly like the live pose did. The bake reports:
+ *
+ *   - `flips`: rotation keys swinging more than `flipThresholdDeg` in one frame (the engine's `LimbFlip` shape; the
+ *     swing is the shortest-arc angle 2·acos(|q0·q1|) between consecutive keys);
+ *   - `limbError`: angle between each limb segment the target draws and the source's canonical limb direction
+ *     (upper/lower arms and legs; ~0 for a correct retarget, float noise only);
+ *   - `motionDeg`: the largest angle any limb moves away from the target's bind pose (0 = a silent T-pose).
+ *
+ * Callers fail on flips, on a limb error above their bound and on `motionDeg` near zero instead of writing a clip that
+ * renders a broken or frozen body.
+ */
+import type { LimbFlip } from "../pose/Retarget.js";
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+/** Limb segments checked for retarget error: role -> the role at the segment's far end. */
+export declare const LIMB_SEGMENTS: readonly (readonly [HumanoidRole, HumanoidRole])[];
+/** Facing rotation (model space) for a driver `facing` option. */
+export declare function facingQuat(facing: HumanoidDriverOptions["facing"]): Quat;
+/** Canonical-frame direction of every limb segment in a frame (accumulated role rotations applied to straight down). */
+export declare function canonicalLimbDirections(frame: HumanoidPoseInput): Partial<Record<HumanoidRole, Vec3>>;
+export declare function angleDeg(a: Vec3, b: Vec3): number;
+export interface GltfChannelData {
+    /** Target joint name and index in `skeleton.bones`. */
+    readonly bone: string;
+    readonly boneIndex: number;
+    readonly path: "rotation" | "translation";
+    /** Flat values, 4 (rotation) or 3 (translation) per key, one key per entry of `times`. */
+    readonly values: Float32Array;
+}
+export interface BakeHumanoidGltfOptions extends HumanoidDriverOptions {
+    /** Single-key swing that counts as a limb flip (default 120 degrees, the engine detector's default). */
+    readonly flipThresholdDeg?: number;
+}
+export interface HumanoidGltfBake {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly times: Float32Array;
+    readonly channels: readonly GltfChannelData[];
+    readonly flips: readonly LimbFlip[];
+    readonly limbError: {
+        readonly maxDeg: number;
+        readonly meanDeg: number;
+    };
+    readonly motionDeg: number;
+    readonly map: HumanoidMap;
+    /** Expected model-space limb directions per frame (for verifying a written file): role -> unit vector. */
+    readonly expected: readonly Partial<Record<HumanoidRole, Vec3>>[];
+}
+/** Bake canonical frames (at `fps`) into per-joint glTF rotation channels plus the hips translation channel. */
+export declare function bakeHumanoidFramesToGltf(name: string, target: IdolSkeleton, frames: readonly HumanoidPoseInput[], fps: number, opts?: BakeHumanoidGltfOptions): HumanoidGltfBake;
+/**
+ * Rotation keys whose single-key swing exceeds `thresholdDeg`. The swing between unit quaternions a, b is
+ * 2·acos(|a·b|), so the test is |a·b| < cos(threshold / 2).
+ */
+export declare function detectKeyFlips(channels: readonly GltfChannelData[], thresholdDeg?: number): LimbFlip[];
+//# sourceMappingURL=bake.d.ts.map
 ```
 
 ### `./dist/animation/threejs-compatibility/AnimationClip.d.ts`
@@ -84239,6 +85190,7 @@ export interface AtmosphereFrameSource {
     /** P3-T6 — live state + sky-change listener for SkyCaptureAdapter wiring. */
     state?(): {
         readonly sky: unknown | null;
+        readonly captureEnvironment?: boolean;
     };
     onSkyChanged?(listener: () => void): (() => void) | void;
 }
@@ -103178,6 +104130,8 @@ export type AuthoredMaterialSnapshot = ReadonlyMap<string, Readonly<Record<strin
 export declare function snapshotMaterials(materials: Iterable<Material>): AuthoredMaterialSnapshot;
 export declare function applyMaterialOverrides(snapshot: AuthoredMaterialSnapshot, materials: Iterable<Material>, overrides: readonly TypedGLBActorMaterialOverride[]): void;
 export declare function lowerModelMaterialOverrides(spec: AuraMaterialSpec | undefined, overrides: readonly AuraModelMaterialOverride[] | undefined): TypedGLBActorMaterialOverride[];
+/** True when a model material spec or override asks for a see-through surface (`opacity` below 1). */
+export declare function modelOpacityIsTranslucent(opacity: unknown): boolean;
 //# sourceMappingURL=ModelMaterialOverrides.d.ts.map
 ```
 
@@ -123844,8 +124798,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -123892,6 +124846,7 @@ export * from "./HumanoidBoneInference.js";
 export * from "./RigQuality.js";
 export * from "./library/standardHumanoidClips.js";
 export * from "./library/performanceStateGraph.js";
+export * from "./smpl/index.js";
 export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
 export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
 export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";
@@ -126576,6 +127531,452 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 //# sourceMappingURL=performanceStateGraph.d.ts.map
 ```
 
+### `./dist/animation/smpl/index.d.ts`
+
+```ts
+/**
+ * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
+ * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
+ * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ */
+export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
+export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
+export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/animation/smpl/humanoid.d.ts`
+
+```ts
+/**
+ * Humanoid role mapping, driver and canonical clips (moved from apps/showcase-port-shared/idol/humanoid.ts, which now
+ * re-exports this module; the games import it unchanged). Used by `aura3d animation import` to retarget clips onto any
+ * rigged humanoid GLB, including Idol's unnamed `bone_N` rigs.
+ *
+ * Idol humanoid driver — drive a rigged Idol GLB (unnamed bones `bone_0..N`) from a game's own code-built joint pose.
+ *
+ * Idol (`speridlabs/idol/max`, `rig: true`) ships a 28–34 bone skeleton in a T-pose with no bone names. Games here already
+ * animate their athletes in code: every frame they compute per-joint local rotations for a procedural rig whose rest pose
+ * is "standing, arms hanging straight down, legs straight down, facing +Z, +Y up, character's left = +X". This module maps
+ * the Idol bones to humanoid roles by hierarchy and rest positions, then turns that same per-joint pose into an
+ * `AnimationPose` for `handle.setAnimationPose(...)` on the `model(assets.<key>)` node — so gameplay animation is
+ * unchanged and only the body that renders it is new.
+ *
+ * API (dependency-free; runs in the browser, in vitest and under plain `node`):
+ *   parseGlbJson(bytes)                -> glTF JSON chunk of a .glb
+ *   readIdolSkeleton(gltf)             -> IdolSkeleton (joint names, parents, rest local TRS, fixed parent-chain transform)
+ *   mapHumanoid(skeleton, opts?)       -> HumanoidMap (role -> bone name, spine/neck chains, diagnostics)
+ *   createHumanoidDriver(skeleton, o?) -> { map, pose(input) } ; pose() returns `{ bones, mode: "replace" }` with
+ *                                         object-form `{x,y,z,w}` / `{x,y,z}` transforms (tuples do not survive the
+ *                                         runtime handle's pose clone; see HumanoidBonePose)
+ *   driver.modelPositions / palmPoints -> model-space joint and palm-centre positions for a pose (prop anchoring)
+ *   loadIdolHumanoid(url, o?)          -> Promise<HumanoidDriver>, cached per URL (fetch + the three calls above)
+ *   eulerZYX(x, y, z)                  -> quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx)
+ *
+ * Input pose (`HumanoidPoseInput`): `rotations[role]` = LOCAL rotation of that joint relative to its parent joint, in the
+ * canonical rest frame above; source hierarchy is hips → spine → chest → neck → head, chest → {l,r}Shoulder → UpperArm →
+ * LowerArm → Hand, hips → {l,r}UpperLeg → LowerLeg → Foot. Omitted roles are identity (a rig with only a "chest" joint
+ * just omits spine). `hipsOffset` is the hips displacement from rest in units of rest hip height (FC: offset / 0.96).
+ *
+ * Retargeting rule per mapped bone: world = G_src · A · R_rest, where G_src is the source joint's accumulated rotation,
+ * R_rest the Idol bone's rest world rotation and A the shortest-arc turn that points the Idol limb straight down (arms
+ * and legs only — the T-pose arms become hanging arms; torso, neck, head and feet keep Idol's natural rest posture).
+ * The source torso rotation (spine·chest) is spread evenly over Idol's spine chain, neck·head over its neck chain.
+ * Clavicles take `shoulderDrop` (default 0.3) of their arm's A so the lowered shoulders do not bunch up.
+ * Unmapped bones (clavicles without a source, fingers, toes, head ends) follow their parent at their rest local rotation.
+ */
+export type Vec3 = readonly [number, number, number];
+/** Quaternion `[x, y, z, w]` (glTF / engine order). */
+export type Quat = readonly [number, number, number, number];
+export declare const HUMANOID_ROLES: readonly ["hips", "spine", "chest", "neck", "head", "leftShoulder", "leftUpperArm", "leftLowerArm", "leftHand", "rightShoulder", "rightUpperArm", "rightLowerArm", "rightHand", "leftUpperLeg", "leftLowerLeg", "leftFoot", "rightUpperLeg", "rightLowerLeg", "rightFoot"];
+export type HumanoidRole = (typeof HUMANOID_ROLES)[number];
+export interface IdolBone {
+    readonly name: string;
+    /** Index into `bones` of the parent joint, or -1 when the parent is not a joint. */
+    readonly parent: number;
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: Vec3;
+}
+export interface IdolSkeleton {
+    readonly bones: readonly IdolBone[];
+    /** World transform of the (non-joint) parent chain above each root joint, keyed by bone index. */
+    readonly rootParents: Readonly<Record<number, {
+        readonly t: Vec3;
+        readonly r: Quat;
+        readonly s: number;
+    }>>;
+}
+export interface HumanoidMap {
+    readonly roles: Partial<Record<HumanoidRole, string>>;
+    /** Idol bones from the first spine bone up to the bone the arms hang from (inclusive). */
+    readonly spineChain: readonly string[];
+    /** Idol bones above the arm branch up to and including the head bone. */
+    readonly neckChain: readonly string[];
+    /** Rest height of the hips joint above the lowest joint, in model units. */
+    readonly hipHeight: number;
+    readonly missing: readonly HumanoidRole[];
+    readonly ok: boolean;
+}
+export interface HumanoidPoseInput {
+    readonly rotations: Partial<Record<HumanoidRole, Quat>>;
+    /** Hips displacement from rest, in units of rest hip height, in the canonical frame (+Y up, +Z forward). */
+    readonly hipsOffset?: Vec3;
+    /**
+     * Optional model-space palm targets (e.g. a held ball's anchor from the procedural rig). The arm is bent and swung
+     * with two-bone IK (bend plane taken from the posed arm) so the drawn palm lands on the target when it is in reach;
+     * Idol arm proportions differ from the procedural rig's, so the same joint angles alone miss by 10-20 cm.
+     */
+    readonly handTargets?: {
+        readonly left?: Vec3;
+        readonly right?: Vec3;
+    };
+}
+/**
+ * One bone's local transform in OBJECT form. The runtime handle clones poses with object spread
+ * (`{ ...transform.rotation }`), which turns a tuple into `{ 0, 1, 2, 3 }` and makes the glTF runtime reject the whole
+ * pose (every body then renders its bind T-pose); `{ x, y, z, w }` survives the clone.
+ */
+export interface HumanoidBonePose {
+    readonly rotation: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+        readonly w: number;
+    };
+    readonly position?: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+    };
+}
+/** Structurally an engine `AnimationPose` (`handle.setAnimationPose(pose)`). */
+export interface HumanoidAnimationPose {
+    readonly bones: Record<string, HumanoidBonePose>;
+    readonly mode: "replace";
+}
+export interface HumanoidDriverOptions {
+    /** Which model-space axis the character faces. Generator output (normalised) faces +Z (default); raw Idol faces +X. */
+    readonly facing?: "+z" | "-z" | "+x" | "-x";
+    /**
+     * Share (0..1) of the T-pose -> hanging-arm turn the clavicle bones take (default 0.3), so lowered arms hang from a
+     * dropped shoulder instead of bunching the deltoid. Arm directions are unaffected (they are solved in world space).
+     */
+    readonly shoulderDrop?: number;
+    /**
+     * Explicit role -> bone-name assignments that override the automatic mapping (`aura3d animation import --map`).
+     * Spine and neck chains are re-derived from the overridden hips/spine/chest/neck/head bones.
+     */
+    readonly roles?: Partial<Record<HumanoidRole, string>>;
+    /** Largest forearm twist about its own axis relative to the upper arm, degrees (default 75; candy-wrapper guard). */
+    readonly maxForearmTwistDeg?: number;
+    /** Largest hand twist about its own axis relative to the forearm, degrees (default 60). */
+    readonly maxWristTwistDeg?: number;
+}
+/** Split `q` into swing * twist about unit `axis` and clamp the twist angle to +-`max` radians. */
+export declare function clampTwist(q: Quat, axis: Vec3, max: number): Quat;
+export interface HumanoidDriver {
+    readonly map: HumanoidMap;
+    readonly skeleton: IdolSkeleton;
+    /** Bone transforms for one frame. Every joint gets a rotation; the hips also get a position. */
+    pose(input: HumanoidPoseInput): HumanoidAnimationPose;
+    /** Model-space joint positions for a pose (debug, tests, foot-plant checks). */
+    modelPositions(input: HumanoidPoseInput): Record<string, Vec3>;
+    /**
+     * Model-space palm centres for a pose: 60% of the way from each wrist (hand bone) to the mean of its child (finger)
+     * joints. Use these, not the procedural rig's palm, to anchor held props (balls) to the hand that is drawn.
+     */
+    palmPoints(input: HumanoidPoseInput): {
+        readonly left: Vec3;
+        readonly right: Vec3;
+    };
+}
+export declare const QUAT_IDENTITY: Quat;
+export declare function quatMul(a: Quat, b: Quat): Quat;
+export declare function quatInv(q: Quat): Quat;
+export declare function quatNorm(q: Quat): Quat;
+export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+export declare function rotateVec(q: Quat, v: Vec3): Vec3;
+/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+export declare function eulerZYX(x: number, y: number, z: number): Quat;
+/** `q` raised to `t` (slerp from identity). */
+export declare function quatPow(q: Quat, t: number): Quat;
+/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
+interface GltfNode {
+    readonly name?: string;
+    readonly children?: readonly number[];
+    readonly translation?: readonly number[];
+    readonly rotation?: readonly number[];
+    readonly scale?: readonly number[];
+    readonly matrix?: readonly number[];
+}
+export interface GltfJsonLike {
+    readonly nodes?: readonly GltfNode[];
+    readonly skins?: readonly {
+        readonly joints: readonly number[];
+    }[];
+}
+/** The JSON chunk of a binary glTF. */
+export declare function parseGlbJson(bytes: ArrayBuffer | Uint8Array): GltfJsonLike;
+/** Joint table of the first skin plus the fixed transform chain above each root joint (e.g. the generator's `auraRoot`). */
+export declare function readIdolSkeleton(gltf: GltfJsonLike): IdolSkeleton;
+/** Map Idol bones to humanoid roles by hierarchy and rest positions. */
+export declare function mapHumanoid(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidMap;
+export declare function createHumanoidDriver(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidDriver;
+/** Canonical-frame world rotations per role -> the per-role LOCAL rotations HumanoidPoseInput takes (missing parents skip up). */
+export declare function globalsToLocals(globals: Partial<Record<HumanoidRole, Quat>>): Partial<Record<HumanoidRole, Quat>>;
+export interface HumanoidSource {
+    readonly map: HumanoidMap;
+    /**
+     * One frame of a source rig (any humanoid skeleton, e.g. a mocap rig) as a canonical pose. `worldRot[i]` is bone i's
+     * model-space world rotation this frame, `hipsPos` the hips world position; both in the source skeleton's model space.
+     */
+    toCanonical(worldRot: readonly Quat[], hipsPos: Vec3): HumanoidPoseInput;
+}
+/**
+ * Inverse of the driver: reads a source rig's motion into the canonical frame (arms-down rest, facing +Z) with the same
+ * role mapping and limb alignment rules, so a clip recorded on one rig plays on every Idol body. The source `skeleton`'s
+ * rest must be its bind pose.
+ */
+export declare function createHumanoidSource(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidSource;
+/** A baked canonical clip: `frames` holds, per frame, one quaternion per `roles` entry followed by the 3 hips-offset values. */
+export interface HumanoidClip {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly roles: readonly HumanoidRole[];
+    readonly frameCount: number;
+    /** Int16 little-endian, base64: quaternion components * 32767, hips offset * 8192. */
+    readonly data: string;
+    /** Free-form timing facts measured at bake time (stance speed, contact time, side, ...). */
+    readonly meta?: Readonly<Record<string, number | string>>;
+}
+/** Pack canonical frames into a HumanoidClip (bake tools). */
+export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
+/** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
+export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
+    readonly loop?: boolean;
+}): HumanoidPoseInput;
+/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
+/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
+/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+export declare const ARM_ROLES: readonly HumanoidRole[];
+/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
+export {};
+//# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/smplMotion.d.ts`
+
+```ts
+/**
+ * fal `fal-ai/hunyuan-motion` (HY-Motion) dict output -> canonical humanoid frames / a HumanoidClip (moved from
+ * apps/showcase-port-shared/idol/smplMotion.ts, which re-exports this module). `aura3d animation import motion.json`
+ * bakes the frames into glTF channels on a rigged GLB (./bake.ts).
+ *
+ * Format (verified Nov 2026 against keypoints3d: FK of these rotations over the rest offsets reproduces every keypoint):
+ *   rot6d [1][F][22][6]  LOCAL joint rotations, SMPL 22-joint body order (SMPL_JOINTS); each 6-vector is a 3x2 matrix
+ *                        flattened row-major, i.e. columns = (v[0],v[2],v[4]) and (v[1],v[3],v[5]), Gram-Schmidt.
+ *                        Joint 0 (pelvis) is the global root orientation (== root_rotations_mat).
+ *   transl [1][F][3]     root translation (metres, Y up); keypoints3d [1][F][52][3] joint positions without transl
+ *                        (pelvis world height = transl.y + keypoints3d.pelvis.y).
+ *   30 fps. Rest pose = T-pose, Y up, character facing +Z, its left = +X: exactly the canonical humanoid frame.
+ * Root motion is stripped (horizontal translation and the clip's mean heading); the vertical hip bob is kept. Loop clips
+ * are made seamless by cross-fading their last `loopBlend` seconds into the start.
+ */
+import { HUMANOID_ROLES, type HumanoidClip, type HumanoidPoseInput, type Vec3 } from "./humanoid.js";
+export declare const SMPL_JOINTS: readonly ["pelvis", "L_hip", "R_hip", "spine1", "L_knee", "R_knee", "spine2", "L_ankle", "R_ankle", "spine3", "L_foot", "R_foot", "neck", "L_collar", "R_collar", "head", "L_shoulder", "R_shoulder", "L_elbow", "R_elbow", "L_wrist", "R_wrist"];
+export declare const SMPL_PARENTS: readonly [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19];
+export interface HyMotionDict {
+    readonly rot6d: readonly (readonly (readonly (readonly number[])[])[])[];
+    readonly transl: readonly (readonly (readonly number[])[])[];
+    readonly keypoints3d: readonly (readonly (readonly (readonly number[])[])[])[];
+}
+export interface SmplClipOptions {
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    /** Remove the clip's mean heading so it faces +Z (default true). Event clips that turn keep their turn. */
+    readonly faceForward?: boolean;
+    /**
+     * Root translation: "in-place" (default) strips horizontal travel and keeps the vertical hip bob; "keep" also keeps
+     * the horizontal travel (relative to the first frame, in the face-forward frame); "strip" removes all of it.
+     */
+    readonly rootMotion?: "in-place" | "keep" | "strip";
+}
+/** Canonical frames (30 fps) of one HY-Motion dict, before packing into a HumanoidClip. */
+export interface SmplFramesResult {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly (typeof HUMANOID_ROLES)[number][];
+    readonly meta: Readonly<Record<string, number | string>>;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+export interface SmplClipResult {
+    readonly clip: HumanoidClip;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+/** Convert one HY-Motion dict to a canonical clip with timing facts in `meta` (ground speed, contacts, apex, ...). */
+export declare function smplMotionToClip(name: string, dict: HyMotionDict, opts?: SmplClipOptions): SmplClipResult;
+/** True when `value` has the HY-Motion dict shape (rot6d [1][F][22][6], transl [1][F][3], keypoints3d [1][F][J][3]). */
+export declare function isHyMotionDict(value: unknown): value is HyMotionDict;
+/** Convert one HY-Motion dict to canonical frames (30 fps) with timing facts in `meta`. */
+export declare function smplMotionToFrames(dict: HyMotionDict, opts?: SmplClipOptions): SmplFramesResult;
+//# sourceMappingURL=smplMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/skeletalMotion.d.ts`
+
+```ts
+/**
+ * Any humanoid skeleton's sampled motion (BVH, FBX, glTF clips) -> canonical humanoid frames, with the same role mapping
+ * and limb-alignment rules the Idol driver uses (./humanoid.ts). Format readers (the CLI's `animation import`) produce a
+ * `SkeletalMotion`: a joint table with rest local TRS plus per-frame local rotations/translations. This module maps it
+ * (names first for facing, geometry for roles), removes the clip's mean heading, grounds the hips, applies the
+ * root-motion mode and loop cross-fade, and returns frames that ./bake.ts writes onto a target rig.
+ *
+ * Extensionless relative imports on purpose: tools that load these sources directly under `node` resolve them to .ts.
+ */
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+export type HumanoidFacing = "+z" | "-z" | "+x" | "-x";
+export type RootMotionMode = "in-place" | "keep" | "strip";
+export interface SkeletalMotionFrame {
+    /** LOCAL rotation per joint (same order as `skeleton.bones`). */
+    readonly r: readonly Quat[];
+    /** LOCAL translation per joint (rest translation where the clip does not animate it). */
+    readonly t: readonly Vec3[];
+}
+export interface SkeletalMotion {
+    readonly skeleton: IdolSkeleton;
+    readonly fps: number;
+    readonly frames: readonly SkeletalMotionFrame[];
+}
+export interface CanonicalMotionOptions {
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Remove the clip's mean heading so it faces +Z (default true). */
+    readonly faceForward?: boolean;
+    readonly rootMotion?: RootMotionMode;
+    /** Model-space axis the source character faces; "auto" (default) detects it from bone names, then toes. */
+    readonly facing?: HumanoidFacing | "auto";
+    /** Role -> bone-name overrides for the source skeleton. */
+    readonly roles?: HumanoidDriverOptions["roles"];
+}
+export interface CanonicalMotion {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly HumanoidRole[];
+    readonly meta: Readonly<Record<string, number | string>>;
+    readonly map: HumanoidMap;
+    readonly facing: HumanoidFacing;
+    readonly facingMethod: FacingDetection["method"];
+}
+export interface FacingDetection {
+    readonly facing: HumanoidFacing;
+    readonly method: "names" | "toes" | "default" | "explicit";
+}
+interface Xf {
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: number;
+}
+/** World transform of every joint for local rotations/translations (rest where omitted). */
+export declare function skeletonWorld(sk: IdolSkeleton, r?: readonly Quat[], t?: readonly Vec3[], order?: number[]): Xf[];
+/** Side of a bone name: "left" for LeftArm / L_hip / thigh.L / lUpLeg-style tokens, "right" likewise, else null. */
+export declare function boneSide(name: string): "left" | "right" | null;
+/**
+ * Which model-space axis a humanoid skeleton faces in its rest pose: from sided bone names (left minus right is the
+ * character's left), else from the feet (foot -> toe points forward), else +Z.
+ */
+export declare function detectHumanoidFacing(sk: IdolSkeleton): FacingDetection;
+/** Per-frame cross-fade of a loop's last `blend` seconds into its start (same rule as the HY-Motion converter). */
+export declare function crossfadeLoop(frames: readonly HumanoidPoseInput[], fps: number, blend?: number): HumanoidPoseInput[];
+/** Resample canonical frames to another rate (per-role slerp, hips lerp). Duration is preserved to the last frame. */
+export declare function resampleCanonicalFrames(frames: readonly HumanoidPoseInput[], fromFps: number, toFps: number): HumanoidPoseInput[];
+/** A sampled skeletal clip as canonical humanoid frames (see the module comment). */
+export declare function skeletalMotionToFrames(motion: SkeletalMotion, opts?: CanonicalMotionOptions): CanonicalMotion;
+export {};
+//# sourceMappingURL=skeletalMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/bake.d.ts`
+
+```ts
+/**
+ * Canonical humanoid frames -> glTF animation channel data on a target skeleton (any rigged humanoid GLB, including
+ * Idol's unnamed `bone_N` rigs). Each frame goes through the same driver the games use at runtime
+ * (`createHumanoidDriver(...).pose(frame)`), so a baked clip plays exactly like the live pose did. The bake reports:
+ *
+ *   - `flips`: rotation keys swinging more than `flipThresholdDeg` in one frame (the engine's `LimbFlip` shape; the
+ *     swing is the shortest-arc angle 2·acos(|q0·q1|) between consecutive keys);
+ *   - `limbError`: angle between each limb segment the target draws and the source's canonical limb direction
+ *     (upper/lower arms and legs; ~0 for a correct retarget, float noise only);
+ *   - `motionDeg`: the largest angle any limb moves away from the target's bind pose (0 = a silent T-pose).
+ *
+ * Callers fail on flips, on a limb error above their bound and on `motionDeg` near zero instead of writing a clip that
+ * renders a broken or frozen body.
+ */
+import type { LimbFlip } from "../pose/Retarget.js";
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+/** Limb segments checked for retarget error: role -> the role at the segment's far end. */
+export declare const LIMB_SEGMENTS: readonly (readonly [HumanoidRole, HumanoidRole])[];
+/** Facing rotation (model space) for a driver `facing` option. */
+export declare function facingQuat(facing: HumanoidDriverOptions["facing"]): Quat;
+/** Canonical-frame direction of every limb segment in a frame (accumulated role rotations applied to straight down). */
+export declare function canonicalLimbDirections(frame: HumanoidPoseInput): Partial<Record<HumanoidRole, Vec3>>;
+export declare function angleDeg(a: Vec3, b: Vec3): number;
+export interface GltfChannelData {
+    /** Target joint name and index in `skeleton.bones`. */
+    readonly bone: string;
+    readonly boneIndex: number;
+    readonly path: "rotation" | "translation";
+    /** Flat values, 4 (rotation) or 3 (translation) per key, one key per entry of `times`. */
+    readonly values: Float32Array;
+}
+export interface BakeHumanoidGltfOptions extends HumanoidDriverOptions {
+    /** Single-key swing that counts as a limb flip (default 120 degrees, the engine detector's default). */
+    readonly flipThresholdDeg?: number;
+}
+export interface HumanoidGltfBake {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly times: Float32Array;
+    readonly channels: readonly GltfChannelData[];
+    readonly flips: readonly LimbFlip[];
+    readonly limbError: {
+        readonly maxDeg: number;
+        readonly meanDeg: number;
+    };
+    readonly motionDeg: number;
+    readonly map: HumanoidMap;
+    /** Expected model-space limb directions per frame (for verifying a written file): role -> unit vector. */
+    readonly expected: readonly Partial<Record<HumanoidRole, Vec3>>[];
+}
+/** Bake canonical frames (at `fps`) into per-joint glTF rotation channels plus the hips translation channel. */
+export declare function bakeHumanoidFramesToGltf(name: string, target: IdolSkeleton, frames: readonly HumanoidPoseInput[], fps: number, opts?: BakeHumanoidGltfOptions): HumanoidGltfBake;
+/**
+ * Rotation keys whose single-key swing exceeds `thresholdDeg`. The swing between unit quaternions a, b is
+ * 2·acos(|a·b|), so the test is |a·b| < cos(threshold / 2).
+ */
+export declare function detectKeyFlips(channels: readonly GltfChannelData[], thresholdDeg?: number): LimbFlip[];
+//# sourceMappingURL=bake.d.ts.map
+```
+
 ### `./dist/animation/threejs-compatibility/AnimationClip.d.ts`
 
 ```ts
@@ -126727,8 +128128,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -132453,8 +133854,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -135119,8 +136520,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -136921,8 +138322,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -138328,6 +139729,7 @@ export * from "./HumanoidBoneInference.js";
 export * from "./RigQuality.js";
 export * from "./library/standardHumanoidClips.js";
 export * from "./library/performanceStateGraph.js";
+export * from "./smpl/index.js";
 export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
 export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
 export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";
@@ -141010,6 +142412,452 @@ export declare function createPerformanceStateGraph(options?: PerformanceStateGr
 /** The full set of state names the performance graph exposes (equals the standard clip vocabulary). */
 export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 //# sourceMappingURL=performanceStateGraph.d.ts.map
+```
+
+### `./dist/animation/smpl/index.d.ts`
+
+```ts
+/**
+ * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
+ * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
+ * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ */
+export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
+export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
+export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/animation/smpl/humanoid.d.ts`
+
+```ts
+/**
+ * Humanoid role mapping, driver and canonical clips (moved from apps/showcase-port-shared/idol/humanoid.ts, which now
+ * re-exports this module; the games import it unchanged). Used by `aura3d animation import` to retarget clips onto any
+ * rigged humanoid GLB, including Idol's unnamed `bone_N` rigs.
+ *
+ * Idol humanoid driver — drive a rigged Idol GLB (unnamed bones `bone_0..N`) from a game's own code-built joint pose.
+ *
+ * Idol (`speridlabs/idol/max`, `rig: true`) ships a 28–34 bone skeleton in a T-pose with no bone names. Games here already
+ * animate their athletes in code: every frame they compute per-joint local rotations for a procedural rig whose rest pose
+ * is "standing, arms hanging straight down, legs straight down, facing +Z, +Y up, character's left = +X". This module maps
+ * the Idol bones to humanoid roles by hierarchy and rest positions, then turns that same per-joint pose into an
+ * `AnimationPose` for `handle.setAnimationPose(...)` on the `model(assets.<key>)` node — so gameplay animation is
+ * unchanged and only the body that renders it is new.
+ *
+ * API (dependency-free; runs in the browser, in vitest and under plain `node`):
+ *   parseGlbJson(bytes)                -> glTF JSON chunk of a .glb
+ *   readIdolSkeleton(gltf)             -> IdolSkeleton (joint names, parents, rest local TRS, fixed parent-chain transform)
+ *   mapHumanoid(skeleton, opts?)       -> HumanoidMap (role -> bone name, spine/neck chains, diagnostics)
+ *   createHumanoidDriver(skeleton, o?) -> { map, pose(input) } ; pose() returns `{ bones, mode: "replace" }` with
+ *                                         object-form `{x,y,z,w}` / `{x,y,z}` transforms (tuples do not survive the
+ *                                         runtime handle's pose clone; see HumanoidBonePose)
+ *   driver.modelPositions / palmPoints -> model-space joint and palm-centre positions for a pose (prop anchoring)
+ *   loadIdolHumanoid(url, o?)          -> Promise<HumanoidDriver>, cached per URL (fetch + the three calls above)
+ *   eulerZYX(x, y, z)                  -> quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx)
+ *
+ * Input pose (`HumanoidPoseInput`): `rotations[role]` = LOCAL rotation of that joint relative to its parent joint, in the
+ * canonical rest frame above; source hierarchy is hips → spine → chest → neck → head, chest → {l,r}Shoulder → UpperArm →
+ * LowerArm → Hand, hips → {l,r}UpperLeg → LowerLeg → Foot. Omitted roles are identity (a rig with only a "chest" joint
+ * just omits spine). `hipsOffset` is the hips displacement from rest in units of rest hip height (FC: offset / 0.96).
+ *
+ * Retargeting rule per mapped bone: world = G_src · A · R_rest, where G_src is the source joint's accumulated rotation,
+ * R_rest the Idol bone's rest world rotation and A the shortest-arc turn that points the Idol limb straight down (arms
+ * and legs only — the T-pose arms become hanging arms; torso, neck, head and feet keep Idol's natural rest posture).
+ * The source torso rotation (spine·chest) is spread evenly over Idol's spine chain, neck·head over its neck chain.
+ * Clavicles take `shoulderDrop` (default 0.3) of their arm's A so the lowered shoulders do not bunch up.
+ * Unmapped bones (clavicles without a source, fingers, toes, head ends) follow their parent at their rest local rotation.
+ */
+export type Vec3 = readonly [number, number, number];
+/** Quaternion `[x, y, z, w]` (glTF / engine order). */
+export type Quat = readonly [number, number, number, number];
+export declare const HUMANOID_ROLES: readonly ["hips", "spine", "chest", "neck", "head", "leftShoulder", "leftUpperArm", "leftLowerArm", "leftHand", "rightShoulder", "rightUpperArm", "rightLowerArm", "rightHand", "leftUpperLeg", "leftLowerLeg", "leftFoot", "rightUpperLeg", "rightLowerLeg", "rightFoot"];
+export type HumanoidRole = (typeof HUMANOID_ROLES)[number];
+export interface IdolBone {
+    readonly name: string;
+    /** Index into `bones` of the parent joint, or -1 when the parent is not a joint. */
+    readonly parent: number;
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: Vec3;
+}
+export interface IdolSkeleton {
+    readonly bones: readonly IdolBone[];
+    /** World transform of the (non-joint) parent chain above each root joint, keyed by bone index. */
+    readonly rootParents: Readonly<Record<number, {
+        readonly t: Vec3;
+        readonly r: Quat;
+        readonly s: number;
+    }>>;
+}
+export interface HumanoidMap {
+    readonly roles: Partial<Record<HumanoidRole, string>>;
+    /** Idol bones from the first spine bone up to the bone the arms hang from (inclusive). */
+    readonly spineChain: readonly string[];
+    /** Idol bones above the arm branch up to and including the head bone. */
+    readonly neckChain: readonly string[];
+    /** Rest height of the hips joint above the lowest joint, in model units. */
+    readonly hipHeight: number;
+    readonly missing: readonly HumanoidRole[];
+    readonly ok: boolean;
+}
+export interface HumanoidPoseInput {
+    readonly rotations: Partial<Record<HumanoidRole, Quat>>;
+    /** Hips displacement from rest, in units of rest hip height, in the canonical frame (+Y up, +Z forward). */
+    readonly hipsOffset?: Vec3;
+    /**
+     * Optional model-space palm targets (e.g. a held ball's anchor from the procedural rig). The arm is bent and swung
+     * with two-bone IK (bend plane taken from the posed arm) so the drawn palm lands on the target when it is in reach;
+     * Idol arm proportions differ from the procedural rig's, so the same joint angles alone miss by 10-20 cm.
+     */
+    readonly handTargets?: {
+        readonly left?: Vec3;
+        readonly right?: Vec3;
+    };
+}
+/**
+ * One bone's local transform in OBJECT form. The runtime handle clones poses with object spread
+ * (`{ ...transform.rotation }`), which turns a tuple into `{ 0, 1, 2, 3 }` and makes the glTF runtime reject the whole
+ * pose (every body then renders its bind T-pose); `{ x, y, z, w }` survives the clone.
+ */
+export interface HumanoidBonePose {
+    readonly rotation: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+        readonly w: number;
+    };
+    readonly position?: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+    };
+}
+/** Structurally an engine `AnimationPose` (`handle.setAnimationPose(pose)`). */
+export interface HumanoidAnimationPose {
+    readonly bones: Record<string, HumanoidBonePose>;
+    readonly mode: "replace";
+}
+export interface HumanoidDriverOptions {
+    /** Which model-space axis the character faces. Generator output (normalised) faces +Z (default); raw Idol faces +X. */
+    readonly facing?: "+z" | "-z" | "+x" | "-x";
+    /**
+     * Share (0..1) of the T-pose -> hanging-arm turn the clavicle bones take (default 0.3), so lowered arms hang from a
+     * dropped shoulder instead of bunching the deltoid. Arm directions are unaffected (they are solved in world space).
+     */
+    readonly shoulderDrop?: number;
+    /**
+     * Explicit role -> bone-name assignments that override the automatic mapping (`aura3d animation import --map`).
+     * Spine and neck chains are re-derived from the overridden hips/spine/chest/neck/head bones.
+     */
+    readonly roles?: Partial<Record<HumanoidRole, string>>;
+    /** Largest forearm twist about its own axis relative to the upper arm, degrees (default 75; candy-wrapper guard). */
+    readonly maxForearmTwistDeg?: number;
+    /** Largest hand twist about its own axis relative to the forearm, degrees (default 60). */
+    readonly maxWristTwistDeg?: number;
+}
+/** Split `q` into swing * twist about unit `axis` and clamp the twist angle to +-`max` radians. */
+export declare function clampTwist(q: Quat, axis: Vec3, max: number): Quat;
+export interface HumanoidDriver {
+    readonly map: HumanoidMap;
+    readonly skeleton: IdolSkeleton;
+    /** Bone transforms for one frame. Every joint gets a rotation; the hips also get a position. */
+    pose(input: HumanoidPoseInput): HumanoidAnimationPose;
+    /** Model-space joint positions for a pose (debug, tests, foot-plant checks). */
+    modelPositions(input: HumanoidPoseInput): Record<string, Vec3>;
+    /**
+     * Model-space palm centres for a pose: 60% of the way from each wrist (hand bone) to the mean of its child (finger)
+     * joints. Use these, not the procedural rig's palm, to anchor held props (balls) to the hand that is drawn.
+     */
+    palmPoints(input: HumanoidPoseInput): {
+        readonly left: Vec3;
+        readonly right: Vec3;
+    };
+}
+export declare const QUAT_IDENTITY: Quat;
+export declare function quatMul(a: Quat, b: Quat): Quat;
+export declare function quatInv(q: Quat): Quat;
+export declare function quatNorm(q: Quat): Quat;
+export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+export declare function rotateVec(q: Quat, v: Vec3): Vec3;
+/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+export declare function eulerZYX(x: number, y: number, z: number): Quat;
+/** `q` raised to `t` (slerp from identity). */
+export declare function quatPow(q: Quat, t: number): Quat;
+/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
+interface GltfNode {
+    readonly name?: string;
+    readonly children?: readonly number[];
+    readonly translation?: readonly number[];
+    readonly rotation?: readonly number[];
+    readonly scale?: readonly number[];
+    readonly matrix?: readonly number[];
+}
+export interface GltfJsonLike {
+    readonly nodes?: readonly GltfNode[];
+    readonly skins?: readonly {
+        readonly joints: readonly number[];
+    }[];
+}
+/** The JSON chunk of a binary glTF. */
+export declare function parseGlbJson(bytes: ArrayBuffer | Uint8Array): GltfJsonLike;
+/** Joint table of the first skin plus the fixed transform chain above each root joint (e.g. the generator's `auraRoot`). */
+export declare function readIdolSkeleton(gltf: GltfJsonLike): IdolSkeleton;
+/** Map Idol bones to humanoid roles by hierarchy and rest positions. */
+export declare function mapHumanoid(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidMap;
+export declare function createHumanoidDriver(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidDriver;
+/** Canonical-frame world rotations per role -> the per-role LOCAL rotations HumanoidPoseInput takes (missing parents skip up). */
+export declare function globalsToLocals(globals: Partial<Record<HumanoidRole, Quat>>): Partial<Record<HumanoidRole, Quat>>;
+export interface HumanoidSource {
+    readonly map: HumanoidMap;
+    /**
+     * One frame of a source rig (any humanoid skeleton, e.g. a mocap rig) as a canonical pose. `worldRot[i]` is bone i's
+     * model-space world rotation this frame, `hipsPos` the hips world position; both in the source skeleton's model space.
+     */
+    toCanonical(worldRot: readonly Quat[], hipsPos: Vec3): HumanoidPoseInput;
+}
+/**
+ * Inverse of the driver: reads a source rig's motion into the canonical frame (arms-down rest, facing +Z) with the same
+ * role mapping and limb alignment rules, so a clip recorded on one rig plays on every Idol body. The source `skeleton`'s
+ * rest must be its bind pose.
+ */
+export declare function createHumanoidSource(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidSource;
+/** A baked canonical clip: `frames` holds, per frame, one quaternion per `roles` entry followed by the 3 hips-offset values. */
+export interface HumanoidClip {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly roles: readonly HumanoidRole[];
+    readonly frameCount: number;
+    /** Int16 little-endian, base64: quaternion components * 32767, hips offset * 8192. */
+    readonly data: string;
+    /** Free-form timing facts measured at bake time (stance speed, contact time, side, ...). */
+    readonly meta?: Readonly<Record<string, number | string>>;
+}
+/** Pack canonical frames into a HumanoidClip (bake tools). */
+export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
+/** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
+export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
+    readonly loop?: boolean;
+}): HumanoidPoseInput;
+/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
+/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
+/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+export declare const ARM_ROLES: readonly HumanoidRole[];
+/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
+export {};
+//# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/smplMotion.d.ts`
+
+```ts
+/**
+ * fal `fal-ai/hunyuan-motion` (HY-Motion) dict output -> canonical humanoid frames / a HumanoidClip (moved from
+ * apps/showcase-port-shared/idol/smplMotion.ts, which re-exports this module). `aura3d animation import motion.json`
+ * bakes the frames into glTF channels on a rigged GLB (./bake.ts).
+ *
+ * Format (verified Nov 2026 against keypoints3d: FK of these rotations over the rest offsets reproduces every keypoint):
+ *   rot6d [1][F][22][6]  LOCAL joint rotations, SMPL 22-joint body order (SMPL_JOINTS); each 6-vector is a 3x2 matrix
+ *                        flattened row-major, i.e. columns = (v[0],v[2],v[4]) and (v[1],v[3],v[5]), Gram-Schmidt.
+ *                        Joint 0 (pelvis) is the global root orientation (== root_rotations_mat).
+ *   transl [1][F][3]     root translation (metres, Y up); keypoints3d [1][F][52][3] joint positions without transl
+ *                        (pelvis world height = transl.y + keypoints3d.pelvis.y).
+ *   30 fps. Rest pose = T-pose, Y up, character facing +Z, its left = +X: exactly the canonical humanoid frame.
+ * Root motion is stripped (horizontal translation and the clip's mean heading); the vertical hip bob is kept. Loop clips
+ * are made seamless by cross-fading their last `loopBlend` seconds into the start.
+ */
+import { HUMANOID_ROLES, type HumanoidClip, type HumanoidPoseInput, type Vec3 } from "./humanoid.js";
+export declare const SMPL_JOINTS: readonly ["pelvis", "L_hip", "R_hip", "spine1", "L_knee", "R_knee", "spine2", "L_ankle", "R_ankle", "spine3", "L_foot", "R_foot", "neck", "L_collar", "R_collar", "head", "L_shoulder", "R_shoulder", "L_elbow", "R_elbow", "L_wrist", "R_wrist"];
+export declare const SMPL_PARENTS: readonly [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19];
+export interface HyMotionDict {
+    readonly rot6d: readonly (readonly (readonly (readonly number[])[])[])[];
+    readonly transl: readonly (readonly (readonly number[])[])[];
+    readonly keypoints3d: readonly (readonly (readonly (readonly number[])[])[])[];
+}
+export interface SmplClipOptions {
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    /** Remove the clip's mean heading so it faces +Z (default true). Event clips that turn keep their turn. */
+    readonly faceForward?: boolean;
+    /**
+     * Root translation: "in-place" (default) strips horizontal travel and keeps the vertical hip bob; "keep" also keeps
+     * the horizontal travel (relative to the first frame, in the face-forward frame); "strip" removes all of it.
+     */
+    readonly rootMotion?: "in-place" | "keep" | "strip";
+}
+/** Canonical frames (30 fps) of one HY-Motion dict, before packing into a HumanoidClip. */
+export interface SmplFramesResult {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly (typeof HUMANOID_ROLES)[number][];
+    readonly meta: Readonly<Record<string, number | string>>;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+export interface SmplClipResult {
+    readonly clip: HumanoidClip;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+/** Convert one HY-Motion dict to a canonical clip with timing facts in `meta` (ground speed, contacts, apex, ...). */
+export declare function smplMotionToClip(name: string, dict: HyMotionDict, opts?: SmplClipOptions): SmplClipResult;
+/** True when `value` has the HY-Motion dict shape (rot6d [1][F][22][6], transl [1][F][3], keypoints3d [1][F][J][3]). */
+export declare function isHyMotionDict(value: unknown): value is HyMotionDict;
+/** Convert one HY-Motion dict to canonical frames (30 fps) with timing facts in `meta`. */
+export declare function smplMotionToFrames(dict: HyMotionDict, opts?: SmplClipOptions): SmplFramesResult;
+//# sourceMappingURL=smplMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/skeletalMotion.d.ts`
+
+```ts
+/**
+ * Any humanoid skeleton's sampled motion (BVH, FBX, glTF clips) -> canonical humanoid frames, with the same role mapping
+ * and limb-alignment rules the Idol driver uses (./humanoid.ts). Format readers (the CLI's `animation import`) produce a
+ * `SkeletalMotion`: a joint table with rest local TRS plus per-frame local rotations/translations. This module maps it
+ * (names first for facing, geometry for roles), removes the clip's mean heading, grounds the hips, applies the
+ * root-motion mode and loop cross-fade, and returns frames that ./bake.ts writes onto a target rig.
+ *
+ * Extensionless relative imports on purpose: tools that load these sources directly under `node` resolve them to .ts.
+ */
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+export type HumanoidFacing = "+z" | "-z" | "+x" | "-x";
+export type RootMotionMode = "in-place" | "keep" | "strip";
+export interface SkeletalMotionFrame {
+    /** LOCAL rotation per joint (same order as `skeleton.bones`). */
+    readonly r: readonly Quat[];
+    /** LOCAL translation per joint (rest translation where the clip does not animate it). */
+    readonly t: readonly Vec3[];
+}
+export interface SkeletalMotion {
+    readonly skeleton: IdolSkeleton;
+    readonly fps: number;
+    readonly frames: readonly SkeletalMotionFrame[];
+}
+export interface CanonicalMotionOptions {
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Remove the clip's mean heading so it faces +Z (default true). */
+    readonly faceForward?: boolean;
+    readonly rootMotion?: RootMotionMode;
+    /** Model-space axis the source character faces; "auto" (default) detects it from bone names, then toes. */
+    readonly facing?: HumanoidFacing | "auto";
+    /** Role -> bone-name overrides for the source skeleton. */
+    readonly roles?: HumanoidDriverOptions["roles"];
+}
+export interface CanonicalMotion {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly HumanoidRole[];
+    readonly meta: Readonly<Record<string, number | string>>;
+    readonly map: HumanoidMap;
+    readonly facing: HumanoidFacing;
+    readonly facingMethod: FacingDetection["method"];
+}
+export interface FacingDetection {
+    readonly facing: HumanoidFacing;
+    readonly method: "names" | "toes" | "default" | "explicit";
+}
+interface Xf {
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: number;
+}
+/** World transform of every joint for local rotations/translations (rest where omitted). */
+export declare function skeletonWorld(sk: IdolSkeleton, r?: readonly Quat[], t?: readonly Vec3[], order?: number[]): Xf[];
+/** Side of a bone name: "left" for LeftArm / L_hip / thigh.L / lUpLeg-style tokens, "right" likewise, else null. */
+export declare function boneSide(name: string): "left" | "right" | null;
+/**
+ * Which model-space axis a humanoid skeleton faces in its rest pose: from sided bone names (left minus right is the
+ * character's left), else from the feet (foot -> toe points forward), else +Z.
+ */
+export declare function detectHumanoidFacing(sk: IdolSkeleton): FacingDetection;
+/** Per-frame cross-fade of a loop's last `blend` seconds into its start (same rule as the HY-Motion converter). */
+export declare function crossfadeLoop(frames: readonly HumanoidPoseInput[], fps: number, blend?: number): HumanoidPoseInput[];
+/** Resample canonical frames to another rate (per-role slerp, hips lerp). Duration is preserved to the last frame. */
+export declare function resampleCanonicalFrames(frames: readonly HumanoidPoseInput[], fromFps: number, toFps: number): HumanoidPoseInput[];
+/** A sampled skeletal clip as canonical humanoid frames (see the module comment). */
+export declare function skeletalMotionToFrames(motion: SkeletalMotion, opts?: CanonicalMotionOptions): CanonicalMotion;
+export {};
+//# sourceMappingURL=skeletalMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/bake.d.ts`
+
+```ts
+/**
+ * Canonical humanoid frames -> glTF animation channel data on a target skeleton (any rigged humanoid GLB, including
+ * Idol's unnamed `bone_N` rigs). Each frame goes through the same driver the games use at runtime
+ * (`createHumanoidDriver(...).pose(frame)`), so a baked clip plays exactly like the live pose did. The bake reports:
+ *
+ *   - `flips`: rotation keys swinging more than `flipThresholdDeg` in one frame (the engine's `LimbFlip` shape; the
+ *     swing is the shortest-arc angle 2·acos(|q0·q1|) between consecutive keys);
+ *   - `limbError`: angle between each limb segment the target draws and the source's canonical limb direction
+ *     (upper/lower arms and legs; ~0 for a correct retarget, float noise only);
+ *   - `motionDeg`: the largest angle any limb moves away from the target's bind pose (0 = a silent T-pose).
+ *
+ * Callers fail on flips, on a limb error above their bound and on `motionDeg` near zero instead of writing a clip that
+ * renders a broken or frozen body.
+ */
+import type { LimbFlip } from "../pose/Retarget.js";
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+/** Limb segments checked for retarget error: role -> the role at the segment's far end. */
+export declare const LIMB_SEGMENTS: readonly (readonly [HumanoidRole, HumanoidRole])[];
+/** Facing rotation (model space) for a driver `facing` option. */
+export declare function facingQuat(facing: HumanoidDriverOptions["facing"]): Quat;
+/** Canonical-frame direction of every limb segment in a frame (accumulated role rotations applied to straight down). */
+export declare function canonicalLimbDirections(frame: HumanoidPoseInput): Partial<Record<HumanoidRole, Vec3>>;
+export declare function angleDeg(a: Vec3, b: Vec3): number;
+export interface GltfChannelData {
+    /** Target joint name and index in `skeleton.bones`. */
+    readonly bone: string;
+    readonly boneIndex: number;
+    readonly path: "rotation" | "translation";
+    /** Flat values, 4 (rotation) or 3 (translation) per key, one key per entry of `times`. */
+    readonly values: Float32Array;
+}
+export interface BakeHumanoidGltfOptions extends HumanoidDriverOptions {
+    /** Single-key swing that counts as a limb flip (default 120 degrees, the engine detector's default). */
+    readonly flipThresholdDeg?: number;
+}
+export interface HumanoidGltfBake {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly times: Float32Array;
+    readonly channels: readonly GltfChannelData[];
+    readonly flips: readonly LimbFlip[];
+    readonly limbError: {
+        readonly maxDeg: number;
+        readonly meanDeg: number;
+    };
+    readonly motionDeg: number;
+    readonly map: HumanoidMap;
+    /** Expected model-space limb directions per frame (for verifying a written file): role -> unit vector. */
+    readonly expected: readonly Partial<Record<HumanoidRole, Vec3>>[];
+}
+/** Bake canonical frames (at `fps`) into per-joint glTF rotation channels plus the hips translation channel. */
+export declare function bakeHumanoidFramesToGltf(name: string, target: IdolSkeleton, frames: readonly HumanoidPoseInput[], fps: number, opts?: BakeHumanoidGltfOptions): HumanoidGltfBake;
+/**
+ * Rotation keys whose single-key swing exceeds `thresholdDeg`. The swing between unit quaternions a, b is
+ * 2·acos(|a·b|), so the test is |a·b| < cos(threshold / 2).
+ */
+export declare function detectKeyFlips(channels: readonly GltfChannelData[], thresholdDeg?: number): LimbFlip[];
+//# sourceMappingURL=bake.d.ts.map
 ```
 
 ### `./dist/animation/threejs-compatibility/AnimationClip.d.ts`
@@ -184538,6 +186386,7 @@ export interface AtmosphereFrameSource {
     /** P3-T6 — live state + sky-change listener for SkyCaptureAdapter wiring. */
     state?(): {
         readonly sky: unknown | null;
+        readonly captureEnvironment?: boolean;
     };
     onSkyChanged?(listener: () => void): (() => void) | void;
 }
@@ -203434,6 +205283,8 @@ export type AuthoredMaterialSnapshot = ReadonlyMap<string, Readonly<Record<strin
 export declare function snapshotMaterials(materials: Iterable<Material>): AuthoredMaterialSnapshot;
 export declare function applyMaterialOverrides(snapshot: AuthoredMaterialSnapshot, materials: Iterable<Material>, overrides: readonly TypedGLBActorMaterialOverride[]): void;
 export declare function lowerModelMaterialOverrides(spec: AuraMaterialSpec | undefined, overrides: readonly AuraModelMaterialOverride[] | undefined): TypedGLBActorMaterialOverride[];
+/** True when a model material spec or override asks for a see-through surface (`opacity` below 1). */
+export declare function modelOpacityIsTranslucent(opacity: unknown): boolean;
 //# sourceMappingURL=ModelMaterialOverrides.d.ts.map
 ```
 
@@ -221446,8 +223297,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -222113,8 +223964,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -224695,8 +226546,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -253563,6 +255414,7 @@ export interface AtmosphereFrameSource {
     /** P3-T6 — live state + sky-change listener for SkyCaptureAdapter wiring. */
     state?(): {
         readonly sky: unknown | null;
+        readonly captureEnvironment?: boolean;
     };
     onSkyChanged?(listener: () => void): (() => void) | void;
 }
@@ -266015,6 +267867,7 @@ export * from "./HumanoidBoneInference.js";
 export * from "./RigQuality.js";
 export * from "./library/standardHumanoidClips.js";
 export * from "./library/performanceStateGraph.js";
+export * from "./smpl/index.js";
 export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
 export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
 export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";
@@ -268697,6 +270550,452 @@ export declare function createPerformanceStateGraph(options?: PerformanceStateGr
 /** The full set of state names the performance graph exposes (equals the standard clip vocabulary). */
 export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 //# sourceMappingURL=performanceStateGraph.d.ts.map
+```
+
+### `./dist/animation/smpl/index.d.ts`
+
+```ts
+/**
+ * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
+ * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
+ * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ */
+export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
+export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
+export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/animation/smpl/humanoid.d.ts`
+
+```ts
+/**
+ * Humanoid role mapping, driver and canonical clips (moved from apps/showcase-port-shared/idol/humanoid.ts, which now
+ * re-exports this module; the games import it unchanged). Used by `aura3d animation import` to retarget clips onto any
+ * rigged humanoid GLB, including Idol's unnamed `bone_N` rigs.
+ *
+ * Idol humanoid driver — drive a rigged Idol GLB (unnamed bones `bone_0..N`) from a game's own code-built joint pose.
+ *
+ * Idol (`speridlabs/idol/max`, `rig: true`) ships a 28–34 bone skeleton in a T-pose with no bone names. Games here already
+ * animate their athletes in code: every frame they compute per-joint local rotations for a procedural rig whose rest pose
+ * is "standing, arms hanging straight down, legs straight down, facing +Z, +Y up, character's left = +X". This module maps
+ * the Idol bones to humanoid roles by hierarchy and rest positions, then turns that same per-joint pose into an
+ * `AnimationPose` for `handle.setAnimationPose(...)` on the `model(assets.<key>)` node — so gameplay animation is
+ * unchanged and only the body that renders it is new.
+ *
+ * API (dependency-free; runs in the browser, in vitest and under plain `node`):
+ *   parseGlbJson(bytes)                -> glTF JSON chunk of a .glb
+ *   readIdolSkeleton(gltf)             -> IdolSkeleton (joint names, parents, rest local TRS, fixed parent-chain transform)
+ *   mapHumanoid(skeleton, opts?)       -> HumanoidMap (role -> bone name, spine/neck chains, diagnostics)
+ *   createHumanoidDriver(skeleton, o?) -> { map, pose(input) } ; pose() returns `{ bones, mode: "replace" }` with
+ *                                         object-form `{x,y,z,w}` / `{x,y,z}` transforms (tuples do not survive the
+ *                                         runtime handle's pose clone; see HumanoidBonePose)
+ *   driver.modelPositions / palmPoints -> model-space joint and palm-centre positions for a pose (prop anchoring)
+ *   loadIdolHumanoid(url, o?)          -> Promise<HumanoidDriver>, cached per URL (fetch + the three calls above)
+ *   eulerZYX(x, y, z)                  -> quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx)
+ *
+ * Input pose (`HumanoidPoseInput`): `rotations[role]` = LOCAL rotation of that joint relative to its parent joint, in the
+ * canonical rest frame above; source hierarchy is hips → spine → chest → neck → head, chest → {l,r}Shoulder → UpperArm →
+ * LowerArm → Hand, hips → {l,r}UpperLeg → LowerLeg → Foot. Omitted roles are identity (a rig with only a "chest" joint
+ * just omits spine). `hipsOffset` is the hips displacement from rest in units of rest hip height (FC: offset / 0.96).
+ *
+ * Retargeting rule per mapped bone: world = G_src · A · R_rest, where G_src is the source joint's accumulated rotation,
+ * R_rest the Idol bone's rest world rotation and A the shortest-arc turn that points the Idol limb straight down (arms
+ * and legs only — the T-pose arms become hanging arms; torso, neck, head and feet keep Idol's natural rest posture).
+ * The source torso rotation (spine·chest) is spread evenly over Idol's spine chain, neck·head over its neck chain.
+ * Clavicles take `shoulderDrop` (default 0.3) of their arm's A so the lowered shoulders do not bunch up.
+ * Unmapped bones (clavicles without a source, fingers, toes, head ends) follow their parent at their rest local rotation.
+ */
+export type Vec3 = readonly [number, number, number];
+/** Quaternion `[x, y, z, w]` (glTF / engine order). */
+export type Quat = readonly [number, number, number, number];
+export declare const HUMANOID_ROLES: readonly ["hips", "spine", "chest", "neck", "head", "leftShoulder", "leftUpperArm", "leftLowerArm", "leftHand", "rightShoulder", "rightUpperArm", "rightLowerArm", "rightHand", "leftUpperLeg", "leftLowerLeg", "leftFoot", "rightUpperLeg", "rightLowerLeg", "rightFoot"];
+export type HumanoidRole = (typeof HUMANOID_ROLES)[number];
+export interface IdolBone {
+    readonly name: string;
+    /** Index into `bones` of the parent joint, or -1 when the parent is not a joint. */
+    readonly parent: number;
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: Vec3;
+}
+export interface IdolSkeleton {
+    readonly bones: readonly IdolBone[];
+    /** World transform of the (non-joint) parent chain above each root joint, keyed by bone index. */
+    readonly rootParents: Readonly<Record<number, {
+        readonly t: Vec3;
+        readonly r: Quat;
+        readonly s: number;
+    }>>;
+}
+export interface HumanoidMap {
+    readonly roles: Partial<Record<HumanoidRole, string>>;
+    /** Idol bones from the first spine bone up to the bone the arms hang from (inclusive). */
+    readonly spineChain: readonly string[];
+    /** Idol bones above the arm branch up to and including the head bone. */
+    readonly neckChain: readonly string[];
+    /** Rest height of the hips joint above the lowest joint, in model units. */
+    readonly hipHeight: number;
+    readonly missing: readonly HumanoidRole[];
+    readonly ok: boolean;
+}
+export interface HumanoidPoseInput {
+    readonly rotations: Partial<Record<HumanoidRole, Quat>>;
+    /** Hips displacement from rest, in units of rest hip height, in the canonical frame (+Y up, +Z forward). */
+    readonly hipsOffset?: Vec3;
+    /**
+     * Optional model-space palm targets (e.g. a held ball's anchor from the procedural rig). The arm is bent and swung
+     * with two-bone IK (bend plane taken from the posed arm) so the drawn palm lands on the target when it is in reach;
+     * Idol arm proportions differ from the procedural rig's, so the same joint angles alone miss by 10-20 cm.
+     */
+    readonly handTargets?: {
+        readonly left?: Vec3;
+        readonly right?: Vec3;
+    };
+}
+/**
+ * One bone's local transform in OBJECT form. The runtime handle clones poses with object spread
+ * (`{ ...transform.rotation }`), which turns a tuple into `{ 0, 1, 2, 3 }` and makes the glTF runtime reject the whole
+ * pose (every body then renders its bind T-pose); `{ x, y, z, w }` survives the clone.
+ */
+export interface HumanoidBonePose {
+    readonly rotation: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+        readonly w: number;
+    };
+    readonly position?: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+    };
+}
+/** Structurally an engine `AnimationPose` (`handle.setAnimationPose(pose)`). */
+export interface HumanoidAnimationPose {
+    readonly bones: Record<string, HumanoidBonePose>;
+    readonly mode: "replace";
+}
+export interface HumanoidDriverOptions {
+    /** Which model-space axis the character faces. Generator output (normalised) faces +Z (default); raw Idol faces +X. */
+    readonly facing?: "+z" | "-z" | "+x" | "-x";
+    /**
+     * Share (0..1) of the T-pose -> hanging-arm turn the clavicle bones take (default 0.3), so lowered arms hang from a
+     * dropped shoulder instead of bunching the deltoid. Arm directions are unaffected (they are solved in world space).
+     */
+    readonly shoulderDrop?: number;
+    /**
+     * Explicit role -> bone-name assignments that override the automatic mapping (`aura3d animation import --map`).
+     * Spine and neck chains are re-derived from the overridden hips/spine/chest/neck/head bones.
+     */
+    readonly roles?: Partial<Record<HumanoidRole, string>>;
+    /** Largest forearm twist about its own axis relative to the upper arm, degrees (default 75; candy-wrapper guard). */
+    readonly maxForearmTwistDeg?: number;
+    /** Largest hand twist about its own axis relative to the forearm, degrees (default 60). */
+    readonly maxWristTwistDeg?: number;
+}
+/** Split `q` into swing * twist about unit `axis` and clamp the twist angle to +-`max` radians. */
+export declare function clampTwist(q: Quat, axis: Vec3, max: number): Quat;
+export interface HumanoidDriver {
+    readonly map: HumanoidMap;
+    readonly skeleton: IdolSkeleton;
+    /** Bone transforms for one frame. Every joint gets a rotation; the hips also get a position. */
+    pose(input: HumanoidPoseInput): HumanoidAnimationPose;
+    /** Model-space joint positions for a pose (debug, tests, foot-plant checks). */
+    modelPositions(input: HumanoidPoseInput): Record<string, Vec3>;
+    /**
+     * Model-space palm centres for a pose: 60% of the way from each wrist (hand bone) to the mean of its child (finger)
+     * joints. Use these, not the procedural rig's palm, to anchor held props (balls) to the hand that is drawn.
+     */
+    palmPoints(input: HumanoidPoseInput): {
+        readonly left: Vec3;
+        readonly right: Vec3;
+    };
+}
+export declare const QUAT_IDENTITY: Quat;
+export declare function quatMul(a: Quat, b: Quat): Quat;
+export declare function quatInv(q: Quat): Quat;
+export declare function quatNorm(q: Quat): Quat;
+export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+export declare function rotateVec(q: Quat, v: Vec3): Vec3;
+/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+export declare function eulerZYX(x: number, y: number, z: number): Quat;
+/** `q` raised to `t` (slerp from identity). */
+export declare function quatPow(q: Quat, t: number): Quat;
+/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
+interface GltfNode {
+    readonly name?: string;
+    readonly children?: readonly number[];
+    readonly translation?: readonly number[];
+    readonly rotation?: readonly number[];
+    readonly scale?: readonly number[];
+    readonly matrix?: readonly number[];
+}
+export interface GltfJsonLike {
+    readonly nodes?: readonly GltfNode[];
+    readonly skins?: readonly {
+        readonly joints: readonly number[];
+    }[];
+}
+/** The JSON chunk of a binary glTF. */
+export declare function parseGlbJson(bytes: ArrayBuffer | Uint8Array): GltfJsonLike;
+/** Joint table of the first skin plus the fixed transform chain above each root joint (e.g. the generator's `auraRoot`). */
+export declare function readIdolSkeleton(gltf: GltfJsonLike): IdolSkeleton;
+/** Map Idol bones to humanoid roles by hierarchy and rest positions. */
+export declare function mapHumanoid(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidMap;
+export declare function createHumanoidDriver(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidDriver;
+/** Canonical-frame world rotations per role -> the per-role LOCAL rotations HumanoidPoseInput takes (missing parents skip up). */
+export declare function globalsToLocals(globals: Partial<Record<HumanoidRole, Quat>>): Partial<Record<HumanoidRole, Quat>>;
+export interface HumanoidSource {
+    readonly map: HumanoidMap;
+    /**
+     * One frame of a source rig (any humanoid skeleton, e.g. a mocap rig) as a canonical pose. `worldRot[i]` is bone i's
+     * model-space world rotation this frame, `hipsPos` the hips world position; both in the source skeleton's model space.
+     */
+    toCanonical(worldRot: readonly Quat[], hipsPos: Vec3): HumanoidPoseInput;
+}
+/**
+ * Inverse of the driver: reads a source rig's motion into the canonical frame (arms-down rest, facing +Z) with the same
+ * role mapping and limb alignment rules, so a clip recorded on one rig plays on every Idol body. The source `skeleton`'s
+ * rest must be its bind pose.
+ */
+export declare function createHumanoidSource(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidSource;
+/** A baked canonical clip: `frames` holds, per frame, one quaternion per `roles` entry followed by the 3 hips-offset values. */
+export interface HumanoidClip {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly roles: readonly HumanoidRole[];
+    readonly frameCount: number;
+    /** Int16 little-endian, base64: quaternion components * 32767, hips offset * 8192. */
+    readonly data: string;
+    /** Free-form timing facts measured at bake time (stance speed, contact time, side, ...). */
+    readonly meta?: Readonly<Record<string, number | string>>;
+}
+/** Pack canonical frames into a HumanoidClip (bake tools). */
+export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
+/** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
+export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
+    readonly loop?: boolean;
+}): HumanoidPoseInput;
+/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
+/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
+/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+export declare const ARM_ROLES: readonly HumanoidRole[];
+/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
+export {};
+//# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/smplMotion.d.ts`
+
+```ts
+/**
+ * fal `fal-ai/hunyuan-motion` (HY-Motion) dict output -> canonical humanoid frames / a HumanoidClip (moved from
+ * apps/showcase-port-shared/idol/smplMotion.ts, which re-exports this module). `aura3d animation import motion.json`
+ * bakes the frames into glTF channels on a rigged GLB (./bake.ts).
+ *
+ * Format (verified Nov 2026 against keypoints3d: FK of these rotations over the rest offsets reproduces every keypoint):
+ *   rot6d [1][F][22][6]  LOCAL joint rotations, SMPL 22-joint body order (SMPL_JOINTS); each 6-vector is a 3x2 matrix
+ *                        flattened row-major, i.e. columns = (v[0],v[2],v[4]) and (v[1],v[3],v[5]), Gram-Schmidt.
+ *                        Joint 0 (pelvis) is the global root orientation (== root_rotations_mat).
+ *   transl [1][F][3]     root translation (metres, Y up); keypoints3d [1][F][52][3] joint positions without transl
+ *                        (pelvis world height = transl.y + keypoints3d.pelvis.y).
+ *   30 fps. Rest pose = T-pose, Y up, character facing +Z, its left = +X: exactly the canonical humanoid frame.
+ * Root motion is stripped (horizontal translation and the clip's mean heading); the vertical hip bob is kept. Loop clips
+ * are made seamless by cross-fading their last `loopBlend` seconds into the start.
+ */
+import { HUMANOID_ROLES, type HumanoidClip, type HumanoidPoseInput, type Vec3 } from "./humanoid.js";
+export declare const SMPL_JOINTS: readonly ["pelvis", "L_hip", "R_hip", "spine1", "L_knee", "R_knee", "spine2", "L_ankle", "R_ankle", "spine3", "L_foot", "R_foot", "neck", "L_collar", "R_collar", "head", "L_shoulder", "R_shoulder", "L_elbow", "R_elbow", "L_wrist", "R_wrist"];
+export declare const SMPL_PARENTS: readonly [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19];
+export interface HyMotionDict {
+    readonly rot6d: readonly (readonly (readonly (readonly number[])[])[])[];
+    readonly transl: readonly (readonly (readonly number[])[])[];
+    readonly keypoints3d: readonly (readonly (readonly (readonly number[])[])[])[];
+}
+export interface SmplClipOptions {
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    /** Remove the clip's mean heading so it faces +Z (default true). Event clips that turn keep their turn. */
+    readonly faceForward?: boolean;
+    /**
+     * Root translation: "in-place" (default) strips horizontal travel and keeps the vertical hip bob; "keep" also keeps
+     * the horizontal travel (relative to the first frame, in the face-forward frame); "strip" removes all of it.
+     */
+    readonly rootMotion?: "in-place" | "keep" | "strip";
+}
+/** Canonical frames (30 fps) of one HY-Motion dict, before packing into a HumanoidClip. */
+export interface SmplFramesResult {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly (typeof HUMANOID_ROLES)[number][];
+    readonly meta: Readonly<Record<string, number | string>>;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+export interface SmplClipResult {
+    readonly clip: HumanoidClip;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+/** Convert one HY-Motion dict to a canonical clip with timing facts in `meta` (ground speed, contacts, apex, ...). */
+export declare function smplMotionToClip(name: string, dict: HyMotionDict, opts?: SmplClipOptions): SmplClipResult;
+/** True when `value` has the HY-Motion dict shape (rot6d [1][F][22][6], transl [1][F][3], keypoints3d [1][F][J][3]). */
+export declare function isHyMotionDict(value: unknown): value is HyMotionDict;
+/** Convert one HY-Motion dict to canonical frames (30 fps) with timing facts in `meta`. */
+export declare function smplMotionToFrames(dict: HyMotionDict, opts?: SmplClipOptions): SmplFramesResult;
+//# sourceMappingURL=smplMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/skeletalMotion.d.ts`
+
+```ts
+/**
+ * Any humanoid skeleton's sampled motion (BVH, FBX, glTF clips) -> canonical humanoid frames, with the same role mapping
+ * and limb-alignment rules the Idol driver uses (./humanoid.ts). Format readers (the CLI's `animation import`) produce a
+ * `SkeletalMotion`: a joint table with rest local TRS plus per-frame local rotations/translations. This module maps it
+ * (names first for facing, geometry for roles), removes the clip's mean heading, grounds the hips, applies the
+ * root-motion mode and loop cross-fade, and returns frames that ./bake.ts writes onto a target rig.
+ *
+ * Extensionless relative imports on purpose: tools that load these sources directly under `node` resolve them to .ts.
+ */
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+export type HumanoidFacing = "+z" | "-z" | "+x" | "-x";
+export type RootMotionMode = "in-place" | "keep" | "strip";
+export interface SkeletalMotionFrame {
+    /** LOCAL rotation per joint (same order as `skeleton.bones`). */
+    readonly r: readonly Quat[];
+    /** LOCAL translation per joint (rest translation where the clip does not animate it). */
+    readonly t: readonly Vec3[];
+}
+export interface SkeletalMotion {
+    readonly skeleton: IdolSkeleton;
+    readonly fps: number;
+    readonly frames: readonly SkeletalMotionFrame[];
+}
+export interface CanonicalMotionOptions {
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Remove the clip's mean heading so it faces +Z (default true). */
+    readonly faceForward?: boolean;
+    readonly rootMotion?: RootMotionMode;
+    /** Model-space axis the source character faces; "auto" (default) detects it from bone names, then toes. */
+    readonly facing?: HumanoidFacing | "auto";
+    /** Role -> bone-name overrides for the source skeleton. */
+    readonly roles?: HumanoidDriverOptions["roles"];
+}
+export interface CanonicalMotion {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly HumanoidRole[];
+    readonly meta: Readonly<Record<string, number | string>>;
+    readonly map: HumanoidMap;
+    readonly facing: HumanoidFacing;
+    readonly facingMethod: FacingDetection["method"];
+}
+export interface FacingDetection {
+    readonly facing: HumanoidFacing;
+    readonly method: "names" | "toes" | "default" | "explicit";
+}
+interface Xf {
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: number;
+}
+/** World transform of every joint for local rotations/translations (rest where omitted). */
+export declare function skeletonWorld(sk: IdolSkeleton, r?: readonly Quat[], t?: readonly Vec3[], order?: number[]): Xf[];
+/** Side of a bone name: "left" for LeftArm / L_hip / thigh.L / lUpLeg-style tokens, "right" likewise, else null. */
+export declare function boneSide(name: string): "left" | "right" | null;
+/**
+ * Which model-space axis a humanoid skeleton faces in its rest pose: from sided bone names (left minus right is the
+ * character's left), else from the feet (foot -> toe points forward), else +Z.
+ */
+export declare function detectHumanoidFacing(sk: IdolSkeleton): FacingDetection;
+/** Per-frame cross-fade of a loop's last `blend` seconds into its start (same rule as the HY-Motion converter). */
+export declare function crossfadeLoop(frames: readonly HumanoidPoseInput[], fps: number, blend?: number): HumanoidPoseInput[];
+/** Resample canonical frames to another rate (per-role slerp, hips lerp). Duration is preserved to the last frame. */
+export declare function resampleCanonicalFrames(frames: readonly HumanoidPoseInput[], fromFps: number, toFps: number): HumanoidPoseInput[];
+/** A sampled skeletal clip as canonical humanoid frames (see the module comment). */
+export declare function skeletalMotionToFrames(motion: SkeletalMotion, opts?: CanonicalMotionOptions): CanonicalMotion;
+export {};
+//# sourceMappingURL=skeletalMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/bake.d.ts`
+
+```ts
+/**
+ * Canonical humanoid frames -> glTF animation channel data on a target skeleton (any rigged humanoid GLB, including
+ * Idol's unnamed `bone_N` rigs). Each frame goes through the same driver the games use at runtime
+ * (`createHumanoidDriver(...).pose(frame)`), so a baked clip plays exactly like the live pose did. The bake reports:
+ *
+ *   - `flips`: rotation keys swinging more than `flipThresholdDeg` in one frame (the engine's `LimbFlip` shape; the
+ *     swing is the shortest-arc angle 2·acos(|q0·q1|) between consecutive keys);
+ *   - `limbError`: angle between each limb segment the target draws and the source's canonical limb direction
+ *     (upper/lower arms and legs; ~0 for a correct retarget, float noise only);
+ *   - `motionDeg`: the largest angle any limb moves away from the target's bind pose (0 = a silent T-pose).
+ *
+ * Callers fail on flips, on a limb error above their bound and on `motionDeg` near zero instead of writing a clip that
+ * renders a broken or frozen body.
+ */
+import type { LimbFlip } from "../pose/Retarget.js";
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+/** Limb segments checked for retarget error: role -> the role at the segment's far end. */
+export declare const LIMB_SEGMENTS: readonly (readonly [HumanoidRole, HumanoidRole])[];
+/** Facing rotation (model space) for a driver `facing` option. */
+export declare function facingQuat(facing: HumanoidDriverOptions["facing"]): Quat;
+/** Canonical-frame direction of every limb segment in a frame (accumulated role rotations applied to straight down). */
+export declare function canonicalLimbDirections(frame: HumanoidPoseInput): Partial<Record<HumanoidRole, Vec3>>;
+export declare function angleDeg(a: Vec3, b: Vec3): number;
+export interface GltfChannelData {
+    /** Target joint name and index in `skeleton.bones`. */
+    readonly bone: string;
+    readonly boneIndex: number;
+    readonly path: "rotation" | "translation";
+    /** Flat values, 4 (rotation) or 3 (translation) per key, one key per entry of `times`. */
+    readonly values: Float32Array;
+}
+export interface BakeHumanoidGltfOptions extends HumanoidDriverOptions {
+    /** Single-key swing that counts as a limb flip (default 120 degrees, the engine detector's default). */
+    readonly flipThresholdDeg?: number;
+}
+export interface HumanoidGltfBake {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly times: Float32Array;
+    readonly channels: readonly GltfChannelData[];
+    readonly flips: readonly LimbFlip[];
+    readonly limbError: {
+        readonly maxDeg: number;
+        readonly meanDeg: number;
+    };
+    readonly motionDeg: number;
+    readonly map: HumanoidMap;
+    /** Expected model-space limb directions per frame (for verifying a written file): role -> unit vector. */
+    readonly expected: readonly Partial<Record<HumanoidRole, Vec3>>[];
+}
+/** Bake canonical frames (at `fps`) into per-joint glTF rotation channels plus the hips translation channel. */
+export declare function bakeHumanoidFramesToGltf(name: string, target: IdolSkeleton, frames: readonly HumanoidPoseInput[], fps: number, opts?: BakeHumanoidGltfOptions): HumanoidGltfBake;
+/**
+ * Rotation keys whose single-key swing exceeds `thresholdDeg`. The swing between unit quaternions a, b is
+ * 2·acos(|a·b|), so the test is |a·b| < cos(threshold / 2).
+ */
+export declare function detectKeyFlips(channels: readonly GltfChannelData[], thresholdDeg?: number): LimbFlip[];
+//# sourceMappingURL=bake.d.ts.map
 ```
 
 ### `./dist/animation/threejs-compatibility/AnimationClip.d.ts`
@@ -293039,6 +295338,8 @@ export type AuthoredMaterialSnapshot = ReadonlyMap<string, Readonly<Record<strin
 export declare function snapshotMaterials(materials: Iterable<Material>): AuthoredMaterialSnapshot;
 export declare function applyMaterialOverrides(snapshot: AuthoredMaterialSnapshot, materials: Iterable<Material>, overrides: readonly TypedGLBActorMaterialOverride[]): void;
 export declare function lowerModelMaterialOverrides(spec: AuraMaterialSpec | undefined, overrides: readonly AuraModelMaterialOverride[] | undefined): TypedGLBActorMaterialOverride[];
+/** True when a model material spec or override asks for a see-through surface (`opacity` below 1). */
+export declare function modelOpacityIsTranslucent(opacity: unknown): boolean;
 //# sourceMappingURL=ModelMaterialOverrides.d.ts.map
 ```
 
@@ -314045,8 +316346,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -317221,8 +319522,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -345875,6 +348176,7 @@ export interface AtmosphereFrameSource {
     /** P3-T6 — live state + sky-change listener for SkyCaptureAdapter wiring. */
     state?(): {
         readonly sky: unknown | null;
+        readonly captureEnvironment?: boolean;
     };
     onSkyChanged?(listener: () => void): (() => void) | void;
 }
@@ -358327,6 +360629,7 @@ export * from "./HumanoidBoneInference.js";
 export * from "./RigQuality.js";
 export * from "./library/standardHumanoidClips.js";
 export * from "./library/performanceStateGraph.js";
+export * from "./smpl/index.js";
 export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
 export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
 export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";
@@ -361009,6 +363312,452 @@ export declare function createPerformanceStateGraph(options?: PerformanceStateGr
 /** The full set of state names the performance graph exposes (equals the standard clip vocabulary). */
 export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 //# sourceMappingURL=performanceStateGraph.d.ts.map
+```
+
+### `./dist/animation/smpl/index.d.ts`
+
+```ts
+/**
+ * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
+ * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
+ * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ */
+export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
+export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
+export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/animation/smpl/humanoid.d.ts`
+
+```ts
+/**
+ * Humanoid role mapping, driver and canonical clips (moved from apps/showcase-port-shared/idol/humanoid.ts, which now
+ * re-exports this module; the games import it unchanged). Used by `aura3d animation import` to retarget clips onto any
+ * rigged humanoid GLB, including Idol's unnamed `bone_N` rigs.
+ *
+ * Idol humanoid driver — drive a rigged Idol GLB (unnamed bones `bone_0..N`) from a game's own code-built joint pose.
+ *
+ * Idol (`speridlabs/idol/max`, `rig: true`) ships a 28–34 bone skeleton in a T-pose with no bone names. Games here already
+ * animate their athletes in code: every frame they compute per-joint local rotations for a procedural rig whose rest pose
+ * is "standing, arms hanging straight down, legs straight down, facing +Z, +Y up, character's left = +X". This module maps
+ * the Idol bones to humanoid roles by hierarchy and rest positions, then turns that same per-joint pose into an
+ * `AnimationPose` for `handle.setAnimationPose(...)` on the `model(assets.<key>)` node — so gameplay animation is
+ * unchanged and only the body that renders it is new.
+ *
+ * API (dependency-free; runs in the browser, in vitest and under plain `node`):
+ *   parseGlbJson(bytes)                -> glTF JSON chunk of a .glb
+ *   readIdolSkeleton(gltf)             -> IdolSkeleton (joint names, parents, rest local TRS, fixed parent-chain transform)
+ *   mapHumanoid(skeleton, opts?)       -> HumanoidMap (role -> bone name, spine/neck chains, diagnostics)
+ *   createHumanoidDriver(skeleton, o?) -> { map, pose(input) } ; pose() returns `{ bones, mode: "replace" }` with
+ *                                         object-form `{x,y,z,w}` / `{x,y,z}` transforms (tuples do not survive the
+ *                                         runtime handle's pose clone; see HumanoidBonePose)
+ *   driver.modelPositions / palmPoints -> model-space joint and palm-centre positions for a pose (prop anchoring)
+ *   loadIdolHumanoid(url, o?)          -> Promise<HumanoidDriver>, cached per URL (fetch + the three calls above)
+ *   eulerZYX(x, y, z)                  -> quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx)
+ *
+ * Input pose (`HumanoidPoseInput`): `rotations[role]` = LOCAL rotation of that joint relative to its parent joint, in the
+ * canonical rest frame above; source hierarchy is hips → spine → chest → neck → head, chest → {l,r}Shoulder → UpperArm →
+ * LowerArm → Hand, hips → {l,r}UpperLeg → LowerLeg → Foot. Omitted roles are identity (a rig with only a "chest" joint
+ * just omits spine). `hipsOffset` is the hips displacement from rest in units of rest hip height (FC: offset / 0.96).
+ *
+ * Retargeting rule per mapped bone: world = G_src · A · R_rest, where G_src is the source joint's accumulated rotation,
+ * R_rest the Idol bone's rest world rotation and A the shortest-arc turn that points the Idol limb straight down (arms
+ * and legs only — the T-pose arms become hanging arms; torso, neck, head and feet keep Idol's natural rest posture).
+ * The source torso rotation (spine·chest) is spread evenly over Idol's spine chain, neck·head over its neck chain.
+ * Clavicles take `shoulderDrop` (default 0.3) of their arm's A so the lowered shoulders do not bunch up.
+ * Unmapped bones (clavicles without a source, fingers, toes, head ends) follow their parent at their rest local rotation.
+ */
+export type Vec3 = readonly [number, number, number];
+/** Quaternion `[x, y, z, w]` (glTF / engine order). */
+export type Quat = readonly [number, number, number, number];
+export declare const HUMANOID_ROLES: readonly ["hips", "spine", "chest", "neck", "head", "leftShoulder", "leftUpperArm", "leftLowerArm", "leftHand", "rightShoulder", "rightUpperArm", "rightLowerArm", "rightHand", "leftUpperLeg", "leftLowerLeg", "leftFoot", "rightUpperLeg", "rightLowerLeg", "rightFoot"];
+export type HumanoidRole = (typeof HUMANOID_ROLES)[number];
+export interface IdolBone {
+    readonly name: string;
+    /** Index into `bones` of the parent joint, or -1 when the parent is not a joint. */
+    readonly parent: number;
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: Vec3;
+}
+export interface IdolSkeleton {
+    readonly bones: readonly IdolBone[];
+    /** World transform of the (non-joint) parent chain above each root joint, keyed by bone index. */
+    readonly rootParents: Readonly<Record<number, {
+        readonly t: Vec3;
+        readonly r: Quat;
+        readonly s: number;
+    }>>;
+}
+export interface HumanoidMap {
+    readonly roles: Partial<Record<HumanoidRole, string>>;
+    /** Idol bones from the first spine bone up to the bone the arms hang from (inclusive). */
+    readonly spineChain: readonly string[];
+    /** Idol bones above the arm branch up to and including the head bone. */
+    readonly neckChain: readonly string[];
+    /** Rest height of the hips joint above the lowest joint, in model units. */
+    readonly hipHeight: number;
+    readonly missing: readonly HumanoidRole[];
+    readonly ok: boolean;
+}
+export interface HumanoidPoseInput {
+    readonly rotations: Partial<Record<HumanoidRole, Quat>>;
+    /** Hips displacement from rest, in units of rest hip height, in the canonical frame (+Y up, +Z forward). */
+    readonly hipsOffset?: Vec3;
+    /**
+     * Optional model-space palm targets (e.g. a held ball's anchor from the procedural rig). The arm is bent and swung
+     * with two-bone IK (bend plane taken from the posed arm) so the drawn palm lands on the target when it is in reach;
+     * Idol arm proportions differ from the procedural rig's, so the same joint angles alone miss by 10-20 cm.
+     */
+    readonly handTargets?: {
+        readonly left?: Vec3;
+        readonly right?: Vec3;
+    };
+}
+/**
+ * One bone's local transform in OBJECT form. The runtime handle clones poses with object spread
+ * (`{ ...transform.rotation }`), which turns a tuple into `{ 0, 1, 2, 3 }` and makes the glTF runtime reject the whole
+ * pose (every body then renders its bind T-pose); `{ x, y, z, w }` survives the clone.
+ */
+export interface HumanoidBonePose {
+    readonly rotation: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+        readonly w: number;
+    };
+    readonly position?: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+    };
+}
+/** Structurally an engine `AnimationPose` (`handle.setAnimationPose(pose)`). */
+export interface HumanoidAnimationPose {
+    readonly bones: Record<string, HumanoidBonePose>;
+    readonly mode: "replace";
+}
+export interface HumanoidDriverOptions {
+    /** Which model-space axis the character faces. Generator output (normalised) faces +Z (default); raw Idol faces +X. */
+    readonly facing?: "+z" | "-z" | "+x" | "-x";
+    /**
+     * Share (0..1) of the T-pose -> hanging-arm turn the clavicle bones take (default 0.3), so lowered arms hang from a
+     * dropped shoulder instead of bunching the deltoid. Arm directions are unaffected (they are solved in world space).
+     */
+    readonly shoulderDrop?: number;
+    /**
+     * Explicit role -> bone-name assignments that override the automatic mapping (`aura3d animation import --map`).
+     * Spine and neck chains are re-derived from the overridden hips/spine/chest/neck/head bones.
+     */
+    readonly roles?: Partial<Record<HumanoidRole, string>>;
+    /** Largest forearm twist about its own axis relative to the upper arm, degrees (default 75; candy-wrapper guard). */
+    readonly maxForearmTwistDeg?: number;
+    /** Largest hand twist about its own axis relative to the forearm, degrees (default 60). */
+    readonly maxWristTwistDeg?: number;
+}
+/** Split `q` into swing * twist about unit `axis` and clamp the twist angle to +-`max` radians. */
+export declare function clampTwist(q: Quat, axis: Vec3, max: number): Quat;
+export interface HumanoidDriver {
+    readonly map: HumanoidMap;
+    readonly skeleton: IdolSkeleton;
+    /** Bone transforms for one frame. Every joint gets a rotation; the hips also get a position. */
+    pose(input: HumanoidPoseInput): HumanoidAnimationPose;
+    /** Model-space joint positions for a pose (debug, tests, foot-plant checks). */
+    modelPositions(input: HumanoidPoseInput): Record<string, Vec3>;
+    /**
+     * Model-space palm centres for a pose: 60% of the way from each wrist (hand bone) to the mean of its child (finger)
+     * joints. Use these, not the procedural rig's palm, to anchor held props (balls) to the hand that is drawn.
+     */
+    palmPoints(input: HumanoidPoseInput): {
+        readonly left: Vec3;
+        readonly right: Vec3;
+    };
+}
+export declare const QUAT_IDENTITY: Quat;
+export declare function quatMul(a: Quat, b: Quat): Quat;
+export declare function quatInv(q: Quat): Quat;
+export declare function quatNorm(q: Quat): Quat;
+export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+export declare function rotateVec(q: Quat, v: Vec3): Vec3;
+/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+export declare function eulerZYX(x: number, y: number, z: number): Quat;
+/** `q` raised to `t` (slerp from identity). */
+export declare function quatPow(q: Quat, t: number): Quat;
+/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
+interface GltfNode {
+    readonly name?: string;
+    readonly children?: readonly number[];
+    readonly translation?: readonly number[];
+    readonly rotation?: readonly number[];
+    readonly scale?: readonly number[];
+    readonly matrix?: readonly number[];
+}
+export interface GltfJsonLike {
+    readonly nodes?: readonly GltfNode[];
+    readonly skins?: readonly {
+        readonly joints: readonly number[];
+    }[];
+}
+/** The JSON chunk of a binary glTF. */
+export declare function parseGlbJson(bytes: ArrayBuffer | Uint8Array): GltfJsonLike;
+/** Joint table of the first skin plus the fixed transform chain above each root joint (e.g. the generator's `auraRoot`). */
+export declare function readIdolSkeleton(gltf: GltfJsonLike): IdolSkeleton;
+/** Map Idol bones to humanoid roles by hierarchy and rest positions. */
+export declare function mapHumanoid(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidMap;
+export declare function createHumanoidDriver(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidDriver;
+/** Canonical-frame world rotations per role -> the per-role LOCAL rotations HumanoidPoseInput takes (missing parents skip up). */
+export declare function globalsToLocals(globals: Partial<Record<HumanoidRole, Quat>>): Partial<Record<HumanoidRole, Quat>>;
+export interface HumanoidSource {
+    readonly map: HumanoidMap;
+    /**
+     * One frame of a source rig (any humanoid skeleton, e.g. a mocap rig) as a canonical pose. `worldRot[i]` is bone i's
+     * model-space world rotation this frame, `hipsPos` the hips world position; both in the source skeleton's model space.
+     */
+    toCanonical(worldRot: readonly Quat[], hipsPos: Vec3): HumanoidPoseInput;
+}
+/**
+ * Inverse of the driver: reads a source rig's motion into the canonical frame (arms-down rest, facing +Z) with the same
+ * role mapping and limb alignment rules, so a clip recorded on one rig plays on every Idol body. The source `skeleton`'s
+ * rest must be its bind pose.
+ */
+export declare function createHumanoidSource(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidSource;
+/** A baked canonical clip: `frames` holds, per frame, one quaternion per `roles` entry followed by the 3 hips-offset values. */
+export interface HumanoidClip {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly roles: readonly HumanoidRole[];
+    readonly frameCount: number;
+    /** Int16 little-endian, base64: quaternion components * 32767, hips offset * 8192. */
+    readonly data: string;
+    /** Free-form timing facts measured at bake time (stance speed, contact time, side, ...). */
+    readonly meta?: Readonly<Record<string, number | string>>;
+}
+/** Pack canonical frames into a HumanoidClip (bake tools). */
+export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
+/** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
+export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
+    readonly loop?: boolean;
+}): HumanoidPoseInput;
+/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
+/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
+/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+export declare const ARM_ROLES: readonly HumanoidRole[];
+/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
+export {};
+//# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/smplMotion.d.ts`
+
+```ts
+/**
+ * fal `fal-ai/hunyuan-motion` (HY-Motion) dict output -> canonical humanoid frames / a HumanoidClip (moved from
+ * apps/showcase-port-shared/idol/smplMotion.ts, which re-exports this module). `aura3d animation import motion.json`
+ * bakes the frames into glTF channels on a rigged GLB (./bake.ts).
+ *
+ * Format (verified Nov 2026 against keypoints3d: FK of these rotations over the rest offsets reproduces every keypoint):
+ *   rot6d [1][F][22][6]  LOCAL joint rotations, SMPL 22-joint body order (SMPL_JOINTS); each 6-vector is a 3x2 matrix
+ *                        flattened row-major, i.e. columns = (v[0],v[2],v[4]) and (v[1],v[3],v[5]), Gram-Schmidt.
+ *                        Joint 0 (pelvis) is the global root orientation (== root_rotations_mat).
+ *   transl [1][F][3]     root translation (metres, Y up); keypoints3d [1][F][52][3] joint positions without transl
+ *                        (pelvis world height = transl.y + keypoints3d.pelvis.y).
+ *   30 fps. Rest pose = T-pose, Y up, character facing +Z, its left = +X: exactly the canonical humanoid frame.
+ * Root motion is stripped (horizontal translation and the clip's mean heading); the vertical hip bob is kept. Loop clips
+ * are made seamless by cross-fading their last `loopBlend` seconds into the start.
+ */
+import { HUMANOID_ROLES, type HumanoidClip, type HumanoidPoseInput, type Vec3 } from "./humanoid.js";
+export declare const SMPL_JOINTS: readonly ["pelvis", "L_hip", "R_hip", "spine1", "L_knee", "R_knee", "spine2", "L_ankle", "R_ankle", "spine3", "L_foot", "R_foot", "neck", "L_collar", "R_collar", "head", "L_shoulder", "R_shoulder", "L_elbow", "R_elbow", "L_wrist", "R_wrist"];
+export declare const SMPL_PARENTS: readonly [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19];
+export interface HyMotionDict {
+    readonly rot6d: readonly (readonly (readonly (readonly number[])[])[])[];
+    readonly transl: readonly (readonly (readonly number[])[])[];
+    readonly keypoints3d: readonly (readonly (readonly (readonly number[])[])[])[];
+}
+export interface SmplClipOptions {
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    /** Remove the clip's mean heading so it faces +Z (default true). Event clips that turn keep their turn. */
+    readonly faceForward?: boolean;
+    /**
+     * Root translation: "in-place" (default) strips horizontal travel and keeps the vertical hip bob; "keep" also keeps
+     * the horizontal travel (relative to the first frame, in the face-forward frame); "strip" removes all of it.
+     */
+    readonly rootMotion?: "in-place" | "keep" | "strip";
+}
+/** Canonical frames (30 fps) of one HY-Motion dict, before packing into a HumanoidClip. */
+export interface SmplFramesResult {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly (typeof HUMANOID_ROLES)[number][];
+    readonly meta: Readonly<Record<string, number | string>>;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+export interface SmplClipResult {
+    readonly clip: HumanoidClip;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+/** Convert one HY-Motion dict to a canonical clip with timing facts in `meta` (ground speed, contacts, apex, ...). */
+export declare function smplMotionToClip(name: string, dict: HyMotionDict, opts?: SmplClipOptions): SmplClipResult;
+/** True when `value` has the HY-Motion dict shape (rot6d [1][F][22][6], transl [1][F][3], keypoints3d [1][F][J][3]). */
+export declare function isHyMotionDict(value: unknown): value is HyMotionDict;
+/** Convert one HY-Motion dict to canonical frames (30 fps) with timing facts in `meta`. */
+export declare function smplMotionToFrames(dict: HyMotionDict, opts?: SmplClipOptions): SmplFramesResult;
+//# sourceMappingURL=smplMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/skeletalMotion.d.ts`
+
+```ts
+/**
+ * Any humanoid skeleton's sampled motion (BVH, FBX, glTF clips) -> canonical humanoid frames, with the same role mapping
+ * and limb-alignment rules the Idol driver uses (./humanoid.ts). Format readers (the CLI's `animation import`) produce a
+ * `SkeletalMotion`: a joint table with rest local TRS plus per-frame local rotations/translations. This module maps it
+ * (names first for facing, geometry for roles), removes the clip's mean heading, grounds the hips, applies the
+ * root-motion mode and loop cross-fade, and returns frames that ./bake.ts writes onto a target rig.
+ *
+ * Extensionless relative imports on purpose: tools that load these sources directly under `node` resolve them to .ts.
+ */
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+export type HumanoidFacing = "+z" | "-z" | "+x" | "-x";
+export type RootMotionMode = "in-place" | "keep" | "strip";
+export interface SkeletalMotionFrame {
+    /** LOCAL rotation per joint (same order as `skeleton.bones`). */
+    readonly r: readonly Quat[];
+    /** LOCAL translation per joint (rest translation where the clip does not animate it). */
+    readonly t: readonly Vec3[];
+}
+export interface SkeletalMotion {
+    readonly skeleton: IdolSkeleton;
+    readonly fps: number;
+    readonly frames: readonly SkeletalMotionFrame[];
+}
+export interface CanonicalMotionOptions {
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Remove the clip's mean heading so it faces +Z (default true). */
+    readonly faceForward?: boolean;
+    readonly rootMotion?: RootMotionMode;
+    /** Model-space axis the source character faces; "auto" (default) detects it from bone names, then toes. */
+    readonly facing?: HumanoidFacing | "auto";
+    /** Role -> bone-name overrides for the source skeleton. */
+    readonly roles?: HumanoidDriverOptions["roles"];
+}
+export interface CanonicalMotion {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly HumanoidRole[];
+    readonly meta: Readonly<Record<string, number | string>>;
+    readonly map: HumanoidMap;
+    readonly facing: HumanoidFacing;
+    readonly facingMethod: FacingDetection["method"];
+}
+export interface FacingDetection {
+    readonly facing: HumanoidFacing;
+    readonly method: "names" | "toes" | "default" | "explicit";
+}
+interface Xf {
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: number;
+}
+/** World transform of every joint for local rotations/translations (rest where omitted). */
+export declare function skeletonWorld(sk: IdolSkeleton, r?: readonly Quat[], t?: readonly Vec3[], order?: number[]): Xf[];
+/** Side of a bone name: "left" for LeftArm / L_hip / thigh.L / lUpLeg-style tokens, "right" likewise, else null. */
+export declare function boneSide(name: string): "left" | "right" | null;
+/**
+ * Which model-space axis a humanoid skeleton faces in its rest pose: from sided bone names (left minus right is the
+ * character's left), else from the feet (foot -> toe points forward), else +Z.
+ */
+export declare function detectHumanoidFacing(sk: IdolSkeleton): FacingDetection;
+/** Per-frame cross-fade of a loop's last `blend` seconds into its start (same rule as the HY-Motion converter). */
+export declare function crossfadeLoop(frames: readonly HumanoidPoseInput[], fps: number, blend?: number): HumanoidPoseInput[];
+/** Resample canonical frames to another rate (per-role slerp, hips lerp). Duration is preserved to the last frame. */
+export declare function resampleCanonicalFrames(frames: readonly HumanoidPoseInput[], fromFps: number, toFps: number): HumanoidPoseInput[];
+/** A sampled skeletal clip as canonical humanoid frames (see the module comment). */
+export declare function skeletalMotionToFrames(motion: SkeletalMotion, opts?: CanonicalMotionOptions): CanonicalMotion;
+export {};
+//# sourceMappingURL=skeletalMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/bake.d.ts`
+
+```ts
+/**
+ * Canonical humanoid frames -> glTF animation channel data on a target skeleton (any rigged humanoid GLB, including
+ * Idol's unnamed `bone_N` rigs). Each frame goes through the same driver the games use at runtime
+ * (`createHumanoidDriver(...).pose(frame)`), so a baked clip plays exactly like the live pose did. The bake reports:
+ *
+ *   - `flips`: rotation keys swinging more than `flipThresholdDeg` in one frame (the engine's `LimbFlip` shape; the
+ *     swing is the shortest-arc angle 2·acos(|q0·q1|) between consecutive keys);
+ *   - `limbError`: angle between each limb segment the target draws and the source's canonical limb direction
+ *     (upper/lower arms and legs; ~0 for a correct retarget, float noise only);
+ *   - `motionDeg`: the largest angle any limb moves away from the target's bind pose (0 = a silent T-pose).
+ *
+ * Callers fail on flips, on a limb error above their bound and on `motionDeg` near zero instead of writing a clip that
+ * renders a broken or frozen body.
+ */
+import type { LimbFlip } from "../pose/Retarget.js";
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+/** Limb segments checked for retarget error: role -> the role at the segment's far end. */
+export declare const LIMB_SEGMENTS: readonly (readonly [HumanoidRole, HumanoidRole])[];
+/** Facing rotation (model space) for a driver `facing` option. */
+export declare function facingQuat(facing: HumanoidDriverOptions["facing"]): Quat;
+/** Canonical-frame direction of every limb segment in a frame (accumulated role rotations applied to straight down). */
+export declare function canonicalLimbDirections(frame: HumanoidPoseInput): Partial<Record<HumanoidRole, Vec3>>;
+export declare function angleDeg(a: Vec3, b: Vec3): number;
+export interface GltfChannelData {
+    /** Target joint name and index in `skeleton.bones`. */
+    readonly bone: string;
+    readonly boneIndex: number;
+    readonly path: "rotation" | "translation";
+    /** Flat values, 4 (rotation) or 3 (translation) per key, one key per entry of `times`. */
+    readonly values: Float32Array;
+}
+export interface BakeHumanoidGltfOptions extends HumanoidDriverOptions {
+    /** Single-key swing that counts as a limb flip (default 120 degrees, the engine detector's default). */
+    readonly flipThresholdDeg?: number;
+}
+export interface HumanoidGltfBake {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly times: Float32Array;
+    readonly channels: readonly GltfChannelData[];
+    readonly flips: readonly LimbFlip[];
+    readonly limbError: {
+        readonly maxDeg: number;
+        readonly meanDeg: number;
+    };
+    readonly motionDeg: number;
+    readonly map: HumanoidMap;
+    /** Expected model-space limb directions per frame (for verifying a written file): role -> unit vector. */
+    readonly expected: readonly Partial<Record<HumanoidRole, Vec3>>[];
+}
+/** Bake canonical frames (at `fps`) into per-joint glTF rotation channels plus the hips translation channel. */
+export declare function bakeHumanoidFramesToGltf(name: string, target: IdolSkeleton, frames: readonly HumanoidPoseInput[], fps: number, opts?: BakeHumanoidGltfOptions): HumanoidGltfBake;
+/**
+ * Rotation keys whose single-key swing exceeds `thresholdDeg`. The swing between unit quaternions a, b is
+ * 2·acos(|a·b|), so the test is |a·b| < cos(threshold / 2).
+ */
+export declare function detectKeyFlips(channels: readonly GltfChannelData[], thresholdDeg?: number): LimbFlip[];
+//# sourceMappingURL=bake.d.ts.map
 ```
 
 ### `./dist/animation/threejs-compatibility/AnimationClip.d.ts`
@@ -385351,6 +388100,8 @@ export type AuthoredMaterialSnapshot = ReadonlyMap<string, Readonly<Record<strin
 export declare function snapshotMaterials(materials: Iterable<Material>): AuthoredMaterialSnapshot;
 export declare function applyMaterialOverrides(snapshot: AuthoredMaterialSnapshot, materials: Iterable<Material>, overrides: readonly TypedGLBActorMaterialOverride[]): void;
 export declare function lowerModelMaterialOverrides(spec: AuraMaterialSpec | undefined, overrides: readonly AuraModelMaterialOverride[] | undefined): TypedGLBActorMaterialOverride[];
+/** True when a model material spec or override asks for a see-through surface (`opacity` below 1). */
+export declare function modelOpacityIsTranslucent(opacity: unknown): boolean;
 //# sourceMappingURL=ModelMaterialOverrides.d.ts.map
 ```
 
@@ -403203,8 +405954,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -403214,8 +405965,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -403240,8 +405991,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -403967,8 +406718,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -405208,8 +407959,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -405847,8 +408598,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -407837,8 +410588,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -408462,8 +411213,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -411134,8 +413885,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -412386,8 +415137,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -412649,8 +415400,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/engine/procedural
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -412946,8 +415697,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -440976,6 +443727,7 @@ export interface AtmosphereFrameSource {
     /** P3-T6 — live state + sky-change listener for SkyCaptureAdapter wiring. */
     state?(): {
         readonly sky: unknown | null;
+        readonly captureEnvironment?: boolean;
     };
     onSkyChanged?(listener: () => void): (() => void) | void;
 }
@@ -447915,6 +450667,7 @@ export * from "./HumanoidBoneInference.js";
 export * from "./RigQuality.js";
 export * from "./library/standardHumanoidClips.js";
 export * from "./library/performanceStateGraph.js";
+export * from "./smpl/index.js";
 export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
 export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
 export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";
@@ -450597,6 +453350,452 @@ export declare function createPerformanceStateGraph(options?: PerformanceStateGr
 /** The full set of state names the performance graph exposes (equals the standard clip vocabulary). */
 export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 //# sourceMappingURL=performanceStateGraph.d.ts.map
+```
+
+### `./dist/animation/smpl/index.d.ts`
+
+```ts
+/**
+ * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
+ * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
+ * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ */
+export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
+export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
+export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/animation/smpl/humanoid.d.ts`
+
+```ts
+/**
+ * Humanoid role mapping, driver and canonical clips (moved from apps/showcase-port-shared/idol/humanoid.ts, which now
+ * re-exports this module; the games import it unchanged). Used by `aura3d animation import` to retarget clips onto any
+ * rigged humanoid GLB, including Idol's unnamed `bone_N` rigs.
+ *
+ * Idol humanoid driver — drive a rigged Idol GLB (unnamed bones `bone_0..N`) from a game's own code-built joint pose.
+ *
+ * Idol (`speridlabs/idol/max`, `rig: true`) ships a 28–34 bone skeleton in a T-pose with no bone names. Games here already
+ * animate their athletes in code: every frame they compute per-joint local rotations for a procedural rig whose rest pose
+ * is "standing, arms hanging straight down, legs straight down, facing +Z, +Y up, character's left = +X". This module maps
+ * the Idol bones to humanoid roles by hierarchy and rest positions, then turns that same per-joint pose into an
+ * `AnimationPose` for `handle.setAnimationPose(...)` on the `model(assets.<key>)` node — so gameplay animation is
+ * unchanged and only the body that renders it is new.
+ *
+ * API (dependency-free; runs in the browser, in vitest and under plain `node`):
+ *   parseGlbJson(bytes)                -> glTF JSON chunk of a .glb
+ *   readIdolSkeleton(gltf)             -> IdolSkeleton (joint names, parents, rest local TRS, fixed parent-chain transform)
+ *   mapHumanoid(skeleton, opts?)       -> HumanoidMap (role -> bone name, spine/neck chains, diagnostics)
+ *   createHumanoidDriver(skeleton, o?) -> { map, pose(input) } ; pose() returns `{ bones, mode: "replace" }` with
+ *                                         object-form `{x,y,z,w}` / `{x,y,z}` transforms (tuples do not survive the
+ *                                         runtime handle's pose clone; see HumanoidBonePose)
+ *   driver.modelPositions / palmPoints -> model-space joint and palm-centre positions for a pose (prop anchoring)
+ *   loadIdolHumanoid(url, o?)          -> Promise<HumanoidDriver>, cached per URL (fetch + the three calls above)
+ *   eulerZYX(x, y, z)                  -> quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx)
+ *
+ * Input pose (`HumanoidPoseInput`): `rotations[role]` = LOCAL rotation of that joint relative to its parent joint, in the
+ * canonical rest frame above; source hierarchy is hips → spine → chest → neck → head, chest → {l,r}Shoulder → UpperArm →
+ * LowerArm → Hand, hips → {l,r}UpperLeg → LowerLeg → Foot. Omitted roles are identity (a rig with only a "chest" joint
+ * just omits spine). `hipsOffset` is the hips displacement from rest in units of rest hip height (FC: offset / 0.96).
+ *
+ * Retargeting rule per mapped bone: world = G_src · A · R_rest, where G_src is the source joint's accumulated rotation,
+ * R_rest the Idol bone's rest world rotation and A the shortest-arc turn that points the Idol limb straight down (arms
+ * and legs only — the T-pose arms become hanging arms; torso, neck, head and feet keep Idol's natural rest posture).
+ * The source torso rotation (spine·chest) is spread evenly over Idol's spine chain, neck·head over its neck chain.
+ * Clavicles take `shoulderDrop` (default 0.3) of their arm's A so the lowered shoulders do not bunch up.
+ * Unmapped bones (clavicles without a source, fingers, toes, head ends) follow their parent at their rest local rotation.
+ */
+export type Vec3 = readonly [number, number, number];
+/** Quaternion `[x, y, z, w]` (glTF / engine order). */
+export type Quat = readonly [number, number, number, number];
+export declare const HUMANOID_ROLES: readonly ["hips", "spine", "chest", "neck", "head", "leftShoulder", "leftUpperArm", "leftLowerArm", "leftHand", "rightShoulder", "rightUpperArm", "rightLowerArm", "rightHand", "leftUpperLeg", "leftLowerLeg", "leftFoot", "rightUpperLeg", "rightLowerLeg", "rightFoot"];
+export type HumanoidRole = (typeof HUMANOID_ROLES)[number];
+export interface IdolBone {
+    readonly name: string;
+    /** Index into `bones` of the parent joint, or -1 when the parent is not a joint. */
+    readonly parent: number;
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: Vec3;
+}
+export interface IdolSkeleton {
+    readonly bones: readonly IdolBone[];
+    /** World transform of the (non-joint) parent chain above each root joint, keyed by bone index. */
+    readonly rootParents: Readonly<Record<number, {
+        readonly t: Vec3;
+        readonly r: Quat;
+        readonly s: number;
+    }>>;
+}
+export interface HumanoidMap {
+    readonly roles: Partial<Record<HumanoidRole, string>>;
+    /** Idol bones from the first spine bone up to the bone the arms hang from (inclusive). */
+    readonly spineChain: readonly string[];
+    /** Idol bones above the arm branch up to and including the head bone. */
+    readonly neckChain: readonly string[];
+    /** Rest height of the hips joint above the lowest joint, in model units. */
+    readonly hipHeight: number;
+    readonly missing: readonly HumanoidRole[];
+    readonly ok: boolean;
+}
+export interface HumanoidPoseInput {
+    readonly rotations: Partial<Record<HumanoidRole, Quat>>;
+    /** Hips displacement from rest, in units of rest hip height, in the canonical frame (+Y up, +Z forward). */
+    readonly hipsOffset?: Vec3;
+    /**
+     * Optional model-space palm targets (e.g. a held ball's anchor from the procedural rig). The arm is bent and swung
+     * with two-bone IK (bend plane taken from the posed arm) so the drawn palm lands on the target when it is in reach;
+     * Idol arm proportions differ from the procedural rig's, so the same joint angles alone miss by 10-20 cm.
+     */
+    readonly handTargets?: {
+        readonly left?: Vec3;
+        readonly right?: Vec3;
+    };
+}
+/**
+ * One bone's local transform in OBJECT form. The runtime handle clones poses with object spread
+ * (`{ ...transform.rotation }`), which turns a tuple into `{ 0, 1, 2, 3 }` and makes the glTF runtime reject the whole
+ * pose (every body then renders its bind T-pose); `{ x, y, z, w }` survives the clone.
+ */
+export interface HumanoidBonePose {
+    readonly rotation: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+        readonly w: number;
+    };
+    readonly position?: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+    };
+}
+/** Structurally an engine `AnimationPose` (`handle.setAnimationPose(pose)`). */
+export interface HumanoidAnimationPose {
+    readonly bones: Record<string, HumanoidBonePose>;
+    readonly mode: "replace";
+}
+export interface HumanoidDriverOptions {
+    /** Which model-space axis the character faces. Generator output (normalised) faces +Z (default); raw Idol faces +X. */
+    readonly facing?: "+z" | "-z" | "+x" | "-x";
+    /**
+     * Share (0..1) of the T-pose -> hanging-arm turn the clavicle bones take (default 0.3), so lowered arms hang from a
+     * dropped shoulder instead of bunching the deltoid. Arm directions are unaffected (they are solved in world space).
+     */
+    readonly shoulderDrop?: number;
+    /**
+     * Explicit role -> bone-name assignments that override the automatic mapping (`aura3d animation import --map`).
+     * Spine and neck chains are re-derived from the overridden hips/spine/chest/neck/head bones.
+     */
+    readonly roles?: Partial<Record<HumanoidRole, string>>;
+    /** Largest forearm twist about its own axis relative to the upper arm, degrees (default 75; candy-wrapper guard). */
+    readonly maxForearmTwistDeg?: number;
+    /** Largest hand twist about its own axis relative to the forearm, degrees (default 60). */
+    readonly maxWristTwistDeg?: number;
+}
+/** Split `q` into swing * twist about unit `axis` and clamp the twist angle to +-`max` radians. */
+export declare function clampTwist(q: Quat, axis: Vec3, max: number): Quat;
+export interface HumanoidDriver {
+    readonly map: HumanoidMap;
+    readonly skeleton: IdolSkeleton;
+    /** Bone transforms for one frame. Every joint gets a rotation; the hips also get a position. */
+    pose(input: HumanoidPoseInput): HumanoidAnimationPose;
+    /** Model-space joint positions for a pose (debug, tests, foot-plant checks). */
+    modelPositions(input: HumanoidPoseInput): Record<string, Vec3>;
+    /**
+     * Model-space palm centres for a pose: 60% of the way from each wrist (hand bone) to the mean of its child (finger)
+     * joints. Use these, not the procedural rig's palm, to anchor held props (balls) to the hand that is drawn.
+     */
+    palmPoints(input: HumanoidPoseInput): {
+        readonly left: Vec3;
+        readonly right: Vec3;
+    };
+}
+export declare const QUAT_IDENTITY: Quat;
+export declare function quatMul(a: Quat, b: Quat): Quat;
+export declare function quatInv(q: Quat): Quat;
+export declare function quatNorm(q: Quat): Quat;
+export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+export declare function rotateVec(q: Quat, v: Vec3): Vec3;
+/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+export declare function eulerZYX(x: number, y: number, z: number): Quat;
+/** `q` raised to `t` (slerp from identity). */
+export declare function quatPow(q: Quat, t: number): Quat;
+/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
+interface GltfNode {
+    readonly name?: string;
+    readonly children?: readonly number[];
+    readonly translation?: readonly number[];
+    readonly rotation?: readonly number[];
+    readonly scale?: readonly number[];
+    readonly matrix?: readonly number[];
+}
+export interface GltfJsonLike {
+    readonly nodes?: readonly GltfNode[];
+    readonly skins?: readonly {
+        readonly joints: readonly number[];
+    }[];
+}
+/** The JSON chunk of a binary glTF. */
+export declare function parseGlbJson(bytes: ArrayBuffer | Uint8Array): GltfJsonLike;
+/** Joint table of the first skin plus the fixed transform chain above each root joint (e.g. the generator's `auraRoot`). */
+export declare function readIdolSkeleton(gltf: GltfJsonLike): IdolSkeleton;
+/** Map Idol bones to humanoid roles by hierarchy and rest positions. */
+export declare function mapHumanoid(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidMap;
+export declare function createHumanoidDriver(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidDriver;
+/** Canonical-frame world rotations per role -> the per-role LOCAL rotations HumanoidPoseInput takes (missing parents skip up). */
+export declare function globalsToLocals(globals: Partial<Record<HumanoidRole, Quat>>): Partial<Record<HumanoidRole, Quat>>;
+export interface HumanoidSource {
+    readonly map: HumanoidMap;
+    /**
+     * One frame of a source rig (any humanoid skeleton, e.g. a mocap rig) as a canonical pose. `worldRot[i]` is bone i's
+     * model-space world rotation this frame, `hipsPos` the hips world position; both in the source skeleton's model space.
+     */
+    toCanonical(worldRot: readonly Quat[], hipsPos: Vec3): HumanoidPoseInput;
+}
+/**
+ * Inverse of the driver: reads a source rig's motion into the canonical frame (arms-down rest, facing +Z) with the same
+ * role mapping and limb alignment rules, so a clip recorded on one rig plays on every Idol body. The source `skeleton`'s
+ * rest must be its bind pose.
+ */
+export declare function createHumanoidSource(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidSource;
+/** A baked canonical clip: `frames` holds, per frame, one quaternion per `roles` entry followed by the 3 hips-offset values. */
+export interface HumanoidClip {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly roles: readonly HumanoidRole[];
+    readonly frameCount: number;
+    /** Int16 little-endian, base64: quaternion components * 32767, hips offset * 8192. */
+    readonly data: string;
+    /** Free-form timing facts measured at bake time (stance speed, contact time, side, ...). */
+    readonly meta?: Readonly<Record<string, number | string>>;
+}
+/** Pack canonical frames into a HumanoidClip (bake tools). */
+export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
+/** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
+export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
+    readonly loop?: boolean;
+}): HumanoidPoseInput;
+/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
+/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
+/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+export declare const ARM_ROLES: readonly HumanoidRole[];
+/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
+export {};
+//# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/smplMotion.d.ts`
+
+```ts
+/**
+ * fal `fal-ai/hunyuan-motion` (HY-Motion) dict output -> canonical humanoid frames / a HumanoidClip (moved from
+ * apps/showcase-port-shared/idol/smplMotion.ts, which re-exports this module). `aura3d animation import motion.json`
+ * bakes the frames into glTF channels on a rigged GLB (./bake.ts).
+ *
+ * Format (verified Nov 2026 against keypoints3d: FK of these rotations over the rest offsets reproduces every keypoint):
+ *   rot6d [1][F][22][6]  LOCAL joint rotations, SMPL 22-joint body order (SMPL_JOINTS); each 6-vector is a 3x2 matrix
+ *                        flattened row-major, i.e. columns = (v[0],v[2],v[4]) and (v[1],v[3],v[5]), Gram-Schmidt.
+ *                        Joint 0 (pelvis) is the global root orientation (== root_rotations_mat).
+ *   transl [1][F][3]     root translation (metres, Y up); keypoints3d [1][F][52][3] joint positions without transl
+ *                        (pelvis world height = transl.y + keypoints3d.pelvis.y).
+ *   30 fps. Rest pose = T-pose, Y up, character facing +Z, its left = +X: exactly the canonical humanoid frame.
+ * Root motion is stripped (horizontal translation and the clip's mean heading); the vertical hip bob is kept. Loop clips
+ * are made seamless by cross-fading their last `loopBlend` seconds into the start.
+ */
+import { HUMANOID_ROLES, type HumanoidClip, type HumanoidPoseInput, type Vec3 } from "./humanoid.js";
+export declare const SMPL_JOINTS: readonly ["pelvis", "L_hip", "R_hip", "spine1", "L_knee", "R_knee", "spine2", "L_ankle", "R_ankle", "spine3", "L_foot", "R_foot", "neck", "L_collar", "R_collar", "head", "L_shoulder", "R_shoulder", "L_elbow", "R_elbow", "L_wrist", "R_wrist"];
+export declare const SMPL_PARENTS: readonly [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19];
+export interface HyMotionDict {
+    readonly rot6d: readonly (readonly (readonly (readonly number[])[])[])[];
+    readonly transl: readonly (readonly (readonly number[])[])[];
+    readonly keypoints3d: readonly (readonly (readonly (readonly number[])[])[])[];
+}
+export interface SmplClipOptions {
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    /** Remove the clip's mean heading so it faces +Z (default true). Event clips that turn keep their turn. */
+    readonly faceForward?: boolean;
+    /**
+     * Root translation: "in-place" (default) strips horizontal travel and keeps the vertical hip bob; "keep" also keeps
+     * the horizontal travel (relative to the first frame, in the face-forward frame); "strip" removes all of it.
+     */
+    readonly rootMotion?: "in-place" | "keep" | "strip";
+}
+/** Canonical frames (30 fps) of one HY-Motion dict, before packing into a HumanoidClip. */
+export interface SmplFramesResult {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly (typeof HUMANOID_ROLES)[number][];
+    readonly meta: Readonly<Record<string, number | string>>;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+export interface SmplClipResult {
+    readonly clip: HumanoidClip;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+/** Convert one HY-Motion dict to a canonical clip with timing facts in `meta` (ground speed, contacts, apex, ...). */
+export declare function smplMotionToClip(name: string, dict: HyMotionDict, opts?: SmplClipOptions): SmplClipResult;
+/** True when `value` has the HY-Motion dict shape (rot6d [1][F][22][6], transl [1][F][3], keypoints3d [1][F][J][3]). */
+export declare function isHyMotionDict(value: unknown): value is HyMotionDict;
+/** Convert one HY-Motion dict to canonical frames (30 fps) with timing facts in `meta`. */
+export declare function smplMotionToFrames(dict: HyMotionDict, opts?: SmplClipOptions): SmplFramesResult;
+//# sourceMappingURL=smplMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/skeletalMotion.d.ts`
+
+```ts
+/**
+ * Any humanoid skeleton's sampled motion (BVH, FBX, glTF clips) -> canonical humanoid frames, with the same role mapping
+ * and limb-alignment rules the Idol driver uses (./humanoid.ts). Format readers (the CLI's `animation import`) produce a
+ * `SkeletalMotion`: a joint table with rest local TRS plus per-frame local rotations/translations. This module maps it
+ * (names first for facing, geometry for roles), removes the clip's mean heading, grounds the hips, applies the
+ * root-motion mode and loop cross-fade, and returns frames that ./bake.ts writes onto a target rig.
+ *
+ * Extensionless relative imports on purpose: tools that load these sources directly under `node` resolve them to .ts.
+ */
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+export type HumanoidFacing = "+z" | "-z" | "+x" | "-x";
+export type RootMotionMode = "in-place" | "keep" | "strip";
+export interface SkeletalMotionFrame {
+    /** LOCAL rotation per joint (same order as `skeleton.bones`). */
+    readonly r: readonly Quat[];
+    /** LOCAL translation per joint (rest translation where the clip does not animate it). */
+    readonly t: readonly Vec3[];
+}
+export interface SkeletalMotion {
+    readonly skeleton: IdolSkeleton;
+    readonly fps: number;
+    readonly frames: readonly SkeletalMotionFrame[];
+}
+export interface CanonicalMotionOptions {
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Remove the clip's mean heading so it faces +Z (default true). */
+    readonly faceForward?: boolean;
+    readonly rootMotion?: RootMotionMode;
+    /** Model-space axis the source character faces; "auto" (default) detects it from bone names, then toes. */
+    readonly facing?: HumanoidFacing | "auto";
+    /** Role -> bone-name overrides for the source skeleton. */
+    readonly roles?: HumanoidDriverOptions["roles"];
+}
+export interface CanonicalMotion {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly HumanoidRole[];
+    readonly meta: Readonly<Record<string, number | string>>;
+    readonly map: HumanoidMap;
+    readonly facing: HumanoidFacing;
+    readonly facingMethod: FacingDetection["method"];
+}
+export interface FacingDetection {
+    readonly facing: HumanoidFacing;
+    readonly method: "names" | "toes" | "default" | "explicit";
+}
+interface Xf {
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: number;
+}
+/** World transform of every joint for local rotations/translations (rest where omitted). */
+export declare function skeletonWorld(sk: IdolSkeleton, r?: readonly Quat[], t?: readonly Vec3[], order?: number[]): Xf[];
+/** Side of a bone name: "left" for LeftArm / L_hip / thigh.L / lUpLeg-style tokens, "right" likewise, else null. */
+export declare function boneSide(name: string): "left" | "right" | null;
+/**
+ * Which model-space axis a humanoid skeleton faces in its rest pose: from sided bone names (left minus right is the
+ * character's left), else from the feet (foot -> toe points forward), else +Z.
+ */
+export declare function detectHumanoidFacing(sk: IdolSkeleton): FacingDetection;
+/** Per-frame cross-fade of a loop's last `blend` seconds into its start (same rule as the HY-Motion converter). */
+export declare function crossfadeLoop(frames: readonly HumanoidPoseInput[], fps: number, blend?: number): HumanoidPoseInput[];
+/** Resample canonical frames to another rate (per-role slerp, hips lerp). Duration is preserved to the last frame. */
+export declare function resampleCanonicalFrames(frames: readonly HumanoidPoseInput[], fromFps: number, toFps: number): HumanoidPoseInput[];
+/** A sampled skeletal clip as canonical humanoid frames (see the module comment). */
+export declare function skeletalMotionToFrames(motion: SkeletalMotion, opts?: CanonicalMotionOptions): CanonicalMotion;
+export {};
+//# sourceMappingURL=skeletalMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/bake.d.ts`
+
+```ts
+/**
+ * Canonical humanoid frames -> glTF animation channel data on a target skeleton (any rigged humanoid GLB, including
+ * Idol's unnamed `bone_N` rigs). Each frame goes through the same driver the games use at runtime
+ * (`createHumanoidDriver(...).pose(frame)`), so a baked clip plays exactly like the live pose did. The bake reports:
+ *
+ *   - `flips`: rotation keys swinging more than `flipThresholdDeg` in one frame (the engine's `LimbFlip` shape; the
+ *     swing is the shortest-arc angle 2·acos(|q0·q1|) between consecutive keys);
+ *   - `limbError`: angle between each limb segment the target draws and the source's canonical limb direction
+ *     (upper/lower arms and legs; ~0 for a correct retarget, float noise only);
+ *   - `motionDeg`: the largest angle any limb moves away from the target's bind pose (0 = a silent T-pose).
+ *
+ * Callers fail on flips, on a limb error above their bound and on `motionDeg` near zero instead of writing a clip that
+ * renders a broken or frozen body.
+ */
+import type { LimbFlip } from "../pose/Retarget.js";
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+/** Limb segments checked for retarget error: role -> the role at the segment's far end. */
+export declare const LIMB_SEGMENTS: readonly (readonly [HumanoidRole, HumanoidRole])[];
+/** Facing rotation (model space) for a driver `facing` option. */
+export declare function facingQuat(facing: HumanoidDriverOptions["facing"]): Quat;
+/** Canonical-frame direction of every limb segment in a frame (accumulated role rotations applied to straight down). */
+export declare function canonicalLimbDirections(frame: HumanoidPoseInput): Partial<Record<HumanoidRole, Vec3>>;
+export declare function angleDeg(a: Vec3, b: Vec3): number;
+export interface GltfChannelData {
+    /** Target joint name and index in `skeleton.bones`. */
+    readonly bone: string;
+    readonly boneIndex: number;
+    readonly path: "rotation" | "translation";
+    /** Flat values, 4 (rotation) or 3 (translation) per key, one key per entry of `times`. */
+    readonly values: Float32Array;
+}
+export interface BakeHumanoidGltfOptions extends HumanoidDriverOptions {
+    /** Single-key swing that counts as a limb flip (default 120 degrees, the engine detector's default). */
+    readonly flipThresholdDeg?: number;
+}
+export interface HumanoidGltfBake {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly times: Float32Array;
+    readonly channels: readonly GltfChannelData[];
+    readonly flips: readonly LimbFlip[];
+    readonly limbError: {
+        readonly maxDeg: number;
+        readonly meanDeg: number;
+    };
+    readonly motionDeg: number;
+    readonly map: HumanoidMap;
+    /** Expected model-space limb directions per frame (for verifying a written file): role -> unit vector. */
+    readonly expected: readonly Partial<Record<HumanoidRole, Vec3>>[];
+}
+/** Bake canonical frames (at `fps`) into per-joint glTF rotation channels plus the hips translation channel. */
+export declare function bakeHumanoidFramesToGltf(name: string, target: IdolSkeleton, frames: readonly HumanoidPoseInput[], fps: number, opts?: BakeHumanoidGltfOptions): HumanoidGltfBake;
+/**
+ * Rotation keys whose single-key swing exceeds `thresholdDeg`. The swing between unit quaternions a, b is
+ * 2·acos(|a·b|), so the test is |a·b| < cos(threshold / 2).
+ */
+export declare function detectKeyFlips(channels: readonly GltfChannelData[], thresholdDeg?: number): LimbFlip[];
+//# sourceMappingURL=bake.d.ts.map
 ```
 
 ### `./dist/animation/threejs-compatibility/AnimationClip.d.ts`
@@ -480539,6 +483738,8 @@ export type AuthoredMaterialSnapshot = ReadonlyMap<string, Readonly<Record<strin
 export declare function snapshotMaterials(materials: Iterable<Material>): AuthoredMaterialSnapshot;
 export declare function applyMaterialOverrides(snapshot: AuthoredMaterialSnapshot, materials: Iterable<Material>, overrides: readonly TypedGLBActorMaterialOverride[]): void;
 export declare function lowerModelMaterialOverrides(spec: AuraMaterialSpec | undefined, overrides: readonly AuraModelMaterialOverride[] | undefined): TypedGLBActorMaterialOverride[];
+/** True when a model material spec or override asks for a see-through surface (`opacity` below 1). */
+export declare function modelOpacityIsTranslucent(opacity: unknown): boolean;
 //# sourceMappingURL=ModelMaterialOverrides.d.ts.map
 ```
 
@@ -499397,8 +502598,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -499530,8 +502731,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -500655,8 +503856,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -500739,8 +503940,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -501919,8 +505120,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/sculpt
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -502467,8 +505668,8 @@ export declare function sculptPaintedLimbChain(chain: SdfLimbChain, hexByTag: Re
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -506775,8 +509976,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -537413,6 +540614,7 @@ export interface AtmosphereFrameSource {
     /** P3-T6 — live state + sky-change listener for SkyCaptureAdapter wiring. */
     state?(): {
         readonly sky: unknown | null;
+        readonly captureEnvironment?: boolean;
     };
     onSkyChanged?(listener: () => void): (() => void) | void;
 }
@@ -544989,6 +548191,7 @@ export * from "./HumanoidBoneInference.js";
 export * from "./RigQuality.js";
 export * from "./library/standardHumanoidClips.js";
 export * from "./library/performanceStateGraph.js";
+export * from "./smpl/index.js";
 export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
 export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
 export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";
@@ -547671,6 +550874,452 @@ export declare function createPerformanceStateGraph(options?: PerformanceStateGr
 /** The full set of state names the performance graph exposes (equals the standard clip vocabulary). */
 export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 //# sourceMappingURL=performanceStateGraph.d.ts.map
+```
+
+### `./dist/animation/smpl/index.d.ts`
+
+```ts
+/**
+ * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
+ * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
+ * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ */
+export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
+export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
+export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/animation/smpl/humanoid.d.ts`
+
+```ts
+/**
+ * Humanoid role mapping, driver and canonical clips (moved from apps/showcase-port-shared/idol/humanoid.ts, which now
+ * re-exports this module; the games import it unchanged). Used by `aura3d animation import` to retarget clips onto any
+ * rigged humanoid GLB, including Idol's unnamed `bone_N` rigs.
+ *
+ * Idol humanoid driver — drive a rigged Idol GLB (unnamed bones `bone_0..N`) from a game's own code-built joint pose.
+ *
+ * Idol (`speridlabs/idol/max`, `rig: true`) ships a 28–34 bone skeleton in a T-pose with no bone names. Games here already
+ * animate their athletes in code: every frame they compute per-joint local rotations for a procedural rig whose rest pose
+ * is "standing, arms hanging straight down, legs straight down, facing +Z, +Y up, character's left = +X". This module maps
+ * the Idol bones to humanoid roles by hierarchy and rest positions, then turns that same per-joint pose into an
+ * `AnimationPose` for `handle.setAnimationPose(...)` on the `model(assets.<key>)` node — so gameplay animation is
+ * unchanged and only the body that renders it is new.
+ *
+ * API (dependency-free; runs in the browser, in vitest and under plain `node`):
+ *   parseGlbJson(bytes)                -> glTF JSON chunk of a .glb
+ *   readIdolSkeleton(gltf)             -> IdolSkeleton (joint names, parents, rest local TRS, fixed parent-chain transform)
+ *   mapHumanoid(skeleton, opts?)       -> HumanoidMap (role -> bone name, spine/neck chains, diagnostics)
+ *   createHumanoidDriver(skeleton, o?) -> { map, pose(input) } ; pose() returns `{ bones, mode: "replace" }` with
+ *                                         object-form `{x,y,z,w}` / `{x,y,z}` transforms (tuples do not survive the
+ *                                         runtime handle's pose clone; see HumanoidBonePose)
+ *   driver.modelPositions / palmPoints -> model-space joint and palm-centre positions for a pose (prop anchoring)
+ *   loadIdolHumanoid(url, o?)          -> Promise<HumanoidDriver>, cached per URL (fetch + the three calls above)
+ *   eulerZYX(x, y, z)                  -> quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx)
+ *
+ * Input pose (`HumanoidPoseInput`): `rotations[role]` = LOCAL rotation of that joint relative to its parent joint, in the
+ * canonical rest frame above; source hierarchy is hips → spine → chest → neck → head, chest → {l,r}Shoulder → UpperArm →
+ * LowerArm → Hand, hips → {l,r}UpperLeg → LowerLeg → Foot. Omitted roles are identity (a rig with only a "chest" joint
+ * just omits spine). `hipsOffset` is the hips displacement from rest in units of rest hip height (FC: offset / 0.96).
+ *
+ * Retargeting rule per mapped bone: world = G_src · A · R_rest, where G_src is the source joint's accumulated rotation,
+ * R_rest the Idol bone's rest world rotation and A the shortest-arc turn that points the Idol limb straight down (arms
+ * and legs only — the T-pose arms become hanging arms; torso, neck, head and feet keep Idol's natural rest posture).
+ * The source torso rotation (spine·chest) is spread evenly over Idol's spine chain, neck·head over its neck chain.
+ * Clavicles take `shoulderDrop` (default 0.3) of their arm's A so the lowered shoulders do not bunch up.
+ * Unmapped bones (clavicles without a source, fingers, toes, head ends) follow their parent at their rest local rotation.
+ */
+export type Vec3 = readonly [number, number, number];
+/** Quaternion `[x, y, z, w]` (glTF / engine order). */
+export type Quat = readonly [number, number, number, number];
+export declare const HUMANOID_ROLES: readonly ["hips", "spine", "chest", "neck", "head", "leftShoulder", "leftUpperArm", "leftLowerArm", "leftHand", "rightShoulder", "rightUpperArm", "rightLowerArm", "rightHand", "leftUpperLeg", "leftLowerLeg", "leftFoot", "rightUpperLeg", "rightLowerLeg", "rightFoot"];
+export type HumanoidRole = (typeof HUMANOID_ROLES)[number];
+export interface IdolBone {
+    readonly name: string;
+    /** Index into `bones` of the parent joint, or -1 when the parent is not a joint. */
+    readonly parent: number;
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: Vec3;
+}
+export interface IdolSkeleton {
+    readonly bones: readonly IdolBone[];
+    /** World transform of the (non-joint) parent chain above each root joint, keyed by bone index. */
+    readonly rootParents: Readonly<Record<number, {
+        readonly t: Vec3;
+        readonly r: Quat;
+        readonly s: number;
+    }>>;
+}
+export interface HumanoidMap {
+    readonly roles: Partial<Record<HumanoidRole, string>>;
+    /** Idol bones from the first spine bone up to the bone the arms hang from (inclusive). */
+    readonly spineChain: readonly string[];
+    /** Idol bones above the arm branch up to and including the head bone. */
+    readonly neckChain: readonly string[];
+    /** Rest height of the hips joint above the lowest joint, in model units. */
+    readonly hipHeight: number;
+    readonly missing: readonly HumanoidRole[];
+    readonly ok: boolean;
+}
+export interface HumanoidPoseInput {
+    readonly rotations: Partial<Record<HumanoidRole, Quat>>;
+    /** Hips displacement from rest, in units of rest hip height, in the canonical frame (+Y up, +Z forward). */
+    readonly hipsOffset?: Vec3;
+    /**
+     * Optional model-space palm targets (e.g. a held ball's anchor from the procedural rig). The arm is bent and swung
+     * with two-bone IK (bend plane taken from the posed arm) so the drawn palm lands on the target when it is in reach;
+     * Idol arm proportions differ from the procedural rig's, so the same joint angles alone miss by 10-20 cm.
+     */
+    readonly handTargets?: {
+        readonly left?: Vec3;
+        readonly right?: Vec3;
+    };
+}
+/**
+ * One bone's local transform in OBJECT form. The runtime handle clones poses with object spread
+ * (`{ ...transform.rotation }`), which turns a tuple into `{ 0, 1, 2, 3 }` and makes the glTF runtime reject the whole
+ * pose (every body then renders its bind T-pose); `{ x, y, z, w }` survives the clone.
+ */
+export interface HumanoidBonePose {
+    readonly rotation: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+        readonly w: number;
+    };
+    readonly position?: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+    };
+}
+/** Structurally an engine `AnimationPose` (`handle.setAnimationPose(pose)`). */
+export interface HumanoidAnimationPose {
+    readonly bones: Record<string, HumanoidBonePose>;
+    readonly mode: "replace";
+}
+export interface HumanoidDriverOptions {
+    /** Which model-space axis the character faces. Generator output (normalised) faces +Z (default); raw Idol faces +X. */
+    readonly facing?: "+z" | "-z" | "+x" | "-x";
+    /**
+     * Share (0..1) of the T-pose -> hanging-arm turn the clavicle bones take (default 0.3), so lowered arms hang from a
+     * dropped shoulder instead of bunching the deltoid. Arm directions are unaffected (they are solved in world space).
+     */
+    readonly shoulderDrop?: number;
+    /**
+     * Explicit role -> bone-name assignments that override the automatic mapping (`aura3d animation import --map`).
+     * Spine and neck chains are re-derived from the overridden hips/spine/chest/neck/head bones.
+     */
+    readonly roles?: Partial<Record<HumanoidRole, string>>;
+    /** Largest forearm twist about its own axis relative to the upper arm, degrees (default 75; candy-wrapper guard). */
+    readonly maxForearmTwistDeg?: number;
+    /** Largest hand twist about its own axis relative to the forearm, degrees (default 60). */
+    readonly maxWristTwistDeg?: number;
+}
+/** Split `q` into swing * twist about unit `axis` and clamp the twist angle to +-`max` radians. */
+export declare function clampTwist(q: Quat, axis: Vec3, max: number): Quat;
+export interface HumanoidDriver {
+    readonly map: HumanoidMap;
+    readonly skeleton: IdolSkeleton;
+    /** Bone transforms for one frame. Every joint gets a rotation; the hips also get a position. */
+    pose(input: HumanoidPoseInput): HumanoidAnimationPose;
+    /** Model-space joint positions for a pose (debug, tests, foot-plant checks). */
+    modelPositions(input: HumanoidPoseInput): Record<string, Vec3>;
+    /**
+     * Model-space palm centres for a pose: 60% of the way from each wrist (hand bone) to the mean of its child (finger)
+     * joints. Use these, not the procedural rig's palm, to anchor held props (balls) to the hand that is drawn.
+     */
+    palmPoints(input: HumanoidPoseInput): {
+        readonly left: Vec3;
+        readonly right: Vec3;
+    };
+}
+export declare const QUAT_IDENTITY: Quat;
+export declare function quatMul(a: Quat, b: Quat): Quat;
+export declare function quatInv(q: Quat): Quat;
+export declare function quatNorm(q: Quat): Quat;
+export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+export declare function rotateVec(q: Quat, v: Vec3): Vec3;
+/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+export declare function eulerZYX(x: number, y: number, z: number): Quat;
+/** `q` raised to `t` (slerp from identity). */
+export declare function quatPow(q: Quat, t: number): Quat;
+/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
+interface GltfNode {
+    readonly name?: string;
+    readonly children?: readonly number[];
+    readonly translation?: readonly number[];
+    readonly rotation?: readonly number[];
+    readonly scale?: readonly number[];
+    readonly matrix?: readonly number[];
+}
+export interface GltfJsonLike {
+    readonly nodes?: readonly GltfNode[];
+    readonly skins?: readonly {
+        readonly joints: readonly number[];
+    }[];
+}
+/** The JSON chunk of a binary glTF. */
+export declare function parseGlbJson(bytes: ArrayBuffer | Uint8Array): GltfJsonLike;
+/** Joint table of the first skin plus the fixed transform chain above each root joint (e.g. the generator's `auraRoot`). */
+export declare function readIdolSkeleton(gltf: GltfJsonLike): IdolSkeleton;
+/** Map Idol bones to humanoid roles by hierarchy and rest positions. */
+export declare function mapHumanoid(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidMap;
+export declare function createHumanoidDriver(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidDriver;
+/** Canonical-frame world rotations per role -> the per-role LOCAL rotations HumanoidPoseInput takes (missing parents skip up). */
+export declare function globalsToLocals(globals: Partial<Record<HumanoidRole, Quat>>): Partial<Record<HumanoidRole, Quat>>;
+export interface HumanoidSource {
+    readonly map: HumanoidMap;
+    /**
+     * One frame of a source rig (any humanoid skeleton, e.g. a mocap rig) as a canonical pose. `worldRot[i]` is bone i's
+     * model-space world rotation this frame, `hipsPos` the hips world position; both in the source skeleton's model space.
+     */
+    toCanonical(worldRot: readonly Quat[], hipsPos: Vec3): HumanoidPoseInput;
+}
+/**
+ * Inverse of the driver: reads a source rig's motion into the canonical frame (arms-down rest, facing +Z) with the same
+ * role mapping and limb alignment rules, so a clip recorded on one rig plays on every Idol body. The source `skeleton`'s
+ * rest must be its bind pose.
+ */
+export declare function createHumanoidSource(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidSource;
+/** A baked canonical clip: `frames` holds, per frame, one quaternion per `roles` entry followed by the 3 hips-offset values. */
+export interface HumanoidClip {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly roles: readonly HumanoidRole[];
+    readonly frameCount: number;
+    /** Int16 little-endian, base64: quaternion components * 32767, hips offset * 8192. */
+    readonly data: string;
+    /** Free-form timing facts measured at bake time (stance speed, contact time, side, ...). */
+    readonly meta?: Readonly<Record<string, number | string>>;
+}
+/** Pack canonical frames into a HumanoidClip (bake tools). */
+export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
+/** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
+export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
+    readonly loop?: boolean;
+}): HumanoidPoseInput;
+/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
+/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
+/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+export declare const ARM_ROLES: readonly HumanoidRole[];
+/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
+export {};
+//# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/smplMotion.d.ts`
+
+```ts
+/**
+ * fal `fal-ai/hunyuan-motion` (HY-Motion) dict output -> canonical humanoid frames / a HumanoidClip (moved from
+ * apps/showcase-port-shared/idol/smplMotion.ts, which re-exports this module). `aura3d animation import motion.json`
+ * bakes the frames into glTF channels on a rigged GLB (./bake.ts).
+ *
+ * Format (verified Nov 2026 against keypoints3d: FK of these rotations over the rest offsets reproduces every keypoint):
+ *   rot6d [1][F][22][6]  LOCAL joint rotations, SMPL 22-joint body order (SMPL_JOINTS); each 6-vector is a 3x2 matrix
+ *                        flattened row-major, i.e. columns = (v[0],v[2],v[4]) and (v[1],v[3],v[5]), Gram-Schmidt.
+ *                        Joint 0 (pelvis) is the global root orientation (== root_rotations_mat).
+ *   transl [1][F][3]     root translation (metres, Y up); keypoints3d [1][F][52][3] joint positions without transl
+ *                        (pelvis world height = transl.y + keypoints3d.pelvis.y).
+ *   30 fps. Rest pose = T-pose, Y up, character facing +Z, its left = +X: exactly the canonical humanoid frame.
+ * Root motion is stripped (horizontal translation and the clip's mean heading); the vertical hip bob is kept. Loop clips
+ * are made seamless by cross-fading their last `loopBlend` seconds into the start.
+ */
+import { HUMANOID_ROLES, type HumanoidClip, type HumanoidPoseInput, type Vec3 } from "./humanoid.js";
+export declare const SMPL_JOINTS: readonly ["pelvis", "L_hip", "R_hip", "spine1", "L_knee", "R_knee", "spine2", "L_ankle", "R_ankle", "spine3", "L_foot", "R_foot", "neck", "L_collar", "R_collar", "head", "L_shoulder", "R_shoulder", "L_elbow", "R_elbow", "L_wrist", "R_wrist"];
+export declare const SMPL_PARENTS: readonly [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19];
+export interface HyMotionDict {
+    readonly rot6d: readonly (readonly (readonly (readonly number[])[])[])[];
+    readonly transl: readonly (readonly (readonly number[])[])[];
+    readonly keypoints3d: readonly (readonly (readonly (readonly number[])[])[])[];
+}
+export interface SmplClipOptions {
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    /** Remove the clip's mean heading so it faces +Z (default true). Event clips that turn keep their turn. */
+    readonly faceForward?: boolean;
+    /**
+     * Root translation: "in-place" (default) strips horizontal travel and keeps the vertical hip bob; "keep" also keeps
+     * the horizontal travel (relative to the first frame, in the face-forward frame); "strip" removes all of it.
+     */
+    readonly rootMotion?: "in-place" | "keep" | "strip";
+}
+/** Canonical frames (30 fps) of one HY-Motion dict, before packing into a HumanoidClip. */
+export interface SmplFramesResult {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly (typeof HUMANOID_ROLES)[number][];
+    readonly meta: Readonly<Record<string, number | string>>;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+export interface SmplClipResult {
+    readonly clip: HumanoidClip;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+/** Convert one HY-Motion dict to a canonical clip with timing facts in `meta` (ground speed, contacts, apex, ...). */
+export declare function smplMotionToClip(name: string, dict: HyMotionDict, opts?: SmplClipOptions): SmplClipResult;
+/** True when `value` has the HY-Motion dict shape (rot6d [1][F][22][6], transl [1][F][3], keypoints3d [1][F][J][3]). */
+export declare function isHyMotionDict(value: unknown): value is HyMotionDict;
+/** Convert one HY-Motion dict to canonical frames (30 fps) with timing facts in `meta`. */
+export declare function smplMotionToFrames(dict: HyMotionDict, opts?: SmplClipOptions): SmplFramesResult;
+//# sourceMappingURL=smplMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/skeletalMotion.d.ts`
+
+```ts
+/**
+ * Any humanoid skeleton's sampled motion (BVH, FBX, glTF clips) -> canonical humanoid frames, with the same role mapping
+ * and limb-alignment rules the Idol driver uses (./humanoid.ts). Format readers (the CLI's `animation import`) produce a
+ * `SkeletalMotion`: a joint table with rest local TRS plus per-frame local rotations/translations. This module maps it
+ * (names first for facing, geometry for roles), removes the clip's mean heading, grounds the hips, applies the
+ * root-motion mode and loop cross-fade, and returns frames that ./bake.ts writes onto a target rig.
+ *
+ * Extensionless relative imports on purpose: tools that load these sources directly under `node` resolve them to .ts.
+ */
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+export type HumanoidFacing = "+z" | "-z" | "+x" | "-x";
+export type RootMotionMode = "in-place" | "keep" | "strip";
+export interface SkeletalMotionFrame {
+    /** LOCAL rotation per joint (same order as `skeleton.bones`). */
+    readonly r: readonly Quat[];
+    /** LOCAL translation per joint (rest translation where the clip does not animate it). */
+    readonly t: readonly Vec3[];
+}
+export interface SkeletalMotion {
+    readonly skeleton: IdolSkeleton;
+    readonly fps: number;
+    readonly frames: readonly SkeletalMotionFrame[];
+}
+export interface CanonicalMotionOptions {
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Remove the clip's mean heading so it faces +Z (default true). */
+    readonly faceForward?: boolean;
+    readonly rootMotion?: RootMotionMode;
+    /** Model-space axis the source character faces; "auto" (default) detects it from bone names, then toes. */
+    readonly facing?: HumanoidFacing | "auto";
+    /** Role -> bone-name overrides for the source skeleton. */
+    readonly roles?: HumanoidDriverOptions["roles"];
+}
+export interface CanonicalMotion {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly HumanoidRole[];
+    readonly meta: Readonly<Record<string, number | string>>;
+    readonly map: HumanoidMap;
+    readonly facing: HumanoidFacing;
+    readonly facingMethod: FacingDetection["method"];
+}
+export interface FacingDetection {
+    readonly facing: HumanoidFacing;
+    readonly method: "names" | "toes" | "default" | "explicit";
+}
+interface Xf {
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: number;
+}
+/** World transform of every joint for local rotations/translations (rest where omitted). */
+export declare function skeletonWorld(sk: IdolSkeleton, r?: readonly Quat[], t?: readonly Vec3[], order?: number[]): Xf[];
+/** Side of a bone name: "left" for LeftArm / L_hip / thigh.L / lUpLeg-style tokens, "right" likewise, else null. */
+export declare function boneSide(name: string): "left" | "right" | null;
+/**
+ * Which model-space axis a humanoid skeleton faces in its rest pose: from sided bone names (left minus right is the
+ * character's left), else from the feet (foot -> toe points forward), else +Z.
+ */
+export declare function detectHumanoidFacing(sk: IdolSkeleton): FacingDetection;
+/** Per-frame cross-fade of a loop's last `blend` seconds into its start (same rule as the HY-Motion converter). */
+export declare function crossfadeLoop(frames: readonly HumanoidPoseInput[], fps: number, blend?: number): HumanoidPoseInput[];
+/** Resample canonical frames to another rate (per-role slerp, hips lerp). Duration is preserved to the last frame. */
+export declare function resampleCanonicalFrames(frames: readonly HumanoidPoseInput[], fromFps: number, toFps: number): HumanoidPoseInput[];
+/** A sampled skeletal clip as canonical humanoid frames (see the module comment). */
+export declare function skeletalMotionToFrames(motion: SkeletalMotion, opts?: CanonicalMotionOptions): CanonicalMotion;
+export {};
+//# sourceMappingURL=skeletalMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/bake.d.ts`
+
+```ts
+/**
+ * Canonical humanoid frames -> glTF animation channel data on a target skeleton (any rigged humanoid GLB, including
+ * Idol's unnamed `bone_N` rigs). Each frame goes through the same driver the games use at runtime
+ * (`createHumanoidDriver(...).pose(frame)`), so a baked clip plays exactly like the live pose did. The bake reports:
+ *
+ *   - `flips`: rotation keys swinging more than `flipThresholdDeg` in one frame (the engine's `LimbFlip` shape; the
+ *     swing is the shortest-arc angle 2·acos(|q0·q1|) between consecutive keys);
+ *   - `limbError`: angle between each limb segment the target draws and the source's canonical limb direction
+ *     (upper/lower arms and legs; ~0 for a correct retarget, float noise only);
+ *   - `motionDeg`: the largest angle any limb moves away from the target's bind pose (0 = a silent T-pose).
+ *
+ * Callers fail on flips, on a limb error above their bound and on `motionDeg` near zero instead of writing a clip that
+ * renders a broken or frozen body.
+ */
+import type { LimbFlip } from "../pose/Retarget.js";
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+/** Limb segments checked for retarget error: role -> the role at the segment's far end. */
+export declare const LIMB_SEGMENTS: readonly (readonly [HumanoidRole, HumanoidRole])[];
+/** Facing rotation (model space) for a driver `facing` option. */
+export declare function facingQuat(facing: HumanoidDriverOptions["facing"]): Quat;
+/** Canonical-frame direction of every limb segment in a frame (accumulated role rotations applied to straight down). */
+export declare function canonicalLimbDirections(frame: HumanoidPoseInput): Partial<Record<HumanoidRole, Vec3>>;
+export declare function angleDeg(a: Vec3, b: Vec3): number;
+export interface GltfChannelData {
+    /** Target joint name and index in `skeleton.bones`. */
+    readonly bone: string;
+    readonly boneIndex: number;
+    readonly path: "rotation" | "translation";
+    /** Flat values, 4 (rotation) or 3 (translation) per key, one key per entry of `times`. */
+    readonly values: Float32Array;
+}
+export interface BakeHumanoidGltfOptions extends HumanoidDriverOptions {
+    /** Single-key swing that counts as a limb flip (default 120 degrees, the engine detector's default). */
+    readonly flipThresholdDeg?: number;
+}
+export interface HumanoidGltfBake {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly times: Float32Array;
+    readonly channels: readonly GltfChannelData[];
+    readonly flips: readonly LimbFlip[];
+    readonly limbError: {
+        readonly maxDeg: number;
+        readonly meanDeg: number;
+    };
+    readonly motionDeg: number;
+    readonly map: HumanoidMap;
+    /** Expected model-space limb directions per frame (for verifying a written file): role -> unit vector. */
+    readonly expected: readonly Partial<Record<HumanoidRole, Vec3>>[];
+}
+/** Bake canonical frames (at `fps`) into per-joint glTF rotation channels plus the hips translation channel. */
+export declare function bakeHumanoidFramesToGltf(name: string, target: IdolSkeleton, frames: readonly HumanoidPoseInput[], fps: number, opts?: BakeHumanoidGltfOptions): HumanoidGltfBake;
+/**
+ * Rotation keys whose single-key swing exceeds `thresholdDeg`. The swing between unit quaternions a, b is
+ * 2·acos(|a·b|), so the test is |a·b| < cos(threshold / 2).
+ */
+export declare function detectKeyFlips(channels: readonly GltfChannelData[], thresholdDeg?: number): LimbFlip[];
+//# sourceMappingURL=bake.d.ts.map
 ```
 
 ### `./dist/animation/threejs-compatibility/AnimationClip.d.ts`
@@ -576278,8 +579927,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -576524,8 +580173,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -605263,6 +608912,7 @@ export interface AtmosphereFrameSource {
     /** P3-T6 — live state + sky-change listener for SkyCaptureAdapter wiring. */
     state?(): {
         readonly sky: unknown | null;
+        readonly captureEnvironment?: boolean;
     };
     onSkyChanged?(listener: () => void): (() => void) | void;
 }
@@ -617715,6 +621365,7 @@ export * from "./HumanoidBoneInference.js";
 export * from "./RigQuality.js";
 export * from "./library/standardHumanoidClips.js";
 export * from "./library/performanceStateGraph.js";
+export * from "./smpl/index.js";
 export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
 export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
 export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";
@@ -620397,6 +624048,452 @@ export declare function createPerformanceStateGraph(options?: PerformanceStateGr
 /** The full set of state names the performance graph exposes (equals the standard clip vocabulary). */
 export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 //# sourceMappingURL=performanceStateGraph.d.ts.map
+```
+
+### `./dist/animation/smpl/index.d.ts`
+
+```ts
+/**
+ * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
+ * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
+ * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ */
+export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
+export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
+export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/animation/smpl/humanoid.d.ts`
+
+```ts
+/**
+ * Humanoid role mapping, driver and canonical clips (moved from apps/showcase-port-shared/idol/humanoid.ts, which now
+ * re-exports this module; the games import it unchanged). Used by `aura3d animation import` to retarget clips onto any
+ * rigged humanoid GLB, including Idol's unnamed `bone_N` rigs.
+ *
+ * Idol humanoid driver — drive a rigged Idol GLB (unnamed bones `bone_0..N`) from a game's own code-built joint pose.
+ *
+ * Idol (`speridlabs/idol/max`, `rig: true`) ships a 28–34 bone skeleton in a T-pose with no bone names. Games here already
+ * animate their athletes in code: every frame they compute per-joint local rotations for a procedural rig whose rest pose
+ * is "standing, arms hanging straight down, legs straight down, facing +Z, +Y up, character's left = +X". This module maps
+ * the Idol bones to humanoid roles by hierarchy and rest positions, then turns that same per-joint pose into an
+ * `AnimationPose` for `handle.setAnimationPose(...)` on the `model(assets.<key>)` node — so gameplay animation is
+ * unchanged and only the body that renders it is new.
+ *
+ * API (dependency-free; runs in the browser, in vitest and under plain `node`):
+ *   parseGlbJson(bytes)                -> glTF JSON chunk of a .glb
+ *   readIdolSkeleton(gltf)             -> IdolSkeleton (joint names, parents, rest local TRS, fixed parent-chain transform)
+ *   mapHumanoid(skeleton, opts?)       -> HumanoidMap (role -> bone name, spine/neck chains, diagnostics)
+ *   createHumanoidDriver(skeleton, o?) -> { map, pose(input) } ; pose() returns `{ bones, mode: "replace" }` with
+ *                                         object-form `{x,y,z,w}` / `{x,y,z}` transforms (tuples do not survive the
+ *                                         runtime handle's pose clone; see HumanoidBonePose)
+ *   driver.modelPositions / palmPoints -> model-space joint and palm-centre positions for a pose (prop anchoring)
+ *   loadIdolHumanoid(url, o?)          -> Promise<HumanoidDriver>, cached per URL (fetch + the three calls above)
+ *   eulerZYX(x, y, z)                  -> quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx)
+ *
+ * Input pose (`HumanoidPoseInput`): `rotations[role]` = LOCAL rotation of that joint relative to its parent joint, in the
+ * canonical rest frame above; source hierarchy is hips → spine → chest → neck → head, chest → {l,r}Shoulder → UpperArm →
+ * LowerArm → Hand, hips → {l,r}UpperLeg → LowerLeg → Foot. Omitted roles are identity (a rig with only a "chest" joint
+ * just omits spine). `hipsOffset` is the hips displacement from rest in units of rest hip height (FC: offset / 0.96).
+ *
+ * Retargeting rule per mapped bone: world = G_src · A · R_rest, where G_src is the source joint's accumulated rotation,
+ * R_rest the Idol bone's rest world rotation and A the shortest-arc turn that points the Idol limb straight down (arms
+ * and legs only — the T-pose arms become hanging arms; torso, neck, head and feet keep Idol's natural rest posture).
+ * The source torso rotation (spine·chest) is spread evenly over Idol's spine chain, neck·head over its neck chain.
+ * Clavicles take `shoulderDrop` (default 0.3) of their arm's A so the lowered shoulders do not bunch up.
+ * Unmapped bones (clavicles without a source, fingers, toes, head ends) follow their parent at their rest local rotation.
+ */
+export type Vec3 = readonly [number, number, number];
+/** Quaternion `[x, y, z, w]` (glTF / engine order). */
+export type Quat = readonly [number, number, number, number];
+export declare const HUMANOID_ROLES: readonly ["hips", "spine", "chest", "neck", "head", "leftShoulder", "leftUpperArm", "leftLowerArm", "leftHand", "rightShoulder", "rightUpperArm", "rightLowerArm", "rightHand", "leftUpperLeg", "leftLowerLeg", "leftFoot", "rightUpperLeg", "rightLowerLeg", "rightFoot"];
+export type HumanoidRole = (typeof HUMANOID_ROLES)[number];
+export interface IdolBone {
+    readonly name: string;
+    /** Index into `bones` of the parent joint, or -1 when the parent is not a joint. */
+    readonly parent: number;
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: Vec3;
+}
+export interface IdolSkeleton {
+    readonly bones: readonly IdolBone[];
+    /** World transform of the (non-joint) parent chain above each root joint, keyed by bone index. */
+    readonly rootParents: Readonly<Record<number, {
+        readonly t: Vec3;
+        readonly r: Quat;
+        readonly s: number;
+    }>>;
+}
+export interface HumanoidMap {
+    readonly roles: Partial<Record<HumanoidRole, string>>;
+    /** Idol bones from the first spine bone up to the bone the arms hang from (inclusive). */
+    readonly spineChain: readonly string[];
+    /** Idol bones above the arm branch up to and including the head bone. */
+    readonly neckChain: readonly string[];
+    /** Rest height of the hips joint above the lowest joint, in model units. */
+    readonly hipHeight: number;
+    readonly missing: readonly HumanoidRole[];
+    readonly ok: boolean;
+}
+export interface HumanoidPoseInput {
+    readonly rotations: Partial<Record<HumanoidRole, Quat>>;
+    /** Hips displacement from rest, in units of rest hip height, in the canonical frame (+Y up, +Z forward). */
+    readonly hipsOffset?: Vec3;
+    /**
+     * Optional model-space palm targets (e.g. a held ball's anchor from the procedural rig). The arm is bent and swung
+     * with two-bone IK (bend plane taken from the posed arm) so the drawn palm lands on the target when it is in reach;
+     * Idol arm proportions differ from the procedural rig's, so the same joint angles alone miss by 10-20 cm.
+     */
+    readonly handTargets?: {
+        readonly left?: Vec3;
+        readonly right?: Vec3;
+    };
+}
+/**
+ * One bone's local transform in OBJECT form. The runtime handle clones poses with object spread
+ * (`{ ...transform.rotation }`), which turns a tuple into `{ 0, 1, 2, 3 }` and makes the glTF runtime reject the whole
+ * pose (every body then renders its bind T-pose); `{ x, y, z, w }` survives the clone.
+ */
+export interface HumanoidBonePose {
+    readonly rotation: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+        readonly w: number;
+    };
+    readonly position?: {
+        readonly x: number;
+        readonly y: number;
+        readonly z: number;
+    };
+}
+/** Structurally an engine `AnimationPose` (`handle.setAnimationPose(pose)`). */
+export interface HumanoidAnimationPose {
+    readonly bones: Record<string, HumanoidBonePose>;
+    readonly mode: "replace";
+}
+export interface HumanoidDriverOptions {
+    /** Which model-space axis the character faces. Generator output (normalised) faces +Z (default); raw Idol faces +X. */
+    readonly facing?: "+z" | "-z" | "+x" | "-x";
+    /**
+     * Share (0..1) of the T-pose -> hanging-arm turn the clavicle bones take (default 0.3), so lowered arms hang from a
+     * dropped shoulder instead of bunching the deltoid. Arm directions are unaffected (they are solved in world space).
+     */
+    readonly shoulderDrop?: number;
+    /**
+     * Explicit role -> bone-name assignments that override the automatic mapping (`aura3d animation import --map`).
+     * Spine and neck chains are re-derived from the overridden hips/spine/chest/neck/head bones.
+     */
+    readonly roles?: Partial<Record<HumanoidRole, string>>;
+    /** Largest forearm twist about its own axis relative to the upper arm, degrees (default 75; candy-wrapper guard). */
+    readonly maxForearmTwistDeg?: number;
+    /** Largest hand twist about its own axis relative to the forearm, degrees (default 60). */
+    readonly maxWristTwistDeg?: number;
+}
+/** Split `q` into swing * twist about unit `axis` and clamp the twist angle to +-`max` radians. */
+export declare function clampTwist(q: Quat, axis: Vec3, max: number): Quat;
+export interface HumanoidDriver {
+    readonly map: HumanoidMap;
+    readonly skeleton: IdolSkeleton;
+    /** Bone transforms for one frame. Every joint gets a rotation; the hips also get a position. */
+    pose(input: HumanoidPoseInput): HumanoidAnimationPose;
+    /** Model-space joint positions for a pose (debug, tests, foot-plant checks). */
+    modelPositions(input: HumanoidPoseInput): Record<string, Vec3>;
+    /**
+     * Model-space palm centres for a pose: 60% of the way from each wrist (hand bone) to the mean of its child (finger)
+     * joints. Use these, not the procedural rig's palm, to anchor held props (balls) to the hand that is drawn.
+     */
+    palmPoints(input: HumanoidPoseInput): {
+        readonly left: Vec3;
+        readonly right: Vec3;
+    };
+}
+export declare const QUAT_IDENTITY: Quat;
+export declare function quatMul(a: Quat, b: Quat): Quat;
+export declare function quatInv(q: Quat): Quat;
+export declare function quatNorm(q: Quat): Quat;
+export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+export declare function rotateVec(q: Quat, v: Vec3): Vec3;
+/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+export declare function eulerZYX(x: number, y: number, z: number): Quat;
+/** `q` raised to `t` (slerp from identity). */
+export declare function quatPow(q: Quat, t: number): Quat;
+/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
+interface GltfNode {
+    readonly name?: string;
+    readonly children?: readonly number[];
+    readonly translation?: readonly number[];
+    readonly rotation?: readonly number[];
+    readonly scale?: readonly number[];
+    readonly matrix?: readonly number[];
+}
+export interface GltfJsonLike {
+    readonly nodes?: readonly GltfNode[];
+    readonly skins?: readonly {
+        readonly joints: readonly number[];
+    }[];
+}
+/** The JSON chunk of a binary glTF. */
+export declare function parseGlbJson(bytes: ArrayBuffer | Uint8Array): GltfJsonLike;
+/** Joint table of the first skin plus the fixed transform chain above each root joint (e.g. the generator's `auraRoot`). */
+export declare function readIdolSkeleton(gltf: GltfJsonLike): IdolSkeleton;
+/** Map Idol bones to humanoid roles by hierarchy and rest positions. */
+export declare function mapHumanoid(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidMap;
+export declare function createHumanoidDriver(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidDriver;
+/** Canonical-frame world rotations per role -> the per-role LOCAL rotations HumanoidPoseInput takes (missing parents skip up). */
+export declare function globalsToLocals(globals: Partial<Record<HumanoidRole, Quat>>): Partial<Record<HumanoidRole, Quat>>;
+export interface HumanoidSource {
+    readonly map: HumanoidMap;
+    /**
+     * One frame of a source rig (any humanoid skeleton, e.g. a mocap rig) as a canonical pose. `worldRot[i]` is bone i's
+     * model-space world rotation this frame, `hipsPos` the hips world position; both in the source skeleton's model space.
+     */
+    toCanonical(worldRot: readonly Quat[], hipsPos: Vec3): HumanoidPoseInput;
+}
+/**
+ * Inverse of the driver: reads a source rig's motion into the canonical frame (arms-down rest, facing +Z) with the same
+ * role mapping and limb alignment rules, so a clip recorded on one rig plays on every Idol body. The source `skeleton`'s
+ * rest must be its bind pose.
+ */
+export declare function createHumanoidSource(skeleton: IdolSkeleton, opts?: HumanoidDriverOptions): HumanoidSource;
+/** A baked canonical clip: `frames` holds, per frame, one quaternion per `roles` entry followed by the 3 hips-offset values. */
+export interface HumanoidClip {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly roles: readonly HumanoidRole[];
+    readonly frameCount: number;
+    /** Int16 little-endian, base64: quaternion components * 32767, hips offset * 8192. */
+    readonly data: string;
+    /** Free-form timing facts measured at bake time (stance speed, contact time, side, ...). */
+    readonly meta?: Readonly<Record<string, number | string>>;
+}
+/** Pack canonical frames into a HumanoidClip (bake tools). */
+export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
+/** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
+export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
+    readonly loop?: boolean;
+}): HumanoidPoseInput;
+/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
+/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
+/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+export declare const ARM_ROLES: readonly HumanoidRole[];
+/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
+export {};
+//# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/smplMotion.d.ts`
+
+```ts
+/**
+ * fal `fal-ai/hunyuan-motion` (HY-Motion) dict output -> canonical humanoid frames / a HumanoidClip (moved from
+ * apps/showcase-port-shared/idol/smplMotion.ts, which re-exports this module). `aura3d animation import motion.json`
+ * bakes the frames into glTF channels on a rigged GLB (./bake.ts).
+ *
+ * Format (verified Nov 2026 against keypoints3d: FK of these rotations over the rest offsets reproduces every keypoint):
+ *   rot6d [1][F][22][6]  LOCAL joint rotations, SMPL 22-joint body order (SMPL_JOINTS); each 6-vector is a 3x2 matrix
+ *                        flattened row-major, i.e. columns = (v[0],v[2],v[4]) and (v[1],v[3],v[5]), Gram-Schmidt.
+ *                        Joint 0 (pelvis) is the global root orientation (== root_rotations_mat).
+ *   transl [1][F][3]     root translation (metres, Y up); keypoints3d [1][F][52][3] joint positions without transl
+ *                        (pelvis world height = transl.y + keypoints3d.pelvis.y).
+ *   30 fps. Rest pose = T-pose, Y up, character facing +Z, its left = +X: exactly the canonical humanoid frame.
+ * Root motion is stripped (horizontal translation and the clip's mean heading); the vertical hip bob is kept. Loop clips
+ * are made seamless by cross-fading their last `loopBlend` seconds into the start.
+ */
+import { HUMANOID_ROLES, type HumanoidClip, type HumanoidPoseInput, type Vec3 } from "./humanoid.js";
+export declare const SMPL_JOINTS: readonly ["pelvis", "L_hip", "R_hip", "spine1", "L_knee", "R_knee", "spine2", "L_ankle", "R_ankle", "spine3", "L_foot", "R_foot", "neck", "L_collar", "R_collar", "head", "L_shoulder", "R_shoulder", "L_elbow", "R_elbow", "L_wrist", "R_wrist"];
+export declare const SMPL_PARENTS: readonly [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19];
+export interface HyMotionDict {
+    readonly rot6d: readonly (readonly (readonly (readonly number[])[])[])[];
+    readonly transl: readonly (readonly (readonly number[])[])[];
+    readonly keypoints3d: readonly (readonly (readonly (readonly number[])[])[])[];
+}
+export interface SmplClipOptions {
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    /** Remove the clip's mean heading so it faces +Z (default true). Event clips that turn keep their turn. */
+    readonly faceForward?: boolean;
+    /**
+     * Root translation: "in-place" (default) strips horizontal travel and keeps the vertical hip bob; "keep" also keeps
+     * the horizontal travel (relative to the first frame, in the face-forward frame); "strip" removes all of it.
+     */
+    readonly rootMotion?: "in-place" | "keep" | "strip";
+}
+/** Canonical frames (30 fps) of one HY-Motion dict, before packing into a HumanoidClip. */
+export interface SmplFramesResult {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly (typeof HUMANOID_ROLES)[number][];
+    readonly meta: Readonly<Record<string, number | string>>;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+export interface SmplClipResult {
+    readonly clip: HumanoidClip;
+    /** Rest offsets (parent-local, metres) the clip was retargeted from. */
+    readonly restOffsets: readonly Vec3[];
+}
+/** Convert one HY-Motion dict to a canonical clip with timing facts in `meta` (ground speed, contacts, apex, ...). */
+export declare function smplMotionToClip(name: string, dict: HyMotionDict, opts?: SmplClipOptions): SmplClipResult;
+/** True when `value` has the HY-Motion dict shape (rot6d [1][F][22][6], transl [1][F][3], keypoints3d [1][F][J][3]). */
+export declare function isHyMotionDict(value: unknown): value is HyMotionDict;
+/** Convert one HY-Motion dict to canonical frames (30 fps) with timing facts in `meta`. */
+export declare function smplMotionToFrames(dict: HyMotionDict, opts?: SmplClipOptions): SmplFramesResult;
+//# sourceMappingURL=smplMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/skeletalMotion.d.ts`
+
+```ts
+/**
+ * Any humanoid skeleton's sampled motion (BVH, FBX, glTF clips) -> canonical humanoid frames, with the same role mapping
+ * and limb-alignment rules the Idol driver uses (./humanoid.ts). Format readers (the CLI's `animation import`) produce a
+ * `SkeletalMotion`: a joint table with rest local TRS plus per-frame local rotations/translations. This module maps it
+ * (names first for facing, geometry for roles), removes the clip's mean heading, grounds the hips, applies the
+ * root-motion mode and loop cross-fade, and returns frames that ./bake.ts writes onto a target rig.
+ *
+ * Extensionless relative imports on purpose: tools that load these sources directly under `node` resolve them to .ts.
+ */
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+export type HumanoidFacing = "+z" | "-z" | "+x" | "-x";
+export type RootMotionMode = "in-place" | "keep" | "strip";
+export interface SkeletalMotionFrame {
+    /** LOCAL rotation per joint (same order as `skeleton.bones`). */
+    readonly r: readonly Quat[];
+    /** LOCAL translation per joint (rest translation where the clip does not animate it). */
+    readonly t: readonly Vec3[];
+}
+export interface SkeletalMotion {
+    readonly skeleton: IdolSkeleton;
+    readonly fps: number;
+    readonly frames: readonly SkeletalMotionFrame[];
+}
+export interface CanonicalMotionOptions {
+    /** Trim [start, end] seconds before conversion. */
+    readonly window?: readonly [number, number];
+    readonly loop?: boolean;
+    /** Seconds of the end cross-faded into the start for loops (default 0.2). */
+    readonly loopBlend?: number;
+    /** Remove the clip's mean heading so it faces +Z (default true). */
+    readonly faceForward?: boolean;
+    readonly rootMotion?: RootMotionMode;
+    /** Model-space axis the source character faces; "auto" (default) detects it from bone names, then toes. */
+    readonly facing?: HumanoidFacing | "auto";
+    /** Role -> bone-name overrides for the source skeleton. */
+    readonly roles?: HumanoidDriverOptions["roles"];
+}
+export interface CanonicalMotion {
+    readonly fps: number;
+    readonly frames: readonly HumanoidPoseInput[];
+    readonly roles: readonly HumanoidRole[];
+    readonly meta: Readonly<Record<string, number | string>>;
+    readonly map: HumanoidMap;
+    readonly facing: HumanoidFacing;
+    readonly facingMethod: FacingDetection["method"];
+}
+export interface FacingDetection {
+    readonly facing: HumanoidFacing;
+    readonly method: "names" | "toes" | "default" | "explicit";
+}
+interface Xf {
+    readonly t: Vec3;
+    readonly r: Quat;
+    readonly s: number;
+}
+/** World transform of every joint for local rotations/translations (rest where omitted). */
+export declare function skeletonWorld(sk: IdolSkeleton, r?: readonly Quat[], t?: readonly Vec3[], order?: number[]): Xf[];
+/** Side of a bone name: "left" for LeftArm / L_hip / thigh.L / lUpLeg-style tokens, "right" likewise, else null. */
+export declare function boneSide(name: string): "left" | "right" | null;
+/**
+ * Which model-space axis a humanoid skeleton faces in its rest pose: from sided bone names (left minus right is the
+ * character's left), else from the feet (foot -> toe points forward), else +Z.
+ */
+export declare function detectHumanoidFacing(sk: IdolSkeleton): FacingDetection;
+/** Per-frame cross-fade of a loop's last `blend` seconds into its start (same rule as the HY-Motion converter). */
+export declare function crossfadeLoop(frames: readonly HumanoidPoseInput[], fps: number, blend?: number): HumanoidPoseInput[];
+/** Resample canonical frames to another rate (per-role slerp, hips lerp). Duration is preserved to the last frame. */
+export declare function resampleCanonicalFrames(frames: readonly HumanoidPoseInput[], fromFps: number, toFps: number): HumanoidPoseInput[];
+/** A sampled skeletal clip as canonical humanoid frames (see the module comment). */
+export declare function skeletalMotionToFrames(motion: SkeletalMotion, opts?: CanonicalMotionOptions): CanonicalMotion;
+export {};
+//# sourceMappingURL=skeletalMotion.d.ts.map
+```
+
+### `./dist/animation/smpl/bake.d.ts`
+
+```ts
+/**
+ * Canonical humanoid frames -> glTF animation channel data on a target skeleton (any rigged humanoid GLB, including
+ * Idol's unnamed `bone_N` rigs). Each frame goes through the same driver the games use at runtime
+ * (`createHumanoidDriver(...).pose(frame)`), so a baked clip plays exactly like the live pose did. The bake reports:
+ *
+ *   - `flips`: rotation keys swinging more than `flipThresholdDeg` in one frame (the engine's `LimbFlip` shape; the
+ *     swing is the shortest-arc angle 2·acos(|q0·q1|) between consecutive keys);
+ *   - `limbError`: angle between each limb segment the target draws and the source's canonical limb direction
+ *     (upper/lower arms and legs; ~0 for a correct retarget, float noise only);
+ *   - `motionDeg`: the largest angle any limb moves away from the target's bind pose (0 = a silent T-pose).
+ *
+ * Callers fail on flips, on a limb error above their bound and on `motionDeg` near zero instead of writing a clip that
+ * renders a broken or frozen body.
+ */
+import type { LimbFlip } from "../pose/Retarget.js";
+import { type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type IdolSkeleton, type Quat, type Vec3 } from "./humanoid.js";
+/** Limb segments checked for retarget error: role -> the role at the segment's far end. */
+export declare const LIMB_SEGMENTS: readonly (readonly [HumanoidRole, HumanoidRole])[];
+/** Facing rotation (model space) for a driver `facing` option. */
+export declare function facingQuat(facing: HumanoidDriverOptions["facing"]): Quat;
+/** Canonical-frame direction of every limb segment in a frame (accumulated role rotations applied to straight down). */
+export declare function canonicalLimbDirections(frame: HumanoidPoseInput): Partial<Record<HumanoidRole, Vec3>>;
+export declare function angleDeg(a: Vec3, b: Vec3): number;
+export interface GltfChannelData {
+    /** Target joint name and index in `skeleton.bones`. */
+    readonly bone: string;
+    readonly boneIndex: number;
+    readonly path: "rotation" | "translation";
+    /** Flat values, 4 (rotation) or 3 (translation) per key, one key per entry of `times`. */
+    readonly values: Float32Array;
+}
+export interface BakeHumanoidGltfOptions extends HumanoidDriverOptions {
+    /** Single-key swing that counts as a limb flip (default 120 degrees, the engine detector's default). */
+    readonly flipThresholdDeg?: number;
+}
+export interface HumanoidGltfBake {
+    readonly name: string;
+    readonly fps: number;
+    readonly duration: number;
+    readonly times: Float32Array;
+    readonly channels: readonly GltfChannelData[];
+    readonly flips: readonly LimbFlip[];
+    readonly limbError: {
+        readonly maxDeg: number;
+        readonly meanDeg: number;
+    };
+    readonly motionDeg: number;
+    readonly map: HumanoidMap;
+    /** Expected model-space limb directions per frame (for verifying a written file): role -> unit vector. */
+    readonly expected: readonly Partial<Record<HumanoidRole, Vec3>>[];
+}
+/** Bake canonical frames (at `fps`) into per-joint glTF rotation channels plus the hips translation channel. */
+export declare function bakeHumanoidFramesToGltf(name: string, target: IdolSkeleton, frames: readonly HumanoidPoseInput[], fps: number, opts?: BakeHumanoidGltfOptions): HumanoidGltfBake;
+/**
+ * Rotation keys whose single-key swing exceeds `thresholdDeg`. The swing between unit quaternions a, b is
+ * 2·acos(|a·b|), so the test is |a·b| < cos(threshold / 2).
+ */
+export declare function detectKeyFlips(channels: readonly GltfChannelData[], thresholdDeg?: number): LimbFlip[];
+//# sourceMappingURL=bake.d.ts.map
 ```
 
 ### `./dist/animation/threejs-compatibility/AnimationClip.d.ts`
@@ -644739,6 +648836,8 @@ export type AuthoredMaterialSnapshot = ReadonlyMap<string, Readonly<Record<strin
 export declare function snapshotMaterials(materials: Iterable<Material>): AuthoredMaterialSnapshot;
 export declare function applyMaterialOverrides(snapshot: AuthoredMaterialSnapshot, materials: Iterable<Material>, overrides: readonly TypedGLBActorMaterialOverride[]): void;
 export declare function lowerModelMaterialOverrides(spec: AuraMaterialSpec | undefined, overrides: readonly AuraModelMaterialOverride[] | undefined): TypedGLBActorMaterialOverride[];
+/** True when a model material spec or override asks for a see-through surface (`opacity` below 1). */
+export declare function modelOpacityIsTranslucent(opacity: unknown): boolean;
 //# sourceMappingURL=ModelMaterialOverrides.d.ts.map
 ```
 
@@ -665846,8 +669945,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -671189,8 +675288,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -671377,8 +675476,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -672111,8 +676210,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=6adaed9160841c89c6cbcff597ff469acff04705a5d331de813405ad90b5f975`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=ba59148f4ed6732dcd54d5400292f83a8bbd03b3052dca8b695abcb973208b4d`
 
 ### Export conditions
 
@@ -672569,8 +676668,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/input@5.5.6#contents-sha256=de2d4682a75767e3c74be5e6e7bbe2626dc3266065516c11a21e6b6c272d3982`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/input@5.6.0#contents-sha256=9c05e457bdf31cf297d9aa4842a8ed8d8a448c1787a9768731f714be7c0b2f25`
 
 ### Export conditions
 
@@ -673811,8 +677910,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/math@5.5.6#contents-sha256=15198bb189f893b49f0018fd41eb7c3e71bdea7b5394973278d8e6efb187cbcf`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/math@5.6.0#contents-sha256=c1d0168f5616f68f7020082f5219ad689884fcc1d11454d08f169d3cfb666b7a`
 
 ### Export conditions
 
@@ -675798,8 +679897,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/math@5.5.6#contents-sha256=15198bb189f893b49f0018fd41eb7c3e71bdea7b5394973278d8e6efb187cbcf`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/math@5.6.0#contents-sha256=c1d0168f5616f68f7020082f5219ad689884fcc1d11454d08f169d3cfb666b7a`
 
 ### Export conditions
 
@@ -677046,8 +681145,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/navigation-recast@5.5.6#contents-sha256=914d08601052dae30c13f670e26f81dce800ddddc851dc969470c1675b0ee5fa`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/navigation-recast@5.6.0#contents-sha256=4ed6015a1197e578964e47e15f3d25a3cbec5796150cf36710306402d6e3e168`
 
 ### Export conditions
 
@@ -677177,8 +681276,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/physics@5.5.6#contents-sha256=fd53d88bc0a796d7187dfc0dccbdeddb633da7a374c74d7d4a39e593a3bc436c`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/physics@5.6.0#contents-sha256=b071eb8495dfdae981d9feef57f6a3fa4347e4bad20fd346431a1006bef0b996`
 
 ### Export conditions
 
@@ -679401,8 +683500,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/physics-rapier@5.5.6#contents-sha256=12d153ff463777e3d9d538e0c9af944f10fabc18b22a3540d7407a95a73a6e69`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/physics-rapier@5.6.0#contents-sha256=c2f5144fa78b52be820d5d81050a2c3e5c5b45d794e0bfaa8f54edba04a218f8`
 
 ### Export conditions
 
@@ -679860,8 +683959,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/physics@5.5.6#contents-sha256=fd53d88bc0a796d7187dfc0dccbdeddb633da7a374c74d7d4a39e593a3bc436c`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/physics@5.6.0#contents-sha256=b071eb8495dfdae981d9feef57f6a3fa4347e4bad20fd346431a1006bef0b996`
 
 ### Export conditions
 
@@ -681113,8 +685212,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/physics@5.5.6#contents-sha256=fd53d88bc0a796d7187dfc0dccbdeddb633da7a374c74d7d4a39e593a3bc436c`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/physics@5.6.0#contents-sha256=b071eb8495dfdae981d9feef57f6a3fa4347e4bad20fd346431a1006bef0b996`
 
 ### Export conditions
 
@@ -681377,8 +685476,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/product-studio
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/product-studio@5.5.6#contents-sha256=a14dd790115f62c372692f528d5568f74705cff10294d4821886f4724e86d243`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/product-studio@5.6.0#contents-sha256=0cf3af6966f21599059ffbfa34e8a4f5155456c921f1d19fc15da69658528573`
 
 ### Export conditions
 
@@ -681659,8 +685758,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/react@5.5.6#contents-sha256=e6dbe29920bcc4077d82c9e6d020e6e88e9127d9f8273f58e9186b0454fe33d9`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/react@5.6.0#contents-sha256=7f687d28a321bb4bb13d240315575a3a6ed0d88bb7197f32b657bf8f529c3766`
 
 ### Export conditions
 
@@ -682061,8 +686160,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -710051,6 +714150,7 @@ export interface AtmosphereFrameSource {
     /** P3-T6 — live state + sky-change listener for SkyCaptureAdapter wiring. */
     state?(): {
         readonly sky: unknown | null;
+        readonly captureEnvironment?: boolean;
     };
     onSkyChanged?(listener: () => void): (() => void) | void;
 }
@@ -714596,8 +718696,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -716198,8 +720298,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -716243,8 +720343,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -716288,8 +720388,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -716358,8 +720458,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -716411,8 +720511,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -716497,8 +720597,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -716567,8 +720667,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -716597,8 +720697,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -716741,8 +720841,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -716799,8 +720899,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -716847,8 +720947,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -718449,8 +722549,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -718509,8 +722609,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -718594,8 +722694,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -718651,8 +722751,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -718759,8 +722859,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -718965,8 +723065,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -719094,8 +723194,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -719154,8 +723254,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -719272,8 +723372,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -719368,8 +723468,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -719429,8 +723529,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -719505,8 +723605,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -719544,8 +723644,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -719577,8 +723677,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -719610,8 +723710,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -719682,8 +723782,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -719723,8 +723823,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -724438,6 +728538,7 @@ export interface AtmosphereFrameSource {
     /** P3-T6 — live state + sky-change listener for SkyCaptureAdapter wiring. */
     state?(): {
         readonly sky: unknown | null;
+        readonly captureEnvironment?: boolean;
     };
     onSkyChanged?(listener: () => void): (() => void) | void;
 }
@@ -726966,8 +731067,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -727605,8 +731706,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -731131,8 +735232,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -731864,8 +735965,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -731999,8 +736100,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -732242,8 +736343,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -732798,8 +736899,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -735810,8 +739911,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
 
 ### Export conditions
 
@@ -736924,8 +741025,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/scene@5.5.6#contents-sha256=79f41386f91ab217d80c86d91ff732437615b0e396b6fdd9a2853e8887619f1e`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/scene@5.6.0#contents-sha256=b62c26202b4d06dccc4a3931ee207990888bbac75ee1b286d1d396160ff1ed7c`
 
 ### Export conditions
 
@@ -738050,8 +742151,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/scene@5.5.6#contents-sha256=79f41386f91ab217d80c86d91ff732437615b0e396b6fdd9a2853e8887619f1e`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/scene@5.6.0#contents-sha256=b62c26202b4d06dccc4a3931ee207990888bbac75ee1b286d1d396160ff1ed7c`
 
 ### Export conditions
 
@@ -738135,8 +742236,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/scripting@5.5.6#contents-sha256=bbdc9398ebeda62793cf0959b6a2b213add3e375554ccfa6298d5b8eac4524b8`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/scripting@5.6.0#contents-sha256=d0f8960e859f5d765d7ab28db0b73e9f96cab9eea687ca6034482ce577ffb2d5`
 
 ### Export conditions
 
@@ -739316,8 +743417,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.5.6`
-- Packed identity: `archive:@aura3d/workflows@5.5.6#contents-sha256=e0b77b05b5609c6900068b0b3c68fc9d08e05724b2b91585b2a46192df9c91a7`
+- Version: `5.6.0`
+- Packed identity: `archive:@aura3d/workflows@5.6.0#contents-sha256=d2384b66c440d27f6e2bfd45a49cafeab1d21da3c56610c6465297b3bf172a2c`
 
 ### Export conditions
 

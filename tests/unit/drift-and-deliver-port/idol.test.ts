@@ -21,7 +21,7 @@ describe("Gridlock Courier Idol pass (render layer only)", () => {
   });
 
   it("courier keeps the car-rig runtime id and the footprint-sized body", () => {
-    const json = idolCourierNode("car-rig", true, "YXZ").toJSON() as { kind: string; rotationOrder?: string; children: { kind: string; scaleMode?: string }[] };
+    const json = idolCourierNode("car-rig", true, "YXZ").toJSON() as { kind: string; rotationOrder?: string; children: readonly { kind: string; scaleMode?: string }[] };
     expect(json.kind).toBe("group");
     expect(json.rotationOrder).toBe("YXZ");
     expect(json.children[0]!.kind).toBe("model");

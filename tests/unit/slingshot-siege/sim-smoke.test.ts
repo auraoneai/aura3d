@@ -15,6 +15,20 @@ async function pump(sim: SiegeSim, frames: number): Promise<void> {
   }
 }
 
+/**
+ * Steps until `done(frame)` holds (checked every frame) or `maxFrames` pass; returns the frames stepped. The shot tests
+ * stop once the property they prove is reachable instead of always simulating 14 s (level 1: the gull dies at ~1.5 s,
+ * the shot settles at ~5 s), which kept the 2 vCPU ACR runner past the 30 s budget.
+ */
+async function pumpUntil(sim: SiegeSim, maxFrames: number, done: (frame: number) => boolean): Promise<number> {
+  for (let i = 0; i < maxFrames; i += 1) {
+    sim.update(1 / 60);
+    if (done(i)) return i + 1;
+    if (i % 60 === 59) await yieldToLoop();
+  }
+  return maxFrames;
+}
+
 // Same launch the evidence hook uses — verified to reach the level-1 tower.
 const ORIGIN: [number, number, number] = [-7.4, 1.8, 0];
 const VELOCITY: [number, number, number] = [9.5, 7.5, 0];
@@ -36,8 +50,11 @@ describe("slingshot-siege sim", () => {
     const sim = new SiegeSim({ level, seed: 42 });
     const ok = sim.launch("stone", ORIGIN, VELOCITY);
     expect(ok).toBe(true);
-    await pump(sim, 60 * 14);
-    const kinds = sim.drainEvents().map((e) => e.kind);
+    const kinds: string[] = [];
+    await pumpUntil(sim, 60 * 14, () => {
+      for (const e of sim.drainEvents()) kinds.push(e.kind);
+      return kinds.includes("shot-settled") && sim.gullsAlive() < sim.gullList().length;
+    });
     expect(sim.gullsAlive()).toBeLessThan(sim.gullList().length);
     expect(kinds).toContain("shot-settled");
   }, 30_000);
@@ -46,7 +63,12 @@ describe("slingshot-siege sim", () => {
     const level = LEVELS[0]!;
     const sim = new SiegeSim({ level, seed: 42 });
     sim.launch("stone", ORIGIN, VELOCITY);
-    await pump(sim, 60 * 14);
+    // Same 14 s budget as before, stopped once a squash happened and every squashed gull's tween clock passed 1.05 s
+    // (the last-gull slow-mo scales that clock, so wall frames since the squash are not a substitute).
+    await pumpUntil(sim, 60 * 14, () => {
+      const deadNow = sim.gullList().filter((g) => !g.alive);
+      return deadNow.length > 0 && deadNow.every((g) => g.squashAge > 1.05);
+    });
     const dead = sim.gullList().filter((g) => !g.alive);
     expect(dead.length).toBeGreaterThan(0);
     for (const g of dead) {
@@ -62,7 +84,7 @@ describe("slingshot-siege sim", () => {
     await pump(sim, 90);
     const used = sim.ability();
     expect(used).toBe(true);
-    await pump(sim, 60 * 10);
+    await pumpUntil(sim, 60 * 10, () => sim.piecesAlive() < sim.pieceList().length);
     expect(sim.piecesAlive()).toBeLessThan(sim.pieceList().length);
   }, 30_000);
 });

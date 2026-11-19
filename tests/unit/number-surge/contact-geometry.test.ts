@@ -33,7 +33,13 @@ const CORRIDOR_HALF = CONFIG.LANE_LIMIT + DIMS.BALL_RADIUS;
 const MARGIN = 0.25;
 const BALL_TOP = DIMS.BALL_RADIUS * 2;
 
-function bounds(p: ArrayLike<number>) {
+/** Flat xyz numbers from a root geometry position attribute (flat numbers, Float32Array, or [x, y, z] tuples). */
+function flatPositions(p: ArrayLike<number> | readonly (readonly number[])[]): number[] {
+  return Array.from(p as ArrayLike<number | readonly number[]>).flatMap((v) => (typeof v === "number" ? [v] : [...v]));
+}
+
+function bounds(attr: ArrayLike<number> | readonly (readonly number[])[]) {
+  const p = flatPositions(attr);
   const min = [Infinity, Infinity, Infinity];
   const max = [-Infinity, -Infinity, -Infinity];
   for (let i = 0; i < p.length; i += 3) {
@@ -72,7 +78,8 @@ describe("number surge contact geometry (visual == sim hitbox)", () => {
     }
     for (const row of ROWS) expect(row.x0 - row.wMax / 2).toBeGreaterThan(CORRIDOR_HALF + MARGIN);
     for (const spec of [buildSleekTrackCurbSpec(), buildSleekTrackCurbGlowSpec()]) {
-      for (let i = 0; i < spec.positions.length; i += 3) expect(Math.abs(spec.positions[i]!)).toBeGreaterThan(CORRIDOR_HALF + MARGIN);
+      const xyz = flatPositions(spec.positions);
+      for (let i = 0; i < xyz.length; i += 3) expect(Math.abs(xyz[i]!)).toBeGreaterThan(CORRIDOR_HALF + MARGIN);
     }
     // Highway pylons hang strictly beneath the deck.
     expect(bounds(buildMergedHighwayPylonSpec().positions).max[1]!).toBeLessThan(0);

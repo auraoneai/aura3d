@@ -57,7 +57,7 @@ function sweep() {
     const all = id === "oak" ? [...(list ?? []), ...accents.sakuraMapleTrees] : (list ?? []);
     for (const p of all) {
       const t = idolPropTransform(id as keyof typeof IDOL_PROP_KEYS, p);
-      const s = t.scale as number[], pos = t.position as number[], yaw = (t.rotation as number[])[1]!;
+      const s = t.scale as readonly number[], pos = t.position as readonly number[], yaw = (t.rotation as readonly number[])[1]!;
       // trunk-sized footprint for trees and lanterns, the full plan (to the eaves) for buildings
       const tree = id === "pine" || id === "oak" || id === "lantern";
       const hx = (b[0]! * s[0]!) / 2 * (tree ? 0.12 : 1), hz = (b[2]! * s[2]!) / 2 * (tree ? 0.12 : 1);

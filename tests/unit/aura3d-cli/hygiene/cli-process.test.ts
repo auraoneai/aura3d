@@ -1,11 +1,11 @@
 /**
  * @aura3d/cli 5.6.0 A6 — the CLI process: --version, exit codes (0 ok / 1 failure / 2 usage + unknown with
  * "did you mean"), help --json, and `--help` never runs (or writes from) any verb. Runs src/cli.ts through tsx;
- * every invocation is started in parallel once.
+ * every invocation runs once in beforeAll through a small pool (see CLI_POOL).
  */
 import { execFile } from "node:child_process";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { availableParallelism, tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 
@@ -64,6 +64,7 @@ const HELP_WRITERS: readonly (readonly string[])[] = [
 let project: string;
 let before: Record<string, number>;
 const results = new Map<string, Run>();
+const CLI_POOL = Math.max(2, Math.min(4, availableParallelism()));
 
 beforeAll(async () => {
   project = consumerProject();
@@ -85,12 +86,20 @@ beforeAll(async () => {
     ["anim-dry", ["animation", "scene", "cast", "add", "--dry-run"], project],
     ...HELP_WRITERS.map((args): [string, readonly string[], string] => [`help:${args.join(" ")}`, args, project])
   ];
-  const settled = await Promise.all(jobs.map(async ([key, args, cwd]) => [key, await run(args, cwd)] as const));
-  for (const [key, result] of settled) results.set(key, result);
-}, 120_000);
+  // Each tsx cold start transforms the whole CLI graph (~3 CPU-s, ~250 MB). All 22 at once on the 2-vCPU ACR runner
+  // (next to the other vitest worker) thrashed until every process hit the 110 s kill (exit 143), so cap concurrency.
+  let next = 0;
+  await Promise.all(Array.from({ length: CLI_POOL }, async () => {
+    while (next < jobs.length) {
+      const [key, args, cwd] = jobs[next++]!;
+      results.set(key, await run(args, cwd));
+    }
+  }));
+}, 300_000);
 
 describe("aura3d CLI process", () => {
   it("--version prints the package version", () => {
+    // invariant: the CLI's --version must print packages/aura3d-cli/package.json's version; the toContain checks are on the spawned process output, not on source text.
     const pkg = JSON.parse(readFileSync(join(repo, "packages/aura3d-cli/package.json"), "utf8")) as { version: string };
     expect(results.get("version")).toMatchObject({ code: 0, stdout: `${pkg.version}\n` });
     expect(JSON.parse(results.get("version-json")!.stdout)).toEqual({ name: "@aura3d/cli", version: pkg.version });

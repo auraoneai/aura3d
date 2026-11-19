@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { VEHICLE_SPECS, type VehicleType } from "../../../apps/showcase-roadster-rush/src/native/constants";
 import { IDOL_HERO_FIT, IDOL_TRAFFIC, IDOL_TRAFFIC_FIT, gantryFit } from "../../../apps/showcase-roadster-rush/src/render/idolFleet";
 
+// invariant: every Idol model(...) call in main.ts must use world scale mode, or Idol GLBs render at their raw generated size (FIX-CHECKLIST scale bug).
 const main = readFileSync(resolve(__dirname, "../../../apps/showcase-roadster-rush/src/main.ts"), "utf8");
 
 describe("Apex Overdrive Idol models keep their real-world size", () => {

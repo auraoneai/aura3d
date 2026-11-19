@@ -1,7 +1,8 @@
-import { execFileSync } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { promisify } from 'node:util';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { inspectInstalledRelease, loadValidatedReleasePlan } from '../../tools/release/exact-release-plan.mjs';
 import { NODE_ENGINE_RANGE, resolveNodeMatrix } from '../../tools/release/node-support.mjs';
@@ -30,14 +31,17 @@ const runEachNode = (check: string, file: string): void => {
 };
 
 describe('installed native capability consumer', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     const candidate = loadValidatedReleasePlan();
     if (!candidate) throw new Error('A3D_RELEASE_PLAN is required for the native packed consumer');
     plan = candidate;
     project = mkdtempSync(join(tmpdir(), 'aura-native-consumer-'));
     writeFileSync(join(project, 'package.json'), JSON.stringify({ name: 'aura-native-consumer', private: true, type: 'module' }));
-    execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', ...plan.packages.map(p => resolve(p.tarball))], {
-      cwd: project, encoding: 'utf8', stdio: 'pipe', timeout: 240_000, maxBuffer: 16 * 1024 * 1024
+    // Asynchronous: the install of every candidate archive takes about a minute on the ACR runner, and a synchronous
+    // child process that long blocks the worker's event loop past vitest's 60 s RPC timeout ("Timeout calling
+    // onTaskUpdate", run native-5-source-560-002), which fails the run even though every test passes.
+    await promisify(execFile)('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', ...plan.packages.map(p => resolve(p.tarball))], {
+      cwd: project, encoding: 'utf8', timeout: 240_000, maxBuffer: 16 * 1024 * 1024
     });
     const installed = inspectInstalledRelease(process.cwd(), project, plan);
     expect(new Set(installed.packages.map((p: any) => p.name))).toEqual(new Set(plan.packages.map(p => p.name)));

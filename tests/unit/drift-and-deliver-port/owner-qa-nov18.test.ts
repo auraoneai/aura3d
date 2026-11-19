@@ -159,7 +159,7 @@ describe("Gridlock Courier owner QA (Nov 18): the driver reads from the bird's-e
   });
 
   it("mounts the glass-roof body, the cabin and the glass in the car-rig group", () => {
-    const json = idolCourierNode("car-rig", true, "YXZ").toJSON() as { children: { kind: string; name?: string; asset?: { url?: string } }[] };
+    const json = idolCourierNode("car-rig", true, "YXZ").toJSON() as { children: readonly { kind: string; name?: string; asset?: { url?: string } }[] };
     const names = json.children.map((c) => c.name);
     expect(names).toContain("car-rig-idol");
     expect(names).toContain("car-rig-cabin");

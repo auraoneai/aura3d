@@ -24,6 +24,7 @@ const programs = {
 };
 
 /** The uniform names WaterRuntime binds (read from its `new Map<string, UniformValue>([...])` literal). */
+// invariant: WaterRuntime.ts's uniform/texture tables are what the WebGPU twins must bind; the not.toContain check is on generated WGSL, not source text.
 const runtimeSource = readFileSync(new URL("../../../../packages/engine/src/production-runtime/world/WaterRuntime.ts", import.meta.url), "utf8");
 const runtimeUniforms = new Set([...runtimeSource.matchAll(/^\s*\["(u_\w+)",/gm)].map((match) => match[1]!));
 const runtimeTextures = new Set([...runtimeSource.matchAll(/\["(u_\w+)", new TextureBinding/g)].map((match) => match[1]!));
