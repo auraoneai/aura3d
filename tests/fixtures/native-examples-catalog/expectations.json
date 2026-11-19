@@ -2551,7 +2551,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-aura-fc-3d/index.html",
-          "sha256": "666dbd78bc24479b7b96916305cd10f0b938a5abacdbd502d74b170f51db82c9"
+          "sha256": "837df50f47a37aa06ce352c5f89ca7407be08f308de588466047fda17c99fdab"
         },
         {
           "path": "apps/showcase-aura-fc-3d/src/game/camera.ts",
@@ -2637,7 +2637,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-aura-hoops-3d/index.html",
-          "sha256": "d409f0f6a13ffae9be5d5976a13c7b1c6b3ba840e60a5caa2ad1087f7f766f40"
+          "sha256": "21bf5d618e620658393ad847134e3d2fb9b86fa34be1e8e75b984e0dd3538bc5"
         },
         {
           "path": "apps/showcase-aura-hoops-3d/src/broadcast.ts",
@@ -2731,7 +2731,7 @@
         },
         {
           "path": "apps/showcase-cross-hop/index.html",
-          "sha256": "12b1cd40de99ac40e4b5800b11e2d1cb1eb42f770b3627a554f94a28dd4ef537"
+          "sha256": "8324f8842b2b43df844119242649ad54e3345464c2b0a91b3622b5659bf5e721"
         },
         {
           "path": "apps/showcase-cross-hop/src/aura-assets.ts",
@@ -2797,7 +2797,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-pips-big-leap/index.html",
-          "sha256": "9ace8d8b16dd5c9f98a14c2b714cf4cdddde18ae9c55211ff96932b1dc5f977c"
+          "sha256": "a93044b778a4d210e14a8b5623daefad3f16b9f2631612441cd9022499b46e80"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/styles.css",
@@ -2908,7 +2908,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-slingshot-siege/index.html",
-          "sha256": "eb29a9f41eb441f1b9a1736af49bf1b7396a29ba3e8d4dff3840100e00de51b5"
+          "sha256": "a16114bb2b6556da94b0916692034d672ab05bb2d5e90748a6372f05bae712e0"
         },
         {
           "path": "apps/showcase-slingshot-siege/src/styles.css",
@@ -3035,7 +3035,7 @@
         },
         {
           "path": "apps/showcase-dot-dash-3d/index.html",
-          "sha256": "5f51b5fe9aab4b9e9a8f2af01d370874b6b3372ff8dd29c986284eb6d973b31b"
+          "sha256": "a2e8381258ea423dcd047c29853d69a8b4d8958bf25545c60df330a509b5c8cb"
         },
         {
           "path": "apps/showcase-port-shared/quickbar.css",
@@ -3118,7 +3118,7 @@
         },
         {
           "path": "apps/showcase-bunker-zero/index.html",
-          "sha256": "e56b3a58b9bb1e00aa83e222e5e9b0d4ee30b5985f24acadb6d06f28241611ca"
+          "sha256": "05dfe248c140bd0095d889bcee33eabd611071da7d51de02227e1230428f705f"
         },
         {
           "path": "packages/engine/src/agent-api/SceneGroundingUtils.ts",
@@ -3218,7 +3218,7 @@
         },
         {
           "path": "apps/showcase-aura-links-3d/index.html",
-          "sha256": "661cf083edafa0c2f964df8b4278cac54f59ab0683509a4adf833794f168c458"
+          "sha256": "b0ec492d7b66a1d34971c66fc64898cd3fa7aa6d81f46f6f2ebf26ba9419f039"
         },
         {
           "path": "public/aura-assets/linksGolferAthleteClean.b56529b1.glb",
@@ -3301,7 +3301,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-top-tennis/index.html",
-          "sha256": "c376decc8eb724fb0890a6d30ee7dc40c3a4b8498443e5869585502faa04a31e"
+          "sha256": "20263d4e762981f1f7f59aa303000d2667439d36c950350e2b59c1dddb962c4e"
         },
         {
           "path": "examples/aura-slam/main.ts",
@@ -3432,7 +3432,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-iron-crown/index.html",
-          "sha256": "ffa90df1d9f599ec854d20f512a0f4a058bf0b7bb8792f4e85d3487645cb4d3a"
+          "sha256": "2c6c0b44d02c78d41ce6889815244e8c06e9adf706d8c83f87cc8dd4ff18bd2c"
         },
         {
           "path": "apps/showcase-iron-crown/src/styles.css",
@@ -3531,7 +3531,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-roadster-rush/index.html",
-          "sha256": "ca45415cf34c0b82f0b3bbe37407e40c8c0abdcb8a2d7c2b1b41a4e88e92fe21"
+          "sha256": "6700f9947e4cfb1a554c6cb9ecbafa80e09b15bc04a188ed3de292cdca6a270e"
         },
         {
           "path": "apps/showcase-roadster-rush/src/native/hud.css",
@@ -3610,7 +3610,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-teleoperator/index.html",
-          "sha256": "7d2092a739390d8f26ec7efa7cd9e973e5d49e95d1f2d53d214e2d355f78d562"
+          "sha256": "e1c22b0fe458f5b79639def40b254bdd1b54809163e58fc8c28890ea6c2ffe5a"
         },
         {
           "path": "apps/showcase-teleoperator/src/intro.ts",
@@ -3792,7 +3792,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-heatsink-port/index.html",
-          "sha256": "a88caa115ea0d3a4ec5b0b7f7a3f6d610a6aed02fd31b2a6150fdef7acd5602f"
+          "sha256": "669edef304cfb8a42d35ca0de3c6037020754ff5b6ae9c47079f4ae88503f376"
         },
         {
           "path": "examples/heatsink-port/main.ts",
@@ -3988,7 +3988,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-drift-and-deliver-port/index.html",
-          "sha256": "4c34c5b3628f27468da7fc4dfa2d27881caec496fc13566f07620ca26a7e365e"
+          "sha256": "dab5ba9578ef51bc8cdf28be5ea1491c16f4b08f8ec22faecaacbafcc222c9c6"
         },
         {
           "path": "examples/drift-and-deliver-port/main.ts",
@@ -4180,7 +4180,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-last-train-port/index.html",
-          "sha256": "2988979118b86978b1a95d408117ddc645ebd8358f878b6b80ff53aa43ab4de4"
+          "sha256": "509a895292c786643e884f6393175241b462cefcfee0de9c40d6470adb3cfc0f"
         },
         {
           "path": "examples/last-train-port/main.ts",
@@ -4393,7 +4393,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-cloud-runner-port/index.html",
-          "sha256": "af998468ab691449172c997108efdda939b1c452725b1430cc2557914be03426"
+          "sha256": "4b6bdf73acfbf24a6e05a21539879ba428dfcd8d4d8276e6d78e1393a8111121"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/main.ts",
@@ -4625,7 +4625,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-ninja-runner-port/index.html",
-          "sha256": "ae52bb509234efed186cd8ead6f7be62a29836525bdb86f52803b7b58b65de9c"
+          "sha256": "a95ee82f00314540526b0c7aa556b9039efddb3097e8fd500a778a64b6194950"
         },
         {
           "path": "examples/ninja-runner-port/main.ts",
@@ -4865,7 +4865,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-roadster-hours-port/index.html",
-          "sha256": "c2a35eddf1ce12ef398b46f8f670f4b248298525ebf66efa1c19d2aac39e70dd"
+          "sha256": "00232abf86c63dbecf205e0372b5ad45b7e221ab40b92758be98aeb1fc283ee8"
         },
         {
           "path": "examples/roadster-hours-port/main.ts",
@@ -5076,7 +5076,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-silt-and-signal-port/index.html",
-          "sha256": "d59c997eb0914730b8acb00413765af0a4aaad978386f25df192c9765da2a127"
+          "sha256": "7f0ab5e568ed2b32d6ce690655158fc38efef57a48e9152b3505b25962e4e938"
         },
         {
           "path": "examples/silt-and-signal-port/main.ts",
@@ -5181,7 +5181,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-serpentine-sky-run-port/index.html",
-          "sha256": "2b5521b3c7b65ed7332ab8d432ec43a9b857313d4ecabbfe509efcc2f2b696ee"
+          "sha256": "7be160218af6c92e9a344d3a8248252a1aed65beccb816d17c90cdb758c70b6f"
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
@@ -5403,7 +5403,7 @@
         },
         {
           "path": "apps/showcase-splat-rush-port/index.html",
-          "sha256": "b8e2fdedf125c92f7f7665f1f05dabf17e2f2b0084a8624071b2c5d01f311fa1"
+          "sha256": "9796f532b6000a4aef636b5e8446c3279b77ec392f59251eb9b88b4b7abd02bb"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -5585,7 +5585,7 @@
         },
         {
           "path": "apps/showcase-strange-orbit-port/index.html",
-          "sha256": "8351967e82bbd9e1a2a07cd3c3812dd9e7230c41e3628a5d865e71a5450c2b7a"
+          "sha256": "c728af585fe611cca0f50e13ea5def2674751f90e0869945909a74a9dbd2c930"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -5765,7 +5765,7 @@
         },
         {
           "path": "apps/showcase-where-the-wind-wanders-port/index.html",
-          "sha256": "d61c38fbb50e1fce4684d9452486e7aa2d061b56701101f97e208740aa47d30d"
+          "sha256": "1a9f5cf46e2d7ba7aa53e366fa86a63b4d592cd1600061fdd5fcdca29fb7ce09"
         }
       ],
       "regions": [
@@ -6080,7 +6080,7 @@
         },
         {
           "path": "apps/showcase-heatsink/index.html",
-          "sha256": "b69863019ff755445860c332f6341c092d33b89cb3b8aa59b02dd41985f5a1a3"
+          "sha256": "364a103cae8d160dc37285554f3d63aa1b68db21d569f077779dfa3aff4ac5ed"
         },
         {
           "path": "public/aura-assets/heatsinkDroneOrion.988f172d.glb",
@@ -6163,7 +6163,7 @@
         },
         {
           "path": "apps/showcase-aura-diamond-3d/index.html",
-          "sha256": "53a43078a56bf367d485c2d5e61654dc2d439b249616717f889ab1f6098d287e"
+          "sha256": "114222d28ccd5fc01404a028c9401e21b8cddc6134f234122ac43272d796c9de"
         }
       ],
       "regions": [
@@ -6593,7 +6593,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-shape-shift-sprint/index.html",
-          "sha256": "7e9293104ced5a1924d5c31dd9f0f6a19ea620474c9061021e15a294768e25fe"
+          "sha256": "d3a074caeebb1c23bfc002959cca8847bc52fabc5c1997f71f5cac2c6ecd36f5"
         },
         {
           "path": "apps/showcase-shape-shift-sprint/src/world.ts",
@@ -6676,7 +6676,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-number-surge/index.html",
-          "sha256": "6574dece945f94a33a3511e6b9a0b6b99d75a5a9b13a62c40adfebf0f78c8730"
+          "sha256": "f9c031f633c1320de01d2d81b61fcff366209a4df4e41bfef0abc7d315681ebf"
         },
         {
           "path": "apps/showcase-number-surge/src/world.ts",
@@ -6759,7 +6759,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-splat-turf/index.html",
-          "sha256": "713887f68c99692105e0ba231c33fc862e1c2217d4506ba88f8c4a835f823ec3"
+          "sha256": "58795b3d6277982c74f40d5120d4ba4796dfa722bc6a0559c4bc3ca117ea69d1"
         },
         {
           "path": "apps/showcase-splat-turf/src/world.ts",
@@ -6842,7 +6842,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-polarity-orbs/index.html",
-          "sha256": "aee2d801fcbcef6f5b7d9e49e29862a18eb28304a3a6e13bc54bb28b7a26a5b4"
+          "sha256": "9f879f41e079d53cf30e152a0090e676e71118d4647198b1dbb259717d479f32"
         },
         {
           "path": "apps/showcase-polarity-orbs/src/world.ts",
@@ -6942,7 +6942,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-beat-hopper/index.html",
-          "sha256": "406ced3b943dcd4050ca974515a1176cb2dd43d1ea92730802225fa1ac9a886d"
+          "sha256": "37bc6b4fda2487db30276e28cf77e0c6b8adae8ffddd7e81007ac00eea715116"
         },
         {
           "path": "apps/showcase-beat-hopper/src/world.ts",
