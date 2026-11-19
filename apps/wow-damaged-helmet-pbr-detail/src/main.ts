@@ -1,34 +1,15 @@
-import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
+import { loadGltfScene } from "@aura3d/engine/renderer";
+import { startProductScene } from "../../wow-common/src/product-scene";
 
-void startWowShowcase({
-  appId: "wow-damaged-helmet-pbr-detail",
-  title: "Damaged Helmet",
-  subtitle: "Imported Damaged Helmet GLB for close PBR texture, normal, occlusion, emissive-panel, and metallic-response inspection.",
-  assetId: "damaged-helmet",
-  environmentId: "venice-sunset",
-  controls: {
-    yaw: 0.42,
-    pitch: -0.04,
-    zoom: 0.74,
-    exposure: 1.12,
-    roughnessScale: 0.76,
-    metallicScale: 0.96,
-    clearcoatBoost: 0.12,
-    backgroundBlur: 0.28,
-    backgroundVisible: false,
-    shadows: true
-  },
-  lightingRig: {
-    keyIntensity: 2.3,
-    fillIntensity: 1.0,
-    rimIntensity: 1.28
-  },
-  postProcess: {
-    tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
-    bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
-    ssao: { enabled: true, radius: 2, intensity: 0.32 },
-    fxaa: { enabled: true },
-    vignette: { enabled: true, intensity: 0.22 }
-  },
-  orbitSpeed: -0.0022
+void startProductScene({
+  id: "wow-damaged-helmet-pbr-detail",
+  loadModel: (viewport) => loadGltfScene({
+    url: "/fixtures/asset-corpus/damaged-helmet.glb",
+    assetId: "damaged-helmet",
+    assetName: "Damaged Helmet",
+    viewport
+  }),
+  lighting: { intensity: 1.35, reflection: 1.2, specular: 1.15, rotation: 0.62 },
+  background: false,
+  orbit: { yaw: 0.42, pitch: -0.04, zoom: 0.74, radiansPerSecond: -0.13 }
 });

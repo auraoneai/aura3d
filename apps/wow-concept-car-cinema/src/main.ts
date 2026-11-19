@@ -1,34 +1,29 @@
-import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
+import { applyCarConceptMaterialStability, carConceptMaterialRenderStateOverrides } from "@aura3d/engine/assets";
+import { loadGltfScene } from "@aura3d/engine/renderer";
+import { startProductScene } from "../../wow-common/src/product-scene";
 
-void startWowShowcase({
-  appId: "wow-concept-car-cinema",
-  title: "Concept Car Studio",
-  subtitle: "Imported high-triangle concept car GLB with clearcoat, transmission, iridescence, variants, HDR lighting, and cinematic orbit.",
-  assetId: "car-concept",
-  environmentId: "studio-small-08",
-  controls: {
-    yaw: -0.38,
-    pitch: -0.08,
-    zoom: 0.82,
-    exposure: 1.18,
-    roughnessScale: 0.74,
-    metallicScale: 1.18,
-    clearcoatBoost: 0.16,
-    backgroundBlur: 0.08,
-    backgroundVisible: true,
-    shadows: true
+void startProductScene({
+  id: "wow-concept-car-cinema",
+  async loadModel(viewport) {
+    const car = await loadGltfScene({
+      url: "/fixtures/threejs-parity/assets/vehicles/car-concept.glb",
+      assetId: "car-concept",
+      assetName: "Concept Car",
+      viewport,
+      materialRenderStateOverrides: carConceptMaterialRenderStateOverrides("current-routes-flagship")
+    });
+    for (const paint of car.resources.materialLibrary.values()) {
+      applyCarConceptMaterialStability(paint, {
+        materialKey: paint.name,
+        profile: "cinematic",
+        roughnessScale: 0.74,
+        metallicScale: 1.18,
+        clearcoatBoost: 0.16
+      });
+    }
+    return car;
   },
-  lightingRig: {
-    keyIntensity: 2.5,
-    fillIntensity: 1.1,
-    rimIntensity: 1.35
-  },
-  postProcess: {
-    tonemapping: { enabled: true, mode: "aces", exposure: 1.15 },
-    bloom: { enabled: true, intensity: 0.22, threshold: 0.8 },
-    ssao: { enabled: true, radius: 2, intensity: 0.32 },
-    fxaa: { enabled: true },
-    vignette: { enabled: true, intensity: 0.22 }
-  },
-  orbitSpeed: 0.0028
+  lighting: { intensity: 0.54, reflection: 0.32, specular: 0.012, rotation: 0.15 },
+  background: true,
+  orbit: { yaw: -0.38, pitch: -0.08, zoom: 0.82, radiansPerSecond: 0.17 }
 });
