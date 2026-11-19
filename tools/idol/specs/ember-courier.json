@@ -1,0 +1,16 @@
+{
+  "game": "ember-courier",
+  "outDir": "marketing/public/models/ember-courier",
+  "style": "High-end industrial science-fiction videogame hero sculpt. Photoreal machined materials with deliberate large readable panel shapes.",
+  "items": [{
+    "key": "character",
+    "kind": "character",
+    "role": "hero",
+    "rig": true,
+    "animations": ["idle", "walk", "run", "jump"],
+    "size": {"height": 1.92},
+    "tex": 2048,
+    "seed": 492508,
+    "subject": "Original rescue exo-courier, athletic human proportions, substantial asymmetric segmented burnt-orange left shoulder pauldron over a graphite ceramic exosuit. Chiseled dark smoked visor with a single narrow luminous amber horizontal light, contrasting pale gunmetal jaw and collar. Cropped cobalt-blue textile cape tabs mounted flat against upper back, compact safety-orange courier pack, ribbed flexible joints between distinct armored chest, waist, pelvis, forearms and greaves. Empty gloved hands, high-tread boots. Crisp machined edges with selectively worn metal, subtle white reflective rescue stripes and fine vent grooves; no weapons, helmet horns, platform, text, or logos. Unobstructed limbs and neck, no dangling or floor-length fabric."
+  }]
+}

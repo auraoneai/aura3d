@@ -1,0 +1,70 @@
+{
+  "name": "Ember Courier",
+  "creator": "AuraOne",
+  "model": "character.glb",
+  "sha256": "92badddf8be5ad2229228201debd2465cd797467bdcbe15687077ab632ee0f26",
+  "bytes": 4008468,
+  "source": {
+    "description": "An original rescue exosuit character generated from the project brief, with an image-to-mesh reconstruction, provider-generated humanoid rig and motion clips.",
+    "spec": "tools/idol/specs/ember-courier.json",
+    "generatedAt": "2026-11-19T19:41:44.055Z",
+    "concept": {
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f551-de46-7213-93e2-13702d3a86bf",
+      "sha256": "3317d22ebc0af7a913df523bc709c41d048c0ebae635c9157e8f43e2c8b51b26"
+    },
+    "generatedMesh": {
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f552-6a79-7e30-806f-07543c49f459",
+      "sha256": "351f2fa3fe16bdd45376115c6d66add87ca50219a399a0b4c37edb1f7f0a5ce3",
+      "riggedSha256": "c1899400e73ec61101aebeeef0363517dc109cc03230d03fd083af9c8477df13"
+    },
+    "rights": {
+      "provider": "fal.ai",
+      "terms": "https://fal.ai/terms",
+      "source": "Generated from an original project description with no third-party source model or reference image."
+    },
+    "articulation": {
+      "script": "tools/idol/articulate-ember-courier.py",
+      "operation": "Split the textured armor shell at neck, shoulders, elbows, wrists, waist, hips, knees and ankles. Each plate follows its original joint. Dark graphite overlapping seals close the cuts. Provider clip tracks and inverse bind matrices are preserved."
+    }
+  },
+  "geometry": {
+    "vertices": 29245,
+    "triangles": 35031,
+    "normals": true,
+    "skinCount": 1,
+    "joints": [
+      28
+    ],
+    "animations": [
+      "idle",
+      "walk",
+      "run",
+      "jump"
+    ],
+    "textureCount": 3,
+    "normalization": {
+      "yawDeg": -90,
+      "scale": 1,
+      "sceneScale": 1.92,
+      "size": [
+        0.998,
+        1,
+        0.305
+      ],
+      "minY": 0
+    },
+    "forward": "+Z",
+    "up": "+Y"
+  },
+  "skinCheck": {
+    "command": "aura3d assets validate --skin character.glb",
+    "pass": true,
+    "posesPerClip": 10,
+    "clips": 4,
+    "maximumTriangleStretch": 1,
+    "overLimit": 0,
+    "flaps": 0
+  }
+}
