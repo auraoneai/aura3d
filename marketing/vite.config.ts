@@ -36,7 +36,7 @@ const htmlInputs = Object.fromEntries([
   ] as const)
 ]);
 
-const observatorySources = new Map(["main", "stage"].map((file) => [
+const observatorySources = new Map(["main", "stage", "aura-assets"].map((file) => [
   `/apps/aura-prism-observatory/${file}.ts.txt`,
   resolve(repoRoot, `apps/aura-prism-observatory/src/${file}.ts`)
 ]));
