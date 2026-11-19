@@ -96,6 +96,7 @@ describe("canvas antialias decision (resolveCanvasAntialias)", () => {
 
   it("the mount passes the decision to the renderer and records the created context", () => {
     const source = readFileSync("packages/engine/src/agent-api/compiler/renderer.ts", "utf8");
+    // invariant: the mount must pass resolveCanvasAntialias's decision as the context's antialias attribute and record it; context creation needs a real canvas, so no unit seam observes it.
     expect(source).toContain("const canvasAntialias = resolveCanvasAntialias(canvas, flags);");
     expect(source).toContain("antialias: canvasAntialias,");
     expect(source).not.toMatch(/antialias: true,\n\s+\.\.\.\(requestedOutput/);

@@ -13,6 +13,7 @@ describe("wow neon city car material stability", () => {
     const materialSource = readFileSync("packages/rendering/src/TexturedPBRMaterial.ts", "utf8");
     const shaderSource = readFileSync("packages/rendering/src/ShaderLibrary.ts", "utf8");
 
+    // invariant: the car-concept specular caps in the shared parity routes, CarConceptMaterialStability and the PBR shader must stay in source — they keep the delayed HDR environment from reintroducing white car speckle, which no unit-level render can observe (the retired app's own clearcoatBoost check went with the app).
     expect(currentRoutesSource).toContain("environmentMapSpecularIntensity: carConcept ? Math.min(environmentMapSpecularIntensity, 0.012)");
     expect(currentRoutesSource).toContain("Math.min(base.proceduralMap.specularIntensity * exposure, 0.01)");
     expect(currentRoutesSource).toContain("applyCarConceptMaterialStability(material, {");
