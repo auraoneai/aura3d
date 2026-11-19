@@ -1,80 +1,88 @@
 {
-  "name": "Vesper GT",
-  "creator": "AuraOne",
-  "model": "coupe.glb",
-  "sha256": "67dc9f6c2492615276c5c06cd92c7e8fab9b1e3fe0741a68131af2390260899d",
-  "bytes": 4676560,
+  "asset": "Vesper GT original coupe",
   "source": {
-    "generatedAt": "2026-11-19T19:44:38.039Z",
-    "concept": {
-      "provider": "fal.ai",
-      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
-      "requestId": "01a1f551-ee8a-7bf1-8984-ff75bdae8709",
-      "sourceFile": "tools/idol/references/vesper-gt/coupe.png",
-      "sha256": "bb3e251fc5abc7044d4907d56355d075227ce02357637f1bea362ac77e372aba"
-    },
-    "generatedMesh": {
-      "provider": "fal.ai",
-      "model": "speridlabs/idol/max",
-      "requestId": "01a1f552-9049-7cf0-af9d-f23189bf4d49",
-      "sha256": "f83115cd9de380b168d1ee71c0d4adb50a40f96981968b6d7d12eae27184c0ad",
-      "settings": {
-        "image_url": "(reference still)",
-        "enable_pbr": true,
-        "image_type": "synthetic",
-        "seed": 29,
-        "mesh_resolution": 1024
-      }
-    },
-    "rights": {
-      "description": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
-      "terms": "https://fal.ai/terms",
-      "sourcePage": "https://fal.ai/models/speridlabs/idol/max"
+    "step": "reference",
+    "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+    "requestId": "01a1f551-ee8a-7bf1-8984-ff75bdae8709",
+    "prompt": "Photoreal automotive design studio photograph of a single completely original two-door Vesper GT luxury performance concept coupe. Wide horizontal front-left three-quarter view with nose pointing left, full car in frame, camera at headlamp height, long 85mm lens, neutral light grey seamless background. Deep rich garnet metallic cherry lacquer, bright long continuous white studio strip reflections defining sculpted flanks. A dramatic long low wedge nose, unbroken hood dipping between proud fender shoulders, single rising shoulder crease and wide swept rear haunches. Dark smoked teardrop glasshouse with visible graphite pillars, taut short rear deck, deep black side intake behind the front wheel, crisp thin amber slash headlamps, front carbon splitter, restrained brushed titanium rocker blades. Four true round wide rubber tires with realistic sidewalls, machined silver directional split five-spoke alloy rims, recessed dark brake rotors; fully show both near wheels, sharply resolved spokes, distinguish wheels from wheel arches. Perfect industrial-design geometry, left/right symmetry, tactile gloss clearcoat, premium real milled surfaces, tasteful unbranded exterior; no text, manufacturer marks, license plates, watermark, props or plinth. Single exterior image, no inset views.",
+    "usd": 0.17
+  },
+  "referenceSha256": "bb3e251fc5abc7044d4907d56355d075227ce02357637f1bea362ac77e372aba",
+  "referenceFile": "tools/idol/references/vesper-gt/coupe.png",
+  "provider": "Tencent Hunyuan 3D Pro v3.1 via fal",
+  "modelPage": "https://fal.ai/models/fal-ai/hunyuan-3d/v3.1/pro/image-to-3d",
+  "commercialUse": "Model page marks Commercial use",
+  "schema": "https://fal.ai/models/fal-ai/hunyuan-3d/v3.1/pro/image-to-3d/api",
+  "input": {
+    "generate_type": "Normal",
+    "enable_pbr": true,
+    "face_count": "default 500000",
+    "reference": "byte-verified original reference image only"
+  },
+  "requestId": "01a1f55f-2f39-7091-aa25-28a3e1678689",
+  "estimatedGenerationUsd": 0.525,
+  "rawSha256": "55c17a4896018bcc191d72506ff5640166e13ca9640662ed1eeed6129951206b",
+  "artifactSha256": "ce819dccaacd73f991bdc535bf135883ae643e81bc1e03ff2f3cc83d0fa78747",
+  "artifactBytes": 7429820,
+  "artifact": "marketing/public/models/vesper-gt/coupe.glb",
+  "triangles": 145874,
+  "vertices": 118267,
+  "boundsMeters": {
+    "min": [
+      -1.094903,
+      0,
+      -2.36
+    ],
+    "max": [
+      1.094903,
+      1.286438,
+      2.36
+    ]
+  },
+  "front": "+Z",
+  "up": "+Y",
+  "tireGroundContactSpreadMeters": 2.4e-05,
+  "postprocess": [
+    "Aura3D optimize, normalize and slim",
+    "Leveled four tire contacts",
+    "Removed generated pseudo lettering at rear, neutralized rear plate pad and badge",
+    "Clamped out-of-range glTF specularColorFactor to 1"
+  ],
+  "evidence": "Four directional base-color views and an Aura3D browser PBR frame were inspected on November 19, 2026. The selected mesh preserves continuous hood reflections, smoked glazing, wheel arches and amber lamp slashes.",
+  "sourceImageRequestId": "01a1f551-ee8a-7bf1-8984-ff75bdae8709",
+  "rawArtifact": {
+    "download": "https://v3b.fal.media/files/b/0ab32209/twPZLwLi0vF9w9IrzmYOK_model.glb",
+    "sha256": "55c17a4896018bcc191d72506ff5640166e13ca9640662ed1eeed6129951206b",
+    "bytes": 53970940
+  },
+  "referenceImageUrl": "https://v3b.fal.media/files/b/0ab321a3/2JTzvXp5VnMl-wI1Q9Asu_ZPUEjUiy.png",
+  "generationRequest": {
+    "method": "POST",
+    "url": "https://queue.fal.run/fal-ai/hunyuan-3d/v3.1/pro/image-to-3d",
+    "body": {
+      "input_image_url": "https://v3b.fal.media/files/b/0ab321a3/2JTzvXp5VnMl-wI1Q9Asu_ZPUEjUiy.png",
+      "generate_type": "Normal",
+      "enable_pbr": true
     }
   },
-  "finishing": {
-    "spec": "tools/idol/specs/vesper-gt.json",
-    "script": "tools/vesper-gt/finish.mjs",
-    "inputSha256": "a11ae45115bd53b31fee7699b6dfda52f2f2b04105bfe3c065417e9f13a2c6a6",
-    "description": "Normalized and leveled the generated mesh. Fitted a symmetric hood, derived smooth panel normals, and modeled a continuous glazing shell, roof panel, and window surrounds. The wheels, lamps, splitter and side detail retain the Idol geometry."
-  },
-  "geometry": {
-    "triangles": 44696,
-    "uniqueVertices": 33365,
-    "bounds": {
-      "min": [
-        -1.0399243831634521,
-        0,
-        -2.359999895095825
-      ],
-      "max": [
-        1.0399243831634521,
-        1.3145807981491089,
-        2.359999895095825
-      ],
-      "size": [
-        2.0798487663269043,
-        1.3145807981491089,
-        4.71999979019165
-      ],
-      "grounded": true
-    },
-    "forward": "+Z",
-    "up": "+Y",
-    "node": "VesperGT",
-    "materials": [
-      "Carbon, vents and brightwork",
-      "Midnight garnet lacquer",
-      "Smoked canopy glazing",
-      "Machined alloys and tire sidewalls",
-      "Amber lamp lenses",
-      "Graphite window surround",
-      "Garnet roof panel"
+  "rebuild": {
+    "sources": [
+      "tools/vesper-gt/rebuild-hunyuan.mts",
+      "tools/vesper-gt/hunyuan-materials.py"
     ],
-    "textureMaps": [
-      "Base color",
-      "Normal",
-      "Metallic roughness"
-    ]
-  }
+    "sourceGlb": "Original output identified by rawArtifact.sha256",
+    "command": "pnpm exec tsx --tsconfig tsconfig.base.json tools/vesper-gt/rebuild-hunyuan.mts RAW.glb OUTPUT.glb",
+    "workingDirectory": "Repository root",
+    "verification": "Local offline reconstruction from original provider output matched artifactSha256 exactly",
+    "pythonPackages": {
+      "Pillow": "12.3.0",
+      "numpy": "2.2.6",
+      "opencv-python": "4.12.0"
+    },
+    "nodePackages": "Repository lockfile"
+  },
+  "sha256": "ce819dccaacd73f991bdc535bf135883ae643e81bc1e03ff2f3cc83d0fa78747",
+  "bytes": 7429820,
+  "creator": "AuraOne",
+  "model": "coupe.glb"
 }
