@@ -10,7 +10,8 @@ const repoRoot = resolve(marketingDir, "..");
 const registry = process.argv.includes("--registry");
 
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
-const canonical = readJson(resolve(repoRoot, "package.json")).version;
+const rootManifest = readJson(resolve(repoRoot, "package.json"));
+const canonical = rootManifest.version;
 const marketingPackage = readJson(resolve(marketingDir, "package.json"));
 const html = readFileSync(resolve(marketingDir, "index.html"), "utf8");
 const failures = [];
@@ -27,6 +28,8 @@ check(
   marketingPackage.dependencies?.["@aura3d/engine"],
   canonical
 );
+
+check("showcase renderer release", rootManifest.devDependencies["@aura3d/showcase-engine"], `npm:@aura3d/engine@${canonical}`);
 
 const schemaVersion = html.match(/"softwareVersion"\s*:\s*"([^"]+)"/)?.[1] ?? null;
 check("JSON-LD softwareVersion", schemaVersion, canonical);

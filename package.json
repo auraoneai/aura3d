@@ -333,6 +333,7 @@
     "@aura3d/ecs": "workspace:*",
     "@aura3d/editor-runtime": "workspace:*",
     "@aura3d/engine-runtime": "workspace:*",
+    "@aura3d/showcase-engine": "npm:@aura3d/engine@5.6.0",
     "@aura3d/game": "workspace:*",
     "@aura3d/input": "workspace:*",
     "@aura3d/math": "workspace:*",

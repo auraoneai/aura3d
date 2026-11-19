@@ -347,7 +347,14 @@ export default defineConfig({
     format: "es",
     plugins: () => [resolveRetargetWorker(), ...(rootConfig.plugins ?? [])]
   },
-  resolve: rootConfig.resolve,
+  resolve: {
+    ...rootConfig.resolve,
+    alias: [
+      // Use the shipped browser exports for the two SDK product scenes.
+      { find: /^@aura3d\/engine\/(assets|renderer)$/, replacement: "@aura3d/showcase-engine/$1" },
+      ...rootConfig.resolve.alias
+    ]
+  },
   optimizeDeps: rootConfig.optimizeDeps,
   server: {
     ...rootServer,

@@ -108,6 +108,9 @@ importers:
       '@aura3d/scripting':
         specifier: workspace:*
         version: link:packages/scripting
+      '@aura3d/showcase-engine':
+        specifier: npm:@aura3d/engine@5.6.0
+        version: '@aura3d/engine@5.6.0(@dimforge/rapier3d-compat@0.20.0)(recast-navigation@0.43.1)'
       '@aura3d/workflows':
         specifier: workspace:*
         version: link:packages/workflows
@@ -528,6 +531,18 @@ importers:
         version: link:../scene
 
 packages:
+
+  '@aura3d/engine@5.6.0':
+    resolution: {integrity: sha512-9so8EPts119mmBPvkx+uKJKgAFZ/0WKnXhZiDPdAK4OyEZc23ZW3ZvNpjgnjA2EG55hRvrZmKRZ1Z33oJIKjAQ==}
+    engines: {node: '>=22.12.0'}
+    peerDependencies:
+      '@dimforge/rapier3d-compat': 0.20.0
+      recast-navigation: 0.43.1
+    peerDependenciesMeta:
+      '@dimforge/rapier3d-compat':
+        optional: true
+      recast-navigation:
+        optional: true
 
   '@dimforge/rapier3d-compat@0.20.0':
     resolution: {integrity: sha512-X4W9pJBdGRX5CO3c/gUNjBFEFG2fn4nYxp9k8STdBDaLa0/w5XTW2ArpayS+9jGFojTi3uFSOWAElCd4rkpekA==}
@@ -2277,6 +2292,20 @@ packages:
     engines: {node: '>=10'}
 
 snapshots:
+
+  '@aura3d/engine@5.6.0(@dimforge/rapier3d-compat@0.20.0)(recast-navigation@0.43.1)':
+    dependencies:
+      '@gltf-transform/core': 4.5.1(patch_hash=2e0c91225a9da4926a0e7651b5ab9d0376b44bba28f49a35b9d182e7228e591b)
+      '@gltf-transform/extensions': 4.5.1
+      '@loaders.gl/core': 4.4.1
+      '@loaders.gl/textures': 4.4.1(@loaders.gl/core@4.4.1)
+      ktx-parse: 1.0.1
+      meshoptimizer: 1.2.0
+    optionalDependencies:
+      '@dimforge/rapier3d-compat': 0.20.0
+      recast-navigation: 0.43.1
+    transitivePeerDependencies:
+      - '@75lb/nature'
 
   '@dimforge/rapier3d-compat@0.20.0': {}
 
