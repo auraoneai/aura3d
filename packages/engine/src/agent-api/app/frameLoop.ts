@@ -8,7 +8,7 @@ import { DeferredFrameResources, applyRootParticleQuality, getRootPerformanceBas
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
-import { applyRenderPathToCanvas, directPathVetoReasons, resolveAppRenderPath, takeDecodedDirectPathBlockers, wantsPreservedDrawingBuffer } from "./renderPath.js";
+import { applyRenderPathToCanvas, canvasMsaaDirectPathBlockers, directPathVetoReasons, resolveAppRenderPath, takeDecodedDirectPathBlockers, wantsPreservedDrawingBuffer } from "./renderPath.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
 import { explicitMountQualityTier, resolveMountQuality } from "../compiler/renderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
@@ -114,7 +114,8 @@ export async function startProductionRender(
   // beat-three.js L-P1: decided per mount (setScene re-mounts re-decide). `direct` pins the
   // HDR-target route off for this renderer only; the app's own flags are untouched.
   // RP-01/RP-03: reasons found after an earlier mount on this canvas (a custom post pass) keep it off the direct path.
-  let renderPath = resolveAppRenderPath(snapshot, options, qrFlags, { extraBlockers: directPathVetoReasons(canvas) });
+  // 5.7.0: a canvas whose WebGL2 context an earlier HDR-route mount created without MSAA stays on the HDR target.
+  let renderPath = resolveAppRenderPath(snapshot, options, qrFlags, { extraBlockers: [...directPathVetoReasons(canvas), ...canvasMsaaDirectPathBlockers(canvas)] });
   diagnosticsState.renderPath = renderPath.report;
   pushWarnings(diagnosticsState, renderPath.warnings);
   applyRenderPathToCanvas(canvas, renderPath);
@@ -160,7 +161,7 @@ export async function startProductionRender(
     renderer.dispose();
     await renderer.whenDisposed?.();
     rawRetirement = "done";
-    renderPath = resolveAppRenderPath(snapshot, options, qrFlags, { extraBlockers: [...directPathVetoReasons(canvas), ...decoded] });
+    renderPath = resolveAppRenderPath(snapshot, options, qrFlags, { extraBlockers: [...directPathVetoReasons(canvas), ...canvasMsaaDirectPathBlockers(canvas), ...decoded] });
     diagnosticsState.renderPath = renderPath.report;
     pushWarnings(diagnosticsState, [`DIRECT_PATH_REDECIDED: ${decoded.join("; ")}; mounted on the HDR target instead of the direct path.`]);
     applyRenderPathToCanvas(canvas, renderPath);
