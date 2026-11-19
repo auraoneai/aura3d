@@ -440,7 +440,7 @@
 .home .feature-story h2 { max-width: 14ch; }
 .home .worlds { background: var(--bg-1); padding-block: var(--chapter-space); }
 .home .chapter-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 20px; flex-wrap: wrap; margin-bottom: 26px; }
-.home .worlds-grid { display: grid; grid-template-columns: 1.35fr 1fr 1fr; gap: clamp(16px,2.2vw,32px); }
+.home .worlds-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: clamp(16px,2.2vw,32px); }
 .home .world-image { display: block; border-radius: var(--radius-sm); overflow: hidden; background: var(--stage); }
 .home .world-image img { display: block; width: 100%; height: auto; aspect-ratio: 16/10; object-fit: cover; }
 .home .worlds article h3 { margin: 16px 0 5px; font-size: clamp(20px,2vw,28px); font-weight: 500; letter-spacing: -.03em; }
@@ -468,15 +468,12 @@
   .home .home-hero-media { margin-top: 10px; }
   .home .home-hero-media .home-stage { aspect-ratio: 1.5; }
   .home .worlds-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .home .worlds article:first-child { grid-column: 1/-1; }
-  .home .worlds article:first-child img { aspect-ratio: 2.3; }
 }
 @media (max-width: 480px) {
   .home .home-hero-media .stage-launch { align-items: flex-start; justify-content: flex-end; flex-direction: column; gap: 10px; }
   .home .home-hero-media .home-stage { aspect-ratio: 1.25; }
   .home .home-hero-media figcaption { display: block; margin-top: 10px; }
   .home .worlds-grid { grid-template-columns: minmax(0,1fr); gap: 28px; }
-  .home .worlds article img,.home .worlds article:first-child img { aspect-ratio: 1.8; }
 }
 @media (prefers-reduced-motion: reduce) {
   .home *, .home *::before, .home *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
