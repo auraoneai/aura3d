@@ -20,7 +20,7 @@ interface SerialNode {
 }
 
 const described = (id: string) =>
-  (athleteNodes(id) as unknown[]).map((n) =>
+  (athleteNodes(id, undefined, undefined, false) as unknown[]).map((n) =>
     typeof (n as { toJSON?: () => SerialNode })?.toJSON === "function"
       ? (n as { toJSON: () => SerialNode }).toJSON()
       : (JSON.parse(JSON.stringify(n)) as SerialNode)
@@ -30,7 +30,7 @@ function flatNames(node: SerialNode): string[] {
   return [node.name ?? "", ...(node.children ?? []).flatMap(flatNames)].filter(Boolean);
 }
 
-describe("athlete rig is one sculpted multi-material articulated body, no second pose or Meshy GLB", () => {
+describe("athlete rig (?idol=off procedural path) is one sculpted multi-material articulated body, no second pose or Meshy GLB", () => {
   it("every athlete has exactly body (articulated group) + shadow + ring, with all 13 anatomical joints", () => {
     expect(ATHLETE_IDS.length).toBeGreaterThanOrEqual(10);
     for (const id of ATHLETE_IDS) {

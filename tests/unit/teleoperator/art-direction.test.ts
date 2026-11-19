@@ -19,7 +19,7 @@ function snapshotFor(sky: (typeof SKY_ORDER)[number]): ArtDirectionSnapshot {
 }
 
 describe("grid dispatch art direction (GU47 WP-14, C-35)", () => {
-  it("is a valid defineArtDirection contract with the WP-14 identity and zero GLBs mounted (100% @aura3d/engine procedural)", () => {
+  it("is a valid defineArtDirection contract with the WP-14 identity; every mounted model is a contracted Idol asset", () => {
     expect(direction.id).toBe("showcase-teleoperator");
     expect(direction.genre).toBe("racing");
     expect(direction.palette.primary).toEqual(["#5f7f8c", "#2b3a55", "#ffb15a", "#b3262b"]);
@@ -28,9 +28,13 @@ describe("grid dispatch art direction (GU47 WP-14, C-35)", () => {
     expect(direction.lighting.environment.background).toBe("sky");
     expect(direction.signatureEffect).toMatch(/marine-layer/i);
     expect(direction.signatureEffect).toMatch(/LiDAR scan pulse/);
-    expect(direction.assets).toEqual([]);
+    // Idol wow pass: the contract lists exactly the admitted Idol keys (gd*), and the boot scene mounts only those.
+    const contracted = new Set(direction.assets.map((a) => a.assetKey));
+    expect(contracted.size).toBe(direction.assets.length);
+    for (const key of contracted) expect(key).toMatch(/^gd[A-Z]/);
     const bootSnap = snapshotFor(BOOT_SKY);
-    expect(bootSnap.models).toEqual([]);
+    expect(bootSnap.models.length).toBeGreaterThan(0);
+    for (const m of bootSnap.models) expect(contracted.has(m.assetKey), m.assetKey).toBe(true);
   });
 
   it("names a VFX entry for every registered preset of the pack", () => {

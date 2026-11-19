@@ -14,11 +14,10 @@ import { expect, test, type Page } from "@playwright/test";
  */
 const APPS_FILE = "tests/browser/aura3d-only-apps.txt";
 const DEFAULT_APPS = [
-  "showcase-bank-shot", "showcase-aurora-lander", "showcase-blockfall-reactor", "showcase-bean-brawl-race",
-  "showcase-kart-havoc", "showcase-turbo-ball", "showcase-vault-breakers", "showcase-product-configurator",
+  "showcase-product-configurator",
   "showcase-smart-city-control", "showcase-cinematic-architecture", "showcase-digital-twin-ops",
   "showcase-data-galaxy", "showcase-webgpu-particle-lab", "showcase-asset-audition",
-  "showcase-material-asset-inspector", "aura-clash-showcase", "showcase-bunker-zero", "showcase-ninja-runner-port"
+  "showcase-material-asset-inspector", "showcase-bunker-zero", "showcase-ninja-runner-port"
 ];
 const APPS = (existsSync(APPS_FILE) ? readFileSync(APPS_FILE, "utf8").split(/\s+/).filter(Boolean) : DEFAULT_APPS);
 const BUILD_TIMEOUT_MS = 1_200_000;

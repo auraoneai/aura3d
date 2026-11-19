@@ -5,6 +5,7 @@ import {
   game
 } from "@aura3d/engine";
 import { buildArticulatedGladiatorRig } from "../art/proceduralModels";
+import { buildIdolFighterNode, idolFightersEnabled } from "./idolFighters";
 
 /**
  * IRON CROWN roster.
@@ -498,12 +499,32 @@ export function createFighterNode(
   _typedFighterAssets: TypedFighterAssets,
   tint?: FighterPalette,
   /** false: the 4.6.2 fighter surface (no IC47-M2 rim or clearcoat) for the 4.6.2 venue look. */
-  surfaceExtras = true
+  surfaceExtras = true,
+  /** Idol wow pass: the rigged Idol fighter when its model is admitted (false: always the procedural gladiator). */
+  idol = idolFightersEnabled()
 ) {
   const assetKey = fighter.asset;
   const palette = tint ?? fighter.palette;
   const yaw = fighterFacingYaw(facing);
   const side: "p1" | "cpu" = nodeId === "rival" ? "cpu" : "p1";
+
+  if (idol) {
+    const surface = surfaceExtras ? fighterSurface(palette) : undefined;
+    const idolNode = buildIdolFighterNode({
+      nodeId,
+      label,
+      fighter: fighter.id,
+      side,
+      position: [position[0], position[1], position[2]],
+      yaw,
+      scale: fighter.scale,
+      tint: tint ? palette.color : undefined,
+      rim: surface?.rim,
+      clearcoat: surface?.clearcoat,
+      runtimeTags: ["fighter", fighter.id, assetKey]
+    });
+    if (idolNode) return idolNode;
+  }
 
   return buildArticulatedGladiatorRig({
     nodeId,

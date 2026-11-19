@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bellkeepers-walk",
+  "key": "bkVillagerKeeper",
+  "generatedAt": "2026-11-18T22:23:00.289Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/bellkeepers-walk/bkVillagerKeeper/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 23,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1004496,
+        "num_faces": 2009028,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A full-body figure of a calm elderly sanctuary keeper woman standing with hands folded in front, front facing the camera, a layered indigo and cream linen long skirt, an olive-sage hooded capelet with the hood down, grey hair in a braided bun, a draped linen cowl, soft leather shoes. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.97,
+    "size": [
+      0.788,
+      1.97,
+      1.277
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/where-the-wind-wanders-port/assets/idol/bkVillagerKeeper.glb",
+  "sizeBytes": 5933864,
+  "preview": "artifacts/idol/bellkeepers-walk/bkVillagerKeeper/views.png",
+  "usd": 0.2
+}

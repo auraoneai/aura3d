@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "apex-overdrive": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "01-title",
+        "02-early",
+        "03-traffic",
+        "04-shield",
+        "05-boost",
+        "06-night-carrier",
+        "07-night-traffic"
+      ],
+      "results": "not captured in this retake (autoplay shows the Wrecked! card ~3 s, then restarts)",
+      "errors": "none (no page errors in any capture)",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

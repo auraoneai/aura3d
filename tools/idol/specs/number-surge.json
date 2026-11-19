@@ -1,0 +1,115 @@
+{
+  "game": "number-surge",
+  "outDir": "apps/showcase-number-surge/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "nsRunnerBot",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 0.92
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A small sleek sprinter robot figure frozen mid-running stride: glossy white lacquered armour shell with cyan accent stripes, a rounded helmet head with a wraparound dark cyan glass visor, slim graphite jointed arms and legs, one leg forward and one back, arms pumping, compact backpack power cell"
+    },
+    {
+      "key": "nsCaptainBot",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.1
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A sturdy captain robot figure frozen mid-running stride: glossy cream-white ceramic armour with polished gold trim, broad shoulder pauldrons, a rounded helmet head with a gold-tinted glass visor, dark graphite jointed arms and legs, one leg forward and one back, arms pumping"
+    },
+    {
+      "key": "nsRiotGuard",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.31
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A heavy armoured riot guard robot standing guard, feet apart: bulky crimson red and black obsidian armour plates, a full helmet with a narrow glowing red visor slit, a tall rectangular black riot shield held in its left hand in front of the body, a long steel halberd polearm held upright in its right hand, armoured boots"
+    },
+    {
+      "key": "nsPalmTree",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 14.6
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A single tall slender coconut palm tree with a gently S-curved ringed grey trunk and a full crown of long arching glossy fronds, standing upright alone with no ground or pot"
+    },
+    {
+      "key": "nsSkyIsland",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 8.08
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A floating rock island: an inverted cone of dark layered violet-grey stone with hanging roots underneath, a flat top covered in lush tropical plants, small palm trees and ferns in a terracotta-rimmed garden, a few glowing magenta crystals poking out of the rock"
+    },
+    {
+      "key": "nsRunnerRig",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run"
+      ],
+      "size": {
+        "height": 0.92
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A small sleek sprinter robot: glossy white lacquered armour shell with cyan accent stripes, a rounded helmet head with a wraparound dark cyan glass visor, slim graphite jointed arms and legs, compact backpack power cell"
+    },
+    {
+      "key": "nsCaptainRig",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run"
+      ],
+      "size": {
+        "height": 1.1
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A sturdy captain robot: glossy cream-white ceramic armour with polished gold trim, broad shoulder pauldrons, a rounded helmet head with a gold-tinted glass visor, dark graphite jointed arms and legs"
+    },
+    {
+      "key": "nsGuardRig",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run"
+      ],
+      "size": {
+        "height": 1.31
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A heavy armoured riot guard robot: bulky crimson red and black obsidian armour plates, a full helmet with a narrow glowing red visor slit, armoured gauntlets and armoured boots, empty hands"
+    }
+  ]
+}

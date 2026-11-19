@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bellkeepers-walk",
+  "key": "bkCottageA",
+  "generatedAt": "2026-11-18T23:28:24.329Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/bellkeepers-walk/bkCottageA/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 31,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1782996,
+        "num_faces": 3566276,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A cosy storybook highland cottage seen from the front: cream lime-plastered walls with dark oak half-timber framing and diagonal braces, a fieldstone foundation with corner quoin stones, a steep gabled roof of mossy grey slate tiles, a stone chimney, a green-painted wooden front door with a small porch hood, small-paned windows with flower boxes of red and yellow flowers, ivy climbing one corner. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 8.964,
+    "size": [
+      8.38,
+      9.452,
+      9.77
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/where-the-wind-wanders-port/assets/idol/bkCottageA.glb",
+  "sizeBytes": 7252560,
+  "preview": "artifacts/idol/bellkeepers-walk/bkCottageA/views.png",
+  "usd": 0.2
+}

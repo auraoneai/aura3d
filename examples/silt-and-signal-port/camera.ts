@@ -42,18 +42,30 @@ export function wantedChaseEye(sim: Pick<Sim, "state" | "flight">, framing: Chas
 }
 
 /** Native sizes of the tree model (0.927 x 1.684 x 0.883), rock models (about 1 unit), and procedural houses (1.64 x 0.88 x 0.98) scaled by placement. */
-const TREE_RADIUS = 0.46, TREE_HEIGHT = 1.684, ROCK_RADIUS = 0.5, ROCK_HEIGHT = 1, HOUSE_RADIUS = 0.82, HOUSE_HEIGHT = 0.88;
+const TREE_HEIGHT = 1.684, ROCK_RADIUS = 0.5, ROCK_HEIGHT = 1, HOUSE_RADIUS = 0.82, HOUSE_HEIGHT = 0.88;
+/** Tree trunk radius per unit of tree scale (the sim's tree collider, terrain.ts TREE_COLLIDER_R). */
+export const TREE_TRUNK_RADIUS = 0.22;
+/**
+ * Clearance the eye keeps from a tree trunk (metres). Trees are "soft" for the chase camera (audit 2026-11-18): a crown
+ * between the eye and the rider fades out (occlusionFade.ts), so the eye only has to stay out of the trunk. With the full
+ * CAMERA_MARGIN around the whole crown, every roadside tree at Turbo pulled the eye to the 2.5 m minimum (head cropped,
+ * view straight down at the deck) in chapters 0, 1, 3 and 5.
+ */
+export const TREE_CAMERA_MARGIN = 0.6;
 
-/** Trees, rocks, houses and piers have no sim collider, but a camera inside a crown, boulder or roof fills the view with it: model them as columns. */
+/** A scenery column; `soft` ones (trees) only keep the eye out of the trunk, their crowns fade instead of blocking. */
+export type SceneryColumn = Column & { readonly soft?: boolean };
+
+/** Trees, rocks, houses and piers: a camera inside a trunk, boulder or roof fills the view with it, so model them as columns. */
 export function sceneryColumns(props: {
   readonly trees: readonly Placement[];
   readonly rocks: readonly Placement[];
   readonly houses?: readonly Placement[];
   readonly stone: readonly Column[];
   readonly brass: readonly Column[];
-}): Column[] {
+}): SceneryColumn[] {
   return [
-    ...props.trees.map((t) => ({ x: t.x, z: t.z, r: TREE_RADIUS * t.scale, bottom: t.y, top: t.y + TREE_HEIGHT * t.scale })),
+    ...props.trees.map((t) => ({ x: t.x, z: t.z, r: TREE_TRUNK_RADIUS * t.scale, bottom: t.y, top: t.y + TREE_HEIGHT * t.scale, soft: true })),
     ...props.rocks.map((r) => ({ x: r.x, z: r.z, r: ROCK_RADIUS * r.scale, bottom: r.y, top: r.y + ROCK_HEIGHT * r.scale })),
     ...(props.houses ?? []).map((h) => ({ x: h.x, z: h.z, r: HOUSE_RADIUS * h.scale, bottom: h.y, top: h.y + HOUSE_HEIGHT * h.scale })),
     ...props.stone,
@@ -62,12 +74,24 @@ export function sceneryColumns(props: {
 }
 
 const SCENERY_CELL_Z = 64;
-const sceneryZCache = new WeakMap<readonly Column[], Map<number, readonly Column[]>>();
+const sceneryZCache = new WeakMap<readonly SceneryColumn[], Map<number, readonly SceneryColumn[]>>();
+const softKeyCache = new WeakMap<readonly SceneryColumn[], ReadonlySet<string>>();
+const columnKey = (c: { readonly x: number; readonly z: number }): string => `${c.x}|${c.z}`;
 
-function getSceneryZCells(scenery: readonly Column[]): Map<number, readonly Column[]> {
+/** Positions of the soft (tree) columns, to recognise the matching trunk colliders of the sim world. */
+function softKeys(scenery: readonly SceneryColumn[]): ReadonlySet<string> {
+  let keys = softKeyCache.get(scenery);
+  if (!keys) {
+    keys = new Set(scenery.filter((c) => c.soft).map(columnKey));
+    softKeyCache.set(scenery, keys);
+  }
+  return keys;
+}
+
+function getSceneryZCells(scenery: readonly SceneryColumn[]): Map<number, readonly SceneryColumn[]> {
   let cells = sceneryZCache.get(scenery);
   if (cells) return cells;
-  const builders = new Map<number, Column[]>();
+  const builders = new Map<number, SceneryColumn[]>();
   for (let i = 0; i < scenery.length; i++) {
     const c = scenery[i]!;
     const c0 = Math.floor((c.z - c.r) / SCENERY_CELL_Z);
@@ -84,9 +108,10 @@ function getSceneryZCells(scenery: readonly Column[]): Map<number, readonly Colu
 }
 
 /** True when a point is inside scenery (a chapter collider or a scenery column, with margin) or under the terrain. */
-export function chaseEyeBlocked(world: Pick<Sim["world"], "colliders" | "floor">, scenery: readonly Column[] = []): (x: number, y: number, z: number) => boolean {
+export function chaseEyeBlocked(world: Pick<Sim["world"], "colliders" | "floor">, scenery: readonly SceneryColumn[] = []): (x: number, y: number, z: number) => boolean {
   const { colliders, floor } = world;
   const sceneryCells = scenery.length >= 32 ? getSceneryZCells(scenery) : null;
+  const soft = softKeys(scenery);
   const probe = { x: 0, y: 0, z: 0 };
   return (x, y, z) => {
     if (y < floor(x, z, y) + 1) return true;
@@ -94,7 +119,8 @@ export function chaseEyeBlocked(world: Pick<Sim["world"], "colliders" | "floor">
       probe.x = x;
       probe.y = y;
       probe.z = z;
-      if (visitCollidersInZBand(colliders, z - CAMERA_MARGIN - 1, z + CAMERA_MARGIN + 1, (c) => pushOut(probe, c, CAMERA_MARGIN, 0.6) !== null)) {
+      // a tree's sim collider is its trunk: the eye keeps TREE_CAMERA_MARGIN from it (the crown fades), not CAMERA_MARGIN
+      if (visitCollidersInZBand(colliders, z - CAMERA_MARGIN - 1, z + CAMERA_MARGIN + 1, (c) => pushOut(probe, c, soft.has(columnKey(c)) ? TREE_CAMERA_MARGIN : CAMERA_MARGIN, 0.6) !== null)) {
         return true;
       }
     }
@@ -107,7 +133,7 @@ export function chaseEyeBlocked(world: Pick<Sim["world"], "colliders" | "floor">
         for (let i = 0; i < bucket.length; i++) {
           const c = bucket[i]!;
           if (y < c.bottom - 0.6 || y > c.top + 0.6) continue;
-          const dx = x - c.x, dz = z - c.z, reach = c.r + CAMERA_MARGIN;
+          const dx = x - c.x, dz = z - c.z, reach = c.r + (c.soft ? TREE_CAMERA_MARGIN : CAMERA_MARGIN);
           if (dx * dx + dz * dz < reach * reach) return true;
         }
       }
@@ -115,7 +141,7 @@ export function chaseEyeBlocked(world: Pick<Sim["world"], "colliders" | "floor">
     }
     for (const c of scenery) {
       if (y < c.bottom - 0.6 || y > c.top + 0.6) continue;
-      const dx = x - c.x, dz = z - c.z, reach = c.r + CAMERA_MARGIN;
+      const dx = x - c.x, dz = z - c.z, reach = c.r + (c.soft ? TREE_CAMERA_MARGIN : CAMERA_MARGIN);
       if (dx * dx + dz * dz < reach * reach) return true;
     }
     return false;

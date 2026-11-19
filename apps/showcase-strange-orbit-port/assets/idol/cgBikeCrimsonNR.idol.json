@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "craterline-gp",
+  "key": "cgBikeCrimsonNR",
+  "generatedAt": "2026-11-19T00:42:21.048Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f141-2858-7483-918c-5445546b1e6a",
+      "prompt": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side with NO rider and nobody on it, an empty racing saddle: Low clip-on handlebars and rear foot pegs are empty. The motorcycle has a smooth streamlined monocoque fairing painted solar crimson red with thin sea-green accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle fully in frame. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f145-7c6c-7053-94b1-d8274296e6ca",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 11,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1216450,
+        "num_faces": 2433116,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side with NO rider and nobody on it, an empty racing saddle: Low clip-on handlebars and rear foot pegs are empty. The motorcycle has a smooth streamlined monocoque fairing painted solar crimson red with thin sea-green accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle fully in frame. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 211.6,
+    "scale": 1.738,
+    "size": [
+      0.843,
+      1.074,
+      1.9
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-strange-orbit-port/assets/idol/cgBikeCrimsonNR.glb",
+  "sizeBytes": 2635776,
+  "preview": "artifacts/idol/craterline-gp/cgBikeCrimsonNR/views.png",
+  "usd": 0.37,
+  "renormalizedAt": "2026-11-19T01:10:46.956Z"
+}

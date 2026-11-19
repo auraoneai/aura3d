@@ -1,0 +1,48 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "craterline-gp",
+  "key": "cgFuelTank",
+  "generatedAt": "2026-11-18T22:36:34.087Z",
+  "generator": "tools/idol/generate.mjs (Idol step resumed from the original queued request after the generator's 20 min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A pressurized cryogenic fuel tank station on the moon: two large horizontal white capsule-shaped pressure tanks with rounded ends lying side by side on a gunmetal steel skid cradle, frost streaks, valve manifolds and insulated pipes along the top, hazard-striped orange bands, small gauges. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0c2-eddc-7e43-8900-63182e422cc6",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1680144,
+        "num_faces": 3360768,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A pressurized cryogenic fuel tank station on the moon: two large horizontal white capsule-shaped pressure tanks with rounded ends lying side by side on a gunmetal steel skid cradle, frost streaks, valve manifolds and insulated pipes along the top, hazard-striped orange bands, small gauges. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.095,
+    "size": [
+      4.091,
+      3.518,
+      4.1
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-strange-orbit-port/assets/idol/cgFuelTank.glb",
+  "sizeBytes": 2114196,
+  "preview": "artifacts/idol/craterline-gp/cgFuelTank/views.png",
+  "usd": 0.37,
+  "postProcess": [
+    "examples/strange-orbit-port/tools/shrink-normal-map.mjs 1024 (normal map PNG -> JPEG q92)"
+  ]
+}

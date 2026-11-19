@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdDroneNighthawk",
+  "generatedAt": "2026-11-18T21:20:50.297Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f088-a9f2-7832-9ed7-adfe96b0f2bd",
+      "prompt": "A futuristic twin-boom racing strike drone: a central cockpit pod with a tinted canopy and a helmeted pilot, two tail booms joined at the back by an inverted V-tail bridge, small missile pods hanging under stub pylons, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round thruster nozzles at the tail glowing orange, dark violet-purple clearcoat paint with gunmetal steel and dark carbon composite, copper radiator fins, panel lines and wear. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f089-4e4e-7d92-83a4-003575be34b0",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1251584,
+        "num_faces": 2503388,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A futuristic twin-boom racing strike drone: a central cockpit pod with a tinted canopy and a helmeted pilot, two tail booms joined at the back by an inverted V-tail bridge, small missile pods hanging under stub pylons, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round thruster nozzles at the tail glowing orange, dark violet-purple clearcoat paint with gunmetal steel and dark carbon composite, copper radiator fins, panel lines and wear. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.402,
+    "size": [
+      3.839,
+      1.126,
+      3.85
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdDroneNighthawk.glb",
+  "sizeBytes": 2119536,
+  "preview": "artifacts/idol/heatsink/tdDroneNighthawk/views.png",
+  "usd": 0.37,
+  "admitRole": "vehicle",
+  "renormalizedAt": "2026-11-18T23:36:47.497Z"
+}

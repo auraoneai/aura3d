@@ -1,0 +1,12 @@
+{
+  "game": "aura-links-3d",
+  "out": "apps/showcase-aura-links-3d/src/game/motion.generated.ts",
+  "clips": [
+    { "key": "Address", "prompt": "A golfer stands at address over a ball on the ground: bent forward from the hips, knees softly flexed, both hands held together low in front of the thighs as if gripping a club, gently waggling the hands and shifting weight slightly between the feet.", "duration": 3, "loop": true, "seed": 700, "guidance": 5 },
+    { "key": "Swing", "prompt": "A right-handed golfer standing at address bent forward with both hands together low in front makes one full golf swing: a slow backswing turning the shoulders until the hands are high above the right shoulder, a fast downswing turning the hips toward the target and through impact, finishing tall with the hands high over the left shoulder and the chest facing the target, then holding the finish.", "duration": 4, "seed": 701, "guidance": 6 },
+    { "key": "Putt", "prompt": "A golfer bent over a short putt, arms hanging straight down with both hands together, makes a small smooth pendulum stroke by rocking the shoulders: hands swing back a little and then through toward the target, head perfectly still, then holds the follow-through.", "duration": 3, "seed": 702, "guidance": 6 },
+    { "key": "Shuffle", "prompt": "A golfer takes a few small slow shuffling steps in place to turn and line up a shot, arms relaxed and hanging in front.", "duration": 2.4, "loop": true, "seed": 703, "guidance": 5 },
+    { "key": "Celebrate", "prompt": "A golfer celebrates a great shot: pumps the right fist hard twice, then raises both arms high above the head and bounces happily on the feet.", "duration": 3, "loop": true, "seed": 704, "guidance": 5 },
+    { "key": "CaddieIdle", "prompt": "A man stands relaxed on a golf course waiting, arms hanging at his sides, slowly shifting his weight from foot to foot and turning his head to look around.", "duration": 5, "loop": true, "seed": 705, "guidance": 5 }
+  ]
+}

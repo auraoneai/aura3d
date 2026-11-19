@@ -326,7 +326,7 @@ jobs:
     timeout-minutes: 120
     env:
       QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
-      GAME_LIST: "showcase-turbo-drift-circuit,showcase-skyline-runner,showcase-neon-swarm,showcase-deep-recovery,showcase-blockfall-reactor"
+      GAME_LIST: "showcase-turbo-drift-circuit,showcase-skyline-runner,showcase-neon-swarm,showcase-deep-recovery"
       VFX_FLAGS: "vfx,vfx.sky,vfx.fog,vfx.volumetric,vfx.decals"
       EVIDENCE_DIR: "docs/project/aura3d-quality-rebuild/evidence/prd07/${{ github.run_id }}"
     steps:

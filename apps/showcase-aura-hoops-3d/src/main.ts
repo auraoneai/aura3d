@@ -49,6 +49,8 @@ import {
   handBounceOverlayAngles
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
+import { warmPrograms } from "@aura3d/engine/game";
+import { visualSeparation, preloadIdolDrivers, driveIdolAthlete, idolAthleteNode, idolBallCartNode, idolBodiesEnabled, idolBodyScale, idolKeyForKit, idolTrophyNode, type IdolBodyKey } from "./idolBodies";
 import {
   COURT_RIGS,
   LIGHTNING_NODE_ID,
@@ -71,7 +73,8 @@ import {
   courtBackdropNodes,
   COURT_FLOOR_FINISH
 } from "./courtRigs";
-import { JUICE_FX, ballTrailOptions, hoopsBurstOptions, hoopsFxKindFor, registerHoopsFx, type HoopsFxKind } from "./fxPack";
+import { createLumaProbe } from "./lumaProbe";
+import { JUICE_FX, ballTrailOptions, ballTrailWanted, hoopsBurstOptions, hoopsFxKindFor, registerHoopsFx, type HoopsFxKind } from "./fxPack";
 import "../../showcase-port-shared/hud-tokens.css";
 import "../../showcase-port-shared/quickbar.css";
 import "../../showcase-port-shared/diag";
@@ -83,7 +86,11 @@ import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 import { readIesLabFlag, sodiumFloodProfile } from "./photometric";
 import { createFrameErrorBoundary, installBlackFrameGuard } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
-import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLaunch } from "./shotPhysics";
+import { RING_R, TUBE_R, advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLaunch } from "./shotPhysics";
+import { courtObstacles, courtsideBallColliders, playerBounds, resolveObstacles, stanchionBallColliders, venueBallColliders } from "./courtObstacles";
+import {
+  AUTOPILOT_CATCH_READ, AUTOPILOT_TOGGLE_CODE, autopilotReleaseQuality, autoplayRequested, chooseAutopilotPlay, createAutoplayWatch, pickOpenReceiver, stepAutoplayWatch
+} from "./autoplay";
 import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
 import { hoopMaterials } from "./hoopMaterials";
@@ -126,6 +133,7 @@ import {
   CHECK_SHOT_GUARD, CPU_DUNK_RATE, SIM_STEP, advanceMeter, blendPose, canBlockRelease, clearTarget, decayRimShake,
   deadBallPossession, dunkRejectChance, isCleared, isDeadBall, makeCosmeticRng, matchDifficulty, meterQuality,
   releaseRead, separate, squadAimSkill, squadSpeedScale, squadStealScale, teamKits, tourNeedsReset,
+  BODY_RADIUS, passInterceptor, passLaunch,
   type Body, type Kit, type Pose
 } from "./rules";
 
@@ -232,7 +240,6 @@ const fxRng = makeCosmeticRng(0x51de);
  *  (adopted from the retired rooftop-buckets solver layout)            *
  * ------------------------------------------------------------------ */
 const RIM: Vec3 = [0, 3.05, 0];
-const RIM_R = 0.255; // rim ring + pipe
 const BOARD_Z = -0.35;
 const BOARD_HALF_W = 0.9;
 const BOARD_Y0 = 2.82;
@@ -259,8 +266,11 @@ function triggerRimSparks(strength = 1): void {
   rimSparksT = 0.42;
   rimSparksStrength = strength;
 }
+// The stanchion and courtside furniture are solid for the ball too (courtObstacles.ts); per-court pieces swap in setVenue.
 const hoopWorld = createHoopWorld({ rim: RIM, boardFaceZ: BOARD_Z + 0.06, boardHalfW: BOARD_HALF_W, boardY0: BOARD_Y0, boardY1: BOARD_Y1 }, (impact) => {
-  if (impact.tag === "rim") {
+  if (impact.tag === "pole" || impact.tag === "decor") {
+    if (impact.speed > 1.2) cue("dribble");
+  } else if (impact.tag === "rim") {
     shotStats.rimImpacts += 1;
     ball.hitRim = true;
     juiceFire("rim", { position: impact.point });
@@ -273,17 +283,31 @@ const hoopWorld = createHoopWorld({ rim: RIM, boardFaceZ: BOARD_Z + 0.06, boardH
     juiceFire("bank", { position: impact.point });
     impactRig.trigger({ freezeSeconds: 0, trauma: 0.12, fovKickDeg: 0.6 });
   }
-});
+}, [...stanchionBallColliders(), ...courtsideBallColliders()]);
+/** Ids of the per-court ball colliders currently in hoopWorld. */
+let venueColliderIds: string[] = [];
+function syncVenueBallColliders(courtId: string): void {
+  for (const id of venueColliderIds) hoopWorld.remove(id);
+  const next = venueBallColliders(courtId);
+  for (const c of next) hoopWorld.add(c);
+  venueColliderIds = next.map((c) => c.id);
+}
+syncVenueBallColliders("rucker");
 const ARC_R = 6.75; // street "two" line
 const CHECK_SPOT: Vec3 = [0, 0, 8.6];
 const COURT_X = 7.6;
 const COURT_Z0 = -2.2;
 const COURT_Z1 = 10.6;
+/** Where an athlete may stand (the clamp in syncAthlete) and the solid furniture inside it. */
+const PLAYER_BOUNDS = playerBounds(COURT_X, COURT_Z0, COURT_Z1);
 const PLAYER_SPEED = 4.6;
 const SPRINT_SPEED = 6.9;
 const DUNK_RANGE = 2.4;
 const GRAVITY = -10.4; // snappier arcade arc than textbook 9.81
 const HIDDEN = 0.0001;
+/** jam aura: a 1.35 m glowing floor disc (scale on the 0.9 x 1.9 x 0.9 cylinder), never a standing column */
+const JAM_AURA_SCALE: [number, number, number] = [1.5, 0.012, 1.5];
+const JAM_AURA_Y = 0.03;
 const CROWD_WAVERS = 0;
 const TRAIL_COUNT = 14;
 const CONE_COUNT = 10;
@@ -549,14 +573,22 @@ const QA_CAM_FREE = ((): { eye: [number, number, number]; target: [number, numbe
   return eye && target ? { eye, target, fov: Number(initialParams.get("qaCamFov")) || 50 } : null;
 })();
 /** ?diag=1&qaNoRain=1 drops the court rain nodes (Manila rain curtains, Shanghai rain volume), so a frame pair isolates their pixels (measurement only). */
+const QA_LUMA = initialParams.get("qaLuma") === "1";
 const QA_NO_RAIN = initialParams.get("diag") === "1" && initialParams.get("qaNoRain") === "1";
 let qaStepsLeft = 0;
 if (QA_STEP && typeof window !== "undefined") (window as unknown as { __qaStep: (n?: number) => void }).__qaStep = (n = 1) => { qaStepsLeft += n; };
 const QA_LEAD = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLead")) || 1 : 1;
 /** ?diag=1&qaAo=0|1 builds the look from its flat nodes with the ambient-occlusion pass dropped (0) or kept (1), for AO on/off pairs (measurement only). */
 const QA_AO = initialParams.get("diag") === "1" ? initialParams.get("qaAo") : null;
-/** ?diag=1&qaTarget=N plays to N points so a run reaches the results card quickly (measurement only). */
-const QA_TARGET = initialParams.get("diag") === "1" ? Number(initialParams.get("qaTarget")) || 0 : 0;
+/** ?diag=1&qaLightningEvery=N strikes the storm court's lightning every N s of live play (measurement only). */
+const QA_LIGHTNING_EVERY = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLightningEvery")) || 0 : 0;
+/**
+ * ?diag=1&qaTarget=N plays to N points so a run reaches the results card quickly (measurement only); `?target=N`
+ * (1-21) is the same short-match hook without the diagnostics overlay, for results-screen captures.
+ */
+const QA_TARGET = initialParams.get("diag") === "1" && Number(initialParams.get("qaTarget")) > 0
+  ? Number(initialParams.get("qaTarget"))
+  : Math.max(0, Math.min(21, Math.round(Number(initialParams.get("target")) || 0)));
 /** ?look=original: the 4.6 look (presets, fog off, today's practicals and dressing) for GU47 before/after pairs. */
 /**
  * GU47 phase 2 (PRD D11, no regression ships): courts whose new look loses to the 4.6.2 frame draw the original look;
@@ -615,7 +647,8 @@ const game_ = {
   diff: "pro" as DiffId,
   /** The difficulty the player picked; Street Tour overrides `diff` per round and other modes restore this. */
   userDiff: "pro" as DiffId,
-  autopilot: initialParams.get("autoplay") === "1" || initialParams.get("demo") === "1",
+  /** `?autoplay=1` / `?autopilot=1` / `?demo=1` (autoplay.ts): the CPU plays your side and the match loops forever. */
+  autopilot: autoplayRequested(initialParams),
   target: 11,
   scoreHome: 0,
   scoreAway: 0,
@@ -758,16 +791,19 @@ function buildHoopNodes(): any[] {
     buildBreakawayRimNode({
       overrides: hoopMaterials(LOOK_ORIGINAL).rim,
       rim: RIM,
-      rimR: RIM_R,
+      rimR: RING_R + 0.012,
+      // the drawn ring is the physics ring (shotPhysics RING_R / TUBE_R): nothing passes through the iron it bounces off
+      ringR: RING_R,
+      tubeR: TUBE_R,
       boardZ: BOARD_Z,
       lookOriginal: LOOK_ORIGINAL
     }).runtime(game.runtimeNode("rim-assembly")),
     // Net: scalloped cord collar + paired GLSL+WGSL vertex-whipping diamond swish net
-    buildTautNetTopNode(RIM[1], LOOK_ORIGINAL).runtime(game.runtimeNode("net-top")),
+    buildTautNetTopNode(RIM[1], LOOK_ORIGINAL, RING_R).runtime(game.runtimeNode("net-top")),
     ...(LOOK_ORIGINAL
       ? [primitives.torus({ name: "net-bottom", size: [0.3, 0.3, 0.28], castShadow: false, material: material.pbr({ color: "#e8e8e0", roughness: 0.7 }) } as any).position(0, RIM[1] - 0.42, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-bottom"))]
       : []),
-    buildTautNetSkirtNode(RIM[1], venue.id === "rucker", LOOK_ORIGINAL).runtime(game.runtimeNode("net-skirt")),
+    buildTautNetSkirtNode(RIM[1], venue.id === "rucker", LOOK_ORIGINAL, RING_R).runtime(game.runtimeNode("net-skirt")),
     ...(!LOOK_ORIGINAL
       ? [
         primitives.plane({
@@ -819,7 +855,7 @@ function buildAthleteAccessories(id: string, team: TeamId, kit: Kit): any[] {
       material: material.emissive({ color: kit.jersey, emissive: kit.jersey, emissiveIntensity: 0.45, opacity: 0.72 })
     } as any).rotate(Math.PI / 2, 0, team === "away" ? Math.PI / 4 : 0).runtime(game.runtimeNode(`${id}-ring`)),
     // Jam aura — hidden until the meter is full
-    primitives.cylinder({ name: `${id}-aura`, size: [0.9, 1.9, 0.9], castShadow: false, visible: false, material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.9, opacity: 0.16 }) } as any).scale(HIDDEN).runtime(game.runtimeNode(`${id}-aura`))
+    primitives.cylinder({ name: `${id}-aura`, size: [0.9, 1.9, 0.9], castShadow: false, visible: false, material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 1.1, opacity: 0.4 }) } as any).scale(HIDDEN).runtime(game.runtimeNode(`${id}-aura`))
   ];
 }
 
@@ -874,12 +910,25 @@ function buildMarkerPoolNodes(): any[] {
   ];
 }
 
+/** Idol body GLB per athlete id for the mounted scene (absent: procedural articulated rig, `?idol=off`). */
+const idolBodyOf = new Map<string, IdolBodyKey>();
+
 function buildAthlete(id: string, team: TeamId): any[] {
   // Sculpted, multi-material 14-joint procedural streetball athlete: guard (1.92 m lean) vs big (1.99 m power frame),
   // per-team sleeveless jersey, connected basketball shorts, crew socks, and grounded high-top sneakers.
   const big = /[124]$/.test(id);
   const kit = teamKit(team);
   void athleteOverrides;
+  if (idolBodiesEnabled()) {
+    // Idol pass: a rigged image-to-3D body in the nearest generated kit, driven by the same joint pose (idolBodies.ts).
+    const key = idolKeyForKit(kit.jersey, big);
+    idolBodyOf.set(id, key);
+    return [
+      idolAthleteNode(id, key, idolBodyScale(key, big), [0, 0, 6]),
+      ...(pooledMarkers() ? [] : buildAthleteAccessories(id, team, kit))
+    ];
+  }
+  idolBodyOf.delete(id);
   return [
     buildArticulatedHoopsAthleteNode(id, {
       kit,
@@ -1000,8 +1049,10 @@ function buildVenueDressing(v: VenueSpec): any[] {
 
   // Courtside dressing shared by all courts: tubular chrome ball rack and championship trophy (elevated on the 0.78 m scorer's table)
   nodes.push(
-    buildTubularBallCartNode(),
-    buildChampionshipTrophyNode(LOOK_ORIGINAL).runtime(game.runtimeNode("trophy-case"))
+    ...(idolBodiesEnabled() && !LOOK_ORIGINAL ? [idolBallCartNode(), idolTrophyNode()] : [
+      buildTubularBallCartNode(),
+      buildChampionshipTrophyNode(LOOK_ORIGINAL).runtime(game.runtimeNode("trophy-case"))
+    ])
   );
 
   // Court wear decals (2 key-entry scuff patches instead of 6 scattered decals)
@@ -1062,9 +1113,9 @@ function buildScene(v: VenueSpec): any {
     // GU47 phase 4 + WP-02: screen-space reflections on glossy court floors.
     s.addMany(courtReflectionNodes(rig));
   }
+  // GU47 phase 4 + WP-02: contact shadows along the shadowed key (feet and ball read grounded); ?look=original keeps 4.6's.
+  s.add(LOOK_ORIGINAL ? effects.contactShadows({ intensity: 0.7, length: 0.28 }) : effects.contactShadows({ intensity: 0.88, length: 0.42, thickness: 0.07, steps: 12, lights: "shadowed" } as any));
   s
-    // GU47 phase 4 + WP-02: contact shadows along the shadowed key (feet and ball read grounded); ?look=original keeps 4.6's.
-    .add(LOOK_ORIGINAL ? effects.contactShadows({ intensity: 0.7, length: 0.28 }) : effects.contactShadows({ intensity: 0.88, length: 0.42, thickness: 0.07, steps: 12, lights: "shadowed" } as any))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 9.2, 17.4], target: [0, 1.4, 2.4], fov: 34, far: v.orbit ? 900 : 420 }))
     .addMany(buildCourtSurfaces(v))
@@ -1298,6 +1349,8 @@ const stanceLegs = (crouch = 0) => ({
 
 function setNodeClip(id: string, handle: AnyHandle, clip: string, speed = 1.0): void {
   if (!handle) return;
+  // Idol bodies carry no game clips: their bones follow the live joint pose (driveIdolAthlete) every frame.
+  if (idolBodyOf.has(id)) return;
   const prevClip = lastClipByActor.get(id);
   const prevSpeed = lastSpeedByActor.get(id) ?? 1.0;
   if (prevClip === clip && Math.abs(prevSpeed - speed) < 0.05) return;
@@ -1521,7 +1574,9 @@ function mountCourtFx(): void {
     return;
   }
   try { registerHoopsFx((auraApp as any).effects, { reducedFlash }); } catch { /* fx best-effort */ }
-  restartBallTrail(game_.jamFull);
+  // a rebuilt scene drops the old ribbon; the frame loop starts a new one at the next shot (ballTrailWanted)
+  try { ballTrail?.stop({ immediate: true }); } catch { /* fx best-effort */ }
+  ballTrail = null;
 }
 function restartBallTrail(fire: boolean): void {
   if (LOOK_ORIGINAL || !auraApp) return;
@@ -1530,6 +1585,11 @@ function restartBallTrail(fire: boolean): void {
     ballTrail = (auraApp as any).effects?.trail?.("ball-live", ballTrailOptions(fire)) ?? null;
     ballTrailFire = fire;
   } catch { ballTrail = null; }
+}
+/** Ends the ribbon (its points fade out) until the next shot. */
+function stopBallTrail(): void {
+  try { ballTrail?.stop(); } catch { /* fx best-effort */ }
+  ballTrail = null;
 }
 /** Burst one hoops kind at a juice position (wet courts swap ground dust for splashes; reduced motion halves it). */
 function hoopsBurst(kind: HoopsFxKind, position: Vec3, strength = 1): void {
@@ -1540,7 +1600,10 @@ function hoopsBurst(kind: HoopsFxKind, position: Vec3, strength = 1): void {
   } catch { /* fx best-effort */ }
 }
 
+/** Last juice events with their game time (read by the `?qaLuma=1` probe). */
+const recentJuice: { ev: string; t: number }[] = [];
 function juiceFire(ev: string, at?: Record<string, unknown>): void {
+  if (QA_LUMA) { recentJuice.push({ ev, t: Number(game_.time.toFixed(2)) }); if (recentJuice.length > 4) recentJuice.shift(); }
   try { (juice as any)?.fire?.(ev, at); } catch { /* juice is best-effort */ }
 }
 function fxSpawn(kind: string, pos: Vec3, radius = 0.5, color?: string): void {
@@ -1704,7 +1767,8 @@ const inputCtl = auraApp.input({
     pass: ["KeyE"],
     shoot: ["Space"],
     rematch: ["KeyR"],
-    menu: ["Escape"]
+    menu: ["Escape"],
+    autopilot: [AUTOPILOT_TOGGLE_CODE]
   },
   axes: {
     moveX: { negative: "left", positive: "right" },
@@ -1754,6 +1818,17 @@ function footEvidence(): Record<string, unknown> {
 }
 
 let lastManualInputAt = -999;
+/** Autoplay results timer and stall guard (only stepped while the autopilot is on). */
+const autoplayWatch = createAutoplayWatch();
+/** Top-bar AUTO button and the P key both land here. */
+let syncAutoBtn: () => void = () => undefined;
+function setAutopilot(on: boolean): void {
+  game_.autopilot = on;
+  if (on) lastManualInputAt = -999; // take over now, not 2.2 s after the toggle press
+  syncAutoBtn();
+  showBanner(on ? "CPU AUTOPILOT ON" : "MANUAL CONTROLS ACTIVE");
+  pushEvent("system", on ? "autopilot enabled" : "manual controls active", "info");
+}
 
 // Blur any clicked button so Space/Enter never re-clicks UI buttons during play.
 window.addEventListener("click", (ev) => {
@@ -1834,6 +1909,10 @@ function rebuildScene(): void {
   if (!auraApp) return;
   try {
     auraApp.setScene(buildScene(venue));
+    // a rebuild (court, squad or fit change) can mount other Idol kits: load their drivers and re-settle programs / uploads
+    void preloadIdolDrivers(idolBodyOf.values())
+      .then(() => warmPrograms(auraApp as unknown as Parameters<typeof warmPrograms>[0], { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 12 }))
+      .then((r) => { warmResult = r; }, () => undefined);
     disableBlurPostEffects();
     resolveHandles();
     mountCourtFx();
@@ -1849,7 +1928,7 @@ function crowdSwell(): void {
   try { (audio as any)?.setCueLevel?.("crowd", { volume: crowdLevel }, 120); } catch { /* audio best-effort */ }
 }
 
-/** Athletes on the floor push apart to a shoulder width; a dunker in the air and lab-parked bodies keep their line. */
+/** Athletes on the floor push apart to a shoulder width and out of the stanchion / table / cart; a dunker in the air and lab-parked bodies keep their line. */
 const bodyScratch: (Body & { a: AthleteState })[] = [];
 function separateBodies(): void {
   bodyScratch.length = 0;
@@ -1857,8 +1936,26 @@ function separateBodies(): void {
     if (a.z < -40) continue; // parked off-court in the labs
     bodyScratch.push({ x: a.x, z: a.z, pinned: a.dunkT > 0, a });
   }
-  if (separate(bodyScratch) === 0) return;
+  if (separate(bodyScratch, undefined, courtObstacles(venue.id), PLAYER_BOUNDS) === 0) return;
   for (const b of bodyScratch) { b.a.x = b.x; b.a.z = b.z; }
+}
+
+/** Render-only draw offsets for the Idol bodies (sim positions, outcomes and replays are untouched). */
+const visualOffset = new Map<string, [number, number]>();
+const NO_OFFSET: [number, number] = [0, 0];
+function updateVisualSeparation(): void {
+  visualOffset.clear();
+  if (idolBodyOf.size === 0) return;
+  const onCourt = athletes.filter((a) => a.z > -40);
+  const offs = visualSeparation(onCourt.map((a) => ({ x: a.x, z: a.z, pinned: a.hasBall || a.dunkT > 0 })));
+  const obstacles = courtObstacles(venue.id);
+  onCourt.forEach((a, i) => {
+    const off = offs[i]!;
+    // a draw offset never pushes a body into the furniture
+    const p = { x: a.x + off[0], z: a.z + off[1] };
+    if (resolveObstacles(p, obstacles, BODY_RADIUS, PLAYER_BOUNDS)) { off[0] = p.x - a.x; off[1] = p.z - a.z; }
+    visualOffset.set(a.nodeId, off);
+  });
 }
 
 function rematch(): void {
@@ -2109,9 +2206,9 @@ function startMatch(mode: ModeId): void {
   // Per-mode controls hint + jam-ready copy
   if (controlsHint) {
     const hints: Record<ModeId, string> = {
-      quick: "MOVE: <b>WASD</b> · SPRINT: <b>SHIFT</b> · CROSS/HESI: <b>J/K</b> · PASS/OOP: <b>E</b> · SHOOT/BLOCK: <b>SPACE</b> · STEAL: <b>K</b>",
-      blacktop: "BLACKTOP TO 21 — ALL BUCKETS COUNT 2 · <b>R</b> REMATCH",
-      tour: "STREET TOUR — SURVIVE THE BRACKET · <b>R</b> REMATCH",
+      quick: "MOVE: <b>WASD</b> · SPRINT: <b>SHIFT</b> · CROSS/HESI: <b>J/K</b> · PASS/OOP: <b>E</b> · SHOOT/BLOCK: <b>SPACE</b> · STEAL: <b>K</b> · AUTOPLAY: <b>P</b>",
+      blacktop: "BLACKTOP TO 21 — ALL BUCKETS COUNT 2 · <b>R</b> REMATCH · <b>P</b> AUTOPLAY",
+      tour: "STREET TOUR — SURVIVE THE BRACKET · <b>R</b> REMATCH · <b>P</b> AUTOPLAY",
       dunklab: "DUNK LAB — JAM METER UNLOCKED · DRIVE AND <b>SPACE</b> AT THE RIM · <b>E</b> ALLEY-OOP",
       handleslab: "HANDLES LAB — CLEAR EVERY CONE RING · <b>J</b> CROSS · <b>K</b> HESI · CHAIN FOR STYLE",
       studio: "PLAYER STUDIO — PICK YOUR FIT · APPLY TO UPDATE THE SQUAD"
@@ -2365,6 +2462,8 @@ function stepBallSim(dt: number): void {
           ball.state = "held";
           ball.holder = ball.passTarget;
           if (recv.team === "home") switchControl(recv);
+          // autopilot catch: read the floor right away instead of idling out a timer left over from off-ball cuts
+          if (recv.team === "home" && game_.autopilot) recv.aiT = Math.min(recv.aiT, AUTOPILOT_CATCH_READ);
           pushEvent("pass", "caught in stride", "info");
           // Lob oop: cutter catching near the rim goes straight up for the slam
           if (recv.cutT > 0 && dist2d(recv.x, recv.z, RIM[0], RIM[2]) < 3.6) {
@@ -2373,6 +2472,11 @@ function stepBallSim(dt: number): void {
           return;
         }
       }
+      // A defender standing in the passing lane gets a hand on it: the ball does not fly through bodies.
+      const passer: TeamId = ball.lastTouch;
+      const lane = athletes.filter((m) => m.team !== passer && m.z > -40);
+      const hit = passInterceptor(ball, lane);
+      if (hit >= 0) deflectPass(lane[hit]!);
     }
 
     // Rim and glass contacts are resolved by the swept impact step above (hoopWorld); here only the make is read off.
@@ -2784,15 +2888,42 @@ function switchControl(a: AthleteState): void {
   homeTeam().forEach((m) => (m.controlled = m === a));
 }
 
+/**
+ * A pass that reaches a defender's body is knocked loose off it (no random roll: the body is in the lane). The existing
+ * loose-ball rules take over: the defender is closest and scoops it, a home steal must be taken back past the arc.
+ */
+function deflectPass(def: AthleteState): void {
+  const dx = ball.x - def.x, dz = ball.z - def.z;
+  const d = Math.hypot(dx, dz) || 1;
+  const sp = Math.hypot(ball.vx, ball.vz);
+  ball.state = "loose";
+  ball.passTarget = -1;
+  ball.vx = (dx / d) * 1.4 + ball.vx * 0.12;
+  ball.vz = (dz / d) * 1.4 + ball.vz * 0.12;
+  ball.vy = Math.min(2.2, 0.8 + sp * 0.12);
+  ball.flightT = 0; ball.looseT = 0; ball.lastTouch = def.team; ball.scored = false; ball.blocked = false;
+  trailHist.length = 0;
+  if (game_.phase === "shot") game_.phase = "live";
+  setClip(def, "Punch_Jab");
+  def.actionUntil = game_.time + 0.42;
+  game_.stats[def.team].steals += 1;
+  game_.stealFlash = 0.4;
+  juiceFire("steal", { position: [ball.x, ball.y, ball.z] });
+  pushEvent("steal", def.team === "home" ? "PASS PICKED OFF" : "pass picked off — cpu ball", def.team === "home" ? "success" : "warning");
+  if (def.team === "home") game_.jam = clamp(game_.jam + 0.1, 0, 1);
+}
+
+/** Render-side: game time each athlete last threw a pass (plays the generated chest pass on the Idol body). */
+const passAt = new Map<string, number>();
 function throwPass(a: AthleteState, recv: AthleteState): void {
+  passAt.set(a.nodeId, game_.time);
   a.hasBall = false;
   const from: Vec3 = [a.x, 1.5, a.z];
   const to: Vec3 = [recv.x, 1.6, recv.z];
-  const d = dist2d(from[0], from[2], to[0], to[2]);
-  const t = clamp(d / 11, 0.22, 0.7);
+  const [pvx, pvy, pvz] = passLaunch(from, to);
   Object.assign(ball, {
     state: "pass" as BallState, x: from[0], y: from[1], z: from[2],
-    vx: (to[0] - from[0]) / t, vy: (to[1] - from[1]) / t + 0.9, vz: (to[2] - from[2]) / t,
+    vx: pvx, vy: pvy, vz: pvz,
     holder: -1, passTarget: idxOf(recv), flightT: 0, looseT: 0, lastTouch: a.team
   });
   trailHist.length = 0;
@@ -2807,7 +2938,7 @@ function stepPlayerAutopilot(me: AthleteState, dt: number): void {
     me.vx = lerp(me.vx, 0, dt * 10);
     me.vz = lerp(me.vz, 0, dt * 10);
     if (game_.shotMeter.frames > 3 && game_.shotMeter.t >= game_.shotMeter.perfect - 0.015) {
-      releaseShot(me, game_.autopilot ? 0.58 + rng() * 0.4 : 0.96);
+      releaseShot(me, game_.autopilot ? autopilotReleaseQuality(rng()) : 0.96);
     }
     return;
   }
@@ -2838,16 +2969,20 @@ function stepPlayerAutopilot(me: AthleteState, dt: number): void {
     if (me.aiT <= 0) {
       me.aiT = 1.3 + rng() * 1.6;
       const roll = rng();
-      if (game_.mode !== "dunklab" && roll < 0.28) {
-        const mates = homeTeam().filter((m) => m !== me);
-        const recv = mates[Math.floor(rng() * mates.length)];
+      const lab = game_.mode === "dunklab";
+      // kick it out only to a teammate with a clear lane: a pass into a defender's body is picked off (deflectPass)
+      const mates = lab ? [] : homeTeam().filter((m) => m !== me);
+      const defenders = lab ? [] : awayTeam().filter((d) => d.z > -40);
+      const play = chooseAutopilotPlay({ roll, dRim, lab, lastPlay: me.aiPlan, canPass: mates.some((m) => pickOpenReceiver(me, [m], defenders, 0) !== undefined) });
+      if (play === "pass") {
+        const recv = pickOpenReceiver(me, mates, defenders, rng());
         if (recv) { throwPass(me, recv); return; }
       }
-      if (game_.mode !== "dunklab" && dRim < 6.4 && roll < 0.58) {
+      if (play === "shoot") {
         openMeter(me);
         return;
       }
-      if (game_.mode !== "dunklab" && roll < 0.8) {
+      if (play === "stand") {
         // Handles on display: stand and pound the rock so the standing dribble
         // cycle reads before the next drive to the rim (autoplay evidence).
         me.aiPlan = "stand";
@@ -2866,6 +3001,15 @@ function stepPlayerAutopilot(me: AthleteState, dt: number): void {
     if (holder) {
       const dir = angTo(holder.x, holder.z, RIM[0], RIM[2]);
       aiMove(me, holder.x + Math.sin(dir) * 1.15, holder.z + Math.cos(dir) * 1.15, dt, PLAYER_SPEED * 0.86);
+      // defend like a player would: a hand up on a jumper, an occasional poke at the dribble (same rules as the keys)
+      if (holder.team === "away" && me.jumpT <= 0 && holder.shooting && defDist(me, holder) < 2.2 && rng() < dt * 2) {
+        me.jumpT = 0.0001;
+        me.vy = 5.6;
+        setClip(me, "Contest", 1.35);
+      } else if (holder.team === "away" && !holder.shooting && me.pokeCd <= 0 && defDist(me, holder) < 1.3 && rng() < dt * 1.6) {
+        me.pokeCd = 1.8;
+        attemptSteal(me, holder);
+      }
     }
   }
 }
@@ -3178,6 +3322,8 @@ function syncAthlete(a: AthleteState, dt: number): void {
   // Integrate position
   a.x = clamp(a.x + a.vx * dt, -COURT_X - 1.4, COURT_X + 1.4);
   a.z = clamp(a.z + a.vz * dt, COURT_Z0 - 2.4, COURT_Z1 + 2.6);
+  // furniture is solid: the step never ends inside the stanchion, scorer's table or ball cart (courtObstacles.ts)
+  if (a.dunkT <= 0) resolveObstacles(a, courtObstacles(venue.id), BODY_RADIUS, PLAYER_BOUNDS);
   if (a.stumble > 0) a.stumble -= dt;
   if (a.pokeCd > 0) a.pokeCd -= dt;
 
@@ -3212,7 +3358,9 @@ function syncAthlete(a: AthleteState, dt: number): void {
 
   // `scaleMode: "fit"` grounds the model's lowest point on the node position, so the node sits at floor height (+ jump height):
   // adding half the body height here lifted every athlete 0.96 m off the floor, away from its ring, shadow and the ball.
-  r.root.setPosition(a.x, a.y + bob, a.z).setRotation(0, a.yaw, 0);
+  // Idol bodies are drawn spread to a broader shoulder width than the sim's (render only; see updateVisualSeparation)
+  const off = visualOffset.get(a.nodeId) ?? NO_OFFSET;
+  r.root.setPosition(a.x + off[0], a.y + bob, a.z + off[1]).setRotation(0, a.yaw, 0);
   sampleFeet(a, r.root);
 
   // Clip selection with hysteresis when nothing explicit is playing
@@ -3295,10 +3443,25 @@ function syncAthlete(a: AthleteState, dt: number): void {
     headLookLocalQuat: headLookQuatOverride
   });
   lastAthletePoses.set(a.nodeId, posed);
+  const idolKey = idolBodyOf.get(a.nodeId);
+  // Idol bodies: the ball anchors to the palm that is DRAWN (the Idol hand), shifted check-aim included.
+  const idolPalms = idolKey ? driveIdolAthlete(r.root, idolKey, posed, /[124]$/.test(a.nodeId), [a.x + off[0], a.y + bob, a.z + off[1]], a.yaw, holdsBall ? posed.palmRWorld : undefined, {
+    t: performance.now() / 1000, clip: a.clip, vx: a.vx, vz: a.vz,
+    action: a.shooting || a.dunkT > 0 || a.jumpT > 0 || a.stumble > 0 || a.actionUntil > 0,
+    ballArms: holdsBall,
+    y: a.y, vy: a.vy, gravity: GRAVITY, jumping: a.jumpT > 0 && a.dunkT <= 0, shooting: a.shooting,
+    dunkU: a.dunkT > 0 ? clamp(a.dunkT / 0.62, 0, 1) : undefined,
+    actionLeft: a.actionUntil > 0 ? a.actionUntil - game_.time : undefined,
+    passAge: passAt.has(a.nodeId) ? game_.time - passAt.get(a.nodeId)! : undefined
+  }) : undefined;
+  const palmR: Vec3 = idolPalms ? idolPalms.right : posed.palmRWorld;
+  const checkAimPalm: Vec3 = idolPalms
+    ? [posed.checkAimPalmWorld[0] + palmR[0] - posed.palmRWorld[0], posed.checkAimPalmWorld[1] + palmR[1] - posed.palmRWorld[1], posed.checkAimPalmWorld[2] + palmR[2] - posed.palmRWorld[2]]
+    : posed.checkAimPalmWorld;
   sampleFeet(a, r.root);
 
   if (holdsBall) {
-    heldRig.set(a.nodeId, { palm: posed.palmRWorld, shoulderY: posed.shoulderY });
+    heldRig.set(a.nodeId, { palm: palmR, shoulderY: posed.shoulderY });
   } else {
     heldRig.delete(a.nodeId);
   }
@@ -3308,8 +3471,8 @@ function syncAthlete(a: AthleteState, dt: number): void {
     livePoseOn.add(a.nodeId);
     overlayPoseOn.delete(a.nodeId);
     aimed = {
-      palm: checkHold ? posed.checkAimPalmWorld : posed.palmRWorld,
-      actual: posed.palmRWorld,
+      palm: checkHold ? checkAimPalm : palmR,
+      actual: palmR,
       shoulderY: posed.shoulderY,
       t: cycleT,
       moving: false
@@ -3318,8 +3481,8 @@ function syncAthlete(a: AthleteState, dt: number): void {
     overlayPoseOn.add(a.nodeId);
     livePoseOn.delete(a.nodeId);
     aimed = {
-      palm: posed.palmRWorld,
-      actual: posed.palmRWorld,
+      palm: palmR,
+      actual: palmR,
       shoulderY: posed.shoulderY,
       t: cycleT,
       moving: true
@@ -3343,7 +3506,9 @@ function syncAthlete(a: AthleteState, dt: number): void {
   r.ring?.setPosition(a.x, 0.018, a.z).setScale([ringS, ringS, ringS]).setVisible(true);
   // Jam aura
   const auraOn = game_.jamFull && a.team === "home" && a.hasBall;
-  r.aura?.setPosition(a.x, a.y + 0.95, a.z).setScale(auraOn ? [0.9, 1.9, 0.9] : HIDDEN).setVisible(auraOn); // fit-grounding: ok (a centre-based cylinder primitive)
+  // owner fix (placeholder look): the jam aura was a 1.9 m translucent orange column that read as a placeholder box over the
+  // ball handler; it is now a flat glowing floor disc under the feet (JAM_AURA_SCALE on the 0.9 x 1.9 x 0.9 cylinder)
+  r.aura?.setPosition(a.x, JAM_AURA_Y, a.z).setScale(auraOn ? JAM_AURA_SCALE : HIDDEN).setVisible(auraOn); // fit-grounding: ok (flat disc on the floor)
 }
 
 /* ------------------------------------------------------------------ *
@@ -3727,6 +3892,7 @@ function frame(dtRaw: number): void {
   // Menu key: exactly one toggle per press (input.ts)
   pressed.beginFrame();
   if (pressed("menu", "Escape")) setMenuOpen(!menuIsOpen());
+  if (pressed("autopilot", AUTOPILOT_TOGGLE_CODE)) setAutopilot(!game_.autopilot);
 
   // The open menu pauses play: no simulation and no gameplay input behind it.
   if (menuIsOpen()) {
@@ -3846,6 +4012,23 @@ function frame(dtRaw: number): void {
     }
   }
 
+  // Autoplay loop: results ~3 s then a rematch, never a menu; a stalled play is re-checked (autoplay.ts).
+  if (game_.autopilot) {
+    const act = stepAutoplayWatch(autoplayWatch, {
+      phase: game_.phase, scoreHome: game_.scoreHome, scoreAway: game_.scoreAway,
+      ballState: ball.state, holder: ball.holder, ballX: ball.x, ballZ: ball.z
+    }, dt);
+    if (act === "restart") {
+      if (game_.phase === "gameover") rematch();
+      else { startMatch(game_.mode === "studio" ? "quick" : game_.mode); enterLive(); }
+      pushEvent("autoplay", "autoplay — next game", "info");
+    } else if (act === "unstick") {
+      pushEvent("autoplay", "autoplay — play stalled, re-check", "info");
+      if (game_.mode === "dunklab" || game_.mode === "handleslab") resetLabBall();
+      else enterCheck(deadBallPossession(ball.lastTouch));
+    }
+  }
+
   // Take-back clearing check
   if (game_.mustClear && game_.phase === "live") {
     const h = holderAthlete();
@@ -3873,6 +4056,7 @@ function frame(dtRaw: number): void {
 
   // Ball + athletes
   stepBallSim(dt);
+  updateVisualSeparation();
   for (const a of athletes) syncAthlete(a, dt);
   refreshHeldBall();
 
@@ -3885,16 +4069,23 @@ function frame(dtRaw: number): void {
   }
   placeBall(ball.x, ball.y, ball.z);
   ballShadow?.setScale([clamp(1.1 - ball.y * 0.12, 0.3, 1.05), 1, clamp(1.1 - ball.y * 0.12, 0.3, 1.05)]).setVisible(true);
-  // H47-E2: Shanghai lightning, a double strike every ~40 s of game time (reduced flash keeps it dark).
+  // H47-E2: Shanghai lightning, a double strike every ~40 s of LIVE play (never at load or on a menu / check / results;
+  // reduced flash keeps it dark).
   if (lightningNode) {
-    const level = lightningFlash(COURT_RIGS[venue.id], game_.time, reducedFlash);
+    const playing = game_.phase === "live" || game_.phase === "shot";
+    const level = playing ? lightningFlash(COURT_RIGS[venue.id], game_.matchT, reducedFlash, QA_LIGHTNING_EVERY) : 0;
     if (level !== lightningLevel) {
       lightningLevel = level;
       try { (lightningNode as any).setLight?.({ intensity: level * LIGHTNING_PEAK }); } catch { /* lighting flag off */ }
     }
   }
-  // H47-V1: the ribbon turns fire-coloured at a full Jam Meter (a trail's options are fixed, so it restarts).
-  if (!LOOK_ORIGINAL && ballTrailFire !== game_.jamFull) restartBallTrail(game_.jamFull);
+  // H47-V1: the ribbon follows shot arcs only (ballTrailWanted) and turns fire-coloured at a full Jam Meter (a trail's
+  // options are fixed, so it restarts).
+  if (!LOOK_ORIGINAL) {
+    const wantTrail = ballTrailWanted(ball.state);
+    if (!wantTrail && ballTrail) stopBallTrail();
+    else if (wantTrail && (!ballTrail || ballTrailFire !== game_.jamFull)) restartBallTrail(game_.jamFull);
+  }
   for (let i = 0; i < trailNodes.length; i++) {
     const h = trailNodes[i];
     const pt = trailHist[trailHist.length - 1 - i];
@@ -4014,7 +4205,7 @@ function present(alpha: number): void {
     r.root.setPosition(p.x, p.y, p.z).setRotation(0, p.yaw, 0);
     r.shadow?.setPosition(p.x, 0.012, p.z);
     r.ring?.setPosition(p.x, 0.018, p.z);
-    r.aura?.setPosition(p.x, p.y + 0.95, p.z); // fit-grounding: ok (a centre-based cylinder primitive)
+    r.aura?.setPosition(p.x, JAM_AURA_Y, p.z); // fit-grounding: ok (a centre-based cylinder primitive)
   });
   if (shownBall.has) {
     const b = blendPose(shownBall.prev, shownBall.cur, alpha, shownBall.out);
@@ -4047,7 +4238,7 @@ function drawReplayFrame(t: number): BroadcastV3 | null {
     r.root.setPosition(p.x, p.y, p.z).setRotation(0, p.yaw, 0);
     r.shadow?.setPosition(p.x, 0.012, p.z);
     r.ring?.setPosition(p.x, 0.018, p.z);
-    r.aura?.setPosition(p.x, p.y + 0.95, p.z); // fit-grounding: ok (a centre-based cylinder primitive)
+    r.aura?.setPosition(p.x, JAM_AURA_Y, p.z); // fit-grounding: ok (a centre-based cylinder primitive)
   });
   placeBall(f.ball[0], f.ball[1], f.ball[2]);
   return f.ball;
@@ -4095,10 +4286,37 @@ if (typeof window !== "undefined") {
   window.addEventListener("pointerdown", skipBroadcast, { capture: true });
 }
 
+/** `?qaLuma=1` (measurement only): per-frame mean luma with a console line per spike (lumaProbe.ts). */
+const lumaProbe = QA_LUMA
+  ? createLumaProbe(() => document.querySelector<HTMLCanvasElement>("#app canvas"), { spikeAt: Number(initialParams.get("qaLumaAt")) || 6, shots: Number(initialParams.get("qaLumaShots")) || 0, width: Number(initialParams.get("qaLumaW")) || 256 })
+  : null;
+if (lumaProbe) (window as any).__hoopsLuma = () => lumaProbe.stats();
+const lumaContext = (): Record<string, unknown> => ({
+  ph: game_.phase, ball: ball.state, bc: broadcast.active, gt: Number(game_.time.toFixed(2)),
+  eye: drawnPose.eye.map((v) => Number(v.toFixed(2))), at: drawnPose.target.map((v) => Number(v.toFixed(2))), fov: Number(drawnPose.fov.toFixed(1)),
+  near: (() => {
+    let best = Infinity, who = "";
+    for (const a of athletes) {
+      const d = Math.hypot(a.x - drawnPose.eye[0], 1.0 + a.y - drawnPose.eye[1], a.z - drawnPose.eye[2]);
+      if (d < best) { best = d; who = a.nodeId; }
+    }
+    return `${who}@${best.toFixed(2)}`;
+  })(),
+  lit: (() => {
+    try {
+      const d = (auraApp as any).lighting?.diagnostics?.();
+      return d ? { pl: d.punctualLights, ls: d.localShadowLights, sh: (d.shadows ?? []).map((r: any) => `${r.light}:${r.cascadeCount ?? "-"}:${(r.skippedCascades ?? []).join("")}:${r.sampled ? 1 : 0}`).join(","), dr: (d.droppedFeatures ?? []).length } : null;
+    } catch { return null; }
+  })(),
+  ln: lightningLevel, trail: ballTrail !== null, jf: Number(jamFlashT.toFixed(2)), juice: recentJuice.slice(-2), venue: venue.id
+});
+
 const frameBoundary = createFrameErrorBoundary({
   onFatal: () => { if (renderError) (renderError as HTMLElement).hidden = false; }
 });
 auraApp.onFrame(({ dt }) => {
+  // read the canvas right after this frame's render (a microtask runs once the frame callback, render included, returns)
+  if (lumaProbe) queueMicrotask(() => lumaProbe.sample(lumaContext));
   frameBoundary.run(() => {
     if (!appReady) {
       for (const a of athletes) syncAthlete(a, 0);
@@ -4136,6 +4354,7 @@ function setVenue(vId: VenueId, silent = false): void {
   if (!VENUES[vId]) return;
   const changed = venue.id !== vId;
   venue = VENUES[vId];
+  syncVenueBallColliders(vId);
   LOOK_ORIGINAL = courtLookOriginal(vId);
   applyHudLook();
   document.querySelectorAll<HTMLButtonElement>("[data-court]").forEach((b) => b.classList.toggle("active", b.dataset.court === vId));
@@ -4147,6 +4366,10 @@ function setVenue(vId: VenueId, silent = false): void {
       disableBlurPostEffects();
       resolveHandles();
       mountCourtFx();
+      // the new court remounts every model and swaps the look / IBL: re-settle programs and texture uploads
+      void preloadIdolDrivers(idolBodyOf.values())
+        .then(() => warmPrograms(auraApp as unknown as Parameters<typeof warmPrograms>[0], { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 12 }))
+        .then((r) => { warmResult = r; }, () => undefined);
     } catch (e) {
       console.warn("[hoops] venue swap failed", e);
     }
@@ -4210,18 +4433,13 @@ function buildStudioPills(): void {
 
 function wireMenus(): void {
   const autoBtn = el<HTMLButtonElement>("tb-auto");
-  const syncAutoBtn = (): void => {
+  syncAutoBtn = (): void => {
     if (!autoBtn) return;
     autoBtn.classList.toggle("active", game_.autopilot);
     autoBtn.textContent = game_.autopilot ? "AUTO: ON" : "AUTO";
   };
   syncAutoBtn();
-  autoBtn?.addEventListener("click", () => {
-    game_.autopilot = !game_.autopilot;
-    syncAutoBtn();
-    showBanner(game_.autopilot ? "CPU AUTOPILOT ON" : "MANUAL CONTROLS ACTIVE");
-    pushEvent("system", game_.autopilot ? "autopilot enabled" : "manual controls active", "info");
-  });
+  autoBtn?.addEventListener("click", () => setAutopilot(!game_.autopilot));
 
   // Mode cards
   document.querySelectorAll<HTMLButtonElement>("[data-start]").forEach((btn) => {
@@ -4319,7 +4537,8 @@ function wireMenus(): void {
   el<HTMLElement>("touch-menu")?.addEventListener("click", () => setMenuOpen(!menuIsOpen()));
   // Pause when the tab or app goes to the background.
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden && (game_.phase === "live" || game_.phase === "shot" || game_.phase === "check")) setMenuOpen(true);
+    // autoplay never parks on the menu (it is meant to run hands-free)
+    if (document.hidden && !game_.autopilot && (game_.phase === "live" || game_.phase === "shot" || game_.phase === "check")) setMenuOpen(true);
   });
 }
 
@@ -4335,7 +4554,8 @@ const params = new URLSearchParams(window.location.search);
 const venueParam = params.get("court") as VenueId | null;
 if (venueParam && VENUES[venueParam]) setVenue(venueParam, true);
 const modeParam = params.get("mode") as ModeId | null;
-const menuParam = params.get("menu") === "1" || modeParam === "studio";
+// autoplay skips the title/menu and starts play straight away
+const menuParam = !game_.autopilot && (params.get("menu") === "1" || modeParam === "studio");
 
 if (menuParam) {
   enterCheck("home");
@@ -4345,12 +4565,20 @@ if (menuParam) {
   setMenuOpen(true);
 } else {
   setMenuOpen(false, false);
-  startMatch(modeParam ?? "quick");
+  startMatch(modeParam && modeParam !== "studio" ? modeParam : "quick");
   if (QA_SERVE) enterCheck("away");
   enterLive();
 }
 
-void Promise.resolve(auraApp.ready()).then(() => {
+/** The last warm-up (`window.__HOOPS_WARM__`): programs, IBL and Idol texture upgrades settled before play / after a rebuild. */
+let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+(window as unknown as { __HOOPS_WARM__?: () => typeof warmResult }).__HOOPS_WARM__ = () => warmResult;
+
+void Promise.resolve(auraApp.ready()).then(async () => {
+  // Idol pass (first-seconds stall fix): the mounted Idol bodies' skeleton drivers are loaded and every program, the IBL
+  // and every Idol texture upgrade are settled (warmPrograms, lessons-learned R2) before play starts.
+  await preloadIdolDrivers(idolBodyOf.values());
+  warmResult = await warmPrograms(auraApp as unknown as Parameters<typeof warmPrograms>[0], { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 }).catch(() => null);
   // B2: report which backend is active and the first-frame readiness on the QA hook (tolerates apps without `readiness()`).
   const qaHook = ((window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ ??= {});
   void publishBackendReport(auraApp as unknown as Parameters<typeof publishBackendReport>[0], qaHook);

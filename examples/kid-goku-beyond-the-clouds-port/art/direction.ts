@@ -46,7 +46,24 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [40, 66], mobile: "both" },
-  assets: [],
+  // Idol wow pass (2026-11, idol.ts): image-to-3D GLBs mounted by default (`?idol=0` restores the procedural kit)
+  assets: [
+    { role: "hero", assetKey: "cdSkyKidHero", maxTriangles: 40000, minTriangles: 10000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "vehicle", assetKey: "cdCloudSteed", maxTriangles: 40000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    // the wyvern is split into a body and two flapping wings; the tyrant is the rigged, code-walked Idol creature
+    { role: "enemy", assetKey: "cdSkyWyvernBody", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "enemy", assetKey: "cdSkyWyvernWingL", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "enemy", assetKey: "cdSkyWyvernWingR", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "enemy", assetKey: "cdStormTyrantRig", maxTriangles: 30000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "cdHermitCottage", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "set-dressing", assetKey: "cdShrinePillar", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "cdBoulder", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "cdHoneyRoast", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "cdRideLog", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "cdCanopyTree", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "cdBonsaiPine", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "cdShoulderRock", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+  ],
   vfx: [
     { event: "skypearl", kind: "pearl-spark" },
     { event: "glider-mount", kind: "cloud-puff" },

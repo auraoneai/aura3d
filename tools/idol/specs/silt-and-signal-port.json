@@ -1,0 +1,185 @@
+{
+  "game": "silt-and-signal-port",
+  "outDir": "examples/silt-and-signal-port/assets/idol",
+  "style": "Hand-painted stylised look of a high-end animated feature film prop: simplified bold readable shapes and warm sunlit desert colours (terracotta, ochre, bone, indigo, turquoise, brass), but with real physical material detail: weathered sandstone grain, oiled leather, woven linen, hammered brass patina, glazed ceramic; soft painterly studio render",
+  "items": [
+    {
+      "key": "duneSkiff",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 2.59
+      },
+      "tex": 2048,
+      "seed": 11,
+      "subject": "A desert sand-surfing hover skiff board seen without any rider: a long narrow streamlined glider board shaped like a large pointed surfboard with a flat top deck, two small outrigger fins at the sides, two curved carved sun-bleached bone tusks rising at the pointed bow, warm sandstone-coloured smooth hull, terracotta lacquer side fairings, gleaming brass gunwale rails and brass cutwater along the edges, two ribbed dark leather foot pads on the flat top deck, a glowing turquoise glazed ceramic core set into the underside, carved cedar wood skids underneath. No sail, no mast, no person Seen from the side at eye level in a low three-quarter side view, the board perfectly level and horizontal, long and flat like a surfboard, about four times longer than wide",
+      "yawDeg": -90
+    },
+    {
+      "key": "duneSkiffAlt",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 2.59
+      },
+      "tex": 2048,
+      "seed": 23,
+      "subject": "A desert sand-surfing hover skiff board seen without any rider: a long narrow streamlined glider board shaped like a large pointed surfboard with a flat top deck, two small outrigger fins at the sides, a single short curved carved bone prow ornament at the pointed bow, warm sandstone-coloured smooth hull, terracotta lacquer side fairings, gleaming brass gunwale rails and brass cutwater along the edges, two ribbed dark leather foot pads on the flat top deck, a glowing turquoise glazed ceramic core set into the underside, carved cedar wood skids underneath. No sail, no mast, no person Seen from the side at eye level in a low three-quarter side view, the board perfectly level and horizontal, long and flat like a surfboard, about four times longer than wide",
+      "yawDeg": -90
+    },
+    {
+      "key": "duneRiderRig",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.72
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A lone desert courier sand-surfer: a slim adult figure in fitted dark teal and charcoal desert riding gear, a short charcoal hooded jacket with leather shoulder straps, dark teal fitted trousers tucked into tall dark brown leather boots, dark leather gloves, a cream linen face wrap over the nose and mouth, round brass sand goggles over the eyes, a long cream-and-teal striped scarf around the neck hanging down the back, a small brass signal transceiver on a belt. Face covered by the wrap and goggles"
+    },
+    {
+      "key": "duneRider",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.46
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A full-body figure of a lone desert courier sand-surfer, facing the viewer, standing in a low crouched riding stance with knees bent, one boot a little ahead of the other, arms held slightly out from the body for balance: a hooded sun-bleached terracotta poncho mantle over a deep indigo nomad tunic, an indigo cloth face wrap covering the nose and mouth, brass-rimmed amber sand goggles over the eyes, linen-wrapped shins and forearms, oiled brown leather boots and gloves, a leather courier satchel at the hip, a small brass and ceramic signal transceiver backpack, a long terracotta scarf hanging behind. Face fully covered by the wrap and goggles"
+    },
+    {
+      "key": "duneBuggy",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.8
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "An expedition desert buggy sand-crawler vehicle: a rugged open-cab off-road buggy with four big lugged balloon tyres, a sturdy tubular steel roll cage, a flat solar panel array on the roof, a small parabolic relay dish antenna mounted on the roof, sand-coloured dented body panels with terracotta paint, jerry cans and canvas bags strapped to the back, dust and scratches"
+    },
+    {
+      "key": "duneViaduct",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 63
+      },
+      "tex": 1024,
+      "seed": 7,
+      "front": "+x",
+      "subject": "A monumental ancient two-tier sandstone aqueduct viaduct seen from the front: a long straight bridge with three big round arches on the lower tier standing on four massive tapered stone piers, six smaller round arches on the upper tier, a flat water channel along the top, warm weathered sandstone blocks with eroded edges and darker keystones, wind-carved, about twice as long as tall"
+    },
+    {
+      "key": "duneGatehouse",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 26
+      },
+      "tex": 1024,
+      "seed": 7,
+      "front": "+x",
+      "subject": "An ancient desert sandstone gatehouse seen from the front: two massive tapered stone pylon towers joined by a big round stone archway with a keystone, a flat stone lintel on top, a small brass lattice tower with a brass beacon dome and a round glass lens on top of the lintel, tattered terracotta and indigo cloth banners hanging on the towers, weathered warm sandstone"
+    },
+    {
+      "key": "duneCanyonGate",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 53.8
+      },
+      "tex": 1024,
+      "seed": 7,
+      "front": "+x",
+      "subject": "A monumental ancient canyon resonance portal seen from the front: two tall fluted tapering sandstone obelisks at the far left and right, joined by a huge round stone arch of large voussoir blocks, a brass lattice truss across the very top with a brass beacon dome and a glowing turquoise crystal in the middle, a brass parabolic dish mounted on each obelisk, weathered warm sandstone and green-patina brass, wider than tall",
+      "yawDeg": -30
+    },
+    {
+      "key": "duneRelayTower",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 31.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "An ancient desert signal relay watchtower: a wide octagonal tapering sandstone base topped by a slender brass lattice tower with three brass rings, two solar panel wings sticking out from the sides, three brass parabolic relay dishes pointing in different directions, and a glowing turquoise crystal beacon in a brass cage at the very top, weathered sandstone and patina brass"
+    },
+    {
+      "key": "duneObelisk",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 27.9
+      },
+      "tex": 1024,
+      "seed": 11,
+      "subject": "A very tall slender ancient fluted sandstone obelisk, four times taller than it is wide, tapering upward to a pointed pyramid tip, vertical fluting grooves, wind-eroded weathered edges, standing on a rough low red-rock boulder plinth"
+    },
+    {
+      "key": "duneMesa",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 2.05
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A large red-rock desert mesa butte rock formation: a flat-topped stratified sandstone mesa with clearly visible horizontal rock layers in red, orange and cream bands, steep eroded cliffs with vertical cracks and a sloping scree base, a wind-carved slender yardang spire rising at one side, about one and a half times wider than tall"
+    },
+    {
+      "key": "duneStall",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 6.9
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A desert courier bazaar market stall: a wooden frame stall with a draped faded terracotta and cream striped cloth awning, a wooden counter with glazed turquoise and ochre ceramic amphorae and clay pots, woven baskets and rugs, weathered wood and linen"
+    },
+    {
+      "key": "duneTowShell",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 3.3
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "An ancient brass and ceramic resonance vessel relic: a wide round squat glazed turquoise ceramic shell vessel bound with ornate hammered brass bands and rings, a brass tow ring at the top, a faint warm amber glow from inside through slits"
+    },
+    {
+      "key": "duneSignalPylon",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.08
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A tall slender ancient sandstone signal pylon column: a tapered square sandstone column with carved bands, a small flat solar panel array mounted on a bracket two thirds up, and a brass parabolic relay dish mounted at the top, weathered sandstone and green patina brass, about six times taller than wide"
+    },
+    {
+      "key": "duneBannerMast",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 21.95
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A tall wooden desert wind banner mast: a tall weathered wooden pole on a stone base with a long tattered terracotta and indigo cloth banner hanging from a crossbar at the top, frayed edges, brass fittings"
+    }
+  ]
+}

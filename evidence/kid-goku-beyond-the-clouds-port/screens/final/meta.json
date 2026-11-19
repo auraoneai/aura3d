@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "kid-goku-beyond-the-clouds-port": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "route": "/apps/cumulus-dash/",
+      "states": [
+        "1280x720 title: title card",
+        "1280x720 first seconds: the run begins: kid visible ahead of the textured rolling log",
+        "1280x720 early play: sandstone canyon, pearls and coins",
+        "1280x720 peak action: the tyrant walking beside the road ('get right or bonk him')",
+        "1280x720 second venue: vaulting the river between shrine bells",
+        "1280x720 late course: final canyon gap at 96%",
+        "1280x720 finish: home at last: the kid reaches the shrine house (finish cinematic)",
+        "390x844 title: title orbit, kid readable in portrait",
+        "390x844 first seconds: the run begins, kid framed in portrait",
+        "390x844 early play: kid running past the textured log",
+        "390x844 early play: boulder incoming",
+        "390x844 peak: mid-course run, Idol trees",
+        "390x844 second venue: riding the steed at 91%"
+      ],
+      "frames": [
+        "1280-01-title.jpg",
+        "1280-02-rolling-log.jpg",
+        "1280-03-canyon.jpg",
+        "1280-04-tyrant.jpg",
+        "1280-05-vault-the-water.jpg",
+        "1280-06-final-gap.jpg",
+        "1280-07-finish-home.jpg",
+        "390-01-title.jpg",
+        "390-02-run-begins.jpg",
+        "390-03-rolling-log.jpg",
+        "390-04-boulder.jpg",
+        "390-05-run.jpg",
+        "390-06-steed.jpg",
+        "card-1x.jpg",
+        "card-2x.jpg"
+      ],
+      "results": "autoplay finishes the course (~126 s incl. load): 'Fourth sky pearl: home at last' finish cinematic, then results 3 s and restart (unit-tested)",
+      "autoplay": "?autoplay=1 (alias ?autopilot=1, O toggles): starts ~1.2 s after load, steers round obstacles, jumps gaps, plants the staff at gorges, bonks flyers/tyrant, vaults the river, rides the cloud; loops",
+      "errors": "none",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

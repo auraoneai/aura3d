@@ -111,6 +111,7 @@ registerCodemod({
  * macos-14 runner (Playwright + ANGLE Metal, tools/impostor-bake/bake-page.mjs).
  */
 import { registerCliCommand } from "../../contracts/commands";
+import { monorepoOnlyMessage, unmetMonorepoRule } from "../../monorepo-only.js";
 
 registerCliCommand({
   name: "assets bake-impostor",
@@ -118,14 +119,18 @@ registerCliCommand({
   summary: "Bake octahedral impostor atlases (albedo+alpha, normal+depth) for a model asset",
   usage: "aura3d assets bake-impostor --asset <id> [--views 8] [--size 256] [--out <dir>] [--execute]",
   async run(argv, io) {
+    // Monorepo-only (tools/impostor-bake is not in the npm package): one clear message, no stack trace.
+    const unmet = unmetMonorepoRule("assets bake-impostor", argv, io.cwd);
+    if (unmet) {
+      io.stderr(monorepoOnlyMessage("assets bake-impostor", unmet.needs, unmet));
+      return 2;
+    }
     let runImpostorBake;
     try {
       ({ runImpostorBake } = await import("../../../../../tools/impostor-bake/index.js"));
     } catch (error) {
-      throw new Error(
-        "aura3d assets bake-impostor: implementation module tools/impostor-bake/index.js is not reachable " +
-        `(${(error as Error).message}). This command is only available from the monorepo source tree.`
-      );
+      io.stderr(`${monorepoOnlyMessage("assets bake-impostor", "tools/impostor-bake/index.js", { base: "cli" })} (${(error as Error).message})`);
+      return 2;
     }
     return runImpostorBake(argv, io);
   }

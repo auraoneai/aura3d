@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "pips-big-leap",
+  "key": "pipHawkWing",
+  "generatedAt": "2026-11-19T01:02:34.101Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f153-a9aa-7fb2-82ea-5d2c2c5ec50d",
+      "prompt": "A single detached brown hawk wing lying flat and fully spread, seen from directly above, long primary feathers at the tip, rounded shoulder end, one wing only, no body. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f154-2d18-7460-94ef-4bf773aedd23",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 723332,
+        "num_faces": 1446672,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single detached brown hawk wing lying flat and fully spread, seen from directly above, long primary feathers at the tip, rounded shoulder end, one wing only, no body. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -49,
+    "scale": 0.474,
+    "size": [
+      0.6,
+      0.275,
+      0.188
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-pips-big-leap/assets/idol/pipHawkWing.glb",
+  "sizeBytes": 651724,
+  "preview": "artifacts/idol/pips-big-leap/pipHawkWing/views.png",
+  "usd": 0.37,
+  "renormalizedAt": "2026-11-19T01:07:47.891Z"
+}

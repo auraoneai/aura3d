@@ -22,10 +22,7 @@ const DEFAULT_ROUTES = [
   "templates/arena-shooter",
   "apps/showcase-aura-links-3d",
   "apps/showcase-cross-hop",
-  "apps/showcase-vault-breakers",
-  "apps/showcase-blockfall-reactor",
   "apps/showcase-dot-dash-3d",
-  "apps/aura-clash-showcase",
   "apps/showcase-smart-city-control"
 ];
 const ROUTES = (process.env.A3D_SHADOW_PROXY_AB_ROUTES ?? "").split(",").map((r) => r.trim()).filter(Boolean);
@@ -126,8 +123,8 @@ test.describe("shadow proxy A/B", () => {
   test.setTimeout(3_300_000);
   // One test per line on purpose: tools/remote-acr/run.sh selects a group with `<spec>:<line>`, so groups run in parallel on separate runners.
   test("group 1: drift-and-deliver, instanced-texture-probe, arena-shooter", async ({ browser }) => auditRoutes(browser, ["examples/drift-and-deliver-port", "examples/instanced-texture-probe", "templates/arena-shooter"], "g1"));
-  test("group 2: aura-links, cross-hop, vault-breakers", async ({ browser }) => auditRoutes(browser, ["apps/showcase-aura-links-3d", "apps/showcase-cross-hop", "apps/showcase-vault-breakers"], "g2"));
-  test("group 3: blockfall-reactor, dot-dash, aura-clash", async ({ browser }) => auditRoutes(browser, ["apps/showcase-blockfall-reactor", "apps/showcase-dot-dash-3d", "apps/aura-clash-showcase"], "g3"));
+  test("group 2: aura-links, cross-hop", async ({ browser }) => auditRoutes(browser, ["apps/showcase-aura-links-3d", "apps/showcase-cross-hop"], "g2"));
+  test("group 3: dot-dash", async ({ browser }) => auditRoutes(browser, ["apps/showcase-dot-dash-3d"], "g3"));
   test("group 4: smart-city-control, rendering-large-scene", async ({ browser }) => auditRoutes(browser, ["apps/showcase-smart-city-control", "examples/rendering-large-scene"], "g4"));
   test("custom routes (A3D_SHADOW_PROXY_AB_ROUTES) or all", async ({ browser }) => auditRoutes(browser, ROUTES.length ? ROUTES : DEFAULT_ROUTES, "all"));
 });

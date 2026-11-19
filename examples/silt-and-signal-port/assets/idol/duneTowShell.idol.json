@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "silt-and-signal-port",
+  "key": "duneTowShell",
+  "generatedAt": "2026-11-18T22:43:26.734Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f094-83e6-7f42-a2c0-8ad8abc8f31b",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 816626,
+        "num_faces": 1633276,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "An ancient brass and ceramic resonance vessel relic: a wide round squat glazed turquoise ceramic shell vessel bound with ornate hammered brass bands and rings, a brass tow ring at the top, a faint warm amber glow from inside through slits",
+  "role": "prop",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.302,
+    "size": [
+      3.3,
+      3.293,
+      3.237
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/silt-and-signal-port/assets/idol/duneTowShell.glb",
+  "sizeBytes": 2974440,
+  "preview": "artifacts/idol/silt-and-signal-port/duneTowShell/views.png",
+  "usd": 0.37
+}

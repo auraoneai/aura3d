@@ -1,0 +1,46 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzMunition",
+  "generatedAt": "2026-11-18T23:38:02.879Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0c8-c861-7531-96f6-6ec109cca0b6",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0de-c5a3-7f80-ba07-50a5473fc4d2",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1248396,
+        "num_faces": 2496876,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "subject": "Stack of two closed olive drab steel military ammunition cans with latched lids, carry handles and worn paint edges, plain unmarked",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.9,
+    "size": [
+      0.76,
+      0.9,
+      0.416
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzMunition.glb",
+  "sizeBytes": 2508788,
+  "preview": "artifacts/idol/bunker-zero/bzMunition/views.png",
+  "usd": 0.37
+}

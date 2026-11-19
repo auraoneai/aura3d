@@ -3,11 +3,14 @@
 // PRD-14 rebuilt 18 game routes behind a `route-<id>` dispatcher
 // (apps/<dir>/src/main.ts -> src/v2/boot.ts). Thirteen of those apps were
 // deleted in release 4.0.1 (46bca99f1) and pruned from games.json in
-// 8e6ecef13; the five below still ship. games.json also registers later
-// routes for capture (aura-links-3d 644da6651, iron-crown + pips-big-leap
-// 479225fd9) that are not PRD-14 rebuild routes: no v2 boot, no route flag.
-// games-json.test.ts asserts this split matches the data and the tree, so a
-// new or removed route fails there instead of being skipped here.
+// 8e6ecef13; the last five (aura-clash-showcase, showcase-aurora-lander,
+// showcase-bank-shot, showcase-blockfall-reactor, showcase-vault-breakers)
+// were deleted later, so no PRD-14 rebuild route ships any more. games.json
+// still registers later routes for capture (aura-links-3d 644da6651,
+// iron-crown + pips-big-leap 479225fd9) that are not PRD-14 rebuild routes:
+// no v2 boot, no route flag. games-json.test.ts asserts this split matches
+// the data and the tree, so a new or removed route fails there instead of
+// being skipped here.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -26,13 +29,7 @@ export const GAMES_JSON_ENTRIES: readonly GamesJsonEntry[] = (JSON.parse(
 ) as { games: GamesJsonEntry[] }).games;
 
 /** The PRD-14 rebuild routes that still ship (v2 boot + route-<id> dispatch). */
-export const PRD14_REBUILD_ROUTES = [
-  "aura-clash-showcase",
-  "showcase-aurora-lander",
-  "showcase-bank-shot",
-  "showcase-blockfall-reactor",
-  "showcase-vault-breakers"
-] as const;
+export const PRD14_REBUILD_ROUTES: readonly string[] = [];
 
 /** Later games.json routes outside the PRD-14 rebuild (no v2 boot). */
 export const NON_REBUILD_ROUTES = [

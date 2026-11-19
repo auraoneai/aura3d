@@ -49,6 +49,20 @@ function laneTypeSeq(row: number, seed: number, forceTheme?: number): LaneType {
   return cur;
 }
 
+/**
+ * Seconds a fixed spot in a road or tram lane stays clear between two movers, at least. A hop through a lane keeps the
+ * critter in it for about 0.17 s (second half of the hop in, the landing frame, first half of the hop out); late-game
+ * roads at top speed used to leave about 0.16 s (gap 1.3 m at 8 to 11 m/s, less at the wrap), so they could not be
+ * crossed at all and every run ended at the first one. 0.3 s is tight but fair.
+ */
+export const CROSSING_WINDOW = 0.3;
+/** core.ts CRITTER_HIT_HALF (the critter half-width in the hit test). */
+const CROSSING_CRITTER_HALF = 0.3;
+
+function hazardHalf(kind: Lane["moverKind"]): number {
+  return moverHalf({ moverKind: kind } as Lane);
+}
+
 /** Deterministic lane descriptor for a row (pure; caller keeps a cache). */
 export function laneFor(row: number, seed: number, difficulty: number, forceTheme?: number): Lane {
   if (row <= 1) {
@@ -88,10 +102,14 @@ export function laneFor(row: number, seed: number, difficulty: number, forceThem
     : moverKind === "pad" ? Math.max(2.6, (spacingDraw < 0.45 ? 3.0 : 4.2) - diff * 0.5)
     : type === "lava" ? Math.max(2.8, 3.4 - diff * 0.5)
     : 6;
+  // Every road and tram lane keeps a crossable gap (autoplay pass, 2026-11-19): see CROSSING_WINDOW.
+  const fair = type === "road" || type === "tram"
+    ? Math.max(spacing, 2 * (hazardHalf(moverKind) + CROSSING_CRITTER_HALF) + speed * CROSSING_WINDOW)
+    : spacing;
   const hasCoin = type === "meadow" && row > 4 && rnd() < 0.16;
   const hasPod = type === "meadow" && row > 40 && rnd() < 0.03;
   return {
-    row, type, dir, speed, spacing, moverKind, theme: themeIdx,
+    row, type, dir, speed, spacing: fair, moverKind, theme: themeIdx,
     phase: rnd() * 60,
     hasCoin, coinCol: Math.floor(rnd() * (COL_MAX - COL_MIN)) + COL_MIN,
     hasPod, podCol: Math.floor(rnd() * (COL_MAX - COL_MIN)) + COL_MIN
@@ -136,7 +154,10 @@ export function laneMovers(lane: Lane, t: number, xs: Float32Array): number {
   }
   if (lane.moverKind === "none" || lane.speed === 0) return 0;
   const span = wrapSpan(lane);
-  const n = Math.min(xs.length, Math.max(1, Math.round(span / lane.spacing)));
+  // Road and tram movers never close up at the wrap: with `round` the gap between the last and first mover could be
+  // half the spacing (the crossing-window guarantee needs every gap at least `spacing`). Platforms keep `round`.
+  const fit = lane.type === "road" || lane.type === "tram" ? Math.floor(span / lane.spacing) : Math.round(span / lane.spacing);
+  const n = Math.min(xs.length, Math.max(1, fit));
   for (let i = 0; i < n; i++) {
     const raw = lane.phase + i * lane.spacing + lane.dir * lane.speed * t;
     xs[i] = ((raw % span) + span * 1.5) % span - span / 2;

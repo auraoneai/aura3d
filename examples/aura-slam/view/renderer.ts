@@ -3,7 +3,8 @@ import { installSafetyNet, type SafetyNet, type SafetySettings } from "@aura3d/d
 import type { AthletePose, SceneRenderer } from "../contract/modules";
 import type { ActorState, BallState, MatchState } from "../contract/sim";
 import type { Vec3 } from "../contract/units";
-import { resolveBallHandles, updateBall, type BallHandles } from "./ball";
+import { createBallSpin, resolveBallHandles, updateBall, type BallHandles } from "./ball";
+import { CORNER_PANEL_TRIM_IDS, createDrawnBallTracker } from "./courtSolids";
 import { slamQaCrops, type QaCrop } from "./qaCrops";
 import { createBroadcastDirector, createLetterbox, introParam, type BroadcastDirector, type DirectorFrame, type Letterbox } from "./intro";
 import { BROADCAST_DOF, CAMERA_FAR, broadcastDofFor, CAMERA_NEAR, CUT_DOF_FSTOP, acePunchOffset, nextPunchT, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
@@ -26,6 +27,10 @@ import { GRASS_STRIPE_NODE_IDS, isRigOrganicPart, racketStringsMaterial, rigMate
 import { BOARD_IDS, createBoardsController, standLineText, type BoardsController } from "./boards";
 import { createNetCordMotion, NET_MESH_ID, NET_TAPE_ID } from "./net";
 import { createImpactRig } from "../../../apps/showcase-port-shared/feel";
+import { IDOL_GANTRY_Y, idolEnabled } from "./idolVenue";
+import { warmPrograms } from "@aura3d/engine/game";
+import { createUmpireIdol, UMPIRE_CHAIR_X, UMPIRE_IDOL_ID } from "./idolUmpire";
+import { createTvCameraPans, TV_CAMERAS } from "./idolVenueMotion";
 
 /** TT-M2: forwards every write to the real handle, upgrading the materials the rig sets (kit fabric, racket clearcoat, matte-satin skin/shoes). */
 function materialUpgradeHandle(real: AuraRuntimeNodeHandle, role: RigMaterialRole, nodeId: string): AuraRuntimeNodeHandle {
@@ -163,6 +168,9 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   let currentVenueKey = "";
   let lastFaultActive = false;
   let lastBallWorld: Vec3 = [0, 0.8, 6.4];
+  // owner pass-through audit: the drawn ball stops at the stands, chair and benches the sim lets a dead ball roll through
+  const drawnBalls = createDrawnBallTracker();
+  let cornerTrims: AuraRuntimeNodeHandle[] = [];
   let lastPlayerPose: ReturnType<AthletePose["pose"]> | null = null;
   let frames = 0;
   // GU47 WP-11: the World Tour look (default) or today's look (`?look=original`). The boot venue comes from `?venue=` so the
@@ -170,6 +178,12 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   const pageSearch = options.search ?? (typeof location !== "undefined" ? location.search : "");
   const look = lookMode(pageSearch);
   const worldTour = look === "world-tour";
+  /** Idol wow pass: GLB set pieces and umpire in the World Tour look (`?idol=0` keeps the procedural ones). */
+  const idol = worldTour && idolEnabled(pageSearch);
+  let umpireIdol: ReturnType<typeof createUmpireIdol> | null = null;
+  let tvPans: ReturnType<typeof createTvCameraPans> | null = null;
+  let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+  const ballSpin = createBallSpin();
   const bootVenue = venueKey(new URLSearchParams(pageSearch).get("venue"));
   let venuePlan: VenueRuntimePlan | null = null;
   let venueChanges = 0;
@@ -222,11 +236,12 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     h.backdrop?.setMaterial(material.pbr({ color: pal.background, roughness: 1, unlit: true }));
     h.bleachers?.setMaterial(material.pbr({ color: pal.seat, roughness: 0.85 }));
     h.sponsorTrim?.setMaterial(material.pbr({ color: pal.trim, roughness: 0.55 }));
+    for (const trim of cornerTrims) trim.setMaterial(material.pbr({ color: pal.trim, roughness: 0.55 }));
     audienceVisible = worldTour || !isMoonVenue(key);
     // GU47 phase 3: the scoreboard gantry read as a tower floating in the black lunar sky; the Moon hides it (Earth stays clear).
     // setVisible alone left the loaded GLB drawing (round-2 capture), so the Moon also drops it 60 m below the plain.
     const gantryShown = !(worldTour && isMoonVenue(key));
-    h.gantry?.setVisible(gantryShown).setPosition(GANTRY_POSITION[0], gantryShown ? GANTRY_POSITION[1] : -60, GANTRY_POSITION[2]);
+    h.gantry?.setVisible(gantryShown).setPosition(GANTRY_POSITION[0], gantryShown ? (idol ? IDOL_GANTRY_Y : GANTRY_POSITION[1]) : -60, GANTRY_POSITION[2]);
     spectators?.setVisible(audienceVisible);
     spectatorHeads?.setVisible(audienceVisible);
     standText?.setVisible(audienceVisible);
@@ -366,7 +381,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       // contracts require sRGB output encoding unless a dedicated P3 float target is configured.
       const prefersP3 = rawGamut === "p3";
       app = createAuraApp(target, {
-        scene: buildTennisScene(rig, { venue: bootVenue, look, camera: cameraRig, ...(crowd ? { crowd } : {}) }),
+        scene: buildTennisScene(rig, { venue: bootVenue, look, camera: cameraRig, idol, ...(crowd ? { crowd } : {}) }),
         // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".
         renderer: { quality: { tier: "auto" }, ...(options.appOptions?.renderer ?? {}) },
         output: {
@@ -425,8 +440,12 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       if (backdrop) h.backdrop = backdrop;
       h.bleachers = req(STATIC_RUNTIME_IDS.bleachers);
       h.sponsorTrim = req(STATIC_RUNTIME_IDS.sponsorTrim);
+      cornerTrims = CORNER_PANEL_TRIM_IDS.flatMap((id) => { try { return [req(id)]; } catch { return []; } });
       h.grandstand = req("stadium-grandstand-rear");
       try { h.gantry = req("stadium-scoreboard-gantry"); } catch { /* optional set dressing */ }
+      if (idol) umpireIdol = createUmpireIdol(req(UMPIRE_IDOL_ID));
+      // the courtside TV cameras exist off the Moon only (the bowl is not mounted there)
+      if (idol) tvPans = createTvCameraPans(TV_CAMERAS.map((c) => { try { return req(c.id); } catch { return undefined; } }));
       try { app.camera?.shake.configure({ maxOffset: 0.18, maxAngleDeg: 0.35, frequency: 18, decayPerSecond: 2.6 }); } catch { /* optional */ }
       net = installSafetyNet({
         safety: options.safety ?? true,
@@ -454,6 +473,16 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       if (typeof ResizeObserver !== "undefined") {
         resizeObserver = new ResizeObserver(() => syncBacking());
         resizeObserver.observe(target);
+      }
+      // Idol wow pass (lessons R2): every Idol GLB (athletes, umpire, set pieces: ~28 MB) is mounted with the boot scene, but their
+      // texture upgrades, the venue HDRI and the new program variants would otherwise land in the first seconds of play (draws
+      // whose program is still compiling are skipped: a frozen frame). Settle them before mount() resolves, i.e. before the
+      // shell starts the loop and drops the loading screen. Venue switches mount no new models (every venue shares them).
+      if (idol) {
+        progress(0.88, "warming");
+        // a warm-up failure (or a headless test app without step()) must never block the boot: the game then warms in play
+        try { warmResult = await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 }); }
+        catch (error) { console.warn("[aura-slam] warmPrograms failed; continuing", error); }
       }
       progress(0.92, "court");
       cameraFov = cameraRig.fovDeg;
@@ -484,7 +513,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       const isMoon = isMoonVenue(venue);
       applyVenue(venue);
 
-      lastBallWorld = updateBall(ball, state, { shadowDisc: !worldTour });
+      lastBallWorld = updateBall(ball, state, { shadowDisc: !worldTour, spin: ballSpin.step(state.ball, Number.isFinite(dt) ? dt! : 1 / 60), contain: drawnBalls, dt: Number.isFinite(dt) ? dt! : 1 / 60 });
       const [bx, by, bz] = lastBallWorld;
       const b = state.ball;
       netCord?.step(b, Number.isFinite(dt) ? dt! : 1 / 60, reducedMotion());
@@ -527,6 +556,9 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
 
       const umpireYaw = clamp(-bx * 0.055, -0.42, 0.42);
       h.umpireHead!.setPosition(-6.68, 2.62, 0).setRotation(0, Math.PI * 0.5 + umpireYaw, 0);
+      // the Idol umpire looks at the ball: yaw from facing the court (+X) toward the ball's depth, neck-limited
+      tvPans?.update(bx, bz, Number.isFinite(dt) ? dt! : 1 / 60);
+      umpireIdol?.update(clamp(Math.atan2(-bz, Math.max(0.5, bx - UMPIRE_CHAIR_X)), -0.85, 0.85), (typeof performance !== "undefined" ? performance.now() : 0) / 1000);
 
       const t = Number(state.time ?? 0);
       const cheering = (state.phase as string) === "pointOver" || state.mode === "gameover";
@@ -597,8 +629,8 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       const pPose = options.pose.pose(state.player, state);
       const aiPose = options.pose.pose(state.ai, state);
       lastPlayerPose = pPose;
-      rig.update(rigs.player, state.player as Readonly<ActorState>, pPose, { isPlayer: true, isMoon });
-      rig.update(rigs.rival, state.ai as Readonly<ActorState>, aiPose, { isPlayer: false, isMoon });
+      rig.update(rigs.player, state.player as Readonly<ActorState>, pPose, { isPlayer: true, isMoon, state });
+      rig.update(rigs.rival, state.ai as Readonly<ActorState>, aiPose, { isPlayer: false, isMoon, state });
 
       // C8: a lost context presents black frames by definition; sampling them made the safety net reload the page mid-match.
       if (!app.deviceLost?.()) net?.sample(frames);
@@ -646,6 +678,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
           count: crowd ? CROWD_SEAT_COUNT : SPECTATOR_COUNT,
           ...(crowd ? { draws: crowdDraws, meanHeadYawDeg: (crowd.meanHeadYaw() * 180) / Math.PI, standing: crowd.standing() } : {})
         },
+        warm: warmResult,
         environment: { venue: currentVenueKey || "hard", background: VENUE_PALETTES[currentVenueKey || "hard"]?.background ?? null },
         look: {
           mode: look,

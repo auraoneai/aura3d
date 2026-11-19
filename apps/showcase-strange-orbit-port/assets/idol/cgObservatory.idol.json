@@ -1,0 +1,48 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "craterline-gp",
+  "key": "cgObservatory",
+  "generatedAt": "2026-11-18T22:47:37.718Z",
+  "generator": "tools/idol/generate.mjs (Idol step resumed from the original queued request after the generator's 20 min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A small lunar crater observatory building: a low stepped dark basalt stone plinth, a ribbed white ceramic cylindrical drum, a smooth brushed titanium hemispherical dome with an open shutter slit from which a white telescope barrel points up at an angle, a thin telemetry mast with a small teal beacon lamp beside the dome. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0c2-ec52-76d0-81f8-33be4e8be978",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1510218,
+        "num_faces": 3020688,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A small lunar crater observatory building: a low stepped dark basalt stone plinth, a ribbed white ceramic cylindrical drum, a smooth brushed titanium hemispherical dome with an open shutter slit from which a white telescope barrel points up at an angle, a thin telemetry mast with a small teal beacon lamp beside the dome. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.853,
+    "size": [
+      0.95,
+      0.918,
+      0.942
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-strange-orbit-port/assets/idol/cgObservatory.glb",
+  "sizeBytes": 2075332,
+  "preview": "artifacts/idol/craterline-gp/cgObservatory/views.png",
+  "usd": 0.37,
+  "postProcess": [
+    "examples/strange-orbit-port/tools/shrink-normal-map.mjs 1024 (normal map PNG -> JPEG q92)"
+  ]
+}

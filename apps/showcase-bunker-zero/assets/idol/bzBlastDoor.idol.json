@@ -1,0 +1,46 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzBlastDoor",
+  "generatedAt": "2026-11-18T23:40:58.565Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0cb-492b-78f1-bcaf-a0b3450e09f1",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0df-1a36-75d0-866a-ea33092ce0be",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 824068,
+        "num_faces": 1648132,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "subject": "Wide heavy sliding steel bunker blast door panel: one flat rectangular riveted dark grey steel slab, slightly wider than it is tall and only a hand thick, clean straight edges, yellow and black hazard stripes along the bottom edge, flush recessed locking wheel, reinforced cross braces, scratches and grime, no frame, no rubble",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 2.932,
+    "size": [
+      2.94,
+      2.666,
+      2.937
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzBlastDoor.glb",
+  "sizeBytes": 4792692,
+  "preview": "artifacts/idol/bunker-zero/bzBlastDoor/views.png",
+  "usd": 0.37
+}

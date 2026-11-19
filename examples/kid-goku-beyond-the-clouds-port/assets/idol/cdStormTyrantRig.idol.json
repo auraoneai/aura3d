@@ -1,0 +1,70 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cumulus-dash",
+  "key": "cdStormTyrantRig",
+  "generatedAt": "2026-11-19T00:53:08.527Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/cumulus-dash/cdStormTyrant/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f14b-1654-7f61-bdd8-bf137b50dd6e",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024,
+        "rig": true,
+        "animations": [
+          "idle",
+          "walk"
+        ]
+      },
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 434494,
+        "num_faces": 868992,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 70,
+        "animations": [
+          "idle",
+          "walk"
+        ]
+      }
+    }
+  ],
+  "prompt": "A huge fearsome tyrant lizard dinosaur standing upright on two powerful legs with a long counterbalancing tail, deep emerald-green armoured scaled hide, ochre-yellow belly scales, a massive head with a gaping toothy jaw, two curved ivory horns above the eyes, a row of crimson dorsal spines along its back, small clawed forearms, glowing amber eyes. Photoreal creature-feature practical model: real wet armoured reptile scales, horn, bone and teeth, physically based materials, high detail. Single full-body creature, entire body in frame with margin, centered, standing still in a neutral pose on all its legs, legs straight and clearly separated, three-quarter side view, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "admitRole": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 0.998 m, 2 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000        9.66x         535      0\n  bind-pose mismatch (SKIN_BIND_MISMATCH): bone_6 71% off-axis, bone_56 45% off-axis, bone_1 164% off-axis, bone_2 139% off-axis, bone_3 37% off-axis, bone_60 35% off-axis, bone_7 67% off-axis\n  ERROR material0 (mesh 0 prim 0): 535 of 30000 triangles stretch past 1.6x their rest edges (worst 9.66x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n  warn  7 bone(s) are not inside the mesh they move: bone_6 (vertices 0.064 m off a 0.09 m bone), bone_56 (vertices 0.039 m off a 0.086 m bone), bone_1 (vertices 0.112 m off a 0.068 m bone), bone_2 (vertices 0.119 m off a 0.085 m bone) (SKIN_BIND_MISMATCH). The mesh was modelled in a different pose than the skeleton assumes (typically mid-stride), so every clip rotates the limbs about joints off the limb. Rebuild the limbs in the skeleton's pose (assets repair-skin --rebuild-limbs) or re-rig.",
+    "repairLog": "skin check still fails after repair: SKIN_STRETCH, SKIN_BIND_MISMATCH\nBind-pose mismatch on bone_6, bone_56, bone_1, bone_2, bone_3, bone_7: the mesh was modelled in a different pose than the skeleton assumes. Weight smoothing and triangle cuts only mask it. For a recognised humanoid run repair-skin --rebuild-limbs (rebuilds the legs in the skeleton's pose); otherwise rebuild the limbs in your DCC tool or regenerate and re-rig the model in the pose the skeleton assumes.\nStill failing after smooth-bridges: SKIN_STRETCH, SKIN_BIND_MISMATCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand."
+  },
+  "normalized": {
+    "yawDeg": -135,
+    "scale": 1,
+    "sceneScale": 8.439,
+    "size": [
+      0.526,
+      0.998,
+      1.182
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/kid-goku-beyond-the-clouds-port/assets/idol/cdStormTyrantRig.glb",
+  "sizeBytes": 2814124,
+  "preview": "artifacts/idol/cumulus-dash/cdStormTyrantRig/views.png",
+  "usd": 0.25
+}

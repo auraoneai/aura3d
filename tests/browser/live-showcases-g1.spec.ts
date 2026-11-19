@@ -6,7 +6,7 @@ import { expect, test, type Page } from "@playwright/test";
  * no console/page errors and no failed requests. Results are printed as SHOWCASE_JSON lines (remote runs cannot egress files).
  */
 const BASE = (process.env.LIVE_BASE ?? "https://aura3d.auraone.ai").replace(/\/$/, "");
-const APPS = ["showcase-aura-diamond-3d", "showcase-aura-fc-3d", "showcase-aura-hoops-3d", "showcase-aura-links-3d", "showcase-aurora-lander", "showcase-bank-shot", "showcase-blockfall-reactor"];
+const APPS = ["showcase-aura-diamond-3d", "showcase-aura-fc-3d", "showcase-aura-hoops-3d", "showcase-aura-links-3d"];
 const BOOT_WAIT_MS = Number(process.env.LIVE_BOOT_WAIT_MS ?? 9000);
 
 async function lumaStats(page: Page, png: Buffer): Promise<{ nonBlack: number; colors: number; mean: number }> {

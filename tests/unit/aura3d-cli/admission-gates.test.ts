@@ -162,10 +162,11 @@ describe("builder pattern coverage", () => {
     // pass) the staged candidate manifest via tools/remote-acr/source5-files.mjs.
     const files = listCandidateFiles(root, ["apps"]).filter((file) => /^apps\/.+\/scripts\/.+/.test(file));
     const builderNamed = files.filter((file) => /(?:build|blender-build|build-review|register)-[^/]*\.(?:mjs|ts|py)$/i.test(file));
-    // Corpus sanity bound: 19 builder scripts remain after the arcade-slate
-    // removal (c41705be2); keep a lower bound that still fails on an empty
-    // detection rather than pinning the retired 50+-script corpus.
-    expect(builderNamed.length).toBeGreaterThan(10);
+    // Corpus sanity bound: the builder-script corpus shrank to a single script
+    // (apps/showcase-aura-links-3d/scripts/build-sfx.mjs) after the nine unused
+    // showcase apps were removed (2026-11-18); keep a bound that still fails on
+    // an empty detection rather than pinning a retired corpus size.
+    expect(builderNamed.length).toBeGreaterThanOrEqual(1);
     for (const file of builderNamed) {
       expect(isBuilderScriptPath(file), file).toBe(true);
     }

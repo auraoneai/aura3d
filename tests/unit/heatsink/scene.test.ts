@@ -7,6 +7,7 @@ import { buildThermalDriftScene, INSTANCE_COUNTS, MODEL_NODE_COUNT } from "../..
 import { CIRCUITS, DRONE_SPECS } from "../../../apps/showcase-heatsink/src/data";
 import { CIRCUIT_LOOKS } from "../../../apps/showcase-heatsink/src/look";
 import { assets, HEATSINK_ASSET_KEYS } from "../../../apps/showcase-heatsink/src/aura-assets";
+import { IDOL_DRONE_KEYS, IDOL_NOZZLES } from "../../../apps/showcase-heatsink/src/art/idolModels";
 
 type Node = {
   kind: string;
@@ -130,7 +131,8 @@ describe("heatsink scene", () => {
     const castsShadow = (name: string): boolean => {
       const root = nodes.find((n) => n.name === name);
       expect(root, name).toBeDefined();
-      const prims = flatten([root!]).filter((n) => n.kind === "primitive");
+      // Idol wow pass: Idol anchors and drones are `model` / `instances.model` nodes; the rest stay primitives.
+      const prims = flatten([root!]).filter((n) => n.kind === "primitive" || n.kind === "model" || n.kind === "instances");
       expect(prims.length, `${name} primitives`).toBeGreaterThan(0);
       return prims.some((p) => p.castShadow !== false);
     };
@@ -144,31 +146,26 @@ describe("heatsink scene", () => {
       expect(glass.castShadow, glass.name).toBe(false);
     }
   });
-  it("sculpts every drone as a multi-material craft tinted towards its DRONE_SPECS colour (hue within 20 deg) under a clearcoat (HS-10, WP-03)", () => {
-    const hue = (hex: string) => {
-      const n = Number.parseInt(hex.slice(1), 16);
-      const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => v / 255) as [number, number, number];
-      const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
-      if (d === 0) return 0;
-      const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
-      return (h * 60 + 360) % 360;
-    };
+  it("mounts every drone as its own Idol hull GLB, turned to the game's -Z nose, under the drone's runtime node (Idol wow pass)", () => {
     for (const id of Object.keys(DRONE_SPECS) as (keyof typeof DRONE_SPECS)[]) {
       const spec = DRONE_SPECS[id];
-      const hullGroup = nodes.find((n) => n.name === `${spec.nodeId}-hull`);
-      const canopy = nodes.find((n) => n.name === `${spec.nodeId}-canopy`);
-      expect(hullGroup?.children?.length ?? 0, `${id} multi-material slots`).toBeGreaterThanOrEqual(4);
-      expect(canopy?.castShadow, `${id} canopy shadow`).toBe(false);
-      expect(canopy?.material?.opacity, `${id} canopy opacity`).toBeCloseTo(0.42, 2);
-      const primaryMat = hullGroup?.children?.[0]?.material;
-      expect(primaryMat?.clearcoat ?? 0, id).toBeGreaterThan(0.5);
-      const delta = Math.abs(hue(primaryMat!.color!) - hue(spec.color));
-      expect(Math.min(delta, 360 - delta), id).toBeLessThanOrEqual(20);
+      const root = nodes.find((n) => n.name === spec.nodeId) as (Node & { runtime?: { id?: string } }) | undefined;
+      expect(root?.runtime?.id, id).toBe(spec.nodeId);
+      const hull = nodes.find((n) => n.name === `${spec.nodeId}-hull`) as (Node & { asset?: { url?: string }; rotation?: number[]; scaleMode?: string }) | undefined;
+      expect(hull?.kind, id).toBe("model");
+      expect(hull?.scaleMode, id).toBe("world");
+      expect(hull?.rotation?.[1], id).toBeCloseTo(Math.PI, 6);
+      expect(JSON.stringify(hull), id).toContain(IDOL_DRONE_KEYS[id]);
+      // the exhaust emitter's anchor sits on the Idol hull's measured nozzle pair (behind the tail, +Z)
+      const exhaust = nodes.find((n) => n.name === `${spec.nodeId}-exhaust`) as (Node & { position?: number[] }) | undefined;
+      expect(exhaust?.position, id).toEqual([0, IDOL_NOZZLES[id].y, IDOL_NOZZLES[id].back]);
+      expect(IDOL_NOZZLES[id].back, id).toBeGreaterThan(spec.maxDim * 0.4);
     }
   });
-  it("mounts zero static GLB models and stays inside the route budget of 32 model nodes (WP-03)", () => {
-    expect(MODEL_NODE_COUNT).toBe(0);
-    expect(nodes.filter((n) => n.kind === "model")).toHaveLength(MODEL_NODE_COUNT);
+  it("mounts the Idol GLB models and stays inside the route budget of 32 model nodes (Idol wow pass)", () => {
+    expect(MODEL_NODE_COUNT).toBeGreaterThanOrEqual(8);
+    const modelNodes = nodes.filter((n) => n.kind === "model" || (n.kind === "instances" && (n as { instanceSource?: string }).instanceSource === "model"));
+    expect(modelNodes).toHaveLength(MODEL_NODE_COUNT);
     const budget = JSON.parse(readFileSync("apps/showcase-heatsink/route-health.json", "utf8")).budgets.maxModelNodes;
     expect(MODEL_NODE_COUNT).toBeLessThanOrEqual(budget);
   });
@@ -180,7 +177,7 @@ describe("heatsink scene", () => {
 });
 
 describe("heatsink asset manifest (RH-06)", () => {
-  it("lists zero GLB models (100% @aura3d/engine procedural geometry)", () => {
+  it("keeps the app-local manifest free of GLB models (the Idol GLBs are admitted to the shared catalog by tools/idol/admit.sh)", () => {
     expect(HEATSINK_ASSET_KEYS).toEqual([]);
     expect(Object.keys(assets)).toEqual([]);
   });

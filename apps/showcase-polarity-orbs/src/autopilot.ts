@@ -8,23 +8,39 @@ export interface AutopilotOptions {
   readonly maxDx?: number;
   /** Rows (by id) the pilot deliberately does not flip on, for death-path tests. */
   readonly mistakeRows?: readonly number[];
+  /**
+   * Attract loop (`?autoplay=1`): after this many fixed steps on the results screen the pilot presses start again,
+   * so the run restarts forever. Unset keeps the one-shot behaviour the QA hooks and replay tests rely on.
+   */
+  readonly restartAfterSteps?: number;
 }
+
+/** Results screen hold before an autoplay restart: ~3 s at the sim's 60 Hz step. */
+export const AUTOPLAY_RESULTS_STEPS = 180;
 
 export class Autopilot {
   private readonly maxDx: number;
   private readonly mistakeRows: ReadonlySet<number>;
   private readonly flipped = new Set<number>();
   private lastTick = -1;
+  private readonly restartAfterSteps: number | undefined;
+  private resultsSteps = 0;
 
   constructor(options: AutopilotOptions = {}) {
     this.maxDx = options.maxDx ?? 14;
     this.mistakeRows = new Set(options.mistakeRows ?? []);
+    this.restartAfterSteps = options.restartAfterSteps;
   }
 
   next(sim: PolarityOrbsSim, step: number): Input {
     const o = sim.o;
+    if (o.phase !== "gameOver") this.resultsSteps = 0;
     if (o.phase === "splash") return { ...IDLE, start: true };
-    if (o.phase === "gameOver") return step === 0 ? { ...IDLE, start: true } : IDLE;
+    if (o.phase === "gameOver") {
+      if (step === 0) return { ...IDLE, start: true };
+      if (this.restartAfterSteps === undefined) return IDLE;
+      return ++this.resultsSteps >= this.restartAfterSteps ? { ...IDLE, start: true } : IDLE;
+    }
     if (o.phase === "bursting") return IDLE;
 
     const row = sim.rows.find((r) => !r.resolved && r.z < 0);

@@ -13,6 +13,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import type { AuraCliCommand } from "../../contracts/commands.js";
+import { monorepoOnlyMessage } from "../../monorepo-only.js";
 
 export const PERF_GATE_SCRIPT = join("tools", "perf-gate", "index.mjs");
 
@@ -76,7 +77,9 @@ export const perfGateCommand: AuraCliCommand = {
     }
     const gate = args.gate ? abs(io.cwd, args.gate) : findPerfGateScript(io.cwd);
     if (!gate || !existsSync(gate)) {
-      io.stderr(`[perf gate] PERF_GATE_NOT_FOUND: ${args.gate ?? PERF_GATE_SCRIPT} (run from the Aura3D repo or pass --gate)`);
+      io.stderr(`[perf gate] PERF_GATE_NOT_FOUND: ${args.gate
+        ? `${args.gate} does not exist`
+        : monorepoOnlyMessage("perf gate", PERF_GATE_SCRIPT.split("\\").join("/"), { base: "cwd", alternative: "pass --gate <path/to/perf-gate/index.mjs> if you have the gate script" })}`);
       return 2;
     }
     const report = abs(io.cwd, args.report);

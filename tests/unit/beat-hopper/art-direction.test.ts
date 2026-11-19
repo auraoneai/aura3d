@@ -30,7 +30,10 @@ describe("beat-hopper art direction", () => {
     expect(lights.filter((l) => l.shadow)).toHaveLength(1);
     expect(snapshot.hasAmbient).toBe(false);
     expect(snapshot.environment.kind).toBe("preset");
-    expect(JSON.stringify(nodes)).not.toContain(".glb");
+    // Idol wow pass: the hero, palms and concert dressing are Idol GLBs (tools/idol/specs/beat-hopper.json).
+    for (const key of ["bhSkaterBot", "bhPalm", "bhSpeakerTower", "bhSynthStack", "bhDjConsole"]) {
+      expect(JSON.stringify(nodes)).toContain(key);
+    }
     expect(nodes.some((n) => n.name === "grp-dress-stacks")).toBe(true);
     expect(nodes.some((n) => n.name === "grp-dress-decks")).toBe(true);
     expect(nodes.some((n) => n.name === "beat-threshold-gate")).toBe(true);
@@ -65,7 +68,7 @@ describe("beat-hopper art direction", () => {
     expect(bloomNode?.color).toBe("#ffffff");
 
     // Vertex color (`COLOR_0`) preservation across dynamic & batched PBR meshes
-    for (const coloredId of ["blocks", "block-chrome", "bar-posts", "walls", "wall-truss", "orbs", "bot-torso", "beat-pad-lacquer"]) {
+    for (const coloredId of ["blocks", "block-chrome", "bar-posts", "walls", "wall-truss", "orbs", "beat-pad-lacquer"]) { // bot-torso: the hero is the Idol skater-bot GLB since the Idol wow pass
       const meshNode = nodes.find((n) => n.name === coloredId) as { geometry?: { colors?: Float32Array } } | undefined;
       expect(meshNode?.geometry?.colors, `${coloredId} must carry GPU vertex colors`).toBeInstanceOf(Float32Array);
       expect((meshNode?.geometry?.colors?.length ?? 0) > 0).toBe(true);

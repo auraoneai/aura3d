@@ -16,7 +16,9 @@ describe("aura-fc-3d lens flares (FC47-P3)", () => {
       for (const f of flares) {
         expect(f.kind).toBe("lensflare");
         expect(f.occlusion).toBe("frustum");
-        expect(f.elements).toHaveLength(3);
+        // owner QA (390x844): no ghost discs, one small lamp-head glow
+        expect(f.elements).toHaveLength(1);
+        expect((f.elements[0] as { size?: number }).size).toBeLessThanOrEqual(120);
         expect(f.elements.every((e) => e.color === VENUE_LOOKS[id].floodColor)).toBe(true);
       }
       expect(flares.find((f) => f.name === `fc-flood-flare-${MAIN_FLOOD_TOWER}`)!.intensity).toBeGreaterThan(flares.find((f) => f.name !== `fc-flood-flare-${MAIN_FLOOD_TOWER}`)!.intensity);

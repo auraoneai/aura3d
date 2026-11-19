@@ -65,6 +65,7 @@ export * from "./HumanoidBoneInference.js";
 export * from "./RigQuality.js";
 export * from "./library/standardHumanoidClips.js";
 export * from "./library/performanceStateGraph.js";
+export * from "./smpl/index.js";
 export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
 export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
 export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";

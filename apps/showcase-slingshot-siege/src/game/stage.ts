@@ -32,22 +32,31 @@ import type { AmmoId } from "./ammo";
 import type { ChapterDef } from "./levels";
 import { chapterLook, sunDirection, type ChapterLook } from "./look";
 import { beachDressing } from "./dressing";
+import { BANNER_POLE, CLIFF_TRANSFORMS, FLAG_MAST, PINE_TRANSFORMS } from "./decorLayout";
 import { islandSurface } from "../art/surfaces";
-import { SEA_STACK_PLACEMENT, farSetPiecesFor, type FarSetPiece as FarSetPiecePlacement } from "../art/setPieces";
+import { FAR_PIECE_ASSETS, SEA_STACK_PLACEMENT, farSetPiecesFor, type FarSetPiece as FarSetPiecePlacement } from "../art/setPieces";
+import {
+  idolBirdNode,
+  idolCoastalPinesNodes,
+  idolFarPieceNode,
+  idolFlagBastionNode,
+  idolForegroundPropNodes,
+  idolGatehouseNode,
+  idolRaiderNode,
+  idolSlingshotBaseNode,
+  idolSlingshotForkNode,
+  idolStoneBridgeNode,
+  idolWatchtowerNode,
+  idolWindmillPropNodes
+} from "../art/idolModels";
 import {
   CRAFT_MATS,
   bevelBoxMesh,
-  buildArchedStoneBridgeNode,
   buildBarrelHoopsSpec,
-  buildChapterBackdropLandmark,
   buildCliffTurfCapSpec,
-  buildCoastalPinesNodes,
   buildDriftwoodSpec,
   buildFacetedSeaCliffMesh,
-  buildFlagBastionNode,
   buildFortressFoundationNode,
-  buildGatehouseNode,
-  buildHeroSiegeBirdNode,
   buildHorizonCloudsNode,
   buildLaunchBastionNode,
   buildLobsterPotSpec,
@@ -56,15 +65,10 @@ import {
   buildProceduralCrateSpec,
   buildProceduralPlankSpec,
   buildQuayBollardSpec,
-  buildRaiderBossNode,
   buildScallopShellSpec,
   buildSeaGrassClumpSpec,
-  buildSeaStackLighthouseLandmark,
-  buildSiegeSlingshotRigNode,
   buildSlingshotPouchSpec,
-  buildSlingshotYokeNode,
   buildTerracedIslandSpec,
-  buildWatchtowerNode,
   buildWindmillNode,
   buildWindmillSailBladeNode,
   latheMesh,
@@ -580,25 +584,9 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   const tuftColors = tuftInst.map((_, i) => (i % 3 === 0 ? grassLight : i % 3 === 1 ? grassDark : mixHex(groundColor, "#9ab060", 0.3)));
 
   // Sun-bleached sedimentary limestone sea-cliffs (replaces 19 MB / ~2M-tri dark Objaverse rock & pine scans).
-  const cliffTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [
-    { position: [-13.2, 0.65, -9.8], rotation: [0.04, 0.38, -0.03], scale: [4.2, 2.3, 2.6] },
-    { position: [-6.4, 0.95, -11.4], rotation: [-0.03, 0.92, 0.02], scale: [5.4, 2.9, 3.0] },
-    { position: [1.8, 1.15, -12.2], rotation: [0.02, 1.74, -0.04], scale: [6.2, 3.3, 3.2] },
-    { position: [9.6, 0.9, -11.0], rotation: [-0.04, 0.68, 0.03], scale: [5.0, 2.7, 2.8] },
-    { position: [14.8, 0.6, -8.8], rotation: [0.03, 1.35, -0.02], scale: [3.8, 2.1, 2.4] },
-    { position: [-6.4, 0.42, -5.4], rotation: [0, 0.52, 0], scale: [3.6, 1.35, 2.3] },
-    { position: [9.6, 0.48, -4.9], rotation: [0, -0.44, 0], scale: [3.9, 1.45, 2.5] },
-    { position: [-11.4, 0.32, -2.8], rotation: [0, 0.6, 0], scale: [2.5, 1.1, 1.9] },
-    { position: [8.4, 0.28, 3.1], rotation: [0, 1.42, 0], scale: [2.1, 0.92, 1.6] }
-  ];
-
-  const pineTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: number }[] = [
-    { position: [-10.2, 0, -2.9], rotation: [0, 0.3, 0], scale: 0.25 },
-    { position: [-5.1, 0, -3.7], rotation: [0, 1.2, 0], scale: 0.22 },
-    { position: [3.8, 0, -3.9], rotation: [0, 2.1, 0], scale: 0.26 },
-    { position: [10.8, 0, -2.7], rotation: [0, 3.0, 0], scale: 0.27 },
-    { position: [11.5, 0, 2.2], rotation: [0, 4.1, 0], scale: 0.22 }
-  ];
+  // Cliffs and pines: placements shared with the sim's static decor colliders (./decorLayout.ts).
+  const cliffTransforms = CLIFF_TRANSFORMS.map((t) => ({ position: [...t.position] as [number, number, number], rotation: [...t.rotation] as [number, number, number], scale: [...t.scale] as [number, number, number] }));
+  const pineTransforms = PINE_TRANSFORMS.map((t) => ({ position: [...t.position] as [number, number, number], rotation: [...t.rotation] as [number, number, number], scale: t.scale }));
 
   nodes.push(
     geometry.custom(buildTerracedIslandSpec(17, 0.045, false), {
@@ -633,27 +621,21 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       castShadow: false,
       receiveShadow: false
     }),
-    // Sculpted coastal sea-stack + striped lighthouse & chapter horizon landmarks (zero Meshy blobs).
-    buildSeaStackLighthouseLandmark(
-      "far-sea-stack",
-      SEA_STACK_PLACEMENT.position,
-      SEA_STACK_PLACEMENT.rotationY,
-      SEA_STACK_PLACEMENT.scale * 0.38
-    ),
+    // Idol wow pass: the far sea stack and the chapter horizon islands (../art/setPieces.ts, ../art/idolModels.ts).
+    idolFarPieceNode(FAR_PIECE_ASSETS.sling_seaStackIsland, "far-sea-stack", [...SEA_STACK_PLACEMENT.position], SEA_STACK_PLACEMENT.rotationY, true, false),
     ...ALL_FAR_PIECES.map(({ chapter: onlyChapter, piece }) => {
       const id = farPieceNodeId(piece.key);
       const active = onlyChapter === null || onlyChapter === chapter.id;
-      return buildChapterBackdropLandmark(
-        piece.key,
+      return idolFarPieceNode(
+        FAR_PIECE_ASSETS[piece.key],
         id,
         active ? [piece.position[0], piece.position[1], piece.position[2]] : [0, -160, 0],
         piece.rotationY,
-        piece.scale,
         active
       );
     }),
     buildLaunchBastionNode(),
-    buildArchedStoneBridgeNode(),
+    idolStoneBridgeNode(),
     buildFortressFoundationNode()
   );
 
@@ -682,7 +664,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       castShadow: false,
       receiveShadow: true
     }),
-    ...buildCoastalPinesNodes(pineTransforms, row),
+    ...idolCoastalPinesNodes(pineTransforms),
     buildHorizonCloudsNode(row)
   );
 
@@ -700,8 +682,8 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   });
 
   nodes.push(
-    buildSiegeSlingshotRigNode([-7.4, 0.42, 0], 0.08, SLING_IDS.catapult),
-    buildSlingshotYokeNode(),
+    idolSlingshotBaseNode(SLING_IDS.catapult),
+    idolSlingshotForkNode(),
     // Sculpted saddle-leather cradle pouch.
     geometry.custom(buildSlingshotPouchSpec(), { name: "sling-pouch", material: saddleLeather, castShadow: true, receiveShadow: true })
       .position(-7.4, 1.6, 0).scale([0.26, 0.12, 0.26]).runtime({ id: SLING_IDS.pouch, tags: ["sling"] }),
@@ -710,10 +692,10 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       .position(-7.5, 1.7, -0.16).scale([0.05, 0.032, 0.45]).runtime({ id: SLING_IDS.bandL, tags: ["sling"] }),
     primitives.box({ name: "sling-band-r", material: elasticBandMaterial("#d94f30", 0), castShadow: false, receiveShadow: false })
       .position(-7.5, 1.7, 0.16).scale([0.05, 0.032, 0.45]).runtime({ id: SLING_IDS.bandR, tags: ["sling"] }),
-    buildHeroSiegeBirdNode("sling-loaded", "pebble", [-7.4, 1.62, 0], Math.PI * 0.5, 0.5, SLING_IDS.loaded, "sling", true),
-    buildHeroSiegeBirdNode("ammo-wait-0", "stone", [-8.35, 0.44, 0.52], Math.PI * 0.42, 0.5, "ammo-wait-0", "stage", false),
-    buildHeroSiegeBirdNode("ammo-wait-1", "triple", [-8.95, 0.18, -0.42], Math.PI * 0.48, 0.48, "ammo-wait-1", "stage", false),
-    buildHeroSiegeBirdNode("ammo-wait-2", "ember", [-9.45, 0.15, 0.28], Math.PI * 0.45, 0.46, "ammo-wait-2", "stage", false)
+    ...idolBirdNode("sling-loaded", "pebble", [-7.4, 1.62, 0], Math.PI * 0.5, 0.5, SLING_IDS.loaded, "sling", true),
+    ...idolBirdNode("ammo-wait-0", "stone", [-8.35, 0.44, 0.52], Math.PI * 0.42, 0.5, "ammo-wait-0", "stage", false),
+    ...idolBirdNode("ammo-wait-1", "triple", [-8.95, 0.18, -0.42], Math.PI * 0.48, 0.48, "ammo-wait-1", "stage", false),
+    ...idolBirdNode("ammo-wait-2", "ember", [-9.45, 0.15, 0.28], Math.PI * 0.45, 0.46, "ammo-wait-2", "stage", false)
   );
 
   // ------------------------------------------------------- piece pools ------
@@ -777,14 +759,14 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
 
   // ------------------------------------------------------- raider rigs ------
   for (let g = 0; g < POOL.gullRigs; g += 1) {
-    nodes.push(buildRaiderBossNode(g, gullPartId(g, "body")));
+    nodes.push(idolRaiderNode(g, gullPartId(g, "body")));
   }
 
   // ------------------------------------------------- projectiles + ribbon ---
   const projAmmos: readonly AmmoId[] = ["pebble", "stone", "triple", "squid", "ember"];
   for (let i = 0; i < POOL.projectiles; i += 1) {
     nodes.push(
-      buildHeroSiegeBirdNode(
+      ...idolBirdNode(
         projectileNodeId(i),
         projAmmos[i % projAmmos.length]!,
         [0, -120, 0],
@@ -834,50 +816,24 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
 
   // -------------------------------------------------- chapter dressing ------
   nodes.push(
-    buildWatchtowerNode(PROP_IDS.watchtower),
-    buildGatehouseNode(PROP_IDS.gatehouse),
-    buildWindmillNode(PROP_IDS.windmillProp, PROP_IDS.windmillProp, ["dressing"], [4.2, 0, -3.2], 0.25, 1.35, true),
+    idolWatchtowerNode(PROP_IDS.watchtower),
+    idolGatehouseNode(PROP_IDS.gatehouse),
+    ...idolWindmillPropNodes(PROP_IDS.windmillProp),
     buildPlankScatterNode(PROP_IDS.plankScatter)
   );
 
   // -------------------------------------------------- foreground framing ----
+  // Idol wow pass: hand-painted toy crates and kegs (dressing only; the physics pools above stay procedural).
   nodes.push(
-    instances.custom(crateSpec, {
-      name: "fg-crates",
-      material: CRAFT_MATS.cratePine,
-      castShadow: false,
-      receiveShadow: true,
-      transforms: [
-        { position: [-4.9, 0.34, 4.6], rotation: [0, 0.35, 0], scale: 0.44 },
-        { position: [-4.95, 0.92, 4.55], rotation: [0, 0.9, 0], scale: 0.32 },
-        { position: [-10.2, 0.28, 3.6], rotation: [0, 0.7, 0], scale: 0.34 }
-      ]
-    }).runtime({ id: "fg-crates", tags: ["dressing"] }),
-    instances.custom(barrelSpec, {
-      name: "fg-barrels",
-      material: CRAFT_MATS.tntRed,
-      castShadow: false,
-      receiveShadow: true,
-      transforms: [
-        { position: [-4.0, 0.34, 4.95], rotation: [0, 0.2, 0], scale: 0.44 },
-        { position: [-9.6, 0.27, 4.1], rotation: [0, 0.5, 0], scale: 0.36 }
-      ]
-    }).runtime({ id: "fg-barrels", tags: ["dressing"] }),
-    instances.custom(barrelHoopsSpec, {
-      name: "fg-barrel-bands",
-      material: KEG_BAND_MATERIAL,
-      castShadow: false,
-      receiveShadow: true,
-      transforms: [
-        { position: [-4.0, 0.38, 4.95], rotation: [0, 0.2, 0], scale: 0.44 },
-        { position: [-9.6, 0.30, 4.1], rotation: [0, 0.5, 0], scale: 0.36 }
-      ]
-    }),
+    ...idolForegroundPropNodes()
+  );
+  nodes.push(
     instances.cylinder({
       name: "flag-poles", material: CRAFT_MATS.darkWalnut, castShadow: true, receiveShadow: true,
       transforms: [
-        { position: [6.3, 1.35, 5.15], scale: [0.06, 2.7, 0.06] },
-        { position: [7.2, 3.4, -0.6], scale: [0.075, 4.5, 0.075] }
+        { position: [BANNER_POLE.x, 1.35, BANNER_POLE.z], scale: [0.06, 2.7, 0.06] },
+        // Reaches down into the (grounded, 0.15 m sunk) Idol bastion's socket; behind the fort since the pass-through pass.
+        { position: [FLAG_MAST.x, 3.3, FLAG_MAST.z], scale: [0.075, 4.7, 0.075] }
       ]
     }),
     instances.box({
@@ -885,8 +841,8 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       transforms: [
         { position: [6.66, 2.14, 5.13], scale: [0.72, 0.92, 0.035] },
         { position: [6.66, 2.62, 5.12], scale: [0.76, 0.08, 0.045] },
-        { position: [7.74, 5.42, -0.6], scale: [1.06, 0.026, 0.026] },
-        { position: [7.62, 4.82, -0.605], scale: [0.78, 0.075, 0.02] }
+        { position: [FLAG_MAST.x + 0.54, 5.42, FLAG_MAST.z], scale: [1.06, 0.026, 0.026] },
+        { position: [FLAG_MAST.x + 0.42, 4.82, FLAG_MAST.z - 0.005], scale: [0.78, 0.075, 0.02] }
       ],
       colors: [mixHex(accentColor, "#c8452e", 0.4), mixHex(accentColor, "#ffe9b0", 0.5), "#3a2c20", mixHex(accentColor, "#f0b45a", 0.5)]
     }),
@@ -894,16 +850,16 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       name: "flag-finials", material: CRAFT_MATS.navalBrass, castShadow: false, receiveShadow: true,
       transforms: [
         { position: [6.3, 2.75, 5.15], scale: [0.14, 0.14, 0.14] },
-        { position: [7.2, 5.7, -0.6], scale: [0.18, 0.18, 0.18] }
+        { position: [FLAG_MAST.x, 5.7, FLAG_MAST.z], scale: [0.18, 0.18, 0.18] }
       ]
     })
   );
 
   // Sculpted crenelated stone flag bastion + animated heraldic pennant.
   nodes.push(
-    buildFlagBastionNode(),
+    idolFlagBastionNode(),
     primitives.box({ name: "flag-pennant", material: material.physical({ color: "#ff4d5a", roughness: 0.62, sheen: 0.48, sheenColor: "#ffb3b8" }), castShadow: false })
-      .position(7.74, 5.15, -0.6).scale([1.06, 0.52, 0.04]).runtime({ id: PROP_IDS.flag, tags: ["flag"] })
+      .position(FLAG_MAST.x + 0.54, 5.15, FLAG_MAST.z).scale([1.06, 0.52, 0.04]).runtime({ id: PROP_IDS.flag, tags: ["flag"] })
   );
 
   // --------------------------------------------------------------- post ----

@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swVilla",
+  "generatedAt": "2026-11-18T22:21:25.942Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the client's 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0ba-07dd-7132-aa41-99afd24bab35",
+      "prompt": "A single two-storey Mediterranean cliffside villa house: whitewashed rough stucco walls, a low-pitched terracotta clay tile hip roof, arched windows with sea-blue wooden louvred shutters, an arched loggia porch on the ground floor, a small balcony with a wrought-iron railing, pink bougainvillea climbing one corner. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0bb-63fe-7523-aa99-da965afff164",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1639306,
+        "num_faces": 3278916,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single two-storey Mediterranean cliffside villa house: whitewashed rough stucco walls, a low-pitched terracotta clay tile hip roof, arched windows with sea-blue wooden louvred shutters, an arched loggia porch on the ground floor, a small balcony with a wrought-iron railing, pink bougainvillea climbing one corner. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.973,
+    "size": [
+      0.958,
+      1,
+      0.922
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swVilla.glb",
+  "sizeBytes": 1144284,
+  "preview": "artifacts/idol/saltwind-highway/swVilla/views.png",
+  "usd": 0.37,
+  "postProcess": "textures re-encoded as JPEG, <= 512 px, to fit the per-game byte budget"
+}

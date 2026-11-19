@@ -4,6 +4,7 @@ import {
   COURT_IDS,
   COURT_RIGS,
   LIGHTNING_NODE_ID,
+  LIGHTNING_PEAK,
   courtIdentityRow,
   courtAtmosphereNodes,
   courtLightningNodes,
@@ -25,6 +26,7 @@ import {
   REDUCED_FLASH_PEAK,
   REDUCED_FLASH_SECONDS,
   ballTrailOptions,
+  ballTrailWanted,
   hoopsBurstOptions,
   hoopsFxKindFor,
   presetForSession,
@@ -119,6 +121,29 @@ describe("Aura Hoops 3D GU47 look table", () => {
     expect(lightningFlash(rig, 41, false)).toBe(0);
     for (let t = 0; t < 120; t += 0.01) expect(lightningFlash(rig, t, true)).toBe(0);
     expect(lightningFlash(COURT_RIGS.rucker, 40.02, false)).toBe(0);
+  });
+
+  it("never strikes at load: the first strike lands a full interval into live play, and it never washes the frame", () => {
+    const rig = COURT_RIGS.shanghai;
+    const every = rig.weather.lightningEverySeconds;
+    // live-play seconds before the first interval (boot, autoplay restarts, checks): always dark
+    for (let t = 0; t < every; t += 0.005) expect(lightningFlash(rig, t, false)).toBe(0);
+    expect(lightningFlash(rig, -1, false)).toBe(0);
+    expect(lightningFlash(rig, Number.NaN, false)).toBe(0);
+    // the QA interval override keeps the same rule
+    for (let t = 0; t < 3; t += 0.005) expect(lightningFlash(rig, t, false, 3)).toBe(0);
+    expect(lightningFlash(rig, 3.02, false, 3)).toBe(1);
+    expect(lightningFlash(COURT_RIGS.rucker, 3.02, false, 3)).toBe(0);
+    // strike duty: <= 0.18 s lit per interval; the peak stays a cold flicker (real GPU: 9 washed half the frame white)
+    let lit = 0;
+    for (let t = every; t < 2 * every; t += 0.001) if (lightningFlash(rig, t, false) > 0) lit += 0.001;
+    expect(lit).toBeLessThanOrEqual(0.181);
+    expect(LIGHTNING_PEAK).toBeLessThanOrEqual(2);
+  });
+
+  it("draws the ball ribbon only on shot arcs (passes and pokes past the low chase eye veiled the frame white)", () => {
+    expect(ballTrailWanted("flight")).toBe(true);
+    for (const state of ["held", "dribbleAir", "pass", "loose", "dunk", "parked"]) expect(ballTrailWanted(state)).toBe(false);
   });
 });
 

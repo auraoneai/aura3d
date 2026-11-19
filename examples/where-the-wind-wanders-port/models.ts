@@ -12,6 +12,8 @@ type Scene = ReturnType<typeof scene>;
 import { hasModel } from "./model-assets";
 import { CLIP_SECONDS, HERO_GAITS, STRIDE_SPEED, type Gait } from "./locomotion";
 import type { Scenery } from "./scenery";
+import { applyIdolBellkeeperMotion, applyIdolBellkeeperPose } from "./art/idolModels";
+import { createBellkeeperMotion, type BellkeeperMotion } from "./art/idolMotion";
 import {
   applyBellkeeperRigPose,
   blendBellkeeperRigPoses,
@@ -135,7 +137,28 @@ const CROSSFADE_SECONDS = 0.15;
 export function createHeroAnimator(app: AuraApp): HeroAnimator {
   const hero = app.nodes.require("hero");
   const getJoint = (id: string) => app.nodes.get?.(id);
-  const hasProceduralRig = () => Boolean(getJoint("hero-hips"));
+  // Idol wow pass: the rigged Idol Bellkeeper (`hero-idol`) takes the same pose as the procedural joint groups.
+  const hasIdolRig = () => Boolean(getJoint("hero-idol"));
+  const hasProceduralRig = () => hasIdolRig() || Boolean(getJoint("hero-hips"));
+  const applyPose = (pose: BellkeeperRigPose): void => {
+    if (!applyIdolBellkeeperPose(getJoint, pose)) applyBellkeeperRigPose(getJoint, pose);
+  };
+  // Idol hero: captured clips (art/idolMotion.ts) instead of the procedural joint pose; the walk follows ground metres
+  let idolMotion: BellkeeperMotion | null = null, metres = 0;
+  const idlePose = sampleBellkeeperRigPose({ gait: "Idle", phaseSeconds: 0 });
+  const applyMotion = (drive: HeroDrive | null, dt: number, pose: BellkeeperRigPose): boolean => {
+    if (!hasIdolRig()) return false;
+    idolMotion ??= createBellkeeperMotion();
+    const frame = idolMotion.frame({
+      gait, metres, dt,
+      hopPhase: drive?.hopPhase ?? "idle",
+      ring: drive?.bellRing ?? 0,
+      lookYaw: drive?.lookYaw ?? 0,
+      lookPitch: drive?.lookPitch ?? 0,
+      onBoat: drive?.onBoat ?? false
+    });
+    return applyIdolBellkeeperMotion(getJoint, frame, pose, idlePose);
+  };
   const controller = createAnimationController<Gait>({
     id: "hero-animation",
     clipRegistry: { kind: "aura3d-embedded-glb-animation-registry", clips: HERO_CLIPS.map((id) => ({ id, name: id, duration: CLIP_SECONDS[id], loop: true })) },
@@ -185,7 +208,8 @@ export function createHeroAnimator(app: AuraApp): HeroAnimator {
       fadeFromPose = currentPose;
       fadeElapsed = CROSSFADE_SECONDS;
       fadeDuration = 0;
-      if (hasProceduralRig()) applyBellkeeperRigPose(getJoint, currentPose);
+      metres = 0;
+      if (!applyMotion(null, 0, currentPose) && hasProceduralRig()) applyPose(currentPose);
     },
     update(drive) {
       const { x, z, airborne, onBoat, time } = drive;
@@ -193,6 +217,7 @@ export function createHeroAnimator(app: AuraApp): HeroAnimator {
       const dt = time - lastTime;
       let clipStep = 0;
       if (dt > 0) {
+        if (!airborne && !onBoat) metres += Math.hypot(x - lastX, z - lastZ);
         const raw = airborne ? STRIDE_SPEED.Run : onBoat ? 0 : Math.hypot(x - lastX, z - lastZ) / dt;
         speedSmooth = airborne || onBoat ? raw : speedSmooth + (raw - speedSmooth) * Math.min(1, dt / SPEED_SMOOTH_SECONDS);
         const frame = loco.update(speedSmooth, dt);
@@ -243,8 +268,8 @@ export function createHeroAnimator(app: AuraApp): HeroAnimator {
         fadeDuration > 0 && fadeElapsed < fadeDuration
           ? blendBellkeeperRigPoses(fadeFromPose, targetPose, fadeElapsed / fadeDuration)
           : targetPose;
-      if (hasProceduralRig()) {
-        applyBellkeeperRigPose(getJoint, currentPose);
+      if (!applyMotion(drive, Math.max(0, dt), currentPose) && hasProceduralRig()) {
+        applyPose(currentPose);
       }
       return gait;
     }

@@ -3,6 +3,7 @@
  * props, checkpoint veils, boost pads. Output is plain arrays so a unit test can check counts, bounds and winding
  * without a GPU. Every vertex position comes from the same `Track` the simulation drives.
  */
+import { CFG } from "./config";
 import { seededRandom } from "./rng";
 import type { Frame, Track } from "./track";
 
@@ -71,8 +72,36 @@ export function buildRoad(track: Track, spacing = 3, columns = 17): MeshData {
   return m;
 }
 
+/**
+ * Rock cap of the split medians (audit 2026-11-19). Between the raised and the lowered lane the median's lid spans
+ * from the top of one divider wall to the other: up to 24 m of rise across 18 m. Drawn in the flat divider material it
+ * was a huge untextured teal slab that filled half the screen from the low lane (looked like a placeholder plane).
+ * The same lid quads (`buildDividers` with `lid` off) are emitted here for the canyon rock material. Presentation only.
+ */
+export function buildMedianCliff(track: Track, spacing = 3, height = 3): MeshData {
+  const m = emptyMesh();
+  const rows = Math.ceil(track.length / spacing);
+  const ds = track.length / rows;
+  const f: Partial<Frame> = {};
+  const g: Partial<Frame> = {};
+  for (let i = 0; i < rows; i++) {
+    const s0 = i * ds, s1 = (i + 1) * ds;
+    const d0 = track.dividerAt(s0), d1 = track.dividerAt(s1);
+    if (d0 <= 0 || d1 <= 0) continue;
+    const a = track.frame(s0, f), b = track.frame(s1, g);
+    const P = (fr: Frame, lat: number): number[] => [fr.x + fr.rx * lat, fr.y + track.latY(fr.s, lat) + height, fr.z + fr.rz * lat];
+    const q = [P(a, -d0), P(b, -d1), P(b, d1), P(a, d0)];
+    let n = unit(crossV(sub(q[2]!, q[0]!), sub(q[1]!, q[3]!)));
+    if (n[1] < 0) n = [-n[0], -n[1], -n[2]];
+    const base = m.positions.length / 3;
+    q.forEach((v, k) => { m.positions.push(v[0]!, v[1]!, v[2]!); m.normals.push(n[0], n[1], n[2]); m.uvs.push(k === 0 || k === 3 ? s0 / 40 : s1 / 40, k < 2 ? 0 : 1); });
+    m.indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  }
+  return m;
+}
+
 /** Median walls of the two split sections: two vertical faces and a lid between `-divider` and `+divider`. */
-export function buildDividers(track: Track, spacing = 3, height = 3): MeshData {
+export function buildDividers(track: Track, spacing = 3, height = 3, lid = true): MeshData {
   const m = emptyMesh();
   const rows = Math.ceil(track.length / spacing);
   const ds = track.length / rows;
@@ -91,7 +120,7 @@ export function buildDividers(track: Track, spacing = 3, height = 3): MeshData {
     const P = (fr: Frame, lat: number, up: number): number[] => [fr.x + fr.rx * lat, fr.y + track.latY(fr.s, lat) + up, fr.z + fr.rz * lat];
     quad([P(a, -d0, 0), P(b, -d1, 0), P(b, -d1, height), P(a, -d0, height)], [Math.sign(a.rx) * -1 || -1, 0, 0]);
     quad([P(a, d0, 0), P(a, d0, height), P(b, d1, height), P(b, d1, 0)], [1, 0, 0]);
-    quad([P(a, -d0, height), P(b, -d1, height), P(b, d1, height), P(a, d0, height)], [0, 1, 0]);
+    if (lid) quad([P(a, -d0, height), P(b, -d1, height), P(b, d1, height), P(a, d0, height)], [0, 1, 0]);
   }
   return m;
 }
@@ -434,12 +463,48 @@ export function buildRails(track: Track, spacing = 5): { rails: MeshData; posts:
   return { rails, posts };
 }
 
+/**
+ * Gantry arch heights above the track centre height `fr.y` (m): the crossbeam and the holographic banner (bottom and
+ * top), and the banner's half span as a fraction of the half width (`buildArches` / `buildGantryBanners`).
+ */
+export const ARCH_CLEARANCE = { beamBottom: 13.2 - 2 - 1.3, beamTop: 13.2 - 2 + 1.3, bannerBottom: 10.35 - 2 - 0.88, bannerTop: 10.35 - 2 + 0.88, bannerHalfSpan: 0.76 } as const;
+/**
+ * The craft's body above the smooth road under it (m): hover gap 4.3 to 5.5 m in bot races at 40 to 115 m/s, hull
+ * -0.11 to +0.97 m about its hover point, plus the idle breath. Shared with the pass-through test.
+ */
+export const FLIGHT_BAND = { low: CFG.vehicle.hover - 1.4, high: CFG.vehicle.hover + 1.7 } as const;
+
+/**
+ * Arch stations every `every` m. Pass-through sweep (Nov 2026): on a split ramp the raised lane lifts the craft into the
+ * crossbeam or the banner of an arch built at the centre height (s = 6600 and 7080: the sim has no arch collider), so a
+ * station is skipped when any lateral position the craft can reach there would put its body into the beam or banner
+ * (stations where the raised lane carries it clean over the beam stay).
+ */
+export function archSlots(track: Track, every = 240): number[] {
+  const out: number[] = [];
+  const V = CFG.vehicle;
+  for (let s = 120; s < track.length - 60; s += every) {
+    const fr = track.frame(s);
+    const dw = track.dividerAt(s);
+    let clear = true;
+    for (let x = -(fr.hw - V.halfWidth); clear && x <= fr.hw - V.halfWidth + 1e-6; x += 0.5) {
+      if (dw > 0 && Math.abs(x) < dw + V.halfWidth) continue;
+      const g = track.smoothGroundY(s, x) - fr.y;
+      const lo = g + FLIGHT_BAND.low, hi = g + FLIGHT_BAND.high;
+      if (hi > ARCH_CLEARANCE.beamBottom && lo < ARCH_CLEARANCE.beamTop) clear = false;
+      if (Math.abs(x) - V.halfWidth < fr.hw * ARCH_CLEARANCE.bannerHalfSpan && hi > ARCH_CLEARANCE.bannerBottom && lo < ARCH_CLEARANCE.bannerTop) clear = false;
+    }
+    if (clear) out.push(s);
+  }
+  return out;
+}
+
 /** Dark bone-pipe gantry arches over the road every ~240 m, with a cyan neon strip under the beam. */
 export function buildArches(track: Track, every = 240): { body: MeshData; neon: MeshData } {
   const body = emptyMesh();
   const neon = emptyMesh();
   const up: V3 = [0, 1, 0];
-  for (let s = 120; s < track.length - 60; s += every) {
+  for (const s of archSlots(track, every)) {
     const fr = track.frame(s);
     const tan: V3 = [fr.tx, 0, fr.tz], rgt: V3 = [fr.rx, 0, fr.rz];
     const span = fr.hw + 2.4;
@@ -455,7 +520,7 @@ export function buildArches(track: Track, every = 240): { body: MeshData; neon: 
 /** Double-sided holographic race telemetry banners suspended beneath each gantry arch crossbeam. */
 export function buildGantryBanners(track: Track, every = 240): MeshData {
   const m = emptyMesh();
-  for (let s = 120; s < track.length - 60; s += every) {
+  for (const s of archSlots(track, every)) {
     const fr = track.frame(s);
     const halfSpan = fr.hw * 0.76;
     const cy = fr.y - 2 + 10.35;

@@ -156,7 +156,7 @@ export const eulerXYZFromQuat = (q: Quat): V3 => {
 /**
  * The virtual skeleton the swing is solved on (GLB model space, metres, the bind pose has identity rotations in the SOLVE:
  * a retarget maps the solved world deltas onto a rig whose own bind rotations differ, see golferRetarget.ts). The default is
- * the original athlete; `useSkeleton` swaps in another rig's proportions (the Meshy golfer) and re-derives every constant.
+ * the original athlete; `useSkeleton` swaps in another rig's proportions (the 24-joint golfer) and re-derives every constant.
  */
 export interface SkeletonProfile {
   readonly id: string;
@@ -184,7 +184,7 @@ export interface SkeletonProfile {
   /** multiplies FLEX_SPLIT (the base spine flex) */
   readonly flexScale: number;
   /**
-   * Anatomic swing (the Meshy golfer): the key table is body-relative (shoulder / hip turn, hand targets in the turned chest's
+   * Anatomic swing (the 24-joint golfer): the key table is body-relative (shoulder / hip turn, hand targets in the turned chest's
    * frame), the arms are 2-bone IK with chest-relative elbow poles, elbow flexion is limited and the forearm roll is set from the
    * grip. Unset = the original trajectory solve (the original athlete, `?golfer=old`), untouched.
    */
@@ -524,6 +524,8 @@ export interface SolvedDeltas {
   readonly thighL: Quat; readonly shinL: Quat; readonly thighR: Quat; readonly shinR: Quat;
   /** trail foot pitch about the toe (anatomic finish only) */
   readonly footR?: Quat;
+  /** lead foot (captured motion only; the swing solve keeps it planted at its bind orientation) */
+  readonly footL?: Quat;
 }
 
 export interface GolferPosture {
@@ -706,7 +708,7 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
 }
 
 /* ------------------------------------------------------------------ *
- *  Anatomic arms (Meshy golfer): limited 2-bone IK, chest-relative     *
+ *  Anatomic arms (24-joint golfer): limited 2-bone IK, chest-relative     *
  *  elbow poles, grip-driven forearm roll                               *
  * ------------------------------------------------------------------ */
 
@@ -715,7 +717,7 @@ const TOE_PITCH = 0.75;
 /** elbow flexion limits (deg): never hyperextended (soft 3 deg), never folded past 150 */
 export const ELBOW_FLEX_MIN_DEG = 3;
 export const ELBOW_FLEX_MAX_DEG = 150;
-/** arm length (upper arm + forearm to palm) the anatomic hand offsets are authored for (the Meshy golfer, metres) */
+/** arm length (upper arm + forearm to palm) the anatomic hand offsets are authored for (the 24-joint golfer, metres) */
 const ARM_REF_LEN = 0.567;
 
 /** lead palm up the shaft from the trail palm: the hands sit together at address and open to a hand-span as the grip rises */
@@ -809,7 +811,7 @@ function solveArmsAnatomic(key: SwingKey, T: TorsoPose, gripM: V3, dirM: V3): An
 }
 
 /* ------------------------------------------------------------------ *
- *  Anatomic key table (Meshy golfer): body-relative                    *
+ *  Anatomic key table (24-joint golfer): body-relative                    *
  * ------------------------------------------------------------------ */
 
 interface AnatSpec {
@@ -820,7 +822,7 @@ interface AnatSpec {
   readonly shift: number; readonly toe: number;
   /** ball-locked keys (address, impact): shaft direction in shot space, the grip follows from the ball */
   readonly ball?: V3;
-  /** free keys: right-palm grip offset from the shoulder mid, in the turned chest's frame (right of the golfer, up, facing; m at the Meshy arm length) */
+  /** free keys: right-palm grip offset from the shoulder mid, in the turned chest's frame (right of the golfer, up, facing; m at the 24-joint arm length) */
   readonly hand?: V3;
   /** shaft direction, grip -> head, in model space (+X = toward the target, +Y up, +Z = toward the ball line) */
   readonly shaft?: V3;

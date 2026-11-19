@@ -88,7 +88,7 @@ export const pointQuadSpec = (additive: boolean): CustomSpec => ({
 export const veilSpec = (): CustomSpec => ({
   glsl: { vertex: VEIL_VERTEX, fragment: VEIL_FRAGMENT },
   wgsl: { vertex: UV_VERTEX_WGSL, fragment: VEIL_FRAGMENT_WGSL },
-  uniforms: { veilTime: { type: "f32", value: 0 }, veilPulse: { type: "f32", value: 0 } },
+  uniforms: { veilTime: { type: "f32", value: 0 }, veilPulse: { type: "f32", value: 0 }, veilFade: { type: "f32", value: 1 } },
   transparent: true,
   depthWrite: false,
   side: "double",

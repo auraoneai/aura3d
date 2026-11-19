@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "serpentine-sky-run",
+  "key": "ssrSweeperBody",
+  "generatedAt": "2026-11-19T00:32:05.069Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f137-c0ac-74b2-9b88-1ab3e514804a",
+      "prompt": "Spirit hearse chariot body only, with NO wheels at all: a compact swept vermilion and black lacquer shrine cart box with empty bare axle stubs on each side where wheels would mount, an upturned temple-roof canopy over a caged glowing teal soul-lantern, three curved iron scythe blades on a crossbar at the front sweeping low, a hooded faceless robed charioteer figure at the front holding a tall hooked iron staff. Seen from a telephoto side three-quarter view. Photograph of a real museum-quality handcrafted East Asian temple artefact: glossy cinnabar-red and black urushi lacquer, carved celadon jade, mother-of-pearl inlay, hand-applied gold leaf and carved granite, crisp real material wear and patina, warm soft studio light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f139-84ee-7ed1-b594-94e2d61e4c28",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 11,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1232224,
+        "num_faces": 2464704,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Spirit hearse chariot body only, with NO wheels at all: a compact swept vermilion and black lacquer shrine cart box with empty bare axle stubs on each side where wheels would mount, an upturned temple-roof canopy over a caged glowing teal soul-lantern, three curved iron scythe blades on a crossbar at the front sweeping low, a hooded faceless robed charioteer figure at the front holding a tall hooked iron staff. Seen from a telephoto side three-quarter view. Photograph of a real museum-quality handcrafted East Asian temple artefact: glossy cinnabar-red and black urushi lacquer, carved celadon jade, mother-of-pearl inlay, hand-applied gold leaf and carved granite, crisp real material wear and patina, warm soft studio light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 3.109,
+    "size": [
+      3.113,
+      3.1,
+      2.742
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-serpentine-sky-run-port/assets/idol/ssrSweeperBody.glb",
+  "sizeBytes": 1829208,
+  "preview": "artifacts/idol/serpentine-sky-run/ssrSweeperBody/views.png",
+  "usd": 0.37
+}

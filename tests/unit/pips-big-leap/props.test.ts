@@ -1,6 +1,6 @@
-// WP-06 (Pip's Big Leap): verifies that all 26 static Meshy & borrowed sci-fi/FPS GLBs and raw flora/plinth
-// primitives in the diorama look are replaced by sculpted multi-material procedural assemblies, while keeping
-// the 3 rigged character GLBs (`pipsPip`, `pipsBrambleback`, `leapBeetleAnim`) and `?look=original` intact.
+// WP-06 (Pip's Big Leap) + Idol wow pass (2026-11): the hero, boss, villagers, pickups, checkpoint posts, spring drums,
+// Sun-Gate arch and static diorama decor are image-to-3D Idol GLBs (src/art/idolModels.ts); plinths, platforms,
+// hazards, flora and animated props stay sculpted multi-material procedural assemblies; `?look=original` decor intact.
 import { describe, expect, it } from "vitest";
 import { webgpuCustomShaderGap } from "../../../packages/engine/src/agent-api/compiler/webgpuCustomShaderGap";
 import { ANIMATED_DECOR_KINDS, buildWorld, nodeName } from "../../../apps/showcase-pips-big-leap/src/game/world";
@@ -14,6 +14,7 @@ import {
   millpondCausticsMaterial,
   storybookStrataMaterial
 } from "../../../apps/showcase-pips-big-leap/src/art/proceduralModels";
+import { idolAsset, idolDecorKinds } from "../../../apps/showcase-pips-big-leap/src/art/idolModels";
 import { checkGlslUnchanged, checkWgslDepthTwin, checkWgslTwin } from "../apps/wgslTwinChecks";
 
 type Transform = { readonly position?: readonly number[]; readonly rotation?: readonly number[]; readonly scale?: number | readonly number[] };
@@ -37,30 +38,38 @@ type Node = {
 
 const PIP_LIMB_PARTS = ["torso", "head", "ear-l", "ear-r", "arm-l", "arm-r", "foot-l", "foot-r", "tail"] as const;
 const BOSS_LIMB_PARTS = ["body", "arm-l", "arm-r", "leg-l", "leg-r"] as const;
+const assetId = (n: Node | undefined) => n?.asset?.id;
+const idolChild = (n: Node | undefined) => (n?.children ?? []).find((c) => c.kind === "model");
 
 const flat = (nodes: readonly Node[]): Node[] => nodes.flatMap((n) => [n, ...(n.kind === "group" ? flat(n.children ?? []) : [])]);
 const sceneOf = (id: (typeof WORLD_IDS)[number], look?: "original") =>
   flat((buildWorld(worldSpec(id), look ? { look } : {}).scene.toJSON() as unknown as { nodes: Node[] }).nodes);
 
 describe("pips-big-leap procedural multi-material props (WP-06)", () => {
-  it("mounts ZERO GLB models across all 7 diorama worlds and builds articulated procedural Pip & Brambleback rigs", () => {
+  it("mounts the rigged Idol Pip and Brambleback as single runtime model nodes (no rigid limb nodes) in every diorama world", () => {
     for (const id of WORLD_IDS) {
       const nodes = sceneOf(id);
       const models = nodes.filter((n) => n.kind === "model");
-      expect(models, id).toEqual([]);
+      for (const m of models) expect(assetId(m), `${id} ${m.name}`).toMatch(/^pip[A-Z]/);
       expect(nodes.filter((n) => (n.name ?? "").startsWith("pbl-props:")), id).toEqual([]);
+      const hero = nodes.find((n) => n.name === nodeName.hero);
+      expect(hero?.kind, id).toBe("model");
+      expect(assetId(hero), id).toBe("pipHero");
+      expect(hero?.runtime, id).toBeDefined();
       for (const part of PIP_LIMB_PARTS) {
-        expect(nodes.some((n) => n.name === `${nodeName.hero}:${part}`), `${id} pip:${part}`).toBe(true);
+        expect(nodes.some((n) => n.name === `${nodeName.hero}:${part}`), `${id} pip:${part}`).toBe(false);
       }
       if (worldSpec(id).boss) {
+        const boss = nodes.find((n) => n.name === nodeName.boss);
+        expect(assetId(boss), id).toBe("pipBrambleback");
         for (const part of BOSS_LIMB_PARTS) {
-          expect(nodes.some((n) => n.name === `${nodeName.boss}:${part}`), `${id} brambleback:${part}`).toBe(true);
+          expect(nodes.some((n) => n.name === `${nodeName.boss}:${part}`), `${id} brambleback:${part}`).toBe(false);
         }
       }
     }
   });
 
-  it("replaces pickups, bounce springs, checkpoints, Sun Gate, hazards, and decor with multi-material custom geometry", () => {
+  it("draws pickups, spring drums, checkpoint posts, the Sun-Gate arch and static decor with Idol models", () => {
     for (const id of WORLD_IDS) {
       const spec = worldSpec(id);
       const nodes = sceneOf(id);
@@ -68,47 +77,62 @@ describe("pips-big-leap procedural multi-material props (WP-06)", () => {
       for (const s of spec.seeds) {
         const seed = nodes.find((n) => n.name === nodeName.seed(s.id));
         expect(seed?.kind, `${id} seed:${s.id}`).toBe("group");
-        expect(seed?.castShadow).toBe(false);
-        expect((seed?.children ?? []).length).toBeGreaterThanOrEqual(3);
+        expect(seed?.runtime).toBeDefined();
+        if (idolAsset("pipSunseed")) {
+          expect(assetId(idolChild(seed))).toBe("pipSunseed");
+          expect(idolChild(seed)?.castShadow).toBe(false);
+        }
       }
       for (const a of spec.acorns) {
         const acorn = nodes.find((n) => n.name === nodeName.acorn(a.id));
         expect(acorn?.kind, `${id} acorn:${a.id}`).toBe("group");
-        expect(acorn?.castShadow).toBe(false);
-        expect((acorn?.children ?? []).length).toBeGreaterThanOrEqual(3);
+        expect(assetId(idolChild(acorn))).toBe("pipGoldenAcorn");
+        expect(idolChild(acorn)?.castShadow).toBe(false);
       }
       for (const h of spec.hearts) {
         const heart = nodes.find((n) => n.name === nodeName.heart(h.id));
         expect(heart?.kind, `${id} heart:${h.id}`).toBe("group");
-        expect(heart?.castShadow).toBe(false);
-        expect((heart?.children ?? []).length).toBeGreaterThanOrEqual(2);
+        if (idolAsset("pipHeartBerry")) {
+          expect(assetId(idolChild(heart))).toBe("pipHeartBerry");
+          expect(idolChild(heart)?.castShadow).toBe(false);
+        }
       }
       for (const sp of spec.springs) {
         const cap = nodes.find((n) => n.name === nodeName.spring(sp.id));
         const base = nodes.find((n) => n.name === `${nodeName.spring(sp.id)}:base`);
         expect(cap?.runtime).toBeDefined();
-        expect((base?.children ?? []).length).toBeGreaterThanOrEqual(3);
+        expect(assetId(idolChild(base))).toBe("pipSpringBase");
       }
       for (const cp of spec.checkpoints) {
         const flag = nodes.find((n) => n.name === nodeName.checkpointFlag(cp.id));
         const stand = nodes.find((n) => n.name === `${nodeName.checkpoint(cp.id)}:pad`);
         expect(flag?.primitive).toBe("custom");
         expect(flag?.runtime).toBeDefined();
-        expect((stand?.children ?? []).length).toBeGreaterThanOrEqual(3);
+        expect(assetId(idolChild(stand))).toBe("pipCheckpointStand");
       }
 
       const gate = nodes.find((n) => n.name === nodeName.gate);
       const ring = nodes.find((n) => n.name === nodeName.gateRing);
       const lock = nodes.find((n) => n.name === nodeName.gateLock);
-      expect((gate?.children ?? []).length).toBeGreaterThanOrEqual(4);
+      expect(assetId(idolChild(gate))).toBe("pipSunGate");
+      expect(gate?.runtime).toBeDefined();
       expect(ring?.primitive).toBe("custom");
       expect((lock?.children ?? []).length).toBeGreaterThanOrEqual(2);
 
       const staticDecor = spec.decor.filter((d) => !ANIMATED_DECOR_KINDS.has(d.kind));
-      if (staticDecor.length > 0) {
-        const castDecor = nodes.find((n) => n.name === "pbl-diorama-decor-cast");
-        expect(castDecor?.kind, id).toBe("group");
-        expect((castDecor?.children ?? []).length, id).toBeGreaterThanOrEqual(2);
+      const idolDecor = nodes.filter((n) => (n.name ?? "").startsWith("pbl-decor:"));
+      const kinds = idolDecorKinds();
+      // One model per placement (`pbl-decor:<kind>:<i>`); windmills add a `:hub` group carrying the spinning sail cross.
+      const placementNodes = idolDecor.filter((n) => /^pbl-decor:[a-z]+:\d+$/.test(n.name ?? ""));
+      expect(placementNodes.length, id).toBe(staticDecor.filter((d) => kinds.has(d.kind as never)).length);
+      for (const n of placementNodes) {
+        // Hawks are a group (wingless body + flapping wing pivots, creature-motion pass); every other kind is one model.
+        if (/^pbl-decor:hawk:/.test(n.name ?? "")) {
+          expect(n.kind, `${id} ${n.name}`).toBe("group");
+          continue;
+        }
+        expect(n.kind, `${id} ${n.name}`).toBe("model");
+        expect(assetId(n), `${id} ${n.name}`).toMatch(/^pip[A-Z]/);
       }
     }
   });
@@ -162,7 +186,7 @@ describe("pips-big-leap procedural multi-material props (WP-06)", () => {
     }
   });
 
-  it("sculpts Original Pip as an acorn-helmeted woodland sprout (~1.25 m tall, grounded at y=0, multi-material PBR, cape hidden)", () => {
+  it("keeps the retired procedural Pip builder (reference sculpt) as an acorn-helmeted woodland sprout (~1.25 m tall, grounded at y=0, multi-material PBR, cape hidden)", () => {
     type GeomNode = Node & {
       readonly geometry?: {
         readonly positions?: Float32Array;

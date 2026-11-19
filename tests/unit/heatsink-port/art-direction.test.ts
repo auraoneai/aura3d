@@ -7,7 +7,7 @@ import { buildWorld } from "../../../examples/heatsink-port/world";
 
 interface JsonNode {
   readonly kind?: string; readonly name?: string; readonly light?: string; readonly environment?: string; readonly intensity?: number;
-  readonly shadow?: unknown; readonly background?: unknown; readonly asset?: { readonly id?: string }; readonly children?: readonly JsonNode[];
+  readonly shadow?: unknown; readonly background?: unknown; readonly asset?: { readonly id?: string; readonly url?: string }; readonly children?: readonly JsonNode[];
 }
 
 /** A literal mirror of `snapshotForAudit` on the authored scene JSON (no mounted app in a unit test). */
@@ -20,7 +20,8 @@ function snapshotOf(search: string): ArtDirectionSnapshot {
     for (const n of nodes) {
       if (n.kind === "light") lights.push({ type: n.light ?? "", shadow: n.shadow === true || (typeof n.shadow === "object" && n.shadow !== null), intensity: n.intensity ?? 0 });
       else if (n.kind === "environment") environment = { kind: n.environment === "hdri" ? "hdri" : "preset", background: n.background === true };
-      else if (n.kind === "model") models.push({ assetKey: n.asset?.id ?? "", triangles: 0, textures: 0, unlit: false, overridesTextures: false });
+      /* typed refs from the shared catalog carry no id; their url is `/aura-assets/<key>.<hash>.glb` (Idol wow pass) */
+      else if (n.kind === "model") models.push({ assetKey: n.asset?.id ?? n.asset?.url?.match(/\/([^/.]+)\.[0-9a-f]+\.glb$/)?.[1] ?? "", triangles: 0, textures: 0, unlit: false, overridesTextures: false });
       if (n.children) walk(n.children);
     }
   };

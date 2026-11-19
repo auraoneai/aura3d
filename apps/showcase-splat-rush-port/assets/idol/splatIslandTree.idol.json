@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-rush-port",
+  "key": "splatIslandTree",
+  "generatedAt": "2026-11-18T23:37:38.184Z",
+  "generator": "tools/idol/generate.mjs (client-timeout resume)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0da-07ec-71e0-afd9-c3217637225a",
+      "prompt": "A small floating sky island diorama: an upside-down cone of layered ochre and cream limestone rock with dangling roots underneath, a flat bright green grassy top with a little wooden artist deck, one round fluffy-canopied tree with a gently curved trunk, and three small paint pots in red, yellow and blue on the deck. Photograph of a real glossy designer vinyl art-toy collectible, smooth sculpted soft-vinyl and lacquered resin surfaces, saturated candy paint colours with real paint drips, crisp studio product lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0e4-065d-7942-9b74-d46dedcbbb7d",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 873134,
+        "num_faces": 1746360,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A small floating sky island diorama: an upside-down cone of layered ochre and cream limestone rock with dangling roots underneath, a flat bright green grassy top with a little wooden artist deck, one round fluffy-canopied tree with a gently curved trunk, and three small paint pots in red, yellow and blue on the deck. Photograph of a real glossy designer vinyl art-toy collectible, smooth sculpted soft-vinyl and lacquered resin surfaces, saturated candy paint colours with real paint drips, crisp studio product lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 10.005,
+    "size": [
+      9.569,
+      10,
+      9.182
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-rush-port/assets/idol/splatIslandTree.glb",
+  "sizeBytes": 1167128,
+  "preview": "artifacts/idol/splat-rush-port/splatIslandTree/views.png",
+  "usd": 0.37,
+  "postProcess": "PNG textures re-encoded as JPEG q90 (normal map) by the splat Idol pass to fit the per-game byte budget"
+}

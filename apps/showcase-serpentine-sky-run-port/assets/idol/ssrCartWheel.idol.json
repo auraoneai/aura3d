@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "serpentine-sky-run",
+  "key": "ssrCartWheel",
+  "generatedAt": "2026-11-19T00:32:05.084Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f137-c0e4-7650-ac45-ca268884187e",
+      "prompt": "A single large spoked cart wheel on its own, seen straight from the side: a bronze-banded dark wooden rim, twelve turned wooden spokes, a round gilded bronze hub cap, perfectly circular and flat. Photograph of a real museum-quality handcrafted East Asian temple artefact: glossy cinnabar-red and black urushi lacquer, carved celadon jade, mother-of-pearl inlay, hand-applied gold leaf and carved granite, crisp real material wear and patina, warm soft studio light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f13a-14ab-72a1-bc3e-afbc7adcd2af",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 5,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1105664,
+        "num_faces": 2211372,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single large spoked cart wheel on its own, seen straight from the side: a bronze-banded dark wooden rim, twelve turned wooden spokes, a round gilded bronze hub cap, perfectly circular and flat. Photograph of a real museum-quality handcrafted East Asian temple artefact: glossy cinnabar-red and black urushi lacquer, carved celadon jade, mother-of-pearl inlay, hand-applied gold leaf and carved granite, crisp real material wear and patina, warm soft studio light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.998,
+    "size": [
+      1,
+      0.998,
+      0.11
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-serpentine-sky-run-port/assets/idol/ssrCartWheel.glb",
+  "sizeBytes": 796216,
+  "preview": "artifacts/idol/serpentine-sky-run/ssrCartWheel/views.png",
+  "usd": 0.37
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink-port",
+  "key": "ioncHeavy",
+  "generatedAt": "2026-11-18T23:06:00.881Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b0-bbee-7ea3-b264-618944c1daa2",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1122924,
+        "num_faces": 2245972,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A hostile heavy armoured hovering gunship drone: a bulky wide crimson-red armoured fuselage with wide forward-swept strike wings, two heavy rotor and weapon sponsons on the wing ends with twin cannon barrels, a big glowing amber reactor eye at the front, cyan trim lights, thick bolted armour plates, gunmetal steel, scratches and scorch marks",
+  "role": "vehicle",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 7.994,
+    "size": [
+      7.99,
+      3.246,
+      7.637
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/heatsink-port/assets/idol/ioncHeavy.glb",
+  "sizeBytes": 4343424,
+  "preview": "artifacts/idol/heatsink-port/ioncHeavy/views.png",
+  "usd": 0.37
+}

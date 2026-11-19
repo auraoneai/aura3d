@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icCoArch",
+  "generatedAt": "2026-11-18T23:34:53.598Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b8-6903-7d03-bd54-d57bf1fe2297",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0eb-8ddb-7230-8022-7be08987c796",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1566820,
+        "num_faces": 3133912,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Ancient stone triumphal archway of weathered travertine blocks with a keystone and carved pilasters, chipped edges",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.487,
+    "size": [
+      3.473,
+      3.64,
+      1.78
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icCoArch.glb",
+  "sizeBytes": 3653880,
+  "preview": "artifacts/idol/iron-crown/icCoArch/views.png",
+  "usd": 0.37
+}

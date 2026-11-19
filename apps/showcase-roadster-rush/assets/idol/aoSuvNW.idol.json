@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoSuvNW",
+  "generatedAt": "2026-11-19T00:25:38.482Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f131-daee-7620-a619-3e1da6470047",
+      "prompt": "A single tall modern five-door sport utility vehicle of a fictional unbranded design, deep forest-green metallic paint, black roof rails, black windows, black wheel-arch cladding, a plain smooth grille with no badge or emblem, no license plates, a smooth blank rear tailgate, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates. Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f132-9145-7b10-882f-c476f609f370",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 21,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 927010,
+        "num_faces": 1854040,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single tall modern five-door sport utility vehicle of a fictional unbranded design, deep forest-green metallic paint, black roof rails, black windows, black wheel-arch cladding, a plain smooth grille with no badge or emblem, no license plates, a smooth blank rear tailgate, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates. Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 37,
+    "scale": 5.185,
+    "size": [
+      2.379,
+      1.624,
+      4.8
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoSuvNW.glb",
+  "sizeBytes": 1319924,
+  "preview": "artifacts/idol/apex-overdrive/aoSuvNW/views.png",
+  "usd": 0.37,
+  "renormalizedAt": "2026-11-19T00:34:38.664Z"
+}

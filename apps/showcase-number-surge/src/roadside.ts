@@ -15,6 +15,7 @@ import {
   type scene
 } from "@aura3d/engine";
 import { scrollFrameZ } from "../../../examples/shared/runner-kit/index";
+import { assets } from "./aura-assets.route";
 import {
   SURGE_MATERIALS,
   buildCyberPalmCrownSpec,
@@ -57,9 +58,13 @@ export const ROADSIDE_SPAN = 180;
 const NEAR = -6;
 const FAR = NEAR - ROADSIDE_SPAN;
 
+/** Idol wow pass: palms are one Idol coconut-palm GLB normalised to 14.6 m (the procedural trunk + crown height). */
+const IDOL_PALM_HEIGHT = 14.6;
+const isPalm = (kind: RoadsideKind): kind is "nsNeonPalm" | "nsPinkPalm" => kind === "nsNeonPalm" || kind === "nsPinkPalm";
+
 const BASE_HEIGHT: Record<RoadsideKind, number> = {
-  nsNeonPalm: 15,
-  nsPinkPalm: 15,
+  nsNeonPalm: IDOL_PALM_HEIGHT,
+  nsPinkPalm: IDOL_PALM_HEIGHT,
   nsNumeralSeven: 18,
   nsFloatingDice: 1.6
 };
@@ -144,6 +149,7 @@ function kindSpecs(kind: RoadsideKind): {
   readonly accentMat: AuraMaterialSpec;
 } {
   switch (kind) {
+    // Palm cases are unused since the Idol pass (palms mount `instances.model(assets.nsPalmTree)`).
     case "nsNeonPalm":
       return {
         primarySpec: buildCyberPalmCrownSpec(1),
@@ -188,7 +194,7 @@ const allocTransform = (): MutableTransform => ({
 });
 
 export function addRoadside(builder: Scene): { bind(node: (id: string) => NodeHandle): { update(travelled: number, time: number): void } } {
-  const groups = ROADSIDE_KINDS.map((kind) => {
+  const groups = ROADSIDE_KINDS.map((kind): { id: string; accentId: string | undefined; members: RoadsidePiece[]; colors: string[]; accentColors: string[]; scratch: MutableTransform[] } => {
     const id = `roadside-${kind}`;
     const accentId = `roadside-${kind}-accent`;
     const members = ROADSIDE.filter((p) => p.kind === kind);
@@ -199,6 +205,14 @@ export function addRoadside(builder: Scene): { bind(node: (id: string) => NodeHa
       writeTransformFor(t, p, 0, 0);
       return t;
     });
+    if (isPalm(kind)) {
+      builder.add(
+        instances
+          .model(assets.nsPalmTree, { name: id, scaleMode: "world", transforms: scratch, castShadow: false, receiveShadow: false })
+          .runtime({ id })
+      );
+      return { id, accentId: undefined, members, colors, accentColors, scratch };
+    }
     const { primarySpec, primaryMat, accentSpec, accentMat } = kindSpecs(kind);
 
     builder.add(
@@ -277,7 +291,7 @@ export function addRoadside(builder: Scene): { bind(node: (id: string) => NodeHa
       const boundGroups = groups.map((g) => ({
         ...g,
         primaryNode: node(g.id),
-        accentNode: node(g.accentId)
+        accentNode: g.accentId === undefined ? undefined : node(g.accentId)
       }));
       const curbsNode = node("roadside-curbs");
       const curbGlowNode = node("roadside-curb-glow");
@@ -290,8 +304,12 @@ export function addRoadside(builder: Scene): { bind(node: (id: string) => NodeHa
             for (let i = 0; i < g.members.length; i++) {
               writeTransformFor(g.scratch[i]!, g.members[i]!, travelled, time);
             }
-            g.primaryNode.setInstances(g.scratch, g.colors);
-            g.accentNode.setInstances(g.scratch, g.accentColors);
+            if (g.accentNode) {
+              g.primaryNode.setInstances(g.scratch, g.colors);
+              g.accentNode.setInstances(g.scratch, g.accentColors);
+            } else {
+              g.primaryNode.setInstances(g.scratch);
+            }
           }
 
           const scroll = -travelled;

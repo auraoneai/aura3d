@@ -1,29 +1,23 @@
-# Glint Courier: final screenshots (4.7.1, GU47 lane g13 phase 3)
+# Glint Courier: final screenshots (arcade-readability pass)
 
-Retaken 2026-10-31 on `gu47/g13` (commit d7fed5422: the GU47 "night shift on the workbench" look plus the phase-3
-presentation pass) with runs `g13p3-r3-s1280`, `g13p3-r3-s390` and `g13p3-r3-scard` (one test per viewport), remote
-ACR on crmmeprodacr, software WebGL2 (SwiftShader). Decoded with
-`evidence/game-upgrades-47/dot-dash-3d/tools/decode-g13-jpg.mjs`. The history below is the 4.5.0 set these replace.
-
-## 4.5.0 set (history)
-
-Route: `apps/showcase-dot-dash-3d`. Built from `audit-fix/g13` merged with `audit-fix/e2` (the per-normal hemisphere the game's lighting is tuned for), on top of `origin/main` 31f8945ad. These frames replace the set built from `0d965903c`, which predated the Glint Courier rework (`b7503eaf1`) and showed the old arcade-clone look.
-
-**Runner:** remote Azure ACR Task (`tools/remote-acr/run.sh`, run `g13w3-screens-final`), headless Chromium, **software WebGL2 (SwiftShader)**. This is not real-GPU evidence: it shows layout and content, not GPU look or frame rate. Tool: the `g13-screens` test in `tests/browser/audit-fix/dot-dash-3d.spec.ts`; frames are taken through the game's own buttons and keys, 30 to 60 s after each step so the judged frame is a steady one. Per-frame luma and sim state: `evidence/dot-dash-3d/audit-fix/wave3/screens-metrics.jsonl`.
-
-## Frames
+Route: `/apps/showcase-dot-dash-3d/` (production marketing build, served snapshot on :8790).
+Runner: headed Chrome on a real GPU (Apple Metal) via REA, production build. Captured 2026-11-18. No console page errors.
 
 | Viewport | State | Meaning |
 |---|---|---|
-| 1280x720 and 390x844 | 01-title | `?autostart=0`: title menu over board 1 |
-| 1280x720 and 390x844 | 02-early | Quick Play pressed, board waiting for the first direction ("Press a direction to move") |
-| 1280x720 and 390x844 | 03-action | after right, down, left key holds |
-| 1280x720 and 390x844 | 04-mid | `?autoplay=1`, 60 s in |
-| 1280x720 and 390x844 | 05-modes | Board Map panel |
+| 1280x720, 390x844 | 01-title | `?autostart=0`: title menu over the top-down board |
+| 1280x720, 390x844 | 02-early | `?autoplay=1`, ~5 s: computer player clearing pellets on board 1 (Relay) |
+| 1280x720, 390x844 | 03-action | `?autoplay=1`, ~13 s: sentries converging on the courier |
+| 1280x720, 390x844 | 04-surge | `?autoplay=1`, ~16-18 s: power cell taken, sentries dark blue, an eaten sentry's eyes returning home |
+| 1280x720, 390x844 | 05-board4 | `?autoplay=1&maze=garden`, ~8 s: board 4 (Overgrowth) |
+| 1280x720 | 06-caught | `?autoplay=1&maze=garden`, ~12 s: courier caught (red shock ring + INTERCEPTED) |
+| 390x844 | 06-chase | `?autoplay=1&maze=garden`, ~12 s: red and cyan sentries right behind the courier |
+| 1440x900 | card-2x | `?autoplay=1`, ~20 s: surge, courier eating a blue sentry; `card-1x.jpg` is the 720x450 LANCZOS downscale |
 
-Card images: `card-2x.jpg` (1440x900, `?autoplay=1`, 60 s in) and `card-1x.jpg` (720x450, downscaled). The site index posters `public/previews/showcase-index/dot-dash-3d.webp` (720x450) and `dot-dash-3d@2x.webp` (1440x900) are made from the same card frame.
-
-## Checked in the frames
-
-- The whole 19 x 21 board is in frame at both sizes (aspect-fit camera, audit row DD-3).
-- HUD, pause button, first-run hint (phone) and the Board Map panel are readable; no end card is left over the board.
+Checked in the frames:
+- Readability: whole maze in frame at both sizes (portrait fits the width); the gold courier is the brightest thing on
+  screen (~35 px at 1280, ~23 px body / ~46 px with glow at 390); sentries ~34 px / ~22 px with big white eyes looking
+  where they move; pellets warm white on near-black; no off-maze props or PCB texture.
+- Motion: sentry stars spin, courier faces travel with a short glow trail and a pickup pulse; frightened sentries blue,
+  eaten sentries eyes only. Actors stay on corridor centre lines (no wall crossing).
+- Known issue: portrait bodies are ~22-23 px (19 tiles across 390 px); their glow halos make them ~35-46 px.

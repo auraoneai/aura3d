@@ -98,7 +98,7 @@
     <meta name="twitter:title" content="Splat — Colour-Gate Ball Runner" />
     <meta name="twitter:description" content="Colour-gate ball runner: switch colour to pass gates, grab power-ups and avoid the splatter game over." />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/splat-rush-port@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Splat","url":"https://aura3d.auraone.ai/apps/chroma-roll/","description":"Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches a recorded reference run. Native…","genre":"Platformers and runners","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/splat-rush-port@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.6"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Splat","url":"https://aura3d.auraone.ai/apps/chroma-roll/","description":"Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches a recorded reference run. Native…","genre":"Platformers and runners","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/splat-rush-port@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.6.0"}</script>
     <style>
       @font-face {
         font-family: 'Splat Display';
@@ -143,8 +143,8 @@
       .splash-copy { font-size: 14px; font-weight: 500; line-height: 1.45; color: #3b1f3f; margin: 0 0 10px; }
       .splash-legend { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0 2px; }
       .legend-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; background: rgba(59, 31, 63, 0.08); border: 1px solid rgba(59, 31, 63, 0.2); font-size: 12px; font-weight: 500; color: #3b1f3f; }
-      #steer-cue { position: fixed; left: 50%; bottom: max(108px, calc(var(--a3d-bar-space, 48px) + 58px + env(safe-area-inset-bottom))); transform: translateX(-50%); z-index: 5; pointer-events: none; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: rgba(253, 240, 224, 0.92); border: 1.5px solid rgba(59, 31, 63, 0.65); box-shadow: 0 6px 18px rgba(24, 10, 30, 0.2); color: #3b1f3f; font-family: var(--font-ui); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.05em; transition: opacity 260ms ease, transform 260ms ease; }
-      #steer-cue[data-hidden="true"] { opacity: 0; transform: translateX(-50%) translateY(8px); }
+      #steer-cue { position: fixed; left: 50%; top: clamp(112px, 22vh, 190px); /* above the ball + rider, never over the runner */ transform: translateX(-50%); z-index: 5; pointer-events: none; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: rgba(253, 240, 224, 0.92); border: 1.5px solid rgba(59, 31, 63, 0.65); box-shadow: 0 6px 18px rgba(24, 10, 30, 0.2); color: #3b1f3f; font-family: var(--font-ui); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.05em; transition: opacity 260ms ease, transform 260ms ease; }
+      #steer-cue[data-hidden="true"] { opacity: 0; transform: translateX(-50%) translateY(-8px); }
       @media (pointer: coarse), (max-width: 760px) {
         .overlay-card { width: calc(100vw - 28px); max-width: 356px; padding-left: 18px; padding-right: 18px; }
         .toggle, .btn, .icon-btn { min-height: 44px; min-width: 44px; touch-action: manipulation; }
@@ -223,7 +223,7 @@
         <button id="btn-start" class="btn">PLAY NOW</button>
         <div id="load-bar" class="load-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
         <div class="settings no-steer"><button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Colour symbols: off</button><button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button></div>
-        <p class="hint">Drag or &larr; &rarr; / A D to steer &middot; Space start &middot; C symbols &middot; P pause &middot; M mute</p>
+        <p class="hint">Drag or &larr; &rarr; / A D to steer &middot; Space start &middot; C symbols &middot; P pause &middot; O autoplay &middot; M mute</p>
       </div>
     </div>
     <div id="gameover-screen" class="overlay hidden" style="background:#f0433a">

@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrPine",
+  "generatedAt": "2026-11-18T22:37:44.031Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/nrPine/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 40,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 610232,
+        "num_faces": 1220592,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A tall slender coastal pine tree with a gently leaning twisted reddish-brown trunk and layered flat cloud-like clusters of dark green needles in tiers up the trunk, standing alone, no pot, no ground. Photograph of a real handmade bonsai-style miniature tree in Japanese woodblock-print colours: real twisted bark, dense dark-green needle clusters, soft warm golden-hour light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.835,
+    "size": [
+      1.103,
+      1.86,
+      1.236
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrPine.glb",
+  "sizeBytes": 3551152,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrPine/views.png",
+  "usd": 0.2
+}

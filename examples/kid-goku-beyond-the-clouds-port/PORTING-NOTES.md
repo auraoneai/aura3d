@@ -1,5 +1,7 @@
 # Cumulus Dash: Aura3D port notes
 
+> **Idol pass (2026-11-18):** `idol.ts` mounts image-to-3D Idol GLBs (spec `tools/idol/specs/cumulus-dash.json`) for the hero (rigged, posed every frame from `computeSkyKidHeroPose` through `art/idolHero.ts`), cloud steed, pterosaurs, storm tyrant, hermit cottage, gate pillars, boulders, roasts and the roadside trees and outcrops; `?idol=0` restores the procedural kit below.
+
 > **5.5.6 Update (2026-11-12):** All external and Meshy `.glb` models documented in historical passes below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files).
 
 Crayon game #11 (`https://app.usecrayon.ai/play/3a9001a5-28fa-4ae0-ba5c-3b068d1912a4`, "Unofficial fan game"). Captured with

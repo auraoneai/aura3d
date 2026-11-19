@@ -1,0 +1,73 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "pips-big-leap",
+  "key": "pipBeetleRigged",
+  "generatedAt": "2026-11-19T01:02:34.102Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f153-a9ab-70f1-93f4-ffdcee04b211",
+      "prompt": "A charismatic glossy iridescent emerald-teal and sapphire forest rhinoceros beetle with one proud curved bronze-tipped horn on its head, a domed shell with a central seam, six short chunky segmented legs clearly separated, low to the ground. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single full-body creature, entire body in frame with margin, centered, standing still in a neutral pose on all its legs, legs straight and clearly separated, three-quarter side view, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f154-2c02-7130-b152-8b78d63cc659",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024,
+        "rig": true,
+        "animations": [
+          "idle",
+          "walk"
+        ]
+      },
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 700624,
+        "num_faces": 1401248,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 31,
+        "animations": [
+          "idle",
+          "walk"
+        ]
+      }
+    }
+  ],
+  "prompt": "A charismatic glossy iridescent emerald-teal and sapphire forest rhinoceros beetle with one proud curved bronze-tipped horn on its head, a domed shell with a central seam, six short chunky segmented legs clearly separated, low to the ground. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single full-body creature, entire body in frame with margin, centered, standing still in a neutral pose on all its legs, legs straight and clearly separated, three-quarter side view, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "admitRole": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 0.697 m, 2 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000         1.7x           4      1\n  bind-pose mismatch (SKIN_BIND_MISMATCH): bone_1 51% off-axis, bone_18 39% off-axis, bone_22 50% off-axis, bone_26 35% off-axis\n  warn  material0 (mesh 0 prim 0): 4 triangle(s) stretch past 1.6x (worst 1.7x), within the allowance of 30 (SKIN_STRETCH).\n  ERROR material0 (mesh 0 prim 0): 1 thin triangle(s) with a posed edge up to 0.1 m (> 0.098 m): they draw as shards or sails once a limb swings (SKIN_FLAP).",
+    "repairLog": "skin check still fails after repair: SKIN_STRETCH, SKIN_FLAP, SKIN_WEIGHT_DISTANT, SKIN_BIND_MISMATCH\nBind-pose mismatch on bone_1, bone_18, bone_22, bone_26: the mesh was modelled in a different pose than the skeleton assumes. Weight smoothing and triangle cuts only mask it. For a recognised humanoid run repair-skin --rebuild-limbs (rebuilds the legs in the skeleton's pose); otherwise rebuild the limbs in your DCC tool or regenerate and re-rig the model in the pose the skeleton assumes.\nStill failing after smooth-bridges: SKIN_STRETCH, SKIN_FLAP, SKIN_WEIGHT_DISTANT, SKIN_BIND_MISMATCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand."
+  },
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 1,
+    "sceneScale": 1.251,
+    "size": [
+      0.868,
+      0.697,
+      1
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-pips-big-leap/assets/idol/pipBeetleRigged.glb",
+  "sizeBytes": 2597120,
+  "preview": "artifacts/idol/pips-big-leap/pipBeetleRigged/views.png",
+  "usd": 0.42
+}

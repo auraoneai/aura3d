@@ -35,7 +35,8 @@ function snapshotOf(options: Parameters<typeof buildWorld>[0]): ArtDirectionSnap
     if (n.kind === "environment") environment = { kind: n.environment === "hdri" ? "hdri" : "preset", background: n.background === true };
     if (n.asset?.url?.endsWith(".glb")) {
       const file = basename(n.asset.url);
-      const key = file.replace(/\.glb$/, "");
+      // admitted assets are served as /aura-assets/<key>.<hash>.glb
+      const key = file.replace(/\.glb$/, "").replace(/\.[0-9a-f]{8}$/, "");
       models.set(key, { assetKey: key, triangles: 0, textures: 0, unlit: false, overridesTextures: false });
     }
     (n.children ?? []).forEach(walk);
@@ -47,13 +48,14 @@ function snapshotOf(options: Parameters<typeof buildWorld>[0]): ArtDirectionSnap
 }
 
 describe("where-the-wind-wanders-port art direction", () => {
-  it("the GU47 world passes the audit (one shadowed sun, IBL fill, zero external GLB models) and the record is written", () => {
+  it("the GU47 world passes the audit (one shadowed sun, IBL fill, only contracted Idol GLB models) and the record is written", () => {
     const snapshot = snapshotOf({});
     const violations = auditArtDirection(direction, snapshot);
     writeArtDirectionAudit("examples/where-the-wind-wanders-port/art/direction.ts", { direction, snapshot, violations });
     expect(snapshot.lights.filter((l) => l.shadow)).toHaveLength(1);
     expect(snapshot.environment).toEqual({ kind: "hdri", background: false });
-    expect(snapshot.models).toEqual([]);
+    const contracted = new Set(direction.assets.map((a) => a.assetKey));
+    for (const m of snapshot.models) expect(contracted.has(m.assetKey), m.assetKey).toBe(true);
     expect(violations).toEqual([]);
   });
 

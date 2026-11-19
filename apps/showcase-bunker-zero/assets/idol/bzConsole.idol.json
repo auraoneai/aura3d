@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzConsole",
+  "generatedAt": "2026-11-18T23:35:29.353Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0ab-c628-7041-85c0-c520681dac57",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0af-87b2-7492-bd9d-d8d0d9848a7c",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1222326,
+        "num_faces": 2445036,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Military bunker command console desk: angled grey steel desk with three glowing green and amber monitor screens showing abstract graphs, rows of switches, knobs and buttons, cable bundles",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.056,
+    "size": [
+      1.32,
+      0.74,
+      1.123
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzConsole.glb",
+  "sizeBytes": 4163812,
+  "preview": "artifacts/idol/bunker-zero/bzConsole/views.png",
+  "usd": 0.37
+}

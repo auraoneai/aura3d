@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeWindmillSails",
+  "generatedAt": "2026-11-19T00:26:03.207Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-3b77-7152-9c93-02c5dfd978f1",
+      "prompt": "A detached windmill sail cross lying flat: four long straight lattice wooden sail arms with cream canvas panels arranged in an even X around a small round wooden hub, all four arms the same length, seen straight from the front, nothing else. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f134-7e4e-7833-aac1-e6f15cad5bb9",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 822882,
+        "num_faces": 1645760,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A detached windmill sail cross lying flat: four long straight lattice wooden sail arms with cream canvas panels arranged in an even X around a small round wooden hub, all four arms the same length, seen straight from the front, nothing else. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.591,
+    "size": [
+      3.412,
+      0.956,
+      3.6
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeWindmillSails.glb",
+  "sizeBytes": 1128096,
+  "preview": "artifacts/idol/slingshot-siege/siegeWindmillSails/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90; re-based by _scratch/hubcenter.mjs: hub axis turned to +X, hub centre at the origin (not grounded)",
+    "bytesBefore": 1321772,
+    "bytesAfter": 1128096
+  }
+}

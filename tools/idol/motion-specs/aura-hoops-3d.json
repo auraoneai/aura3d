@@ -1,0 +1,134 @@
+{
+  "game": "aura-hoops-3d",
+  "out": "apps/showcase-aura-hoops-3d/src/motion.generated.ts",
+  "clips": [
+    {
+      "key": "Idle",
+      "prompt": "A basketball player stands in an athletic stance with knees slightly bent, weight on the balls of the feet, arms relaxed, waiting for the play.",
+      "duration": 3,
+      "loop": true,
+      "seed": 600,
+      "guidance": 5
+    },
+    {
+      "key": "Walk",
+      "prompt": "A basketball player walks forward in a straight line at a relaxed pace, arms swinging naturally.",
+      "duration": 3,
+      "loop": true,
+      "seed": 601,
+      "guidance": 5
+    },
+    {
+      "key": "Run",
+      "prompt": "A basketball player jogs forward in a straight line at a steady medium pace, arms swinging naturally.",
+      "duration": 2.4,
+      "loop": true,
+      "seed": 602,
+      "guidance": 5
+    },
+    {
+      "key": "Sprint",
+      "prompt": "A basketball player sprints forward in a straight line at full speed, arms pumping hard.",
+      "duration": 2,
+      "loop": true,
+      "seed": 603,
+      "guidance": 5
+    },
+    {
+      "key": "DribbleStand",
+      "prompt": "A basketball player stands in place with knees bent and dribbles a basketball with the right hand, pushing the ball down repeatedly at hip height.",
+      "duration": 2,
+      "loop": true,
+      "seed": 604,
+      "guidance": 5
+    },
+    {
+      "key": "DribbleMove",
+      "prompt": "A basketball player jogs forward in a straight line while dribbling a basketball with the right hand.",
+      "duration": 2,
+      "loop": true,
+      "seed": 605,
+      "guidance": 5
+    },
+    {
+      "key": "Crossover",
+      "prompt": "A basketball player performs a quick crossover dribble, bouncing the ball from the right hand across the body to the left hand while stepping and shifting weight to the left.",
+      "duration": 1.5,
+      "loop": false,
+      "seed": 606,
+      "guidance": 5
+    },
+    {
+      "key": "JumpShot",
+      "prompt": "A basketball player jumps straight up and shoots a jump shot, raising the ball above the head and flicking the right wrist at the top of the jump, then lands.",
+      "duration": 2,
+      "loop": false,
+      "seed": 607,
+      "guidance": 5
+    },
+    {
+      "key": "SetShot",
+      "prompt": "A basketball player bends the knees and shoots a set shot with both hands without jumping, extending the arms upward and following through with the right wrist.",
+      "duration": 2,
+      "loop": false,
+      "seed": 608,
+      "guidance": 5
+    },
+    {
+      "key": "Layup",
+      "prompt": "A basketball player takes two steps forward and jumps off the left foot, raising the right hand high to lay the ball up, then lands.",
+      "duration": 2,
+      "loop": false,
+      "seed": 609,
+      "guidance": 5
+    },
+    {
+      "key": "Dunk",
+      "prompt": "A basketball player runs forward, jumps very high and slams the ball down with both hands above the head, then lands.",
+      "duration": 2,
+      "loop": false,
+      "seed": 610,
+      "guidance": 5
+    },
+    {
+      "key": "ChestPass",
+      "prompt": "A basketball player steps forward and throws a two-handed chest pass, pushing both hands forward from the chest and turning the thumbs down.",
+      "duration": 1.5,
+      "loop": false,
+      "seed": 611,
+      "guidance": 5
+    },
+    {
+      "key": "Block",
+      "prompt": "A basketball player jumps straight up with both arms fully extended above the head to block a shot, then lands.",
+      "duration": 1.5,
+      "loop": false,
+      "seed": 612,
+      "guidance": 5
+    },
+    {
+      "key": "Rebound",
+      "prompt": "A basketball player jumps up and grabs a rebound with both hands high above the head, pulling the ball down to the chest while landing.",
+      "duration": 2,
+      "loop": false,
+      "seed": 613,
+      "guidance": 5
+    },
+    {
+      "key": "ShuffleLeft",
+      "prompt": "A basketball defender in a low defensive stance with arms spread wide shuffles sideways to his left without crossing the feet.",
+      "duration": 2,
+      "loop": true,
+      "seed": 614,
+      "guidance": 5
+    },
+    {
+      "key": "Celebrate",
+      "prompt": "A basketball player celebrates by jumping and pumping both fists in the air.",
+      "duration": 2,
+      "loop": false,
+      "seed": 615,
+      "guidance": 5
+    }
+  ]
+}

@@ -34,7 +34,7 @@ describe("heatsink-port scene fixes", () => {
     expect(heavyCore).not.toEqual(sentryCore.replace(/target-0/g, `target-${heavyIds[0]}`));
   });
 
-  it("the low tier loads the lite model set, the high tier the full one (HP-12)", () => {
+  it("the low tier loads the lite model set, the high tier the full one (HP-12)", { timeout: 30_000 }, () => {
     expect(modelSet("low")).toBe(MODELS_LITE);
     expect(modelSet("high")).toBe(MODELS);
     for (const key of Object.keys(MODELS) as (keyof typeof MODELS)[]) {

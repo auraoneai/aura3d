@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeBarrel",
+  "generatedAt": "2026-11-18T23:34:02.562Z",
+  "generator": "tools/idol/generate.mjs (post steps finished locally from the downloaded Idol result)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0bc-0732-77e0-8938-b6fde5245748",
+      "prompt": "A round red-painted wooden keg barrel standing upright, curved staves, two dark iron hoops near the top and bottom and one crimson hoop in the middle, flat wooden lid. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0be-296d-7950-8376-719d811ab425",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1014666,
+        "num_faces": 2029432,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A round red-painted wooden keg barrel standing upright, curved staves, two dark iron hoops near the top and bottom and one crimson hoop in the middle, flat wooden lid. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.436,
+    "size": [
+      1.203,
+      1.5,
+      1.198
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeBarrel.glb",
+  "sizeBytes": 662356,
+  "preview": "artifacts/idol/slingshot-siege/siegeBarrel/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90, textures capped at 512px",
+    "bytesBefore": 2377444,
+    "bytesAfter": 662356
+  }
+}

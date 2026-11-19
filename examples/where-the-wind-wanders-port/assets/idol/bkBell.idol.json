@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bellkeepers-walk",
+  "key": "bkBell",
+  "generatedAt": "2026-11-18T22:24:37.527Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0c3-0f6f-7f23-85e5-a798f948e56b",
+      "prompt": "A single cast bronze church bell on its own, isolated, with nothing around it: no frame, no posts, no roof, no stand. Warm green-brown patina with a polished golden lip, smooth flared mouth, two plain raised bands with no writing, a small dark oak yoke block with iron straps bolted on the crown, a clapper ball visible just inside the mouth, hanging straight. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0d7-521d-7b60-bbbd-0e575b886f28",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 46,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1066944,
+        "num_faces": 2133924,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single cast bronze church bell on its own, isolated, with nothing around it: no frame, no posts, no roof, no stand. Warm green-brown patina with a polished golden lip, smooth flared mouth, two plain raised bands with no writing, a small dark oak yoke block with iron straps bolted on the crown, a clapper ball visible just inside the mouth, hanging straight. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.162,
+    "size": [
+      0.883,
+      1.16,
+      0.891
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/where-the-wind-wanders-port/assets/idol/bkBell.glb",
+  "sizeBytes": 2214612,
+  "preview": "artifacts/idol/bellkeepers-walk/bkBell/views.png",
+  "usd": 0.37
+}

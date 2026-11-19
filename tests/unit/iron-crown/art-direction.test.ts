@@ -61,8 +61,9 @@ describe("iron-crown art direction (GU47 WP-15)", () => {
     expect(direction.signatureEffect).toMatch(/letterbox/);
   });
 
-  it("contracts zero external GLBs — all 6 fighters and all stage set-pieces are native @aura3d/engine procedural builds", () => {
-    expect(direction.assets).toHaveLength(0);
+  it("contracts the Idol fighters, weapons and set pieces (Idol wow pass); the app-local manifest still carries no GLB", () => {
+    const spec = JSON.parse(readFileSync(path.resolve("tools/idol/specs/iron-crown.json"), "utf8")) as { items: { key: string }[] };
+    expect(direction.assets.map((a) => a.assetKey).sort()).toEqual(spec.items.map((i) => i.key).sort());
     expect(appManifest.assets.filter((entry) => entry.format === "glb")).toHaveLength(0);
   });
 

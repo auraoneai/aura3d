@@ -12,8 +12,6 @@ import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const PADDED_SHELL_ROUTES = [
-  "showcase-bank-shot",
-  "showcase-vault-breakers",
   "showcase-patrol-wing",
   "showcase-siege-golf",
 ];

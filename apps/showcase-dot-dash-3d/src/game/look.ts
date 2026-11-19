@@ -280,3 +280,43 @@ export function hexLuma(hex: string): number {
 export function focusDistance(position: readonly [number, number, number], target: readonly [number, number, number]): number {
   return Math.hypot(position[0] - target[0], position[1] - target[1], position[2] - target[2]);
 }
+
+/**
+ * Arcade-readability look (owner review 2026-11-18, "make them like pacman type"): classic maze-chase cabinet
+ * readability with original characters. A near-black floor, one neon wall colour per board (always in the blue /
+ * violet family so it never reads as a sentry colour), warm-white pellets, and the actors as the brightest, most
+ * saturated things on screen. The PCB bench rows above stay as data for the Board Map cards and the bake tests.
+ */
+export const ARCADE = {
+  /** The maze sits straight on the cabinet clear colour (no floor mesh). */
+  floor: "#020307",
+  background: "#020307",
+  /** Neon wall outline colour per board. */
+  neon: {
+    classic: "#2f6bff",
+    spiral: "#6a4dff",
+    twin: "#3a62ff",
+    garden: "#3b5bff",
+    foundry: "#5546ff",
+    zerocore: "#7a46ff"
+  } as Readonly<Record<MazeId, string>>,
+  /** Arcade board-clear flash colour (alternates with the neon colour). */
+  neonFlash: "#e8f0ff",
+  pellet: "#fff1cf",
+  cell: "#ffe6a8",
+  cellGlow: "#ffb84a",
+  courier: "#ffd21a",
+  courierGlow: "#ffc400",
+  /** Frightened (surge) sentries: one dark blue, flashing white near the end. */
+  frightened: "#2438ff",
+  frightenedFlash: "#ffffff",
+  frightenedEye: "#ffc9c0",
+  pupil: "#0d1650",
+  eyeWhite: "#ffffff",
+  /** Key light (overhead, the only shadow caster) and the low IBL fill (never drawn). */
+  key: { position: [4, 30, 9] as const, color: "#ffffff", intensity: 1.4 },
+  ibl: 0.3,
+  bloom: { intensity: 0.62, threshold: 0.72, radius: 0.5 },
+  toneMapping: "neutral" as const,
+  exposure: 1
+} as const;

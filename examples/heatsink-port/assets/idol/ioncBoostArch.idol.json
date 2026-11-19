@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink-port",
+  "key": "ioncBoostArch",
+  "generatedAt": "2026-11-18T22:05:01.543Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08c-3943-7182-a615-5ee691dd4f2f",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 709030,
+        "num_faces": 1418388,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A freestanding futuristic magnetic boost gate arch, front view: a tall pointed aerodynamic arch made of a sleek swept metal blade with segmented ribs, glowing cyan chevron lights along its inner edge, standing on two heavy dark basalt stone footings, brushed alloy and dark anodised metal",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 11.699,
+    "size": [
+      12.876,
+      12.4,
+      12.762
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/heatsink-port/assets/idol/ioncBoostArch.glb",
+  "sizeBytes": 3351880,
+  "preview": "artifacts/idol/heatsink-port/ioncBoostArch/views.png",
+  "usd": 0.37
+}

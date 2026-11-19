@@ -1,0 +1,45 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdGantryStart",
+  "generatedAt": "2026-11-18T22:30:45.293Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09a-f8a2-7e53-94e0-d75000209b4a",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 559126,
+        "num_faces": 1118716,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A wide steel start-line gantry spanning a racing road, front view: two tall slender lattice steel towers at the far left and right ends joined high up by a horizontal box-truss bridge carrying a row of round start lights and floodlights, the space between the towers is wide and empty, the structure is about three times wider than tall, dark gunmetal steel with orange hazard stripes, cables and rust",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -135,
+    "scale": 27.926,
+    "size": [
+      38,
+      21.472,
+      7.436
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdGantryStart.glb",
+  "sizeBytes": 2001596,
+  "preview": "artifacts/idol/heatsink/tdGantryStart/views.png",
+  "usd": 0.37,
+  "admitRole": "set-dressing",
+  "renormalizedAt": "2026-11-18T23:37:14.756Z"
+}

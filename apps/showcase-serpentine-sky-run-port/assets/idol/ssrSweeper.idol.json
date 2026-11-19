@@ -1,0 +1,57 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "serpentine-sky-run",
+  "key": "ssrSweeper",
+  "generatedAt": "2026-11-18T23:27:40.104Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/serpentine-sky-run/ssrSweeper/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1274714,
+        "num_faces": 2550108,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Spirit hearse chariot: a compact swept vermilion and black lacquer shrine cart on two large spoked bronze and iron wheels, an upturned temple-roof canopy over a caged glowing teal soul-lantern, three curved iron scythe blades on a crossbar at the front sweeping low over the ground, a hooded faceless robed charioteer figure at the front holding a tall hooked iron staff with a hanging paper lantern. Photograph of a real museum-quality handcrafted East Asian temple artefact: glossy cinnabar-red and black urushi lacquer, carved celadon jade, mother-of-pearl inlay, hand-applied gold leaf and carved granite, crisp real material wear and patina, warm soft studio light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 3.174,
+    "size": [
+      3.01,
+      3.1,
+      3.175
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-serpentine-sky-run-port/assets/idol/ssrSweeper.glb",
+  "sizeBytes": 4133632,
+  "preview": "artifacts/idol/serpentine-sky-run/ssrSweeper/views.png",
+  "usd": 0.2,
+  "postProcess": {
+    "by": "serpentine Idol pass (gltf-transform textureCompress + meshopt simplify)",
+    "textures": "JPEG; base/normal 1024, metallicRoughness 512",
+    "simplify": "lockBorder, error 0.002, target 9k verts",
+    "sizeBytes": 1745840
+  }
+}

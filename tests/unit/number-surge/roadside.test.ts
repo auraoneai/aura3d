@@ -19,7 +19,7 @@ describe("number surge procedural roadside dressing", () => {
     }
   });
 
-  it("mounts zero static GLB models and batches all roadside pieces into procedural instances.custom nodes with positive scales", () => {
+  it("batches every roadside piece into one instanced node per kind (Idol palms, procedural sevens and dice) with positive scales", () => {
     const world = buildWorld({ sim: new NumberSurgeSim(7), aspect: 16 / 9 });
     const nodes = world.scene.toJSON().nodes as unknown as {
       kind: string;
@@ -27,9 +27,10 @@ describe("number surge procedural roadside dressing", () => {
       name?: string;
       instances?: { scale?: number | number[] }[];
     }[];
-    expect(nodes.filter((n) => n.kind === "model")).toEqual([]);
     const primaryIds = new Set(ROADSIDE_KINDS.map((k) => `roadside-${k}`));
-    const primaryBatches = nodes.filter((n) => n.kind === "primitive" && n.primitive === "custom" && n.name !== undefined && primaryIds.has(n.name));
+    const primaryBatches = nodes.filter((n) => (n.kind === "model" || (n.kind === "primitive" && n.primitive === "custom")) && n.name !== undefined && primaryIds.has(n.name));
+    // Idol wow pass: both palm kinds are instanced Idol palm GLBs.
+    expect(nodes.filter((n) => n.kind === "model" && n.name?.includes("Palm")).map((n) => n.name).sort()).toEqual(["roadside-nsNeonPalm", "roadside-nsPinkPalm"]);
     expect(primaryBatches.map((n) => n.name).sort()).toEqual([...primaryIds].sort());
     const totalInstances = primaryBatches.reduce((sum, m) => sum + (m.instances?.length ?? 0), 0);
     expect(totalInstances).toBe(ROADSIDE.length);

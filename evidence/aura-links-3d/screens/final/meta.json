@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "aura-links-3d": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "title",
+        "tee",
+        "swing",
+        "flight",
+        "green",
+        "course-maple",
+        "course-mare",
+        "results"
+      ],
+      "results": "captured: 1280-08-results.jpg / 390-07-results.jpg, ?autoplay=1&hole=7 (holes 7-9 played hands-free so the round fits the capture window; unplayed holes 1-6 read '-' on the card); autoplay shows the card 3.2 s then starts the next course (unit-tested)",
+      "errors": "none (the INSTANCE_SCATTER_RUNTIME_UNSUPPORTED onFrame error from tree clearance is gone)",
+      "capturedAt": "2026-11-19"
+    }
+  }
+}

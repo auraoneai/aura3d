@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "teleoperator",
+  "key": "gdBoxTruckW",
+  "generatedAt": "2026-11-19T00:25:53.751Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-16a0-7252-a3e5-a488e7f4f6b1",
+      "prompt": "A medium-duty city box delivery truck, red cab-over tilt cab with an aero roof fairing, plain clean white ribbed cargo box body with a roll-up rear shutter door, black bumpers, plain unmarked box with no graphics, shown WITHOUT ANY WHEELS OR TYRES fitted: the empty front and rear wheel wells are dark hollows under the cab and the cargo box. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f133-98a8-7da1-a49b-0080bd7ca397",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 9,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1223106,
+        "num_faces": 2446460,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A medium-duty city box delivery truck, red cab-over tilt cab with an aero roof fairing, plain clean white ribbed cargo box body with a roll-up rear shutter door, black bumpers, plain unmarked box with no graphics, shown WITHOUT ANY WHEELS OR TYRES fitted: the empty front and rear wheel wells are dark hollows under the cab and the cargo box. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 7.513,
+    "size": [
+      2.808,
+      3.196,
+      7.53
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-teleoperator/assets/idol/gdBoxTruckW.glb",
+  "sizeBytes": 1415668,
+  "preview": "artifacts/idol/teleoperator/gdBoxTruckW/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": 0,
+    "tex": null,
+    "maxVerts": null,
+    "baked": true,
+    "reason": "Idol rebuilt the three-quarter reference diagonally; yaw re-fitted to the minimum-area footprint"
+  }
+}

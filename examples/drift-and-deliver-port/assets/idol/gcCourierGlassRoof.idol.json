@@ -1,0 +1,27 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "drift-and-deliver-port",
+  "key": "gcCourierGlassRoof",
+  "generatedAt": "2026-11-18T23:40:00.000Z",
+  "generator": "examples/drift-and-deliver-port/tools/derive-courier-glass-roof.mjs",
+  "derivedFrom": {
+    "key": "gcCourier",
+    "file": "gcCourier.glb",
+    "sha256": "e03336cc918f824ee272bbb3195b9fd39d79aa58d0e77e0211fcaea53fbb3428",
+    "provenance": "gcCourier.idol.json"
+  },
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "derive",
+      "tool": "tools/derive-courier-glass-roof.mjs",
+      "note": "Deterministic triangle cut of the admitted gcCourier.glb: roof skin, fused roof parcel, rack crossbar and beacon inside the rack rails removed (COURIER_ROOF_OPENING in courierCabin.ts); geometry elsewhere, UVs and textures unchanged. No generation, no spend.",
+      "usd": 0
+    }
+  ],
+  "sha256": "660665f535944c13a9ddb128fd8669c2840d010b22bfbd73dc628f6a92b19df8",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null
+}

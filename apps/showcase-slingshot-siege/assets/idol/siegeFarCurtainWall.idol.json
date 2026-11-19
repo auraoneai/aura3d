@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeFarCurtainWall",
+  "generatedAt": "2026-11-18T23:35:24.618Z",
+  "generator": "tools/idol/generate.mjs (post steps finished locally from the downloaded Idol result)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0e9-0cf2-7b51-832d-15020f599585",
+      "prompt": "A small toy diorama island: a rocky islet carrying a stretch of grey stone castle curtain wall with crenellated battlements between two round stone towers with dark slate cone roofs and small red pennant flags. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ea-0196-7fc3-b35b-840393f82b9a",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 770066,
+        "num_faces": 1540128,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A small toy diorama island: a rocky islet carrying a stretch of grey stone castle curtain wall with crenellated battlements between two round stone towers with dark slate cone roofs and small red pennant flags. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 7.23,
+    "size": [
+      7.242,
+      5.9,
+      7.053
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeFarCurtainWall.glb",
+  "sizeBytes": 1129772,
+  "preview": "artifacts/idol/slingshot-siege/siegeFarCurtainWall/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90, textures capped at 512px",
+    "bytesBefore": 2875972,
+    "bytesAfter": 1129772
+  }
+}

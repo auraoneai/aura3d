@@ -1,13 +1,37 @@
+import fs from "node:fs";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import rootConfig, { createSourceWorkerEntryPlugin } from "../../vite.config";
 
 const appDir = path.dirname(fileURLToPath(import.meta.url));
 const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
+const sharedAuraAssetsDir = path.resolve(appDir, "../../public/aura-assets");
+const appAuraAssetsDir = path.resolve(appDir, "public/aura-assets");
+
+/**
+ * Idol pass (Nov 2026): the Idol GLBs are admitted into the repo-wide public/aura-assets (served at /aura-assets on the
+ * site). Dev and preview serve any /aura-assets file the route-local public tree lacks from that shared directory.
+ */
+function sharedAuraAssets(req: IncomingMessage, res: ServerResponse, next: () => void): void {
+  const name = decodeURIComponent((req.url ?? "/").split("?")[0] ?? "/").replace(/^\/+/, "");
+  const local = path.resolve(appAuraAssetsDir, name);
+  const shared = path.resolve(sharedAuraAssetsDir, name);
+  if (!name || (local.startsWith(appAuraAssetsDir + path.sep) && fs.existsSync(local))) return next();
+  if (!shared.startsWith(sharedAuraAssetsDir + path.sep) || !fs.existsSync(shared) || !fs.statSync(shared).isFile()) return next();
+  res.setHeader("Content-Type", shared.endsWith(".glb") ? "model/gltf-binary" : "application/octet-stream");
+  res.setHeader("Content-Length", String(fs.statSync(shared).size));
+  fs.createReadStream(shared).pipe(res);
+}
+const serveSharedAuraAssets: Plugin = {
+  name: "aura-fc-shared-aura-assets",
+  configureServer(server) { server.middlewares.use("/aura-assets", sharedAuraAssets); },
+  configurePreviewServer(server) { server.middlewares.use("/aura-assets", sharedAuraAssets); }
+};
 
 export default defineConfig({
-  plugins: rootConfig.plugins ?? [],
+  plugins: [serveSharedAuraAssets, ...(rootConfig.plugins ?? [])],
   resolve: { ...rootConfig.resolve, alias: baseAlias },
   worker: { format: "es", plugins: () => [createSourceWorkerEntryPlugin()] },
   optimizeDeps: rootConfig.optimizeDeps,

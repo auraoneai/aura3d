@@ -45,7 +45,8 @@ import {
   mountTouchControls,
   sfx,
   sfxUrl,
-  installGameBeacon
+  installGameBeacon,
+  warmPrograms,
 } from "@aura3d/engine/game";
 import "../../showcase-port-shared/quickbar.css";
 import { dualAnimatedWaterSpec } from "../../showcase-port-shared/dual-shaders";
@@ -68,23 +69,29 @@ import type {
   HoleTerrain,
   LabScore,
   LieKind,
+  PinObstacle,
   ScoreCard,
   TourState,
+  TreeObstacle,
   Vec2,
   Vec3,
   WindState
 } from "./game/types";
-import { COURSES, buildHoleTerrain, pondGeometry } from "./game/courses";
+import { COURSES, COURSE_ORDER, buildHoleTerrain, pondGeometry } from "./game/courses";
+import { AUTOPLAY_TIMING, autoplayAction, autoplayRequested, nextAutoplayCourse } from "./game/autoplayLoop";
 import {
   CLUBS,
   CLUB_ORDER,
   advanceTour,
   aiHoleScore,
   createScoreCard,
+  holePlayed,
+  playedPar,
   createSwingMeter,
   createTour,
   launchBall,
   liePenalty,
+  predictLanding,
   makeRng,
   PLAYER_NAME,
   recordHole,
@@ -94,10 +101,10 @@ import {
   suggestClub
 } from "./game/sim";
 import { defaultAimYaw, pinArrowDegrees, stepAimOffset, wrapAngle, yawToward } from "./game/aim";
-import { applyGolferFit, buildGolferNodes, golferTelemetry, golferVariantFromSearch, poseGolfer, resolveGolferRig, setGolferVariant, type GolferPhase } from "./game/rig";
+import { applyGolferFit, buildGolferNodes, golferTelemetry, golferVariantFromSearch, idolGolferKey, poseGolfer, resolveGolferRig, setGolferVariant, type GolferPhase } from "./game/rig";
 import { sweptClubContact, type ClubContact } from "./game/contact";
 import { commitStroke } from "./game/strokeCommit";
-import { COURSE_LOOKS, contactShadowIntensity, courseFill, flagFlutterAmplitude, type LinksTier } from "./game/lighting";
+import { COURSE_LOOKS, contactShadowIntensity, courseFill, flagFlutterAmplitude, hasBlackSky, type LinksTier } from "./game/lighting";
 import { buildCourseRig } from "./game/lookRig";
 import { landingVfxFor, registerLinksVfx, type LinksVfxId } from "./game/vfx";
 import { IMPACT_FOV_KICK_DEG, cupCamPose, flyoverAllowed, flyoverShots, tracerCamPose, wantsCupCam, wantsTracerCam } from "./game/broadcast";
@@ -128,6 +135,17 @@ import {
   buildTudorClubhouseNodes,
   mergeTerrainDiscSpecs
 } from "./art/proceduralModels";
+import {
+  buildIdolBallWasherNode,
+  buildIdolClubhouseNode,
+  buildIdolClumpBatch,
+  buildIdolGallerySpectatorsNode,
+  buildIdolTreeBatches,
+  withoutNodes
+} from "./art/idolModels";
+import { treesBlockingShot, type TreeSpot } from "./game/treeClearance";
+import { clubhouseSpot, courseTreeSpots, treeColliders } from "./game/treeSpots";
+import { presentedBallPos } from "./game/ballView";
 import { holeCardTransition, holeCardVisible, holeMap, holeMapSvg, holeSubtitle, holeTitle, shotStatsLabel } from "./game/holeCard";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
 import {
@@ -173,6 +191,9 @@ const TRAIL_COUNT = 16;
  * the 5.5 cm club head in the 1280x720 address frame (remote run g10w3-shots); the ground ring marks it at range.
  */
 const BALL_R = 0.05;
+/** the drawn flagstick (art/proceduralModels.ts buildPinFlagstickNode: fibreglass pole r 0.012, 3.1 m to the finial) */
+const FLAGSTICK_HEIGHT = 3.1;
+const FLAGSTICK_R = 0.013;
 /** drawn cup radius (m), matching the sim capture radius so a ball that looks in drops in */
 const CUP_R = 0.1;
 
@@ -258,6 +279,9 @@ const DIFF_AI_SKILL: Record<DifficultyId, number> = { amateur: 0.55, pro: 0.72, 
 
 /** LINKS-05: the GU47 look tiles turf, sand, basalt and regolith in world metres; `?look=original` keeps 4.6.2 flat colour. */
 const turfOn = lookMode !== "original";
+/** Idol image-to-3D set pieces (art/idolModels.ts) replace the procedural broadleaf trees, clubhouse body, gallery spectators
+ * and ball washer; `?look=original` keeps the procedural builders */
+const idolArt = lookMode !== "original";
 const surfaceUv: SurfaceUvMode = turfOn ? "metres" : "legacy";
 
 /**
@@ -354,24 +378,99 @@ function scatterInDisc(rng: () => number, center: Vec2, radius: number, count: n
   return out;
 }
 
-/** Sample a point along the hole's polyline at normalized parameter u ∈ [0, 1]. */
-function samplePathPoint(path: readonly Vec2[], u: number): { x: number; z: number; nx: number; nz: number } {
-  const clamped = clamp(u, 0, 1);
-  const segCount = Math.max(1, path.length - 1);
-  const f = clamped * segCount;
-  const idx = Math.min(segCount - 1, Math.floor(f));
-  const localT = f - idx;
-  const a = path[idx]!;
-  const b = path[idx + 1] ?? a;
-  const dx = b[0] - a[0];
-  const dz = b[1] - a[1];
-  const len = Math.hypot(dx, dz) || 1;
-  return {
-    x: lerp(a[0], b[0], localT),
-    z: lerp(a[1], b[1], localT),
-    nx: -dz / len,
-    nz: dx / len
-  };
+
+/* ------------------------------------------------------------------ *
+ *  Shot sight-line clearance (treeClearance.ts)                       *
+ * ------------------------------------------------------------------ */
+
+interface TreeBatchRecord {
+  readonly id: string; readonly transforms: readonly any[]; readonly treeOf: readonly number[]; hidden: string;
+  /** packed (wind) batches: rebuild from the kept instance indices instead of setInstances */
+  readonly rebuild?: (keep: readonly number[]) => any;
+}
+let treeSpotsMounted: readonly TreeSpot[] = [];
+let treeBatches: TreeBatchRecord[] = [];
+let treeClearanceKey = "";
+/** the ball's colliders for treeSpotsMounted (index-aligned, game/treeSpots.ts) and the trees the clearance hides now */
+let treeCollidersMounted: readonly TreeObstacle[] = [];
+let treesHidden: ReadonlySet<number> = new Set();
+
+/** give every corridor tree batch a runtime id and remember which tree each instance is (matched by trunk position) */
+function registerTreeBatches(batches: readonly any[], spots: readonly TreeSpot[]): any[] {
+  treeSpotsMounted = spots;
+  treeBatches = [];
+  treeClearanceKey = "";
+  treesHidden = new Set();
+  return batches.map((node, k) => {
+    const json = typeof node?.toJSON === "function" ? node.toJSON() : node;
+    const transforms: any[] = node?.treeBatchTransforms ?? json?.instances ?? [];
+    if (!transforms.length) return node;
+    const id = `tree-batch-${k}`;
+    const treeOf = transforms.map((tr) => {
+      const p = tr.position ?? [0, 0, 0];
+      let best = -1, bd = Infinity;
+      spots.forEach((sp, i) => { const d = Math.hypot(sp.x - p[0], sp.z - p[2]); if (d < bd) { bd = d; best = i; } });
+      return bd < 0.5 ? best : -1;
+    });
+    treeBatches.push({ id, transforms, treeOf, hidden: "", rebuild: typeof node?.rebuildTreeBatch === "function" ? node.rebuildTreeBatch : undefined });
+    return node.runtime(game.runtimeNode(id));
+  });
+}
+
+/** hide the trees whose canopy reaches the shot camera's sight line for the current ball and aim (restores the rest) */
+function applyTreeClearance(force = false): void {
+  const r = state.round;
+  if (!r || !auraApp || treeBatches.length === 0) return;
+  const yaw = aimYaw();
+  const key = `${r.ballPos[0].toFixed(1)},${r.ballPos[2].toFixed(1)},${yaw.toFixed(2)}`;
+  if (!force && key === treeClearanceKey) return;
+  treeClearanceKey = key;
+  const blocked = treesBlockingShot(treeSpotsMounted, [r.ballPos[0], r.ballPos[2]], yaw);
+  treesHidden = blocked;
+  for (const b of treeBatches) {
+    const hidden = b.treeOf.map((t, i) => (t >= 0 && blocked.has(t) ? i : -1)).filter((i) => i >= 0).join(",");
+    if (hidden === b.hidden && !force) continue;
+    b.hidden = hidden;
+    const set = new Set(hidden ? hidden.split(",").map(Number) : []);
+    if (b.rebuild) {
+      // packed wind scatter: swap the batch for one without the hidden trees (same runtime id)
+      try {
+        const keep = b.transforms.map((_, i) => i).filter((i) => !set.has(i));
+        (auraApp as any).nodes.remove(b.id);
+        (auraApp as any).nodes.add(b.rebuild(keep).runtime(game.runtimeNode(b.id)));
+      } catch (e) {
+        diagLog("[links] tree clearance rebuild failed:", String(e));
+      }
+      continue;
+    }
+    const h = tryReq(b.id);
+    try {
+      h?.setInstances?.(b.transforms.map((tr, i) => (set.has(i) ? { ...tr, scale: [0.0001, 0.0001, 0.0001] } : tr)));
+    } catch (e) {
+      diagLog("[links] tree clearance setInstances failed:", String(e));
+    }
+  }
+}
+
+/**
+ * What the ball can hit on this shot: the trees still drawn (the clearance-hidden ones are not there to hit) and the
+ * flagstick. The live shot, its flight steps, the autopilot plan and the landing preview all use this, so the prediction
+ * meets the same trees the ball does.
+ */
+function shotObstacles(): { obstacles: readonly TreeObstacle[]; pin?: PinObstacle } {
+  const t = state.terrain;
+  if (!t) return { obstacles: [] };
+  if (state.phase === "address" || state.phase === "swing") applyTreeClearance();
+  const obstacles = treeCollidersMounted.length === treeSpotsMounted.length
+    ? treeCollidersMounted.filter((_, i) => !treesHidden.has(i))
+    : [];
+  return { obstacles, pin: { x: t.cup[0], z: t.cup[2], y0: t.cup[1], height: FLAGSTICK_HEIGHT, radius: FLAGSTICK_R } };
+}
+
+/** clubhouse: the Idol house replaces the procedural lodge body and its glass; the shrubs and the walk to the green stay */
+function clubhouseNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain, x: number, z: number): any[] {
+  const nodes = buildTudorClubhouseNodes(course, hole, terrain, x, z, turfOn, ribbonAlongPath);
+  return idolArt ? [...withoutNodes(nodes, ["clubhouse-lodge", "clubhouse-windows"]), buildIdolClubhouseNode(course, terrain, x, z)] : nodes;
 }
 
 function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain, rng: () => number): any[] {
@@ -381,60 +480,18 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
   const [tx, tz] = [terrain.tee[0], terrain.tee[2]];
   const midT = hole.layout.path[Math.floor(hole.layout.path.length / 2)] ?? [0, hole.lengthM * 0.5];
   const fairHalf = hole.layout.fairwayWidth * 0.5;
-  const clubSpot = theme === "dunes"
-    ? { x: cx - 16, z: cz + hole.layout.greenRadius + 15 }
-    : theme === "parkland"
-      ? { x: cx - 15, z: cz + hole.layout.greenRadius + 14 }
-      : null;
+  const clubSpot = clubhouseSpot(course, hole, terrain);
 
-  // --- Corridor botanical trees along left & right rough + behind the green ---
-  const corridorTrees: { x: number; z: number; h: number; yaw: number }[] = [];
-  const corridorRows = 12;
-  for (let r = 0; r < corridorRows; r++) {
-    const u = 0.09 + (r / (corridorRows - 1)) * 0.84;
-    const p = samplePathPoint(hole.layout.path, u);
-    for (const side of [-1, 1] as const) {
-      const lat1 = fairHalf + 3.8 + rng() * 4.5;
-      const x1 = p.x + p.nx * side * lat1 + (rng() - 0.5) * 2.2;
-      const z1 = p.z + p.nz * side * lat1 + (rng() - 0.5) * 3.0;
-      corridorTrees.push({ x: x1, z: z1, h: 6.8 + rng() * 3.2, yaw: rng() * Math.PI * 2 });
-
-      const lat2 = fairHalf + 10.5 + rng() * 7.5;
-      const x2 = p.x + p.nx * side * lat2 + (rng() - 0.5) * 3.0;
-      const z2 = p.z + p.nz * side * lat2 + (rng() - 0.5) * 4.0;
-      corridorTrees.push({ x: x2, z: z2, h: 8.2 + rng() * 3.8, yaw: rng() * Math.PI * 2 });
-    }
-  }
-  for (let i = 0; i < 8; i++) {
-    const a = -Math.PI * 0.38 + (i / 7) * Math.PI * 0.76;
-    const dist = hole.layout.greenRadius + 16 + (i % 2) * 5;
-    const bx = cx + Math.sin(a) * dist;
-    const bz = cz + Math.cos(a) * dist;
-    corridorTrees.push({ x: bx, z: bz, h: 8.5 + (i % 3) * 1.4, yaw: rng() * Math.PI * 2 });
-  }
-  if (theme === "dunes" || theme === "parkland") {
-    for (let i = 0; i < 10; i++) {
-      const p = samplePathPoint(hole.layout.path, 0.14 + (i / 9) * 0.72);
-      const side = i % 2 === 0 ? -1 : 1;
-      const lat = fairHalf + 22 + (i % 4) * 4.5;
-      corridorTrees.push({
-        x: p.x + p.nx * side * lat + (rng() - 0.5) * 3.5,
-        z: p.z + p.nz * side * lat + (rng() - 0.5) * 5.0,
-        h: 7.4 + (i % 4) * 1.1,
-        yaw: rng() * Math.PI * 2
-      });
-    }
-  }
-
-  if (theme !== "lunar" && theme !== "volcanic") {
-    const treeSpots = corridorTrees.filter((tr) => {
-      const zKind = terrain.zone(tr.x, tr.z);
-      if (zKind === "sand" || zKind === "water" || zKind === "fairway" || zKind === "green") return false;
-      return !clubSpot || Math.hypot(tr.x - clubSpot.x, tr.z - clubSpot.z) > 9.5;
-    });
-    if (treeSpots.length > 0) {
-      nodes.push(...buildCourseTreeBatches(terrain, treeSpots, theme, turfOn, state.reducedMotion));
-    }
+  // --- Corridor botanical trees along left & right rough + behind the green (game/treeSpots.ts: the sim's tree colliders
+  // come from this same list; the trees are the scene rng's first draws) ---
+  treeCollidersMounted = [];
+  const treeSpots = courseTreeSpots(course, hole, terrain, rng);
+  if (treeSpots.length > 0) {
+    const batches = idolArt
+      ? buildIdolTreeBatches(terrain, treeSpots, theme, turfOn, state.reducedMotion)
+      : buildCourseTreeBatches(terrain, treeSpots, theme, turfOn, state.reducedMotion);
+    nodes.push(...registerTreeBatches(batches, treeSpots));
+    treeCollidersMounted = treeColliders(terrain, treeSpots, theme, idolArt ? "idol" : "original");
   }
 
   // --- Stratified coastal / volcanic / lunar rock outcrops along rough ---
@@ -450,7 +507,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     const millX = midT[0] - fairHalf - 16;
     const millZ = midT[1] + 18;
     nodes.push(buildCoastalLighthouseNode([millX, terrain.height(millX, millZ) - 0.15, millZ], 0.55));
-    if (clubSpot) nodes.push(...buildTudorClubhouseNodes(course, hole, terrain, clubSpot.x, clubSpot.z, turfOn, ribbonAlongPath));
+    if (clubSpot) nodes.push(...clubhouseNodes(course, hole, terrain, clubSpot.x, clubSpot.z));
     if (hole.layout.water.length) {
       const w = hole.layout.water[0]!;
       const brX = w.center[0] - w.radius * 0.8;
@@ -458,7 +515,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
       nodes.push(buildBurnFootbridgeNode([brX, terrain.height(brX, brZ) - 0.05, brZ], 0.2));
     }
   } else if (theme === "parkland") {
-    if (clubSpot) nodes.push(...buildTudorClubhouseNodes(course, hole, terrain, clubSpot.x, clubSpot.z, turfOn, ribbonAlongPath));
+    if (clubSpot) nodes.push(...clubhouseNodes(course, hole, terrain, clubSpot.x, clubSpot.z));
   } else if (theme === "volcanic") {
     nodes.push(...buildBasaltColumnsAndShardNodes(terrain, midT, fairHalf));
   } else if (theme === "alpine") {
@@ -466,7 +523,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     const ccZ = midT[1] + 14;
     nodes.push(
       buildAlpineCableCarStationNode([ccX, terrain.height(ccX, ccZ) - 0.1, ccZ], -1.95),
-      buildAlpineHorizonTreelineNode(cx, cz)
+      buildAlpineHorizonTreelineNode(cx, cz, (x, z) => terrain.height(x, z))
     );
   } else if (theme === "nightCity") {
     nodes.push(...buildHarbourSkylineNodes(terrain, midT, cx, cz, lookMode));
@@ -480,7 +537,10 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     const sz = cz + 3.5;
     nodes.push(...buildTournamentBleacherNodes(cx, cz, sx, sz, terrain, course.palette, side < 0 ? "l" : "r"));
   }
-  nodes.push(...buildGalleryRopeAndSpectatorBatches(cx, cz, hole.layout.greenRadius, terrain, rng));
+  const gallery = buildGalleryRopeAndSpectatorBatches(cx, cz, hole.layout.greenRadius, terrain, rng);
+  nodes.push(...(idolArt
+    ? [...withoutNodes(gallery, ["gallery-spectators"]), buildIdolGallerySpectatorsNode(cx, cz, hole.layout.greenRadius, terrain)]
+    : gallery));
 
   return nodes;
 }
@@ -530,8 +590,12 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
       const wind = coverWind(l, state.reducedMotion, COURSE_LOOKS[course.id].flagFlutter);
       const mat = l.emissive > 0
         ? material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: l.emissive, roughness: l.roughness } as any)
-        : material.pbr({ color: l.name === "tufts" ? "#567d52" : "#ffffff", roughness: l.roughness });
-      nodes.push(
+        // the instance colour multiplies the base: grass tufts keep the green base, Mare's rock chips their own grey
+        : material.pbr({ color: l.name === "tufts" && !l.rock ? "#567d52" : "#ffffff", roughness: l.roughness });
+      // the smooth cone tufts read as placeholders: in the Idol look they are real grass clumps (art/idolModels.ts)
+      const clumps = idolArt && l.name === "tufts" && l.shape === "cone" ? buildIdolClumpBatch(terrain, course.dressing.theme, plan, wind) : null;
+      if (clumps) nodes.push(clumps);
+      else nodes.push(
         (instances as any)[l.shape]({
           name: `ground-cover-${l.name}`,
           size: [...l.size],
@@ -543,8 +607,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
           ...(wind ? { wind } : {})
         })
       );
-      // GU47 WP-36 (golfMarram, LINKS-07): St Auroras' rough carries real marram clumps, the Links-owned Meshy model
-      // (6,793 triangles, one draw), on every 40th tuft spot nearest the tee, at most 48 (24 on Low)
+      // GU47 WP-36 (golfMarram, LINKS-07): St Auroras' rough carries marram clumps (procedural batch, one draw), on every 40th tuft spot nearest the tee, at most 48 (24 on Low)
       if (l.name === "tufts" && course.dressing.theme === "dunes") {
         const tee = lay.path[0] ?? [0, 0];
         const spots = plan.transforms
@@ -624,7 +687,9 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   nodes.push(
     primitives.box({ name: "tee-surround", size: [9.3, 0.07, 7.3], material: teeEdgeMat, castShadow: false }).position(terrain.tee[0], terrain.tee[1] - 0.025, terrain.tee[2]),
     primitives.box({ name: "tee-box", size: [8.4, 0.12, 6.4], material: teeMat, castShadow: false }).position(terrain.tee[0], terrain.tee[1] - 0.03, terrain.tee[2]),
-    ...buildTeeFurnitureNodes(course, hole, terrain, turfOn)
+    ...(idolArt
+      ? [...withoutNodes(buildTeeFurnitureNodes(course, hole, terrain, turfOn), ["tee-ball-washer"]), buildIdolBallWasherNode(terrain)]
+      : buildTeeFurnitureNodes(course, hole, terrain, turfOn))
   );
   if (turfOn) {
     nodes.push(geometry.custom(flatPad(terrain.tee[0], terrain.tee[1] + 0.032, terrain.tee[2], 8.3, 6.3), { name: "tee-deck", material: surfaceMaterial(course, "firstCut", pal.teeBox, 0.82), castShadow: false }));
@@ -909,6 +974,8 @@ let golferRig: ReturnType<typeof resolveGolferRig> | null = null;
 let ballHandle: any = null;
 let ballShadowHandle: any = null;
 let aimLineHandle: any = null;
+/** gap (m) between the ball and the near end of the 28 m aim line */
+const AIM_LINE_GAP = 0.15;
 let landingRingHandle: any = null;
 let cupPulseHandle: any = null;
 let ballMarkerHandle: any = null;
@@ -951,6 +1018,22 @@ function triggerDustFlipbook(pos: Vec3): void {
   sandPuffUntil = nowMs() + 780;
 }
 
+/** warmPrograms result of the boot (and the last course / golfer switch); game logic waits while `warming` */
+let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+let warming = false;
+let warmedCourseId: string | null = null;
+/** a course switch (new clubhouse, trees) or a new studio golfer mounts new Idol models: settle their programs before play */
+function rewarmIdolModels(force = false): void {
+  const id = state.course.id;
+  if ((!force && warmedCourseId === id) || !auraApp || !appReady || bootUrlParams.get("qa") === "1" || bootUrlParams.get("still")) return;
+  warmedCourseId = id;
+  warming = true;
+  void warmPrograms(auraApp as any, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 })
+    .then((r) => { warmResult = r; })
+    .catch(() => undefined)
+    .finally(() => { warming = false; });
+}
+
 /** true while frame() runs inside the engine's onFrame callback (scene swaps are deferred until it returns) */
 let inEngineFrame = false;
 /** ?qa=1 hold: game logic advances only through the QA hook */
@@ -962,6 +1045,26 @@ function flushPendingHoleScene(): void {
   pendingHoleScene = null;
   (auraApp as any)?.setScene(next);
   resolveHoleHandles();
+  rewarmIdolModels(pendingForce);
+  pendingForce = false;
+}
+let pendingForce = false;
+
+/** a new studio polo picks another Idol golfer GLB: remount the current hole mid-round (startRound remounts otherwise) */
+function remountForGolferFit(): void {
+  if (!state.round || !state.terrain || !mountedHoleSig) return;
+  const sig = `${state.course.id}|${state.hole.number}|${state.lab ? "lab" : "round"}|${idolGolferKey(state.fit)}`;
+  if (sig === mountedHoleSig) return;
+  mountedHoleSig = sig;
+  const next = buildHoleScene(state.course, state.hole, state.terrain, state.lab);
+  if (inEngineFrame) {
+    pendingHoleScene = next;
+    pendingForce = true;
+  } else {
+    (auraApp as any)?.setScene(next);
+    resolveHoleHandles();
+    rewarmIdolModels(true);
+  }
 }
 
 function resolveHoleHandles(): void {
@@ -974,6 +1077,8 @@ function resolveHoleHandles(): void {
   cupPulseHandle = req("cup-pulse");
   ballMarkerHandle = tryReq("ball-marker");
   flagstickHandle = tryReq("flagstick");
+  treeClearanceKey = "";
+  for (const b of treeBatches) b.hidden = "";
   sandPuffHandle = tryReq("vfx-sand-puff");
   sandPuffUntil = 0;
   sandPuffHandle?.setVisible?.(false);
@@ -1117,7 +1222,7 @@ function showShotStats(club: string, carry: number, roll: number, toPin: number)
 
 /** Shows or hides the lower third as the phase changes (one class toggle, only when the answer changes). */
 function syncHoleCard(): void {
-  const want = holeCardVisible({ look: lookMode, phase: state.phase, lab: state.lab !== null, hasRound: state.round !== null });
+  const want = holeCardVisible({ look: lookMode, phase: state.phase, lab: state.lab !== null, hasRound: state.round !== null, strokes: state.round?.strokes ?? 0 });
   if (want === holeCardShown) return;
   holeCardShown = want;
   $("hole-card")?.classList.toggle("show", want);
@@ -1188,7 +1293,8 @@ function startFlyover(): void {
     disabled: bootUrlParams.get("flyover") === "0"
   });
   // reduced motion, labs and capture modes get the cut to the address cam instead (PRD §6.3)
-  if (!broadcastOn || !allowed || !t || state.lab || state.phase !== "address") return;
+  // the demo autopilot cuts straight to the address cam: play starts within seconds, hands-free
+  if (!broadcastOn || !allowed || autopilot || !t || state.lab || state.phase !== "address") return;
   if (typeof director?.play !== "function" || typeof director?.rigs?.rail !== "function") return;
   try {
     const shots = flyoverShots(t, state.hole).map((s) => ({
@@ -1269,7 +1375,8 @@ function updateCamera(dt: number): void {
   const shotCam = mode === "flight" && ball && broadcastCam
     ? broadcastCam.kind === "cup"
       ? cupCamPose(t, ball.pos)
-      : ball.status === "flight" ? tracerCamPose(t, broadcastCam.launch, broadcastCam.yaw, ball.pos) : null
+      // on a black-sky course (Mare) the tracer cam keeps the horizon in the lower frame (no sky-only black frames)
+      : ball.status === "flight" ? tracerCamPose(t, broadcastCam.launch, broadcastCam.yaw, ball.pos, { keepHorizon: hasBlackSky(COURSE_LOOKS[state.courseId]) }) : null
     : null;
   if (shotCam) {
     // GU47 LINKS-12: the cup cam on short putts, the locked-off tracer cam on drives (until the first bounce)
@@ -1535,6 +1642,10 @@ function updatePinIndicator(): void {
 function beginAddress(): void {
   const r = state.round!;
   const t = state.terrain!;
+  // the next shot is staged from round.ballPos (golfer, solve, club, aim line): the drawn ball must be exactly there, so
+  // the finished shot's ball record and its interpolation history are dropped (the next swing launches a fresh one)
+  state.ball = null;
+  ballPresenter.reset();
   r.lie = r.strokes === 0 ? "tee" : t.zone(r.ballPos[0], r.ballPos[2]);
   if (r.lie === "water" || r.lie === "oob") r.lie = "rough";
   r.clubIdx = CLUB_ORDER.indexOf(suggestClub(r.lie, t.cupDistance(r.ballPos[0], r.ballPos[2])));
@@ -1559,7 +1670,9 @@ function beginAddress(): void {
     setBroadcastDof(false);
   }
   cam.mode = "aim";
-  setPrompt(isCoarseViewport() ? "TAP SWING · AIM ◀ ▶ · CLUB / PIN" : "SPACE — SWING · A/D AIM (SHIFT FINE) · P PIN · Q/E CLUB");
+  setPrompt(autopilot
+    ? (isCoarseViewport() ? "AUTOPLAY ON" : "AUTOPLAY — O TO TAKE OVER")
+    : isCoarseViewport() ? "TAP SWING · AIM ◀ ▶ · CLUB / PIN" : "SPACE — SWING · A/D AIM (SHIFT FINE) · P PIN · Q/E CLUB · O AUTO");
   $("swing-meter")?.classList.remove("show");
   $("shot-telemetry")?.classList.remove("show");
   ballStepAccum = 0;
@@ -1618,6 +1731,32 @@ function commitSwing(): void {
   updateCardHud();
 }
 
+/** the obstacles the shot in flight meets (set at impact) */
+let shotHits: { obstacles: readonly TreeObstacle[]; pin?: PinObstacle } = { obstacles: [] };
+let landingPreviewKey = "";
+let landingPreview: Vec3 = [0, 0, 0];
+
+/** first ground contact of a pure shot from the staged ball (cached per ball, aim, club, power and hidden-tree set) */
+function previewLanding(club: ReturnType<typeof shotClub>, power: number, yaw: number): Vec3 {
+  const r = state.round!;
+  const t = state.terrain!;
+  const hits = shotObstacles();
+  const key = `${r.ballPos.map((v) => v.toFixed(2)).join(",")}|${yaw.toFixed(3)}|${club.id}|${power.toFixed(2)}|${hits.obstacles.length}|${state.wind.speed},${state.wind.yaw}`;
+  if (key === landingPreviewKey) return landingPreview;
+  landingPreviewKey = key;
+  const lie = r.strokes === 0 ? "tee" : t.zone(r.ballPos[0], r.ballPos[2]);
+  landingPreview = predictLanding({
+    terrain: t,
+    gravity: state.course.gravity,
+    airDensity: state.course.airDensity,
+    wind: state.wind,
+    lie,
+    liePenalty: liePenalty(lie),
+    ...hits
+  }, { club, power, accuracy: 0, spin: 0, aimYaw: yaw }, r.ballPos);
+  return landingPreview;
+}
+
 /**
  * IMPACT — the clubhead strikes the ball at the bottom of the swing arc.
  * Called from advanceSwingDrive at the instant the downswing completes (the
@@ -1632,13 +1771,16 @@ function fireImpact(): void {
   pendingCommit = null;
   state.commit = commit;
   const lie = r.strokes === 0 ? "tee" : t.zone(r.ballPos[0], r.ballPos[2]);
+  // the trees still drawn for this shot and the flagstick: the flight steps meet the same ones (shotObstacles)
+  shotHits = shotObstacles();
   const env = {
     terrain: t,
     gravity: state.course.gravity,
     airDensity: state.course.airDensity,
     wind: state.wind,
     lie,
-    liePenalty: liePenalty(lie)
+    liePenalty: liePenalty(lie),
+    ...shotHits
   };
   // launchBall spawns on the tee — reposition for non-tee lies (sim contract)
   state.ball = { ...launchBall(commit, env), pos: [...r.ballPos] as Vec3 };
@@ -1945,7 +2087,8 @@ function startHole(idx: number): void {
   // and remounts, which on some GPU stacks leaves the canvas dead (see the
   // iron-crown/pips-big-leap remount fix). The boot scene already mounts hole 1,
   // so skip the identical re-mount.
-  const sig = `${state.course.id}|${hole.number}|${state.lab ? "lab" : "round"}`;
+  // the Idol golfer GLB follows the studio polo, so the fit's golfer is part of the scene signature
+  const sig = `${state.course.id}|${hole.number}|${state.lab ? "lab" : "round"}|${idolGolferKey(state.fit)}`;
   if (sig !== mountedHoleSig) {
     mountedHoleSig = sig;
     const next = buildHoleScene(state.course, hole, t, state.lab);
@@ -1953,7 +2096,10 @@ function startHole(idx: number): void {
     // rest of that frame then draws disposed materials ("Material a3d-production-sdf-text-label is disposed"),
     // so the swap waits until the frame has been submitted.
     if (inEngineFrame) pendingHoleScene = next;
-    else (auraApp as any)?.setScene(next);
+    else {
+      (auraApp as any)?.setScene(next);
+      rewarmIdolModels();
+    }
   }
   resolveHoleHandles();
   cam.t = 0;
@@ -2013,8 +2159,10 @@ function renderFinalCard(title: string, foot: string): void {
   $("fc-title")!.textContent = title;
   $("fc-table")!.innerHTML =
     `<tr><th>HOLE</th>${holes.map((h) => `<th>${h.hole}</th>`).join("")}<th>TOT</th></tr>` +
-    `<tr><td>PAR</td>${cells((h) => String(h.par))}<td>${card.totalPar}</td></tr>` +
-    `<tr><td>YOU</td>${cells((h) => String(h.strokes), (h) => (h.strokes < h.par ? "under" : h.strokes > h.par ? "over" : ""))}<td>${card.totalStrokes}</td></tr>`;
+    // the PAR total sums only the holes played, so it matches the YOU total beside it (par 12 over 3 holes, not 36)
+    `<tr><td>PAR</td>${cells((h) => String(h.par))}<td>${playedPar(card)}</td></tr>` +
+    // a hole not played this round (started mid-round with ?hole=N) reads "–", not a 0 under par
+    `<tr><td>YOU</td>${cells((h) => (holePlayed(h) ? String(h.strokes) : "–"), (h) => (!holePlayed(h) ? "" : h.strokes < h.par ? "under" : h.strokes > h.par ? "over" : ""))}<td>${card.totalStrokes}</td></tr>`;
   $("fc-foot")!.textContent = `${state.course.name.toUpperCase()} · ${tp} · ${foot}`;
   box.classList.add("show");
 }
@@ -2053,7 +2201,7 @@ function finishRound(): void {
     renderFinalCard("SKINS MATCH OVER", `SKINS WON ${r.skinsWon} OF 9${r.skinsPot > 0 ? ` · ${r.skinsPot} UNCLAIMED` : ""}`);
     pushEvent("skins", `match over — ${r.skinsWon} skins won${pot}`, "info");
   } else {
-    showMsg("ROUND COMPLETE", `${card.totalStrokes} strokes · ${toPar >= 0 ? "+" : ""}${toPar} vs par ${card.totalPar}`, 4200);
+    showMsg("ROUND COMPLETE", `${card.totalStrokes} strokes · ${toPar >= 0 ? "+" : ""}${toPar} vs par ${playedPar(card)}`, 4200);
     renderFinalCard("ROUND COMPLETE", `${card.totalStrokes} STROKES · MENU FOR A NEW ROUND`);
     pushEvent("round", `round complete: ${toPar >= 0 ? "+" : ""}${toPar}`, toPar <= 0 ? "success" : "info");
     if (toPar < 0) void audio?.cue("win");
@@ -2090,6 +2238,15 @@ function setMode(mode: GameModeId | "skins"): void {
     startRound();
   }
   updateModeChips();
+}
+
+/** O: the demo autopilot on or off. On, it plays the very next frame it can (no manual-input grace); off, the player has the shot. */
+function toggleAutopilot(): void {
+  autopilot = !autopilot;
+  if (autopilot) lastManualInputAt = -AUTOPLAY_TIMING.manualGraceS - 1;
+  else autoPlan = null;
+  pushEvent("system", autopilot ? "autoplay on — O to take over" : "autoplay off — your shot", "info");
+  if (state.phase === "address") beginAddress();
 }
 
 /**
@@ -2290,12 +2447,12 @@ let heroCelebrate = false;
 let autoPlan: ShotPlan | null = null;
 let simTime = 0;
 let lastManualInputAt = -10;
-let addressEnteredAt = 0;
-let roundOverEnteredAt = 0;
 let lastObservedPhase = "";
+/** sim time the current play phase began (the autoplay loop times every phase from it) */
+let phaseEnteredAt = 0;
 const bootUrlParams = new URLSearchParams(window.location.search);
 const isStillMode = bootUrlParams.has("still");
-let autopilot = bootUrlParams.get("autoplay") === "1" || bootUrlParams.get("demo") === "1";
+let autopilot = autoplayRequested(bootUrlParams);
 let appReady = false;
 const pressedKeys = new Set<string>();
 let aimHeldFor = 0;
@@ -2329,11 +2486,7 @@ function frame(realDt: number): void {
 
   if (state.phase !== lastObservedPhase) {
     lastObservedPhase = state.phase;
-    if (state.phase === "address") {
-      addressEnteredAt = simTime;
-    } else if (state.phase === "roundover") {
-      roundOverEnteredAt = simTime;
-    }
+    phaseEnteredAt = simTime;
   }
 
   if (bannerTimer && now > bannerTimer) { $("banner")?.classList.remove("show"); bannerTimer = 0; }
@@ -2343,6 +2496,8 @@ function frame(realDt: number): void {
   // --- broadcast flyover (LINKS-12): any key skips it this frame (the key still does its usual job); a due flyover
   // starts once the hole's scene is mounted ---
   if (flyover && justPressed.size > 0) skipFlyover();
+  // O toggles the demo autopilot (game/autoplayLoop.ts); turning it on hands over at once
+  if (justPressed.has("KeyO") && !isStillMode) toggleAutopilot();
   if (pendingFlyover && !pendingHoleScene) startFlyover();
 
   // --- input edges ---
@@ -2368,25 +2523,36 @@ function frame(realDt: number): void {
     }
   }
 
-  // --- autopilot ONLY when explicitly enabled via ?autoplay=1 or ?demo=1 ---
-  if (autopilot && state.phase !== "menu" && !isStillMode && simTime - lastManualInputAt > 2.2) {
-    if (r && t && state.phase === "address" && simTime - addressEnteredAt > 1.35) {
-      const lie: LieKind = r.strokes === 0 ? "tee" : t.zone(r.ballPos[0], r.ballPos[2]);
-      autoPlan = planShot({
-        terrain: t,
-        gravity: state.course.gravity,
-        airDensity: state.course.airDensity,
-        wind: state.wind,
-        ballPos: r.ballPos,
-        lie: lie === "water" || lie === "oob" ? "rough" : lie
-      });
-      r.clubIdx = CLUB_ORDER.indexOf(autoPlan.club);
-      r.aimOffset = wrapAngle(autoPlan.aimYaw - r.aimBase);
-      updateCardHud();
-      startSwing();
-    } else if (state.phase === "roundover" && simTime - roundOverEnteredAt > 3.2) {
-      continueAfterRound();
-    }
+  // --- autopilot ONLY when enabled (?autoplay=1, ?autopilot=1, ?demo=1 or the O key): game/autoplayLoop.ts decides when ---
+  const autoAct = autoplayAction({ enabled: autopilot, still: isStillMode, phase: state.phase, simTime, phaseEnteredAt, lastManualInputAt });
+  if (autoAct === "swing" && r && t) {
+    const lie: LieKind = r.strokes === 0 ? "tee" : t.zone(r.ballPos[0], r.ballPos[2]);
+    autoPlan = planShot({
+      terrain: t,
+      gravity: state.course.gravity,
+      airDensity: state.course.airDensity,
+      wind: state.wind,
+      ballPos: r.ballPos,
+      lie: lie === "water" || lie === "oob" ? "rough" : lie,
+      ...shotObstacles()
+    });
+    r.clubIdx = CLUB_ORDER.indexOf(autoPlan.club);
+    r.aimOffset = wrapAngle(autoPlan.aimYaw - r.aimBase);
+    updateCardHud();
+    startSwing();
+  } else if (autoAct === "next-round") {
+    // the demo tours the courses: the next round is on the next course (a live Pro Circuit keeps its own order)
+    if (state.mode !== "tour") selectCourse(nextAutoplayCourse(COURSE_ORDER, state.courseId), false);
+    continueAfterRound();
+  } else if (autoAct === "leave-menu") {
+    closeMenu();
+    menuReturn = null;
+    hideFinalCard();
+    setMode("quick");
+  } else if (autoAct === "settle-ball" && state.ball && t) {
+    // watchdog: a ball that never settles comes to rest where it is
+    const p = state.ball.pos;
+    onBallRest([p[0], t.height(p[0], p[2]), p[2]], t.zone(p[0], p[2]));
   }
 
   // --- aim/club continuous ---
@@ -2431,7 +2597,8 @@ function frame(realDt: number): void {
       airDensity: state.course.airDensity,
       wind: state.wind,
       lie: state.commit.club.putter ? ("green" as LieKind) : "fairway",
-      liePenalty: 1
+      liePenalty: 1,
+      ...shotHits
     };
     if (deterministicMode) {
       const { ball, events } = stepBall(state.ball, env, dt);
@@ -2465,12 +2632,13 @@ function frame(realDt: number): void {
 
   // --- visuals ---
   if (r && t) {
-    const bp =
-      !deterministicMode && state.phase === "flight" && state.ball
-        ? ballPresenter.present({ alpha: ballStepAccum / FIXED_BALL_DT }, true).pos
-        : state.ball
-          ? state.ball.pos
-          : r.ballPos;
+    const bp = presentedBallPos({
+      phase: state.phase,
+      interpolate: !deterministicMode,
+      ball: state.ball?.pos ?? null,
+      staged: r.ballPos,
+      present: () => ballPresenter.present({ alpha: ballStepAccum / FIXED_BALL_DT }, true).pos
+    });
     ballHandle?.setPosition(bp[0], Math.max(bp[1] - BALL_R, t.height(bp[0], bp[2]) - 0.01), bp[2]);
     const bh = bp[1] - t.height(bp[0], bp[2]);
     const ss = clamp(1 - bh * 0.05, 0.4, 1);
@@ -2510,12 +2678,16 @@ function frame(realDt: number): void {
           landingRingHandle?.setScale(HIDDEN_SCALE).setVisible(false);
         }
       } else {
-        const lx = r.ballPos[0] + Math.sin(yaw) * 14.5;
-        const lz = r.ballPos[2] + Math.cos(yaw) * 14.5;
+        // owner (Mare tee): the 28 m aim line started 0.5 m past the ball, so its near tip read as a second ball up the line;
+        // it now starts AIM_LINE_GAP (0.15 m) past the ball, touching it from the camera's view
+        const lx = r.ballPos[0] + Math.sin(yaw) * (14 + AIM_LINE_GAP);
+        const lz = r.ballPos[2] + Math.cos(yaw) * (14 + AIM_LINE_GAP);
         aimLineHandle?.setPosition(lx, t.height(lx, lz) + 0.06, lz).setRotation(0, yaw, 0).setScale([1, 1, 1]).setVisible(r.lie !== "green");
-        const carry = club.carry * 0.92;
-        const px = r.ballPos[0] + Math.sin(yaw) * carry;
-        const pz = r.ballPos[2] + Math.cos(yaw) * carry;
+        // where a pure strike at 92% (or the locked meter power) first comes down, through the live sim with the wind, the
+        // trees still drawn and the flagstick: a shot into a tree shows its landing under the tree
+        const land = previewLanding(club, sw.phase === "accuracy" && sw.power != null ? sw.power : 0.92, yaw);
+        const px = land[0];
+        const pz = land[2];
         landingRingHandle?.setPosition(px, t.height(px, pz) + 0.12, pz).setRotation(Math.PI / 2, 0, 0).setScale([1, 1, 1]).setVisible(r.lie !== "green");
       }
       const pulse = state.reducedMotion ? 0 : now / 480;
@@ -2592,6 +2764,8 @@ function frame(realDt: number): void {
       }
       poseGolfer(golferRig, phase, u, g.pos, g.yaw, (x, z) => t.height(x, z));
       checkClubContact(dt, g.yaw);
+      // trees whose canopy reaches the shot camera's sight line hide for this shot (treeClearance.ts)
+      if (state.phase === "address" || state.phase === "swing") applyTreeClearance();
     }
 
     // flag flutter (held still under reduced motion). GU47 LINKS-13 + WP-05: flagstick banner yaws with wind direction
@@ -2744,6 +2918,7 @@ function buildStudioSwatches(): void {
     try { localStorage.setItem("aura-links-fit", JSON.stringify(state.fit)); } catch { /* private mode */ }
     if (golferRig) applyGolferFit(golferRig, state.fit);
     for (const h of trailHandles) h?.setMaterial?.(material.emissive({ color: state.fit.trail, emissive: state.fit.trail, emissiveIntensity: 0.4 }));
+    remountForGolferFit();
     closeMenu();
     if (!state.round) startRound();
     else state.phase = "address";
@@ -3038,7 +3213,7 @@ function installQaHook(): void {
     },
     /** world positions of the people on the tee and by the green (framing checks) */
     figures() {
-      const names = ["golfer-body", "caddy-body", "golfer-bag", "golfer-cart", "gallery-spectators"];
+      const names = ["golfer-body", "caddy-body", "golfer-bag", "golfer-cart", "gallery-spectators", "golf-ball"];
       const out: Record<string, unknown> = { ball: state.round?.ballPos ?? null, eye: cam.eye, target: cam.target };
       for (const n of names) {
         const h = tryReq(n);
@@ -3195,7 +3370,7 @@ function boot(): void {
       ...(coarsePixelRatio !== undefined ? { pixelRatio: coarsePixelRatio } : {})
     };
   }
-  mountedHoleSig = `${state.course.id}|${state.hole.number}|round`;
+  mountedHoleSig = `${state.course.id}|${state.hole.number}|round|${idolGolferKey(state.fit)}`;
   auraApp = createAuraApp("#app", {
     scene: buildHoleScene(state.course, state.hole, state.terrain, null),
     ...baseAppOpts,
@@ -3249,7 +3424,7 @@ function boot(): void {
   // Evidence pump: publishes state even when RAF is throttled (headless capture)
   window.setInterval(() => publishEvidence(), 500);
   (auraApp as any).onFrame(({ dt }: { dt: number }) => {
-    if (!appReady || qaHold) return;
+    if (!appReady || qaHold || warming) return;
     inEngineFrame = true;
     try {
       frame(clamp(dt, 0.001, 0.05));
@@ -3258,7 +3433,14 @@ function boot(): void {
     }
     if (pendingHoleScene) queueMicrotask(flushPendingHoleScene);
   });
-  void (auraApp as any).ready?.()?.then(() => {
+  void (auraApp as any).ready?.()?.then(async () => {
+    // Idol wow pass (FIRST-SECONDS): the Idol GLBs (golfer, caddie, cart, bag, gallery, clubhouse, trees) stream in after the
+    // mount; their texture upgrades and program variants would otherwise compile in the first seconds of play (skipped
+    // draws). Settle them before the loop runs and the loading bar completes. QA / still captures keep the old no-wait boot.
+    if (params.get("qa") !== "1" && !params.get("still")) {
+      warmResult = await warmPrograms(auraApp as any, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 }).catch(() => null);
+    }
+    warmedCourseId = state.course.id;
     appReady = true;
     document.body.dataset.aura3dReady = "true";
     bootStage("ready");

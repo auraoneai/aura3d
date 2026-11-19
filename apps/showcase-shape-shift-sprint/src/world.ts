@@ -9,12 +9,14 @@
  * - Crisp studio post-processing (`contactShadows` + `ambientOcclusion` + `screenSpaceReflections` + `cinematicBloom` + `godRays`, zero `depthOfField`),
  * - 6 Milestone Toybox Worlds smoothly blended via dual-backend GLSL + WGSL uniforms.
  */
-import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, group, lights, material, model, scene, type AuraApp } from "@aura3d/engine";
+import { assets } from "./aura-assets.route";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch,
   CORRIDOR_BOUNDS,
   GameRng,
+  OPEN_BOUNDS,
   Slots,
   hexToLinear,
   scrollFrameZ,
@@ -24,7 +26,7 @@ import {
   type Rgb
 } from "../../../examples/shared/runner-kit/index";
 import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
-import { POOL, type Segment, type ShapeShiftSim, type Token, type WallRow } from "./sim";
+import { POOL, judgeRow, type Segment, type ShapeShiftSim, type Token, type WallRow } from "./sim";
 import {
   LOOK,
   ROAD_LINEAR,
@@ -60,13 +62,15 @@ import {
   confettiMesh,
   groundQuad,
   mergeMeshes,
+  playerBodyExtents,
   playerMesh,
   rimMesh,
   roadSegmentMesh,
   roadTones,
   sphereMesh,
   tokenMesh,
-  wallCellMesh
+  wallCellMesh,
+  wallHoleExtents
 } from "./meshes";
 import { shakeOffset, type CameraPose, type Shown } from "./presentation";
 import {
@@ -74,10 +78,10 @@ import {
   buildFloatingPrismClustersNode,
   buildHorizonStadiumPylonsNode,
   buildMorphPlayerNode,
-  buildRivalMorphPacerNode,
-  buildShapeGatePortalNode,
-  buildToyBlockTowerNode,
-  buildToyCastleIslandNode
+  MORPH_FOOT,
+  buildIdolRivalAugerNode,
+  buildIdolThrusterFanNode,
+  buildShapeGatePortalNode
 } from "./art/proceduralModels";
 
 type SceneBuilder = ReturnType<typeof scene>;
@@ -177,6 +181,112 @@ export function allProgramSpecs(): readonly { readonly name: string; readonly sp
   ];
 }
 
+/** Max dimension the Idol landmark GLBs were normalised to (`tools/idol/specs/shape-shift-sprint.json`). */
+const IDOL_LANDMARK_DIM = { toyCastleIsland: 10, toyBlockTower: 26 } as const;
+const IDOL_CASTLES = [assets.sssCastleIslandCream, assets.sssCastleIslandBlush, assets.sssCastleIslandMint] as const;
+
+function idolLandmarkNode(id: string, kind: "toyCastleIsland" | "toyBlockTower", size: number, variant: number) {
+  const asset = kind === "toyCastleIsland" ? IDOL_CASTLES[variant % 3]! : assets.sssBlockTower;
+  return group(id, [
+    model(asset, { name: `${id}-idol`, scaleMode: "world", castShadow: false, receiveShadow: false }).scale(size / IDOL_LANDMARK_DIM[kind])
+  ]).runtime({ id });
+}
+
+/**
+ * The rival GLBs are normalised to the procedural pacers' 1.1 m length and grounded; the procedural pacers were centred
+ * on the node origin (half-heights 0.15 / 0.24 m), so the GLB drops by that half-height.
+ */
+/**
+ * Moving-part anchors in the rival group frame (nose toward -Z): the Idol drill's base (axis 0.17 m up the 0.57 m hull,
+ * dropped by its 0.15 m half-height; base 0.30 m behind the 0.55 m nose) and the coupe's two thruster mouths.
+ */
+export const IDOL_RIVAL_PARTS = {
+  auger: [0, 0.02, -0.3] as [number, number, number],
+  fans: [[0.125, -0.125, 0.548], [-0.136, -0.123, 0.551]] as [number, number, number][]
+} as const;
+/** Auger / turbine spin (rad) at elapsed `t`; reduced motion keeps a slow turn. */
+export function idolRivalSpin(t: number, reduced: boolean): { readonly auger: number; readonly fan: number } {
+  return { auger: t * (reduced ? 1.2 : 9.5), fan: t * (reduced ? 1.5 : 14) };
+}
+
+/** Mascot stride phase in [-1, 1] at elapsed `t` (0 when not running or reduced motion). */
+export function mascotStride(t: number, running: boolean, reduced: boolean): number {
+  return running && !reduced ? Math.sin(t * 13.5) : 0;
+}
+/** Foot rest height per form: the morph mesh's base (computed once from the gameplay meshes). */
+const MORPH_FOOT_BASE_Y = ([0, 1, 2] as const).map((i) => {
+  const pos = playerMesh(i).positions;
+  let min = Infinity;
+  for (let k = 1; k < pos.length; k += 3) min = Math.min(min, pos[k]!);
+  return min + MORPH_FOOT.y;
+});
+
+function idolRival(asset: typeof assets.sssRivalDrillBoat | typeof assets.sssRivalCoupe, id: string, halfHeight: number) {
+  return model(asset, { name: `${id}-idol`, scaleMode: "world", castShadow: true, receiveShadow: false })
+    .position(0, -halfHeight, 0).rotation(0, Math.PI, 0);
+}
+
+/** Visual margin of the morph body inside its opening while it passes a wall row. */
+export const GATE_FIT_MARGIN = 0.92;
+/** Approach distance (m) over which the body eases from its running pose into the opening. */
+export const GATE_DIVE_RAMP = 1.6;
+
+/**
+ * Passed-wall retract: once a row is behind the runner (between it and the raised chase camera), its cells sink into
+ * the road at this many metres per metre travelled, so a just-cleared 3 m wall never hides the hero (real-GPU QA:
+ * the cleared wall filled the lower half of the frame for ~0.4 s after every gate). Presentation only.
+ */
+export const WALL_RETRACT_PER_M = 2;
+
+/** Downward offset (m, <= 0) of a wall row whose front face is `behind` metres past the runner (`row.z - player.z`). */
+export function wallRetractY(behind: number): number {
+  const past = behind - WALL_DIMS.thickness;
+  if (!(past > 0)) return 0;
+  return -Math.min(WALL_DIMS.cellHeight + 0.2, past * WALL_RETRACT_PER_M);
+}
+
+/**
+ * Culling bounds for the batches that live in the scrolling road frame (road, walls, contact, rims, tokens). Their
+ * instances sit at `z - sim.scroll` under a node moved by `+scroll`, so local z runs off to -scroll: with the fixed
+ * `CORRIDOR_BOUNDS` (local z >= -420) every one of them was frustum-culled after ~420 m and the gates turned invisible
+ * while the sim kept scoring them (real-GPU full-run QA). The scrolling frame is unbounded, so these use `OPEN_BOUNDS`.
+ */
+export const SCROLL_BOUNDS = OPEN_BOUNDS;
+
+/** Largest uniform body scale that fits the opening of the matching hole (`wallHoleExtents`), with `GATE_FIT_MARGIN`. */
+export function gateFitScale(shapeIndex: number): number {
+  const hole = wallHoleExtents(shapeIndex);
+  const body = playerBodyExtents(shapeIndex);
+  return GATE_FIT_MARGIN * Math.min(hole.halfWidth / body.halfWidth, (hole.top - hole.bottom) / (body.top - body.bottom));
+}
+
+/**
+ * Gate dive (presentation only; the sim alone judges the fit): while the body overlaps a wall row in depth it is shrunk
+ * to fit its own shape's opening and lifted to the opening's centre, so a fitting runner goes through the hole instead
+ * of through the solid sill under it. `weight` is 1 while the body overlaps the wall slab and eases to 0 over
+ * `GATE_DIVE_RAMP`; `scale` / `centerY` are the node's uniform scale and centre height inside the opening.
+ */
+export function gateDive(shapeIndex: number, scale: number, gateDist: number): { readonly weight: number; readonly scale: number; readonly centerY: number } {
+  const hole = wallHoleExtents(shapeIndex);
+  const body = playerBodyExtents(shapeIndex);
+  const fit = Math.min(scale, gateFitScale(shapeIndex));
+  const inner = WALL_DIMS.thickness / 2 + body.halfWidth * Math.max(scale, fit) + 0.05;
+  const u = Math.min(1, Math.max(0, (gateDist - inner) / GATE_DIVE_RAMP));
+  const weight = 1 - u * u * (3 - 2 * u);
+  return { weight, scale: fit, centerY: (hole.bottom + hole.top) / 2 - ((body.bottom + body.top) / 2) * fit };
+}
+
+/** Whether the runner goes through `row` cleanly: the sim's verdict once resolved, its live judgement before. */
+export function rowFits(row: WallRow, simNow: ShapeShiftSim): boolean {
+  if (row.resolved) return row.matchedLane >= 0;
+  return judgeRow(row.holes, simNow.o.laneOffset, simNow.o.shapeIndex, simNow.o.wildcardTimer > 0).fits;
+}
+
+/** Lane cell of `row` nearest the runner's centre `x` (the cell a hit strikes). */
+export function nearestLaneIndex(row: WallRow, x: number): number {
+  return judgeRow(row.holes, x, 0, false).laneIndex;
+}
+
 export function buildWorld(options: WorldOptions): World {
   const builder = scene()
     .background(LOOK.skyStops[LOOK.skyStops.length - 1]!.hex)
@@ -220,36 +330,45 @@ export function buildWorld(options: WorldOptions): World {
     color: "#b8dcff"
   }));
 
-  const road = new Batch(roadSegmentMesh(), POOL.segments, roadTones(), CORRIDOR_BOUNDS);
+  const road = new Batch(roadSegmentMesh(), POOL.segments, roadTones(), SCROLL_BOUNDS);
   addBatch("road", road, toyToonSpec(ROAD_LINEAR, { tone: true, rim: 0.06, clearcoat: 0.56, fogStart: GAME_FOG_START }), false, true);
   add("road-skirt", skirtMesh(), toyToonSpec([1, 1, 1], {
     rim: 0.14, clearcoat: 0.34, fogStart: GAME_FOG_START, stripes: [hexToLinear(SCENERY.coral), hexToLinear(SCENERY.cream), SKIRT_DIMS.period]
   }), false, true);
 
   const wallMeshes = [wallCellMesh(0), wallCellMesh(1), wallCellMesh(2)] as const;
-  const walls = new Batch(wallMeshes[0], POOL.rows * 3, null, CORRIDOR_BOUNDS);
+  const walls = new Batch(wallMeshes[0], POOL.rows * 3, null, SCROLL_BOUNDS);
   addBatch("walls", walls, toyToonSpec(WALL_LINEAR, { rim: 0.14, clearcoat: 0.38, fogStart: GAME_FOG_START }), true, true);
 
-  const contact = new Batch(wallContactMesh(WALL_DIMS.cellWidth, 1.15), POOL.rows * 3, null, CORRIDOR_BOUNDS);
+  const contact = new Batch(wallContactMesh(WALL_DIMS.cellWidth, 1.15), POOL.rows * 3, null, SCROLL_BOUNDS);
   addBatch("wall-contact", contact, contactSpec(0.32));
 
   const rimMeshes = [rimMesh(0), rimMesh(1), rimMesh(2)] as const;
-  const rims = new Batch(rimMeshes[0], POOL.rows * 3, [1, 1, 1], CORRIDOR_BOUNDS);
+  const rims = new Batch(rimMeshes[0], POOL.rows * 3, [1, 1, 1], SCROLL_BOUNDS);
   addBatch("rims", rims, toyToonSpec([1, 1, 1], { tone: true, rim: 0.24, clearcoat: 0.64, fogStart: GAME_FOG_START }), false, false);
 
   const tokenMeshes = [tokenMesh(0), tokenMesh(1), tokenMesh(2), tokenMesh(3)] as const;
-  const tokens = new Batch(tokenMeshes[0], POOL.tokens, [1, 1, 1], CORRIDOR_BOUNDS);
+  const tokens = new Batch(tokenMeshes[0], POOL.tokens, [1, 1, 1], SCROLL_BOUNDS);
   addBatch("tokens", tokens, toyToonSpec([1, 1, 1], { tone: true, rim: 0.36, clearcoat: 0.68, fogStart: GAME_FOG_START }), false, false);
 
-  // Sculpted multi-material morph forms (`player-0` Crimson Gyro-Runner,
-  // `player-1` Solar GT Widebody Coupe, `player-2` Cobalt Aero Delta-Glider & Turbo-Rotor)
+  // Morph mascot forms (owner review): one gel creature whose body is the gate shape it matches: red ball
+  // (`player-0`), yellow block (`player-1`), blue cone (`player-2`), with eyes and running feet
   for (const i of [0, 1, 2] as const) {
     builder.add(buildMorphPlayerNode(i, playerMesh(i)));
   }
 
   // Flank rival morph pacers (`rival-0` Spiral Auger Drill-Boat, `rival-1` Plum Aero-Coupe)
-  builder.add(buildRivalMorphPacerNode("rival-0", 0).position(-5.15, -50, -60));
-  builder.add(buildRivalMorphPacerNode("rival-1", 1).position(5.15, -50, -60));
+  // Idol wow pass: Idol toy hover-craft GLBs (built facing +Z, turned to the pacers' -Z nose).
+  // Spinning parts on the rigid Idol bodies (rotated every frame in update): the drill boat's auger and the coupe's two
+  // rear thruster turbines, placed at the Idol mesh's drill / thruster centres (measured from the GLB, rival-group frame).
+  builder.add(group("rival-0", [
+    idolRival(assets.sssRivalDrillBoat, "rival-0", 0.15),
+    buildIdolRivalAugerNode("rival-0-auger").position(...IDOL_RIVAL_PARTS.auger)
+  ]).position(-5.15, -50, -60).runtime({ id: "rival-0" }));
+  builder.add(group("rival-1", [
+    idolRival(assets.sssRivalCoupe, "rival-1", 0.24),
+    ...IDOL_RIVAL_PARTS.fans.map((p, i) => buildIdolThrusterFanNode(`rival-1-fan-${i}`).position(...p))
+  ]).position(5.15, -50, -60).runtime({ id: "rival-1" }));
 
   // Sculpted multi-material shape-gate portals (`archwayVoussoirSlots` + `latticeTrussMesh` + 4 glowing shape stencils)
   for (let slot = 0; slot < POOL.rows; slot++) {
@@ -305,9 +424,9 @@ export function buildWorld(options: WorldOptions): World {
   );
   MESHY_PIECES.forEach((p, idx) => {
     const pose = meshyPose(p, 0, false);
-    const landmark = p.kind === "toyCastleIsland"
-      ? buildToyCastleIslandNode(p.id, p.size, idx)
-      : buildToyBlockTowerNode(p.id, p.size, idx);
+    // Idol wow pass: Idol toy castle islands (three colourways) and block towers, normalised to IDOL_LANDMARK_DIM
+    // and rescaled to the piece's max dimension, grounded like the procedural assemblies they replace.
+    const landmark = idolLandmarkNode(p.id, p.kind, p.size, idx);
     builder.add(
       landmark
         .position(pose.x, pose.y, pose.z)
@@ -353,6 +472,8 @@ export function buildWorld(options: WorldOptions): World {
       const rowSlots = new Slots<WallRow>(POOL.rows);
       const tokenSlots = new Slots<Token>(POOL.tokens);
       const rimKey: number[] = Array.from({ length: POOL.rows * 3 }, () => -1);
+      /** Wall cells knocked out by a hit (a non-fit row breaks where the runner struck it instead of ghosting through). */
+      const smashed: boolean[] = Array.from({ length: POOL.rows * 3 }, () => false);
       const tokenKey: string[] = Array.from({ length: POOL.tokens }, () => "");
       const particleShown: boolean[] = Array.from({ length: POOL.particles + TRAIL_MAX }, () => false);
       const particleColor: string[] = Array.from({ length: POOL.particles + TRAIL_MAX }, () => "");
@@ -479,6 +600,7 @@ export function buildWorld(options: WorldOptions): World {
 
         /* molded 3D cutout wall cells + 3D bevelled shape collars + sculpted gate portals (scrolling frame) */
         let nearestGateDist = 99;
+        let nearestRow: WallRow | null = null;
         const activePortalSlots = new Set<number>();
         rowSlots.retain(simNow.rows, (slot) => {
           node(`gate-portal-${slot}`).setVisible(false);
@@ -487,11 +609,15 @@ export function buildWorld(options: WorldOptions): World {
             contact.collapse(slot * 3 + i);
             rims.collapse(slot * 3 + i);
             rimKey[slot * 3 + i] = -1;
+            smashed[slot * 3 + i] = false;
           }
         });
         for (const row of simNow.rows) {
           const dGate = Math.abs(row.z - p.z);
-          if (dGate < nearestGateDist) nearestGateDist = dGate;
+          if (dGate < nearestGateDist) {
+            nearestGateDist = dGate;
+            nearestRow = row;
+          }
           const { slot, fresh } = rowSlots.use(row);
           if (slot < 0) continue;
           const portalVisible = row.z > -72 && row.z < 7;
@@ -504,10 +630,22 @@ export function buildWorld(options: WorldOptions): World {
           const z = scrollFrameZ(row.z, scroll);
           row.holes.forEach((hole, i) => {
             const idx = slot * 3 + i;
-            if (fresh) {
-              walls.place(idx, hole.laneX, 0, z, 0, 1, 1, 1, wallMeshes[hole.shapeIndex]);
-              contact.place(idx, hole.laneX, 0.025, z + WALL_DIMS.thickness / 2, 0, 1, 1, 1);
-              rims.place(idx, hole.laneX, WALL_DIMS.openingCenterY, z + WALL_DIMS.thickness / 2 + 0.005, 0, 1, 1, 1, rimMeshes[hole.shapeIndex]);
+            if (fresh) smashed[idx] = false;
+            if (smashed[idx]) return;
+            if (row.resolved && row.matchedLane < 0 && nearestLaneIndex(row, p.x) === i) {
+              // Hit (mismatch, or the runner's centre was on solid wall): the struck cell breaks out of the row.
+              smashed[idx] = true;
+              walls.collapse(idx);
+              contact.collapse(idx);
+              rims.collapse(idx);
+              rimKey[idx] = -1;
+              return;
+            }
+            const sinkY = wallRetractY(row.z - p.z);
+            if (fresh || sinkY < 0) {
+              walls.place(idx, hole.laneX, sinkY, z, 0, 1, 1, 1, wallMeshes[hole.shapeIndex]);
+              contact.place(idx, hole.laneX, 0.025 + sinkY, z + WALL_DIMS.thickness / 2, 0, 1, 1, 1);
+              rims.place(idx, hole.laneX, WALL_DIMS.openingCenterY + sinkY, z + WALL_DIMS.thickness / 2 + 0.005, 0, 1, 1, 1, rimMeshes[hole.shapeIndex]);
             }
             const fits = hole.shapeIndex === o.shapeIndex || o.wildcardTimer > 0;
             const matched = row.resolved && row.matchedLane === i;
@@ -577,7 +715,13 @@ export function buildWorld(options: WorldOptions): World {
         const gliderHoverBob = o.shapeIndex === 2 && !reduced && o.phase === "playing"
           ? 0.052 * p.scale * (0.5 + 0.5 * Math.sin(elapsed * 7.2))
           : 0;
-        const playerCenterY = baseY * p.scale * syFactor + runnerStrideBob + coupeSuspensionBob + gliderHoverBob;
+        const runY = baseY * p.scale * syFactor + runnerStrideBob + coupeSuspensionBob + gliderHoverBob;
+        // Gate dive: only when this row is (or, unresolved, would be) a fit, so a hit still strikes the wall low.
+        const dive = gateDive(o.shapeIndex, p.scale, nearestGateDist);
+        const diveW = nearestRow && rowFits(nearestRow, simNow) ? dive.weight : 0;
+        const playerCenterY = runY + (dive.centerY - runY) * diveW;
+        const bodySx = p.scale * sxzFactor + (dive.scale - p.scale * sxzFactor) * diveW;
+        const bodySy = p.scale * syFactor + (dive.scale - p.scale * syFactor) * diveW;
 
         for (let i = 0; i < 3; i++) {
           const h = node(`player-${i}`);
@@ -585,7 +729,7 @@ export function buildWorld(options: WorldOptions): World {
           h.setVisible(on);
           if (on) {
             h.setPosition(p.x, playerCenterY, p.z)
-              .setScale([p.scale * sxzFactor, p.scale * syFactor, p.scale * sxzFactor]);
+              .setScale([bodySx, bodySy, bodySx]);
             if (i === 0) {
               const pitch = reduced ? 0 : -0.1 + 0.035 * Math.sin(elapsed * 13.5);
               h.setRotation(pitch, reduced ? 0 : -steerBank * 0.55, reduced ? 0 : -steerBank * 0.65);
@@ -596,6 +740,17 @@ export function buildWorld(options: WorldOptions): World {
               const pitch = reduced ? 0 : 0.055 + 0.035 * Math.sin(elapsed * 5.8);
               h.setRotation(pitch, reduced ? 0 : -steerBank * 0.62, reduced ? 0 : -steerBank * 1.2);
             }
+          }
+        }
+
+        // Mascot feet: alternate stride while running (lift + swing), planted otherwise.
+        {
+          const stride = mascotStride(elapsed, o.phase === "playing" && p.visible, reduced);
+          for (let f = 0; f < 2; f++) {
+            const k = f === 0 ? stride : -stride;
+            node(`player-${o.shapeIndex}-foot-${f}`)
+              .setPosition(f === 0 ? -MORPH_FOOT.dx : MORPH_FOOT.dx, MORPH_FOOT_BASE_Y[o.shapeIndex]! + Math.max(0, k) * 0.09, -k * 0.16)
+              .setRotation(k * 0.5, 0, 0);
           }
         }
 
@@ -610,6 +765,9 @@ export function buildWorld(options: WorldOptions): World {
             const ry = (rIdx === 0 ? 0.52 : 0.44) + (reduced ? 0 : Math.sin(elapsed * 5.4 + rIdx * 1.3) * 0.08);
             const rBank = reduced ? 0 : Math.cos(elapsed * 1.8 + rIdx * 1.7) * -0.14 * side;
             rh.setPosition(rx, ry, rz).setRotation(0.02, 0, rBank).setScale(0.96);
+            const spin = idolRivalSpin(elapsed, reduced);
+            if (rIdx === 0) node("rival-0-auger").setRotation(0, 0, spin.auger);
+            else for (let f = 0; f < IDOL_RIVAL_PARTS.fans.length; f++) node(`rival-1-fan-${f}`).setRotation(0, 0, f === 0 ? spin.fan : -spin.fan);
           }
         }
 

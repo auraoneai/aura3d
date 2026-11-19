@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "aura-fc-3d": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "title",
+        "early",
+        "action",
+        "goal",
+        "save",
+        "venue-kyoto",
+        "fulltime"
+      ],
+      "results": "full time captured: 1280-07-fulltime.jpg / 390-06-fulltime.jpg (?autoplay=1&qaHalf=20, QA-only short halves): FULL TIME banner + scoreline, held 3 s, then the next venue kicks off",
+      "errors": "none",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

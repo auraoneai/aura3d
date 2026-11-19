@@ -5,6 +5,7 @@
  */
 import { createCountedRng } from "@aura3d/engine";
 import { CELL, WALL_H, SILO_H, isBlocked, isSolid, parseFloor, type FloorDef } from "./maps";
+import { PROP_FOOTPRINT, ROCKET_Y, staticObstacles, type Footprint } from "./obstacles";
 
 export { CELL, WALL_H };
 
@@ -136,7 +137,14 @@ export interface Sim {
 }
 
 const EYE = 1.55;
-const PLAYER_R = 0.34;
+export const PLAYER_R = 0.34;
+/**
+ * Body radius of each live enemy for player-vs-enemy blocking (GPU QA 2026-11-19: the player walked through enemies).
+ * Contact distance is PLAYER_R + this; the dog's bite range (1.6) stays well outside it.
+ */
+export const ENEMY_BODY_R: Readonly<Record<EnemyKind, number>> = { guard: 0.32, gunner: 0.38, dog: 0.3, boss: 0.62 };
+/** Rocket warhead radius for prop impacts (obstacles.ts footprints). */
+const ROCKET_HIT_R = 0.15;
 const NOISE_RANGE = 12;
 
 export const cellCenter = (c: number) => (c + 0.5) * CELL;
@@ -306,17 +314,60 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
   const emit = (s: string) => ev(s);
   const say = (s: string, t = 2.2) => { state.msg = s; state.msgT = t; };
 
+  // Pass-through pass (obstacles.ts): props stop movement and rockets at their own footprint, not their whole cell, and the
+  // floor's console + cryo canister are static obstacles.
+  const dressing = staticObstacles(def, def.id === 5 ? SILO_H : WALL_H);
+  const inBox = (x: number, z: number, r: number, bx: number, bz: number, f: Footprint) => Math.abs(x - bx) < r + f.hx && Math.abs(z - bz) < r + f.hz;
+  const livePropAt = (cx: number, cz: number) => {
+    const ch = gridAt(cx, cz);
+    if (ch !== "o" && ch !== "b" && ch !== "c") return undefined;
+    return props.find((pp) => pp.cx === cx && pp.cz === cz && pp.alive);
+  };
   function moveWithCollision(e: { x: number; z: number }, dx: number, dz: number, r: number) {
-    // axis-separated slide against walls + props
+    // axis-separated slide against walls + prop footprints + static dressing
     const tryMove = (nx: number, nz: number) => {
       const minCx = Math.floor((nx - r) / CELL), maxCx = Math.floor((nx + r) / CELL);
       const minCz = Math.floor((nz - r) / CELL), maxCz = Math.floor((nz + r) / CELL);
       for (let cz = minCz; cz <= maxCz; cz++)
-        for (let cx = minCx; cx <= maxCx; cx++) if (cellBlocked(cx, cz)) return false;
+        for (let cx = minCx; cx <= maxCx; cx++) {
+          const ch = gridAt(cx, cz);
+          if (ch === "o" || ch === "b" || ch === "c") {
+            const pr = livePropAt(cx, cz);
+            if (pr && inBox(nx, nz, r, cellCenter(cx), cellCenter(cz), PROP_FOOTPRINT[pr.kind])) return false;
+            continue;
+          }
+          if (cellBlocked(cx, cz)) return false;
+        }
+      for (const o of dressing) if (inBox(nx, nz, r, o.x, o.z, o.f)) return false;
       return true;
     };
     if (tryMove(e.x + dx, e.z)) e.x += dx;
     if (tryMove(e.x, e.z + dz)) e.z += dz;
+  }
+
+  /**
+   * Player-vs-enemy blocking: a live enemy is a solid body. The player is pushed out of any enemy it overlaps (walls
+   * still apply), so walking into one slides along it instead of passing through; with `enemyYields` (after the enemies
+   * move) the enemy steps back first and the player takes whatever the enemy could not.
+   */
+  function separatePlayer(enemyYields: boolean) {
+    if (!p.alive) return;
+    for (const e of enemies) {
+      if (e.state === "dead") continue;
+      const min = PLAYER_R + ENEMY_BODY_R[e.kind];
+      let dx = p.x - e.x, dz = p.z - e.z;
+      let d = Math.hypot(dx, dz);
+      if (d >= min) continue;
+      if (d < 1e-4) { dx = -Math.sin(p.yaw); dz = Math.cos(p.yaw); d = 1; } // dead centre: back the player off
+      const nx = dx / d, nz = dz / d;
+      let overlap = min - Math.min(d, min);
+      if (enemyYields) {
+        moveWithCollision(e, -nx * overlap, -nz * overlap, 0.3);
+        overlap = Math.max(0, min - Math.hypot(p.x - e.x, p.z - e.z));
+        if (overlap <= 1e-4) continue;
+      }
+      moveWithCollision(p, nx * overlap, nz * overlap, PLAYER_R);
+    }
   }
 
   function bfsNext(fromX: number, fromZ: number, toX: number, toZ: number): [number, number] | null {
@@ -705,8 +756,9 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
         const cx = Math.floor(nx / CELL), cz = Math.floor(nz / CELL);
         const doorInCell = doors.find((dd) => dd.cx === cx && dd.cz === cz);
         const hitDoor = doorInCell ? doorInCell.open < 0.45 : false;
-        const colInCell = gridAt(cx, cz) === "o" && props.some((pp) => pp.cx === cx && pp.cz === cz && pp.alive);
-        const hitWall = cellSolid(cx, cz) || hitDoor || colInCell;
+        const colInCell = gridAt(cx, cz) === "o" && props.some((pp) => pp.cx === cx && pp.cz === cz && pp.alive && inBox(nx, nz, 0, cellCenter(cx), cellCenter(cz), PROP_FOOTPRINT.column));
+        const hitDressing = dressing.some((o) => o.f.h > (r.y ?? ROCKET_Y) && inBox(nx, nz, 0, o.x, o.z, o.f));
+        const hitWall = cellSolid(cx, cz) || hitDoor || colInCell || hitDressing;
 
         if (hitWall) {
           r.x = nx; r.z = nz;
@@ -736,7 +788,8 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
           }
           for (const pr of props) {
             if (!pr.alive || (pr.kind !== "barrel" && pr.kind !== "crate")) continue;
-            if (Math.hypot(cellCenter(pr.cx) - nx, cellCenter(pr.cz) - nz) < 0.75) {
+            // the rocket body (ROCKET_HIT_R) touches the drum / crate footprint
+            if (inBox(nx, nz, ROCKET_HIT_R, cellCenter(pr.cx), cellCenter(pr.cz), PROP_FOOTPRINT[pr.kind])) {
               hitPropTarget = pr;
               break;
             }
@@ -902,6 +955,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
       const mz = (input.moveX * rz + input.moveZ * fz) * speed * dt;
       const px = p.x, pz = p.z;
       moveWithCollision(p, mx, mz, PLAYER_R);
+      separatePlayer(false);
       if (Math.hypot(p.x - px, p.z - pz) > 0.01) {
         p.stepT -= dt;
         if (p.stepT <= 0) { p.stepT = 0.42; emit("step"); }
@@ -910,7 +964,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
 
     tickRockets(dt);
     // C16: enemies stand down once the floor is finished (cleared delay, results)
-    if (!state.finished) for (const e of enemies) tickEnemy(e, dt);
+    if (!state.finished) { for (const e of enemies) tickEnemy(e, dt); separatePlayer(true); }
     else for (const e of enemies) if (e.state === "dead") e.deathT += dt;
     tickPickups();
     tickExit();

@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoWheelHero",
+  "generatedAt": "2026-11-19T00:25:38.487Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f131-daee-72f3-bdbf-187fffd8f553",
+      "prompt": "A single realistic hypercar wheel: low-profile black performance tyre, forged dark titanium five-spoke rim, bright orange brake caliper behind the spokes, drilled brake disc. Photoreal studio product render, physically based materials, high detail. Seen exactly side-on, the wheel face looking straight at the camera, long telephoto lens, generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f132-f1ef-7913-864a-2021542ed3da",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1758774,
+        "num_faces": 3517608,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single realistic hypercar wheel: low-profile black performance tyre, forged dark titanium five-spoke rim, bright orange brake caliper behind the spokes, drilled brake disc. Photoreal studio product render, physically based materials, high detail. Seen exactly side-on, the wheel face looking straight at the camera, long telephoto lens, generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 0.703,
+    "size": [
+      0.209,
+      0.7,
+      0.699
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoWheelHero.glb",
+  "sizeBytes": 507284,
+  "preview": "artifacts/idol/apex-overdrive/aoWheelHero/views.png",
+  "usd": 0.37,
+  "renormalizedAt": "2026-11-19T00:36:45.057Z"
+}

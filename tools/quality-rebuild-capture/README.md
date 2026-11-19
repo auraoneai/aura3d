@@ -26,7 +26,7 @@ the app's own `vite.config.ts` (or the root config when the app has none) and pi
 - `publicDir`: `false`
 
 Turning off `publicDir` stops Vite from copying the multi-GB shared `public/` tree into every
-build. The static server serves `public/`, `apps/aura-clash-showcase/public/` and
+build. The static server serves `public/`, each selected game's `apps/<appDir>/public/` and
 `marketing/public/` as fallbacks instead, with and without the `/apps/<appDir>` prefix.
 
 ## Usage
@@ -35,7 +35,7 @@ build. The static server serves `public/`, `apps/aura-clash-showcase/public/` an
 node tools/quality-rebuild-capture/capture-games.mjs --validate        # schema check, no browser
 node tools/quality-rebuild-capture/capture-games.mjs --build-only      # build local-source games
 node tools/quality-rebuild-capture/capture-games.mjs --skip-build      # capture (reuse .build/)
-node tools/quality-rebuild-capture/capture-games.mjs --games showcase-bank-shot,aura-clash-showcase
+node tools/quality-rebuild-capture/capture-games.mjs --games showcase-iron-crown,showcase-pips-big-leap
 node tools/quality-rebuild-capture/capture-games.mjs --local-build     # everything from source
 ```
 

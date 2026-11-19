@@ -1,0 +1,64 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeBirdSquidWingR",
+  "generatedAt": "2026-11-19T01:04:08.119Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f155-18d4-71f3-ad2a-e1e88b133597",
+      "prompt": "A single detached cartoon bird wing toy piece lying flat, seen from directly above: a flat rounded paddle-shaped dark purple wing, narrow rounded root end on the left widening to three layered scalloped feathers at the right, feather tips painted purple with mint-green tips, about three times longer than wide, nothing else. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f155-9b6a-7d92-9fce-b373a80ac194",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 853122,
+        "num_faces": 1706240,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single detached cartoon bird wing toy piece lying flat, seen from directly above: a flat rounded paddle-shaped dark purple wing, narrow rounded root end on the left widening to three layered scalloped feathers at the right, feather tips painted purple with mint-green tips, about three times longer than wide, nothing else. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.7,
+    "size": [
+      0.698,
+      0.101,
+      0.7
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeBirdSquidWingR.glb",
+  "sizeBytes": 388304,
+  "preview": "artifacts/idol/slingshot-siege/siegeBirdSquidWing/views.png",
+  "usd": 0,
+  "derived": {
+    "from": "siegeBirdSquidWing",
+    "how": "artifacts/idol/slingshot-siege/_scratch/mirror-wing.mjs: x-mirrored copy (right wing), winding reversed; no paid call"
+  },
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90",
+    "bytesBefore": 715396,
+    "bytesAfter": 388304
+  }
+}

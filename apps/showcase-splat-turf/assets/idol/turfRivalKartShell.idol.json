@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-turf",
+  "key": "turfRivalKartShell",
+  "generatedAt": "2026-11-19T00:41:04.025Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f13f-fa88-7650-b406-276eafde0533",
+      "prompt": "Telephoto front three-quarter view from front-left and slightly above of a squat rival street-cleaning go-kart body only, NO wheels: four empty rounded wheel arches with nothing inside them, the body floating level, and a plain flat steel bumper bracket across the front with nothing attached. An EMPTY open cockpit: a black bucket seat with nobody in it and a small black steering wheel on a column, no driver, no person. Slate-grey and graphite clearcoat rounded body with red hazard stripes, round headlights, a short mast with a red warning beacon light behind the seat. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, brushed and chromed metal, real fabric, fine surface detail and light wear. Single isolated object, entire object in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No people, no wheels, no tyres, no brushes, no text, no logos, no lettering, no numbers, no brand marks anywhere.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f145-8d7f-79a1-982c-4346a2d50c13",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1509568,
+        "num_faces": 3019300,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Telephoto front three-quarter view from front-left and slightly above of a squat rival street-cleaning go-kart body only, NO wheels: four empty rounded wheel arches with nothing inside them, the body floating level, and a plain flat steel bumper bracket across the front with nothing attached. An EMPTY open cockpit: a black bucket seat with nobody in it and a small black steering wheel on a column, no driver, no person. Slate-grey and graphite clearcoat rounded body with red hazard stripes, round headlights, a short mast with a red warning beacon light behind the seat. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, brushed and chromed metal, real fabric, fine surface detail and light wear. Single isolated object, entire object in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No people, no wheels, no tyres, no brushes, no text, no logos, no lettering, no numbers, no brand marks anywhere.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.146,
+    "size": [
+      0.847,
+      0.795,
+      1.15
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-turf/assets/idol/turfRivalKartShell.glb",
+  "sizeBytes": 2565536,
+  "preview": "artifacts/idol/splat-turf/turfRivalKartShell/views.png",
+  "usd": 0.37
+}

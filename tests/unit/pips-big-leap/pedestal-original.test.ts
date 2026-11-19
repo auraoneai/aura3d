@@ -17,14 +17,16 @@ const flat = (nodes: readonly SceneNode[]): SceneNode[] =>
   nodes.flatMap((node) => [node, ...flat(node.children ?? [])]);
 
 describe("pips-big-leap original spring and checkpoint presentation", () => {
-  it("mounts zero GLB models and keeps procedural interactive springs and checkpoints in every world", () => {
+  it("mounts only Idol GLB models and keeps interactive spring caps and checkpoint pennants procedural in every world", () => {
     for (const id of WORLD_IDS) {
       const spec = worldSpec(id);
       const built = buildWorld(spec, { look: worldLookMode(id, "?look=original") });
       const nodes = flat((built.scene.toJSON() as unknown as { nodes: SceneNode[] }).nodes);
       const byName = (name: string) => nodes.find((node) => node.name === name);
 
-      expect(nodes.filter((node) => node.kind === "model"), `${id} original models`).toEqual([]);
+      for (const model of nodes.filter((node) => node.kind === "model")) {
+        expect((model as { readonly asset?: { readonly id?: string } }).asset?.id, `${id} ${model.name}`).toMatch(/^pip[A-Z]/);
+      }
       expect(spec.springs, id).toHaveLength(1);
       expect(spec.checkpoints, id).toHaveLength(3);
       for (const spring of spec.springs) {

@@ -3,7 +3,9 @@
  * Features real-frame-dt `createImpactRig` (`createHitStop` + `createCameraShake` + FOV kick), 32-frame ink-droplet bursts,
  * AuraOne territory-meter HUD (`hud-tokens.css`, Whitney + DIN Pro), pointer/keyboard/touch-pad steering, and QA hooks.
  *
- * Query parameters: `seed=N`, `manual=1`, `autostart=1`, `autopilot=1`, `warmup=N`, `dpr=N`, `motion=reduced|full`.
+ * Query parameters: `seed=N`, `manual=1`, `autoplay=1` (aliases `autostart=1`, `autopilot=1`), `warmup=N`, `dpr=N`,
+ * `motion=reduced|full`. Autoplay skips the title, the autopilot plays through the normal input path, and each results
+ * card holds ~3 s before the next run starts (forever). KeyO toggles the autopilot during play.
  */
 import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
@@ -20,7 +22,7 @@ import { LOOK, QA_CROPS } from "./look";
 import { HudWriter, coveragePercent } from "./hud";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { createTurfSound, diffSounds, type FrameState } from "./audio";
-import { TurfAutopilot } from "./autopilot";
+import { AutoplayDriver, TurfAutopilot } from "./autopilot";
 import { HOWTO_SEEN_KEY, createHowto } from "./howto";
 
 const config = readQaParams({
@@ -28,6 +30,7 @@ const config = readQaParams({
   manual: { type: "flag" },
   autostart: { type: "flag" },
   autopilot: { type: "flag" },
+  autoplay: { type: "flag" },
   warmup: { type: "number", default: 30 },
   dpr: { type: "number", default: 0 },
   motion: { type: "string", default: "" }
@@ -47,7 +50,9 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let steps = 0;
-let pilot: TurfAutopilot | null = config.autopilot ? new TurfAutopilot() : null;
+/** `?autoplay=1` = today's `?autostart=1&autopilot=1`; either old flag alone still turns autoplay on. */
+const autoplay = config.autoplay || config.autopilot || config.autostart;
+let pilot: AutoplayDriver | null = autoplay ? new AutoplayDriver() : null;
 let renderFailed = false;
 const pending: Input = { ...IDLE };
 let nextPopupSeq = 0;
@@ -193,7 +198,8 @@ function reactToFrame(): void {
     }
   }
   prevFrame = frame;
-  fx.vignette(o.mult, false, LOOK.ball, o.time, reducedMotion);
+  // Combo vignette capped at x2.5 (opacity <= ~0.2): at x4-x5 the full pink vignette washed the whole frame out.
+  fx.vignette(Math.min(o.mult, 2.5), false, LOOK.ball, o.time, reducedMotion);
 }
 
 /* ------------------------------------------------------------------ frame */
@@ -227,7 +233,8 @@ function advance(input: Input): void {
 
 const loop = createFixedStepLoop({
   manual: config.manual,
-  isActive: () => ready && !paused && !howto.open && !isPageHidden(),
+  // The how-to dialog only gates manual play; autoplay keeps running under it.
+  isActive: () => ready && !paused && (pilot !== null || !howto.open) && !isPageHidden(),
   schedule: (cb) => (isPageHidden() ? 0 : requestAnimationFrame(cb)),
   cancel: (id) => cancelAnimationFrame(Number(id)),
   step() {
@@ -240,7 +247,7 @@ const loop = createFixedStepLoop({
       if (!keyDragging) { pending.down = true; keyDragging = true; }
       pending.dx += steerDir * 0.2;
     }
-    const input: Input = pilot ? pilot.next(sim, steps) : { ...pending };
+    const input: Input = pilot ? pilot.next(sim) : { ...pending };
     pending.start = pending.down = pending.up = false;
     pending.dx = 0;
     advance(input);
@@ -304,10 +311,10 @@ async function boot(): Promise<void> {
   startButton.textContent = "play now";
   startButton.removeAttribute("aria-busy");
   $("splash-best").textContent = `best coverage ${best}%`;
-  if (config.autostart) {
+  if (config.autostart || config.autoplay) {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);
     steps = 0;
-    if (!pilot) pilot = new TurfAutopilot();
+    pilot = new AutoplayDriver();
   }
   render();
   updateHud();
@@ -490,6 +497,12 @@ $("btn-restart").addEventListener("click", () => {
 
 /* ------------------------------------------------------------------ keyboard */
 
+/** KeyO: hand the run to the autopilot (it also restarts after each results card) or take it back. */
+function toggleAutopilot(): void {
+  dropInput();
+  pilot = pilot ? null : new AutoplayDriver();
+}
+
 const KEY_DIR: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 };
 const held = new Set<string>();
 addEventListener("keydown", (e) => {
@@ -502,10 +515,11 @@ addEventListener("keydown", (e) => {
     }
     return;
   }
-  if (config.manual || pilot || e.repeat) return;
+  if (config.manual || e.repeat) return;
+  if (e.code === "KeyO") { toggleAutopilot(); return; }
   if (e.code === "KeyM") { toggleMute(); return; }
   if (e.code === "KeyP" || e.code === "Escape") { setPaused(!paused); return; }
-  if (paused) return;
+  if (pilot || paused) return;
   if (e.code === "Space" || e.code === "Enter") {
     e.preventDefault();
     if (sim.o.phase === "splash" && ready) requestStart();
@@ -578,7 +592,7 @@ const qa = installQaHooks("splat-turf", {
     nextPopupSeq = 0;
     prevFrame = null;
     lastPhase = "splash";
-    pilot = config.autopilot ? new TurfAutopilot() : null;
+    pilot = autoplay ? new AutoplayDriver() : null;
     render();
     updateHud();
   },

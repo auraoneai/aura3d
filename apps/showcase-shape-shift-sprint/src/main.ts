@@ -14,7 +14,7 @@ import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags"
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 import { createImpactRig, createProceduralSfx } from "../../showcase-port-shared/feel";
 import { IDLE, PHASE_CODE, ShapeShiftSim, TRACE_COLUMNS, replay, type Input } from "./sim";
-import { Autopilot } from "./autopilot";
+import { AUTOPLAY_PILOT, Autopilot } from "./autopilot";
 import { createShapeSound, diffSounds, type FrameState } from "./audio";
 import { Fx } from "./fx";
 import { Hud } from "./hud";
@@ -26,6 +26,7 @@ import { buildWorld, type PostMode, type WorldRuntime } from "./world";
 const config = readQaParams({
   seed: { type: "number", default: 20261101 },
   manual: { type: "flag" },
+  autoplay: { type: "flag" },
   autostart: { type: "flag" },
   autopilot: { type: "flag" },
   warmup: { type: "number", default: 30 },
@@ -51,7 +52,13 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let steps = 0;
-let pilot: Autopilot | null = config.autopilot ? new Autopilot() : null;
+/**
+ * `?autoplay=1` (aliases `?autopilot=1`, `?autostart=1`): skip the title, the computer plays through the normal `Input`
+ * path, results hold ~3 s after a game over, then the next run starts, forever. KeyO toggles the pilot in play.
+ */
+const autoplay = config.autoplay || config.autopilot || config.autostart;
+const autoPilot = (): Autopilot => new Autopilot(AUTOPLAY_PILOT);
+let pilot: Autopilot | null = autoplay ? autoPilot() : null;
 let renderFailed = false;
 const pending: Input = { ...IDLE };
 let perfectNow = false;
@@ -143,6 +150,7 @@ for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-form-btn]"
 
 function advance(input: Input): void {
   const seqBefore = sim.popupSeq;
+  const phaseBefore = sim.o.phase;
   sim.advance(input);
   perfectNow = false;
   if (sim.popupSeq !== seqBefore) {
@@ -152,6 +160,8 @@ function advance(input: Input): void {
   rig.step(sim);
   pilot?.observe(sim);
   steps++;
+  // A pilot restart goes through the sim's normal start input; reset the presentation the way restart() does.
+  if (pilot && phaseBefore === "gameOver" && sim.o.phase === "playing") resetRunPresentation();
 }
 
 const isPageHidden = (): boolean =>
@@ -373,10 +383,11 @@ async function boot(): Promise<void> {
   ready = true;
   loading.done();
   startButton?.removeAttribute("aria-busy");
-  if (config.autostart) {
+  if (autoplay) {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);
     steps = 0;
-    if (!pilot) pilot = new Autopilot();
+    if (!pilot) pilot = autoPilot();
+    if (howto.isOpen) howto.close();
   }
   render();
   updateHud();
@@ -493,6 +504,10 @@ function startRun(): void {
 
 function restart(): void {
   sim.begin();
+  resetRunPresentation();
+}
+
+function resetRunPresentation(): void {
   runStats.maxCombo = 0;
   rig.reset();
   impactRig.reset();
@@ -533,13 +548,34 @@ const toggleMute = (): void => {
 muteButton.addEventListener("click", toggleMute);
 paintMute();
 
-/* keyboard: Space/Enter start and restart, arrows or A/D steer, 1/2/3 form lane assist, M mute, C symbols, P/Esc pause */
+/** KeyO: hand the runner to the computer (it also leaves the title / results by itself) or take it back. */
+function toggleAutopilot(): void {
+  held.clear();
+  keyDir = 0;
+  keyDragging = false;
+  assistTargetX = null;
+  assistDragging = false;
+  pending.dx = 0;
+  if (pilot) {
+    pilot = null;
+    pending.up = true;
+    return;
+  }
+  if (howto.isOpen) howto.close();
+  if (paused) setPaused(false);
+  dismissSteerCue();
+  pilot = autoPilot();
+}
+
+/* keyboard: Space/Enter start and restart, arrows or A/D steer, 1/2/3 form lane assist, M mute, C symbols, P/Esc pause, O autopilot */
 const KEY_DIR: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 };
 const KEY_FORM: Record<string, number> = { Digit1: 0, Digit2: 1, Digit3: 2 };
 const held = new Set<string>();
 addEventListener("keydown", (e) => {
   void sound.unlock();
-  if (config.manual || pilot || e.repeat) return;
+  if (config.manual || e.repeat) return;
+  if (e.code === "KeyO") { toggleAutopilot(); return; }
+  if (pilot) return;
   if (e.code === "KeyM") { toggleMute(); return; }
   if (e.code === "KeyC") { toggleSetting("symbols"); return; }
   if (e.code === "KeyP" || e.code === "Escape") { setPaused(!paused); return; }
@@ -628,7 +664,7 @@ const qa = installQaHooks("shape-shift", {
     steps = 0;
     prevFrame = null;
     lastPhase = "splash";
-    pilot = config.autopilot ? new Autopilot() : null;
+    pilot = autoplay ? autoPilot() : null;
     render();
     updateHud();
   },

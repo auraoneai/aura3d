@@ -2,7 +2,9 @@
  * Lamplight Line on Aura3D: boot, fixed-step loop, input, HUD and capture hooks.
  * The simulation lives in `sim.ts` (pure); `world.ts` renders it through the public engine surface.
  *
- * Query parameters (all optional): `autopilot=1` (drive the tram with the capture's controller),
+ * Query parameters (all optional): `autoplay=1` (alias `autopilot=1`: hands-free, skips the title, the capture's controller
+ * drives every leg, doors and departures are automatic, and a completed service shows its results for 3 s and starts
+ * again, looping forever; P toggles it),
  * `night=1`, `manual=1` (the sim only advances through `__AURA_LAST_TRAIN__.stepFrames`; skips the title screen), `speed=N` (sim steps per frame),
  * `title=0` (skip the title screen), `legs=2` (short service), `dpr=N` (pixel ratio override; default min(devicePixelRatio, 1.5)).
  * GU47: `band=A..E` pins a time band (LT-01), `look=original` keeps the 4.6 day / night look, `shots=0` turns the LT-16 camera shots off.
@@ -11,7 +13,9 @@
  * `keys` set through `press` / `release`.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
+import { warmPrograms } from "@aura3d/engine/game";
 import { controllerInput, type ControllerParams } from "./replay";
+import { autoplayRequested, createAutoplayDriver } from "./autoplay";
 import {
   DT, GRADES, SHORT_LEGS, actionDepart, actionDoors, actionKeepRiding, actionNewService, actionTimeOfDay, attemptScore, createState, step, streakMultiplier, tipOf,
   type SimData, type SimState, type StepInput, type Temperament
@@ -23,6 +27,7 @@ import { createLoadingProgress } from "../shared/loading-progress";
 import { labAppOptions, labRenderWorker, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import "./enamel.css";
+import { preloadFigureDrivers } from "./figures";
 
 /* GU47 LT-17: the railway-enamel HUD (enamel.css) dresses the band look; ?look=original keeps today's HUD. */
 if (LOOK === "bands") document.documentElement.classList.add("enamel");
@@ -51,11 +56,12 @@ if (params.get("legs") === String(SHORT_LEGS)) actionNewService(sim, { force: tr
 let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
-let autopilot = flag("autopilot");
+let autopilot = autoplayRequested(location.search);
+const autoplayDriver = createAutoplayDriver(CONTROLLER);
 const keys = new Set<string>();
 let seconds = 0;
 const sound = new TrainSound();
-let titleMode = !flag("manual") && !flag("autopilot") && params.get("title") !== "0";
+let titleMode = !flag("manual") && !autopilot && params.get("title") !== "0";
 let prevAudio: AudioState | null = null;
 let resultsShown = false;
 let toastUntil = 0;
@@ -108,9 +114,9 @@ function manualInput(): StepInput {
 }
 
 function autoDrive(): StepInput {
-  if (sim.phase === "docked") { actionDoors(sim); return {}; }
-  if (sim.phase === "ready") { actionDepart(sim); return {}; }
-  return sim.phase === "enroute" ? controllerInput(sim, data, CONTROLLER) : {};
+  const { input, restarted } = autoplayDriver.step(sim, data);
+  if (restarted) { presenter.reset(); toast("Autoplay: new service from Mango Tide", 1800); }
+  return input;
 }
 
 function stepOnce(input?: StepInput): void {
@@ -378,7 +384,7 @@ let freshFrame = false;
 /**
  * A WebGPU-capable backend (the default `auto`, or `?backend=webgpu`) renders with async frames: on WebGPU the station reflection probes cannot capture
  * on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED). While one is in flight the next render is skipped (the scene
- * may not be mutated under a pending submission). Absent the flag every render is the synchronous `app.step(0)` as before.
+ * may not be mutated under a pending submission). Absent the flag every render is a synchronous `app.step(frameDt)`.
  */
 const USE_PROBES = flag("probes");
 const LAB_ASYNC_FRAMES = USE_PROBES && resolveLabBackend(readLabFlags(), "auto") !== undefined;
@@ -390,13 +396,20 @@ const reportAsyncFrameError = (error: unknown): void => {
   asyncFrameErrorReported = true;
   reportError(error);
 };
+/** Wall-clock time of the last rendered frame; the engine clock advances by the gap so Idol walker clips play. */
+let lastRenderMs: number | null = null;
 function render(live = false): void {
   if (!app || !runtime) return;
   if (asyncFrame) return;
+  const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
+  // The Idol walkers' walk / idle clips run on the engine pose mixer, which advances by the step dt (`step(0)` froze them in
+  // their bind T-pose). Clamped so a background tab or a capture burst never jumps the clips far.
+  const frameDt = lastRenderMs === null ? 0 : Math.max(0, Math.min(0.1, (nowMs - lastRenderMs) / 1000));
+  lastRenderMs = nowMs;
   if (!freshFrame) { freshFrame = true; queueMicrotask(() => { freshFrame = false; }); }
   runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, seconds, { orbit: titleMode, reducedMotion: reducedMotion() });
-  if (LAB_ASYNC_FRAMES) asyncFrame = app.stepAsync(0).catch(reportAsyncFrameError).finally(() => { asyncFrame = null; });
-  else app.step(0);
+  if (LAB_ASYNC_FRAMES) asyncFrame = app.stepAsync(frameDt).catch(reportAsyncFrameError).finally(() => { asyncFrame = null; });
+  else app.step(frameDt);
 }
 
 /** `speed=N` runs N sim steps per fixed step. The sim steps only in play and never in manual mode; frames always render. */
@@ -645,8 +658,17 @@ async function boot(): Promise<void> {
   await app.ready();
   mark("app ready");
   progress.done();
+  // rigged motorman / riders: read their skeletons before the first placed frame so none starts hidden
+  await preloadFigureDrivers();
   runtime = world.bind(app, data, sim.timeOfDay === "night");
   mark("runtime bound");
+  // Idol pass first-seconds fix (lessons R2): the Idol tram, town models and the rigged walkers stream their GLBs and
+  // 1-2K texture upgrades after mount; each landing compiles new program variants and draws whose program is still
+  // compiling are skipped (a frozen sky-colour screen). Place the world once, then wait for the HDRI, every pending
+  // texture upgrade and a stable draw count before the loading panel hides and the loop runs.
+  render();
+  await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+  mark("programs warm");
   ready = true;
   $("loading").classList.add("hidden");
   /* A data ready signal (the hook's `ready` is a function): set once the loading panel is gone, for capture runners that wait on a window value. */

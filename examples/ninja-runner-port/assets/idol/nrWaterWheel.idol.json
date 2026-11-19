@@ -1,0 +1,52 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrWaterWheel",
+  "generatedAt": "2026-11-19T01:55:42.368Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/_refs/nrWaterWheel.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f125-b3da-7f42-aa89-2c24fafd39f7",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 61,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1259056,
+        "num_faces": 2518268,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A large wooden mill water wheel seen from its side, a single round wheel only with no frame and no building: two parallel wooden rims joined by many evenly spaced flat paddle boards around the circumference, straight wooden spokes from a thick central iron-bound hub, an iron axle stub poking out of the hub, perfectly circular and symmetrical. Photograph of a real, hand-built wood and iron miniature in Japanese woodblock-print colours: wet weathered cedar planks, blackened forged iron straps and hub, moss on the lower boards, soft warm golden-hour light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "admitRole": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 7.62,
+    "size": [
+      7.676,
+      8,
+      4.592
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrWaterWheel.glb",
+  "sizeBytes": 2099776,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrWaterWheel/views.png",
+  "usd": 0.2
+}

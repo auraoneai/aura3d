@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "teleoperator",
+  "key": "gdCrossoverAvW",
+  "generatedAt": "2026-11-19T00:25:53.743Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-166c-7053-aaa6-e67f809280b8",
+      "prompt": "A modern compact electric crossover car converted to a self-driving vehicle, satin silver metallic paint, smooth rounded body, tinted dark windows, slim LED headlights, a black lidar dome on the roof front, small black radar pods on the front fenders, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f133-1a3a-74a0-b3fc-b9e0dc70df35",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 9,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1130586,
+        "num_faces": 2261188,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A modern compact electric crossover car converted to a self-driving vehicle, satin silver metallic paint, smooth rounded body, tinted dark windows, slim LED headlights, a black lidar dome on the roof front, small black radar pods on the front fenders, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.982,
+    "size": [
+      2.104,
+      1.627,
+      3.99
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-teleoperator/assets/idol/gdCrossoverAvW.glb",
+  "sizeBytes": 1955008,
+  "preview": "artifacts/idol/teleoperator/gdCrossoverAvW/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": 0,
+    "tex": null,
+    "maxVerts": null,
+    "baked": true,
+    "reason": "Idol rebuilt the three-quarter reference diagonally; yaw re-fitted to the minimum-area footprint"
+  }
+}

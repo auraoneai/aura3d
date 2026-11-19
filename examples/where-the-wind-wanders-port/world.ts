@@ -6,15 +6,17 @@
  * mountain tarn water with shoreline feathering and boat wake, catenary linen kite thread, and
  * golden-hour to moonlit-night atmosphere. Gameplay state comes from `sim.ts`; this module only draws it.
  */
+import { IDOL_MODELS, idolBellkeeperRightHand, idolSailsNode, syncIdolBellkeeperBody } from "./art/idolModels";
+import { buildSceneColliders } from "./colliders";
 import { camera, effects, environments, geometry, lights, material, scene, type AuraActorAnimationApi, type AuraApp } from "@aura3d/engine";
 import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
 import { ENV_ASSETS, VALLEY_IBL_INTENSITY } from "./env-assets";
 import { createWindVfx } from "./vfx";
-import { createCameraSequencer, type SequenceId } from "./camera-seq";
-import { CLEARANCE_CHEST, clearedFollowPose, easeBoom, followCameraClearance, structureObstacles } from "./camera-clearance";
+import { FOLLOW_ZOOM, FOLLOW_ZOOM_Y, createCameraSequencer, type SequenceId } from "./camera-seq";
+import { CLEARANCE_CHEST, VOYAGE_SAIL_KEEP_OUT, aimForLift, canopyObstacles, crownClearance, raiseLensKeepingDistance, clearedFollowPose, easeBoom, followCameraClearance, liftLensOverGround, sailObstacles, structureObstacles, voyageLens } from "./camera-clearance";
 import { WIND_DIR, gustAt } from "./wind";
-import { BELL, CAMERA_OFFSET, LETTERS, START, nearbyInteraction, type WindState } from "./sim";
+import { BELL, CAMERA_OFFSET, LETTERS, START, nearbyInteraction, type Vec2, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, RIPPLE_FRAGMENT, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, THREAD_FRAGMENT, THREAD_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
 import {
   BLOB_FRAGMENT_WGSL, BLOB_VERTEX_WGSL, GLOW_FRAGMENT_WGSL, GLOW_VERTEX_WGSL, HAZE_FRAGMENT_WGSL, HAZE_VERTEX_WGSL, MOTE_FRAGMENT_WGSL, MOTE_VERTEX_WGSL, PAINT_VERTEX_WGSL, PROP_VERTEX_WGSL,
@@ -280,7 +282,11 @@ export interface WorldRuntime {
   snap(state: WindState): void;
   /** Presentation-only voyage after the bell: seconds since it began, or null for the normal follow camera. */
   setEpilogue(seconds: number | null): void;
+  /** The next voyage frame frames the boat at the jetty at once (autoplay: the result card never shows the old view). */
+  cutToVoyage(): void;
   readonly nodeCount: number;
+  /** The sim's rails plus this world's solid scenery (colliders.ts); `stepFrame` resolves the keeper against them. */
+  readonly rails: readonly (readonly Vec2[])[];
   readonly foliageCards: number;
   readonly stats: { trees: number; propTriangles: number; foliageTriangles: number; terrainTriangles: number };
   /** The bell's current swing angle (radians about z), for QA. */
@@ -363,7 +369,29 @@ export function storybookLead(lead: { x: number; z: number; px: number; pz: numb
  */
 export function followFraming(amount: number, aspect: number): { y: number; fov: number; lead: number } {
   const a = Math.max(0, Math.min(1, amount));
-  return { y: CAMERA_OFFSET.y + (STORYBOOK_CAMERA_Y - CAMERA_OFFSET.y) * a, fov: aspect < 1 ? 50 : 43 + (40 - 43) * a, lead: a };
+  return { y: CAMERA_OFFSET.y + (STORYBOOK_CAMERA_Y - CAMERA_OFFSET.y) * a, fov: aspect < 1 ? PORTRAIT_FOLLOW_FOV : 43 + (40 - 43) * a, lead: a };
+}
+/**
+ * Portrait (aspect < 1) framing (owner GPU QA 2026-11-18 at 390x844: the keeper walked out of the narrow frame). The
+ * landscape follow aims 2 m beside her and trails her by ~1.3 m; a portrait frame is only ~25 degrees wide, so it aims
+ * almost at her (`PORTRAIT_LATERAL` of the side offset and the storybook lead), follows faster and opens the lens.
+ */
+export const PORTRAIT_FOLLOW_FOV = 54;
+export const PORTRAIT_LATERAL = 0.2;
+export const PORTRAIT_FOLLOW_RATE = 4;
+export const LANDSCAPE_FOLLOW_RATE = 2.5;
+/** The follow camera's look target for the keeper standing at (x, y, z), hop excluded (world.ts follow; tests project through it). */
+export function followTargetFor(x: number, yHop: number, z: number, lead: { x: number; z: number }, leadAmt: number, aspect: number): [number, number, number] {
+  const lat = aspect < 1 ? PORTRAIT_LATERAL : 1;
+  return [x + (2 + lead.x * leadAmt) * lat, yHop + 1.8, z - 3.5 + lead.z * leadAmt];
+}
+/** Portrait voyage: aim at the keeper in the boat from close behind and a little east (clear of the sails at the jetty). */
+export const PORTRAIT_VOYAGE = { side: 2, rise: 4.4, back: 9.6, lookUp: 1.5, fov: 52 } as const;
+/** The voyage look target (before easing) and the lens offset from it, by aspect. */
+export function voyageFraming(b: { x: number; y: number; z: number }, e: number, aspect: number, motion = 1): { target: [number, number, number]; offset: [number, number, number]; fov: number } {
+  if (aspect < 1) return { target: [b.x, b.y + PORTRAIT_VOYAGE.lookUp, b.z], offset: [PORTRAIT_VOYAGE.side, PORTRAIT_VOYAGE.rise, PORTRAIT_VOYAGE.back], fov: PORTRAIT_VOYAGE.fov };
+  const k = Math.min(1, e / 6);
+  return { target: [b.x - 4 * (1 - k), b.y + 2.2, b.z - 2], offset: [-9 + 4 * motion * Math.sin(e * 0.05), EPILOGUE_CAMERA_RISE, 14], fov: 45 };
 }
 /** Applies one look post (DAY_POST / DUSK_POST) through the runtime post surface. */
 function applyLookPost(app: AuraApp, post: LookPost, high: boolean, dusk = false): void {
@@ -426,6 +454,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   const none: ModelSet = { letter: false, bell: false, cottage: false, trees: false, hero: false, wisp: false, boat: false, stones: false, shrubs: false };
   const set: ModelSet = options.models === false ? none : availableModels();
   const sc = buildScenery(4242, { bell: set.bell, cottage: set.cottage, trees: set.trees, stones: set.stones, shrubs: set.shrubs });
+  // the keeper collides with what this world draws (trees, rocks, signs, villagers, lanterns, shrine, fences, walls, bridge)
+  const sceneColliders = buildSceneColliders(sc, { modelSet: set.cottage, stones: set.stones, idol: IDOL_MODELS });
   const builder: Scene = scene()
     .background(original ? "#b8d0bd" : "#cbe4e0")
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [START.x + CAMERA_OFFSET.x, 6.7, 21], target: [START.x, 2.2, 0.5], fov: 43, near: 0.15, far: 900 }));
@@ -617,7 +647,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   /* ---- merged scenery ---- */
   builder.add(geometry.custom(dynamic(sc.props), { name: "scenery", material: material.custom(propSpec(false, phase4)) }).runtime({ id: lit("props") }));
   if (set.cottage) {
-    builder.add(createWindmillSailsNode({ name: "windmill-sails", id: "sails", position: [sc.windmillHub.x, sc.windmillHub.y, sc.windmillHub.z], castShadow: shadows, receiveShadow: shadows }));
+    builder.add((IDOL_MODELS ? idolSailsNode("sails", [sc.windmillHub.x, sc.windmillHub.y, sc.windmillHub.z], shadows, shadows) : null)
+      ?? createWindmillSailsNode({ name: "windmill-sails", id: "sails", position: [sc.windmillHub.x, sc.windmillHub.y, sc.windmillHub.z], castShadow: shadows, receiveShadow: shadows }));
   } else {
     builder.add(geometry.custom(dynamic(sc.sails), { name: "windmill-sails", material: material.custom(propSpec(shadows, phase4)) }).runtime({ id: lit("sails") }));
   }
@@ -733,6 +764,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         return h;
       };
       const heroAnim = set.hero ? createHeroAnimator(app) : null;
+      // the rigged Idol hero plays captured clips whose hips already bob, lean and sway in step: no node-level stride motion
+      const idolHeroMotion = Boolean(heroAnim && app.nodes.get?.("hero-idol"));
       // WW47-AN2: procedural Bellkeeper head gaze turns gently toward nearby letters and the sanctuary bell.
       const heroActor = !original && set.hero ? node("hero") as ReturnType<typeof node> & { readonly animation?: AuraActorAnimationApi } : null;
       let gazeTarget: string | null = null;
@@ -794,7 +827,17 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       // WW47-C2: the eased walk lead (world xz) and the previous traveller position it is measured from
       const lead = { x: 0, z: 0, px: START.x, pz: START.z };
       // follow-camera boom fraction kept clear of the cottages and windmill (GU47 look only; presentation)
-      const camObstacles = structureObstacles();
+      // buildings and tree crowns: the lens pulls in rather than sit in a crown (shore letter GPU QA)
+      const camFixed = [...structureObstacles(), ...sailObstacles(sc.windmillHub)];
+      const camCrowns = canopyObstacles(sc.canopies);
+      let crownRise = 0;
+      // the voyage camera keeps out of the tower and from in front of the turning sails (results card GPU QA); it rides
+      // EPILOGUE_CAMERA_RISE above the tree tops already, so crowns are left out (they would flicker the pull-in)
+      const voyageObstacles = [...structureObstacles(), ...sailObstacles(sc.windmillHub, VOYAGE_SAIL_KEEP_OUT)];
+      // the portrait voyage rides lower (closer to the keeper), so it keeps clear of the crowns too
+      const portraitVoyageObstacles = [...voyageObstacles, ...canopyObstacles(sc.canopies)];
+      let voyageCut = false;
+      let voyageEye: [number, number, number] | null = null;
       let boomFrac = 1;
       let lastFound = -1;
       let bodyDrive = 0, footCell = -1;
@@ -826,7 +869,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           0.14 * m * Math.sin(t * 1.1 + 0.4 * g)
         );
         node("kite").setPosition(kitePos.x, kitePos.y, kitePos.z).setRotation(krx, kry, krz);
-        const handLocal = heroAnim ? computeBellkeeperRightHandLocal(heroAnim.pose) : [-0.28, 1.48, 0.22] as const;
+        const handLocal = heroAnim ? ((IDOL_MODELS ? idolBellkeeperRightHand() : null) ?? computeBellkeeperRightHandLocal(heroAnim.pose)) : [-0.28, 1.48, 0.22] as const;
         let ax = hx + handLocal[0] * Math.cos(yaw) + handLocal[2] * Math.sin(yaw);
         let ay = hy + handLocal[1];
         let az = hz - handLocal[0] * Math.sin(yaw) + handLocal[2] * Math.cos(yaw);
@@ -910,10 +953,12 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       };
       return {
         foliageCards: cardCount,
+        rails: sceneColliders.rails,
         stats: { trees: sc.treeCount, propTriangles, foliageTriangles: f.indices.length / 3, terrainTriangles: terrain.indices.length / 3 },
         get nodeCount() { return handles.size; },
         get bellAngle() { return bellAngle; },
-        setEpilogue(seconds) { epilogue = seconds; },
+        setEpilogue(seconds) { epilogue = seconds; if (seconds === null) voyageEye = null; },
+        cutToVoyage() { voyageCut = true; },
         snap(state) { sequencer.skip(); clearGaze(); impactRig.reset(); bellRingAt = -1; wasBellComplete = state.complete; heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; lead.x = 0; lead.z = 0; lead.px = state.pos.x; lead.pz = state.pos.z; boomFrac = 1; epilogue = null; },
         get daylight() { return daylight.frame; },
         get sequence() { return sequencer.active; },
@@ -970,14 +1015,17 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           if (onBoat) {
             const b = boatPose(epilogue!);
             tr.setPosition(b.x, b.y + 0.55, b.z - 0.3).setRotation(0, b.yaw, 0);
+            syncIdolBellkeeperBody((id) => app.nodes.get?.(id), [b.x, b.y + 0.55, b.z - 0.3], [0, b.yaw, 0]);
             if (!heroAnim) tr.setUniform?.("windTime", time);
             node("shadow").setPosition(b.x, -10, b.z);
           } else {
             // secondary motion from the stride phase (bob, lean, roll), on the hero node only; the sim position is untouched
             bodyDrive = followDrive(bodyDrive, heroAnim && state.hop.phase === "idle" ? heroAnim.speed / STRIDE_SPEED.Walk : 0, dt);
-            const bm = heroAnim && !original ? bodyMotion(heroAnim.cycle, bodyDrive) : NO_MOTION;
+            const bm = heroAnim && !original && !idolHeroMotion ? bodyMotion(heroAnim.cycle, bodyDrive) : NO_MOTION;
             const [hrx, hry, hrz] = eulerZYXFromYawPitchRoll(yaw, bm.pitch, bm.roll);
             tr.setPosition(x, y + hop + bm.bob, z).setRotation(hrx, hry, hrz);
+            // the rigged Idol body is top-level (a skinned node ignores the moving group): it takes the same world pose
+            syncIdolBellkeeperBody((id) => app.nodes.get?.(id), [x, y + hop + bm.bob, z], [hrx, hry, hrz]);
             node("shadow").setPosition(x, y + 0.06, z).setScale((1 - 0.35 * Math.min(1, hop / 1.2)) * (1 + 0.5 * bm.bob));
             // a foot plants: a few grass specks at the heel (same footfall cell as the footstep sound)
             const cell = footstepCell(state.stride);
@@ -1104,15 +1152,21 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             // slow voyage: pull back over the jetty, then follow the boat towards the far isle
             const e = epilogue;
             const b = boatPose(e);
-            const k = Math.min(1, e / 6);
-            const tx = b.x - 4 * (1 - k) + 0, tz = b.z - 2;
+            const vf = voyageFraming(b, e, aspect, motion());
+            const [tx, ty, tz] = vf.target;
             look.x += (tx - look.x) * (1 - Math.exp(-1.5 * dt));
-            look.y += (b.y + 2.2 - look.y) * (1 - Math.exp(-1.5 * dt));
+            look.y += (ty - look.y) * (1 - Math.exp(-1.5 * dt));
             look.z += (tz - look.z) * (1 - Math.exp(-1.5 * dt));
             // 6.4 above the look target clears every tree top on the way from the bell to the jetty and out to sea
-            const ep: [number, number, number] = [look.x - 9 + 4 * motion() * Math.sin(e * 0.05), look.y + EPILOGUE_CAMERA_RISE, look.z + 14];
+            const cutNow = voyageCut;
+            if (voyageCut) { look.x = tx; look.y = ty; look.z = tz; voyageCut = false; }
+            const goal = voyageLens([look.x, look.y, look.z], [look.x + vf.offset[0], look.y + vf.offset[1], look.z + vf.offset[2]], aspect < 1 ? portraitVoyageObstacles : voyageObstacles, terrainHeight);
+            // a pull-in past the sails eases instead of snapping
+            if (!voyageEye || cutNow) voyageEye = goal;
+            else { const ka = 1 - Math.exp(-5 * dt); voyageEye = [voyageEye[0] + (goal[0] - voyageEye[0]) * ka, voyageEye[1] + (goal[1] - voyageEye[1]) * ka, voyageEye[2] + (goal[2] - voyageEye[2]) * ka]; }
+            const ep: [number, number, number] = [voyageEye[0], voyageEye[1], voyageEye[2]];
             node("sky").setPosition(ep[0], ep[1], ep[2]);
-            cam.setPose({ position: ep, target: [look.x, look.y, look.z], up: [0, 1, 0], fov: aspect < 1 ? 52 : 45 }, { cut: false });
+            cam.setPose({ position: ep, target: [look.x, look.y, look.z], up: [0, 1, 0], fov: vf.fov }, { cut: false });
             applyStoryPost(ep, [look.x, look.y, look.z]);
             return;
           }
@@ -1121,25 +1175,36 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           story += ((shownDusk ? 1 : 0) - story) * (1 - Math.exp(-dt / 1.2));
           const framing = original ? null : followFraming(story, aspect);
           const leadAmt = framing ? framing.lead : 0;
-          const tx = x + 2 + lead.x * leadAmt, ty = y + hop + 1.8, tz = z - 3.5 + lead.z * leadAmt;
-          const k = 1 - Math.exp(-2.5 * dt);
+          // the look target ignores the hop: easing up into a hop and lagging on the landing dropped her feet out of frame
+          const [tx, ty, tz] = followTargetFor(x, y, z, lead, leadAmt, aspect);
+          const k = 1 - Math.exp(-(aspect < 1 ? PORTRAIT_FOLLOW_RATE : LANDSCAPE_FOLLOW_RATE) * dt);
           look.x += (tx - look.x) * k;
           look.y += (ty - look.y) * k;
           look.z += (tz - look.z) * k;
           const off = framing ? { x: CAMERA_OFFSET.x, y: framing.y, z: CAMERA_OFFSET.z } : CAMERA_OFFSET;
-          let cp: [number, number, number] = [look.x + off.x, look.y + off.y, look.z + off.z];
+          // F3 GPU QA: the drawn follow camera comes in to FOLLOW_ZOOM of the offset so the keeper reads in the meadow
+          let cp: [number, number, number] = [look.x + off.x * FOLLOW_ZOOM, look.y + off.y * FOLLOW_ZOOM_Y, look.z + off.z * FOLLOW_ZOOM];
           let followTarget: [number, number, number] = [look.x, look.y, look.z];
           if (!original) {
             // pull the lens in along the traveller -> lens line when a building stands between them (same view direction)
             const chest: [number, number, number] = [x, y + hop + CLEARANCE_CHEST, z];
-            boomFrac = easeBoom(boomFrac, followCameraClearance(chest, cp, camObstacles), dt);
+            const crown = crownClearance(chest, cp, camCrowns);
+            boomFrac = easeBoom(boomFrac, Math.min(followCameraClearance(chest, cp, camFixed), crown.frac), dt);
             if (boomFrac < 0.999) { const cleared = clearedFollowPose(chest, cp, [look.x, look.y, look.z], boomFrac); cp = cleared.position; followTarget = cleared.target; }
+            // over any tree crown on the sight line (rises fast, settles over ~0.5 s) ...
+            const preLiftY = cp[1];
+            crownRise += (crown.lift - crownRise) * (1 - Math.exp(-(crown.lift > crownRise ? 10 : 2) * dt));
+            cp = raiseLensKeepingDistance(chest, cp, crownRise);
+            // ... and never under a bank, hill or cliff lip: the lens and its sight line stay above the ground
+            cp = raiseLensKeepingDistance(chest, cp, liftLensOverGround(chest, cp, terrainHeight)[1] - cp[1]);
+            cp = liftLensOverGround(chest, cp, terrainHeight);
+            followTarget = aimForLift(followTarget, chest, cp[1] - preLiftY);
           }
           // WW47-C1: the bell's finale orbit starts when it rings; a running sequence overrides the follow pose
           if (state.complete && !seqComplete) sequencer.start("finale");
           seqComplete = state.complete;
           // WW47-C2 (part): a storybook 40-degree lens on landscape; portrait keeps 50 so the traveller stays in frame
-          const follow = { position: cp, target: followTarget, fov: framing ? framing.fov : aspect < 1 ? 50 : 43 };
+          const follow = { position: cp, target: followTarget, fov: framing ? framing.fov : aspect < 1 ? PORTRAIT_FOLLOW_FOV : 43 };
           const shownSeq = sequencer.update(dt, follow) ?? follow;
           const shown = CAPTURE_CAMVIEW ? captureView(CAPTURE_CAMVIEW, x, y + hop, z) : shownSeq;
           const eyePos: [number, number, number] = impact && !CAPTURE_CAMVIEW

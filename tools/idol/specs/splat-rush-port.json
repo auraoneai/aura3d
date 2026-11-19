@@ -1,0 +1,165 @@
+{
+  "game": "splat-rush-port",
+  "outDir": "apps/showcase-splat-rush-port/assets/idol",
+  "style": "Photograph of a real glossy designer vinyl art-toy collectible, smooth sculpted soft-vinyl and lacquered resin surfaces, saturated candy paint colours with real paint drips, crisp studio product lighting, high detail",
+  "items": [
+    {
+      "key": "splatHeroRunner",
+      "kind": "object",
+      "role": "hero",
+      "size": {
+        "height": 0.5
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A cheerful kid paint-runner figure crouched low in a surfing stance, knees bent, arms out for balance, facing forward, wearing a cream-white hoodie, dark plum shorts and chunky cobalt-blue sneakers, wavy magenta hair locks with mint, red and yellow paint-dipped tips, cyan tinted sport goggles pushed onto the face, a small round glass paint tank backpack with brass straps"
+    },
+    {
+      "key": "splatFinishArch",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "width": 10.0
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A festive fairground paint-festival finish arch gateway: two tall cream-ivory round columns standing on turned brass plinths with rose-pink and mint-green bands, joined at the top by a gently curved ivory arch beam with brass clasp rings, a golden paint-pot finial with blue paint on top of the keystone, a row of colourful scalloped pennant flags hanging under the arch, a fan of rainbow paint-stripe rays at each column top, the opening between the columns completely clear and wide"
+    },
+    {
+      "key": "splatSweeperBot",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 1.83
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A cute rounded egg-shaped mascot robot with a glossy ivory and plum body, a wraparound cyan visor with two big glossy cartoon eyes, a crest of four curly paint-splash locks on top in mint, red, yellow and blue, two arms stretched straight out sideways each holding a fluffy cylindrical paint roller, the left roller rose pink and the right roller mint green, standing on a short round brass base"
+    },
+    {
+      "key": "splatPickupRainbow",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 2.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A glossy collectible power-up charm: a plump upright teardrop of swirled rainbow paint (violet, red, blue, yellow, mint bands) with a polished gold ring around its middle, four small coloured four-point star petals around the ring, and a tiny glowing warm bead on its tip"
+    },
+    {
+      "key": "splatPickupShield",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 2.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A glossy collectible power-up charm: an upright six-sided crest shield in sky-blue enamel with a raised polished gold bezel frame and a translucent pale-blue glass chevron raised in the centre"
+    },
+    {
+      "key": "splatPickupDouble",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 2.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A glossy collectible power-up charm: two chunky interlocked golden yellow five-point stars standing upright, one slightly behind and tilted from the other, a polished brass gyroscope ring around them and a glowing amber gem in the centre"
+    },
+    {
+      "key": "splatPickupSwitch",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 2.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A glossy collectible power-up charm: an upright round disc made of two curled teardrop paint swirls hugging each other, one teal and one coral, framed by a polished brass ring with four small round gem pips in red, yellow, blue and purple around it"
+    },
+    {
+      "key": "splatIslandTree",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 10
+      },
+      "tex": 512,
+      "seed": 7,
+      "subject": "A small floating sky island diorama: an upside-down cone of layered ochre and cream limestone rock with dangling roots underneath, a flat bright green grassy top with a little wooden artist deck, one round fluffy-canopied tree with a gently curved trunk, and three small paint pots in red, yellow and blue on the deck"
+    },
+    {
+      "key": "splatIslandTower",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 12
+      },
+      "tex": 512,
+      "seed": 7,
+      "subject": "A small floating sky island diorama: an upside-down cone of layered ochre and cream limestone rock underneath, a flat grassy top carrying a tall slender steel lattice water tower painted plum with a big rounded cream water tank on top covered in colourful paint drips running down"
+    },
+    {
+      "key": "splatBalloon",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 7.5
+      },
+      "tex": 512,
+      "seed": 7,
+      "subject": "A hot-air balloon with a round puffy envelope made of sixteen vertical gores in alternating red, cream, cobalt blue, golden yellow, magenta and mint, a brass burner ring, ropes down to a small woven wicker basket"
+    },
+    {
+      "key": "splatIslandPaintPot",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 10
+      },
+      "tex": 512,
+      "seed": 7,
+      "subject": "A small floating sky island diorama: an upside-down cone of layered ochre and cream limestone rock underneath, a flat grassy top with a giant tipped-over pale metal paint can pouring a thick glossy pink paint stream that pools in a shiny puddle on the grass"
+    },
+    {
+      "key": "splatIslandPalette",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 10
+      },
+      "tex": 512,
+      "seed": 7,
+      "subject": "A small floating sky island diorama: an upside-down cone of layered ochre and cream limestone rock underneath, a flat grassy top holding a giant tilted wooden artist palette with plump swirled dabs of red, yellow, blue, mint and violet paint, and two giant crossed paintbrushes with wet tips"
+    },
+    {
+      "key": "splatIslandEasel",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 12
+      },
+      "tex": 512,
+      "seed": 7,
+      "subject": "A small floating sky island diorama: an upside-down cone of layered ochre and cream limestone rock underneath, a flat grassy top with a tall wooden tripod easel holding a canvas painted with bold abstract colour swirls in red, yellow, blue and mint, a wooden paint ledge"
+    },
+    {
+      "key": "splatRunnerRig",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 0.62
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A cheerful kid paint-runner: cream-white hoodie with paint drips, dark plum shorts, chunky cobalt-blue sneakers, wavy magenta hair with mint, red and yellow paint-dipped tips, cyan tinted sport goggles"
+    }
+  ]
+}

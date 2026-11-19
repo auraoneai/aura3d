@@ -1,0 +1,17 @@
+{
+  "game": "aura-diamond-3d",
+  "out": "apps/showcase-aura-diamond-3d/src/idol/motion.generated.ts",
+  "clips": [
+    { "key": "Pitch", "prompt": "A right-handed baseball pitcher standing sideways on a mound brings both hands together at the chest, lifts the front knee high, strides forward toward the target and whips the right throwing arm over the top to release the ball, then follows through bending forward with the throwing arm crossing the body.", "duration": 3, "loop": false, "seed": 701, "guidance": 5, "faceForward": false },
+    { "key": "PitchSet", "prompt": "A baseball pitcher stands tall on the mound between pitches, glove hand at the waist, leaning slightly forward to look in at the catcher, shifting weight a little.", "duration": 4, "loop": true, "seed": 702, "guidance": 5 },
+    { "key": "Throw", "prompt": "A right-handed baseball infielder takes a quick crow-hop step forward and makes a hard overhand throw with the right arm, then follows through.", "duration": 1.8, "loop": false, "seed": 703, "guidance": 5, "faceForward": false },
+    { "key": "Sprint", "prompt": "A baseball player sprints forward in a straight line at full speed, leaning forward, arms pumping hard.", "duration": 2, "loop": true, "seed": 704, "guidance": 5 },
+    { "key": "CoachIdle", "prompt": "A baseball base coach stands relaxed beside the base path, shifting weight from foot to foot, clapping his hands now and then and pointing.", "duration": 4, "loop": true, "seed": 705, "guidance": 5 },
+    { "key": "CatcherSquat", "prompt": "A baseball catcher squats in a deep crouch on the balls of the feet, left glove hand held up in front of the chest as a target, right hand behind the back, making small balance adjustments.", "duration": 3, "loop": true, "seed": 706, "guidance": 5 },
+    { "key": "Ready", "prompt": "A baseball infielder in an athletic ready crouch, feet wide, knees bent, hands low in front of the knees, making small bouncing weight shifts ready to react.", "duration": 3, "loop": true, "seed": 707, "guidance": 5 },
+    { "key": "Catch", "prompt": "A baseball outfielder settles under a fly ball, reaches up with the left glove hand above the head to catch it, covers it with the right hand and brings it down to the chest.", "duration": 1.8, "loop": false, "seed": 708, "guidance": 5 },
+    { "key": "Leadoff", "prompt": "A baserunner stands in a wide lead-off crouch with knees bent and arms loose, shifting weight side to side, ready to run.", "duration": 3, "loop": true, "seed": 709, "guidance": 5 },
+    { "key": "BatStance", "prompt": "A right-handed baseball batter in the batting stance, feet apart, knees slightly bent, both hands gripping a bat held up above the right shoulder, small rhythmic bat waggle and a slight rocking of the weight.", "duration": 3, "loop": true, "seed": 710, "guidance": 5, "faceForward": false },
+    { "key": "Swing", "prompt": "A right-handed baseball batter in the batting stance holding a bat above the right shoulder loads back, takes a short stride with the left foot, rotates the hips and swings the bat level and hard through the hitting zone with both hands, and finishes high over the left shoulder in a full follow-through.", "duration": 1.8, "loop": false, "seed": 711, "guidance": 5, "faceForward": false }
+  ]
+}

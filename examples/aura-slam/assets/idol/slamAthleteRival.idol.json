@@ -1,0 +1,57 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-slam",
+  "key": "slamAthleteRival",
+  "generatedAt": "2026-11-18T22:22:11.782Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the generator's 20-minute poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f09d-9dfd-7512-a39a-66382154a058",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09e-b80a-79a1-9af6-18a03f073152",
+      "usd": 0.25,
+      "rig": {
+        "succeeded": true,
+        "num_bones": 28,
+        "animations": [
+          "idle"
+        ]
+      }
+    }
+  ],
+  "prompt": "A fit adult male professional tennis player with deep brown skin and a very short closely cropped black buzz cut (no ponytail, no braids, nothing hanging behind the head), wearing a plain burnt-orange clay-coloured short-sleeve athletic crew-neck shirt, plain dark navy-blue athletic shorts, white crew socks, white tennis shoes and a white wristband",
+  "role": "character",
+  "rig": true,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.799,
+    "size": [
+      1.758,
+      1.8,
+      0.328
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/aura-slam/assets/idol/slamAthleteRival.glb",
+  "sizeBytes": 3270152,
+  "usd": 0.42,
+  "postOptimize": {
+    "tool": "examples/aura-slam/tools/idol-character-pass.mjs",
+    "clips": "dropped (every bone is posed by view/idolHumanoid.ts)",
+    "tex": 1024
+  },
+  "rerollOf": {
+    "reason": "seed 7 invented a long braid down the back (unseen side)",
+    "usd": 0.42,
+    "requestIds": [
+      "see artifacts/idol/ledger.jsonl"
+    ]
+  }
+}

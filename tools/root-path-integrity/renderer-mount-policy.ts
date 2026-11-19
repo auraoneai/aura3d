@@ -60,7 +60,7 @@ function clean(source: string): string {
 
 const ROOT_MOUNT = /\bcreateAuraApp\s*\(|\bcreateGameApp\s*\(/;
 // A root mount with a null canvas target is headless game logic (no pixels;
-// e.g. `createGameApp(null, {...})` in apps/aura-clash-showcase): it never
+// e.g. `createGameApp(null, {...})`): it never
 // claims pixel ownership, so it does not create a second renderer bucket.
 const HEADLESS_ROOT_MOUNT = /\bcreate(?:AuraApp|GameApp)\s*\(\s*null\b/;
 const HEADLESS_ROOT_MOUNT_GLOBAL = /\bcreate(?:AuraApp|GameApp)\s*\(\s*null\b/g;

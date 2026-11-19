@@ -312,7 +312,7 @@ export const VEIL_FRAGMENT_WGSL = wgslStage([POW], /* wgsl */ `
   let stream = a3dPow(max(0.0, sin(z * 8.0 + sin(y * 0.65 - aura.u_veilTime) * 1.1 - aura.u_veilTime * 0.4)), 30.0);
   let rim = exp(-a3dPow((abs(z) - edge + 0.25) * 3.0, 2.0));
   let alpha = (stream * 0.09 + rim * 0.4) * mask * smoothstep(0.0, 0.7, y) * (1.0 - smoothstep(11.5, 13.0, y));
-  return vec4<f32>(mix(vec3<f32>(0.48, 0.79, 1.0), vec3<f32>(1.0, 0.75, 0.3), vec3<f32>(0.65 + 0.35 * sin(aura.u_veilTime + y))), alpha * (1.0 + aura.u_veilPulse * 2.0));
+  return vec4<f32>(mix(vec3<f32>(0.48, 0.79, 1.0), vec3<f32>(1.0, 0.75, 0.3), vec3<f32>(0.65 + 0.35 * sin(aura.u_veilTime + y))), alpha * (1.0 + aura.u_veilPulse * 2.0) * aura.u_veilFade);
 }`);
 
 export const RIDER_SHADOW_FRAGMENT_WGSL = wgslStage([POW], /* wgsl */ `

@@ -7,7 +7,7 @@ const S = (over: Partial<ShotInput["S"]> = {}): ShotInput["S"] => ({ time: 10, s
 const input = (s: ShotInput["S"], extra: Partial<ShotInput> = {}): ShotInput => ({ S: s, dt: 1 / 60, lean: 0, outro: 0, reducedMotion: false, ...extra });
 
 describe("serpentine-sky-run camera shots (SSR-15)", () => {
-  it("runs a 4 s intro with bars that eases into the chase camera", () => {
+  it("runs a 1.5 s intro with bars that eases into the chase camera", () => {
     const d = createShotDirector();
     const start = d.step(input(S({ time: 0 })));
     expect(start.name).toBe("intro");

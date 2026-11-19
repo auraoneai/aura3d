@@ -33,7 +33,7 @@ mkdirSync(outDir, { recursive: true });
 const playbook = JSON.parse(
   readFileSync(resolve(repoRoot, "tools/showcase-library/game-play-playbook.json"), "utf8"),
 );
-const gameIds = Object.keys(playbook).filter((k) => !k.startsWith("$") && k !== "aura-clash-showcase");
+const gameIds = Object.keys(playbook).filter((k) => !k.startsWith("$"));
 
 function log(...a) { process.stderr.write(`${a.join(" ")}\n`); }
 

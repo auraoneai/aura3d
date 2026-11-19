@@ -53,8 +53,17 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [52, 64], mobile: "both" },
   assets: [
-    // 100% procedural @aura3d/engine multi-material meshes (zero external or Meshy GLBs): classic enclosed electric interurban
-    // railcar, riders, houses, clock towers, lighthouses, crates, swan-neck lamps, coastal keeps/watchtowers, flora, and basalt undercrofts
+    // Idol wow pass (Nov 2026): image-to-3D GLBs (speridlabs/idol/max, tools/idol/specs/last-train-port.json) for the tram,
+    // its riders and motorman, townsfolk and the town set pieces; terrain, track, flora, clouds and lamps stay procedural.
+    { role: "vehicle", assetKey: "llTram", kit: "K2", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "character", assetKey: "llMotorman", kit: "K2", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    ...(["llPaxEasy", "llPaxSightseer", "llPaxRushed", "llPaxSleeper", "llFolk0", "llFolk1", "llFolk2", "llFolk3", "llFolk4", "llFolk5", "llWalkerA", "llWalkerB", "llWalkerC", "llWalkerD"] as const).map((assetKey) => (
+      { role: "character" as const, assetKey, kit: "K2" as const, maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+    )),
+    ...(["llHouse0", "llHouse1", "llHouse2", "llHouseSnow0", "llHouseSnow1", "llHouseSnow2", "llClockTower", "llClockTowerSnow", "llLighthouse", "llKeep", "llWatchtower"] as const).map((assetKey) => (
+      { role: "world" as const, assetKey, kit: "K4" as const, maxTriangles: 60000, textureSet: "BC+N+ORM+E" as const, maxTextureSize: 2048 as const }
+    )),
+    { role: "prop", assetKey: "llCrates", kit: "K2", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "clean-arrival", kind: "sky-lanterns" },

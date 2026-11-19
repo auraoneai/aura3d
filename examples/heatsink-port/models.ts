@@ -124,6 +124,21 @@ function shoulderDrop(offset: number, s: number): number {
 
 /** Static canyon & reactor scenery beyond the guard rails: basalt mesas, cryo-vents, coolant towers & boost arches. */
 export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS, casts = false): NodeB[] {
+  return buildSceneryInstancedNodes(scenerySpots(track, seed), isLiteSet(set), casts);
+}
+
+/**
+ * Pass-through sweep (Nov 2026): the widest horizontal reach (m, at instance scale 1, any yaw) of each canyon kind's Idol
+ * GLB, measured from its vertices (tools: max |xz| after the GLB's own node transform). A spot is kept only when that
+ * reach times its scale, plus `DECOR_CLEARANCE`, stays outside every road sample's edge, so no mesa or tower ever
+ * overhangs the rails into the corridor the craft can fly (the sim has no scenery colliders; this is decor).
+ */
+export const SCENERY_REACH = { caps: 7.24, corals: 2.57, ruins: 9.47, arches: 8.55 } as const;
+/** metres every piece of roadside decor keeps clear of the road edge (the rails stand 0.39 to 0.71 m outside it) */
+export const DECOR_CLEARANCE = 1.0;
+
+/** The deterministic canyon scenery placement shared by the procedural pools and the Idol pools (art/idolModels.ts). */
+export function scenerySpots(track: Track, seed = 733): { caps: Spot[]; corals: Spot[]; ruins: Spot[]; arches: Spot[] } {
   const rng = seededRandom(seed);
   const f: Partial<Frame> = {};
   const caps: Spot[] = [], corals: Spot[] = [], ruins: Spot[] = [], arches: Spot[] = [];
@@ -148,7 +163,8 @@ export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS, c
       const slopeTilt = side * Math.atan2(shoulderDrop(offset + 2, s) - shoulderDrop(offset - 2, s), 4) * 0.28;
       const yaw = rng() * Math.PI * 2;
       const scale = 0.8 + rng() * 0.5;
-      if (nearRoadEdge(x, z, 9.5 * scale)) continue;
+      const kind = pick < 0.3 ? "caps" : pick < 0.6 ? "corals" : pick < 0.7 ? "arches" : "ruins";
+      if (nearRoadEdge(x, z, Math.max(9.5 * scale, SCENERY_REACH[kind] * scale + DECOR_CLEARANCE))) continue;
       const spot: Spot = {
         position: [x, y, z],
         rotation: [Math.sin(yaw) * slopeTilt, yaw, -Math.cos(yaw) * slopeTilt],
@@ -160,20 +176,43 @@ export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS, c
       else ruins.push(spot);
     }
   }
-  return buildSceneryInstancedNodes({ caps, corals, ruins, arches }, isLiteSet(set), casts);
+  return { caps, corals, ruins, arches };
 }
 
 /** Two electromagnetic pylons with holographic chevron gantries per checkpoint gate, standing on the road edge. */
 export function gatePylonNodes(track: Track, rotationOf: (fr: Frame) => readonly [number, number, number], set: ModelSet = MODELS, casts = false): NodeB[] {
+  return buildGatePylonInstancedNodes(gatePylonTransforms(track, rotationOf), isLiteSet(set), casts);
+}
+
+/**
+ * The Idol gate pylon's half extents in the track frame (m): along the road (its GLB x, 11.81 m) and across it (its GLB z,
+ * 7.05 m). `gatePylonTransforms` orients local X along the tangent and local Z across the road.
+ */
+export const GATE_PYLON_HALF = { along: 5.91, across: 3.53 } as const;
+/**
+ * Lateral offset of each pylon's centre beyond the road edge. Pass-through sweep (Nov 2026): the pylons stood at
+ * hw + 0.6, so their inner 2.9 m stood over the road where the craft hugs the wall and it flew through them (the sim has
+ * no pylon collider). Now the inner face stands DECOR_CLEARANCE (+ 0.4 m for the plinth corners on curves) outside the
+ * edge, beyond the rails.
+ */
+export const GATE_PYLON_OFFSET = GATE_PYLON_HALF.across + DECOR_CLEARANCE + 0.4;
+
+/** Two pylon transforms per checkpoint gate just beyond the road edges (shared by the procedural and Idol pylon pools). */
+export function gatePylonTransforms(track: Track, rotationOf: (fr: Frame) => readonly [number, number, number]): { position: [number, number, number]; rotation: [number, number, number] }[] {
   const transforms: { position: [number, number, number]; rotation: [number, number, number] }[] = [];
   const f: Partial<Frame> = {};
   for (const s of track.checkpoints) {
     const fr = track.frame(s, f) as Frame;
     const rot = rotationOf(fr);
     for (const side of [-1, 1] as const) {
-      const lat = side * (fr.hw + 0.6);
-      transforms.push({ position: [fr.x + fr.rx * lat, fr.y + track.latY(s, side * fr.hw) - 0.25, fr.z + fr.rz * lat], rotation: [rot[0], rot[1], rot[2]] });
+      const lat = side * (fr.hw + GATE_PYLON_OFFSET);
+      /* grounding: the plinth now stands on the banked shoulder, so it drops to the lowest shoulder point under its footprint */
+      let drop = 0;
+      for (let o = GATE_PYLON_OFFSET - GATE_PYLON_HALF.across; o <= GATE_PYLON_OFFSET + GATE_PYLON_HALF.across + 1e-6; o += 0.5) {
+        for (const ds of [-GATE_PYLON_HALF.along, 0, GATE_PYLON_HALF.along]) drop = Math.min(drop, shoulderDrop(o, s + ds));
+      }
+      transforms.push({ position: [fr.x + fr.rx * lat, fr.y + track.latY(s, side * fr.hw) + drop - 0.25, fr.z + fr.rz * lat], rotation: [rot[0], rot[1], rot[2]] });
     }
   }
-  return buildGatePylonInstancedNodes(transforms, isLiteSet(set), casts);
+  return transforms;
 }

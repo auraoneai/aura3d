@@ -38,9 +38,13 @@ import { resolveAthlete, applyAthleteKit, poseAthlete, skinFor, teamKitForId, ty
 import { createHud, clubFor } from "./game/hud";
 import { createModes } from "./game/modes";
 import { VENUES, VENUE_ORDER } from "./game/content";
+import { autoplayRequested } from "./game/autoplay";
+import { createVenueTransition, venueCardColors } from "./game/venueTransition";
 import type { UserInputFrame, PlayerState, SimEvent, VenueId } from "./game/types";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
+import { warmPrograms } from "@aura3d/engine/game";
+import { idolBodiesEnabled, preloadIdolDrivers } from "./game/idolBodies";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
@@ -174,10 +178,61 @@ function boot(): void {
   let reelShown: ReadonlySet<string> = new Set();
   const rigs = new Map<string, AthleteRig>();
   for (const id of ATHLETE_IDS) rigs.set(id, resolveAthlete(app, id));
+  /** The last warm-up (`window.__FC_WARM__`): programs, IBL and Idol texture upgrades settled before play / after a venue rebuild. */
+  let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+  (window as unknown as { __FC_WARM__?: () => typeof warmResult }).__FC_WARM__ = () => warmResult;
+  /**
+   * Venue transition card (game/venueTransition.ts): a rebuilt venue shows near-black frames while its programs and
+   * textures settle, so a broadcast card in the new venue's colours covers the switch until warmPrograms is done.
+   * It sits over the HUD (z 30, so no scoreboard or banner prints across it) and under the top bar (z 60).
+   */
+  const venueFade = createVenueTransition();
+  const venueCard = document.createElement("div");
+  venueCard.className = "fc-venue-card";
+  venueCard.setAttribute("aria-hidden", "true");
+  venueCard.style.cssText = "position:fixed;inset:0;z-index:40;pointer-events:none;display:none;opacity:0;"
+    + "flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;"
+    + "font-family:var(--font-ui, \"Whitney\", \"Whitney Fallback\", sans-serif);";
+  shell.appendChild(venueCard);
+  let venueCardSeq = 0;
+  const showVenueCard = (venue: VenueId, fixture: string | null): number => {
+    const v = VENUES[venue];
+    const c = venueCardColors(v);
+    venueCard.style.background = `repeating-linear-gradient(90deg, transparent 0 9vw, ${c.stripe}66 9vw 18vw), `
+      + `linear-gradient(160deg, ${c.top} 0%, ${c.bottom} 100%)`;
+    venueCard.style.color = c.ink;
+    venueCard.replaceChildren();
+    const line = (tag: string, text: string, css: string) => {
+      const e = document.createElement(tag);
+      e.textContent = text;
+      e.style.cssText = css;
+      venueCard.appendChild(e);
+    };
+    line("span", fixture ? "Next fixture" : "Venue", `font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;padding:5px 12px;background:${c.ink};color:${c.accent};`);
+    line("b", v.label, "font-size:clamp(28px,5.4vw,58px);font-weight:600;letter-spacing:.06em;line-height:1.05;");
+    line("span", v.tagline, "font-size:clamp(13px,1.5vw,16px);font-weight:500;opacity:.78;");
+    if (fixture) line("span", fixture, `font-size:clamp(14px,1.8vw,19px);font-weight:600;letter-spacing:.04em;margin-top:8px;padding:6px 14px;border-top:3px solid ${c.accent};`);
+    venueCard.style.display = "flex";
+    venueCard.style.opacity = "1";
+    venueFade.begin(performance.now() / 1000);
+    return ++venueCardSeq;
+  };
+  const tickVenueCard = (now: number): void => {
+    if (!venueFade.active) return;
+    const o = venueFade.opacity(now);
+    venueCard.style.opacity = o.toFixed(3);
+    if (o <= 0) venueCard.style.display = "none";
+  };
+  (window as unknown as { __FC_VENUE_CARD__?: () => unknown }).__FC_VENUE_CARD__ = () => ({
+    shown: venueCard.style.display !== "none", opacity: Number(venueCard.style.opacity || 0), seq: venueCardSeq
+  });
+
   /** FC-21: the look is part of the scene graph, so a venue change rebuilds the scene and re-resolves every handle. */
-  const rebuildForVenue = (venue: VenueId): void => {
+  const rebuildForVenue = (venue: VenueId, fixture: string | null = null): void => {
     if (venue === sceneVenue) return;
     sceneVenue = venue;
+    // after boot the switch is covered (the boot warm-up has its own loading state); the card cuts in on this frame
+    const seq = appReady ? showVenueCard(venue, fixture) : -1;
     try {
       (app as any).setScene(sceneFor(venue));
       applyPostAccessibility(app, reducedMotion);
@@ -185,8 +240,12 @@ function boot(): void {
       world = resolveWorld(app);
       scoreReel = bindScoreboardText(app);
       for (const id of ATHLETE_IDS) rigs.set(id, resolveAthlete(app, id));
+      // the rebuilt venue remounts every model and swaps the look / IBL: re-settle its programs and texture uploads
+      void warmPrograms(app as any, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 12 }).then((r) => { warmResult = r; }, () => undefined)
+        .finally(() => { if (seq === venueCardSeq) venueFade.warmed(performance.now() / 1000); });
     } catch (e) {
       console.warn("[fc3d] venue rebuild failed", e);
+      if (seq === venueCardSeq) venueFade.warmed(performance.now() / 1000);
     }
   };
 
@@ -212,7 +271,8 @@ function boot(): void {
       shoot: ["Space", "TouchShoot"],
       skillA: ["KeyJ", "TouchSkillA"], skillB: ["KeyK", "TouchSkillB"],
       switch: ["KeyQ", "TouchSwitch"],
-      pause: ["KeyP", "Escape", "TouchPause"]
+      pause: ["KeyP", "Escape", "TouchPause"],
+      autopilot: ["KeyO"]
     },
     axes: {
       moveX: { negative: "left", positive: "right" },
@@ -518,9 +578,12 @@ function boot(): void {
   let lastPhaseForCrowd = "";
   let lastSimPhase = "";
   let appReady = false;
-  let autopilot = params.get("autoplay") === "1" || params.get("demo") === "1";
+  // `?autoplay=1` (alias `?autopilot=1`, legacy `?demo=1`): CPU v CPU from boot, looping venue to venue (modes.ts)
+  let autopilot = autoplayRequested(params);
   sim.setAutopilot(autopilot);
   sim.setAssist(params.get("assist") === "1");
+  // QA: `?qaHalf=<seconds>` shortens each half so a capture reaches the full-time screen (never set in normal play)
+  { const qaHalf = Number(params.get("qaHalf")); if (qaHalf > 0) sim.setQaHalfLength?.(qaHalf); }
 
   type PresentedBall = MatchBallSlice;
   interface MatchBallSlice {
@@ -598,7 +661,8 @@ function boot(): void {
     hud.setPaused(sim.state.paused);
     syncCrowd();
   }
-  document.addEventListener("visibilitychange", () => { if (document.hidden && appReady) setPaused(true); });
+  // autoplay is a hands-free loop: a hidden tab must not leave it parked on the pause panel
+  document.addEventListener("visibilitychange", () => { if (document.hidden && appReady && !autopilot) setPaused(true); });
 
   /* ---- FC-16 crowd bed: starts with the first match, ducked in menus and pause, swells on goals ---- */
   let crowdOn = false;
@@ -716,6 +780,7 @@ function boot(): void {
       inputFrame.skillChop ||= input.pressed("skillB");
       inputFrame.switchPlayer ||= input.pressed("switch");
       if (appReady && input.pressed("pause")) setPaused(!sim.state.paused);
+      if (appReady && input.pressed("autopilot")) toggleAutopilot();
 
       // FC-18: fixed 1/60 s sim steps from an accumulator (at most 6 per frame; a long stall drops the rest), so a
       // 24 m/s strike moves 0.4 m per step at any frame rate and every match replays from (seed, inputs)
@@ -724,7 +789,10 @@ function boot(): void {
         presenter.reset();
       }
       lastSimPhase = sim.state.phase;
-      if (appReady && !frozen) {
+      // the match holds while the venue transition card covers a rebuilding venue (no kickoff played under it)
+      const venueHold = venueFade.holding(now);
+      tickVenueCard(now);
+      if (appReady && !frozen && !venueHold) {
         stepAcc = Math.min(stepAcc + impact.simDt, SIM_DT * 6);
         while (stepAcc >= SIM_DT - 1e-9) {
           stepAcc -= SIM_DT;
@@ -762,10 +830,13 @@ function boot(): void {
       // venue retint when it changes
       if (s.venue !== lastVenue) {
         lastVenue = s.venue;
-        rebuildForVenue(s.venue);
+        const fx = modes.cfg && (modes.mode === "demo" || modes.mode === "quick" || modes.mode === "circuit")
+          ? `${clubFor(modes.cfg.homeClub).name} v ${clubFor(modes.cfg.awayClub).name}` : null;
+        rebuildForVenue(s.venue, fx);
         applyVenue(world, VENUES[s.venue]);
         refreshKits();
-        if (appReady) { hud.banner(VENUES[s.venue].label, 2400); hud.ident(VENUES[s.venue].label, VENUE_LOOKS[s.venue].timeOfDay); }
+        // the transition card already titles the venue: the centre banner would only print over it
+        if (appReady) { if (!venueFade.holding(now)) hud.banner(VENUES[s.venue].label, 2400); hud.ident(VENUES[s.venue].label, VENUE_LOOKS[s.venue].timeOfDay); }
       }
 
       /* ---- render athletes ---- */
@@ -1047,6 +1118,20 @@ function boot(): void {
     }
   });
 
+  /**
+   * O toggles autopilot: on, the computer plays the user's side (a menu or panel starts the hands-free CPU v CPU loop);
+   * off, the user takes control (from the CPU v CPU loop that is a fresh Quick Play match).
+   */
+  function toggleAutopilot(): void {
+    autopilot = !autopilot;
+    sim.setAutopilot(autopilot);
+    document.getElementById("fc-btn-demo")?.classList.toggle("active", autopilot);
+    if (autopilot && (modes.mode === "menu" || modes.mode === "studio")) modes.startDemo();
+    else if (!autopilot && modes.mode === "demo") modes.startQuick();
+    if (autopilot && sim.state.paused) setPaused(false);
+    hud.banner(autopilot ? "AUTOPILOT ON · O to take over" : "AUTOPILOT OFF · you have the ball", 1800);
+  }
+
   /* -------------------------- toolbar -------------------------- */
 
   function bindToolbar(): void {
@@ -1119,6 +1204,14 @@ function boot(): void {
   const readyPromise = Promise.resolve((app as any).ready?.());
   readyPromise
     .catch((err) => console.warn("[fc3d] app.ready warning", err))
+    // Idol pass (first-seconds stall fix): every Idol body's skeleton driver is loaded and every program, the night IBL
+    // and every Idol texture upgrade are settled (warmPrograms, lessons-learned R2) before play starts, so the first
+    // seconds never skip draws on compiling program variants or show parked / T-posed bodies.
+    .then(async () => {
+      loading.set(0.5, "Warming");
+      if (idolBodiesEnabled()) await preloadIdolDrivers();
+      warmResult = await warmPrograms(app as any, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 }).catch(() => null);
+    })
     .finally(() => {
       appReady = true;
       applyPostAccessibility(app, reducedMotion);

@@ -71,22 +71,24 @@ const FULL_PRESETS: Readonly<Record<IronCrownVfxKind, AuraVfxEffectSpec>> = {
       { type: "light", intensity: 9, range: 7, duration: 0.45, color: KO_GOLD }
     ]
   },
+  // Ambient (owner neutral-grade pass): fewer, smaller, dimmer motes that stay behind the fight lane. The bright additive
+  // embers and motes read as white noise drifting over the fighters. Bounds: tests/unit/iron-crown/neutral-grade.test.ts.
   "ic-forge-embers": {
     name: "ic-forge-embers",
     layers: [
-      { type: "emitter", preset: "spark-fire", count: 10, speed: [0.4, 1.1], life: [1.2, 2.2], gravity: 1.2, color: "#ff7a2e", intensity: 2, size: [0.02, 0.045], spread: 0.35, additive: true, direction: [0, 1, 0], drag: 0.6, sprite: "glow" }
+      { type: "emitter", preset: "spark-fire", count: 4, speed: [0.35, 0.9], life: [1, 1.6], gravity: 1.2, color: "#b8501c", intensity: 1, size: [0.012, 0.026], spread: 0.18, additive: true, direction: [0, 1, 0], drag: 0.6, sprite: "glow" }
     ]
   },
   "ic-lantern-motes": {
     name: "ic-lantern-motes",
     layers: [
-      { type: "emitter", preset: "pickup-gold", count: 6, speed: [0.15, 0.45], life: [1.6, 2.6], gravity: 0.35, color: "#ffc76a", intensity: 1.6, size: [0.02, 0.04], spread: 0.6, additive: true, sprite: "dust-mote" }
+      { type: "emitter", preset: "pickup-gold", count: 3, speed: [0.12, 0.35], life: [1.2, 2], gravity: 0.35, color: "#b88f4c", intensity: 0.8, size: [0.012, 0.024], spread: 0.2, additive: true, direction: [0, 1, 0], sprite: "dust-mote" }
     ]
   },
   "ic-dust-devil": {
     name: "ic-dust-devil",
     layers: [
-      { type: "emitter", preset: "dust-sand", count: 14, speed: [0.8, 2.2], life: [0.9, 1.6], gravity: 0.2, color: "#c9a46a", size: [0.25, 0.6], spread: 0.5, additive: false, direction: [1, 0.25, 0], sprite: "smoke-a", maxScreen: 0.08 }
+      { type: "emitter", preset: "dust-sand", count: 8, speed: [0.7, 1.8], life: [0.8, 1.2], gravity: 0.2, color: "#9c8360", size: [0.2, 0.4], spread: 0.3, additive: false, direction: [1, 0.25, 0], sprite: "smoke-a", maxScreen: 0.05 }
     ]
   },
   "ic-win-confetti": {
@@ -180,7 +182,7 @@ export interface AmbientEmitter {
 export const AMBIENT_EMITTERS: Readonly<Record<StageId, readonly AmbientEmitter[]>> = {
   "crown-arena": [{ kind: "ic-forge-embers", interval: 0.55, points: [[-3.5, 2.0, -1.65], [3.5, 2.0, -1.65]] }],
   "neo-tokyo-rooftop": [],
-  "bangkok-dock": [{ kind: "ic-lantern-motes", interval: 0.8, points: [[-3.1, 1.7, -1.4], [3.1, 1.7, -1.4]] }],
+  "bangkok-dock": [{ kind: "ic-lantern-motes", interval: 0.8, points: [[-3.1, 1.7, -1.45], [3.1, 1.7, -1.45]] }],
   "colosseum-ruins": [{ kind: "ic-dust-devil", interval: 2.4, points: [[-6.5, 0.15, -3.2], [5.5, 0.15, -4.6], [-1.5, 0.15, -6]] }],
   "desert-airbase": [],
   "himalayan-monastery": []
@@ -215,4 +217,30 @@ export function ambientLiveParticles(emitters: readonly AmbientEmitter[], comfor
   const presets = ironCrownVfxPresets(comfort);
   const slow = comfort.reducedMotion ? 2 : 1;
   return emitters.reduce((sum, e) => sum + (presetParticles(presets[e.kind]) * presetLifeSeconds(presets[e.kind])) / (e.interval * slow), 0);
+}
+
+/** Default spawn-disc radius of the CPU emitter (engine CpuEmitter `spawnRadius` fallback). */
+const EMITTER_SPAWN_RADIUS = 0.05;
+
+/**
+ * The largest z an ambient emitter's particles can reach (a conservative bound of the CPU emitter's spawn: direction plus a
+ * +-spread jitter per axis, normalised, times the top speed and the longest life, plus the spawn disc). Gravity acts on
+ * y and drag only slows them, so neither moves a particle toward the camera. Every ambient emitter stays behind
+ * `FIGHT_LANE_BACK_Z` in look.ts (owner neutral-grade pass: no motes in front of the fighters).
+ */
+export function ambientEmitterMaxZ(emitter: AmbientEmitter, presets: Readonly<Record<IronCrownVfxKind, AuraVfxEffectSpec>> = FULL_PRESETS): number {
+  let reach = 0;
+  for (const layer of presets[emitter.kind].layers) {
+    if (layer.type !== "emitter") continue;
+    const dir = (layer.direction as readonly number[] | undefined) ?? [0, 1, 0];
+    const len = Math.hypot(dir[0] ?? 0, dir[1] ?? 0, dir[2] ?? 0) || 1;
+    const spread = Number(layer.spread ?? 0);
+    const denom = 1 - spread * Math.sqrt(3);
+    const dz = denom > 0 ? Math.min(1, (Math.abs((dir[2] ?? 0) / len) + spread) / denom) : 1;
+    const speed = layer.speed as readonly number[] | number | undefined;
+    const life = layer.life as readonly number[] | number | undefined;
+    const top = (v: readonly number[] | number | undefined) => (Array.isArray(v) ? Math.max(...v) : Number(v ?? 0));
+    reach = Math.max(reach, top(speed) * dz * top(life) + EMITTER_SPAWN_RADIUS);
+  }
+  return Math.max(...emitter.points.map((p) => p[2])) + reach;
 }

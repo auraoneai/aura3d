@@ -79,11 +79,6 @@
       "noScroll": true
     },
     {
-      "name": "docs-aura-clash-showcase",
-      "path": "/docs/aura-clash-showcase.html",
-      "noScroll": true
-    },
-    {
       "name": "showcase-index",
       "path": "/apps/showcase-index/",
       "noScroll": true

@@ -240,8 +240,10 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
     variant: "floor6", floorParam: "6", slot: 5, fixture: "alarm-beacon",
     // Blind-panel fix pass: the red alarm lamp read as a muddy maroon cast; F6 now shares F1's warm work-light family.
     lamp: { color: "#ffb870", temperatureK: 2900 },
-    // F6's key is the moon through the hatch (lightRig.ts BZ_MOON); its spot becomes a sweeping alarm beacon.
-    key: { cell: [4, 3], target: [4, 4], drop: 0.3, intensity: 16, distance: 12, angleDeg: 34, penumbra: 0.45 },
+    // F6's key is the moon through the hatch: the key spot hung in the shaft 2.2 m above the ceiling line (under the night
+    // backdrop), aimed straight down in the moon's colour (lightRig.ts BZ_MOON). The runtime cannot retune a spot's cone,
+    // so it keeps every floor's 30 degrees, which at 7.6 m covers the 9 m opening. The fill spot is the sweeping alarm beacon.
+    key: { cell: [11, 9], target: [11, 9], drop: -2.2, intensity: 180, distance: 14, angleDeg: 30, penumbra: 0.45 },
     fill: { cell: [20, 14], target: [20, 13], drop: 0.3, intensity: 9.5, distance: 11, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 2.1, distance: 7.5, height: "ceiling", flicker: 0 },
     fogDensity: 0.009, environmentIntensity: 0.09, exposure: 0.98, grade: { temperature: 0.1, tint: 0 },

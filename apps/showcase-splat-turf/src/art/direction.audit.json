@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-splat-turf/src/art/direction.ts",
-  "sourceSha256": "469e20241b2d8efeaa1c0330ef6108156c7c1b5414395b401e88b84fbaf2366b",
+  "sourceSha256": "f4286e13fedafabd6a4171391ce0b34928ee7131d07a5279708b5dbb39023a34",
   "id": "splat-turf",
   "genre": "maze-arcade",
   "signatureEffect": "Sunlit wet-ink skate-arena carnival: a persistent GPU splat coverage map with raised clearcoat meniscus highlights down a primed gesso road, plus a cyan solvent wipe wash that lifts pigment back to white.",
@@ -33,7 +33,190 @@
       "kind": "preset",
       "background": false
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "turfHeroKartShell",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfHeroDriverRig",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfRivalDriverRig",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfRivalDriverRig",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfRivalDriverRig",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfFinishGantry",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfInkTank",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfBleacher",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfTrussTower",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfAerosolMonument",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfInflatableBarrier",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfStreetPalm",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfBalloon",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfIslandEasel",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfIslandTower",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfIslandTree",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfIslandPaintPot",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfIslandPalette",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfPaintBucketMagenta",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfPaintBucketAmber",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfPaintBucketCyan",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfPaintBucketViolet",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfAerosolCan",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfRivalKartShell",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfKartWheel",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "turfScrubBrush",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "drawCalls": 12
   },
   "direction": {
@@ -98,7 +281,190 @@
       ],
       "mobile": "both"
     },
-    "assets": [],
+    "assets": [
+      {
+        "role": "vehicle",
+        "assetKey": "turfHeroKartShell",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "enemy",
+        "assetKey": "turfRivalKartShell",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "turfKartWheel",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "prop",
+        "assetKey": "turfScrubBrush",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "character",
+        "assetKey": "turfHeroDriverRig",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "driven-pose"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "turfRivalDriverRig",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "driven-pose"
+          ]
+        }
+      },
+      {
+        "role": "prop",
+        "assetKey": "turfAerosolCan",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "turfPaintBucketMagenta",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "turfPaintBucketAmber",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "turfPaintBucketCyan",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "turfPaintBucketViolet",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "turfBleacher",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "turfTrussTower",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "turfAerosolMonument",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "turfInflatableBarrier",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "turfStreetPalm",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "turfInkTank",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "turfFinishGantry",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "turfIslandTree",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "turfIslandTower",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "turfBalloon",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "turfIslandPaintPot",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "turfIslandPalette",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "turfIslandEasel",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
     "vfx": [
       {
         "event": "paint-trail",

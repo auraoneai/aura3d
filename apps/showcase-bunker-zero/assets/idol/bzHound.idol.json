@@ -1,0 +1,63 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzHound",
+  "generatedAt": "2026-11-18T23:44:23.918Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08d-1077-7be3-b533-a54b8b2e1e70",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f099-afb2-7cc0-990d-d5302446be08",
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 591036,
+        "num_faces": 1182072,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 24,
+        "animations": [
+          "idle",
+          "walk",
+          "run"
+        ]
+      },
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Original armored military attack dog: muscular lean dark sable black and tan short-haired guard dog with cropped pointed ears, wearing an olive tactical harness vest with two side pouches and a black collar, alert stance",
+  "role": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 1 m, 3 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000         3.5x         465      0\n  ERROR material0 (mesh 0 prim 0): 465 of 30000 triangles stretch past 1.6x their rest edges (worst 3.5x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n  warn  material0 (mesh 0 prim 0): 3749 vertices are influenced (>= 0.15) by a bone farther than 0.5 m (SKIN_WEIGHT_DISTANT). assets repair-skin --prune-distant removes those influences.\n",
+    "repairLog": "skin check still fails after repair: SKIN_STRETCH, SKIN_WEIGHT_DISTANT\nStill failing after smooth-bridges: SKIN_STRETCH, SKIN_WEIGHT_DISTANT. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand.\n"
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1,
+    "sceneScale": 1.161,
+    "size": [
+      0.6,
+      1,
+      0.948
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzHound.glb",
+  "sizeBytes": 2286148,
+  "preview": "artifacts/idol/bunker-zero/bzHound/views.png",
+  "usd": 0.42,
+  "admitRole": "character",
+  "renormalizedAt": "2026-11-18T23:48:05.932Z"
+}

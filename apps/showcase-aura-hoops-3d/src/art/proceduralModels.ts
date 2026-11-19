@@ -73,6 +73,17 @@ import {
 } from "../../../showcase-port-shared/proceduralKernel";
 import { WGSL_CLIP, WGSL_NOISE, wgslStage } from "../../../showcase-port-shared/wgsl-twins";
 import type { CourtId } from "../courtRigs";
+import {
+  BALL_CART,
+  SCORER_TABLE,
+  SHANGHAI_LAMP,
+  SHANGHAI_LAMP_SPOTS,
+  STANCHION_BASE,
+  STANCHION_NECK,
+  STANCHION_NECK_R,
+  STANCHION_STRUT,
+  STANCHION_STRUT_R
+} from "../courtObstacles";
 import { dualChainLinkFenceSpec, dualSwishNetSpec } from "../hoopsShaders";
 
 const sdfCapsule = (p: V3, a: V3, b: V3, r: number): number => sdfTaperedCapsule(p, a, b, r, r);
@@ -360,20 +371,11 @@ export function buildHoopStanchionNode(rigOverrides: readonly AuraModelMaterialO
     gussets.push(place(box(0.035, 0.38, 0.44, 0.008), [gx, 0.22, gz], [0, yaw, 0]));
   }
 
-  const neckCurve = catmullRomSpline3(
-    [
-      [0, 0.06, 0],
-      [0, 1.45, 0],
-      [0, 2.52, 0.06],
-      [0, 3.16, 0.48],
-      [0, 3.38, 0.98],
-      [0, 3.4, 1.24]
-    ],
-    6
-  );
-  const mainPost = tube(neckCurve, 0.105, 16);
-  const strutL = tube([[-0.14, 2.48, 0.08], [-0.28, 3.04, 0.62], [-0.44, 3.52, 1.24]], 0.036, 10);
-  const strutR = tube([[0.14, 2.48, 0.08], [0.28, 3.04, 0.62], [0.44, 3.52, 1.24]], 0.036, 10);
+  // centreline, struts and base come from courtObstacles.ts, which builds the ball and body colliders from the same numbers
+  const neckCurve = catmullRomSpline3(STANCHION_NECK.map((p): V3 => [p[0], p[1], p[2]]), 6);
+  const mainPost = tube(neckCurve, STANCHION_NECK_R, 16);
+  const strutL = tube(STANCHION_STRUT.map(([x, y, z]): V3 => [-x, y, z]), STANCHION_STRUT_R, 10);
+  const strutR = tube(STANCHION_STRUT.map(([x, y, z]): V3 => [x, y, z]), STANCHION_STRUT_R, 10);
 
   const hFrame = combineRaw([
     place(box(1.06, 0.07, 0.07, 0.012), [0, 3.52, 1.26]),
@@ -416,7 +418,7 @@ export function buildHoopStanchionNode(rigOverrides: readonly AuraModelMaterialO
     { castShadow: false, receiveShadow: true }
   );
 
-  return group("hoop-stanchion-rig", [postNode, padNode], { position: [0, 0, -1.68] }) as unknown as AuraNodeBuilder<AuraSceneNode>;
+  return group("hoop-stanchion-rig", [postNode, padNode], { position: [STANCHION_BASE[0], 0, STANCHION_BASE[1]] }) as unknown as AuraNodeBuilder<AuraSceneNode>;
 }
 
 export interface BackboardBuildOptions {
@@ -492,8 +494,17 @@ export interface RimBuildOptions {
   readonly overrides: readonly AuraModelMaterialOverride[];
   readonly rim: AuraVec3;
   readonly rimR: number;
+  /** Ring centreline radius (m). When set with `tubeR` it overrides the legacy `rimR - 0.012` ring, so the drawn rim can equal the physics rim (shotPhysics RING_R / TUBE_R). */
+  readonly ringR?: number;
+  /** Ring tube radius (m); legacy default 0.013. */
+  readonly tubeR?: number;
   readonly boardZ: number;
   readonly lookOriginal: boolean;
+}
+
+/** The drawn ring of `buildBreakawayRimNode`: centreline radius and tube radius. */
+export function rimRingDims(opts: Pick<RimBuildOptions, "rimR" | "ringR" | "tubeR">): { ringR: number; tubeR: number } {
+  return { ringR: opts.ringR ?? opts.rimR - 0.012, tubeR: opts.tubeR ?? 0.013 };
 }
 
 export function buildBreakawayRimNode(opts: RimBuildOptions): AuraNodeBuilder<AuraSceneNode> {
@@ -508,11 +519,13 @@ export function buildBreakawayRimNode(opts: RimBuildOptions): AuraNodeBuilder<Au
   const collarMetalMat = material.studioMetal({ color: "#c4ccd6", roughness: 0.2, envMapIntensity: 1.4 });
 
   const throatZ = opts.boardZ - opts.rim[2] + 0.055;
-  const ringCenterR = opts.rimR - 0.012;
+  const { ringR: ringCenterR, tubeR: ringTubeR } = rimRingDims(opts);
+  // under-rim braces scale with the ring so they stay under its outer half (never inside the opening a ball drops through)
+  const k = ringCenterR / 0.243;
   const rimParts: RawMesh[] = [
-    tube(circleRingPts(0, 0, 0, ringCenterR, 36, "y"), 0.013, 12, false),
-    tube([[-0.14, -0.02, -0.2], [-0.21, -0.01, -0.11]], 0.0095, 8),
-    tube([[0.14, -0.02, -0.2], [0.21, -0.01, -0.11]], 0.0095, 8)
+    tube(circleRingPts(0, 0, 0, ringCenterR, 36, "y"), ringTubeR, 12, false),
+    tube([[-0.14 * k, -0.02, -0.2 * k], [-0.21 * k, -0.01, -0.11 * k]], 0.0095, 8),
+    tube([[0.14 * k, -0.02, -0.2 * k], [0.21 * k, -0.01, -0.11 * k]], 0.0095, 8)
   ];
   for (let i = 0; i < 12; i++) {
     const a = ((i + 0.5) / 12) * Math.PI * 2;
@@ -547,7 +560,11 @@ export function buildBreakawayRimNode(opts: RimBuildOptions): AuraNodeBuilder<Au
   ) as unknown as AuraNodeBuilder<AuraSceneNode>;
 }
 
-export function buildTautNetTopNode(rimY: number, lookOriginal: boolean): AuraNodeBuilder<AuraSceneNode> {
+/** Net collar radius for a ring of centreline radius `ringR` (0.236 on the legacy 0.243 ring): it hangs just inside the ring centreline. */
+export const netCollarRadius = (ringR = 0.243): number => ringR - 0.007;
+
+export function buildTautNetTopNode(rimY: number, lookOriginal: boolean, ringR = 0.243): AuraNodeBuilder<AuraSceneNode> {
+  const collarR = netCollarRadius(ringR);
   const ptsA: V3[] = [];
   const ptsB: V3[] = [];
   const segs = 60;
@@ -556,8 +573,8 @@ export function buildTautNetTopNode(rimY: number, lookOriginal: boolean): AuraNo
     const scallop = -0.013 * Math.abs(Math.sin(a * 6));
     const twist = 0.0035 * Math.cos(a * 24);
     const twistY = 0.0035 * Math.sin(a * 24);
-    ptsA.push([Math.cos(a) * (0.236 + twist), scallop + twistY, Math.sin(a) * (0.236 + twist)]);
-    ptsB.push([Math.cos(a) * (0.236 - twist), scallop - twistY, Math.sin(a) * (0.236 - twist)]);
+    ptsA.push([Math.cos(a) * (collarR + twist), scallop + twistY, Math.sin(a) * (collarR + twist)]);
+    ptsB.push([Math.cos(a) * (collarR - twist), scallop - twistY, Math.sin(a) * (collarR - twist)]);
   }
   const mat = lookOriginal
     ? material.pbr({ color: "#e8e8e0", roughness: 0.7 })
@@ -569,7 +586,9 @@ export function buildTautNetTopNode(rimY: number, lookOriginal: boolean): AuraNo
   });
 }
 
-export function buildTautNetSkirtNode(rimY: number, isRucker: boolean, lookOriginal: boolean): AuraNodeBuilder<AuraSceneNode> {
+export function buildTautNetSkirtNode(rimY: number, isRucker: boolean, lookOriginal: boolean, ringR = 0.243): AuraNodeBuilder<AuraSceneNode> {
+  // the lathe profile's top radius is 0.5: scale it so the skirt meets the collar (0.47 on the legacy ring)
+  const sxz = (netCollarRadius(ringR) / 0.236) * 0.47;
   const profile = bezierCurve2([0.5, -0.5], [0.36, -0.18], [0.42, 0.22], [0.5, 0.5], 16);
   const skirtMesh = latheMesh(profile, 28);
   const mat = lookOriginal
@@ -577,7 +596,7 @@ export function buildTautNetSkirtNode(rimY: number, isRucker: boolean, lookOrigi
     : material.custom(dualSwishNetSpec(isRucker));
   return singleMeshNode("net-skirt", [skirtMesh], mat, {
     position: [0, rimY - 0.24, 0],
-    scale: [0.47, 0.44, 0.47],
+    scale: [sxz, 0.44, sxz],
     castShadow: false,
     receiveShadow: false
   });
@@ -804,7 +823,7 @@ export function buildTubularBallCartNode(): AuraNodeBuilder<AuraSceneNode> {
     normal: material.proceduralTextures.rubber({ scale: 30, strength: 0.4, contrast: 0.75 })
   });
 
-  const W = 0.62, D = 0.27;
+  const W = BALL_CART.halfW, D = BALL_CART.halfD;
   const frameParts: RawMesh[] = [
     tube([[-W, 0.1, -D], [-W, 0.98, -D], [-W, 1.08, 0], [-W, 0.98, D], [-W, 0.1, D]], 0.018, 10),
     tube([[W, 0.1, -D], [W, 0.98, -D], [W, 1.08, 0], [W, 0.98, D], [W, 0.1, D]], 0.018, 10)
@@ -838,7 +857,7 @@ export function buildTubularBallCartNode(): AuraNodeBuilder<AuraSceneNode> {
       { mesh: combineRaw(wheels), material: wheelMat },
       { mesh: combineRaw(balls), material: ballMat }
     ],
-    { position: [-8.9, 0, 9.4], rotation: [0, 0.5, 0], castShadow: false, receiveShadow: true }
+    { position: [BALL_CART.x, 0, BALL_CART.z], rotation: [0, BALL_CART.yaw, 0], castShadow: false, receiveShadow: true }
   );
 }
 
@@ -868,7 +887,7 @@ export function buildChampionshipTrophyNode(lookOriginal: boolean): AuraNodeBuil
       { mesh: combineRaw([chalice, handleL, handleR, plaque]), material: goldMat },
       { mesh: finialBall, material: crownBallMat }
     ],
-    { id: "trophy-case", position: [9.2, lookOriginal ? 0 : 0.78, -3.4], rotation: [0, -0.8, 0], castShadow: false, receiveShadow: true }
+    { id: "trophy-case", position: [SCORER_TABLE.x, lookOriginal ? 0 : SCORER_TABLE.height, SCORER_TABLE.z], rotation: [0, SCORER_TABLE.yaw, 0], castShadow: false, receiveShadow: true }
   );
 }
 
@@ -879,8 +898,8 @@ export function buildProceduralCourtsideTableNodes(): AuraNodeBuilder<AuraSceneN
   const ledMat = material.emissive({ color: "#1c1208", emissive: "#ff8c2b", emissiveIntensity: 0.85, practical: true });
   const coolerMat = material.clearcoatPaint({ color: "#e04f16", roughness: 0.22, clearcoat: 0.8 });
 
-  const tablePos: V3 = [9.2, 0, -3.4];
-  const tableRot: V3 = [0, -0.8, 0];
+  const tablePos: V3 = [SCORER_TABLE.x, 0, SCORER_TABLE.z];
+  const tableRot: V3 = [0, SCORER_TABLE.yaw, 0];
   const allSteel: RawMesh[] = [
     place(
       combineRaw([
@@ -895,7 +914,7 @@ export function buildProceduralCourtsideTableNodes(): AuraNodeBuilder<AuraSceneN
   const allWood: RawMesh[] = [
     place(
       combineRaw([
-        place(box(1.92, 0.06, 0.98, 0.014), [0, 0.75, 0]),
+        place(box(SCORER_TABLE.halfW * 2, 0.06, SCORER_TABLE.halfD * 2, 0.014), [0, SCORER_TABLE.height - 0.03, 0]),
         place(box(1.74, 0.54, 0.04, 0.01), [0, 0.44, 0.42])
       ]),
       tablePos,
@@ -1528,15 +1547,15 @@ export function buildShanghaiNeonLampNodes(): AuraNodeBuilder<AuraSceneNode>[] {
 
   const poleCurve = catmullRomSpline3([[0, 0, 0], [0, 2.8, 0], [0, 4.15, 0.25], [0, 4.58, 0.88]], 6);
   const mast = combineRaw([
-    latheMesh([[0, 0], [0.22, 0], [0.16, 0.28], [0.09, 0.34], [0, 0.34]], 12),
-    tube(poleCurve, 0.062, 10)
+    latheMesh([[0, 0], [SHANGHAI_LAMP.baseR, 0], [0.16, 0.28], [0.09, SHANGHAI_LAMP.baseH], [0, SHANGHAI_LAMP.baseH]], 12),
+    tube(poleCurve, SHANGHAI_LAMP.mastR, 10)
   ]);
   const blade = combineRaw([
     place(box(0.1, 0.06, 0.92, 0.012), [0, 4.52, 0.72], [0.18, 0, 0]),
     place(box(0.055, 1.45, 0.055, 0.008), [0, 3.15, 0.07])
   ]);
 
-  const spots: readonly [number, number][] = [[-9, -3.2], [9, -3.2], [-9, 11.5], [9, 11.5], [-12, 4], [12, 4]];
+  const spots = SHANGHAI_LAMP_SPOTS;
   const allMasts: RawMesh[] = [];
   const cyanBlades: RawMesh[] = [];
   const magentaBlades: RawMesh[] = [];

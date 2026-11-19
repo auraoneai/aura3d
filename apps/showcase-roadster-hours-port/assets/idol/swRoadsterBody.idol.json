@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swRoadsterBody",
+  "generatedAt": "2026-11-18T22:23:06.165Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the client's 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f089-f023-7870-bd63-49c38f7bb328",
+      "prompt": "A single fictional classic 1960s open-top two-seat grand-touring roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge, voluptuous pontoon front and rear fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes running over the bonnet and rear deck, raked chrome-framed low windscreen, open cockpit with two quilted tan leather bucket seats and a wooden steering wheel, twin chrome roll hoops behind the seats, chrome side exhaust pipes, round red tail lamps, chrome bumperettes. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08e-d18e-76a1-b086-40ac360af8fc",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1169396,
+        "num_faces": 2338852,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single fictional classic 1960s open-top two-seat grand-touring roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge, voluptuous pontoon front and rear fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes running over the bonnet and rear deck, raked chrome-framed low windscreen, open cockpit with two quilted tan leather bucket seats and a wooden steering wheel, twin chrome roll hoops behind the seats, chrome side exhaust pipes, round red tail lamps, chrome bumperettes. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "hero",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -36.5,
+    "scale": 3.999,
+    "size": [
+      3.088,
+      1.564,
+      4.44
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swRoadsterBody.glb",
+  "sizeBytes": 6438152,
+  "preview": "artifacts/idol/saltwind-highway/swRoadsterBody/views.png",
+  "usd": 0.37,
+  "orientationFix": "yawDeg 53.5 (long axis fitted; reference was a three-quarter view)"
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink-port",
+  "key": "ioncBarrel",
+  "generatedAt": "2026-11-18T23:06:19.490Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b0-4c46-7a61-92f3-3da3f26b4fe0",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1302914,
+        "num_faces": 2606392,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A volatile plasma containment drum: a heavy upright crimson-red armoured steel drum with three glowing neon amber and magenta containment rings around it, gold hazard chevron decals, armoured end caps, scratches and scorch marks",
+  "role": "prop",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 2.184,
+    "size": [
+      1.505,
+      2.28,
+      1.512
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/heatsink-port/assets/idol/ioncBarrel.glb",
+  "sizeBytes": 3290360,
+  "preview": "artifacts/idol/heatsink-port/ioncBarrel/views.png",
+  "usd": 0.37
+}

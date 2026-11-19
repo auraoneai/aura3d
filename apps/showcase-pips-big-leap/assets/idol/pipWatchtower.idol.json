@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "pips-big-leap",
+  "key": "pipWatchtower",
+  "generatedAt": "2026-11-18T22:57:11.463Z",
+  "generator": "tools/idol/generate.mjs (request resumed after its 20-min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A storybook wooden watchtower: four timber legs with cross bracing, a small lookout hut on top with a pointed red shingle roof and a small cloth pennant on a pole. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a4-a040-7310-bff0-0689cb8e72a3",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1498772,
+        "num_faces": 2997836,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A storybook wooden watchtower: four timber legs with cross bracing, a small lookout hut on top with a pointed red shingle roof and a small cloth pennant on a pole. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 5.568,
+    "size": [
+      2.301,
+      5.56,
+      3.076
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-pips-big-leap/assets/idol/pipWatchtower.glb",
+  "sizeBytes": 936612,
+  "preview": "artifacts/idol/pips-big-leap/pipWatchtower/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    "PNG textures (normal map) re-encoded as JPEG q90, 4:4:4; geometry and UVs untouched"
+  ],
+  "admitRole": "set-dressing",
+  "renormalizedAt": "2026-11-18T23:40:20.239Z"
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "silt-and-signal-port",
+  "key": "duneGatehouse",
+  "generatedAt": "2026-11-18T22:57:24.504Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f094-b3c7-7023-bfdd-a08e90840154",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1079464,
+        "num_faces": 2159032,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "An ancient desert sandstone gatehouse seen from the front: two massive tapered stone pylon towers joined by a big round stone archway with a keystone, a flat stone lintel on top, a small brass lattice tower with a brass beacon dome and a round glass lens on top of the lintel, tattered terracotta and indigo cloth banners hanging on the towers, weathered warm sandstone",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 25.967,
+    "size": [
+      26,
+      25.599,
+      13.488
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/silt-and-signal-port/assets/idol/duneGatehouse.glb",
+  "sizeBytes": 3488488,
+  "preview": "artifacts/idol/silt-and-signal-port/duneGatehouse/views.png",
+  "usd": 0.37
+}

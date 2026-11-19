@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
@@ -19,13 +18,13 @@ import {
   type SwingPosePhase
 } from "../../../apps/showcase-aura-links-3d/src/game/swingMath";
 import {
-  ATHLETE_TO_MESHY,
+  ATHLETE_TO_RIG,
   GOLFER_TARGET_HEIGHT,
-  MESHY_DRIVE,
-  MESHY_GLB_HEIGHT,
+  RIG_DRIVE,
+  RIG_GLB_HEIGHT,
   PALM_PAST_HAND,
-  meshyForwardKinematics,
-  meshyProfile,
+  rigForwardKinematics,
+  rigProfile,
   retargetSolved
 } from "../../../apps/showcase-aura-links-3d/src/game/golferRetarget";
 import { GOLFER_BIND, GOLFER_GLB } from "../../../apps/showcase-aura-links-3d/src/game/golferSkeleton";
@@ -33,15 +32,13 @@ import { buildGolferNodes, golferVariantFromSearch, setGolferVariant } from "../
 
 const app = resolve(__dirname, "../../../apps/showcase-aura-links-3d");
 
-describe("Procedural golfer bind skeleton (24 joints, zero GLBs)", () => {
-  it("defines all 24 canonical humanoid joints with valid unit rotations and zero model entries in aura-assets.ts", () => {
+describe("Procedural golfer bind skeleton (24 joints)", () => {
+  it("defines all 24 canonical humanoid joints with valid unit rotations (the ?golfer=old figure's skeleton is code, not a GLB)", () => {
     expect(GOLFER_BIND).toHaveLength(24);
     for (const joint of GOLFER_BIND) {
       expect(Math.hypot(joint.rot[0], joint.rot[1], joint.rot[2], joint.rot[3]), joint.name).toBeCloseTo(1, 3);
     }
     expect(GOLFER_GLB).toBe("procedural-golfer-rig");
-    const src = readFileSync(resolve(app, "src/aura-assets.ts"), "utf8");
-    expect(src).not.toContain('.glb"');
   });
 });
 
@@ -50,32 +47,32 @@ describe("bone map: original athlete skeleton -> 24-joint procedural golfer skel
 
   it("maps every bone the swing solve writes, and every target bone exists in the 24-joint bind skeleton", () => {
     const solved = solveSwing(evaluateSwing("address", 0), makeRoot(0));
-    expect(Object.keys(ATHLETE_TO_MESHY).sort()).toEqual(Object.keys(solved.bones).sort());
-    for (const [athlete, meshy] of Object.entries(ATHLETE_TO_MESHY)) {
-      if (meshy === null) continue;
-      expect(jointNames.has(meshy), `${athlete} -> ${meshy}`).toBe(true);
+    expect(Object.keys(ATHLETE_TO_RIG).sort()).toEqual(Object.keys(solved.bones).sort());
+    for (const [athlete, rigBone] of Object.entries(ATHLETE_TO_RIG)) {
+      if (rigBone === null) continue;
+      expect(jointNames.has(rigBone), `${athlete} -> ${rigBone}`).toBe(true);
     }
-    for (const bone of Object.keys(MESHY_DRIVE)) expect(jointNames.has(bone), bone).toBe(true);
+    for (const bone of Object.keys(RIG_DRIVE)) expect(jointNames.has(bone), bone).toBe(true);
   });
 
   it("the arm, leg, spine and head chains are driven end to end (hands follow the forearms, the club hand bones are driven)", () => {
     for (const bone of ["LeftHand", "RightHand", "LeftArm", "RightArm", "LeftForeArm", "RightForeArm", "Hips", "Head", "LeftUpLeg", "RightUpLeg"]) {
-      expect(MESHY_DRIVE, bone).toHaveProperty(bone);
+      expect(RIG_DRIVE, bone).toHaveProperty(bone);
     }
-    expect(Object.values(ATHLETE_TO_MESHY).filter(Boolean).every((m) => m! in MESHY_DRIVE)).toBe(true);
+    expect(Object.values(ATHLETE_TO_RIG).filter(Boolean).every((m) => m! in RIG_DRIVE)).toBe(true);
   });
 
   it("rest-pose height: both profiles scale cleanly to 1.84 m with identical world club length", () => {
-    expect(MESHY_GLB_HEIGHT * meshyProfile().fitScale).toBeCloseTo(GOLFER_TARGET_HEIGHT, 2);
+    expect(RIG_GLB_HEIGHT * rigProfile().fitScale).toBeCloseTo(GOLFER_TARGET_HEIGHT, 2);
     const headEnd = GOLFER_BIND.find((b) => b.name === "head_end")!.pos[1];
-    expect(headEnd).toBeLessThanOrEqual(MESHY_GLB_HEIGHT);
-    expect(headEnd).toBeGreaterThan(MESHY_GLB_HEIGHT * 0.97);
-    expect(meshyProfile().clubScale * meshyProfile().fitScale).toBeCloseTo(SKELETON_ATHLETE.fitScale, 6);
+    expect(headEnd).toBeLessThanOrEqual(RIG_GLB_HEIGHT);
+    expect(headEnd).toBeGreaterThan(RIG_GLB_HEIGHT * 0.97);
+    expect(rigProfile().clubScale * rigProfile().fitScale).toBeCloseTo(SKELETON_ATHLETE.fitScale, 6);
   });
 });
 
 describe("swing on the 24-joint procedural golfer skeleton", () => {
-  beforeAll(() => useSkeleton(meshyProfile()));
+  beforeAll(() => useSkeleton(rigProfile()));
   afterAll(() => useSkeleton(SKELETON_ATHLETE));
 
   const PHASES: Array<[SwingPosePhase, number]> = [
@@ -88,8 +85,8 @@ describe("swing on the 24-joint procedural golfer skeleton", () => {
   ];
   const root = () => makeRoot(0);
   const solve = (phase: SwingPosePhase, t: number) => solveSwing(evaluateSwing(phase, t), root());
-  const prof = () => meshyProfile();
-  const palmOf = (fk: ReturnType<typeof meshyForwardKinematics>, fore: string, hand: string) => {
+  const prof = () => rigProfile();
+  const palmOf = (fk: ReturnType<typeof rigForwardKinematics>, fore: string, hand: string) => {
     const f = fk.get(fore)!.pos;
     const h = fk.get(hand)!.pos;
     return vAdd(h, vScale(unit(vSub(h, f)), PALM_PAST_HAND));
@@ -137,7 +134,7 @@ describe("swing on the 24-joint procedural golfer skeleton", () => {
       for (const [bone, b] of Object.entries(pose)) {
         expect(Math.hypot(b.rotation.x, b.rotation.y, b.rotation.z, b.rotation.w), `${bone} ${phase}@${t}`).toBeCloseTo(1, 5);
       }
-      const fk = meshyForwardKinematics(pose);
+      const fk = rigForwardKinematics(pose);
       expect(vDist(palmOf(fk, "RightForeArm", "RightHand"), toModel(root(), s.grip)), `R ${phase}@${t}`).toBeLessThan(0.005);
       expect(vDist(palmOf(fk, "LeftForeArm", "LeftHand"), toModel(root(), s.leftPalm)), `L ${phase}@${t}`).toBeLessThan(0.005);
       expect(vDist(fk.get("RightArm")!.pos, toModel(root(), s.shoulderRShot)), `RS ${phase}@${t}`).toBeLessThan(0.005);
@@ -153,7 +150,7 @@ describe("swing on the 24-joint procedural golfer skeleton", () => {
 
   it("the head stays over the body and the hands are higher than the knees through the swing", () => {
     for (const [phase, t] of PHASES) {
-      const fk = meshyForwardKinematics(retargetSolved(solve(phase, t)));
+      const fk = rigForwardKinematics(retargetSolved(solve(phase, t)));
       expect(fk.get("Head")!.pos[1], `${phase}@${t}`).toBeGreaterThan(1.2);
       expect(fk.get("RightHand")!.pos[1], `${phase}@${t}`).toBeGreaterThan(fk.get("RightLeg")!.pos[1]);
     }
@@ -162,24 +159,24 @@ describe("swing on the 24-joint procedural golfer skeleton", () => {
 
 describe("golfer variant", () => {
   it("selects the default GU47 profile by default, and the original athlete behind ?golfer=old or ?look=original", () => {
-    expect(golferVariantFromSearch("")).toBe("meshy");
-    expect(golferVariantFromSearch("?hole=3")).toBe("meshy");
+    expect(golferVariantFromSearch("")).toBe("idol");
+    expect(golferVariantFromSearch("?hole=3")).toBe("idol");
     expect(golferVariantFromSearch("?golfer=old")).toBe("athlete");
     expect(golferVariantFromSearch("?look=original")).toBe("athlete");
-    expect(golferVariantFromSearch("?look=gu47")).toBe("meshy");
+    expect(golferVariantFromSearch("?look=gu47")).toBe("idol");
   });
 
-  it("mounts the procedural articulated group and ready clip metadata", () => {
+  it("mounts the rigged Idol golfer GLB by default (the procedural articulated group behind ?golfer=old) with ready clip metadata", () => {
     const find = () => (buildGolferNodes({} as any) as any[]).map((n) => (typeof n?.toJSON === "function" ? n.toJSON() : n)).find((n) => n.name === "golfer-body");
     try {
-      setGolferVariant("meshy");
-      expect(find().kind).toBe("group");
+      setGolferVariant("idol");
+      expect(find().kind).toBe("model");
       expect(find().animation.clip).toBe("idle");
       setGolferVariant("athlete");
       expect(find().kind).toBe("group");
       expect(find().animation.clip).toBe("Ready");
     } finally {
-      setGolferVariant("meshy");
+      setGolferVariant("idol");
     }
   });
 });

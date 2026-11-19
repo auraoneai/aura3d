@@ -235,7 +235,7 @@ export function collectRoutes(rootDir) {
   }
   const appsDir = join(rootDir, "apps");
   return readdirSync(appsDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && (/^showcase-/.test(d.name) || d.name === "aura-clash-showcase"))
+    .filter((d) => d.isDirectory() && /^showcase-/.test(d.name))
     .map((d) => ({ id: d.name, dir: join(appsDir, d.name) }));
 }
 

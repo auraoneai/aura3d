@@ -13,11 +13,11 @@ export function swingAliasesFree(controls: Pick<ControlsPort, "actionForKey">): 
 /**
  * The bottom controls hint (C3), built from the live bindings instead of static HTML, so it names the right keys and follows
  * rebinds. Default text: "MOVE & AIM: ARROWS/WASD · SERVE & HIT: SPACE / J / K / L · SHORT: Q · DEEP: E · LOB: R (PRO/LEGEND) ·
- * POWER: SHIFT · PAUSE: P".
+ * POWER: SHIFT · PAUSE: P". The shell passes `autoplayKey` (shell/autoplay.ts, KeyO) to add "AUTOPLAY: O" while that key is free.
  */
 export function controlsHintText(
   controls: Pick<ControlsPort, "getBindings" | "labelFor" | "actionForKey">,
-  options: { lobAllLevels?: boolean } = {}
+  options: { lobAllLevels?: boolean; autoplayKey?: string } = {}
 ): string {
   const key = (action: string, all = false): string => controls.labelFor(action, "keyboard", { all });
   const hit = swingAliasesFree(controls) ? `${key("hit")} / J / K / L` : key("hit");
@@ -30,6 +30,7 @@ export function controlsHintText(
     `Deep: ${key("deep")}`,
     `Lob: ${key("lob")}${lobGate}`,
     `Power: ${power}`,
-    "Pause: P"
+    "Pause: P",
+    ...(options.autoplayKey && !controls.actionForKey(options.autoplayKey) ? [`Autoplay: ${options.autoplayKey.replace(/^Key/, "")}`] : [])
   ].join(" · ").toUpperCase();
 }

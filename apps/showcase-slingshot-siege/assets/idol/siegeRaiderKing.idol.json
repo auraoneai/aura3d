@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeRaiderKing",
+  "generatedAt": "2026-11-18T23:38:27.158Z",
+  "generator": "tools/idol/generate.mjs (post steps finished locally from the downloaded Idol result)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08a-30bf-7593-8d30-4f3af428dbc4",
+      "prompt": "A chubby round green pig-goblin king toy figure, big round lime-green head-body with a large pink pig snout, small ivory tusks, beady black eyes, a grand curled black handlebar moustache, pointed green ears, wearing a tall golden crown with red jewels sitting on a small red velvet cushion, a golden armour collar with a white ermine trim, short stubby legs. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f091-1344-7e80-8b82-d89b65d1ab77",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1085548,
+        "num_faces": 2171184,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A chubby round green pig-goblin king toy figure, big round lime-green head-body with a large pink pig snout, small ivory tusks, beady black eyes, a grand curled black handlebar moustache, pointed green ears, wearing a tall golden crown with red jewels sitting on a small red velvet cushion, a golden armour collar with a white ermine trim, short stubby legs. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.245,
+    "size": [
+      1.088,
+      1.42,
+      1.275
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeRaiderKing.glb",
+  "sizeBytes": 864120,
+  "preview": "artifacts/idol/slingshot-siege/siegeRaiderKing/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90",
+    "bytesBefore": 1501684,
+    "bytesAfter": 864120
+  }
+}

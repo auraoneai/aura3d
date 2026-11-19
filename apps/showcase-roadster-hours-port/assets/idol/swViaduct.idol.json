@@ -1,0 +1,48 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swViaduct",
+  "generatedAt": "2026-11-18T23:35:33.244Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the client's 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0f1-fc56-7a22-96bf-81ca9b10fa04",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 962804,
+        "num_faces": 1925908,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single short section of an old Mediterranean coastal stone viaduct bridge seen from the side: three tall round Romanesque arches carried on tapered warm limestone piers with stone plinth footings, sandstone voussoir arch stones and proud keystones, a flat road deck on top with a low wrought-iron parapet railing, weathered sun-bleached stone with moss at the base, open sky visible through the arches. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 34.597,
+    "size": [
+      34.65,
+      26.541,
+      34.403
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swViaduct.glb",
+  "sizeBytes": 1311988,
+  "preview": "artifacts/idol/saltwind-highway/swViaduct/views.png",
+  "usd": 0.2,
+  "postProcess": "textures re-encoded as JPEG, <= 512 px, to fit the per-game byte budget"
+}

@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swHatchMustardP",
+  "generatedAt": "2026-11-18T23:15:48.902Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/saltwind-highway/swHatchMustardP/ref-src.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0f1-f7d5-7dc2-b7d5-91fcf3e509c2",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 107,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1505868,
+        "num_faces": 3012464,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single compact five-door hatchback car of a fictional unbranded design, mustard-yellow paint, black plastic lower trim and bumpers, dark tinted windows, black roof rails, black tyres on silver alloy wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 3.5,
+    "scale": 3.59,
+    "size": [
+      1.863,
+      1.847,
+      4.12
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swHatchMustardP.glb",
+  "sizeBytes": 1229948,
+  "preview": "artifacts/idol/saltwind-highway/swHatchMustardP/views.png",
+  "usd": 0.2,
+  "orientationFix": "yawDeg 93.5 (long axis fitted; reference was a three-quarter view)",
+  "postProcess": "textures re-encoded as JPEG, <= 512 px, to fit the per-game byte budget"
+}

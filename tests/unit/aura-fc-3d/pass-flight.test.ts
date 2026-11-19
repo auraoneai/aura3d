@@ -4,7 +4,8 @@ const IDLE = { move: [0, 0], sprint: false, passShort: false, passDriven: false,
 describe("CPU match: passes are ground passes that reach their target", () => {
   it("median pass apex stays near the grass and most passes reach the intended receiver", () => {
     let total = 0, ok = 0, goals = 0, shots = 0; const maxH: number[] = [];
-    for (const seed of [1, 2]) {
+    // six 4-minute matches: two were too few to measure a ~72% completion rate against a 70% bar (±3% seed noise)
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
       const sim = createSim();
       sim.setAutopilot(true);
       sim.startMatch({ mode: "quick", venue: "favela", homeClub: "aurora", awayClub: "kings", userTeam: null, difficulty: 0.7, goldenGoal: false, shootoutOnTie: false, seed } as any);

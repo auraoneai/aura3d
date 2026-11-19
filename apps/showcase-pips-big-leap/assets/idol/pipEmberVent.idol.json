@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "pips-big-leap",
+  "key": "pipEmberVent",
+  "generatedAt": "2026-11-18T23:20:01.749Z",
+  "generator": "tools/idol/generate.mjs (request resumed after its 20-min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A low round volcanic basalt vent mound made of dark stones with glowing orange ember cracks and a hollow glowing crater on top. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b7-e182-7a71-8ca5-74afb58af34a",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 997948,
+        "num_faces": 1995892,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A low round volcanic basalt vent mound made of dark stones with glowing orange ember cracks and a hollow glowing crater on top. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.642,
+    "size": [
+      1.64,
+      0.918,
+      1.626
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-pips-big-leap/assets/idol/pipEmberVent.glb",
+  "sizeBytes": 682196,
+  "preview": "artifacts/idol/pips-big-leap/pipEmberVent/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    "PNG textures (normal map) re-encoded as JPEG q90, 4:4:4; geometry and UVs untouched"
+  ],
+  "admitRole": "prop",
+  "renormalizedAt": "2026-11-18T23:37:49.662Z"
+}

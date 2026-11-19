@@ -41,7 +41,8 @@ describe("pips-big-leap certification provenance", () => {
       for (const look of ["diorama", "original"] as const) {
         const built = buildWorld(spec, { look });
         const scene = JSON.stringify(built.scene.toJSON());
-        expect(scene, `${id} ${look} hero`).toContain('"name":"pip:torso"');
+        expect(scene, `${id} ${look} hero`).toContain('"name":"pip"');
+        expect(scene, `${id} ${look} hero`).toContain('"id":"pipHero"');
         // invariant: source must not reintroduce `<backdrop id>` in the built world — Pips keeps the uncertified backdrop unmounted so route health never claims it
         expect(scene, `${id} ${look} backdrop`).not.toContain(backdrop.id);
 

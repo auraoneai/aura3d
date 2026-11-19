@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-turf",
+  "key": "turfPaintBucketAmber",
+  "generatedAt": "2026-11-18T21:59:02.499Z",
+  "generator": "tools/idol/generate.mjs (client-timeout resume)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A large open metal paint bucket with a wire bail handle, overflowing with thick glossy amber-yellow paint that drips down the sides and pools around the base, a paint roller resting across the rim. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17,
+      "note": "billed in the timed-out generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f098-4c36-7322-9e87-86420aba39fb",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1037958,
+        "num_faces": 2075984,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A large open metal paint bucket with a wire bail handle, overflowing with thick glossy amber-yellow paint that drips down the sides and pools around the base, a paint roller resting across the rim. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.437,
+    "size": [
+      1.437,
+      1.35,
+      1.177
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-turf/assets/idol/turfPaintBucketAmber.glb",
+  "sizeBytes": 1367852,
+  "preview": "artifacts/idol/splat-turf/turfPaintBucketAmber/views.png",
+  "usd": 0.37,
+  "postProcess": "PNG textures re-encoded as JPEG q90 (normal map) by the splat Idol pass to fit the per-game byte budget"
+}

@@ -1,15 +1,15 @@
 /**
- * Swing verification tool (offline, no browser): solves the swing at 12 phase samples for the Meshy golfer and for the original
+ * Swing verification tool (offline, no browser): solves the swing at 12 phase samples for the 24-joint golfer and for the original
  * athlete, prints the joint read-outs (elbow flexion, shoulder elevation, shoulder / hip turn, arm side, shaft) and renders stick-figure
  * contact sheets (face-on, down-the-line and the in-game 3/4 camera behind-right of the player) as PNG via sharp.
  *
  * Run (from the repo root): pnpm exec tsx apps/showcase-aura-links-3d/scripts/golfer-swing-sheet.ts <label> [outDir]
-* Output: <outDir>/<label>-{meshy,old}-{front,dtl,game,keys}.png and <label>-metrics.txt (default outDir tests/reports/golfer-swing).
+* Output: <outDir>/<label>-{idol,old}-{front,dtl,game,keys}.png and <label>-metrics.txt (default outDir tests/reports/golfer-swing).
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
-import { meshyProfile } from "../src/game/golferRetarget";
+import { rigProfile } from "../src/game/golferRetarget";
 import { poseJoints, swingMetrics, type PoseJoints } from "../src/game/swingAnalysis";
 import {
   BALL_SHOT, SKELETON_ATHLETE, evaluateSwing, makeRoot, solveSwing, toModel, useSkeleton, vAdd, vDot, vScale, vSub,
@@ -114,7 +114,7 @@ async function sheet(profile: SkeletonProfile, name: string, outDir: string, lab
 const label = process.argv[2] ?? "run";
 const outDir = resolve(process.argv[3] ?? "tests/reports/golfer-swing");
 mkdirSync(outDir, { recursive: true });
-const text = [await sheet(meshyProfile(), "meshy", outDir, label), await sheet(SKELETON_ATHLETE, "old", outDir, label)].join("\n\n");
+const text = [await sheet(rigProfile(), "idol", outDir, label), await sheet(SKELETON_ATHLETE, "old", outDir, label)].join("\n\n");
 useSkeleton(SKELETON_ATHLETE);
 writeFileSync(resolve(outDir, `${label}-metrics.txt`), text + "\n");
 console.log(text);

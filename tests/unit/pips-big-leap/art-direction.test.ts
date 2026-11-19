@@ -25,9 +25,13 @@ function snapshotOf(id: (typeof WORLD_IDS)[number]): ArtDirectionSnapshot {
 }
 
 describe("pips-big-leap art direction (PRD 3.2)", () => {
-  it("passes defineArtDirection with zero Meshy GLB assets (100% @aura3d/engine procedural)", () => {
+  it("passes defineArtDirection with the Idol wow-pass GLBs contracted (rigged hero + boss, props, set dressing)", () => {
     expect(defineArtDirection(direction)).toBe(direction);
-    expect(direction.assets).toEqual([]);
+    const keys = direction.assets.map((a) => a.assetKey);
+    expect(keys).toContain("pipHero");
+    expect(keys).toContain("pipBrambleback");
+    expect(keys.every((k) => /^pip[A-Z]/.test(k))).toBe(true);
+    expect(direction.assets.find((a) => a.assetKey === "pipHero")?.role).toBe("hero");
   });
 
   it("states the identity: moss, toadstool red, birch cream; sun-seed gold reserved; a unique miniature-lens signature", () => {

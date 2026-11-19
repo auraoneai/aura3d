@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icCoStandard",
+  "generatedAt": "2026-11-18T23:04:08.688Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0be-9b18-7e61-bc88-a0cc67b0153a",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0c9-3dc3-75f3-9082-85295e32035c",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 380756,
+        "num_faces": 761536,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Ancient legion battle standard: tall bronze pole topped with a laurel wreath and a crossbar holding a hanging crimson banner with gold fringe, square stone base",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.465,
+    "size": [
+      1.728,
+      3.68,
+      0.642
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icCoStandard.glb",
+  "sizeBytes": 2622632,
+  "preview": "artifacts/idol/iron-crown/icCoStandard/views.png",
+  "usd": 0.37
+}

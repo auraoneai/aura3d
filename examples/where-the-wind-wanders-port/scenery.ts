@@ -7,6 +7,7 @@
 import { BELL, BOUNDS, LETTERS, START, STRUCTURES, FENCE_ASPECT } from "./sim";
 import { KIND, addBlob, addBox, addCylinder, addGable, addLathe, addQuad, lin, mixRgb, newMesh, scaleRgb, type Mesh, type Rgb } from "./meshkit";
 import { SEA_LEVEL, lehmer, pathZ, terrainHeight, type ShadowBlob } from "./terrain";
+import { COTTAGE_LAYOUT, DESIRE_LINE_HALF_WIDTH, SIGNPOSTS, SIGNPOST_R, desireLineDistance } from "./decor-layout";
 
 const SUN_SHADOW = (() => {
   const x = 0.468, z = -0.374, l = Math.hypot(x, z);
@@ -37,6 +38,10 @@ export interface Scenery {
   /** WW47-V4: top of the main cottage's chimney (procedural cottage; the GLB cottage uses the same footprint offset). */
   chimney: { x: number; y: number; z: number } | null;
   treeCount: number;
+  /** Solid footprints the player bumps into (tree trunks, rocks, signposts) inside the walkable meadow: x, z, radius. */
+  solids: { x: number; z: number; r: number; kind: "trunk" | "rock" | "sign" }[];
+  /** Tree crowns near the walk (x, z, radius, crown bottom and top in world y): the follow camera keeps clear of them. */
+  canopies: { x: number; z: number; r: number; minY: number; maxY: number }[];
 }
 
 const C = {
@@ -62,6 +67,14 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
   const lanterns: { x: number; y: number; z: number }[] = [];
   let chimney: Scenery["chimney"] = null;
   let treeCount = 0;
+  const solids: Scenery["solids"] = [];
+  const canopies: Scenery["canopies"] = [];
+  /** Crowns within reach of the follow camera (it trails ~9 m south of the walk and may sit outside the walkable box). */
+  const canopy = (x: number, z: number, r: number, minY: number, maxY: number): void => {
+    if (x > BOUNDS.minX - 14 && x < BOUNDS.maxX + 14 && z > BOUNDS.minZ - 6 && z < BOUNDS.maxZ + 16) canopies.push({ x, z, r, minY, maxY });
+  };
+  const walkable = (x: number, z: number, r: number): boolean => x > BOUNDS.minX - r && x < BOUNDS.maxX + r && z > BOUNDS.minZ - r && z < BOUNDS.maxZ + r;
+  const solid = (x: number, z: number, r: number, kind: Scenery["solids"][number]["kind"]): void => { if (walkable(x, z, r)) solids.push({ x, z, r, kind }); };
 
   const blocked = (x: number, z: number, pad = 0): boolean => {
     if (Math.abs(z - pathZ(x)) < 2.2 + pad && x > -52 && x < 58) return true;
@@ -131,9 +144,9 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
     blobs.push({ x, z, rx: w * 0.62, rz: d * 0.62, strength: 0.35 });
     keepClear.push({ x, z, r: Math.max(w, d) * 0.62 + 1.5 });
   };
-  const cot = STRUCTURES.cottage, dcot = STRUCTURES.distantCottage, mill = STRUCTURES.windmill;
-  cottage(cot.x, cot.z, 1.12, 0, C.tile, C.plaster);
-  cottage(dcot.x, dcot.z, 0.95, 0.5, lin("#a8503a"), lin("#e6dcc0"));
+  const mill = STRUCTURES.windmill;
+  cottage(COTTAGE_LAYOUT[0]!.x, COTTAGE_LAYOUT[0]!.z, COTTAGE_LAYOUT[0]!.s, COTTAGE_LAYOUT[0]!.yaw, C.tile, C.plaster);
+  cottage(COTTAGE_LAYOUT[1]!.x, COTTAGE_LAYOUT[1]!.z, COTTAGE_LAYOUT[1]!.s, COTTAGE_LAYOUT[1]!.yaw, lin("#a8503a"), lin("#e6dcc0"));
   if (replace.shrubs) {
     for (const c of placements.cottages) {
       for (let i = 0; i < 5; i++) {
@@ -190,12 +203,13 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
   };
   for (let x = -18; x < -7; x += 4) fenceAt(x, -4, 1.45);
   for (let x = 25; x < 42; x += 4) fenceAt(x, 7, 1.35);
-  for (const [sx, sz, yaw] of [[-14, 2, 0.2], [13, 3, -0.15]] as const) {
+  for (const [sx, sz, yaw] of SIGNPOSTS) {
     const y = terrainHeight(sx, sz);
     addBox(props, { x: sx, y: y + 0.75, z: sz, w: 0.16, h: 1.5, d: 0.16, kind: KIND.wood, color: C.woodDark });
     addBox(props, { x: sx, y: y + 1.45, z: sz + 0.05, w: 1.05, h: 0.46, d: 0.07, yaw, kind: KIND.wood, color: C.woodLight });
     addBox(props, { x: sx + 0.1, y: y + 1.0, z: sz + 0.05, w: 0.8, h: 0.3, d: 0.07, yaw: yaw + 0.1, kind: KIND.wood, color: C.wood });
     keepClear.push({ x: sx, z: sz, r: 1.2 });
+    solid(sx, sz, SIGNPOST_R, "sign");
   }
   const by = terrainHeight(BELL.x, BELL.z);
   if (!replace.bell) {
@@ -241,7 +255,11 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
     for (let i = 0; i < n; i++) {
       const rx = x + (rand() - 0.5) * 3.2 * s, rz = z + (rand() - 0.5) * 2.6 * s;
       const sz = (0.4 + rand() * 0.9) * s;
-      addBlob(props, { x: rx, y: terrainHeight(rx, rz) + sz * 0.2, z: rz, rx: sz * 1.3, ry: sz * 0.8, rz: sz, rings: 4, seg: 7, bump: 0.22, kind: KIND.stone, color: scaleRgb(C.rock, 0.78), colorTop: C.rock, rand, upNormal: 0.15 });
+      // rocks on a walked route are left out (drawn into the sink, so the random stream and every other rock stay put)
+      const onRoute = desireLineDistance(rx, rz) < DESIRE_LINE_HALF_WIDTH + sz * 1.15;
+      addBlob(onRoute ? sink : props, { x: rx, y: terrainHeight(rx, rz) + sz * 0.2, z: rz, rx: sz * 1.3, ry: sz * 0.8, rz: sz, rings: 4, seg: 7, bump: 0.22, kind: KIND.stone, color: scaleRgb(C.rock, 0.78), colorTop: C.rock, rand, upNormal: 0.15 });
+      // knee-high and taller rocks block (the blob stands ~sz above the grass); pebbles are stepped over
+      if (sz >= 0.5 && !onRoute) solid(rx, rz, sz * 1.15, "rock");
     }
   };
   rocks(-30, -7.2, 4, 0.9); rocks(-10, -7.5, 3, 0.8); rocks(12, -4.2, 3, 0.8); rocks(40, -12.5, 6, 1.0); rocks(8, -15.5, 5, 1.1); rocks(-35, -14, 7, 1.2); rocks(52, 8, 4, 0.9); rocks(-43, -8, 4, 1.0); rocks(24, -2, 3, 0.7);
@@ -263,32 +281,39 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
   const boatMoor = { x: jx + 2.35, y: SEA_LEVEL + 0.02, z: -14.3 };
 
   /* ---------- trees ---------- */
+  /** Set while a scattered tree lands on a desire line: it is drawn into the sink (same random draws, nothing visible or solid). */
+  let skipTree = false;
+  const treeOut = (): Mesh => (skipTree ? sink : props);
   const pine = (x: number, z: number, s: number, tone: number, yAt?: number): void => {
     const y = (yAt ?? terrainHeight(x, z)) - 0.1;
     const H = (3.8 + rand() * 2.8) * s;
     const phase = rand() * 6.28;
     const frost = rand() < 0.22;
     if (replace.trees) {
-      placements.pines.push({ x, y, z, s, yaw: rand() * 6.28, h: H + 1.2 * s, variant: frost ? 1 : 0 });
-      blobs.push({ x: x + SUN_SHADOW.x * H * 0.55, z: z + SUN_SHADOW.z * H * 0.55, rx: 1.7 * s, rz: 1.5 * s + H * 0.12, strength: 0.38 });
-      keepClear.push({ x, z, r: 1.3 * s });
-      treeCount++;
+      if (!skipTree) placements.pines.push({ x, y, z, s, yaw: rand() * 6.28, h: H + 1.2 * s, variant: frost ? 1 : 0 });
+      if (!skipTree) solid(x, z, 0.4 * s, "trunk");
+      if (!skipTree) canopy(x, z, 1.8 * s, y + 1.0 * s, y + H + 1.2 * s);
+      if (!skipTree) blobs.push({ x: x + SUN_SHADOW.x * H * 0.55, z: z + SUN_SHADOW.z * H * 0.55, rx: 1.7 * s, rz: 1.5 * s + H * 0.12, strength: 0.38 });
+      if (!skipTree) keepClear.push({ x, z, r: 1.3 * s });
+      if (!skipTree) treeCount++;
       return;
     }
     const deep = frost ? C.pineFrost : mixRgb(C.pineDeep, C.pineMid, tone);
     const top = frost ? scaleRgb(C.pineFrost, 1.25) : mixRgb(C.pineMid, C.pineLight, tone);
-    addCylinder(props, { x, y, z, r0: 0.3 * s, r1: 0.15 * s, h: 2.3 * s, seg: 6, kind: KIND.bark, color: C.barkDark, colorTop: C.barkLight, sway: 0.02, phase });
+    addCylinder(treeOut(), { x, y, z, r0: 0.3 * s, r1: 0.15 * s, h: 2.3 * s, seg: 6, kind: KIND.bark, color: C.barkDark, colorTop: C.barkLight, sway: 0.02, phase });
+    if (!skipTree) solid(x, z, 0.4 * s, "trunk");
+    if (!skipTree) canopy(x, z, 1.8 * s, y + 1.2 * s, y + H);
     const tiers = 5;
     for (let i = 0; i < tiers; i++) {
       const f = i / tiers;
       const base = y + 1.2 * s + f * (H - 2.0 * s);
       const r = (1.7 * (1 - f * 0.78)) * s;
       const h = ((H - 1.2 * s) / tiers) * 2.15;
-      addCylinder(props, { x, y: base, z, r0: r, r1: 0.04 * s, h, seg: 11, jag: 0.16, kind: KIND.leaf, color: scaleRgb(deep, 0.78 + 0.1 * f), colorTop: mixRgb(deep, top, 0.4 + 0.6 * f), jitter: 0.07, rand, sway: 0.1 * f * s + 0.03, phase, upNormal: 0.55 });
+      addCylinder(treeOut(), { x, y: base, z, r0: r, r1: 0.04 * s, h, seg: 11, jag: 0.16, kind: KIND.leaf, color: scaleRgb(deep, 0.78 + 0.1 * f), colorTop: mixRgb(deep, top, 0.4 + 0.6 * f), jitter: 0.07, rand, sway: 0.1 * f * s + 0.03, phase, upNormal: 0.55 });
     }
-    blobs.push({ x: x + SUN_SHADOW.x * H * 0.55, z: z + SUN_SHADOW.z * H * 0.55, rx: 1.7 * s, rz: 1.5 * s + H * 0.12, strength: 0.38 });
-    keepClear.push({ x, z, r: 1.3 * s });
-    treeCount++;
+    if (!skipTree) blobs.push({ x: x + SUN_SHADOW.x * H * 0.55, z: z + SUN_SHADOW.z * H * 0.55, rx: 1.7 * s, rz: 1.5 * s + H * 0.12, strength: 0.38 });
+    if (!skipTree) keepClear.push({ x, z, r: 1.3 * s });
+    if (!skipTree) treeCount++;
   };
   const roundTree = (x: number, z: number, s: number, variant: "oak" | "birch" | "maple", big = false, yAt?: number): void => {
     const y = (yAt ?? terrainHeight(x, z)) - 0.1;
@@ -296,33 +321,37 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
     const trunkH = (big ? 4.4 : 2.0 + rand() * 0.6) * s;
     if (replace.trees) {
       const R0 = (big ? 3.1 : 1.5 + rand() * 0.4) * s;
-      placements.oaks.push({ x, y, z, s, yaw: rand() * 6.28, h: trunkH + R0 * 2.2, variant: variant === "birch" ? 1 : variant === "maple" ? 2 : 0 });
-      blobs.push({ x: x + SUN_SHADOW.x * R0 * 1.0, z: z + SUN_SHADOW.z * R0 * 1.0, rx: R0 * 1.5, rz: R0 * 1.3, strength: big ? 0.5 : 0.36 });
-      keepClear.push({ x, z, r: big ? 2.6 : 1.3 * s });
-      treeCount++;
+      if (!skipTree) placements.oaks.push({ x, y, z, s, yaw: rand() * 6.28, h: trunkH + R0 * 2.2, variant: variant === "birch" ? 1 : variant === "maple" ? 2 : 0 });
+      if (!skipTree) solid(x, z, (big ? 0.95 : 0.42) * s, "trunk");
+      if (!skipTree) canopy(x, z, R0 * 1.25, y + trunkH * 0.8, y + trunkH + R0 * 2.2);
+      if (!skipTree) blobs.push({ x: x + SUN_SHADOW.x * R0 * 1.0, z: z + SUN_SHADOW.z * R0 * 1.0, rx: R0 * 1.5, rz: R0 * 1.3, strength: big ? 0.5 : 0.36 });
+      if (!skipTree) keepClear.push({ x, z, r: big ? 2.6 : 1.3 * s });
+      if (!skipTree) treeCount++;
       return;
     }
     const leafBase = variant === "maple" ? lin("#a8903a") : variant === "birch" ? lin("#5e9a3e") : C.oakDeep;
     const leafTop = variant === "maple" ? lin("#dcc45a") : variant === "birch" ? lin("#93c455") : lin("#78ad42");
-    addCylinder(props, { x, y, z, r0: (big ? 0.85 : 0.34) * s, r1: (big ? 0.5 : 0.2) * s, h: trunkH, seg: 8, kind: KIND.bark, color: variant === "birch" ? C.birchDark : C.barkDark, colorTop: variant === "birch" ? C.birch : C.barkLight, sway: 0.015, phase });
+    if (!skipTree) solid(x, z, (big ? 0.95 : 0.42) * s, "trunk");
+    addCylinder(treeOut(), { x, y, z, r0: (big ? 0.85 : 0.34) * s, r1: (big ? 0.5 : 0.2) * s, h: trunkH, seg: 8, kind: KIND.bark, color: variant === "birch" ? C.birchDark : C.barkDark, colorTop: variant === "birch" ? C.birch : C.barkLight, sway: 0.015, phase });
     const nb = big ? 16 : 9 + Math.floor(rand() * 4);
     const R = (big ? 3.1 : 1.5 + rand() * 0.4) * s;
+    if (!skipTree) canopy(x, z, R * 1.25, y + trunkH * 0.8, y + trunkH + R * 2.2);
     for (let i = 0; i < nb; i++) {
       const a = (i / nb) * Math.PI * 2 * 1.7 + rand();
       const rr = i === 0 ? 0 : R * (0.5 + rand() * 0.45);
       const by2 = y + trunkH + R * (0.45 + rand() * 0.75) + (i === 0 ? R * 0.35 : 0);
       const sc = (i === 0 ? 0.8 : 0.42 + rand() * 0.28) * R;
-      addBlob(props, { x: x + Math.cos(a) * rr, y: by2, z: z + Math.sin(a) * rr, rx: sc, ry: sc * 0.8, rz: sc, rings: 5, seg: 9, bump: 0.2, kind: KIND.leaf, color: leafBase, colorTop: leafTop, jitter: 0.1, rand, sway: 0.1 * s, phase: phase + i * 0.4, upNormal: 0.45 });
+      addBlob(treeOut(), { x: x + Math.cos(a) * rr, y: by2, z: z + Math.sin(a) * rr, rx: sc, ry: sc * 0.8, rz: sc, rings: 5, seg: 9, bump: 0.2, kind: KIND.leaf, color: leafBase, colorTop: leafTop, jitter: 0.1, rand, sway: 0.1 * s, phase: phase + i * 0.4, upNormal: 0.45 });
     }
     if (big) {
       for (let i = 0; i < 3; i++) {
         const a = i * 2.1 + 0.4;
-        addCylinder(props, { x, y: y + trunkH * 0.7, z, r0: 0.3, r1: 0.14, h: 2.4, seg: 6, kind: KIND.bark, color: C.barkDark, colorTop: C.barkLight, lean: [Math.cos(a) * 1.9, 1.1, Math.sin(a) * 1.9] });
+        addCylinder(treeOut(), { x, y: y + trunkH * 0.7, z, r0: 0.3, r1: 0.14, h: 2.4, seg: 6, kind: KIND.bark, color: C.barkDark, colorTop: C.barkLight, lean: [Math.cos(a) * 1.9, 1.1, Math.sin(a) * 1.9] });
       }
     }
-    blobs.push({ x: x + SUN_SHADOW.x * R * 1.0, z: z + SUN_SHADOW.z * R * 1.0, rx: R * 1.5, rz: R * 1.3, strength: big ? 0.5 : 0.36 });
-    keepClear.push({ x, z, r: big ? 2.6 : 1.3 * s });
-    treeCount++;
+    if (!skipTree) blobs.push({ x: x + SUN_SHADOW.x * R * 1.0, z: z + SUN_SHADOW.z * R * 1.0, rx: R * 1.5, rz: R * 1.3, strength: big ? 0.5 : 0.36 });
+    if (!skipTree) keepClear.push({ x, z, r: big ? 2.6 : 1.3 * s });
+    if (!skipTree) treeCount++;
   };
 
   // the old oak at the first letter: a wide, gnarled crown on a short, thick trunk
@@ -343,6 +372,7 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
     }
     blobs.push({ x: ox + SUN_SHADOW.x * 7, z: oz + SUN_SHADOW.z * 7, rx: 9.5, rz: 8, strength: 0.52 });
     keepClear.push({ x: ox, z: oz, r: 5.2 });
+    canopy(ox, oz, 7.4, oy + 6.0, oy + 15.5);
     treeCount++;
   }
   for (const l of LETTERS) keepClear.push({ x: l.x, z: l.z, r: 2.4 });
@@ -354,7 +384,9 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
       const x = region.x0 + rand() * (region.x1 - region.x0), z = region.z0 + rand() * (region.z1 - region.z0);
       if (blocked(x, z, pad)) continue;
       if (terrainHeight(x, z) < SEA_LEVEL + 0.5) continue;
+      skipTree = desireLineDistance(x, z) < DESIRE_LINE_HALF_WIDTH + 0.7;
       fn(x, z);
+      skipTree = false;
       made++;
     }
   };
@@ -453,7 +485,7 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
   addBlob(wisp, { x: 0, y: -0.28, z: 0, rx: 0.1, ry: 0.2, rz: 0.1, rings: 3, seg: 6, bump: 0, kind: KIND.skin, color: lin("#7a4fd8"), colorTop: lin("#9b6cf0") });
   const traveller = buildTraveller();
 
-  return { placements, props, sails, boat, traveller, bellMesh, envelope, wisp, blobs, keepClear, windmillHub, bellHang, boatMoor, jettyEnd, lanterns, chimney, treeCount };
+  return { placements, props, sails, boat, traveller, bellMesh, envelope, wisp, blobs, keepClear, windmillHub, bellHang, boatMoor, jettyEnd, lanterns, chimney, treeCount, solids, canopies };
 }
 
 /** The walker: limb ids drive the vertex-shader gait (1/2 legs, 3/4 arms, 5 cloak). Feet at y = 0, facing +z. */

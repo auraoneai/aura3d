@@ -43,12 +43,13 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
     }
   });
 
-  it("draws the analytic sky on Harbor, Canyon and Lunar and hides their HDRI; Midtown, Ivy and the Dome draw the HDRI", () => {
+  it("draws the analytic sky on Harbor, Midtown, Canyon and Lunar and hides their HDRI; Ivy and the Dome draw the HDRI", () => {
     for (const park of PARK_ORDER) {
       const { nodes } = flat(park);
       const skies = nodes.filter((n) => n.kind === "sky");
       const env = nodes.find((n) => n.kind === "environment");
-      if (park === "sandlot" || park === "canyon" || park === "lunar") {
+      // Midtown joined the sky parks in the owner QA pass: its drawn HDRI street lamps bloomed the walk-up shot white.
+      if (park === "sandlot" || park === "skyline" || park === "canyon" || park === "lunar") {
         expect(skies).toHaveLength(1);
         expect(env?.background).toBe(false);
       } else {

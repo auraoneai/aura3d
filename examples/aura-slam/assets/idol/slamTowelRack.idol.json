@@ -1,0 +1,61 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-slam",
+  "key": "slamTowelRack",
+  "generatedAt": "2026-11-18T21:20:54.330Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f088-b92f-7311-abc2-3ebceafb44a7",
+      "prompt": "A small A-frame courtside towel rack made of dark green steel tube with two folded fluffy cream white towels hanging over the top bar. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08a-2ad7-72b2-9d95-1ae9bbff1f9a",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1049334,
+        "num_faces": 2098736,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A small A-frame courtside towel rack made of dark green steel tube with two folded fluffy cream white towels hanging over the top bar. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.881,
+    "size": [
+      0.879,
+      0.88,
+      0.541
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/aura-slam/assets/idol/slamTowelRack.glb",
+  "sizeBytes": 1137504,
+  "preview": "artifacts/idol/aura-slam/slamTowelRack/views.png",
+  "usd": 0.37,
+  "postOptimize": {
+    "tool": "aura3d assets optimize",
+    "role": "prop",
+    "tex": 512,
+    "maxVerts": 8000,
+    "reason": "~20-40 px under the broadcast camera; per-game byte budget"
+  }
+}

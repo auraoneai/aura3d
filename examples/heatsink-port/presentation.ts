@@ -256,6 +256,19 @@ export interface CraftArticulationState {
   nozzleScale?: number;
 }
 
+/**
+ * Largest rotor advance per rendered frame (rad). The craft rotor and the target fans have 4 blades (3 on Low), so the
+ * pattern repeats every 90 degrees; at 60 fps the old 44..126 rad/s spin stepped 0.73..2.1 rad a frame, and near 1.57 rad
+ * (about 96 rad/s, full race speed) the blades strobed to a near standstill or crawled backwards (wagon-wheel aliasing:
+ * audit 2026-11-19). Keeping each step under a third of the 4-blade period makes every frame read as a forward spin.
+ */
+export const ROTOR_MAX_STEP = 0.5;
+/** per-frame rotor advance for `rpmRad` (rad/s) over `dt`: monotonic in rpm and dt, always below `ROTOR_MAX_STEP` */
+export function rotorStep(rpmRad: number, dt: number): number {
+  const raw = Math.max(0, rpmRad) * Math.min(0.1, Math.max(0, dt));
+  return ROTOR_MAX_STEP * (1 - Math.exp(-raw / ROTOR_MAX_STEP));
+}
+
 export function stepCraftArticulation(
   state: CraftArticulationState,
   dt: number,
@@ -268,7 +281,7 @@ export function stepCraftArticulation(
   const boostLevel = typeof boostActive === "number" ? Math.min(1, Math.max(0, boostActive)) : (boostActive ? 1 : 0);
   const clampedSpeed = Math.min(1, Math.max(0, speed01));
   const rpmRad = 44 + 52 * clampedSpeed + 30 * boostLevel;
-  state.rotorAngle = (state.rotorAngle + rpmRad * clampedDt) % (Math.PI * 200);
+  state.rotorAngle = (state.rotorAngle + rotorStep(rpmRad, clampedDt)) % (Math.PI * 200);
   const targetPitch = brakingOrDrifting ? 0.52 : 0.06 + 0.08 * clampedSpeed;
   const targetRoll = Math.max(-1, Math.min(1, steer)) * 0.22;
   const k = 1 - Math.exp(-clampedDt * 14);

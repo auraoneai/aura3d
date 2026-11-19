@@ -49,7 +49,9 @@ export default defineArtDirection({
     { role: "enemy", assetKey: "ninja-brute", maxTriangles: 15000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["run", "idle", "punch", "hit"] } },
     { role: "character", assetKey: "ninja-sage", maxTriangles: 15000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["run", "idle", "jump", "slide", "punch"] } },
     { role: "enemy", assetKey: "ninja-caster", maxTriangles: 15000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["idle", "run", "cast", "hit", "death"] } },
-    { role: "enemy", assetKey: "ninja-scout", maxTriangles: 15000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["idle", "run", "throw", "hit", "death"] } }
+    { role: "enemy", assetKey: "ninja-scout", maxTriangles: 15000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["idle", "run", "throw", "hit", "death"] } },
+    // Idol wow pass: the evening water wheel rotor (spins about its axle in world.ts)
+    { role: "set-dressing", assetKey: "nrWaterWheel", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "kill", kind: "burst" },

@@ -63,7 +63,7 @@ function classify(line) {
 
 const appsDir = join(scanRoot, "apps");
 const routes = readdirSync(appsDir, { withFileTypes: true })
-  .filter((d) => d.isDirectory() && (/^showcase-/.test(d.name) || d.name === "aura-clash-showcase"))
+  .filter((d) => d.isDirectory() && /^showcase-/.test(d.name))
   .map((d) => d.name)
   .filter((name) => onlyRoutes === null || onlyRoutes.has(name));
 

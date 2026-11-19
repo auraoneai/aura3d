@@ -39,15 +39,6 @@ const gameRuntimeConfig = [
   "vitest.config.ts",
   "aura.exports.json"
 ];
-const clashTest = "apps/aura-clash-showcase/tests/copy-boundary.test.mjs";
-const clashPrerequisites = [
-  "apps/aura-clash-showcase/index.html",
-  "apps/aura-clash-showcase/src/main.ts",
-  "apps/aura-clash-showcase/src/legacy/main.ts",
-  "apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts",
-  "apps/aura-clash-showcase/src/legacy/ui/TitleScreen.ts",
-  "apps/aura-clash-showcase/src/v2/boot.ts"
-];
 const releaseTest = "tests/unit/release/muse301-publication-workflows.test.mjs";
 const releasePrerequisites = [
   "tools/release/publish-all.mjs",
@@ -107,8 +98,6 @@ describe("native source test inventory", () => {
       "apps/animation-studio-web/verify/wiring.test.cjs",
       "apps/animation-studio-web/src/state/backend.ts",
       "apps/animation-studio-web/src/state/mapDocument.ts",
-      clashTest,
-      ...clashPrerequisites,
       "tools/asset-optimize/tests/profiles.test.ts",
       "tools/asset-optimize/vitest.config.ts",
       "tests/cli-configs/install-meshy-mcp.test.mjs",
@@ -150,7 +139,7 @@ describe("native source test inventory", () => {
       .toEqual(["packages", "packages-dist"]);
     const byId = Object.fromEntries(result.supplementalChecks.map((check: any) => [check.id, check]));
     expect(Object.keys(byId).sort()).toEqual([
-      "app-animation-studio-node", "app-clash-node", "app-cross-hop-vitest",
+      "app-animation-studio-node", "app-cross-hop-vitest",
       "app-wonder-world-vitest", "asset-optimize-vitest", "cli-config-node",
       "cli-config-shell", "docs-game-upgrades-node", "node-release-unit",
       "performance-cpu-vitest", "template-node", "template-source-vitest"
@@ -172,7 +161,6 @@ describe("native source test inventory", () => {
       "node", "--test", "--test-reporter=tap", "--test-concurrency=1",
       "apps/animation-studio-web/verify/wiring.test.cjs"
     ]);
-    expect(byId["app-clash-node"].prerequisitePaths).toEqual([...clashPrerequisites].sort());
     expect(byId["node-release-unit"].prerequisitePaths).toEqual([...releasePrerequisites].sort());
     expect(byId["cli-config-shell"].invocations[0].argv)
       .toEqual(["bash", "tests/cli-configs/meshy-agent.test.sh"]);
@@ -354,7 +342,6 @@ describe("native source test inventory", () => {
   });
 
   it.each([
-    { testPath: clashTest, checkId: "app-clash-node", prerequisites: clashPrerequisites },
     { testPath: releaseTest, checkId: "node-release-unit", prerequisites: releasePrerequisites }
   ])("binds exactly the staged $checkId contract inputs and blocks every missing path", ({ testPath, checkId, prerequisites }) => {
     const staged = manifest([testPath, ...prerequisites]);

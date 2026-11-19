@@ -27,3 +27,21 @@ describe("grid dispatch per-app asset manifest (RH-06, C6, 100% @aura3d/engine p
     }
   });
 });
+
+describe("grid dispatch Idol wow pass assets", () => {
+  it("every route-local Idol model has a provenance record, a brand-free key, and an admitted file in the shared public tree", async () => {
+    const { assets: routeAssets } = await import("../../../apps/showcase-teleoperator/src/aura-assets.route");
+    const keys = Object.keys(routeAssets);
+    expect(keys.length).toBe(30);
+    for (const key of keys) {
+      expect(key).toMatch(/^gd[A-Z]/);
+      expect(key).not.toMatch(/waymo|cybercab|cybertruck|corvette|tesla|jaguar|zoox|transamerica|coit/i);
+      const provDir = "apps/showcase-teleoperator/assets/idol";
+      const prov = JSON.parse(readFileSync(join(root, provDir, `${key}.idol.json`), "utf8")) as { schema: string; key: string };
+      expect(prov.schema).toBe("aura3d.idol-provenance/1");
+      expect(prov.key).toBe(key);
+      const url = (routeAssets as Record<string, { url: string }>)[key]!.url;
+      expect(existsSync(join(root, "public", url)), url).toBe(true);
+    }
+  });
+});

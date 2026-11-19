@@ -1,0 +1,46 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icSovereignShield",
+  "generatedAt": "2026-11-18T23:30:48.715Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0a6-106d-76b3-8a91-043cb4eccda6",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ea-7a64-7c01-b94f-8f2497e378d2",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1248686,
+        "num_faces": 2497444,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "subject": "Heater-shaped knight shield of blackened steel with a raised gold crown-shaped boss in the centre, gold riveted rim, battle scratches, seen from the front",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.525,
+    "size": [
+      0.526,
+      0.62,
+      0.129
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icSovereignShield.glb",
+  "sizeBytes": 2389596,
+  "preview": "artifacts/idol/iron-crown/icSovereignShield/views.png",
+  "usd": 0.37
+}

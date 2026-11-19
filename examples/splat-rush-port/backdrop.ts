@@ -1,10 +1,11 @@
 /**
- * Floating-island backdrop (presentation only): Meshy toy-style islands and balloons that drift past on both sides of the
+ * Floating-island backdrop (presentation only): Idol vinyl-toy islands and balloons (`idol.ts`) that drift past on both sides of the
  * road at the road's own scroll speed, following its curve. Placement is a pure function of the simulation's distance and
  * elapsed time, so it never touches the simulation or its random stream.
  */
 import { defineAuraAssets, environments, lights, scene, type AuraApp, type AuraAssetRef, type AuraHdriId } from "@aura3d/engine";
-import { buildBackdropPieceNode, type BackdropPieceVariant } from "./art/proceduralModels";
+import type { BackdropPieceVariant } from "./art/proceduralModels";
+import { idolPieceNode, type IdolKey } from "./idol";
 import { LOOKS, sunDirection, type SplatLook } from "./look";
 import { curve } from "./sim";
 
@@ -108,9 +109,19 @@ export function addBackdrop(builder: Scene, look: SplatLook = LOOKS.original): v
   const shadows = look.backdropLights === "from-toon";
   for (const p of PIECES) {
     const island = p.kind !== "balloon";
-    builder.add(buildBackdropPieceNode(pieceModel(look, p), { id: p.id, size: p.size, castShadow: shadows && island, receiveShadow: shadows }));
+    builder.add(idolPieceNode(p.id, ISLAND_KEY[pieceModel(look, p)], { size: p.size, anchor: island ? 0.42 : 0.5, castShadow: shadows && island, receiveShadow: shadows }));
   }
 }
+
+/** Idol GLB per backdrop variant (normalised to the piece size; islands pivot at the former 42% "waist", balloons at the centre). */
+export const ISLAND_KEY: Record<BackdropPieceVariant, IdolKey> = {
+  islandTree: "splatIslandTree",
+  islandTower: "splatIslandTower",
+  balloon: "splatBalloon",
+  paintPotIsland: "splatIslandPaintPot",
+  paletteIsland: "splatIslandPalette",
+  easelIsland: "splatIslandEasel"
+};
 
 /** GU47 WP-36 CR-A1: in the carnival look two of the tree islands (one per side) are the paint-pot island; same slot, size and motion. */
 export const PAINT_POT_PIECES: readonly number[] = [3, 6];

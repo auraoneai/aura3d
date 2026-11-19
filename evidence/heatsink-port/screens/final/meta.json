@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "heatsink-port": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "title",
+        "early",
+        "action",
+        "mid",
+        "original-look",
+        "ram"
+      ],
+      "results": "full 3-lap ?autoplay=1 race verified on the real GPU (2026-11-19 audit): finished 4:49.4, GOLD, 42/48 kills, 0 crashes; results card ~3 s then countdown restart (no results frame kept)",
+      "errors": "none",
+      "capturedAt": "2026-11-18",
+      "ram": "1280-06-ram / 390-06-ram: craft-vs-target collider (2026-11-19). Captured with the CDP helper in headed Chrome on the same real GPU (REA scenarios cannot call the replay hook): ?manual=1, reference replay to step 362, the craft has just flown into sentry 0, which shatters (kills 1/48, +50)",
+      "countdown": "boot now warms the countdown-sweep poses and the strike flash-light variants: 0 programs compile after boot (was 8 at countdown start + ~46 on the first hit/kill); autoplay countdown no longer opens on a 1.5-2.8 s stall"
+    }
+  }
+}

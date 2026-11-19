@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icCoColumn",
+  "generatedAt": "2026-11-18T23:04:12.104Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b8-8a43-79b3-b14b-c36e68733324",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ba-4d75-7060-bc65-817bbda04880",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 554918,
+        "num_faces": 1109836,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Tall fluted Corinthian marble column with an ornate acanthus leaf capital on a square plinth base, weathered and chipped, ancient",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.61,
+    "size": [
+      1.269,
+      4.62,
+      1.328
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icCoColumn.glb",
+  "sizeBytes": 2792360,
+  "preview": "artifacts/idol/iron-crown/icCoColumn/views.png",
+  "usd": 0.37
+}

@@ -58,7 +58,8 @@ import {
   type V4
 } from "../../../showcase-port-shared/proceduralKernel";
 import type { CourseSpec, GolferFit, HoleSpec, HoleTerrain, Vec2, Vec3 } from "../game/types";
-import { GOLFER_TARGET_HEIGHT, MESHY_GLB_HEIGHT, meshyProfile } from "../game/golferRetarget";
+import { groundUnder } from "../game/idolArt";
+import { GOLFER_TARGET_HEIGHT, RIG_GLB_HEIGHT, rigProfile } from "../game/golferRetarget";
 
 function cachedSpec(key: string, build: () => AuraCustomGeometrySpec): AuraCustomGeometrySpec {
   return memoizeGeometry(key, build);
@@ -1506,7 +1507,7 @@ export function buildSculptedGolferFigureNode(fit: GolferFit, refined = true, na
 
 /**
  * Articulated 14-joint procedural Pro Golfer (`golfer-body`, scaled to `1.84 m`, grounded `minY = 0`)
- * built on `meshyProfile()`'s exact joint positions so `solveSwing` drives both palms onto the golf club
+ * built on `rigProfile()`'s exact joint positions so `solveSwing` drives both palms onto the golf club
  * grip and keeps both tour golf shoes planted on the turf with zero `.glb` files.
  */
 export function buildArticulatedGolferNode(
@@ -1515,7 +1516,7 @@ export function buildArticulatedGolferNode(
   clip = "idle",
   clipSpeed = 1
 ): any {
-  const prof = meshyProfile();
+  const prof = rigProfile();
   const { rig, leg } = prof;
   const rt = (id: string) => game.runtimeNode(id);
 
@@ -2329,7 +2330,7 @@ export function buildArticulatedGolferNode(
     .position(rig.hipsBind[0], rig.hipsBind[1], rig.hipsBind[2])
     .runtime(rt("golfer-hips"));
 
-  const fitScale = GOLFER_TARGET_HEIGHT / MESHY_GLB_HEIGHT;
+  const fitScale = GOLFER_TARGET_HEIGHT / RIG_GLB_HEIGHT;
   return group("golfer-body", [hipsNode])
     .scale(fitScale)
     .animate({ clip, loop: true, speed: clipSpeed })
@@ -3143,7 +3144,9 @@ export function buildCourseTreeBatches(
   trees: readonly { x: number; z: number; h: number; yaw: number }[],
   theme: string,
   turfOn: boolean,
-  reducedMotion: boolean
+  reducedMotion: boolean,
+  /** every tree is a conifer (the Idol broadleaves are mounted separately, art/idolModels.ts) */
+  conifersOnly = false
 ): any[] {
   if (trees.length === 0) return [];
   const trunkSpec = cachedSpec("links:tree-trunk-v3", () => {
@@ -3208,13 +3211,16 @@ export function buildCourseTreeBatches(
 
   trees.forEach((tr, i) => {
     const s = tr.h / 6.3;
-    const y = terrain.height(tr.x, tr.z) - 0.1;
+    // owner fix (floating trees): the trunk base sits on the LOWEST ground under the root spread (roots reach ~0.34 s from
+    // the axis), sunk a little, so no side of a tree on a dune slope or mound lip hangs in the air
+    const y = coniferBaseY(terrain.height, tr.x, tr.z, s);
     const lean = theme === "dunes" ? 0.09 : 0.03;
     const rot: Vec3 = [Math.sin(tr.yaw) * lean, tr.yaw, Math.cos(tr.yaw) * lean];
     trunkTransforms.push({ position: [tr.x, y, tr.z] as Vec3, rotation: rot, scale: [s, s, s] as Vec3 });
     // Mix fairway oaks/maples (`layeredCanopyMesh`) and coastal/alpine pines (`coniferBoughTierMesh`) cleanly by biome
-    const useOak =
-      theme === "parkland"
+    const useOak = conifersOnly
+      ? false
+      : theme === "parkland"
         ? i % 4 !== 3
         : theme === "dunes"
           ? i % 2 === 0
@@ -3239,6 +3245,14 @@ export function buildCourseTreeBatches(
   });
 
   const windOpt = turfOn && !reducedMotion ? { wind: { strength: 0.08, speed: 0.9 } as any } : {};
+  // A wind-swayed batch is a packed scatter the engine cannot change live, so the shot clearance (main.ts applyTreeClearance)
+  // rebuilds it from the kept instance indices; every batch here is index-aligned with `trees` per kind.
+  const rebuildable = (build: (list: any[], colors?: string[]) => any, list: any[], colors?: string[]) => {
+    const node = build(list, colors);
+    node.treeBatchTransforms = list;
+    node.rebuildTreeBatch = (keep: readonly number[]) => build(keep.map((i) => list[i]), colors ? keep.map((i) => colors[i]!) : undefined);
+    return node;
+  };
   const batches: any[] = [
     instances.custom(trunkSpec, {
       name: "conifer-trunks",
@@ -3249,39 +3263,45 @@ export function buildCourseTreeBatches(
   ];
   if (oakTransforms.length > 0) {
     batches.push(
-      instances.custom(oakCanopySpec, {
+      rebuildable((list, colors) => instances.custom(oakCanopySpec, {
         name: "fairway-oak-canopy",
         material: material.pbr({ color: "#ffffff", roughness: 0.84, clearcoat: 0, sheen: 0 } as any),
-        transforms: oakTransforms,
-        colors: oakColors,
+        transforms: list,
+        colors,
         castShadow: false,
         ...windOpt
-      })
+      }), oakTransforms, oakColors)
     );
   }
   if (pineTransforms.length > 0) {
     batches.push(
-      instances.custom(pineCanopySpec, {
+      rebuildable((list, colors) => instances.custom(pineCanopySpec, {
         name: theme === "alpine" ? "corridor-pines" : "conifer-canopy",
         material: material.pbr({ color: "#ffffff", roughness: 0.84, clearcoat: 0, sheen: 0 } as any),
-        transforms: pineTransforms,
-        colors: pineColors,
+        transforms: list,
+        colors,
         castShadow: false,
         ...windOpt
-      })
+      }), pineTransforms, pineColors)
     );
   }
   return batches;
 }
 
-export function buildAlpineHorizonTreelineNode(cx: number, cz: number): any {
+/** trunk base Y of a procedural tree at scale `s`: lowest ground under the root spread, sunk CONIFER_GROUND_SINK */
+export const CONIFER_GROUND_SINK = 0.12;
+export function coniferBaseY(height: (x: number, z: number) => number, x: number, z: number, s: number): number {
+  return groundUnder(height, x, z, 0.45 * s) - CONIFER_GROUND_SINK;
+}
+
+export function buildAlpineHorizonTreelineNode(cx: number, cz: number, height?: (x: number, z: number) => number): any {
   const snowPineSpec = cachedSpec("links:alpine-horizon-pine-v2", () =>
     mergeRawMeshes([bakeMeshCavityAO(coniferBoughTierMesh({ baseRadius: 0.65, height: 2.0, tiers: 4, seed: 53 }), 0.34)])
   );
   const transforms = Array.from({ length: 15 }, (_, i) => {
     const h = 20 + ((i * 7) % 5) * 3.5;
     return {
-      position: [cx + 18 + i * 6, 0, cz + 140 + ((i % 3) - 1) * 0.5] as Vec3,
+      position: [cx + 18 + i * 6, height ? coniferBaseY(height, cx + 18 + i * 6, cz + 140 + ((i % 3) - 1) * 0.5, h / 2) : 0, cz + 140 + ((i % 3) - 1) * 0.5] as Vec3,
       rotation: [0, i * 1.7, 0] as Vec3,
       scale: [h / 2, h / 2, h / 2] as Vec3
     };

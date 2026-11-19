@@ -1,0 +1,243 @@
+{
+  "game": "serpentine-sky-run",
+  "outDir": "apps/showcase-serpentine-sky-run-port/assets/idol",
+  "style": "Photograph of a real museum-quality handcrafted East Asian temple artefact: glossy cinnabar-red and black urushi lacquer, carved celadon jade, mother-of-pearl inlay, hand-applied gold leaf and carved granite, crisp real material wear and patina, warm soft studio light",
+  "items": [
+    {
+      "key": "ssrHeroViolet",
+      "subject": "Original young martial-arts sky pilgrim, athletic slim build, friendly determined face, short black hair tied in a small neat topknot, a cream silk headband knotted at the back with two short tails. Sleeveless deep crimson-wine cotton wrap jacket crossed over the chest, a wide cream cloth sash belt, loose deep indigo cotton trousers gathered into cream cloth shin wraps, dark indigo cloth split-toe boots, dark indigo wrist wraps, bare muscular arms",
+      "kind": "character",
+      "role": "hero",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.95
+      },
+      "tex": 2048,
+      "seed": 7,
+      "style": "Photoreal full-body studio photograph of a real costumed martial-arts performer: heavy hand-woven cotton and raw silk with visible weave, stitching and folds, soft cloth wraps, natural skin, warm soft studio light"
+    },
+    {
+      "key": "ssrHeroTide",
+      "subject": "Original young martial-arts sky pilgrim, athletic slim build, friendly determined face, short black hair tied in a small neat topknot, a cream silk headband knotted at the back with two short tails. Sleeveless bright vermilion-red cotton wrap jacket crossed over the chest, a wide cream cloth sash belt, loose dark red cotton trousers gathered into cream cloth shin wraps, charcoal navy cloth split-toe boots, charcoal navy wrist wraps, bare muscular arms",
+      "kind": "character",
+      "role": "hero",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.95
+      },
+      "tex": 1024,
+      "seed": 7,
+      "style": "Photoreal full-body studio photograph of a real costumed martial-arts performer: heavy hand-woven cotton and raw silk with visible weave, stitching and folds, soft cloth wraps, natural skin, warm soft studio light"
+    },
+    {
+      "key": "ssrHeroVerdant",
+      "subject": "Original young martial-arts sky pilgrim, athletic slim build, friendly determined face, short dark brown hair tied in a small neat topknot, a cream silk headband knotted at the back with two short tails. Sleeveless moss-green cotton wrap jacket crossed over the chest, a wide cream cloth sash belt, loose dark forest-green cotton trousers gathered into cream cloth shin wraps, dark brown cloth split-toe boots, dark brown wrist wraps, bare muscular arms",
+      "kind": "character",
+      "role": "hero",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.95
+      },
+      "tex": 1024,
+      "seed": 7,
+      "style": "Photoreal full-body studio photograph of a real costumed martial-arts performer: heavy hand-woven cotton and raw silk with visible weave, stitching and folds, soft cloth wraps, natural skin, warm soft studio light"
+    },
+    {
+      "key": "ssrOni",
+      "subject": "Hulking horned mountain ogre road guardian standing upright facing forward in a wide planted stance, both feet on the ground, deep crimson-red muscular skin, two curved ivory horns, small glowing amber eyes, short ivory tusks, wild pale mane, crimson lacquered spiked shoulder pauldrons, crossed forged-iron chest harness, tiger-stripe pelt loincloth with a thick twisted rope belt, baggy indigo trousers, iron ankle shackles, holding a huge octagonal iron-studded war club upright in its right hand beside its body",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 3.84
+      },
+      "tex": 2048,
+      "seed": 7,
+      "style": "Photoreal creature-effects maquette photograph: sculpted silicone skin with pores and veins, real lacquered armour, forged iron and woven fabric, warm soft studio light"
+    },
+    {
+      "key": "ssrSweeper",
+      "subject": "Spirit hearse chariot: a compact swept vermilion and black lacquer shrine cart on two large spoked bronze and iron wheels, an upturned temple-roof canopy over a caged glowing teal soul-lantern, three curved iron scythe blades on a crossbar at the front sweeping low over the ground, a hooded faceless robed charioteer figure at the front holding a tall hooked iron staff with a hanging paper lantern",
+      "kind": "vehicle",
+      "role": "prop",
+      "size": {
+        "height": 3.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "yawDeg": 90
+    },
+    {
+      "key": "ssrBarrier",
+      "subject": "Shrine spirit barrier gate: two short vermilion lacquer posts on black lacquer stone footings, a burnished bronze lower rail and a vermilion top rail with five small iron and gold spear-tip finials, a glowing pale jade ward panel stretched between the posts at chest height, coral silk streamers hanging from the posts, wide and low, straight-on front facing the viewer",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 2.84
+      },
+      "tex": 1024,
+      "seed": 7,
+      "yawDeg": -45
+    },
+    {
+      "key": "ssrArch",
+      "subject": "Low shrine slide-under arch: two slender vermilion lacquer posts on black lacquer bases with gold caps, a single horizontal vermilion beam with a thin black lacquer top rail crossing between them at chest height, a small hanging silk tag and a jade bead at the centre of the beam, a small pleated paper lantern hanging on the outside of each post, open empty space below the beam, wide, straight-on front facing the viewer",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 2.1
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "ssrFeast",
+      "subject": "Low vermilion lacquer banquet table with gold rim and four square legs, set with a glazed roast on a platter, a celadon jade jar, an ivory porcelain rice bowl and three small ivory porcelain dumpling bowls, a small candle flame",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 2.02
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "ssrSerpentHead",
+      "subject": "Colossal carved jade and gold sky-serpent dragon head on a tall S-curved scaled neck rising vertically, emerald and celadon overlapping scales, branched gold antler horns, flowing whiskers, ivory fangs in a half-open jaw, blazing amber eyes, a glowing pearl held between the jaws, the head at the top of the neck looking forward",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 144
+      },
+      "tex": 2048,
+      "maxVerts": 30000,
+      "seed": 7
+    },
+    {
+      "key": "ssrGatehouse",
+      "subject": "Grand palace gateway arch spanning a wide road: two pairs of tall cinnabar-red lacquer columns on carved granite plinths, gold column collars, a tiered upswept black-tiled temple roof with gold ridge ornaments on top, a deep indigo lacquer lintel board, coral silk banners, hanging paper lanterns, one very wide and tall completely open central passage between the inner columns with nothing inside it, wide straight-on front view",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 36.9
+      },
+      "tex": 2048,
+      "maxVerts": 30000,
+      "seed": 7
+    },
+    {
+      "key": "ssrIslandPagoda",
+      "subject": "Floating sky island: an inverted cone of layered stratified ochre and slate rock hanging beneath a flat grassy top wreathed in soft white cloud, on top a tall five-tier vermilion lacquer pagoda with black roofs and gold finial, a small vermilion shrine gate and a gnarled bonsai pine",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 16.8
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "ssrIslandLantern",
+      "subject": "Floating sky island: an inverted cone of layered warm red sandstone rock hanging beneath a flat grassy top wreathed in soft white cloud, on top a slender vermilion lacquer lantern tower with glowing paper lanterns, a pink blossom tree and a small stone shrine",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 16.8
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "ssrIslandShrine",
+      "subject": "Floating sky island: an inverted cone of layered grey granite and slate rock hanging beneath a flat grassy top wreathed in soft white cloud, on top a two-tier vermilion temple hall with black upswept roofs, a golden-leaved tree, a gnarled bonsai pine and a small vermilion shrine gate",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 16.8
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "ssrTailMonument",
+      "subject": "Monument of a coiled jade serpent tail spiralling upward around itself on a round carved granite pedestal, emerald scales, gold fins along the coil, the thin tail tip topped with a gold finial and a glowing amber orb",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 26.75
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "ssrLantern",
+      "subject": "Tall carved granite temple lantern on a round stepped base, a vermilion lacquer column, a glowing pleated paper lantern box with gold corner posts, a small upswept black lacquer roof with a gold finial",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 3.68
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "ssrTorii",
+      "subject": "Very tall shrine torii gate: two tall round vermilion lacquer pillars on black lacquer base sleeves, a straight vermilion tie beam near the top, a black-capped gently curved vermilion top lintel with upswept ends, a small black centre tablet, a glowing pleated paper lantern hanging from a short bracket on the outside of each pillar, wide open space between the pillars, straight-on front view",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 20.5
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "ssrPlanetlet",
+      "subject": "Small round floating meadow planet sphere: green grass all over the sphere, a curved white-domed sanctuary cottage with a vermilion upswept roof on top, a gnarled bonsai pine and a pink blossom tree, a ring of stepping stones, a collar of soft white cloud underneath",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 42.7
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "ssrSweeperBody",
+      "subject": "Spirit hearse chariot body only, with NO wheels at all: a compact swept vermilion and black lacquer shrine cart box with empty bare axle stubs on each side where wheels would mount, an upturned temple-roof canopy over a caged glowing teal soul-lantern, three curved iron scythe blades on a crossbar at the front sweeping low, a hooded faceless robed charioteer figure at the front holding a tall hooked iron staff. Seen from a telephoto side three-quarter view",
+      "kind": "vehicle",
+      "role": "prop",
+      "size": {
+        "height": 3.1
+      },
+      "tex": 1024,
+      "seed": 11,
+      "yawDeg": 90
+    },
+    {
+      "key": "ssrCartWheel",
+      "subject": "A single large spoked cart wheel on its own, seen straight from the side: a bronze-banded dark wooden rim, twelve turned wooden spokes, a round gilded bronze hub cap, perfectly circular and flat",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 1.0
+      },
+      "tex": 512,
+      "seed": 5
+    }
+  ]
+}

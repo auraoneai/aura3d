@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-cross-hop/src/art/direction.ts",
-  "sourceSha256": "18b229f8a4f3042b138d24cbca79676674730e1933021a05db5fb12d4e68ca77",
+  "sourceSha256": "6de3024495d0ca44827dc7d4f8555672bdf778bf42ca422a4638e248bcf00240",
   "id": "cross-hop",
   "genre": "platformer",
   "signatureEffect": "tilt-shift diorama + day clock: tilt-shift blur bands on the player row and a sun that moves with progress",
@@ -38,7 +38,155 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "hopCarSedan",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopCarHatch",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopCarSuv",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopCarTaxi",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopCarVan",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopCarPickup",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopBoxTruck",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopTram",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopTrainLoco",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopTrainCoach",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopHoverCar",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopWheel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopRailWheel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopRiverLog",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopLilyPad",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopLavaStone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopTree",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopTreeBlossom",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopBush",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopCritterHop",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hopHawk",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "materials": [
       {
         "node": "cross-hop backdrop 0",
@@ -73,6 +221,10 @@
         "practical": false
       },
       {
+        "node": "train-coupler",
+        "practical": false
+      },
+      {
         "node": "lane-glow",
         "emissiveIntensity": 1.05,
         "practical": true
@@ -87,59 +239,7 @@
         "practical": false
       },
       {
-        "node": "m-cars",
-        "practical": false
-      },
-      {
-        "node": "m-hatch",
-        "practical": false
-      },
-      {
-        "node": "m-suv",
-        "practical": false
-      },
-      {
-        "node": "m-taxi",
-        "practical": false
-      },
-      {
-        "node": "m-van",
-        "practical": false
-      },
-      {
-        "node": "m-pickup",
-        "practical": false
-      },
-      {
-        "node": "m-trucks",
-        "practical": false
-      },
-      {
-        "node": "m-trams",
-        "practical": false
-      },
-      {
-        "node": "m-trains",
-        "practical": false
-      },
-      {
-        "node": "m-hover",
-        "practical": false
-      },
-      {
-        "node": "m-logs",
-        "practical": false
-      },
-      {
         "node": "m-log-ends",
-        "practical": false
-      },
-      {
-        "node": "m-pads",
-        "practical": false
-      },
-      {
-        "node": "m-stones",
         "practical": false
       },
       {
@@ -156,72 +256,12 @@
         "practical": false
       },
       {
-        "node": "d-trees",
-        "practical": false
-      },
-      {
-        "node": "d-bushes",
-        "practical": false
-      },
-      {
         "node": "m-rail-tracks",
         "practical": false
       },
       {
         "node": "d-b",
         "practical": false
-      },
-      {
-        "node": "player-body material 0",
-        "practical": false
-      },
-      {
-        "node": "player-body material 1",
-        "practical": false
-      },
-      {
-        "node": "player-body material 2",
-        "practical": false
-      },
-      {
-        "node": "player-body material 3",
-        "practical": false
-      },
-      {
-        "node": "player-body material 4",
-        "emissiveIntensity": 0.1,
-        "practical": true
-      },
-      {
-        "name": "lacquer",
-        "node": "player-body material 5",
-        "practical": false
-      },
-      {
-        "name": "glazed ceramic",
-        "node": "player-body material 6",
-        "practical": false
-      },
-      {
-        "node": "player-body material 7",
-        "practical": false
-      },
-      {
-        "node": "player-vocal-sac",
-        "practical": false
-      },
-      {
-        "node": "hawk material 0",
-        "practical": false
-      },
-      {
-        "node": "hawk material 1",
-        "practical": false
-      },
-      {
-        "node": "hawk material 2",
-        "emissiveIntensity": 1.32,
-        "practical": true
       },
       {
         "name": "lacquer",
@@ -329,7 +369,269 @@
       ],
       "mobile": "both"
     },
-    "assets": [],
+    "assets": [
+      {
+        "role": "character",
+        "assetKey": "hopCritterHop",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "hopCritterChick",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "hopCritterTurtle",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "hopCritterBun",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "hopCritterAxolotl",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "hopCritterDucky",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "hopCritterRoboFrog",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "hopCritterToastCat",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "hopCritterMushroomKid",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "hopCritterKnightToad",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "hopCritterAstroFrog",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "hopCritterGoldenHop",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hopCarSedan",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hopCarHatch",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hopCarSuv",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hopCarTaxi",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hopCarVan",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hopCarPickup",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hopBoxTruck",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hopTram",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hopTrainLoco",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hopTrainCoach",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hopHoverCar",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "hopLogRaft",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "hopCandyRaft",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "hopRiverLog",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "hopLilyPad",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "hopLavaStone",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "hopTree",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "hopTreeBlossom",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "hopBush",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "hopWheel",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "hopRailWheel",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "hopHawk",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
     "vfx": [
       {
         "event": "hop-land",

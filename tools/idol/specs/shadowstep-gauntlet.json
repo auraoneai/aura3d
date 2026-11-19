@@ -1,0 +1,357 @@
+{
+  "game": "shadowstep-gauntlet",
+  "outDir": "examples/ninja-runner-port/assets/idol",
+  "style": "Photograph of a real hand-carved and hand-painted wooden figure in Japanese woodblock-print colours: carved basswood with soft chisel facets, flat matte mineral-pigment paint in deep indigo, persimmon vermilion and rice-paper cream, fine sumi-ink linework painted along hems, folds and edges, museum-quality craftsmanship, soft warm studio light",
+  "items": [
+    {
+      "key": "nrHero",
+      "kind": "character",
+      "role": "hero",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.75
+      },
+      "seed": 11,
+      "subject": "A lithe young shinobi runner in a fitted midnight-navy wrapped jacket and tapered trousers, a burnt-orange hooded cowl over the head with the face uncovered and a calm determined expression, a long burnt-orange scarf tied at the neck with short tails, a burnt-orange waist sash, cream cloth wraps on forearms and shins, dark split-toe tabi boots, slim and athletic build"
+    },
+    {
+      "key": "nrHeroClone",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.75
+      },
+      "seed": 12,
+      "subject": "A lithe young shinobi runner whose whole outfit is painted in luminous spirit blues: cobalt-blue wrapped jacket and trousers, pale cyan hooded cowl with the face uncovered and skin painted pale ice-blue, a long pale cyan scarf tied at the neck with short tails, cyan waist sash, pale blue cloth wraps on forearms and shins, deep blue tabi boots, slim athletic build, like a ghostly spirit double",
+      "tex": 1024
+    },
+    {
+      "key": "nrSage",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.75
+      },
+      "seed": 13,
+      "subject": "An agile elder sage warrior with long swept-back white hair and a short white beard, a fitted jade-green wrapped jacket with imperial gold trim, cream under-robe at the collar, jade-green tapered trousers, a gold waist sash with a small rolled scroll tucked in it, cream cloth wraps on forearms and shins, dark green tabi boots, lean athletic build",
+      "tex": 1024
+    },
+    {
+      "key": "nrEmber",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.8
+      },
+      "seed": 14,
+      "subject": "A fierce demon-ember shinobi in a fitted obsidian-black wrapped jacket and trousers with blazing vermilion lacquered shoulder and shin guards, wild black hair with flame-orange tips, a vermilion half mask over the lower face, a vermilion waist sash, cream cloth wraps on forearms, black tabi boots, lean powerful build",
+      "tex": 1024
+    },
+    {
+      "key": "nrSoldier",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run"
+      ],
+      "size": {
+        "height": 1.75
+      },
+      "seed": 15,
+      "subject": "A feudal-era foot soldier in iron-slate blue cloth jacket and trousers, wearing crimson-lacquered laced lamellar chest armour, crimson shoulder plates and a short crimson armoured skirt, a shallow dark conical iron war hat, a dark cloth half mask over the lower face, cream cloth wraps on the shins, dark straw sandals over split-toe socks, sturdy build, empty hands",
+      "tex": 1024
+    },
+    {
+      "key": "nrBrute",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run"
+      ],
+      "size": {
+        "height": 1.85
+      },
+      "seed": 16,
+      "subject": "A huge hulking ogre warrior with brick-red skin, a broad muscular chest and thick arms, a wild mane of white hair, two short ivory horns on the forehead, fierce tusked scowl, wearing dark crimson-lacquered armour plates on the shoulders and a heavy armoured skirt over dark plum trousers, a crimson rope belt, bare red forearms, dark wrapped boots, empty hands",
+      "tex": 1024
+    },
+    {
+      "key": "nrCaster",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run"
+      ],
+      "size": {
+        "height": 1.75
+      },
+      "seed": 17,
+      "subject": "A court sorcerer in flowing imperial-crimson outer robes over obsidian-black inner robes, a white porcelain face mask with painted red brow marks, a tall black lacquered court cap, gold talisman rings on the wrists, a gold-trimmed crimson sash, the robe sleeves wide but ending at the wrists, dark slippers, slender build, empty hands",
+      "tex": 1024
+    },
+    {
+      "key": "nrScout",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "run"
+      ],
+      "size": {
+        "height": 1.7
+      },
+      "seed": 18,
+      "subject": "A swift night-raid assassin in a fitted charcoal-grey wrapped jacket and trousers, a crimson silk sash and crimson arm bands, a white porcelain fox mask with red painted markings covering the face, short black hair tied back, cream cloth wraps on forearms and shins, charcoal tabi boots, slim agile build, empty hands",
+      "tex": 1024
+    },
+    {
+      "key": "nrPagoda",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 36
+      },
+      "seed": 21,
+      "tex": 2048,
+      "maxVerts": 30000,
+      "style": "Photograph of a real, hand-built painted wood and clay architectural miniature in Japanese woodblock-print colours: weathered cedar timber, real fired dark-grey clay roof tiles, white plaster walls, persimmon-vermilion lacquered railings and brackets, fine ink-line edging on the trim, soft warm golden-hour light",
+      "subject": "A tall five-tiered feudal castle pagoda tower standing on a battered dry-stone rampart base, each tier with sweeping upturned curved tiled eaves, white plaster walls with dark timber framing and small lattice windows, gold finials on the roof ridge tips, a tall bronze spire on top, square symmetrical plan"
+    },
+    {
+      "key": "nrShrineGate",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 11.4
+      },
+      "seed": 57,
+      "tex": 2048,
+      "style": "Photograph of a real, hand-built painted wood and stone architectural miniature in Japanese woodblock-print colours: thick solid timber lacquered all over in persimmon vermilion, weathered granite plinths, fine ink-line edging, soft warm golden-hour light",
+      "subject": "A grand shrine gate seen straight from the front: two thick round vermilion pillars on stone plinths, a single thick solid vermilion top lintel beam that is chunky and blocky with gently upswept ends (no black cap, no thin edges), a second straight vermilion tie beam below it, a small blank central strut between the beams, symmetrical, every part thick and solid",
+      "image": "artifacts/idol/shadowstep-gauntlet/_refs/nrShrineGate.png"
+    },
+    {
+      "key": "nrWaterWheel",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 8
+      },
+      "seed": 61,
+      "tex": 1024,
+      "style": "Photograph of a real, hand-built wood and iron miniature in Japanese woodblock-print colours: wet weathered cedar planks, blackened forged iron straps and hub, moss on the lower boards, soft warm golden-hour light",
+      "subject": "A large wooden mill water wheel seen from its side, a single round wheel only with no frame and no building: two parallel wooden rims joined by many evenly spaced flat paddle boards around the circumference, straight wooden spokes from a thick central iron-bound hub, an iron axle stub poking out of the hub, perfectly circular and symmetrical",
+      "image": "artifacts/idol/shadowstep-gauntlet/_refs/nrWaterWheel.png"
+    },
+    {
+      "key": "nrHouseA",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "width": 1.9
+      },
+      "seed": 31,
+      "style": "Photograph of a real, hand-built painted wood and clay architectural miniature in Japanese woodblock-print colours: weathered dark cedar timber, real fired grey clay roof tiles, cream lime plaster, indigo cloth door curtain, fine ink-line edging on the trim, soft warm golden-hour light",
+      "subject": "A long low two-storey feudal-era town house, wide street facade with dark wooden lattice screens on the ground floor, an indigo cloth curtain over the doorway with no markings, a small tiled pent roof over the ground floor, cream plaster upper wall with a slatted window, a main gabled roof of curved grey clay tiles with a ridge cap",
+      "maxVerts": 8000,
+      "tex": 1024
+    },
+    {
+      "key": "nrHouseB",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1.9
+      },
+      "seed": 32,
+      "style": "Photograph of a real, hand-built painted wood and clay architectural miniature in Japanese woodblock-print colours: weathered dark cedar timber, real fired grey clay roof tiles, cream lime plaster, persimmon-vermilion painted trim, fine ink-line edging, soft warm golden-hour light",
+      "subject": "A narrow tall three-storey feudal-era town house with a deep plan, dark timber frame, cream plaster walls, wooden lattice windows, a small wooden balcony on the second floor, stacked curved grey clay tiled eaves on each floor and a steep gabled tiled roof",
+      "maxVerts": 8000,
+      "tex": 1024
+    },
+    {
+      "key": "nrHouseC",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1.9
+      },
+      "seed": 33,
+      "style": "Photograph of a real, hand-built painted wood and clay architectural miniature in Japanese woodblock-print colours: weathered dark cedar timber, real fired grey clay roof tiles, cream lime plaster, persimmon-vermilion painted trim, fine ink-line edging, soft warm golden-hour light",
+      "subject": "A square two-storey feudal-era merchant house with a hipped-and-gabled roof of curved grey clay tiles, wide overhanging eaves, white plaster storehouse-style upper walls with small barred windows, dark timber ground floor with sliding lattice doors and a wooden veranda",
+      "maxVerts": 8000,
+      "tex": 1024
+    },
+    {
+      "key": "nrHouseD",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1.9
+      },
+      "seed": 34,
+      "style": "Photograph of a real, hand-built painted wood and clay architectural miniature in Japanese woodblock-print colours: weathered dark cedar timber, real fired grey clay roof tiles, cream lime plaster, persimmon-vermilion painted trim, fine ink-line edging, soft warm golden-hour light",
+      "subject": "A slim tall two-storey feudal-era town house with an asymmetric facade, dark timber frame and cream plaster panels, a wooden lattice bay window, a narrow tiled pent roof and a steep gabled roof of curved grey clay tiles, a small hanging paper lantern by the door without any writing",
+      "maxVerts": 8000,
+      "tex": 1024
+    },
+    {
+      "key": "nrTeahouse",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1.64
+      },
+      "seed": 35,
+      "style": "Photograph of a real, hand-built painted wood and clay architectural miniature in Japanese woodblock-print colours: weathered cedar timber, real fired grey clay roof tiles, rice-paper screens, persimmon-vermilion painted trim, fine ink-line edging, soft warm golden-hour light",
+      "subject": "A small single-storey roadside teahouse on a low dry-stone base, an open front with a wooden bench and a red cloth-covered seat, rice-paper sliding screens, a broad hipped roof of curved grey clay tiles with wide eaves, a red paper parasol leaning by the bench",
+      "maxVerts": 10000,
+      "tex": 1024
+    },
+    {
+      "key": "nrTower",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1.9
+      },
+      "seed": 36,
+      "style": "Photograph of a real, hand-built painted wood and clay architectural miniature in Japanese woodblock-print colours: weathered dark cedar timber, real fired grey clay roof tiles, cream lime plaster, persimmon-vermilion painted trim, fine ink-line edging, soft warm golden-hour light",
+      "subject": "A three-storey feudal-era watchtower on a sloped dry-stone base, square cream plaster walls with dark timber framing and small barred windows, an open lookout gallery with a wooden railing on top, curved grey clay tiled eaves on every level and a hipped tiled roof",
+      "maxVerts": 8000,
+      "tex": 1024
+    },
+    {
+      "key": "nrGate",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "width": 1.9
+      },
+      "seed": 37,
+      "style": "Photograph of a real, hand-built painted wood and clay architectural miniature in Japanese woodblock-print colours: weathered dark cedar timber, black iron studs, real fired grey clay roof tiles, fine ink-line edging, soft warm golden-hour light",
+      "subject": "A wide feudal-era town gate seen from the front: two heavy dark timber posts with a cross beam, a pair of big wooden doors standing open, iron studs and straps, a gabled roof of curved grey clay tiles over the top beam, symmetrical",
+      "maxVerts": 10000,
+      "tex": 1024
+    },
+    {
+      "key": "nrLantern",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 1.9
+      },
+      "seed": 38,
+      "tex": 1024,
+      "style": "Photograph of a real handmade miniature in Japanese woodblock-print colours: weathered granite stone, warm glowing rice-paper panels, fine ink-line edging, soft warm golden-hour light",
+      "subject": "A tall carved stone garden lantern: a round column on a lotus base, a square fire box with warm glowing rice-paper windows, a wide curved stone roof cap with upturned corners and a jewel finial, blank with no carvings of writing",
+      "maxVerts": 4000
+    },
+    {
+      "key": "nrMarketStall",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "width": 1.89
+      },
+      "seed": 39,
+      "style": "Photograph of a real handmade miniature in Japanese woodblock-print colours: weathered cedar wood, woven straw, indigo and persimmon cloth, ceramic pots, fine ink-line edging, soft warm golden-hour light",
+      "subject": "A feudal-era wooden market stall: a low wooden counter piled with woven baskets of vegetables, ceramic jars and rolled cloth bolts, four wooden posts holding a slanted straw-thatch awning with a plain indigo cloth valance, no writing",
+      "maxVerts": 8000,
+      "tex": 1024
+    },
+    {
+      "key": "nrPine",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1.86
+      },
+      "seed": 40,
+      "style": "Photograph of a real handmade bonsai-style miniature tree in Japanese woodblock-print colours: real twisted bark, dense dark-green needle clusters, soft warm golden-hour light",
+      "subject": "A tall slender coastal pine tree with a gently leaning twisted reddish-brown trunk and layered flat cloud-like clusters of dark green needles in tiers up the trunk, standing alone, no pot, no ground",
+      "maxVerts": 4000,
+      "tex": 1024
+    },
+    {
+      "key": "nrMaple",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1.85
+      },
+      "seed": 41,
+      "style": "Photograph of a real handmade miniature tree in Japanese woodblock-print colours: real bark, dense small leaves, soft warm golden-hour light",
+      "subject": "A rounded ornamental maple tree with a short gnarled dark trunk and a full rounded crown of small persimmon-orange and crimson autumn leaves, standing alone, no pot, no ground",
+      "maxVerts": 5000,
+      "tex": 1024
+    },
+    {
+      "key": "nrKatana",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "length": 1.0
+      },
+      "seed": 51,
+      "tex": 1024,
+      "style": "Photograph of a real handcrafted museum replica prop: polished steel, gilded brass, indigo silk cord, soft studio light",
+      "subject": "A museum display prop of a traditional curved single-edged blade with no sheath, lying flat in side profile: a slender gently curved polished steel blade with a soft wavy temper line, a round gilded hand guard, and a long grip wrapped in indigo silk cord in a diamond pattern with a gold end cap",
+      "image": "artifacts/idol/shadowstep-gauntlet/_refs/nrKatana.png"
+    },
+    {
+      "key": "nrKanabo",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "length": 1.0
+      },
+      "seed": 52,
+      "tex": 1024,
+      "style": "Photograph of a real handmade weapon: dark lacquered hardwood, blackened forged iron studs and bands, worn gold collar, soft studio light",
+      "subject": "A heavy octagonal war club lying horizontally in profile, a thin wrapped wooden handle widening into a long thick club head covered in rows of round iron studs, a gold collar ring between handle and head"
+    },
+    {
+      "key": "nrBarricade",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 2.1
+      },
+      "seed": 61,
+      "tex": 1024,
+      "maxVerts": 8000,
+      "style": "Photograph of a real, hand-built painted wood miniature in Japanese woodblock-print colours: weathered dark cedar planks, blackened forged iron straps and studs, rough hemp rope, fine ink-line edging, soft warm golden-hour light",
+      "subject": "A low wide feudal-era roadblock seen straight from the front: a long heavy crate of dark cedar planks bound with blackened iron straps and round studs, a row of short sharpened wooden stakes along its top edge, thick hemp rope lashed around both ends, symmetrical, no writing"
+    }
+  ]
+}

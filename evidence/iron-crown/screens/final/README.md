@@ -1,54 +1,45 @@
-# Iron Crown: final screenshots after the UI and content fixes
+# Iron Crown: final screenshots (2026-11-18)
 
-**Retaken 2026-10-31 (GU47 phase 3, 4.7.1 candidate):** every frame (1280 and 390, 01-title to 06-results) and the card come from `tests/browser/audit-fix/iron-crown.spec.ts` (`@g7` screens, `ic-card`) on the remote ACR runner (crmmeprodacr, runs g05p3-r3-3 and g05p3-r3-4, software WebGL2), Crown Arena in its refined look (blind panel g05p3r3c 3/0/0 better than 4.6.2). `card-1x.jpg` is the 2x frame downscaled; posters rebuilt with `tools/site/build-card-images.mjs`. The text below describes the earlier capture.
+Route: `/apps/showcase-iron-crown/`
 
-Route: `apps/showcase-iron-crown`. Built from `origin/game-rework` at `0d965903c` (includes the shared quick bar, the content fixes and the new Teleoperator vehicles).
+Runner: headed Chrome on a real GPU (Apple Metal) via REA, production build (http://127.0.0.1:8790).
 
-**Runner:** remote Azure ACR Task, headless Chromium, **software WebGL2 (SwiftShader)**. This is not real-GPU evidence: it shows layout and content, not GPU look or frame rate. Tool: `tests/browser/shotsd-iron-crown.spec.ts` with `tests/browser/shotsd-lib.ts`, decoded with `tools/shots/decode-shotsd.mjs`. Frames come from clicking the game's own buttons and holding keys, not from the QA hooks.
-
-Staging: the dist was built with `tools/shots/vite.shotsd.config.ts`; every asset the route references was copied from this repo into the dist (so new and changed files are the repository's, not production's). Files the repository does not carry (shared decoders, HDRI, previews) fall back to production.
-
-## Frames
-
-| Viewport | State | Meaning | Status |
-|---|---|---|---|
-| 1280 | 01-title | first loaded frame | captured |
-| 1280 | 02-early | early gameplay | captured |
-| 1280 | 03-action | after key input | captured |
-| 1280 | 04-mid | mid-play (autoplay or driving) | captured |
-| 1280 | 05-modes | modes / menu panel | captured |
-| 1280 | 06-results | results | not reached |
-| 390 | 01-title | first loaded frame | captured |
-| 390 | 02-early | early gameplay | captured |
-| 390 | 03-action | after key input | captured |
-| 390 | 04-mid | mid-play (autoplay or driving) | captured |
-| 390 | 05-modes | modes / menu panel | captured |
-| 390 | 06-results | results | not reached |
-
-Card images: `card-2x.jpg` (1440x900, captured natively) and `card-1x.jpg` (720x450, downscaled from the 2x capture). Card aspect from `apps/showcase-index/index.html`.
-
-## Capture health
-
-- 1280: console errors 0, bad responses 0, ready 4s, proxied from production 18
-- 390: console errors 0, bad responses 0, ready 44s, proxied from production 18
-- card: console errors 0, bad responses 0, ready 4s, proxied from production 18
+| Viewport | State | Meaning |
+|---|---|---|
+| 1280 | `1280-01-title.jpg` | Fighter & Venue picker over the live bout |
+| 1280 | `1280-02-early.jpg` | ?autoplay=1 Quick Bout, Crown Arena (neutral key), Kenji vs Mara |
+| 1280 | `1280-03-action.jpg` | flying kick connecting, hit spark |
+| 1280 | `1280-04-neo-tokyo.jpg` | Neo-Tokyo Rooftop (`?stage=neo-tokyo-rooftop`), Kenji vs Mara: wet floor clean around the feet (no floor "steam") |
+| 1280 | `1280-05-lantern-dock.jpg` | Lantern Dock |
+| 1280 | `1280-06-colosseum.jpg` | Colosseum Ruins, knockdown (standards now at the wings, not centre stage) |
+| 1280 | `1280-07-airstrip.jpg` | Desert Airstrip |
+| 1280 | `1280-08-results.jpg` | result card (VICTORY, stats, Next bout / Rematch / Main menu); short match via `?icdebug=1&icfinish=4` |
+| 390x844 | `390-01-title.jpg` | Fighter & Venue picker on a phone |
+| 390x844 | `390-02-crown.jpg` | portrait bout, Crown Arena: both fighters whole inside the HUD-safe frame |
+| 390x844 | `390-03-neo-tokyo.jpg` | portrait, Neo-Tokyo Rooftop (was: camera too close, one fighter filling the frame) |
+| 390x844 | `390-04-lantern-dock.jpg` | portrait, Lantern Dock |
+| 390x844 | `390-05-colosseum.jpg` | portrait, Colosseum Ruins |
+| 390x844 | `390-06-airstrip.jpg` | portrait, Desert Airstrip |
+| 390x844 | `390-07-monastery.jpg` | portrait, Cloudstep Monastery |
+| 390x844 | `390-08-results.jpg` | portrait result card |
+| 1440x900 | `card-2x.jpg` | Crown Arena strike exchange under the neutral key, throne and dragon columns (`card-1x.jpg` = 720x450 LANCZOS downscale) |
 
 ## Checked in the frames
 
-- The Crown Arena wall shows shelves, gold pedestals and red banners; I saw no framed photographic portraits (1280 title, early, mid and modes frames).
-- Fonts load (the first capture had 404s for the Whitney files because of my staging; the rerun has 0 bad responses).
-- Shared quick bar is a single row with a 'Built with Aura3D' credit at 1280; no engine chip.
+- no black screen on Quick Bout or venue switch, no page errors
+- strikes reach the opponent (hit sparks at contact); fighters cannot pass through each other (push-box separation)
+- no see-through holes on fighters in close crops (Boulder, Mara, Kenji, Seraph); hands intact
+- Crown Arena background colour measured on a real-GPU 1280x720 frame: lit-background CIELAB C* 15.5 -> 9.7, b* 14.2 -> 1.9; all venues C* <= 11, b* <= 6
+- Monastery bonsai pine and Colosseum battle standards no longer stand in the middle of the fight (wind set pieces now placed on the instance)
 
-## Problems still visible (not fixed in this lane)
+- Portrait framing (`?icframelog=1` logs both fighters' projected boxes): every venue on 390x844, both fighters' boxes
+  stay within x 0.10-0.91, y 0.51-0.86 of the frame across a bout (HUD plates end near y 0.15, mode strip starts near 0.93);
+  the win shot keeps the winner whole and the lens above the floor; the intro close-ups hand portrait to the fight lens
+- Neo-Tokyo "floor steam" was the wet clearcoat floor mirroring the rooftop_night HDRI (A/B on the GPU: environment off
+  removed it; SSR, rain and light shafts off did not). Environment rotation 140 -> 230 deg; the flood shaft also stops
+  above head height and the back rims end 5 m out (no rim pool on the floor in front of the feet)
 
-- [medium] Both fighters have realistic generated human faces (Kenji Arashi in a teal gi with a black belt, Mara Volt in a dark red suit with blond hair). I could not verify whether either resembles a real person; the earlier recolour removed the white gi and red headband, but Kenji is still a karate-gi fighter with a black belt.
-- [low] 390 portrait: the health-bar name plates truncate ('KENJI ARA...', 'BOULDER ...') and the arena is cropped around the throne.
-- [low] Results were not reached in 40 s of autopilot.
+## Known issues
 
-## Review coverage
-
-Frames opened and checked by eye: 1280 early, mid and modes; 390 mid and modes (5 of 11). The remaining frames were captured but not individually inspected; the problems above come from the frames listed here.
-
-## Update 2026-10-25 (roster art pass)
-
-The 1280 and 390 frames and the card were retaken after Boulder, Seraph and Sovereign got flat stylised faces (`evidence/iron-crown/rework/p1-roster/`). Runner: remote Azure ACR Task, headless Chromium, software WebGL2 (not real-GPU evidence), spec `tests/browser/p1crown.spec.ts` (runs `p1crown-4` for the standard set and `p1crown-5` for the card), dev-server staging (not the shotsd dist). The card (`card-1x.jpg`, `card-2x.jpg`) is a Boulder Kane vs Sovereign Versus frame at 1440x900; the 1280 and 390 frames show the default Quick Bout (Kenji vs Mara). 06-results was not reached. Console errors and failed responses: none in any profile.
+- Landscape win shot is a low hero framing that crops the winner at the knees (authored; the victory clip steps the
+  winner ~0.6 m off its body point)

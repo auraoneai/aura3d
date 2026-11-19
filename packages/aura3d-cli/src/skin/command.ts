@@ -218,7 +218,20 @@ export function runRepairSkin(projectDir: string, target: string, options: Repai
 export const SKIN_HELP = `aura3d assets validate --skin [file.glb] [--asset id[,id]] [--clips Walk,Run] [--samples 10] [--stretch-limit 1.6] [--strict] [--warn-only CODE,CODE] [--json]
   Poses every rigged GLB through the clips it ships and fails on stretched triangles (${SKIN_STRETCH}), thin long flaps (${SKIN_FLAP}), bad weights (${SKIN_WEIGHT_SUM}), distant influences (${SKIN_WEIGHT_DISTANT}), a mesh not in its skeleton's pose (${SKIN_BIND_MISMATCH}, warning unless --strict) and impossible joint ranges (${SKIN_JOINT_RANGE}).
   Known defects that ship are listed with a reason in ${SKIN_ALLOW_FILE}.
-aura3d assets repair-skin <file.glb|assetId> [--out file.glb] [--normalize] [--max-influences 4] [--prune-distant] [--smooth-bridges] [--cut-stretch 2] [--rebuild-limbs [--material-map skin=skin,shorts=short,socks=sock,boots=dark]] [--json]
-  Every step is opt-in. --rebuild-limbs rebuilds the legs of a recognised humanoid in the pose its skeleton assumes (generalised from the Aura FC fix). --refit-skeleton moves the joints to where the mesh actually bends and re-targets the clips (for a textured mesh you cannot rebuild); --keep-clips drops the clips the game does not play; --smooth-rounds/--smooth-rings/--smooth-threshold tune --smooth-bridges.`;
+aura3d assets repair-skin <file.glb|assetId> [--out file.glb] [--normalize] [--max-influences 4] [--prune-distant] [--smooth-bridges] [--smooth-threshold 1.5] [--smooth-rounds 1] [--smooth-rings 4] [--cut-stretch 2] [--rebuild-limbs [--material-map skin=skin,shorts=short,socks=sock,boots=dark]] [--refit-skeleton] [--keep-clips Idle_Loop,Walk_Loop] [--json]
+  Every step is opt-in; the repaired GLB is written next to the input (<name>.repaired.glb) unless --out is given, and the skin check runs again on it.
+  --out FILE              where to write the repaired GLB.
+  --normalize             renormalise skin weights so each vertex sums to 1.
+  --max-influences N      keep the N strongest joint influences per vertex (1-4, default 4).
+  --prune-distant         drop influences from joints far from the vertex.
+  --smooth-bridges        smooth the weights of triangles that stretch between limbs.
+  --smooth-threshold X    triangles stretched past X times their rest size form the smoothing region (default 1.5).
+  --smooth-rounds N       smoothing rounds; each re-measures the stretch with the new weights (default 1).
+  --smooth-rings N        rings of neighbouring vertices smoothed around a stretched triangle (default 4).
+  --cut-stretch X         last resort: remove triangles still stretched past X after the other steps (leaves holes).
+  --rebuild-limbs         rebuild the legs of a recognised humanoid in the pose its skeleton assumes; --material-map maps its material slots.
+  --refit-skeleton        move the joints to where the mesh actually bends and re-target the clips (for a textured mesh you cannot rebuild).
+  --keep-clips A,B        keep only these clips and drop the ones the game does not play.
+  --json                  print the full before/after report as JSON.`;
 
 export { DEFAULT_SKIN_THRESHOLDS };

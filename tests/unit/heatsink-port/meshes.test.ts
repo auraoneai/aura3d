@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appendBox, buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, emptyMesh, groundQuad, mound, padQuad, veilQuad, type MeshData } from "../../../examples/heatsink-port/meshes";
+import { appendBox, archSlots, buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, emptyMesh, groundQuad, mound, padQuad, veilQuad, type MeshData } from "../../../examples/heatsink-port/meshes";
 import { Track } from "../../../examples/heatsink-port/track";
 
 const track = new Track();
@@ -151,7 +151,9 @@ describe("art-pass meshes", () => {
     const { body, neon } = buildArches(track);
     check(body);
     check(neon);
-    const count = Math.floor((track.length - 60 - 120 - 1) / 240) + 1;
+    /* pass-through sweep: stations on a split ramp, where the raised lane lifts the craft into the beam, are skipped */
+    const count = archSlots(track).length;
+    expect(count).toBe(Math.floor((track.length - 60 - 120 - 1) / 240) + 1 - 2);
     expect(body.positions.length / 3).toBe(count * 3 * 24);
     expect(neon.positions.length / 3).toBe(count * 2 * 24);
   });

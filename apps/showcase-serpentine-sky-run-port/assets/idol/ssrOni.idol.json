@@ -1,0 +1,57 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "serpentine-sky-run",
+  "key": "ssrOni",
+  "generatedAt": "2026-11-18T22:33:39.005Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/serpentine-sky-run/ssrOni/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f092-6282-7680-8c51-b26b6eaee222",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 845066,
+        "num_faces": 1690132,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Hulking horned mountain ogre road guardian standing upright facing forward in a wide planted stance, both feet on the ground, deep crimson-red muscular skin, two curved ivory horns, small glowing amber eyes, short ivory tusks, wild pale mane, crimson lacquered spiked shoulder pauldrons, crossed forged-iron chest harness, tiger-stripe pelt loincloth with a thick twisted rope belt, baggy indigo trousers, iron ankle shackles, holding a huge octagonal iron-studded war club upright in its right hand beside its body. Photoreal creature-effects maquette photograph: sculpted silicone skin with pores and veins, real lacquered armour, forged iron and woven fabric, warm soft studio light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.493,
+    "size": [
+      3.21,
+      3.84,
+      2.699
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-serpentine-sky-run-port/assets/idol/ssrOni.glb",
+  "sizeBytes": 7396680,
+  "preview": "artifacts/idol/serpentine-sky-run/ssrOni/views.png",
+  "usd": 0.2,
+  "postProcess": {
+    "by": "serpentine Idol pass (gltf-transform textureCompress + meshopt simplify)",
+    "textures": "JPEG q85-88; base/normal 1024 (ssrHeroViolet 2048), metallicRoughness 512 for props/backdrops, normal 512 for far backdrops",
+    "simplify": "static meshes only (lockBorder, error 0.002) to 7k-17k verts; rigged heroes untouched",
+    "sizeBytes": 1616964
+  }
+}

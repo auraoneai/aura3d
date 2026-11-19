@@ -20,13 +20,16 @@ function modelKeys(): Set<string> {
   return new Set([...src.matchAll(/readonly "([A-Za-z0-9_]+)": AuraAssetDefinition & \{ readonly type: "model"/g)].map((m) => m[1]!));
 }
 
-/** Every model asset the scene builders mount (main.ts dressing + rig.ts golfer group). */
+/** Every model asset the scene builders mount: the golfer group (rig.ts) and the Idol set pieces (art/idolModels.ts, keys from game/idolArt.ts). */
 function mountedModelKeys(): string[] {
   const models = modelKeys();
   const used = new Set<string>();
-  for (const file of ["src/main.ts", "src/game/rig.ts"]) {
+  for (const file of ["src/main.ts", "src/game/rig.ts", "src/art/idolModels.ts", "src/game/idolArt.ts"]) {
     const src = readFileSync(resolve(app, file), "utf8");
-    for (const m of src.matchAll(/assets\.([A-Za-z0-9_]+)/g)) if (models.has(m[1]!)) used.add(m[1]!);
+    for (const m of src.matchAll(/assets\.([A-Za-z0-9_]+)|"([A-Za-z0-9_]+)"/g)) {
+      const key = m[1] ?? m[2]!;
+      if (models.has(key)) used.add(key);
+    }
   }
   return [...used].sort();
 }
@@ -55,11 +58,11 @@ describe("Aura Links art direction (GU47 WP-20, PRD §3.2)", () => {
     expect(direction.palette.primary.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("mounts zero external GLB models and names every Links VFX preset (all golfers and props 100% procedural)", () => {
+  it("contracts every mounted Idol GLB model in the art direction and names every Links VFX preset", () => {
     const mounted = mountedModelKeys();
-    expect(mounted).toEqual([]);
+    expect(mounted.length).toBeGreaterThanOrEqual(15);
     const contracted = direction.assets.map((a) => a.assetKey).sort();
-    expect(contracted).toEqual([]);
+    expect(contracted).toEqual(mounted);
     const kinds = new Set(direction.vfx.map((v) => v.kind));
     for (const id of LINKS_VFX_IDS) expect(kinds.has(id), id).toBe(true);
   });

@@ -3,11 +3,11 @@ import {
   BALL_SHOT, ELBOW_FLEX_MAX_DEG, SKELETON_ATHLETE, evaluateSwing, makeRoot, solveSwing, toModel, unit, useSkeleton, vSub,
   type SolvedSwing, type SwingPosePhase
 } from "../../../apps/showcase-aura-links-3d/src/game/swingMath";
-import { meshyProfile, meshyForwardKinematics, retargetSolved } from "../../../apps/showcase-aura-links-3d/src/game/golferRetarget";
+import { rigProfile, rigForwardKinematics, retargetSolved } from "../../../apps/showcase-aura-links-3d/src/game/golferRetarget";
 import { lineTurnDeg, poseJoints, swingMetrics } from "../../../apps/showcase-aura-links-3d/src/game/swingAnalysis";
 
 /**
- * The swing must read as a golf swing, not just put the hands on the grip: joint angles of the retargeted Meshy golfer through
+ * The swing must read as a golf swing, not just put the hands on the grip: joint angles of the retargeted 24-joint golfer through
  * the whole swing (the owner's 4.7.14 report: arms crossed over a front-facing chest, no shoulder turn, shaft pointing up behind
  * the head). Contact sheets and the angle table come from scripts/golfer-swing-sheet.ts (tests/reports/golfer-swing).
  */
@@ -20,8 +20,8 @@ const dense = (): Array<[SwingPosePhase, number]> => {
   return out;
 };
 
-describe("Meshy golfer swing kinematics (anatomic solve)", () => {
-  beforeAll(() => useSkeleton(meshyProfile()));
+describe("24-joint golfer swing kinematics (anatomic solve)", () => {
+  beforeAll(() => useSkeleton(rigProfile()));
   afterAll(() => useSkeleton(SKELETON_ATHLETE));
 
   it("keeps both elbows between a soft 3 and 150 degrees of flexion through the whole swing, and the arms never fold into the torso", () => {
@@ -131,9 +131,9 @@ describe("Meshy golfer swing kinematics (anatomic solve)", () => {
     for (const [phase, t] of dense()) {
       const s = solve(phase, t);
       expect(swingMetrics(s, mk()).palmFacing, `${phase}@${t}`).toBeGreaterThan(-0.5);
-      const fk = meshyForwardKinematics(retargetSolved(s));
+      const fk = rigForwardKinematics(retargetSolved(s));
       expect(fk.get("LeftHand")!.pos.every(Number.isFinite)).toBe(true);
-      // the real Meshy elbows (forward kinematics of the overlay pose) are where the analysed virtual elbows are
+      // the real 24-joint elbows (forward kinematics of the overlay pose) are where the analysed virtual elbows are
       const j = poseJoints(s, mk());
       expect(Math.hypot(...vSub(fk.get("LeftForeArm")!.pos, j.elbowL)), `LE ${phase}@${t}`).toBeLessThan(0.005);
       expect(Math.hypot(...vSub(fk.get("RightForeArm")!.pos, j.elbowR)), `RE ${phase}@${t}`).toBeLessThan(0.005);

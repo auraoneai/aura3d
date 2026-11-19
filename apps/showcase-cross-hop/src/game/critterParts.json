@@ -1,0 +1,678 @@
+{
+  "hopCritterHop": {
+    "height": 1.05,
+    "parts": [
+      {
+        "name": "legL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.202,
+          0.315,
+          0
+        ],
+        "triangles": 1389
+      },
+      {
+        "name": "legR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.202,
+          0.315,
+          0
+        ],
+        "triangles": 1465
+      }
+    ]
+  },
+  "hopCritterGoldenHop": {
+    "height": 1.05,
+    "parts": [
+      {
+        "name": "legL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.185,
+          0.315,
+          0
+        ],
+        "triangles": 1150
+      },
+      {
+        "name": "legR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.185,
+          0.315,
+          0
+        ],
+        "triangles": 1093
+      }
+    ]
+  },
+  "hopCritterRoboFrog": {
+    "height": 1.049,
+    "parts": [
+      {
+        "name": "legL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.217,
+          0.442,
+          0
+        ],
+        "triangles": 1896
+      },
+      {
+        "name": "legR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.216,
+          0.442,
+          0
+        ],
+        "triangles": 1800
+      }
+    ]
+  },
+  "hopCritterChick": {
+    "height": 1.05,
+    "parts": [
+      {
+        "name": "wingL",
+        "motion": "wing",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.346,
+          0.63,
+          0
+        ],
+        "triangles": 715
+      },
+      {
+        "name": "wingR",
+        "motion": "wing",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.346,
+          0.63,
+          0
+        ],
+        "triangles": 765
+      },
+      {
+        "name": "footL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.013,
+          0.115,
+          0
+        ],
+        "triangles": 797
+      },
+      {
+        "name": "footR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.013,
+          0.115,
+          0
+        ],
+        "triangles": 920
+      }
+    ]
+  },
+  "hopCritterDucky": {
+    "height": 1.05,
+    "parts": [
+      {
+        "name": "wingL",
+        "motion": "wing",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.184,
+          0.546,
+          0
+        ],
+        "triangles": 814
+      },
+      {
+        "name": "wingR",
+        "motion": "wing",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.184,
+          0.546,
+          0
+        ],
+        "triangles": 695
+      },
+      {
+        "name": "footL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.012,
+          0.116,
+          0
+        ],
+        "triangles": 838
+      },
+      {
+        "name": "footR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.012,
+          0.116,
+          0
+        ],
+        "triangles": 930
+      },
+      {
+        "name": "tail",
+        "motion": "tail",
+        "parent": null,
+        "side": 0,
+        "front": 0,
+        "pivot": [
+          0,
+          0.336,
+          -0.193
+        ],
+        "triangles": 777
+      }
+    ]
+  },
+  "hopCritterTurtle": {
+    "height": 1.049,
+    "parts": [
+      {
+        "name": "head",
+        "motion": "head",
+        "parent": null,
+        "side": 0,
+        "front": 0,
+        "pivot": [
+          0,
+          0.295,
+          0.317
+        ],
+        "triangles": 1952
+      },
+      {
+        "name": "legFL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 1,
+        "pivot": [
+          0.241,
+          0.232,
+          0.285
+        ],
+        "triangles": 393
+      },
+      {
+        "name": "legFR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 1,
+        "pivot": [
+          -0.241,
+          0.232,
+          0.285
+        ],
+        "triangles": 412
+      },
+      {
+        "name": "legBL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": -1,
+        "pivot": [
+          0.241,
+          0.232,
+          -0.285
+        ],
+        "triangles": 477
+      },
+      {
+        "name": "legBR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": -1,
+        "pivot": [
+          -0.241,
+          0.232,
+          -0.285
+        ],
+        "triangles": 765
+      }
+    ]
+  },
+  "hopCritterBun": {
+    "height": 1.05,
+    "parts": [
+      {
+        "name": "earL",
+        "motion": "ear",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.024,
+          0.714,
+          0
+        ],
+        "triangles": 977
+      },
+      {
+        "name": "earR",
+        "motion": "ear",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.024,
+          0.714,
+          0
+        ],
+        "triangles": 1069
+      },
+      {
+        "name": "footL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.015,
+          0.126,
+          0
+        ],
+        "triangles": 1208
+      },
+      {
+        "name": "footR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.015,
+          0.126,
+          0
+        ],
+        "triangles": 894
+      },
+      {
+        "name": "tail",
+        "motion": "tail",
+        "parent": null,
+        "side": 0,
+        "front": 0,
+        "pivot": [
+          0,
+          0.236,
+          -0.268
+        ],
+        "triangles": 925
+      }
+    ]
+  },
+  "hopCritterAxolotl": {
+    "height": 1.049,
+    "parts": [
+      {
+        "name": "gillL",
+        "motion": "gill",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.277,
+          0.756,
+          0
+        ],
+        "triangles": 1980
+      },
+      {
+        "name": "gillR",
+        "motion": "gill",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.276,
+          0.756,
+          0
+        ],
+        "triangles": 2083
+      },
+      {
+        "name": "tail",
+        "motion": "tail",
+        "parent": null,
+        "side": 0,
+        "front": 0,
+        "pivot": [
+          0,
+          0.211,
+          -0.121
+        ],
+        "triangles": 443
+      },
+      {
+        "name": "footL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.015,
+          0.127,
+          0
+        ],
+        "triangles": 427
+      },
+      {
+        "name": "footR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.014,
+          0.127,
+          0
+        ],
+        "triangles": 410
+      }
+    ]
+  },
+  "hopCritterToastCat": {
+    "height": 1.05,
+    "parts": [
+      {
+        "name": "earL",
+        "motion": "ear",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.18,
+          0.914,
+          0
+        ],
+        "triangles": 223
+      },
+      {
+        "name": "earR",
+        "motion": "ear",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.18,
+          0.914,
+          0
+        ],
+        "triangles": 556
+      },
+      {
+        "name": "tail",
+        "motion": "tail",
+        "parent": null,
+        "side": 0,
+        "front": 0,
+        "pivot": [
+          0,
+          0.394,
+          -0.177
+        ],
+        "triangles": 1516
+      },
+      {
+        "name": "footL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.019,
+          0.105,
+          0
+        ],
+        "triangles": 487
+      },
+      {
+        "name": "footR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.019,
+          0.105,
+          0
+        ],
+        "triangles": 672
+      }
+    ]
+  },
+  "hopCritterMushroomKid": {
+    "height": 1.049,
+    "parts": [
+      {
+        "name": "armL",
+        "motion": "arm",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.181,
+          0.42,
+          0
+        ],
+        "triangles": 296
+      },
+      {
+        "name": "armR",
+        "motion": "arm",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.181,
+          0.42,
+          0
+        ],
+        "triangles": 563
+      },
+      {
+        "name": "footL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.01,
+          0.147,
+          0
+        ],
+        "triangles": 665
+      },
+      {
+        "name": "footR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.01,
+          0.147,
+          0
+        ],
+        "triangles": 767
+      }
+    ]
+  },
+  "hopCritterKnightToad": {
+    "height": 1.049,
+    "parts": [
+      {
+        "name": "footL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.021,
+          0.127,
+          0
+        ],
+        "triangles": 511
+      },
+      {
+        "name": "footR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.023,
+          0.127,
+          0
+        ],
+        "triangles": 591
+      }
+    ]
+  },
+  "hopCritterAstroFrog": {
+    "height": 1.048,
+    "parts": [
+      {
+        "name": "armL",
+        "motion": "arm",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.176,
+          0.671,
+          0.001
+        ],
+        "triangles": 1767
+      },
+      {
+        "name": "armR",
+        "motion": "arm",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.176,
+          0.671,
+          0.001
+        ],
+        "triangles": 1262
+      },
+      {
+        "name": "legL",
+        "motion": "leg",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.01,
+          0.315,
+          0.001
+        ],
+        "triangles": 1271
+      },
+      {
+        "name": "legR",
+        "motion": "leg",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.01,
+          0.315,
+          0.001
+        ],
+        "triangles": 1263
+      }
+    ]
+  },
+  "hopHawk": {
+    "height": 1.321,
+    "parts": [
+      {
+        "name": "wingL",
+        "motion": "wing",
+        "parent": null,
+        "side": 1,
+        "front": 0,
+        "pivot": [
+          0.17,
+          0.793,
+          0
+        ],
+        "triangles": 3933
+      },
+      {
+        "name": "wingR",
+        "motion": "wing",
+        "parent": null,
+        "side": -1,
+        "front": 0,
+        "pivot": [
+          -0.17,
+          0.793,
+          0
+        ],
+        "triangles": 5924
+      }
+    ]
+  }
+}

@@ -464,6 +464,10 @@ export function damage(state: SimState, force = false, kind = "hit"): boolean {
   return true;
 }
 
+/** Original `VE` hitbox: the lane distance at which a rock / log is hit, and the jump height that clears it (props.ts draws them this size). */
+export const OBSTACLE_REACH = { rock: 1.3, log: 2.15 } as const;
+export const OBSTACLE_JUMP_CLEAR = 1.3;
+
 /**
  * Original `VE`: obstacle crash / clean-pass and orb pickup, run after `Sp` each frame. Not ported: the orb magnet while on the Glider
  * (`UE`/`GE`), creature and boulder encounters (`FT.update` and its `PE` events).
@@ -472,8 +476,8 @@ export function worldPass(state: SimState, ch: Chapter, world: WorldLayout = wor
   const ev: string[] = [];
   for (const o of world.obstacles) {
     if (state.crashed.has(o.id) || Math.abs(state.s - o.s) > 1.2) continue;
-    const reach = o.type === "log" ? 2.15 : 1.3;
-    if (Math.abs(state.lane - o.lane) < reach && state.jump < 1.3) {
+    const reach = o.type === "log" ? OBSTACLE_REACH.log : OBSTACLE_REACH.rock;
+    if (Math.abs(state.lane - o.lane) < reach && state.jump < OBSTACLE_JUMP_CLEAR) {
       state.crashed.add(o.id);
       if (damage(state, false, "obstacle")) { state.stumbleTimer = 0.55; ev.push("hit"); }
     } else if (state.s >= o.s && !state.crashed.has(o.id)) {

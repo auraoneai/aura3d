@@ -1,36 +1,38 @@
-# Ion Circuit: final screenshots (GU47 phase-4 retake, 2026-10-31)
+# Ion Circuit: final screenshots
 
-- **Build:** branch `gu47/g19` at 9d8083778 (Aura3D 4.7.1 plus the phase-4 twilight default: panel-verified better than 4.6.2 in g19p4r6 and g19p4r7, 3/0/0 each). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-circuit.spec.ts`, remote run `g19p4-r7-scr` (picassostagingacr), decoded with `tools/shots/decode-shotsb.mjs`.
-- **Runner:** headless Chromium on SwiftShader: software WebGL2, not a GPU. `quality=low` as before.
-- **Card:** `card@2x.jpg` is the strike state at 1440x900 (`strike-card2x`), `card.jpg` is it downscaled to 720x450; previews rebuilt with `node tools/site/build-card-images.mjs`.
-- **Changes visible here:** slim one-row HUD at 640x360; WP-36 `ionSentryDrone` sentry targets; contact shadow under the drone; no white road paint on the causeway; the wake fades near the lens.
+Route: `/apps/ion-circuit/`
 
-## Previous set (GU47 phase-3 retake, 2026-10-31)
+Runner: headed Chrome on a real GPU (Apple Metal) via REA `capture_browser_scenario`, production build served from http://127.0.0.1:8790 (2026-11-18).
 
-- **Build:** branch `gu47/g19` at b967a20f2 (Aura3D 4.7.0 plus the phase-3 twilight default: panel-verified better than 4.6.2 in rounds g19p3r1..r3, 3/0/0 each). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-circuit.spec.ts`, remote run `g19p3-scr-2` (picassostagingacr), decoded with `tools/shots/decode-shotsb.mjs`.
-- **Runner:** headless Chromium on SwiftShader: software WebGL2, not a GPU. `quality=low` as before (no GTAO, motion blur, CA, grain or lens flare; one shadow cascade).
-- **Card:** `card@2x.jpg` is the strike state at 1440x900 (`strike-card2x` in the log), `card.jpg` is it downscaled to 720x450; previews rebuilt with `node tools/site/build-card-images.mjs`.
-- **Known:** in the 390 frames the two-line objective touches the district banner; the `max-width: 500px` rule that moves the banner to 172 px landed after this capture and is not in these frames.
+| Viewport | File | State | Meaning |
+|---|---|---|---|
+| 1280x720 | 1280-01-title.jpg | title | start menu with strike objective and controls (P autopilot) |
+| 1280x720 | 1280-02-early.jpg | early | ?autoplay=1: first seconds of the race under the gantry, 240 km/h |
+| 1280x720 | 1280-03-action.jpg | action | 288 km/h, locking a red barrel target |
+| 1280x720 | 1280-04-mid.jpg | mid | split section at 285 km/h: the median between the raised and lowered lanes is now a canyon-rock ridge, gunship target ahead |
+| 1280x720 | 1280-05-original.jpg | original-look | ?look=original mode, autoplay, target barrel ahead |
+| 1280x720 | 1280-06-ram.jpg | ram | the craft flies into a live sentry: it shatters on contact (flash + debris; kills 1/48). CDP helper, headed Chrome, same GPU, ?manual=1 reference replay step 362 |
+| 390x844 | 390-01-title.jpg | title | start menu, portrait |
+| 390x844 | 390-02-early.jpg | early | autoplay, first seconds of the race |
+| 390x844 | 390-03-action.jpg | action | barrel target locked at 57 m |
+| 390x844 | 390-04-mid.jpg | mid | split section: canyon-rock median ridge, gunship target ahead |
+| 390x844 | 390-05-original.jpg | original-look | ?look=original, sentry target ahead |
+| 390x844 | 390-06-ram.jpg | ram | same ram moment, portrait |
+| 1440x900 | card-2x.jpg | card | autoplay at 288 km/h firing on a barrel target, gantry and ringed planet behind |
+| 720x450 | card-1x.jpg | card | card-2x.jpg downscaled (LANCZOS, q88) |
 
-## Previous set (audit-fix retake, 2026-10-29)
+## Checked in the frames
 
+- ?autoplay=1 with no input: countdown, race, the craft holds the racing line at 278-295 km/h, shoots barrels and sentries (kills 5/48 by 36 s)
+- First seconds: loading card with progress, then the countdown orbit; no frozen or blank frame
+- Craft readable at the default camera; targets labelled; gate pylons stand outside the rails
+- Audit 2026-11-19: craft rotors step 0.45-0.50 rad per frame (alias-free forward spin, measured); sentry/gunship duct fans spin (~30 rad/s, measured on the node)
+- Split medians: the flat teal lid slab is now drawn in the canyon rock material (1280-04-mid / 390-04-mid retaken)
+- Craft-vs-target collider (2026-11-19): a craft that touches a live target shatters it (operation.ts craftTouchesTarget; kill at half value, chain broken, movement untouched); 1280-06-ram / 390-06-ram
+- Countdown (2026-11-19): boot warms the sweep poses and flash-light variants; on the real GPU 0 programs compile after boot (was 8 at the countdown + ~46 on the first hit/kill), no countdown stall
 
-- **Build:** branch `audit-fix/g19` (4.5.0 engine plus the lane G19 fixes: GO banner, HUD, touch controls, contact shadow, strip bounds, LIGHT-01 environment). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-circuit.spec.ts`.
-- **Runner:** remote Azure ACR task `g19-w3-screens` (`tools/remote-acr/run.sh`), headless Chromium on SwiftShader: software WebGL2, not a GPU. The owner should confirm the look on real hardware.
-- **Viewports:** 640x360 reduced low-quality canvas and 390x844 (touch device, so the touch controls show). Card: `card@2x.jpg` is the strike state at 1440x900, `card.jpg` is it downscaled to 720x450. Same file names and sizes as the previous set.
-- **Method:** states are driven through the game QA hooks (manual stepping), so frames are deterministic; the title frame is the normal page. `capture-log.txt` has the per-frame state, the visible overlays and the console errors.
+## Known issues
 
-## Frames
-
-- `title-640.jpg`, `title-390.jpg`: menu over the countdown.
-- `early-*`, `start-*`: countdown (3 and 2).
-- `strike-*`: step 323 of the strike replay, the first kill, 2.2 s into the race: the GO banner has cleared and the next-target line is visible.
-- `mid-action-*`: step 1148, a barrel shot at 170 m/s.
-- `results-*`: a real finished race (lane-follow bot at 80 m/s, `autopilot` hook): GOLD, 42 of 48 kills, finish time 4:49.233, with the medal rules under the stats.
-- `card.jpg`, `card@2x.jpg`: the strike state.
-
-## Changes against the previous set (2026-10-25)
-
-- The countdown banner is no longer hidden by the capture code; it clears by itself (HP-01).
-- The `results` frames used to show a race in progress; they now show a finished card (audit "Tests and evidence gaps").
-- HUD: KILLS / RACE, HULL pips, best lap under TIME (HP-06, HP-15). The 390 frames show the touch buttons (HP-03).
+- 390x844: when the objective line wraps to 4 lines ("NO TARGETS AHEAD ..."), the district banner (absolute top 172px from an older style block in apps/showcase-heatsink-port/index.html) overlaps it (390-06-ram)
+- Craft and target fans too small at the chase camera to judge spin by eye; spin verified from node transforms
+- ?look=original craft has no separate rotor nodes (baked Idol ducts are static)

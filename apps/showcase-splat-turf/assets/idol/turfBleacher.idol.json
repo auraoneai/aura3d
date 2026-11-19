@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-turf",
+  "key": "turfBleacher",
+  "generatedAt": "2026-11-18T23:37:38.171Z",
+  "generator": "tools/idol/generate.mjs (client-timeout resume)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A small outdoor skate-park spectator grandstand: four tiers of aluminium bench seats on a painted plum steel frame with stairs, topped by a curved tensioned fabric sun-sail canopy in coral and sunshine yellow on steel masts. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17,
+      "note": "billed in the timed-out generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0d9-bbe9-7eb1-a367-5e111768ddc1",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1157802,
+        "num_faces": 2316080,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A small outdoor skate-park spectator grandstand: four tiers of aluminium bench seats on a painted plum steel frame with stairs, topped by a curved tensioned fabric sun-sail canopy in coral and sunshine yellow on steel masts. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 7.368,
+    "size": [
+      7.4,
+      7.455,
+      6.912
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-turf/assets/idol/turfBleacher.glb",
+  "sizeBytes": 1379908,
+  "preview": "artifacts/idol/splat-turf/turfBleacher/views.png",
+  "usd": 0.37,
+  "postProcess": "PNG textures re-encoded as JPEG q90 (normal map) by the splat Idol pass to fit the per-game byte budget"
+}

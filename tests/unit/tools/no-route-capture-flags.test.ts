@@ -1,13 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { Linter } from "eslint";
 import tsParser from "@typescript-eslint/parser";
 // @ts-expect-error plain .js config file without declarations
 import ruleset from "../../../eslint/qr/no-route-capture-flags.js";
 
-const repoRoot = dirname(dirname(dirname(dirname(fileURLToPath(import.meta.url)))));
 const linter = new Linter();
 
 const languageOptions = { parser: tsParser, ecmaVersion: 2022, sourceType: "module", globals: { window: "readonly", document: "readonly", URLSearchParams: "readonly" } };
@@ -16,18 +12,9 @@ const lint = (code: string, filename: string) =>
   linter.verify(code, [{ languageOptions }, ...ruleset], filename);
 
 describe("eslint/qr/no-route-capture-flags", () => {
-  it("reports zero capture-flag hits on apps/showcase-bank-shot/src/legacy/main.ts (migrated)", () => {
-    // Bank-shot's legacy route no longer reads ?capture: the divergent review
-    // branches were deleted and the shipped play branch is unconditional.
-    const main = readFileSync(join(repoRoot, "apps/showcase-bank-shot/src/legacy/main.ts"), "utf8");
-    const messages = lint(main, "apps/showcase-bank-shot/src/legacy/main.ts");
-    const hits = messages.filter((m) => m.message.includes("aura3d/no-route-capture-flags"));
-    expect(hits).toEqual([]);
-  });
-
   it("reports zero on the patched scratch file (no capture reads)", () => {
     const patched = `const url = new URLSearchParams(window.location.search);\nconst seed = url.get("seed");\n`;
-    const messages = lint(patched, "apps/showcase-bank-shot/src/main.ts");
+    const messages = lint(patched, "apps/showcase-x/src/main.ts");
     expect(messages).toEqual([]);
   });
 

@@ -89,7 +89,6 @@ jobs:
           tests/unit/contracts/impl/prd09-game.test.ts
       - name: Capture-parity tool gates
         run: |
-          node tools/showcase-library/game-capture-parity.mjs --routes aura-clash-showcase --fail-on-any
           node tools/showcase-library/game-capture-parity.mjs
       - name: Beacon size-limit (< 0.5 kB min+gz)
         working-directory: packages/game

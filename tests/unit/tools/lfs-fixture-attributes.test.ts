@@ -62,10 +62,6 @@ const lfsNeighbors = [
 
 const existingPointers = [
   {
-    path: "apps/aura-clash-showcase/public/aura-assets/arenaNeonDowntownTextured.312f2320.glb",
-    corpusNeighbor: "fixtures/asset-corpus/antique-camera.glb"
-  },
-  {
     path: "public/hdri/belfast_sunset_puresky_1k.hdr",
     corpusNeighbor: "fixtures/environment-corpus/hdri/new.hdr"
   }

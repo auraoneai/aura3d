@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzGunnerMinigun",
+  "generatedAt": "2026-11-18T22:16:56.868Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/bunker-zero/_refs/bzGunnerMinigun.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0bc-0d1b-7aa0-8481-d9cfb4eca57d",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 410506,
+        "num_faces": 821028,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Fictional heavy six-barrel rotary machine gun: cluster of six long steel barrels, bulky dark olive motor housing, top carry handle, rear twin grips, ammunition belt feed chute. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.127,
+    "size": [
+      1.2,
+      0.678,
+      1.09
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzGunnerMinigun.glb",
+  "sizeBytes": 2405484,
+  "preview": "artifacts/idol/bunker-zero/bzGunnerMinigun/views.png",
+  "usd": 0.2
+}

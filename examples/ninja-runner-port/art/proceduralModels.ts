@@ -53,6 +53,7 @@ import {
 import { MESHY_MANIFEST, type PropId } from "../assets/meshy/manifest";
 import type { CharacterId } from "../models";
 import type { CourseAccents, ModelPlacement, ModelSink } from "../scenery";
+import { IDOL_SCENERY, buildIdolWaterWheelRotor } from "./idolScenery";
 
 /** Strips preset `.name` so shared material specs never emit duplicate names in scene JSON. */
 export const unnamed = (spec: AuraMaterialSpec): AuraMaterialSpec => {
@@ -846,7 +847,8 @@ export function buildWaterWheelSetpieceGroup(placement: ModelPlacement): ReturnT
     materialIndex: 2
   });
 
-  const rotorNode = assembleMultiMaterialNode("setpiece-waterWheel", buildWaterWheelRotorSlots(), HERO_SETPIECE_PALETTE, {
+  // Idol wow pass: the rotor is the Idol water wheel (`idolScenery.ts`); the trestles, millrace and flume stay procedural.
+  const rotorNode = (IDOL_SCENERY ? buildIdolWaterWheelRotor() : null) ?? assembleMultiMaterialNode("setpiece-waterWheel", buildWaterWheelRotorSlots(), HERO_SETPIECE_PALETTE, {
     id: "setpiece-waterWheel",
     castShadow: false,
     receiveShadow: true,

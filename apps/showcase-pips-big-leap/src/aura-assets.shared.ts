@@ -5,7 +5,4997 @@ import { defineAuraAssets } from "@aura3d/engine";
 import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type PipsSharedAssetDefinitions = {
+  readonly "pipHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipBrambleback": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipSunseed": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipGoldenAcorn": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipHeartBerry": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipSunGate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipCheckpointStand": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipOakTree": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipConifer": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipToadstool": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipFlower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipBoulder": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipStonePillar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipStoneArch": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipWatchtower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipCrate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipBarrel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipLantern": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipCrystal": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipEmberVent": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipCloud": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipHawkBody": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipHawkWing": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipHedgehogRigged": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipBeetleRigged": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipStarRelic": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipSpringBase": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipWindmillTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "pipWindmillSails": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
 };
 
 export const sharedAssets: AuraAssetMap<PipsSharedAssetDefinitions> = defineAuraAssets({
+  "pipHero": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipHero.087621d8.glb",
+    hash: "sha256-087621d8abcb4b62b751af5e6c33233113f05f5bd4b443e42e8492ff9c1d6b1a",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-087621d8abcb4b62b751af5e6c33233113f05f5bd4b443e42e8492ff9c1d6b1a"
+    },
+    bounds: [
+      0.698,
+      1,
+      0.512
+    ],
+    sizeBytes: 3700704,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "animationClips": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "animationClipDetails": [
+        {
+          "name": "idle",
+          "duration": 2.5333333015441895,
+          "channelCount": 29
+        },
+        {
+          "name": "walk",
+          "duration": 1.6666666269302368,
+          "channelCount": 29
+        },
+        {
+          "name": "run",
+          "duration": 1.1666666269302368,
+          "channelCount": 29
+        },
+        {
+          "name": "jump",
+          "duration": 1.6666666269302368,
+          "channelCount": 29
+        }
+      ],
+      "animationMetadata": {
+        "clipCount": 4,
+        "clips": [
+          {
+            "index": 0,
+            "name": "idle",
+            "channelCount": 29,
+            "samplerCount": 29,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21",
+              "bone_22",
+              "bone_23",
+              "bone_24",
+              "bone_25",
+              "bone_26",
+              "bone_27"
+            ],
+            "duration": 2.5333333015441895,
+            "hasRootMotionCandidate": false,
+            "frameRate": 15.000000894069725
+          },
+          {
+            "index": 1,
+            "name": "walk",
+            "channelCount": 29,
+            "samplerCount": 29,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21",
+              "bone_22",
+              "bone_23",
+              "bone_24",
+              "bone_25",
+              "bone_26",
+              "bone_27"
+            ],
+            "duration": 1.6666666269302368,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 2,
+            "name": "run",
+            "channelCount": 29,
+            "samplerCount": 29,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21",
+              "bone_22",
+              "bone_23",
+              "bone_24",
+              "bone_25",
+              "bone_26",
+              "bone_27"
+            ],
+            "duration": 1.1666666269302368,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 3,
+            "name": "jump",
+            "channelCount": 29,
+            "samplerCount": 29,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21",
+              "bone_22",
+              "bone_23",
+              "bone_24",
+              "bone_25",
+              "bone_26",
+              "bone_27"
+            ],
+            "duration": 1.6666666269302368,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          }
+        ],
+        "messages": [
+          "Detected 4 embedded animation clips."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 28,
+        "skins": [
+          {
+            "index": 0,
+            "name": "skin-0",
+            "jointCount": 28,
+            "joints": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21",
+              "bone_22",
+              "bone_23",
+              "bone_24",
+              "bone_25",
+              "bone_26",
+              "bone_27"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 28 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 30,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 4,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 12,
+        "messages": [
+          "Detected 30 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipHero.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:27:14Z",
+        "checkedAt": "2026-11-18T23:27:14Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipHero.glb",
+      "outputPath": "public/aura-assets/pipHero.087621d8.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.349,
+          0,
+          -0.256
+        ],
+        "max": [
+          0.349,
+          1,
+          0.256
+        ],
+        "size": [
+          0.698,
+          1,
+          0.512
+        ],
+        "center": [
+          0,
+          0.5,
+          0
+        ],
+        "maxDimension": 1,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "geometry_0",
+        "bone_0",
+        "bone_1",
+        "bone_2",
+        "bone_3",
+        "bone_4",
+        "bone_5",
+        "bone_6",
+        "bone_7",
+        "bone_8",
+        "bone_9",
+        "bone_10",
+        "bone_11",
+        "bone_12",
+        "bone_13",
+        "bone_14",
+        "bone_15",
+        "bone_16",
+        "bone_17",
+        "bone_18",
+        "bone_19",
+        "bone_20",
+        "bone_21",
+        "bone_22",
+        "bone_23",
+        "bone_24",
+        "bone_25",
+        "bone_26",
+        "bone_27",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipHero.thumb.svg",
+      "quality": "candidate",
+      "role": "character"
+    },
+  },
+  "pipBrambleback": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipBrambleback.d78699f0.glb",
+    hash: "sha256-d78699f0e20dc31604507e2cc2d84b5b84273510a0805c27945315bd55fca705",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-d78699f0e20dc31604507e2cc2d84b5b84273510a0805c27945315bd55fca705"
+    },
+    bounds: [
+      1.001,
+      0.915,
+      0.689
+    ],
+    sizeBytes: 2784512,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "animationClips": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "animationClipDetails": [
+        {
+          "name": "idle",
+          "duration": 2.5333333015441895,
+          "channelCount": 23
+        },
+        {
+          "name": "walk",
+          "duration": 1.6666666269302368,
+          "channelCount": 23
+        },
+        {
+          "name": "run",
+          "duration": 1.1666666269302368,
+          "channelCount": 23
+        },
+        {
+          "name": "jump",
+          "duration": 1.6666666269302368,
+          "channelCount": 23
+        }
+      ],
+      "animationMetadata": {
+        "clipCount": 4,
+        "clips": [
+          {
+            "index": 0,
+            "name": "idle",
+            "channelCount": 23,
+            "samplerCount": 23,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21"
+            ],
+            "duration": 2.5333333015441895,
+            "hasRootMotionCandidate": false,
+            "frameRate": 15.000000894069725
+          },
+          {
+            "index": 1,
+            "name": "walk",
+            "channelCount": 23,
+            "samplerCount": 23,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21"
+            ],
+            "duration": 1.6666666269302368,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 2,
+            "name": "run",
+            "channelCount": 23,
+            "samplerCount": 23,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21"
+            ],
+            "duration": 1.1666666269302368,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 3,
+            "name": "jump",
+            "channelCount": 23,
+            "samplerCount": 23,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21"
+            ],
+            "duration": 1.6666666269302368,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          }
+        ],
+        "messages": [
+          "Detected 4 embedded animation clips."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 22,
+        "skins": [
+          {
+            "index": 0,
+            "name": "skin-0",
+            "jointCount": 22,
+            "joints": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 22 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 24,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 4,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 9,
+        "messages": [
+          "Detected 24 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipBrambleback.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:27:14Z",
+        "checkedAt": "2026-11-18T23:27:14Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipBrambleback.glb",
+      "outputPath": "public/aura-assets/pipBrambleback.d78699f0.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.501,
+          0,
+          -0.344
+        ],
+        "max": [
+          0.501,
+          0.915,
+          0.344
+        ],
+        "size": [
+          1.001,
+          0.915,
+          0.689
+        ],
+        "center": [
+          0,
+          0.457,
+          0
+        ],
+        "maxDimension": 1.001,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "geometry_0",
+        "bone_0",
+        "bone_1",
+        "bone_2",
+        "bone_3",
+        "bone_4",
+        "bone_5",
+        "bone_6",
+        "bone_7",
+        "bone_8",
+        "bone_9",
+        "bone_10",
+        "bone_11",
+        "bone_12",
+        "bone_13",
+        "bone_14",
+        "bone_15",
+        "bone_16",
+        "bone_17",
+        "bone_18",
+        "bone_19",
+        "bone_20",
+        "bone_21",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipBrambleback.thumb.svg",
+      "quality": "candidate",
+      "role": "character"
+    },
+  },
+  "pipSunseed": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipSunseed.02b8fe3e.glb",
+    hash: "sha256-02b8fe3e52163c64c7407f97000feda52bb4f841e17138d3970b6e09c92983d8",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-02b8fe3e52163c64c7407f97000feda52bb4f841e17138d3970b6e09c92983d8"
+    },
+    bounds: [
+      0.368,
+      0.62,
+      0.368
+    ],
+    sizeBytes: 657296,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipSunseed.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:40:41Z",
+        "checkedAt": "2026-11-18T23:40:41Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipSunseed.glb",
+      "outputPath": "public/aura-assets/pipSunseed.02b8fe3e.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.184,
+          0,
+          -0.184
+        ],
+        "max": [
+          0.184,
+          0.62,
+          0.184
+        ],
+        "size": [
+          0.368,
+          0.62,
+          0.368
+        ],
+        "center": [
+          0,
+          0.31,
+          0
+        ],
+        "maxDimension": 0.62,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipSunseed.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipGoldenAcorn": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipGoldenAcorn.a71bec3e.glb",
+    hash: "sha256-a71bec3eb999488421cd62bc2483e00ebe804bf7e5d823b9ee38787b591c52c9",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-a71bec3eb999488421cd62bc2483e00ebe804bf7e5d823b9ee38787b591c52c9"
+    },
+    bounds: [
+      0.425,
+      0.62,
+      0.419
+    ],
+    sizeBytes: 688640,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipGoldenAcorn.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:40:42Z",
+        "checkedAt": "2026-11-18T23:40:42Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipGoldenAcorn.glb",
+      "outputPath": "public/aura-assets/pipGoldenAcorn.a71bec3e.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.212,
+          0,
+          -0.209
+        ],
+        "max": [
+          0.212,
+          0.62,
+          0.209
+        ],
+        "size": [
+          0.425,
+          0.62,
+          0.419
+        ],
+        "center": [
+          0,
+          0.31,
+          0
+        ],
+        "maxDimension": 0.62,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipGoldenAcorn.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipHeartBerry": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipHeartBerry.2b1bda5d.glb",
+    hash: "sha256-2b1bda5da4e6bcc89c6a1042db67a772a132a150715ead730dd406d71c0f8f3e",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-2b1bda5da4e6bcc89c6a1042db67a772a132a150715ead730dd406d71c0f8f3e"
+    },
+    bounds: [
+      0.401,
+      0.52,
+      0.228
+    ],
+    sizeBytes: 632692,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipHeartBerry.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:40:43Z",
+        "checkedAt": "2026-11-18T23:40:43Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipHeartBerry.glb",
+      "outputPath": "public/aura-assets/pipHeartBerry.2b1bda5d.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.201,
+          0,
+          -0.114
+        ],
+        "max": [
+          0.201,
+          0.52,
+          0.114
+        ],
+        "size": [
+          0.401,
+          0.52,
+          0.228
+        ],
+        "center": [
+          0,
+          0.26,
+          0
+        ],
+        "maxDimension": 0.52,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipHeartBerry.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipSunGate": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipSunGate.2c8e6f67.glb",
+    hash: "sha256-2c8e6f6758bdabfb6aa944c26ff8e4a0bc4f6c6fdc08877644f1f513568500ff",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-2c8e6f6758bdabfb6aa944c26ff8e4a0bc4f6c6fdc08877644f1f513568500ff"
+    },
+    bounds: [
+      4.46,
+      3.31,
+      1.05
+    ],
+    sizeBytes: 1421596,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipSunGate.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:40:33Z",
+        "checkedAt": "2026-11-18T23:40:33Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipSunGate.glb",
+      "outputPath": "public/aura-assets/pipSunGate.2c8e6f67.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -2.23,
+          0,
+          -0.525
+        ],
+        "max": [
+          2.23,
+          3.31,
+          0.525
+        ],
+        "size": [
+          4.46,
+          3.31,
+          1.05
+        ],
+        "center": [
+          0,
+          1.655,
+          0
+        ],
+        "maxDimension": 4.46,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipSunGate.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing"
+    },
+  },
+  "pipCheckpointStand": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipCheckpointStand.078e3160.glb",
+    hash: "sha256-078e31604bba0399fbb4191238190e18618d4ef3ddc203554c250b46c7baf764",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-078e31604bba0399fbb4191238190e18618d4ef3ddc203554c250b46c7baf764"
+    },
+    bounds: [
+      1.195,
+      2,
+      0.74
+    ],
+    sizeBytes: 651888,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipCheckpointStand.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:39:01Z",
+        "checkedAt": "2026-11-18T23:39:01Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipCheckpointStand.glb",
+      "outputPath": "public/aura-assets/pipCheckpointStand.078e3160.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.597,
+          0,
+          -0.37
+        ],
+        "max": [
+          0.597,
+          2,
+          0.37
+        ],
+        "size": [
+          1.195,
+          2,
+          0.74
+        ],
+        "center": [
+          0,
+          1,
+          0
+        ],
+        "maxDimension": 2,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipCheckpointStand.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipOakTree": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipOakTree.c8990b0c.glb",
+    hash: "sha256-c8990b0ca6263d57a65f84d884d1b58a67505269c5e86aed7a3a2e028f54f26d",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-c8990b0ca6263d57a65f84d884d1b58a67505269c5e86aed7a3a2e028f54f26d"
+    },
+    bounds: [
+      4.53,
+      4.99,
+      3.849
+    ],
+    sizeBytes: 910316,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipOakTree.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:40:34Z",
+        "checkedAt": "2026-11-18T23:40:34Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipOakTree.glb",
+      "outputPath": "public/aura-assets/pipOakTree.c8990b0c.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -2.265,
+          0,
+          -1.925
+        ],
+        "max": [
+          2.265,
+          4.99,
+          1.925
+        ],
+        "size": [
+          4.53,
+          4.99,
+          3.849
+        ],
+        "center": [
+          0,
+          2.495,
+          0
+        ],
+        "maxDimension": 4.99,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipOakTree.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing"
+    },
+  },
+  "pipConifer": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipConifer.2649d6a0.glb",
+    hash: "sha256-2649d6a013eeaac738fc7d2025cf2c838e7276bb02c28365b7c5529acaf558e9",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-2649d6a013eeaac738fc7d2025cf2c838e7276bb02c28365b7c5529acaf558e9"
+    },
+    bounds: [
+      2.849,
+      3.88,
+      2.536
+    ],
+    sizeBytes: 879508,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 2,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipConifer.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:40:35Z",
+        "checkedAt": "2026-11-18T23:40:35Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipConifer.glb",
+      "outputPath": "public/aura-assets/pipConifer.2649d6a0.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -1.424,
+          0,
+          -1.268
+        ],
+        "max": [
+          1.424,
+          3.88,
+          1.268
+        ],
+        "size": [
+          2.849,
+          3.88,
+          2.536
+        ],
+        "center": [
+          0,
+          1.94,
+          0
+        ],
+        "maxDimension": 3.88,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipConifer.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing"
+    },
+  },
+  "pipToadstool": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipToadstool.6b00a9f5.glb",
+    hash: "sha256-6b00a9f58db38623a829f0d856c6b6e59004a6631052934f82ac0869d80e64fa",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-6b00a9f58db38623a829f0d856c6b6e59004a6631052934f82ac0869d80e64fa"
+    },
+    bounds: [
+      1.183,
+      1.34,
+      1.165
+    ],
+    sizeBytes: 715560,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipToadstool.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:39:00Z",
+        "checkedAt": "2026-11-18T23:39:00Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipToadstool.glb",
+      "outputPath": "public/aura-assets/pipToadstool.6b00a9f5.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.591,
+          0,
+          -0.583
+        ],
+        "max": [
+          0.591,
+          1.34,
+          0.583
+        ],
+        "size": [
+          1.183,
+          1.34,
+          1.165
+        ],
+        "center": [
+          0,
+          0.67,
+          0
+        ],
+        "maxDimension": 1.34,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipToadstool.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipFlower": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipFlower.18d5789b.glb",
+    hash: "sha256-18d5789b9d02bd9afd0847c0c24d8ed6cb79b6e9da69bf64ee0999eb58fc117b",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-18d5789b9d02bd9afd0847c0c24d8ed6cb79b6e9da69bf64ee0999eb58fc117b"
+    },
+    bounds: [
+      0.524,
+      0.76,
+      0.427
+    ],
+    sizeBytes: 806284,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipFlower.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:38:56Z",
+        "checkedAt": "2026-11-18T23:38:56Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipFlower.glb",
+      "outputPath": "public/aura-assets/pipFlower.18d5789b.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.262,
+          0,
+          -0.213
+        ],
+        "max": [
+          0.262,
+          0.76,
+          0.213
+        ],
+        "size": [
+          0.524,
+          0.76,
+          0.427
+        ],
+        "center": [
+          0,
+          0.38,
+          0
+        ],
+        "maxDimension": 0.76,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipFlower.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipBoulder": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipBoulder.19a199ac.glb",
+    hash: "sha256-19a199acd89eaa098db8ce3ad379ed9b037cb4cbeeb19bd83047cc835075f964",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-19a199acd89eaa098db8ce3ad379ed9b037cb4cbeeb19bd83047cc835075f964"
+    },
+    bounds: [
+      1.43,
+      1.138,
+      1.451
+    ],
+    sizeBytes: 593816,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 2,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipBoulder.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:38:59Z",
+        "checkedAt": "2026-11-18T23:38:59Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipBoulder.glb",
+      "outputPath": "public/aura-assets/pipBoulder.19a199ac.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.715,
+          0,
+          -0.725
+        ],
+        "max": [
+          0.715,
+          1.138,
+          0.725
+        ],
+        "size": [
+          1.43,
+          1.138,
+          1.451
+        ],
+        "center": [
+          0,
+          0.569,
+          0
+        ],
+        "maxDimension": 1.451,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipBoulder.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipStonePillar": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipStonePillar.ccbb9f7f.glb",
+    hash: "sha256-ccbb9f7fa3a609adf4692f55e8f1824fad7bbf2926574ae8a701e8458afcec9a",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-ccbb9f7fa3a609adf4692f55e8f1824fad7bbf2926574ae8a701e8458afcec9a"
+    },
+    bounds: [
+      0.995,
+      2.98,
+      1.055
+    ],
+    sizeBytes: 789748,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipStonePillar.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:40:37Z",
+        "checkedAt": "2026-11-18T23:40:37Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipStonePillar.glb",
+      "outputPath": "public/aura-assets/pipStonePillar.ccbb9f7f.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.497,
+          0,
+          -0.528
+        ],
+        "max": [
+          0.497,
+          2.98,
+          0.528
+        ],
+        "size": [
+          0.995,
+          2.98,
+          1.055
+        ],
+        "center": [
+          0,
+          1.49,
+          0
+        ],
+        "maxDimension": 2.98,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipStonePillar.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing"
+    },
+  },
+  "pipStoneArch": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipStoneArch.f6f12f80.glb",
+    hash: "sha256-f6f12f8096211ff674fc673b2092317765f29d2b7fb8152726eb26be219bdc02",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-f6f12f8096211ff674fc673b2092317765f29d2b7fb8152726eb26be219bdc02"
+    },
+    bounds: [
+      4.09,
+      4.128,
+      1.527
+    ],
+    sizeBytes: 835272,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipStoneArch.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:40:38Z",
+        "checkedAt": "2026-11-18T23:40:38Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipStoneArch.glb",
+      "outputPath": "public/aura-assets/pipStoneArch.f6f12f80.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -2.045,
+          0,
+          -0.764
+        ],
+        "max": [
+          2.045,
+          4.128,
+          0.764
+        ],
+        "size": [
+          4.09,
+          4.128,
+          1.527
+        ],
+        "center": [
+          0,
+          2.064,
+          0
+        ],
+        "maxDimension": 4.128,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipStoneArch.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing"
+    },
+  },
+  "pipWatchtower": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipWatchtower.25dc786b.glb",
+    hash: "sha256-25dc786b4bdb2eab2da1cb2d784a7bc7e2e604d2cf5149710eabeb6e6769f9f2",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-25dc786b4bdb2eab2da1cb2d784a7bc7e2e604d2cf5149710eabeb6e6769f9f2"
+    },
+    bounds: [
+      2.301,
+      5.56,
+      3.076
+    ],
+    sizeBytes: 936612,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipWatchtower.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:40:40Z",
+        "checkedAt": "2026-11-18T23:40:40Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipWatchtower.glb",
+      "outputPath": "public/aura-assets/pipWatchtower.25dc786b.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -1.15,
+          0,
+          -1.538
+        ],
+        "max": [
+          1.15,
+          5.56,
+          1.538
+        ],
+        "size": [
+          2.301,
+          5.56,
+          3.076
+        ],
+        "center": [
+          0,
+          2.78,
+          0
+        ],
+        "maxDimension": 5.56,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipWatchtower.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing"
+    },
+  },
+  "pipCrate": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipCrate.34f4dbc2.glb",
+    hash: "sha256-34f4dbc278b37d5fe121f80725b8d86bd1f510096e48691927eafe9ad58bf5e2",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-34f4dbc278b37d5fe121f80725b8d86bd1f510096e48691927eafe9ad58bf5e2"
+    },
+    bounds: [
+      0.96,
+      0.88,
+      1.139
+    ],
+    sizeBytes: 650688,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipCrate.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:38:56Z",
+        "checkedAt": "2026-11-18T23:38:56Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipCrate.glb",
+      "outputPath": "public/aura-assets/pipCrate.34f4dbc2.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.48,
+          0,
+          -0.57
+        ],
+        "max": [
+          0.48,
+          0.88,
+          0.57
+        ],
+        "size": [
+          0.96,
+          0.88,
+          1.139
+        ],
+        "center": [
+          0,
+          0.44,
+          0
+        ],
+        "maxDimension": 1.139,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipCrate.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipBarrel": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipBarrel.08d3212b.glb",
+    hash: "sha256-08d3212ba4191a277dbfa5e454b1a48ccd0c9c2b8bf5b9662e645482bce2a222",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-08d3212ba4191a277dbfa5e454b1a48ccd0c9c2b8bf5b9662e645482bce2a222"
+    },
+    bounds: [
+      0.787,
+      0.98,
+      0.79
+    ],
+    sizeBytes: 677248,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipBarrel.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:38:57Z",
+        "checkedAt": "2026-11-18T23:38:57Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipBarrel.glb",
+      "outputPath": "public/aura-assets/pipBarrel.08d3212b.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.394,
+          0,
+          -0.395
+        ],
+        "max": [
+          0.394,
+          0.98,
+          0.395
+        ],
+        "size": [
+          0.787,
+          0.98,
+          0.79
+        ],
+        "center": [
+          0,
+          0.49,
+          0
+        ],
+        "maxDimension": 0.98,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipBarrel.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipLantern": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipLantern.31a4a02b.glb",
+    hash: "sha256-31a4a02b4f61e847862ce24e0308c3c552c64d86947db0443779e9be8ef4535d",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-31a4a02b4f61e847862ce24e0308c3c552c64d86947db0443779e9be8ef4535d"
+    },
+    bounds: [
+      1.508,
+      2.41,
+      1.448
+    ],
+    sizeBytes: 844792,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipLantern.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:39:01Z",
+        "checkedAt": "2026-11-18T23:39:01Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipLantern.glb",
+      "outputPath": "public/aura-assets/pipLantern.31a4a02b.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.754,
+          0,
+          -0.724
+        ],
+        "max": [
+          0.754,
+          2.41,
+          0.724
+        ],
+        "size": [
+          1.508,
+          2.41,
+          1.448
+        ],
+        "center": [
+          0,
+          1.205,
+          0
+        ],
+        "maxDimension": 2.41,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipLantern.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipCrystal": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipCrystal.69640b4d.glb",
+    hash: "sha256-69640b4da17026f4f46783634e8cec3378709062bbe9d62eacfdf1dde902d4e9",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-69640b4da17026f4f46783634e8cec3378709062bbe9d62eacfdf1dde902d4e9"
+    },
+    bounds: [
+      1.306,
+      1.5,
+      1.334
+    ],
+    sizeBytes: 802932,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipCrystal.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:39:02Z",
+        "checkedAt": "2026-11-18T23:39:02Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipCrystal.glb",
+      "outputPath": "public/aura-assets/pipCrystal.69640b4d.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.653,
+          0,
+          -0.667
+        ],
+        "max": [
+          0.653,
+          1.5,
+          0.667
+        ],
+        "size": [
+          1.306,
+          1.5,
+          1.334
+        ],
+        "center": [
+          0,
+          0.75,
+          0
+        ],
+        "maxDimension": 1.5,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipCrystal.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipEmberVent": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipEmberVent.2f3e142b.glb",
+    hash: "sha256-2f3e142b949e0ab12117a2e621b21f59f732656f42be992973fbf848cf87cc47",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-2f3e142b949e0ab12117a2e621b21f59f732656f42be992973fbf848cf87cc47"
+    },
+    bounds: [
+      1.64,
+      0.918,
+      1.626
+    ],
+    sizeBytes: 682196,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipEmberVent.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:38:59Z",
+        "checkedAt": "2026-11-18T23:38:59Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipEmberVent.glb",
+      "outputPath": "public/aura-assets/pipEmberVent.2f3e142b.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.82,
+          0,
+          -0.813
+        ],
+        "max": [
+          0.82,
+          0.918,
+          0.813
+        ],
+        "size": [
+          1.64,
+          0.918,
+          1.626
+        ],
+        "center": [
+          0,
+          0.459,
+          0
+        ],
+        "maxDimension": 1.64,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipEmberVent.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipCloud": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipCloud.d3a77d85.glb",
+    hash: "sha256-d3a77d857bb4b4cb5a2ff09fb864c8c4eb765907965603ab99f75f50ea1f4e3b",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-d3a77d857bb4b4cb5a2ff09fb864c8c4eb765907965603ab99f75f50ea1f4e3b"
+    },
+    bounds: [
+      2.09,
+      1.313,
+      2.054
+    ],
+    sizeBytes: 1043896,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipCloud.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:38:54Z",
+        "checkedAt": "2026-11-18T23:38:54Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipCloud.glb",
+      "outputPath": "public/aura-assets/pipCloud.d3a77d85.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -1.045,
+          0,
+          -1.027
+        ],
+        "max": [
+          1.045,
+          1.313,
+          1.027
+        ],
+        "size": [
+          2.09,
+          1.313,
+          2.054
+        ],
+        "center": [
+          0,
+          0.656,
+          0
+        ],
+        "maxDimension": 2.09,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipCloud.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing"
+    },
+  },
+  "pipHawkBody": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipHawkBody.99eaba1c.glb",
+    hash: "sha256-99eaba1ce87feb69531555d8cecd9c7e9203fa364d2a8b13b5f371e373e21366",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-99eaba1ce87feb69531555d8cecd9c7e9203fa364d2a8b13b5f371e373e21366"
+    },
+    bounds: [
+      0.301,
+      0.302,
+      0.8
+    ],
+    sizeBytes: 640824,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "geometry_0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipHawkBody.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-19T01:09:03Z",
+        "checkedAt": "2026-11-19T01:09:03Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipHawkBody.glb",
+      "outputPath": "public/aura-assets/pipHawkBody.99eaba1c.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.151,
+          0,
+          -0.4
+        ],
+        "max": [
+          0.151,
+          0.302,
+          0.4
+        ],
+        "size": [
+          0.301,
+          0.302,
+          0.8
+        ],
+        "center": [
+          0,
+          0.151,
+          0
+        ],
+        "maxDimension": 0.8,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "geometry_0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipHawkBody.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipHawkWing": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipHawkWing.b840e12c.glb",
+    hash: "sha256-b840e12c8bfbcbe3d35ff1f215e174085234f937ffca3afea067d88363ab570a",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-b840e12c8bfbcbe3d35ff1f215e174085234f937ffca3afea067d88363ab570a"
+    },
+    bounds: [
+      0.6,
+      0.275,
+      0.188
+    ],
+    sizeBytes: 651724,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "geometry_0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipHawkWing.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-19T01:09:03Z",
+        "checkedAt": "2026-11-19T01:09:03Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipHawkWing.glb",
+      "outputPath": "public/aura-assets/pipHawkWing.b840e12c.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.3,
+          0,
+          -0.094
+        ],
+        "max": [
+          0.3,
+          0.275,
+          0.094
+        ],
+        "size": [
+          0.6,
+          0.275,
+          0.188
+        ],
+        "center": [
+          0,
+          0.138,
+          0
+        ],
+        "maxDimension": 0.6,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "geometry_0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipHawkWing.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipHedgehogRigged": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipHedgehogRigged.b3c9e350.glb",
+    hash: "sha256-b3c9e350d84a9e75ccd772d351430f548af42d68ce252a24060d8dd658421981",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-b3c9e350d84a9e75ccd772d351430f548af42d68ce252a24060d8dd658421981"
+    },
+    bounds: [
+      1.37,
+      0.888,
+      1.37
+    ],
+    sizeBytes: 3254136,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "animationClips": [
+        "idle",
+        "walk"
+      ],
+      "animationClipDetails": [
+        {
+          "name": "idle",
+          "duration": 1.625,
+          "channelCount": 45
+        },
+        {
+          "name": "walk",
+          "duration": 0.9581664800643921,
+          "channelCount": 45
+        }
+      ],
+      "animationMetadata": {
+        "clipCount": 2,
+        "clips": [
+          {
+            "index": 0,
+            "name": "idle",
+            "channelCount": 45,
+            "samplerCount": 45,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21",
+              "bone_22",
+              "bone_23",
+              "bone_24",
+              "bone_25",
+              "bone_26",
+              "bone_27",
+              "bone_28",
+              "bone_29",
+              "bone_30",
+              "bone_31",
+              "bone_32",
+              "bone_33",
+              "bone_34",
+              "bone_35",
+              "bone_36",
+              "bone_37",
+              "bone_38",
+              "bone_39",
+              "bone_40",
+              "bone_41",
+              "bone_42",
+              "bone_43"
+            ],
+            "duration": 1.625,
+            "hasRootMotionCandidate": false,
+            "frameRate": 29.999921322075238
+          },
+          {
+            "index": 1,
+            "name": "walk",
+            "channelCount": 45,
+            "samplerCount": 45,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21",
+              "bone_22",
+              "bone_23",
+              "bone_24",
+              "bone_25",
+              "bone_26",
+              "bone_27",
+              "bone_28",
+              "bone_29",
+              "bone_30",
+              "bone_31",
+              "bone_32",
+              "bone_33",
+              "bone_34",
+              "bone_35",
+              "bone_36",
+              "bone_37",
+              "bone_38",
+              "bone_39",
+              "bone_40",
+              "bone_41",
+              "bone_42",
+              "bone_43"
+            ],
+            "duration": 0.9581664800643921,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          }
+        ],
+        "messages": [
+          "Detected 2 embedded animation clips."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 44,
+        "skins": [
+          {
+            "index": 0,
+            "name": "skin-0",
+            "jointCount": 44,
+            "joints": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21",
+              "bone_22",
+              "bone_23",
+              "bone_24",
+              "bone_25",
+              "bone_26",
+              "bone_27",
+              "bone_28",
+              "bone_29",
+              "bone_30",
+              "bone_31",
+              "bone_32",
+              "bone_33",
+              "bone_34",
+              "bone_35",
+              "bone_36",
+              "bone_37",
+              "bone_38",
+              "bone_39",
+              "bone_40",
+              "bone_41",
+              "bone_42",
+              "bone_43"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 44 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 46,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 2,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 13,
+        "messages": [
+          "Detected 46 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipHedgehogRigged.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-19T01:09:04Z",
+        "checkedAt": "2026-11-19T01:09:04Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipHedgehogRigged.glb",
+      "outputPath": "public/aura-assets/pipHedgehogRigged.b3c9e350.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.753,
+          0,
+          -0.76
+        ],
+        "max": [
+          0.617,
+          0.888,
+          0.61
+        ],
+        "size": [
+          1.37,
+          0.888,
+          1.37
+        ],
+        "center": [
+          -0.068,
+          0.444,
+          -0.075
+        ],
+        "maxDimension": 1.37,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "geometry_0",
+        "bone_0",
+        "bone_1",
+        "bone_2",
+        "bone_3",
+        "bone_4",
+        "bone_5",
+        "bone_6",
+        "bone_7",
+        "bone_8",
+        "bone_9",
+        "bone_10",
+        "bone_11",
+        "bone_12",
+        "bone_13",
+        "bone_14",
+        "bone_15",
+        "bone_16",
+        "bone_17",
+        "bone_18",
+        "bone_19",
+        "bone_20",
+        "bone_21",
+        "bone_22",
+        "bone_23",
+        "bone_24",
+        "bone_25",
+        "bone_26",
+        "bone_27",
+        "bone_28",
+        "bone_29",
+        "bone_30",
+        "bone_31",
+        "bone_32",
+        "bone_33",
+        "bone_34",
+        "bone_35",
+        "bone_36",
+        "bone_37",
+        "bone_38",
+        "bone_39",
+        "bone_40",
+        "bone_41",
+        "bone_42",
+        "bone_43",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipHedgehogRigged.thumb.svg",
+      "quality": "candidate",
+      "role": "character"
+    },
+  },
+  "pipBeetleRigged": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipBeetleRigged.15f2aa7e.glb",
+    hash: "sha256-15f2aa7e1f53f60adf434858ebb72ec8eb1c30d16908ababf4825c217165c5dc",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-15f2aa7e1f53f60adf434858ebb72ec8eb1c30d16908ababf4825c217165c5dc"
+    },
+    bounds: [
+      0.868,
+      0.697,
+      1
+    ],
+    sizeBytes: 2597120,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "animationClips": [
+        "idle",
+        "walk"
+      ],
+      "animationClipDetails": [
+        {
+          "name": "idle",
+          "duration": 1.625,
+          "channelCount": 32
+        },
+        {
+          "name": "walk",
+          "duration": 0.9581664800643921,
+          "channelCount": 32
+        }
+      ],
+      "animationMetadata": {
+        "clipCount": 2,
+        "clips": [
+          {
+            "index": 0,
+            "name": "idle",
+            "channelCount": 32,
+            "samplerCount": 32,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21",
+              "bone_22",
+              "bone_23",
+              "bone_24",
+              "bone_25",
+              "bone_26",
+              "bone_27",
+              "bone_28",
+              "bone_29",
+              "bone_30"
+            ],
+            "duration": 1.625,
+            "hasRootMotionCandidate": false,
+            "frameRate": 29.999921322075238
+          },
+          {
+            "index": 1,
+            "name": "walk",
+            "channelCount": 32,
+            "samplerCount": 32,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21",
+              "bone_22",
+              "bone_23",
+              "bone_24",
+              "bone_25",
+              "bone_26",
+              "bone_27",
+              "bone_28",
+              "bone_29",
+              "bone_30"
+            ],
+            "duration": 0.9581664800643921,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          }
+        ],
+        "messages": [
+          "Detected 2 embedded animation clips."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 31,
+        "skins": [
+          {
+            "index": 0,
+            "name": "skin-0",
+            "jointCount": 31,
+            "joints": [
+              "bone_0",
+              "bone_1",
+              "bone_2",
+              "bone_3",
+              "bone_4",
+              "bone_5",
+              "bone_6",
+              "bone_7",
+              "bone_8",
+              "bone_9",
+              "bone_10",
+              "bone_11",
+              "bone_12",
+              "bone_13",
+              "bone_14",
+              "bone_15",
+              "bone_16",
+              "bone_17",
+              "bone_18",
+              "bone_19",
+              "bone_20",
+              "bone_21",
+              "bone_22",
+              "bone_23",
+              "bone_24",
+              "bone_25",
+              "bone_26",
+              "bone_27",
+              "bone_28",
+              "bone_29",
+              "bone_30"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 31 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 33,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 2,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 6,
+        "messages": [
+          "Detected 33 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipBeetleRigged.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-19T01:09:04Z",
+        "checkedAt": "2026-11-19T01:09:04Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipBeetleRigged.glb",
+      "outputPath": "public/aura-assets/pipBeetleRigged.15f2aa7e.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.434,
+          0,
+          -0.5
+        ],
+        "max": [
+          0.434,
+          0.697,
+          0.5
+        ],
+        "size": [
+          0.868,
+          0.697,
+          1
+        ],
+        "center": [
+          0,
+          0.349,
+          0
+        ],
+        "maxDimension": 1,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "geometry_0",
+        "bone_0",
+        "bone_1",
+        "bone_2",
+        "bone_3",
+        "bone_4",
+        "bone_5",
+        "bone_6",
+        "bone_7",
+        "bone_8",
+        "bone_9",
+        "bone_10",
+        "bone_11",
+        "bone_12",
+        "bone_13",
+        "bone_14",
+        "bone_15",
+        "bone_16",
+        "bone_17",
+        "bone_18",
+        "bone_19",
+        "bone_20",
+        "bone_21",
+        "bone_22",
+        "bone_23",
+        "bone_24",
+        "bone_25",
+        "bone_26",
+        "bone_27",
+        "bone_28",
+        "bone_29",
+        "bone_30",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipBeetleRigged.thumb.svg",
+      "quality": "candidate",
+      "role": "character"
+    },
+  },
+  "pipStarRelic": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipStarRelic.c65a3342.glb",
+    hash: "sha256-c65a33421b3d7455079bc9a79ef5330c073495942ced56e0f621eeea98e7a5ea",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-c65a33421b3d7455079bc9a79ef5330c073495942ced56e0f621eeea98e7a5ea"
+    },
+    bounds: [
+      0.566,
+      0.58,
+      0.057
+    ],
+    sizeBytes: 669992,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipStarRelic.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:38:58Z",
+        "checkedAt": "2026-11-18T23:38:58Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipStarRelic.glb",
+      "outputPath": "public/aura-assets/pipStarRelic.c65a3342.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.283,
+          0,
+          -0.028
+        ],
+        "max": [
+          0.283,
+          0.58,
+          0.028
+        ],
+        "size": [
+          0.566,
+          0.58,
+          0.057
+        ],
+        "center": [
+          0,
+          0.29,
+          0
+        ],
+        "maxDimension": 0.58,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipStarRelic.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipSpringBase": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipSpringBase.5ea294e6.glb",
+    hash: "sha256-5ea294e67df21a39d8897506e85d458545734146997fbbe12562028784fc787b",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-5ea294e67df21a39d8897506e85d458545734146997fbbe12562028784fc787b"
+    },
+    bounds: [
+      1.08,
+      0.598,
+      1.071
+    ],
+    sizeBytes: 677784,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "auraRoot"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipSpringBase.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-18T23:38:58Z",
+        "checkedAt": "2026-11-18T23:38:58Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipSpringBase.glb",
+      "outputPath": "public/aura-assets/pipSpringBase.5ea294e6.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -0.54,
+          0,
+          -0.535
+        ],
+        "max": [
+          0.54,
+          0.598,
+          0.535
+        ],
+        "size": [
+          1.08,
+          0.598,
+          1.071
+        ],
+        "center": [
+          0,
+          0.299,
+          0
+        ],
+        "maxDimension": 1.08,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "world",
+        "geometry_0",
+        "auraRoot"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipSpringBase.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  "pipWindmillTower": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipWindmillTower.e8ecc909.glb",
+    hash: "sha256-e8ecc9099aa5a42a59cbb17e75eedd41d935d1ef3ecb9950350da04ce42dba7c",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-e8ecc9099aa5a42a59cbb17e75eedd41d935d1ef3ecb9950350da04ce42dba7c"
+    },
+    bounds: [
+      3.338,
+      4.7,
+      4.725
+    ],
+    sizeBytes: 772704,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 2,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "geometry_0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipWindmillTower.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-19T00:31:08Z",
+        "checkedAt": "2026-11-19T00:31:08Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipWindmillTower.glb",
+      "outputPath": "public/aura-assets/pipWindmillTower.e8ecc909.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -1.669,
+          0,
+          -2.362
+        ],
+        "max": [
+          1.669,
+          4.7,
+          2.362
+        ],
+        "size": [
+          3.338,
+          4.7,
+          4.725
+        ],
+        "center": [
+          0,
+          2.35,
+          0
+        ],
+        "maxDimension": 4.725,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "geometry_0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipWindmillTower.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing"
+    },
+  },
+  "pipWindmillSails": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pipWindmillSails.d1c9de4a.glb",
+    hash: "sha256-d1c9de4a57c249ae2fb18c0ab7344df08ae6da41ab6efb3e0458a311caf181bb",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-d1c9de4a57c249ae2fb18c0ab7344df08ae6da41ab6efb3e0458a311caf181bb"
+    },
+    bounds: [
+      3.8,
+      0.598,
+      3.932
+    ],
+    sizeBytes: 708516,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "geometry_0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipWindmillSails.glb",
+        "sourcePage": "https://fal.ai/models/speridlabs/idol/max",
+        "license": "LicenseRef-fal-idol-generated",
+        "licenseName": "fal.ai generated output (speridlabs/idol/max)",
+        "licenseUrl": "https://fal.ai/models/speridlabs/idol/max",
+        "licenseRaw": "Generated by AuraOne through the authenticated fal.ai API with speridlabs/idol/max (commercial use listed as supported); prompts name no brand, logo or real person. Provenance: <glb>.idol.json.",
+        "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+        "sourceFamily": "idol",
+        "retrievedAt": "2026-11-19T00:31:09Z",
+        "checkedAt": "2026-11-19T00:31:09Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "apps/showcase-pips-big-leap/assets/idol/pipWindmillSails.glb",
+      "outputPath": "public/aura-assets/pipWindmillSails.d1c9de4a.glb",
+      "license": "LicenseRef-fal-idol-generated",
+      "author": "AuraOne (generated with speridlabs/idol/max on fal.ai)",
+      "boundsMetadata": {
+        "min": [
+          -1.9,
+          0,
+          -1.966
+        ],
+        "max": [
+          1.9,
+          0.598,
+          1.966
+        ],
+        "size": [
+          3.8,
+          0.598,
+          3.932
+        ],
+        "center": [
+          0,
+          0.299,
+          0
+        ],
+        "maxDimension": 3.932,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "gltf-extras",
+        "forwardAxis": "+z",
+        "upAxis": "+y",
+        "messages": [
+          "Orientation metadata detected with forwardAxis=+z and upAxis=+y."
+        ]
+      },
+      "nodeNames": [
+        "geometry_0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pipWindmillSails.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
 } as const);

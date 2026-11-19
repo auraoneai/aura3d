@@ -1,5 +1,6 @@
-// Pip's Big Leap — zero mounted GLB models (Pip, Brambleback, villagers, island plinths,
-// pickups, checkpoints, springs, Sun-Gate and woodland props are 100% @aura3d/engine procedural).
+// Pip's Big Leap — the Idol wow pass (2026-11) mounts image-to-3D GLBs for Pip, Brambleback, villagers, pickups,
+// checkpoints, spring drums, the Sun-Gate arch and the static diorama decor (`sharedAssets` in aura-assets.shared.ts,
+// built by src/art/idolModels.ts). Island plinths, platforms, hazards and animated props stay procedural.
 // Unmounted backdrop hash/bounds records below exist solely so certify.ts reports unmounted provenance.
 
 export const assets = {
@@ -37,26 +38,26 @@ export const assets = {
   }
 } as const;
 
-/** Procedural locomotion state labels for Pip (`buildPipHeroNode`). */
+/** Pip's clip per locomotion state: the in-place loops baked into the rigged Idol hero (`pipHero`: idle/walk/run/jump). */
 export const PIP_CLIPS = {
-  idle: "Idle",
-  walk: "Quick_Walk",
-  run: "RunFast",
-  jump: "Regular_Jump",
-  fall: "Regular_Jump",
-  crouch: "Regular_Jump",
-  die: "Dead",
-  hurt: "Idle",
-  celebrate: "Victory_Cheer",
-  interact: "happy_jump_m"
+  idle: "idle",
+  walk: "walk",
+  run: "run",
+  jump: "jump",
+  fall: "jump",
+  crouch: "jump",
+  die: "idle",
+  hurt: "idle",
+  celebrate: "jump",
+  interact: "jump"
 } as const;
 
-/** Procedural phase labels for Brambleback (`buildBramblebackBossNode`). */
+/** Brambleback's clip per boss phase: the in-place loops baked into the rigged Idol boss (`pipBrambleback`). */
 export const BOSS_CLIPS = {
-  idle: "Idle",
-  walk: "Quick_Walk",
-  attack: "Attack",
-  hurt: "Hit_Reaction",
-  die: "Dead",
-  taunt: "Chest_Pound_Taunt"
+  idle: "idle",
+  walk: "run",
+  attack: "jump",
+  hurt: "idle",
+  die: "idle",
+  taunt: "walk"
 } as const;

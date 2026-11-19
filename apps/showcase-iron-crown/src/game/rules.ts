@@ -8,6 +8,11 @@ import { moveFor, type AttackKind, type IronMove } from "./moves";
 export const METER_MAX = 100;
 export const ROUNDS_TO_WIN = 2;
 
+/** Bout flow beats (main.ts frame loop): the K.O. hold, the pause between rounds, and the delay before the result card. */
+export const KO_HOLD_SECONDS = 1.7;
+export const ROUND_END_SECONDS = 1.5;
+export const BOUT_RESULT_DELAY_MS = 1600;
+
 /** A special costs a full SUPER meter, for the player and the CPU alike (audit IC-02). */
 export function canUseSpecial(meter: number): boolean {
   return meter >= METER_MAX;

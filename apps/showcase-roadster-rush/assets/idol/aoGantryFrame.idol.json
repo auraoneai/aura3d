@@ -1,0 +1,63 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoGantryFrame",
+  "generatedAt": "2026-11-18T22:09:36.924Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered after its 20 min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A single overhead highway sign gantry structure seen from the front: two tall square galvanized-steel lattice truss towers standing far apart on concrete footings, joined across the very top by one long horizontal box-truss steel beam, bolted gusset plates, weathered grey zinc finish, no sign panels attached, empty open space under the beam, very wide and tall. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09a-f37f-7892-8b5f-d6f05e811086",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 611826,
+        "num_faces": 1224448,
+        "watertight": true
+      },
+      "seed": 7
+    }
+  ],
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 23.831,
+    "size": [
+      22.8,
+      19.385,
+      3.297
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoGantryFrame.glb",
+  "sizeBytes": 1790856,
+  "preview": "artifacts/idol/apex-overdrive/aoGantryFrame/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "front": "+x",
+    "yawDeg": 0,
+    "note": "re-normalised from opt.glb after preview showed the wrong facing"
+  },
+  "postprocess": [
+    {
+      "step": "crop",
+      "note": "Idol reconstructed a second, broken copy of the frame behind the first and concrete footings that would stand on the deck; kept triangles with raw x > 0 (front frame) and raw y > -0.33 (above the footings) in opt.glb, then re-ran tools/idol/normalize.mjs",
+      "source": "artifacts/idol/apex-overdrive/aoGantryFrame/opt-uncropped.glb"
+    },
+    {
+      "step": "normal-jpeg",
+      "quality": 90,
+      "bytesBefore": 3866920,
+      "bytesAfter": 1790856
+    }
+  ]
+}

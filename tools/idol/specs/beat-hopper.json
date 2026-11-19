@@ -1,0 +1,73 @@
+{
+  "game": "beat-hopper",
+  "outDir": "apps/showcase-beat-hopper/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "bhSkaterBot",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.55
+      },
+      "seed": 7,
+      "tex": 2048,
+      "subject": "A slim humanoid robot roller-skater DJ: glossy white ceramic armour plates over a dark graphite flexible body, violet accent panels on the chest and forearms, a rounded helmet head with a wraparound cyan glass visor, large padded over-ear headphones, a short cropped satin bomber jacket in deep violet, black knee pads, inline roller skates with glowing cyan wheels on both feet"
+    },
+    {
+      "key": "bhPalm",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.0
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A single tall slender coconut palm tree with a gently curved ringed grey-brown trunk and a full crown of long arching glossy green fronds, a few coconuts under the crown, standing upright alone with no ground or pot"
+    },
+    {
+      "key": "bhSpeakerTower",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 8.6
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A tall professional concert loudspeaker tower: a vertical stack of black textured plywood speaker cabinets with black metal grilles and large woofer cones, a curved line-array of smaller horn speakers on top, mounted in a black steel rigging frame on a heavy steel base plate, thin cyan LED strips along the cabinet edges"
+    },
+    {
+      "key": "bhSynthStack",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 6.6
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A tall vintage modular synthesizer tower: several stacked black wooden cases full of aluminium-faced synth modules with many knobs, switches, patch jacks and colourful patch cables, a bass speaker cabinet with a large woofer at the bottom, sitting on a steel base plate, small violet indicator lights"
+    },
+    {
+      "key": "bhDjConsole",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "maxDim": 5.2
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A professional DJ booth console: a wide black brushed-metal desk with two vinyl record turntables on either side, a mixer with faders and knobs in the middle, a clear acrylic front panel, chrome legs, small cyan and gold LED accent strips along the edges"
+    }
+  ]
+}

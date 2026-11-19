@@ -1,6 +1,6 @@
 # Showcase game build guide
 
-Version: 5.5.6
+Version: 5.6.0
 
 Use this when you add, edit or review a game on the public showcase (`apps/showcase-*`, the 15 cards on `https://aura3d.auraone.ai/apps/showcase-index/`, the Crayon ports in `examples/*-port`, and `examples/aura-slam`). Build the game with `docs/agents/build-a-game.md`; this page is what a showcase route adds on top: route-health, evidence, honest disclosure and the review gate.
 
@@ -55,4 +55,4 @@ State what the page is, what it is not, and the measured state. Examples that ar
 
 ## History
 
-Earlier versions of this page described only `apps/aura-clash-showcase` and referenced release scripts that no longer exist in `package.json` (`verify:aura-clash-flagship`, `verify:aura3d110-performance`, `verify:aura3d110-deployed-visual`, `aura3d110:readiness`). That app's own tests remain `pnpm --dir apps/aura-clash-showcase test:playable` and `test:flagship`; run them through the remote runner.
+Earlier versions of this page described only the Aura Clash showcase app and referenced release scripts that no longer exist in `package.json` (`verify:aura-clash-flagship`, `verify:aura3d110-performance`, `verify:aura3d110-deployed-visual`, `aura3d110:readiness`). That app has since been removed from the repository.

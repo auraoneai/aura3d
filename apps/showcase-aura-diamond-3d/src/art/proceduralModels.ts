@@ -376,9 +376,11 @@ export const DIAMOND_MATS = {
   mapleBarrel: material.lacquer({ color: "#7a4424", roughness: 0.22, clearcoat: 0.95, clearcoatRoughness: 0.05 }),
   pineTarGrip: material.blackRubber({ color: "#1c1816", roughness: 0.94 }),
   alloyBat: material.brushedMetal({ color: "#d6dde6", roughness: 0.22, anisotropy: 0.88 }),
-  oiledLeather: material.fabric({ color: "#6e3b1e", roughness: 0.60, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.36, sheenColor: "#a86b43" }),
-  catcherLeather: material.fabric({ color: "#542b16", roughness: 0.58, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.38, sheenColor: "#8f5632" }),
-  rawhideLace: material.fabric({ color: "#c89b68", roughness: 0.66, clearcoat: 0, envMapIntensity: 0.08, sheen: 0.28 }),
+  // Idol pass GPU QA: the gloves and the mitt sit on the shaded side of the Idol hands (pocket toward the pitcher, key behind the
+  // batter) and read as flat black discs at envMapIntensity 0.1; tan saddle leather with real sky fill keeps their shape.
+  oiledLeather: material.fabric({ color: "#9a6236", roughness: 0.56, clearcoat: 0, envMapIntensity: 0.65, sheen: 0.4, sheenColor: "#c8905c" }),
+  catcherLeather: material.fabric({ color: "#8a5530", roughness: 0.54, clearcoat: 0, envMapIntensity: 0.7, sheen: 0.42, sheenColor: "#c08a58" }),
+  rawhideLace: material.fabric({ color: "#d8b07c", roughness: 0.62, clearcoat: 0, envMapIntensity: 0.6, sheen: 0.3 }),
   brassHardware: material.studioMetal({ color: "#d4af5a", roughness: 0.24 }),
   // Architectural metals, masonry, glass, & emissive practicals
   trussSteel: material.brushedMetal({ color: "#2b3646", roughness: 0.38, anisotropy: 0.72 }),

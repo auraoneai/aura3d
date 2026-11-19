@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "beat-hopper",
+  "key": "bhSynthStack",
+  "generatedAt": "2026-11-18T22:10:57.783Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-a62e-7310-8cd8-a4146e14e66e",
+      "prompt": "A tall vintage modular synthesizer tower: several stacked black wooden cases full of aluminium-faced synth modules with many knobs, switches, patch jacks and colourful patch cables, a bass speaker cabinet with a large woofer at the bottom, sitting on a steel base plate, small violet indicator lights. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f097-5511-75c1-9cc8-0a1c0e5c94d1",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1460194,
+        "num_faces": 2920604,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A tall vintage modular synthesizer tower: several stacked black wooden cases full of aluminium-faced synth modules with many knobs, switches, patch jacks and colourful patch cables, a bass speaker cabinet with a large woofer at the bottom, sitting on a steel base plate, small violet indicator lights. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 6.596,
+    "size": [
+      3.271,
+      6.6,
+      2.507
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-beat-hopper/assets/idol/bhSynthStack.glb",
+  "sizeBytes": 3551872,
+  "preview": "artifacts/idol/beat-hopper/bhSynthStack/views.png",
+  "usd": 0.37
+}

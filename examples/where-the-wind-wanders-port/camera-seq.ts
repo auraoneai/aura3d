@@ -21,10 +21,18 @@ const smooth = (t: number): number => { const s = Math.max(0, Math.min(1, t)); r
 const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
 const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)];
 
+/**
+ * F3 GPU QA (presentation only): the drawn follow camera sits this share of the sim's CAMERA_OFFSET from its look target
+ * (same direction, so the input axes are unchanged) — at the full ~18 m the keeper read as a small figure in the meadow.
+ */
+export const FOLLOW_ZOOM = 0.6;
+/** The height comes in less than the distance, so the closer lens looks down over the meadow grass at the keeper. */
+export const FOLLOW_ZOOM_Y = 0.78;
+
 /** The follow pose the intro ends on: the world's look target at the start and the follow offset. */
 export function followPoseAtStart(fov: number): CameraPose {
   const target: Vec3 = [START.x + 2, terrainHeight(START.x, START.z) + 1.8, START.z - 3.5];
-  return { position: [target[0] + CAMERA_OFFSET.x, target[1] + CAMERA_OFFSET.y, target[2] + CAMERA_OFFSET.z], target, fov };
+  return { position: [target[0] + CAMERA_OFFSET.x * FOLLOW_ZOOM, target[1] + CAMERA_OFFSET.y * FOLLOW_ZOOM_Y, target[2] + CAMERA_OFFSET.z * FOLLOW_ZOOM], target, fov };
 }
 
 /** Intro frame 0: high over the south of the valley, looking along it toward the bell in the east. */

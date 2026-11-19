@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-turf",
+  "key": "turfInkTank",
+  "generatedAt": "2026-11-18T23:37:38.183Z",
+  "generator": "tools/idol/generate.mjs (client-timeout resume)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0da-080a-7a02-a5f7-4152fbdd8235",
+      "prompt": "A tall pressurized industrial ink reservoir tank: a polished chrome cylinder with domed ends standing on short steel legs, a vertical glass sight tube on the front showing bright magenta ink inside, a brass pressure gauge, braided hoses and valves, magenta painted bands. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0e4-8423-7910-b6bf-68213a4e78a1",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1080214,
+        "num_faces": 2160480,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A tall pressurized industrial ink reservoir tank: a polished chrome cylinder with domed ends standing on short steel legs, a vertical glass sight tube on the front showing bright magenta ink inside, a brass pressure gauge, braided hoses and valves, magenta painted bands. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.489,
+    "size": [
+      2.792,
+      4.5,
+      2.386
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-turf/assets/idol/turfInkTank.glb",
+  "sizeBytes": 1242144,
+  "preview": "artifacts/idol/splat-turf/turfInkTank/views.png",
+  "usd": 0.37,
+  "postProcess": "PNG textures re-encoded as JPEG q90 (normal map) by the splat Idol pass to fit the per-game byte budget"
+}

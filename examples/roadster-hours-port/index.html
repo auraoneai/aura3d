@@ -138,7 +138,24 @@
       #pause-button { right: 10px; top: calc(var(--top-safe) + 64px); min-height: 44px; min-width: 44px; }
       .card { margin-left: 16px; width: calc(100vw - 32px); gap: 10px; }
       .wordmark { font-size: 34px; }
+      /* Portrait HUD (390x844 QA, Nov 19): the route bar left the top row (a long act name ran into it) and docks above the
+         dash; toast and coach share one line above it (an event toast hides the coach while it shows); the countdown sits
+         above the car; pause and sound clear the score box when its combo chip shows. Bottom stack top: 186 px (HUD_SAFE_PORTRAIT_PX). */
+      body:not(.touch) #progress { top: auto; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 102px); width: min(320px, calc(100vw - 24px)); }
+      body:not(.touch) #toast, body:not(.touch):not(.look-original) #toast { top: auto; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 118px); padding: 0 16px; font-size: 18px; line-height: 1.25; }
+      body:not(.touch) #coach { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 118px); padding: 0 16px; line-height: 1.3; }
+      #toast:not(:empty) ~ #coach { visibility: hidden; }
+      body #count { top: 21%; font-size: 76px; }
+      body:not(.touch) #pause-button { top: calc(var(--top-safe) + 74px); }
+      body:not(.touch) #mute { top: calc(var(--top-safe) + 124px); }
     }
+    body.touch #progress { top: auto; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 110px); width: 128px; }
+    body.touch #toast, body.touch:not(.look-original) #toast { top: auto; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 124px); padding: 0 64px; font-size: 18px; line-height: 1.25; }
+    body.touch #coach { line-height: 1.3; }
+    body.touch #toast:not(:empty) ~ #coach { visibility: hidden; }
+    body.touch #count { top: 21%; font-size: 76px; }
+    body.touch #pause-button { top: calc(var(--top-safe) + 74px); }
+    body.touch #mute { top: calc(var(--top-safe) + 124px); }
     #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0b0d12; text-align: center; }
     #loading b { font-weight: 600; font-size: 16px; }
   </style>
@@ -185,6 +202,7 @@
         <dt>Shift</dt><dd>Nitro (tap again when the bar turns green)</dd>
         <dt>Q / E</dt><dd>Roll in the air</dd>
         <dt>R, Esc, M</dt><dd>Recover, pause, mute</dd>
+        <dt>I</dt><dd>Autopilot on / off</dd>
       </dl>
       <div class="actions"><button id="start" disabled>Drive</button><span class="meta enter-hint">or press Enter</span></div>
       <div class="actions"><button id="controls-open" class="ghost" type="button">Change keys</button><button id="motion" class="ghost" type="button" aria-pressed="false">Motion: full</button></div>

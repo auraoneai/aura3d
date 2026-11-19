@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "polarity-orbs",
+  "key": "poCrystalBlue",
+  "generatedAt": "2026-11-18T22:01:48.052Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-a630-7490-b1f1-2abfaad22feb",
+      "prompt": "A cluster of large translucent ice-blue quartz crystal points growing upward from a dark rock base, sharp faceted hexagonal prisms of different heights, glassy with internal veils. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f097-d811-7340-a1cf-bb4ddef4a226",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1174040,
+        "num_faces": 2348096,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A cluster of large translucent ice-blue quartz crystal points growing upward from a dark rock base, sharp faceted hexagonal prisms of different heights, glassy with internal veils. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 7.004,
+    "size": [
+      6.668,
+      7,
+      6.615
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-polarity-orbs/assets/idol/poCrystalBlue.glb",
+  "sizeBytes": 3020668,
+  "preview": "artifacts/idol/polarity-orbs/poCrystalBlue/views.png",
+  "usd": 0.37
+}

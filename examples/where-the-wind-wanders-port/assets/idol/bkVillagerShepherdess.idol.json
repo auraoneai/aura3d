@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bellkeepers-walk",
+  "key": "bkVillagerShepherdess",
+  "generatedAt": "2026-11-18T22:22:59.629Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/bellkeepers-walk/bkVillagerShepherdess/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 21,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 861694,
+        "num_faces": 1723440,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A full-body figure of a friendly highland shepherdess standing relaxed with arms at her sides, front facing the camera, a pleated slate-blue skirt, woven linen apron, saffron-yellow shoulder shawl, knotted cloth kerchief over her hair with two side braids, worn leather boots. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.95,
+    "size": [
+      0.809,
+      1.95,
+      0.763
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/where-the-wind-wanders-port/assets/idol/bkVillagerShepherdess.glb",
+  "sizeBytes": 5946560,
+  "preview": "artifacts/idol/bellkeepers-walk/bkVillagerShepherdess/views.png",
+  "usd": 0.2
+}

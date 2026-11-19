@@ -1,7 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { auraClashAttackFrames } from "../../../apps/aura-clash-showcase/src/playable/combat/auraClashMoveData";
 
 /**
  * WS-5.3 — the reported route defects, as retained regression cases named by route ID.
@@ -88,63 +87,11 @@ describe("showcase-digital-twin-ops — floating procedural geometry", () => {
   });
 });
 
-describe("aura-clash-showcase — hit timing, spacing and recovery frames", () => {
-  it("gives every attack more recovery than active frames", () => {
-    /*
-     * The reported defect, stated as the numbers: the route shipped **12-32 active frames against
-     * 4-5 recovery**, inverted from any real fighting game. An attack whose hitbox is live longer
-     * than its recovery cannot be punished, so spacing and whiff-punishment — the whole game —
-     * do not exist.
-     *
-     * Frame data is now derived by `solveCombatFrameData` from an intended role rather than
-     * hand-authored. Measured today: light 5/active/10, heavy 13/active/22, special 18/active/67.
-     */
-    for (const [id, frames] of Object.entries(auraClashAttackFrames)) {
-      expect(frames.recovery, `${id}: recovery ${frames.recovery} <= active ${frames.active}`).toBeGreaterThan(frames.active);
-      expect(frames.startup, `${id} has no startup, so it is unreactable`).toBeGreaterThan(0);
-    }
-  });
-
-  it("leaves at least one attack punishable on block, so spacing matters", () => {
-    // If every move is plus on block there is no risk in attacking and no spacing game.
-    const onBlock = Object.values(auraClashAttackFrames).map((frames) => frames.advantage.onBlock);
-    expect(Math.min(...onBlock), "no attack is punishable on block").toBeLessThan(0);
-  });
-
-  it("scales risk with reward rather than making the strongest move safest", () => {
-    // The heaviest-damage move must not also be the safest, which is the inverted-tuning shape
-    // the original frame data had.
-    const attacks = Object.values(auraClashAttackFrames);
-    const strongest = attacks.reduce((best, frames) => (frames.damage > best.damage ? frames : best));
-    const safest = attacks.reduce((best, frames) => (frames.advantage.onBlock > best.advantage.onBlock ? frames : best));
-    expect(strongest.id, "the highest-damage attack is also the safest on block").not.toBe(safest.id);
-  });
-});
-
 // `showcase-skyline-runner` and `showcase-turbo-drift-circuit` were retired in 4.0.1
 // (`docs/project/showcase/apps-classification.md`); their route-binding cases are retired with them
 // (docs/project/status/retired-tests.md, "ACR unit shard 5" section).
-
-describe("showcase-blockfall-reactor — complete game-loop verification", () => {
-  // QR-14 T1.10: `src/main.ts` is the route-flag dispatcher; the default (flag-off) route is `src/legacy/main.ts`.
-  const source = routeSource("showcase-blockfall-reactor", "src/legacy/main.ts");
-
-  it("publishes observed gameplay proof rather than asserting its own completion", () => {
-    expect(source).toContain("observedGameplayProof");
-    // invariant: source must keep `observedGameplayProof.eventCounts.reset += 1` — Blockfall Reactor reports resets it actually observed instead of self-asserting a complete game loop
-    expect(source).toContain("observedGameplayProof.eventCounts.reset += 1");
-  });
-
-  it("does not pin solver iterations locally, so it inherits the corrected default", () => {
-    /*
-     * Blockfall's shoving blocks were caused by `solverIterations` defaulting to 1 against
-     * cannon's own 10. The fix is the engine default; a route that pinned the value locally would
-     * not benefit from it — and 1 is exactly the value a route would have pinned while trying to
-     * make the old behaviour look intentional.
-     */
-    expect(source).not.toMatch(/solverIterations:\s*[1-5]\b/);
-  });
-});
+// The Aura Clash and Blockfall Reactor apps were deleted later; their frame-data and game-loop cases
+// went with them.
 
 describe("cross-cutting — labels must not be Canvas-2D-only", () => {
   it("keeps Canvas 2D refusing a renderable scene, so a label cannot be 2D-only", () => {

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/silt-and-signal-port/art/direction.ts",
-  "sourceSha256": "7ed729b6d64630dfc49520766fcc075ba43f087fbfd097b823620d0d7ec9e00f",
+  "sourceSha256": "5b7266646ca5efc9d7010ec3f8d22f5f7933d571b52c2efdbfa0f4ea69b5a56c",
   "id": "showcase-silt-and-signal-port",
   "genre": "flight",
   "signatureEffect": "Sand wake thrown up under the hoverboard at speed and low altitude, inside a hand-inked frame whose umber ink fades to nothing by 600 m.",
@@ -38,7 +38,134 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "duneTowShell",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneSkiffAlt",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneRiderRig",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneGatehouse",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneViaduct",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneViaduct",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneCanyonGate",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneStall",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneBuggy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneRelayTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneBannerMast",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneBannerMast",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneBannerMast",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneBannerMast",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneObelisk",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneMesa",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneMesa",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "duneSignalPylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "materials": [
       {
         "node": "sky",
@@ -126,6 +253,38 @@
       },
       {
         "node": "trees-trunks",
+        "practical": false
+      },
+      {
+        "node": "tree-fade-0",
+        "practical": false
+      },
+      {
+        "node": "tree-fade-trunk-0",
+        "practical": false
+      },
+      {
+        "node": "tree-fade-1",
+        "practical": false
+      },
+      {
+        "node": "tree-fade-trunk-1",
+        "practical": false
+      },
+      {
+        "node": "tree-fade-2",
+        "practical": false
+      },
+      {
+        "node": "tree-fade-trunk-2",
+        "practical": false
+      },
+      {
+        "node": "tree-fade-3",
+        "practical": false
+      },
+      {
+        "node": "tree-fade-trunk-3",
         "practical": false
       },
       {
@@ -218,18 +377,6 @@
         "practical": true
       },
       {
-        "node": "tow-shell material 0",
-        "practical": false
-      },
-      {
-        "node": "tow-shell material 1",
-        "practical": false
-      },
-      {
-        "node": "tow-shell material 2",
-        "practical": false
-      },
-      {
         "node": "tow-glow",
         "emissiveIntensity": 2.15,
         "practical": true
@@ -278,500 +425,7 @@
         "practical": true
       },
       {
-        "node": "board material 0",
-        "practical": false
-      },
-      {
-        "node": "board material 1",
-        "practical": false
-      },
-      {
-        "node": "board material 2",
-        "practical": false
-      },
-      {
-        "node": "board material 3",
-        "practical": false
-      },
-      {
-        "node": "board material 4",
-        "practical": false
-      },
-      {
-        "node": "board material 5",
-        "practical": false
-      },
-      {
-        "node": "board material 6",
-        "practical": false
-      },
-      {
-        "node": "board material 7",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "board material 8",
-        "emissiveIntensity": 2.15,
-        "practical": true
-      },
-      {
-        "node": "board material 9",
-        "practical": false
-      },
-      {
-        "node": "rider-stance material 4",
-        "practical": false
-      },
-      {
-        "node": "rider-stance material 5",
-        "practical": false
-      },
-      {
-        "node": "rider-stance material 6",
-        "practical": false
-      },
-      {
-        "node": "rider-stance material 7",
-        "practical": false
-      },
-      {
-        "node": "rider-stance material 8",
-        "practical": false
-      },
-      {
-        "node": "rider-pelvis-mesh material 0",
-        "practical": false
-      },
-      {
-        "node": "rider-pelvis-mesh material 2",
-        "practical": false
-      },
-      {
-        "node": "rider-pelvis-mesh material 3",
-        "practical": false
-      },
-      {
-        "node": "rider-pelvis-mesh material 5",
-        "practical": false
-      },
-      {
-        "node": "rider-pelvis-mesh material 6",
-        "practical": false
-      },
-      {
-        "node": "rider-pelvis-mesh material 8",
-        "practical": false
-      },
-      {
-        "node": "rider-pelvis-mesh material 9",
-        "practical": false
-      },
-      {
-        "node": "rider-pelvis-mesh material 13",
-        "practical": false
-      },
-      {
-        "node": "rider-pelvis-mesh material 15",
-        "practical": false
-      },
-      {
-        "node": "rider-torso-mesh material 0",
-        "practical": false
-      },
-      {
-        "node": "rider-torso-mesh material 1",
-        "practical": false
-      },
-      {
-        "node": "rider-torso-mesh material 2",
-        "practical": false
-      },
-      {
-        "node": "rider-torso-mesh material 3",
-        "practical": false
-      },
-      {
-        "node": "rider-torso-mesh material 5",
-        "practical": false
-      },
-      {
-        "node": "rider-torso-mesh material 8",
-        "practical": false
-      },
-      {
-        "node": "rider-torso-mesh material 11",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "rider-torso-mesh material 12",
-        "practical": false
-      },
-      {
-        "node": "rider-torso-mesh material 13",
-        "practical": false
-      },
-      {
-        "node": "rider-head material 0",
-        "practical": false
-      },
-      {
-        "node": "rider-head material 1",
-        "practical": false
-      },
-      {
-        "node": "rider-head material 2",
-        "practical": false
-      },
-      {
-        "node": "rider-head material 6",
-        "practical": false
-      },
-      {
-        "node": "rider-head material 8",
-        "practical": false
-      },
-      {
-        "node": "rider-head material 10",
-        "practical": false
-      },
-      {
-        "node": "rider-head material 13",
-        "practical": false
-      },
-      {
-        "node": "rider-head material 14",
-        "practical": false
-      },
-      {
-        "node": "rider-arm-lead material 2",
-        "practical": false
-      },
-      {
-        "node": "rider-arm-lead material 4",
-        "practical": false
-      },
-      {
-        "node": "rider-arm-lead material 6",
-        "practical": false
-      },
-      {
-        "node": "rider-arm-lead material 8",
-        "practical": false
-      },
-      {
-        "node": "rider-arm-trail material 0",
-        "practical": false
-      },
-      {
-        "node": "rider-arm-trail material 2",
-        "practical": false
-      },
-      {
-        "node": "rider-arm-trail material 4",
-        "practical": false
-      },
-      {
-        "node": "rider-arm-trail material 6",
-        "practical": false
-      },
-      {
-        "node": "rider-arm-trail material 8",
-        "practical": false
-      },
-      {
-        "node": "rider-scarf-mesh material 0",
-        "practical": false
-      },
-      {
-        "node": "rider-scarf-mesh material 1",
-        "practical": false
-      },
-      {
-        "node": "rider-scarf-mesh material 13",
-        "practical": false
-      },
-      {
-        "node": "rider-scarf-tip material 0",
-        "practical": false
-      },
-      {
-        "node": "rider-scarf-tip material 13",
-        "practical": false
-      },
-      {
         "node": "rider-blob",
-        "practical": false
-      },
-      {
-        "node": "gatehouse-neri material 0",
-        "practical": false
-      },
-      {
-        "node": "gatehouse-neri material 1",
-        "practical": false
-      },
-      {
-        "node": "gatehouse-neri material 3",
-        "practical": false
-      },
-      {
-        "node": "gatehouse-neri material 8",
-        "practical": false
-      },
-      {
-        "node": "gatehouse-neri material 10",
-        "practical": false
-      },
-      {
-        "node": "gatehouse-neri material 11",
-        "practical": false
-      },
-      {
-        "node": "gatehouse-neri material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "aqueduct-east material 0",
-        "practical": false
-      },
-      {
-        "node": "aqueduct-east material 1",
-        "practical": false
-      },
-      {
-        "node": "aqueduct-east material 3",
-        "practical": false
-      },
-      {
-        "node": "aqueduct-east material 5",
-        "practical": false
-      },
-      {
-        "node": "aqueduct-west material 0",
-        "practical": false
-      },
-      {
-        "node": "aqueduct-west material 1",
-        "practical": false
-      },
-      {
-        "node": "aqueduct-west material 3",
-        "practical": false
-      },
-      {
-        "node": "aqueduct-west material 5",
-        "practical": false
-      },
-      {
-        "node": "canyon-gate material 0",
-        "practical": false
-      },
-      {
-        "node": "canyon-gate material 1",
-        "practical": false
-      },
-      {
-        "node": "canyon-gate material 3",
-        "practical": false
-      },
-      {
-        "node": "canyon-gate material 4",
-        "practical": false
-      },
-      {
-        "node": "canyon-gate material 5",
-        "practical": false
-      },
-      {
-        "node": "canyon-gate material 11",
-        "practical": false
-      },
-      {
-        "node": "canyon-gate material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "canyon-gate material 13",
-        "emissiveIntensity": 2.15,
-        "practical": true
-      },
-      {
-        "node": "stall-0 material 0",
-        "practical": false
-      },
-      {
-        "node": "stall-0 material 5",
-        "practical": false
-      },
-      {
-        "node": "stall-0 material 6",
-        "practical": false
-      },
-      {
-        "node": "stall-0 material 7",
-        "practical": false
-      },
-      {
-        "node": "stall-0 material 8",
-        "practical": false
-      },
-      {
-        "node": "desert-crawler-0 material 3",
-        "practical": false
-      },
-      {
-        "node": "desert-crawler-0 material 4",
-        "practical": false
-      },
-      {
-        "node": "desert-crawler-0 material 5",
-        "practical": false
-      },
-      {
-        "node": "desert-crawler-0 material 6",
-        "practical": false
-      },
-      {
-        "node": "desert-crawler-0 material 11",
-        "practical": false
-      },
-      {
-        "node": "desert-crawler-0 material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "watchtower-0 material 0",
-        "practical": false
-      },
-      {
-        "node": "watchtower-0 material 1",
-        "practical": false
-      },
-      {
-        "node": "watchtower-0 material 3",
-        "practical": false
-      },
-      {
-        "node": "watchtower-0 material 4",
-        "practical": false
-      },
-      {
-        "node": "watchtower-0 material 5",
-        "practical": false
-      },
-      {
-        "node": "watchtower-0 material 11",
-        "practical": false
-      },
-      {
-        "node": "watchtower-0 material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "banner-0 material 0",
-        "practical": false
-      },
-      {
-        "node": "banner-0 material 3",
-        "practical": false
-      },
-      {
-        "node": "banner-0 material 7",
-        "practical": false
-      },
-      {
-        "node": "banner-0 material 8",
-        "practical": false
-      },
-      {
-        "node": "banner-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "banner-1 material 3",
-        "practical": false
-      },
-      {
-        "node": "banner-1 material 7",
-        "practical": false
-      },
-      {
-        "node": "banner-1 material 9",
-        "practical": false
-      },
-      {
-        "node": "banner-2 material 0",
-        "practical": false
-      },
-      {
-        "node": "banner-2 material 3",
-        "practical": false
-      },
-      {
-        "node": "banner-2 material 7",
-        "practical": false
-      },
-      {
-        "node": "banner-2 material 10",
-        "practical": false
-      },
-      {
-        "node": "banner-3 material 0",
-        "practical": false
-      },
-      {
-        "node": "banner-3 material 3",
-        "practical": false
-      },
-      {
-        "node": "banner-3 material 7",
-        "practical": false
-      },
-      {
-        "node": "banner-3 material 8",
-        "practical": false
-      },
-      {
-        "node": "pillar-0 material 1",
-        "practical": false
-      },
-      {
-        "node": "pillar-0 material 2",
-        "practical": false
-      },
-      {
-        "node": "pillar-0 material 3",
-        "practical": false
-      },
-      {
-        "node": "pillar-0 material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "mesa-spire-0",
-        "practical": false
-      },
-      {
-        "node": "batched-mesa-spires",
-        "practical": false
-      },
-      {
-        "node": "batched-signal-pylons",
-        "practical": false
-      },
-      {
-        "node": "batched-relay-dishes",
-        "practical": false
-      },
-      {
-        "node": "batched-solar-arrays",
         "practical": false
       },
       {
@@ -843,7 +497,115 @@
       ],
       "mobile": "both"
     },
-    "assets": [],
+    "assets": [
+      {
+        "role": "character",
+        "assetKey": "duneRiderRig",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "duneSkiffAlt",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "duneBuggy",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "duneViaduct",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "duneGatehouse",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "duneCanyonGate",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "duneRelayTower",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "duneObelisk",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "duneMesa",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "duneStall",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "duneSignalPylon",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "duneBannerMast",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "duneTowShell",
+        "kit": "K2",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
     "vfx": [
       {
         "event": "board-low-fast",

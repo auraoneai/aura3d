@@ -5,7 +5,8 @@
 //   1. the atmosphere reports a visible sky (`background: "sky-*"`);
 //   2. the scene has no explicit environment (`environment` absent/null);
 //   3. the C-09 factory slot has a real provider (prd02);
-//   4. `A3D_QR_LIGHTING` is on (the slot's own flag).
+//   4. `A3D_QR_LIGHTING` is on (the slot's own flag);
+//   5. the sky node did not opt out (`captureEnvironment: false`).
 // Otherwise the adapter resolves to `SKY_CAPTURE_PENDING` and captures
 // nothing. Re-capture is driven by the atmosphere's `onSkyChanged` listener.
 
@@ -20,7 +21,7 @@ export const SKY_CAPTURE_PENDING = "SKY_CAPTURE_PENDING" as const;
 export interface SkyCaptureAppLike {
   /** App diagnostics surface — atmosphere state + listener. */
   readonly atmosphere: {
-    state(): { readonly sky: unknown | null };
+    state(): { readonly sky: unknown | null; readonly captureEnvironment?: boolean };
     onSkyChanged?(listener: () => void): (() => void) | void;
   };
   /** Explicit environment field on the render source (undefined = none). */
@@ -45,7 +46,7 @@ export function captureSkyEnvironment(
   const state = app.atmosphere.state();
   const hasSky = state.sky != null;
   const hasExplicitEnvironment = app.environment != null;
-  if (!hasSky || hasExplicitEnvironment || !environmentProbeFactorySlot.provided || !flags.on("A3D_QR_LIGHTING")) {
+  if (!hasSky || hasExplicitEnvironment || state.captureEnvironment === false || !environmentProbeFactorySlot.provided || !flags.on("A3D_QR_LIGHTING")) {
     return { status: SKY_CAPTURE_PENDING, probe: null };
   }
   const factory = environmentProbeFactorySlot.get(flags)(device);
@@ -66,6 +67,9 @@ export function captureSkyEnvironment(
 export class SkyCaptureAdapter {
   private probe: EnvironmentProbe | null = null;
   private offSkyChanged: (() => void) | null = null;
+  private failureWarned = false;
+  /** The last capture failure (null after a capture succeeds); a failure never throws out of the frame. */
+  lastError: unknown = null;
 
   constructor(
     private readonly app: SkyCaptureAppLike,
@@ -83,7 +87,25 @@ export class SkyCaptureAdapter {
   }
 
   private recapture(): void {
-    const result = captureSkyEnvironment(this.app, this.device, this.flags);
+    // An opted-out sky lights nothing: drop a probe an earlier sky captured.
+    if (this.app.atmosphere.state().captureEnvironment === false) {
+      this.probe = null;
+      return;
+    }
+    let result: SkyCaptureResult;
+    try {
+      result = captureSkyEnvironment(this.app, this.device, this.flags);
+    } catch (error) {
+      // A failed capture (e.g. no float render target) leaves the scene lit
+      // as before; it must never take the frame (and the renderer) down.
+      this.lastError = error;
+      if (!this.failureWarned && typeof console !== "undefined") {
+        this.failureWarned = true;
+        console.warn(`SKY_CAPTURE_FAILED: ${error instanceof Error ? error.message : String(error)}`);
+      }
+      return;
+    }
+    this.lastError = null;
     if (result.probe) this.probe = result.probe;
   }
 

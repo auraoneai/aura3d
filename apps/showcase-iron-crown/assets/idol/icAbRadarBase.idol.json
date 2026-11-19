@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icAbRadarBase",
+  "generatedAt": "2026-11-19T00:26:03.312Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-3ba1-7731-83b0-66dc4c8eb5e4",
+      "prompt": "Military airfield radar tower without any antenna: steel lattice tower with a small railed platform and a round turntable mount on top, side ladder, desert dust. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f134-9ecd-78d3-938f-98ac72fa3713",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 940944,
+        "num_faces": 1882184,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Military airfield radar tower without any antenna: steel lattice tower with a small railed platform and a round turntable mount on top, side ladder, desert dust. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "admitRole": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.497,
+    "size": [
+      1.962,
+      3.5,
+      2.211
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icAbRadarBase.glb",
+  "sizeBytes": 2254948,
+  "preview": "artifacts/idol/iron-crown/icAbRadarBase/views.png",
+  "usd": 0.37
+}

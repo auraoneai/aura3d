@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "silt-and-signal-port",
+  "key": "duneRelayTower",
+  "generatedAt": "2026-11-18T22:45:14.229Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f094-9373-7d20-bae2-8600608c63f2",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1305714,
+        "num_faces": 2612492,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "An ancient desert signal relay watchtower: a wide octagonal tapering sandstone base topped by a slender brass lattice tower with three brass rings, two solar panel wings sticking out from the sides, three brass parabolic relay dishes pointing in different directions, and a glowing turquoise crystal beacon in a brass cage at the very top, weathered sandstone and patina brass",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 27.214,
+    "size": [
+      21.921,
+      31.1,
+      25.328
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/silt-and-signal-port/assets/idol/duneRelayTower.glb",
+  "sizeBytes": 4440388,
+  "preview": "artifacts/idol/silt-and-signal-port/duneRelayTower/views.png",
+  "usd": 0.37
+}

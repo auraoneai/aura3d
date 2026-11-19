@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { MESHY_MANIFEST } from "../../../examples/ninja-runner-port/assets/meshy/manifest";
-import { buildProceduralActorNodes, createProceduralActorAssets } from "../../../examples/ninja-runner-port/art/proceduralActors";
+import { buildProceduralActorNodes, buildSculptedActorNodes, createProceduralActorAssets } from "../../../examples/ninja-runner-port/art/proceduralActors";
 import { CHARACTER_URLS, EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, SLOT_MODEL } from "../../../examples/ninja-runner-port/models";
 import { buildScenery, type ModelSink } from "../../../examples/ninja-runner-port/scenery";
 
@@ -41,7 +41,7 @@ describe("procedural Sengoku character & prop assets", () => {
     expect(CHARACTER_URLS.scout).toContain("ninja_runner_port_ninjaScoutAnimR2");
 
     for (const [idx, id] of EVENING_SLOT_MODEL.entries()) {
-      const nodes = buildProceduralActorNodes(idx, id, idx >= 1 && idx <= 3);
+      const nodes = buildSculptedActorNodes(idx, id, idx >= 1 && idx <= 3);
       expect(nodes).toHaveLength(6);
       const actor = assets.actors[idx]!;
       if (id === "caster") expect(actor.evidence.clips).toEqual(expect.arrayContaining(["idle", "run", "cast", "hit", "death"]));
@@ -55,14 +55,14 @@ describe("procedural Sengoku character & prop assets", () => {
 
     // Verify COLOR_0 vertex colors are preserved across every character archetype + clone + ember form (zero white clay)
     const variantsToCheck = [
-      buildProceduralActorNodes(0, "hero", true, "std"),
-      buildProceduralActorNodes(1, "hero", false, "clone"),
-      buildProceduralActorNodes(12, "sage", true, "std"),
-      buildProceduralActorNodes(19, "sage", true, "ember"),
-      buildProceduralActorNodes(4, "soldier", false, "std"),
-      buildProceduralActorNodes(10, "brute", false, "std"),
-      buildProceduralActorNodes(13, "caster", false, "std"),
-      buildProceduralActorNodes(16, "scout", false, "std")
+      buildSculptedActorNodes(0, "hero", true, "std"),
+      buildSculptedActorNodes(1, "hero", false, "clone"),
+      buildSculptedActorNodes(12, "sage", true, "std"),
+      buildSculptedActorNodes(19, "sage", true, "ember"),
+      buildSculptedActorNodes(4, "soldier", false, "std"),
+      buildSculptedActorNodes(10, "brute", false, "std"),
+      buildSculptedActorNodes(13, "caster", false, "std"),
+      buildSculptedActorNodes(16, "scout", false, "std")
     ];
     for (const rigNodes of variantsToCheck) {
       expect(rigNodes).toHaveLength(6);
@@ -115,14 +115,14 @@ describe("procedural Sengoku character & prop assets", () => {
     };
 
     const archetypes = [
-      { key: "hero", nodes: buildProceduralActorNodes(0, "hero", true, "std") },
-      { key: "clone", nodes: buildProceduralActorNodes(1, "hero", false, "clone") },
-      { key: "sage", nodes: buildProceduralActorNodes(12, "sage", true, "std") },
-      { key: "ember", nodes: buildProceduralActorNodes(19, "sage", true, "ember") },
-      { key: "soldier", nodes: buildProceduralActorNodes(4, "soldier", false, "std") },
-      { key: "brute", nodes: buildProceduralActorNodes(10, "brute", false, "std") },
-      { key: "caster", nodes: buildProceduralActorNodes(13, "caster", false, "std") },
-      { key: "scout", nodes: buildProceduralActorNodes(16, "scout", false, "std") }
+      { key: "hero", nodes: buildSculptedActorNodes(0, "hero", true, "std") },
+      { key: "clone", nodes: buildSculptedActorNodes(1, "hero", false, "clone") },
+      { key: "sage", nodes: buildSculptedActorNodes(12, "sage", true, "std") },
+      { key: "ember", nodes: buildSculptedActorNodes(19, "sage", true, "ember") },
+      { key: "soldier", nodes: buildSculptedActorNodes(4, "soldier", false, "std") },
+      { key: "brute", nodes: buildSculptedActorNodes(10, "brute", false, "std") },
+      { key: "caster", nodes: buildSculptedActorNodes(13, "caster", false, "std") },
+      { key: "scout", nodes: buildSculptedActorNodes(16, "scout", false, "std") }
     ] as const;
 
     const headSignatures = new Set<number>();

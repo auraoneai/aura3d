@@ -4,8 +4,9 @@
  *   contact shadows, SSAO, wet-ink SSR, extent fog, cinematic bloom, and broadcast-crisp color grading.
  * - Single-draw RGBA8 GPU splat coverage ribbon (`createTurfSplatSurface` + `wetInkRibbonSpec` paired GLSL+WGSL)
  *   replacing the former 7,200-quad dynamic paint batch (0 dynamic paint vertex uploads).
- * - Articulated PBR clearcoat & chrome hero paint-roller yoke, pressurized aerosol cans with chrome nozzles,
- *   rotary floor-scrubber eraser bots with glowing hazard beacons, and 32-frame `createFlipbookAtlas("ink")` bursts.
+ * - Articulated PBR clearcoat & chrome hero paint-roller yoke, 32-frame `createFlipbookAtlas("ink")` bursts, and Idol
+ *   image-to-3D GLBs (`art/idol.ts`) for the kid-driven hero kart, rival scrubber karts, aerosol cans, paint buckets,
+ *   arena set pieces, finish gantry and sky islands (instanced, render-only; the splat ribbon is untouched).
  */
 import {
   camera,
@@ -22,7 +23,6 @@ import {
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch,
-  CORRIDOR_BOUNDS,
   flatSpec,
   toonSpec,
   type CustomSpec
@@ -34,27 +34,41 @@ import {
   ballMesh,
   quadMesh,
   roadMesh,
+  cylinderMesh,
+  translateMesh,
   sphereMesh,
   stripMesh,
   type MeshData
 } from "./meshes";
 import {
-  assembleHeroInkRoverNodes,
-  assembleTurfScoreboardGantryNode,
-  turfAerosolCanBodyMesh,
-  turfAerosolCanNozzleMesh,
   turfArenaCurbWallMesh,
-  turfEraserBotBeaconMesh,
-  turfEraserBotBodyMesh,
-  turfEraserBotScrubberMesh,
-  turfEraserBotTrimMesh,
-  turfRoadsidePropMesh,
   turfRollerCapsMesh,
   turfRollerYokeMesh
 } from "./art/proceduralModels";
+import {
+  HERO_BODY_LOCAL,
+  HERO_KART_LAYOUT,
+  IDOL_DIMS,
+  IdolPool,
+  RIVAL_BRUSH_LOCAL,
+  RIVAL_KART_LAYOUT,
+  DRIVER_RIG_SCALE,
+  HERO_DRIVER_ID,
+  HERO_SEAT,
+  RIVAL_SEAT,
+  rivalDriverId,
+  rivalDriverNodes,
+  heroDriverNode,
+  PAINT_BUCKET_KEYS,
+  PAINT_BUCKET_NODE_IDS,
+  TURF_IDOL_ASSETS,
+  finishGantryNode,
+  heroRoverNode,
+  idolInstancedNode
+} from "./art/idol";
 import type { CameraPose, Shown } from "./presentation";
 import { glowSpec, hazed, sunsetSkySpec, type Haze } from "./art/haze";
-import { addScenery } from "./scenery";
+import { RUN_FRAME_BOUNDS, addScenery } from "./scenery";
 import { ballSquash, contactShadowSpec, glossyBallSpec } from "./art/ball";
 import {
   createTurfSplatSurface,
@@ -74,24 +88,86 @@ export const GRID_CELLS = CONFIG.RUN_LENGTH * CONFIG.GRID_COLS;
 export const BATCH_IDS = [
   "road",
   "edges",
-  "props",
   "paint",
   "strips",
-  "cans",
-  "can-nozzles",
-  "bots",
-  "bot-trim",
-  "bot-scrubbers",
-  "bot-beacons",
+  "can-halos",
+  "can-beacons",
   "particles"
 ] as const;
 
+/** Idol GLB pools in the scrolling road frame (instanced `setInstanceMatrices` nodes; see `art/idol.ts`). */
+export const IDOL_POOL_IDS = ["cans", "bots", ...PAINT_BUCKET_NODE_IDS] as const;
+
+import { MatrixWriter, decompose, multiply, transformPoint, trs, wheelLocal, type KartLayout, type Mat4 } from "./art/kartRig";
+import { driverPose, seatedHips } from "./art/riders";
+import { loadIdolHumanoid, type HumanoidDriver } from "../../showcase-port-shared/idol/humanoid";
+
+/** Every kart wheel (hero + rivals) is one instanced Idol draw in world space; rival scrub brushes are another. */
+export const KART_WHEEL_CAPACITY = 4 * (1 + CONFIG.POOL_BOTS);
+const WHEEL_GLB = { dims: IDOL_DIMS.turfKartWheel };
+/** Rival scrub brush spin (rad/s), the old procedural hydro-scrubber rate. */
+export const BRUSH_SPIN_RATE = 9.5;
+
+/** Aerosol-can pickup display scale (the 0.69 m GLB reads at ~8 px at chase distance otherwise). */
+export const CAN_SCALE = 1.7;
+
+/**
+ * A rammed rival eraser kart is bumped off the causeway instead of being driven through: from the contact frame it
+ * slides sideways away from the rover (never across it), hops, spins and drops off the deck edge into the cloud sea.
+ * `s` = metres the rover has travelled since contact; `side` = +1/-1 away from the rover. Presentation only (the sim
+ * keeps the bot where it was; the hit is already resolved). Clears the rover's 1.24 m summed half-width within ~0.9 m.
+ */
+export function eraserKnock(s: number, side: number, reduced: boolean, clear = 0): { dx: number; dy: number; spin: number } {
+  const t = Math.max(0, s);
+  return { dx: side * (clear + 1.4 * t), dy: Math.max(-12, t * 0.9 - 0.12 * t * t), spin: reduced ? 0 : side * t * 0.8 };
+}
+
+/**
+ * Bump pop for a kart the rover just hit: the lateral overlap at contact (summed half-widths minus the centre gap), so
+ * from the first drawn frame of the knock the two karts only touch, never interpenetrate.
+ */
+export function knockClearance(botX: number, laneOffset: number): number {
+  return Math.max(0, CONFIG.ROVER_HALF_WIDTH + CONFIG.ERASER_HALF_WIDTH - Math.abs(botX - laneOffset));
+}
+
+/** Rival karts yaw their nose this far (rad) into their lateral slide (the brush swings with it; sim footprint covers it). */
+export const BOT_STEER_YAW = 0.16;
+
+/** Rival kart instance tint once it has been hit (multiplies the baked albedo; white = untouched). */
+const BOT_HIT_TINT = [0.36, 0.36, 0.44] as const;
+const WHITE = [1, 1, 1] as const;
+
 /** Roadside paint pots: one every PROP_SPACING m on each side, sized and tinted from the row (no RNG). */
 export const PROP_SPACING = 10;
+/** Live roadside paint buckets never exceed one per PROP_SPACING rows per side across the pooled segments. */
+const PROP_POOL_CAPACITY = Math.ceil(CONFIG.POOL_SEGMENTS / PROP_SPACING) * 2 + 2;
+/**
+ * Segment-side slot (`segment * 2 + side`) -> dense bucket-pool slot. A segment's row keeps its residue mod PROP_SPACING
+ * (POOL_SEGMENTS is a multiple of it), so the at most one prop per PROP_SPACING segments per side never collide.
+ */
+const propSlot = (slot: number): number => (slot & 1) * Math.ceil(CONFIG.POOL_SEGMENTS / PROP_SPACING) + Math.floor((slot >> 1) / PROP_SPACING);
 
 function propHash(row: number, side: number): number {
   const h = Math.sin(row * 12.9898 + side * 78.233) * 43758.5453;
   return h - Math.floor(h);
+}
+
+/** Roadside paint buckets sit at least this far outside the curb line (EDGE_X), plus up to PROP_SETBACK_JITTER more. */
+export const PROP_SETBACK = 2.2;
+export const PROP_SETBACK_JITTER = 3.6;
+
+/** Roadside paint-bucket pose for `row`/`side` (0 left, 1 right), or null when that row carries no bucket (pure, no RNG). */
+export function roadsidePropPose(row: number, side: number): { x: number; sc: number; sy: number; yaw: number; variant: number } | null {
+  if (row < 0 || ((row + side * 3) % PROP_SPACING) !== 0) return null;
+  const h = propHash(row, side);
+  const sc = 0.6 + h * 0.45;
+  return {
+    x: (side === 0 ? -1 : 1) * (EDGE_X + PROP_SETBACK + h * PROP_SETBACK_JITTER),
+    sc,
+    sy: sc * (0.9 + propHash(row + 7, side) * 0.35),
+    yaw: h * 6.28,
+    variant: Math.floor(propHash(row + 3, side) * PAINT_BUCKET_KEYS.length) % PAINT_BUCKET_KEYS.length
+  };
 }
 
 /* ------------------------------------------------------------------ ink-burst billboard quad */
@@ -112,6 +188,8 @@ export type InkBurstKind = "can" | "solvent" | "eraser" | "stretch" | "finish";
 export interface WorldOptions {
   sim: SplatTurfSim;
   aspect: number;
+  /** Rigged-driver skeleton loader (default: fetch the GLB and map it; tests inject a file-backed loader). */
+  loadHumanoid?: (url: string) => Promise<HumanoidDriver>;
 }
 
 export interface WorldView {
@@ -315,11 +393,11 @@ export function buildWorld(options: WorldOptions): World {
     material.carPaint({ color: LOOK.roadEdge, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 }),
     { cast: true, receive: true }
   );
-  const heroRover = assembleHeroInkRoverNodes();
-  builder.add(heroRover.bodyNode);
-  builder.add(heroRover.glassNode);
+  builder.add(heroRoverNode());
+  builder.add(heroDriverNode());
+  for (const n of rivalDriverNodes(CONFIG.POOL_BOTS)) builder.add(n);
   addMesh("ball-shadow", quadMesh(1.42, 1.48), material.custom(contactShadowSpec()));
-  builder.add(assembleTurfScoreboardGantryNode());
+  builder.add(finishGantryNode());
 
   // Static 1,200 m wet-ink splat ribbon: 1 draw call, 0 CPU vertex rewrites!
   addMesh(
@@ -341,17 +419,19 @@ export function buildWorld(options: WorldOptions): World {
     }
   );
 
-  const road = new Batch(roadMesh(), CONFIG.POOL_SEGMENTS, null, CORRIDOR_BOUNDS);
-  const edges = new Batch(turfArenaCurbWallMesh(), CONFIG.POOL_SEGMENTS * 2, null, CORRIDOR_BOUNDS);
-  const props = new Batch(turfRoadsidePropMesh(), CONFIG.POOL_SEGMENTS * 2, [1, 1, 1], CORRIDOR_BOUNDS);
-  const strips = new Batch(stripMesh(), CONFIG.POOL_STRIPS, null, CORRIDOR_BOUNDS);
-  const cans = new Batch(turfAerosolCanBodyMesh(), CONFIG.POOL_CANS, null, CORRIDOR_BOUNDS);
-  const canNozzles = new Batch(turfAerosolCanNozzleMesh(), CONFIG.POOL_CANS, null, CORRIDOR_BOUNDS);
-  const bots = new Batch(turfEraserBotBodyMesh(), CONFIG.POOL_BOTS, linear(LOOK.eraser), CORRIDOR_BOUNDS);
-  const botTrim = new Batch(turfEraserBotTrimMesh(), CONFIG.POOL_BOTS, null, CORRIDOR_BOUNDS);
-  const botScrubbers = new Batch(turfEraserBotScrubberMesh(), CONFIG.POOL_BOTS, null, CORRIDOR_BOUNDS);
-  const botBeacons = new Batch(turfEraserBotBeaconMesh(), CONFIG.POOL_BOTS, null, CORRIDOR_BOUNDS);
-  const particles = new Batch(sphereMesh(0.12, 6, 6), CONFIG.POOL_PARTICLES, [1, 1, 1], CORRIDOR_BOUNDS);
+  const road = new Batch(roadMesh(), CONFIG.POOL_SEGMENTS, null, RUN_FRAME_BOUNDS);
+  const edges = new Batch(turfArenaCurbWallMesh(), CONFIG.POOL_SEGMENTS * 2, null, RUN_FRAME_BOUNDS);
+  const strips = new Batch(stripMesh(), CONFIG.POOL_STRIPS, null, RUN_FRAME_BOUNDS);
+  // Idol GLB pools: roadside paint buckets (one pool per paint colour), aerosol can pickups, rival eraser karts.
+  const propPools = PAINT_BUCKET_KEYS.map(() => new IdolPool(PROP_POOL_CAPACITY));
+  const propVariant = new Int8Array(CONFIG.POOL_SEGMENTS * 2).fill(-1);
+  const cans = new IdolPool(CONFIG.POOL_CANS);
+  // Pickup readability at chase distance: a glowing hot-magenta ring under each can and a tall glowing light beacon
+  // above it (unlit, over the bloom threshold), on top of a 1.7x can that spins and bobs.
+  const canHalos = new Batch(cylinderMesh(0.78, 0.02, 32), CONFIG.POOL_CANS, linear(LOOK.ball), RUN_FRAME_BOUNDS);
+  const canBeacons = new Batch(translateMesh(cylinderMesh(0.07, 2.4, 10), 0, 1.2, 0), CONFIG.POOL_CANS, linear(LOOK.can), RUN_FRAME_BOUNDS);
+  const bots = new IdolPool(CONFIG.POOL_BOTS);
+  const particles = new Batch(sphereMesh(0.12, 6, 6), CONFIG.POOL_PARTICLES, [1, 1, 1], RUN_FRAME_BOUNDS);
   const inkBursts = new Batch(billboardQuadMesh(1), INK_BURST_POOL, [1, 1, 1], {
     min: [-16, -8, -48],
     max: [16, 16, 16]
@@ -378,39 +458,14 @@ export function buildWorld(options: WorldOptions): World {
     material.pbr({ color: LOOK.roadEdge, roughness: 0.48, metalness: 0.04, clearcoat: 0, sheen: 0 }),
     { cast: false, receive: true }
   );
-  addBatch("props", props, PROGRAMS.toonTone());
+  PAINT_BUCKET_KEYS.forEach((key, v) => builder.add(idolInstancedNode(PAINT_BUCKET_NODE_IDS[v]!, TURF_IDOL_ASSETS[key], PROP_POOL_CAPACITY)));
   addBatch("strips", strips, flatSpec(linear(LOOK.solvent), 0.62));
-  addPbrBatch(
-    "cans",
-    cans,
-    material.clearcoatPaint({ color: LOOK.can, roughness: 0.055, clearcoat: 1, clearcoatRoughness: 0.018, envMapIntensity: 1.55 }),
-    { cast: true, receive: true }
-  );
-  addPbrBatch(
-    "can-nozzles",
-    canNozzles,
-    material.chrome({ color: "#f8fbff", roughness: 0.022, envMapIntensity: 2.05 }),
-    { cast: true, receive: false }
-  );
-  addBatch("bots", bots, PROGRAMS.toonTone(), { cast: true, receive: true });
-  addPbrBatch(
-    "bot-trim",
-    botTrim,
-    material.brushedMetal({ color: "#e8bb4e", roughness: 0.16, anisotropy: 0.86, anisotropyRotation: 0.5 }),
-    { cast: false, receive: true }
-  );
-  addPbrBatch(
-    "bot-scrubbers",
-    botScrubbers,
-    material.rubber({ color: "#1ad4d8", roughness: 0.5 }),
-    { cast: false, receive: true }
-  );
-  addPbrBatch(
-    "bot-beacons",
-    botBeacons,
-    material.glowingEmissive({ color: "#ff335c", emissive: "#ff2652", emissiveIntensity: 3.1, practical: true }),
-    { cast: false, receive: false }
-  );
+  addBatch("can-halos", canHalos, glowSpec(2.6));
+  addBatch("can-beacons", canBeacons, glowSpec(2.4));
+  builder.add(idolInstancedNode("cans", TURF_IDOL_ASSETS.turfAerosolCan, CONFIG.POOL_CANS, { cast: true, receive: true }));
+  builder.add(idolInstancedNode("bots", TURF_IDOL_ASSETS.turfRivalKartShell, CONFIG.POOL_BOTS, { cast: true, receive: true }));
+  builder.add(idolInstancedNode("kart-wheels", TURF_IDOL_ASSETS.turfKartWheel, KART_WHEEL_CAPACITY, { cast: true, receive: true }));
+  builder.add(idolInstancedNode("bot-brushes", TURF_IDOL_ASSETS.turfScrubBrush, CONFIG.POOL_BOTS, { cast: true, receive: true }));
   addBatch("particles", particles, PROGRAMS.toonTone());
   addBatch("ink-bursts", inkBursts, inkFlipbookSpec(turfSplat.inkAtlas));
 
@@ -463,6 +518,9 @@ export function buildWorld(options: WorldOptions): World {
       const canKey = Array.from({ length: CONFIG.POOL_CANS }, () => "");
       const botShown = Array.from({ length: CONFIG.POOL_BOTS }, () => false);
       const botHit = Array.from({ length: CONFIG.POOL_BOTS }, () => false);
+      const botKnockFrom = new Float64Array(CONFIG.POOL_BOTS).fill(Number.NaN);
+      const botKnockSide = new Int8Array(CONFIG.POOL_BOTS);
+      const botKnockClear = new Float64Array(CONFIG.POOL_BOTS);
       const particleShown = Array.from({ length: CONFIG.POOL_PARTICLES }, () => false);
       const particleKind = new Int8Array(CONFIG.POOL_PARTICLES).fill(-1);
       const bursts: InkBurstState[] = Array.from({ length: INK_BURST_POOL }, () => ({
@@ -486,6 +544,22 @@ export function buildWorld(options: WorldOptions): World {
       let lastTime = 0;
       let lateral = 0;
       let lastSquash = "";
+      // Rigged drivers: skeletons load once (the GLB is already fetched by the renderer; this reads its glTF JSON).
+      const load = options.loadHumanoid ?? ((url: string) => loadIdolHumanoid(url));
+      let heroDriver: HumanoidDriver | undefined;
+      let rivalDriver: HumanoidDriver | undefined;
+      let heroHips: readonly [number, number, number] = [0, 0.5, 0];
+      let rivalHips: readonly [number, number, number] = [0, 0.5, 0];
+      const driversReady = Promise.all([
+        load(TURF_IDOL_ASSETS.turfHeroDriverRig.url).then((d) => { heroDriver = d; heroHips = seatedHips(d); }),
+        load(TURF_IDOL_ASSETS.turfRivalDriverRig.url).then((d) => { rivalDriver = d; rivalHips = seatedHips(d); })
+      ]).catch((e: unknown) => { console.warn("splat-turf: rigged drivers unavailable", e); });
+      void driversReady;
+      const wheelWriter = new MatrixWriter(KART_WHEEL_CAPACITY);
+      const brushWriter = new MatrixWriter(CONFIG.POOL_BOTS);
+      const pushKartWheels = (parent: Mat4, layout: KartLayout, spin: number, steer: number): void => {
+        for (let w = 0; w < 4; w++) wheelWriter.push(multiply(parent, wheelLocal(layout, WHEEL_GLB, w, spin, steer)));
+      };
 
       function spawnInkBurst(kind: InkBurstKind): void {
         const count = kind === "finish" ? 4 : kind === "eraser" ? 3 : 2;
@@ -595,16 +669,16 @@ export function buildWorld(options: WorldOptions): World {
           scenery.placeSegment(i, seg.row);
           for (let side = 0; side < 2; side++) {
             const slot = i * 2 + side;
-            if (seg.row < 0 || ((seg.row + side * 3) % PROP_SPACING) !== 0) {
-              props.collapse(slot);
-              continue;
+            const prev = propVariant[slot]!;
+            if (prev >= 0) {
+              propPools[prev]!.collapse(propSlot(slot));
+              propVariant[slot] = -1;
             }
-            const h = propHash(seg.row, side);
-            const x = (side === 0 ? -1 : 1) * (EDGE_X + 2.2 + h * 3.6);
-            const sc = 0.6 + h * 0.45;
-            props.place(slot, x, -0.35, -seg.row - 0.5, h * 6.28, sc, sc * (0.9 + propHash(seg.row + 7, side) * 0.35), sc);
-            scenery.placeIslet(seg.row, side, x, sc);
-            props.setTone(slot, linear(LOOK.paintColors[Math.floor(propHash(seg.row + 3, side) * LOOK.paintColors.length)] as string));
+            const prop = roadsidePropPose(seg.row, side);
+            if (!prop) continue;
+            propPools[prop.variant]!.place(propSlot(slot), prop.x, -0.35, -seg.row - 0.5, prop.yaw, prop.sc, 0, 0, prop.sy);
+            propVariant[slot] = prop.variant;
+            scenery.placeIslet(seg.row, side, prop.x, prop.sc);
           }
         }
 
@@ -627,37 +701,55 @@ export function buildWorld(options: WorldOptions): World {
           if (c.active) {
             const cx = c.col - CONFIG.LANE_LIMIT;
             const cz = -c.row - 0.5;
-            const yaw = c.row * 0.7;
-            cans.place(i, cx, 0, cz, yaw, 1, 1, 1);
-            canNozzles.place(i, cx, 0, cz, yaw, 1, 1, 1);
+            canHalos.place(i, cx, 0.02, cz, 0, 1, 1, 1);
+            canBeacons.place(i, cx, 0, cz, 0, 1, 1, 1);
           } else {
             cans.collapse(i);
-            canNozzles.collapse(i);
+            canHalos.collapse(i);
+            canBeacons.collapse(i);
           }
         }
+        // Live cans spin and bob every frame (presentation only; collection is the sim's row/col test).
+        for (let i = 0; i < o.cans.length; i++) {
+          const c = o.cans[i]!;
+          if (!c.active) continue;
+          const spin = reduced ? c.row * 0.7 : c.row * 0.7 + time * 2.4;
+          const bob = reduced ? 0.05 : 0.05 + 0.08 * (0.5 + 0.5 * Math.sin(time * 4 + c.row));
+          cans.place(i, c.col - CONFIG.LANE_LIMIT, bob, -c.row - 0.5, spin, CAN_SCALE);
+        }
 
-        // Piloted rival ink-racers lateral-move every frame; under-chassis hydro-scrubbers spin continuously.
-        const scrubberSpin = reduced ? 0 : time * 9.5;
+        const botFrames: { x: number; y: number; z: number; yaw: number; dir: number; slot: number }[] = [];
+        // Karts knocked in the same step (a strike) share one bump pop so they fly off in formation.
+        let strikeClear = 0;
+        for (let i = 0; i < o.bots.length; i++) {
+          const b = o.bots[i]!;
+          if (b.active && b.hit && Number.isNaN(botKnockFrom[i]!)) strikeClear = Math.max(strikeClear, knockClearance(b.x, laneOffset));
+        }
+        // Rival eraser karts face the approaching player (+Z) and slide laterally every frame; a hit kart greys out.
         for (let i = 0; i < o.bots.length; i++) {
           const b = o.bots[i]!;
           if (!b.active) {
             if (botShown[i]) {
               bots.collapse(i);
-              botTrim.collapse(i);
-              botScrubbers.collapse(i);
-              botBeacons.collapse(i);
               botShown[i] = false;
             }
             continue;
           }
-          bots.place(i, b.x, 0, -b.row, 0, 1, 1, 1);
-          botTrim.place(i, b.x, 0, -b.row, 0, 1, 1, 1);
-          botScrubbers.place(i, b.x, 0, -b.row, scrubberSpin + i * 1.1, 1, 1, 1);
-          botBeacons.place(i, b.x, 0, -b.row, 0, 1, 1, 1);
+          const steer = reduced ? 0 : Math.max(-0.22, Math.min(0.22, b.dir * BOT_STEER_YAW));
+          if (!b.hit) botKnockFrom[i] = Number.NaN;
+          else if (Number.isNaN(botKnockFrom[i]!)) {
+            botKnockFrom[i] = distance;
+            botKnockSide[i] = b.x > laneOffset ? 1 : b.x < laneOffset ? -1 : b.x >= 0 ? 1 : -1;
+            botKnockClear[i] = strikeClear;
+          }
+          const knock = b.hit ? eraserKnock(distance - botKnockFrom[i]!, botKnockSide[i]!, reduced, botKnockClear[i]!) : { dx: 0, dy: 0, spin: 0 };
+          const bx = b.x + knock.dx;
+          bots.place(i, bx, knock.dy, -b.row, steer + knock.spin);
+          botFrames.push({ x: bx, y: knock.dy, z: -b.row, yaw: steer + knock.spin, dir: b.dir, slot: i });
           botShown[i] = true;
           if (botHit[i] !== b.hit) {
             botHit[i] = b.hit;
-            bots.setTone(i, b.hit ? [0.25, 0.25, 0.32] : linear(LOOK.eraser));
+            bots.setTint(i, b.hit ? BOT_HIT_TINT : WHITE);
           }
         }
 
@@ -683,17 +775,16 @@ export function buildWorld(options: WorldOptions): World {
         for (const id of BATCH_IDS) {
           node(id).setPosition(0, id === "paint" ? CELL_Y : 0, roadZ);
         }
+        const roadFrame = [0, 0, roadZ] as const;
         node("finish").setPosition(0, 0, roadZ - CONFIG.RUN_LENGTH);
         road.flush(node("road"));
         edges.flush(node("edges"));
-        props.flush(node("props"));
+        propPools.forEach((pool, v) => pool.flush(node(PAINT_BUCKET_NODE_IDS[v]!), false, roadFrame));
         strips.flush(node("strips"), false);
-        cans.flush(node("cans"));
-        canNozzles.flush(node("can-nozzles"));
-        bots.flush(node("bots"));
-        botTrim.flush(node("bot-trim"));
-        botScrubbers.flush(node("bot-scrubbers"));
-        botBeacons.flush(node("bot-beacons"));
+        canHalos.flush(node("can-halos"), false);
+        canBeacons.flush(node("can-beacons"), false);
+        cans.flush(node("cans"), false, roadFrame);
+        bots.flush(node("bots"), false, roadFrame);
         particles.flush(node("particles"));
         scenery.update(node, roadZ, distance, time, reduced);
 
@@ -741,11 +832,53 @@ export function buildWorld(options: WorldOptions): World {
           .setRotation(roverPitch, yokeBank * 0.42, yokeBank * 0.65)
           .setScale(scale)
           .setVisible(!gone);
-        node("ink-rover-glass")
-          .setPosition(laneOffset, BALL_RADIUS * scale, 0)
-          .setRotation(roverPitch, yokeBank * 0.42, yokeBank * 0.65)
-          .setScale(scale)
-          .setVisible(!gone);
+        // Moving parts: hero wheels roll by distance / radius and steer with the lateral speed; rival wheels roll with
+        // their lateral slide and steer into it; rival scrub brushes spin continuously (world-space instanced draws).
+        wheelWriter.begin();
+        brushWriter.begin();
+        if (!gone) {
+          const heroParent = multiply(
+            trs([laneOffset, BALL_RADIUS * scale, 0], [roverPitch, yokeBank * 0.42, yokeBank * 0.65], scale),
+            HERO_BODY_LOCAL
+          );
+          const heroSteer = reduced ? 0 : Math.max(-0.4, Math.min(0.4, -lateral * 0.08));
+          pushKartWheels(heroParent, HERO_KART_LAYOUT, distance / HERO_KART_LAYOUT.wheelRadius, heroSteer);
+        }
+        // Hero driver: seated in the empty shell, hands on the turning wheel, torso and head leaning into the steer.
+        const speedRatio = Math.max(0, Math.min(1, (o.speed - CONFIG.SPEED_INIT) / Math.max(1e-6, CONFIG.SPEED_INIT)));
+        if (heroDriver) {
+          const hs = DRIVER_RIG_SCALE.turfHeroDriverRig;
+          const steerIn = reduced ? 0 : Math.max(-1, Math.min(1, -lateral * 0.2));
+          // world = kart pose · shell offset (Ry pi) · T(seat - scale * seated hips) · S(rig scale)
+          const seat = decompose(multiply(
+            multiply(trs([laneOffset, BALL_RADIUS * scale, 0], [roverPitch, yokeBank * 0.42, yokeBank * 0.65], scale), HERO_BODY_LOCAL),
+            trs([HERO_SEAT[0] - hs * heroHips[0], HERO_SEAT[1] - hs * heroHips[1], HERO_SEAT[2] - hs * heroHips[2]], [0, 0, 0], hs)
+          ));
+          node(HERO_DRIVER_ID)
+            .setPosition(seat.t[0], seat.t[1], seat.t[2])
+            .setRotation(seat.rot[0], seat.rot[1], seat.rot[2])
+            .setScale(seat.s)
+            .setVisible(!gone)
+            .setAnimationPose?.(driverPose(heroDriver, { steer: steerIn, time, speed: speedRatio, reduced }).pose as never);
+        }
+        const brushSpin = reduced ? 0 : -time * BRUSH_SPIN_RATE;
+        for (const f of botFrames) {
+          const parent = trs([f.x, f.y, f.z + roadZ], [0, f.yaw, 0]);
+          pushKartWheels(parent, RIVAL_KART_LAYOUT, f.x / RIVAL_KART_LAYOUT.wheelRadius, reduced ? 0 : f.dir * 0.45);
+          brushWriter.push(multiply(parent, multiply(trs([0, RIVAL_BRUSH_LOCAL.y, RIVAL_BRUSH_LOCAL.z], [brushSpin, 0, 0]), trs([0, -IDOL_DIMS.turfScrubBrush[1] / 2, 0]))));
+          if (rivalDriver) {
+            const rs = DRIVER_RIG_SCALE.turfRivalDriverRig;
+            const at = transformPoint(parent, [RIVAL_SEAT[0] - rs * rivalHips[0], RIVAL_SEAT[1] - rs * rivalHips[1], RIVAL_SEAT[2] - rs * rivalHips[2]]);
+            node(rivalDriverId(f.slot))
+              .setPosition(at[0], at[1], at[2])
+              .setRotation(0, f.yaw, 0)
+              .setVisible(true)
+              .setAnimationPose?.(driverPose(rivalDriver, { steer: reduced ? 0 : f.dir * 0.8, time: time + f.slot * 0.7, speed: 0.5, reduced }).pose as never);
+          }
+        }
+        for (let i = 0; i < CONFIG.POOL_BOTS; i++) if (!o.bots[i]!.active) node(rivalDriverId(i)).setVisible(false);
+        wheelWriter.end(node("kart-wheels"));
+        brushWriter.end(node("bot-brushes"));
         node("roller-mist")
           .setPosition(laneOffset, 0.16, 0.34)
           .setVisible(!gone && !reduced && o.phase === "playing" && o.wipeFlash <= 0);
@@ -778,14 +911,9 @@ export function buildWorld(options: WorldOptions): World {
       const batches = [
         road,
         edges,
-        props,
         strips,
-        cans,
-        canNozzles,
-        bots,
-        botTrim,
-        botScrubbers,
-        botBeacons,
+        canHalos,
+        canBeacons,
         particles,
         inkBursts,
         ...scenery.batches
@@ -795,22 +923,14 @@ export function buildWorld(options: WorldOptions): World {
         // Park one instance of each pooled batch below the road so every GPU pipeline compiles before frame one.
         if (on) {
           strips.place(0, 0, -50, -60, 0, 1, 1, 1);
-          cans.place(0, 0, -50, -60, 0, 1, 1, 1);
-          canNozzles.place(0, 0, -50, -60, 0, 1, 1, 1);
-          bots.place(0, 0, -50, -60, 0, 1, 1, 1);
-          botTrim.place(0, 0, -50, -60, 0, 1, 1, 1);
-          botScrubbers.place(0, 0, -50, -60, 0, 1, 1, 1);
-          botBeacons.place(0, 0, -50, -60, 0, 1, 1, 1);
+          cans.place(0, 0, -50, -60, 0);
+          bots.place(0, 0, -50, -60, 0);
           particles.place(0, 0, -50, -60, 0, 1, 1, 1);
           inkBursts.place(0, 0, -50, -60, 0, 1, 1, 1);
         } else {
           strips.collapse(0);
           cans.collapse(0);
-          canNozzles.collapse(0);
           bots.collapse(0);
-          botTrim.collapse(0);
-          botScrubbers.collapse(0);
-          botBeacons.collapse(0);
           particles.collapse(0);
           inkBursts.collapse(0);
           stripKey.fill("");
@@ -819,12 +939,8 @@ export function buildWorld(options: WorldOptions): World {
           particleShown.fill(false);
         }
         strips.flush(node("strips"), false);
-        cans.flush(node("cans"));
-        canNozzles.flush(node("can-nozzles"));
-        bots.flush(node("bots"));
-        botTrim.flush(node("bot-trim"));
-        botScrubbers.flush(node("bot-scrubbers"));
-        botBeacons.flush(node("bot-beacons"));
+        cans.flush(node("cans"), true);
+        bots.flush(node("bots"), true);
         particles.flush(node("particles"));
         inkBursts.flush(node("ink-bursts"), false);
       }

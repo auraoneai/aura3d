@@ -5,7 +5,7 @@
  * rejections, failed requests, and NaN transform checks.
  *
  *   pnpm exec node tools/showcase-library/game-play-probe.mjs --out tests/reports/game-play-probe
- *   ... --routes showcase-bank-shot,showcase-vault-breakers
+ *   ... --routes showcase-skyline-runner,showcase-mech-hangar
  *   ... --viewport 1280x720
  */
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
@@ -264,10 +264,8 @@ async function probeRoute(route) {
 
 const routesJson = JSON.parse(readFileSync(resolve(repoRoot, "tools/showcase-library/route-gates.json"), "utf8"));
 const gameIds = new Set(Object.keys(playbook).filter((k) => !k.startsWith("$")));
-// Aura Clash is the flagship game route and is not registered in the showcase route-gates file.
-const EXTRA_ROUTES = [
-  { id: "aura-clash-showcase", label: "Aura Clash Arena", path: "/apps/aura-clash-showcase/", releaseClass: "flagship" },
-];
+// Game routes that are not registered in the showcase route-gates file (none today).
+const EXTRA_ROUTES = [];
 const routes = [...EXTRA_ROUTES, ...routesJson.routes]
   .filter((r) => gameIds.has(r.id))
   .filter((r) => only.length === 0 || only.includes(r.id))

@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "drift-and-deliver-port",
+  "key": "gcTree",
+  "generatedAt": "2026-11-18T22:16:59.323Z",
+  "generator": "tools/idol/generate.mjs (optimise/normalise finished by hand: generator passed role set-dressing to assets optimize)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b7-85a3-7381-bff7-f765d694b297",
+      "prompt": "A single young broadleaf city street tree, a straight grey-brown trunk and a full rounded bushy crown of fresh green leaves, a small square of dark soil at the base. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b9-3796-7692-a661-fc1ac85ae344",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1546300,
+        "num_faces": 3094132,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A single young broadleaf city street tree, a straight grey-brown trunk and a full rounded bushy crown of fresh green leaves, a small square of dark soil at the base. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.338,
+    "size": [
+      4.107,
+      4.6,
+      3.874
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/drift-and-deliver-port/assets/idol/gcTree.glb",
+  "sizeBytes": 905092,
+  "preview": "artifacts/idol/drift-and-deliver-port/gcTree/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "decimate",
+      "targetTriangles": 5000,
+      "tool": "meshoptimizer simplify (Permissive, error 0.02)",
+      "reason": "~380 instances each across the city"
+    },
+    {
+      "step": "texture-jpeg",
+      "maxTexPx": 512,
+      "before": 3925680,
+      "after": 905092
+    }
+  ]
+}

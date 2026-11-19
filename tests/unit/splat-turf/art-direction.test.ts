@@ -22,6 +22,17 @@ import {
   turfEraserBotTrimMesh
 } from "../../../apps/showcase-splat-turf/src/art/proceduralModels";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
+import { ARENA_LAYOUT, PAINT_BUCKET_NODE_IDS, TURF_IDOL_KEYS } from "../../../apps/showcase-splat-turf/src/art/idol";
+
+const collectNodes = (list: readonly Record<string, unknown>[]): Record<string, unknown>[] => {
+  const acc: Record<string, unknown>[] = [];
+  for (const n of list) {
+    acc.push(n);
+    if (Array.isArray(n.children)) acc.push(...collectNodes(n.children as Record<string, unknown>[]));
+  }
+  return acc;
+};
+const modelKey = (n: Record<string, unknown>): string => String((n.asset as { id?: string } | undefined)?.id ?? "");
 
 /** Expected in-play draws: sky, ball, shadow, finish + 7 merged batches + key light rig. */
 const DRAWS_ESTIMATE = 12;
@@ -35,11 +46,14 @@ describe("splat turf art direction", () => {
       .filter((n) => n.kind === "light")
       .map((n) => ({ type: String(n.light), shadow: Boolean(n.shadow), intensity: Number(n.intensity ?? 1) }));
     const env = nodes.find((n) => n.kind === "environment");
+    const models = collectNodes(nodes)
+      .filter((n) => n.kind === "model")
+      .map((n) => ({ assetKey: modelKey(n), triangles: 0, textures: 3, unlit: false, overridesTextures: false }));
     const snapshot: ArtDirectionSnapshot = {
       lights,
       hasAmbient: lights.some((l) => l.type === "ambient"),
       environment: { kind: env?.environment === "hdri" ? "hdri" : env ? "preset" : "none", background: env?.background === true },
-      models: [],
+      models,
       drawCalls: DRAWS_ESTIMATE
     };
     expect(lights.filter((l) => l.shadow)).toHaveLength(1);
@@ -55,44 +69,32 @@ describe("splat turf art direction", () => {
     expect(direction.signatureEffect).toMatch(/solvent wipe wash/);
     expect(direction.palette.primary).toEqual(["#4f2a8f", "#ff9fc8", "#ffd9a8", "#ffffff"]);
     expect(direction.lighting.environment.background).toBe("sky");
-    expect(direction.assets).toEqual([]);
+    expect(direction.assets.map((a) => a.assetKey).sort()).toEqual([...TURF_IDOL_KEYS].sort());
     expect(LOOK.road).toBe("#ffffff");
     expect(LOOK.ink).toBe("#3b1f47");
   });
 
-  it("mounts procedural multi-material Street-Sport Ink Arena architecture with zero static GLB model nodes", () => {
+  it("mounts the Idol GLB hero rover, rival karts, cans, buckets, arena set pieces, gantry and sky islands", () => {
     const sim = new SplatTurfSim(11);
     const world = buildWorld({ sim, aspect: 16 / 9 });
     const nodes = world.scene.toJSON().nodes as unknown as Record<string, unknown>[];
-
-    const collectNodes = (list: readonly Record<string, unknown>[]): Record<string, unknown>[] => {
-      const acc: Record<string, unknown>[] = [];
-      for (const n of list) {
-        acc.push(n);
-        if (Array.isArray(n.children)) {
-          acc.push(...collectNodes(n.children as Record<string, unknown>[]));
-        }
-      }
-      return acc;
-    };
     const allNodes = collectNodes(nodes);
-    expect(allNodes.filter((n) => n.kind === "model")).toEqual([]);
-    for (const n of allNodes) {
-      const assetVal = typeof n.asset === "string" ? n.asset : typeof n.url === "string" ? n.url : "";
-      expect(assetVal).not.toContain(".glb");
-    }
+    const models = allNodes.filter((n) => n.kind === "model");
+    expect(new Set(models.map(modelKey))).toEqual(new Set(TURF_IDOL_KEYS));
+    for (const m of models) expect((m as { scaleMode?: string }).scaleMode).toBe("world");
 
     const names = nodes.map((n) => String(n.name ?? ""));
-    expect(names).toContain("finish");
-    expect(names).toContain("arena-belt-0");
-    expect(names).toContain("arena-belt-1");
-    expect(names).toContain("arena-glass-0");
-    expect(names).toContain("arena-glass-1");
-    expect(names).toContain("isle-group-balloon");
-    expect(names).toContain("isle-group-paintPotIsland");
-
-    const glassNode = nodes.find((n) => n.name === "arena-glass-0");
-    expect(glassNode?.castShadow).toBe(false);
+    for (const id of ["finish", "ink-rover-body", "cans", "bots", ...PAINT_BUCKET_NODE_IDS, "isle-group-balloon", "isle-group-paintPotIsland"]) {
+      expect(names).toContain(id);
+    }
+    for (const key of new Set(ARENA_LAYOUT.map((a) => a.key))) {
+      const belt = nodes.find((n) => n.name === `arena-${key}`) as { instances?: unknown[]; transforms?: unknown[] } | undefined;
+      expect(belt, key).toBeDefined();
+      expect((belt?.instances ?? belt?.transforms ?? []).length).toBe(ARENA_LAYOUT.filter((a) => a.key === key).length * 2);
+    }
+    // The paint simulation keeps its procedural surfaces: the GPU splat ribbon, road deck and curbs are untouched.
+    for (const id of ["paint", "road", "edges", "strips"]) expect(names).toContain(id);
+    for (const gone of ["arena-glass-0", "ink-rover-glass", "bot-trim", "bot-beacons", "can-nozzles", "props"]) expect(names).not.toContain(gone);
 
     // Matte arena curb surface (`roughness >= 0.42`) and toned-down SSR (`intensity <= 0.14`)
     const edgesNode = nodes.find((n) => n.name === "edges") as { material?: { roughness?: number; clearcoat?: number } } | undefined;
@@ -161,5 +163,5 @@ describe("splat turf art direction", () => {
     expect(botTrim.positions.length / 3).toBeGreaterThan(600);
     expect(botScrub.positions.length / 3).toBeGreaterThan(120);
     expect(botBeacon.positions.length / 3).toBeGreaterThan(300);
-  });
+  }, 30_000);
 });

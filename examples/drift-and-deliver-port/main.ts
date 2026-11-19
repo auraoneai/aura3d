@@ -17,7 +17,7 @@ import { furnitureSolids } from "./city";
 import { createShift, formatClock, recordBest, stepShift, type ShiftEvent } from "./shift";
 import { mountTouchControls } from "./touch";
 import { drivingKey, keyAction } from "./input";
-import { setChaseFraming, setReducedMotion } from "./chase";
+import { chaseFraming, setChaseFraming, setReducedMotion } from "./chase";
 import { parseAt, parseLook, phaseAt, todSeconds } from "./phases";
 import { SkidMarks, COURIER_TEAL } from "./fx";
 import { beaconMaterial, createShiftRuntime, padMaterial, ringMaterial, shiftSceneNodes, type ShiftRuntime } from "./shiftRuntime";
@@ -37,10 +37,15 @@ import {
   buildHeroCourierRigNode,
   buildHeroCourierWheelNode
 } from "./vehicles";
-import { buildDropoffParcelKioskNode, dropoffKioskPose } from "./art/proceduralModels";
+import { buildDropoffParcelKioskNode, dropoffKioskPose, kioskSolid } from "./art/proceduralModels";
+import { idolCourierNode, idolEnabled } from "./idol";
+import { IDOL_WHEEL_LAYOUT, TRAFFIC_WHEEL_IDS, advanceShownSpin, courierWheelPlacement, idolCourierWheelPoses, stepTrafficWheels } from "./wheels";
+import { WALKER_POOL, placeWalkers, walkerNodes } from "./walkers";
 import { toArrays } from "./mesh";
 import { snapChase, stepChase, type ChaseState } from "./chase";
 import { beamGeometry, beamSpec } from "./headlights";
+import { createAutopilot } from "./autopilot";
+import { courierSightTargets, createOccluderFader, takeFadeLayers, type OccluderFader } from "./occluderFade";
 import { CONFIG, NO_KEYS, createCar, stateVector, stepCar, teleport, type Footprint, type Keys, type Solid } from "./sim";
 import {
   PITCH,
@@ -61,11 +66,15 @@ const params = new URLSearchParams(location.search);
 for (const [key, value] of Object.entries(healParams(healStage(undefined, undefined, HEAL_STORAGE_KEY)))) if (!params.has(key)) params.set(key, value);
 const config = {
   manual: params.get("manual") === "1",
-  autostart: params.get("autostart") === "1" || params.get("manual") === "1",
+  /** `?autoplay=1` (owner standard, Nov 18; `?autopilot=1` / `?demo=1` are aliases): the computer drives the shift hands-free. */
+  autoplay: ["autoplay", "autopilot", "demo"].some((k) => params.get(k) === "1"),
+  autostart: params.get("autostart") === "1" || params.get("manual") === "1" || ["autoplay", "autopilot", "demo"].some((k) => params.get(k) === "1"),
   quality: (params.get("quality") === "low" ? "low" : "high") as "high" | "low",
   /** diagnostics switches: `ao=1` turns screen-space AO on, `env=0` drops the HDRI light, `shadow=0` drops the sun's shadows */
   /** `models=0` falls back to the code-built car shells (diagnostics) */
   models: params.get("models") !== "0",
+  /** Idol pass (image-to-3D courier, traffic, people, landmarks, street props); `?idol=0` shows the procedural kit */
+  idol: params.get("models") !== "0" && idolEnabled(),
   ao: params.get("ao") !== "0",
   env: params.get("env") !== "0",
   shadow: params.get("shadow") !== "0",
@@ -138,6 +147,11 @@ const game = { phase: "splash" as Phase, score: 0, collected: 0 };
 let shift = createShift(config.shiftSeconds);
 const audio = config.manual ? null : createAudio();
 const keys: Keys = { ...NO_KEYS };
+/** Autoplay driver (autopilot.ts): it feeds the same Keys path a player does; I toggles it in play. */
+const pilot = createAutopilot();
+let autoplayOn = config.autoplay && !config.manual;
+const AUTOPLAY_RESULTS_MS = 3500;
+const pilotWorld = { get job() { return shift.job; }, pickups, traffic };
 const camState: ChaseState = snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 });
 
 const cell = (v: number): number => Math.floor(v / 24);
@@ -176,13 +190,22 @@ function nearSolids(x: number, z: number): Solid[] {
   return query(grid, x, z);
 }
 /** Collision candidates near the car: the original queries a spatial grid; the port passes the nearby subset. */
-const solidsNear = (): Solid[] => query(playGrid, car.x, car.z);
+const solidsNear = (): Solid[] => {
+  const near = query(playGrid, car.x, car.z);
+  const kiosk = kioskSolid(shift.job);
+  return kiosk && Math.abs(kiosk.x - car.x) < 24 && Math.abs(kiosk.z - car.z) < 24 ? [...near, kiosk] : near;
+};
 const buildingSolidsNear = (): Solid[] => nearSolids(car.x, car.z);
 /** True when a camera point is inside a building (with a 0.4 m skin) or under the street. */
+/**
+ * Camera-only top of each building: the dressed roof (full-run QA, Nov 18: the bird's-eye eye looked through a red gable
+ * that rises up to 2.5 m over `height`, so the courier vanished behind it at a corner). Filled after each look build.
+ */
+const cameraTops = new Map<object, number>();
 function cameraBlocked(x: number, y: number, z: number): boolean {
   if (y < 0.3) return true;
   for (const b of query(buildingGrid, x, z)) {
-    if (y < b.height + 0.3 && Math.abs(x - b.x) < b.hw + 0.4 && Math.abs(z - b.z) < b.hd + 0.4) return true;
+    if (y < (cameraTops.get(b) ?? b.height + 0.3) && Math.abs(x - b.x) < b.hw + 0.65 && Math.abs(z - b.z) < b.hd + 0.65) return true;
   }
   return false;
 }
@@ -217,12 +240,28 @@ const mobileHandset =
 let iesProfile: AuraPhotometricProfile | undefined;
 function buildScene() {
   const row = phaseAt(todSeconds(shift.elapsed, shift.length, config.at));
-  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z }, look: config.look, row, mobileTrim: mobileHandset, ...(iesProfile ? { headlightProfile: iesProfile } : {}) });
-  setChaseFraming(look.shift ? "close" : "close-original");
+  takeFadeLayers();
+  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z }, look: config.look, row, mobileTrim: mobileHandset, idol: config.idol, ...(iesProfile ? { headlightProfile: iesProfile } : {}) });
+  cameraTops.clear();
+  buildings.forEach((b, i) => {
+    const roof = look.roofs?.[i];
+    // gables rise up to 2.2 m (+ overhang); flat caps carry up to 2.3 m of roof clutter
+    cameraTops.set(b, Math.max(b.height + 0.3, roof ? roof.y + (roof.flat ? 2.4 : 2.6) : 0));
+  });
+  // Owner QA (Nov 18): trees, palms and lamp posts between the camera and the courier fade to ghosts (presentation only)
+  occluderFader = params.get("fade") === "0" ? null : createOccluderFader(takeFadeLayers());
+  // Owner QA (Nov 18): the live game opens on the elevated bird's-eye chase; C toggles the old close chase (`?cam=close`)
+  setChaseFraming(params.get("cam") === "close" ? (look.shift ? "close" : "close-original") : "bird");
   Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 }));
   const s = look.builder;
   if (look.shift) for (const n of shiftSceneNodes(skid, { reducedFlash: config.reducedFlash })) s.add(n);
-  if (config.models) {
+  if (config.models && config.idol) {
+    // Idol courier: wheel-less body + the procedural hero wheels at its measured arches (spin by speed, front pair steers)
+    s.add(idolCourierNode("car-rig", true, look.shift ? "YXZ" : "ZYX"));
+    for (const w of IDOL_COURIER_WHEELS) s.add(buildHeroCourierWheelNode(w.id, w.side, look.shift));
+    // Idol walkers: 16 pooled rigged people strolling / idling on the sidewalks around the courier (render only)
+    for (const n of walkerNodes()) s.add(n);
+  } else if (config.models) {
     s.add(buildHeroCourierRigNode("car-rig", true, look.shift ? "YXZ" : "ZYX"));
     for (const w of HERO_COURIER_WHEEL_POSES) {
       s.add(buildHeroCourierWheelNode(w.id, w.side, look.shift));
@@ -292,6 +331,11 @@ let wasImpactDrifting = false;
 let wasImpactBoosting = false;
 let boostKickCooldown = 0;
 let driftKickCooldown = 0;
+/** Idol courier wheel nodes at the wheel-less body's measured arches (scaled hero wheels). */
+const IDOL_COURIER_WHEELS = idolCourierWheelPoses();
+/** The occluder fade (occluderFade.ts) and the eye the camera was last posed at this frame. */
+let occluderFader: OccluderFader | null = null;
+let posedEye: [number, number, number] = [0, 0, 0];
 let wheelSpin = 0;
 
 function simulateStep(input: Keys): void {
@@ -401,7 +445,7 @@ function placeBeams(yaw: number, carX: number, carZ: number): void {
   h.updateAttribute?.("normal", { array: beamWorldNormals });
 }
 
-function placeTraffic(shown: Float64Array): void {
+function placeTraffic(shown: Float64Array, dt = 1 / 60): void {
   for (const rig of look.traffic) {
     rig.cars.forEach((carIndex, n) => {
       const m = mat(shown[3 * carIndex]!, 0, shown[3 * carIndex + 1]!, shown[3 * carIndex + 2]!, 0, 1, 1, 1);
@@ -411,7 +455,7 @@ function placeTraffic(shown: Float64Array): void {
   }
   for (const group of look.modelTraffic) {
     let list = trafficTransforms.get(group.id);
-    if (!list) trafficTransforms.set(group.id, (list = group.cars.map(() => ({ position: [0, 0, 0] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: group.scale }))));
+    if (!list) trafficTransforms.set(group.id, (list = group.cars.map(() => ({ position: [0, group.lift ?? 0, 0] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: group.scale }))));
     group.cars.forEach((i, n) => {
       const t = list![n]!;
       t.position[0] = shown[3 * i]!;
@@ -421,6 +465,12 @@ function placeTraffic(shown: Float64Array): void {
     for (const layerId of group.layerIds ?? [group.id]) {
       node(layerId).setInstances?.(list);
     }
+  }
+  // Idol pass: every traffic car's wheels roll by the distance it moved this frame (two instanced draws)
+  if (look.trafficWheels) {
+    const wheels = stepTrafficWheels(look.trafficWheels, shown, dt);
+    node(TRAFFIC_WHEEL_IDS.tyre).setInstances?.(wheels);
+    node(TRAFFIC_WHEEL_IDS.rim).setInstances?.(wheels);
   }
 }
 const trafficTransforms = new Map<string, { position: [number, number, number]; rotation: [number, number, number]; scale: number }[]>();
@@ -465,7 +515,7 @@ function placeNodes(dt: number, shown: Presented): void {
   const roll = -Math.max(-0.16, Math.min(0.16, view.steer * Math.min(1, Math.abs(view.speed) / 34) * 0.09 + 0.1 * view.lean));
   // GU47 WP-28 GC-AN1 (shift look): nose dips under braking, lifts under throttle, from the presented speed only
   const pitch = look.shift ? stepPitch(pitchState, view.speed, dt, document.body.classList.contains("reduced-motion")) : 0;
-  wheelSpin = (wheelSpin + (view.speed * dt) / HERO_COURIER_WHEEL_RADIUS) % (Math.PI * 2);
+  wheelSpin = advanceShownSpin(wheelSpin, view.speed * dt, config.idol ? IDOL_WHEEL_LAYOUT.gcCourier.radius : HERO_COURIER_WHEEL_RADIUS, dt);
   // Convert intrinsic YXZ vehicle pose (R = Ry(ry) * Rx(rx) * Rz(rz)) into exact ZYX Euler angles when targeting ZYX nodes
   const yxzToZyx = (rx: number, ry: number, rz: number): [number, number, number] => {
     const cx = Math.cos(rx), sx = Math.sin(rx);
@@ -507,13 +557,17 @@ function placeNodes(dt: number, shown: Presented): void {
   };
   if (config.models) {
     place("car-rig", 0, 0, 0, look.shift);
+  }
+  if (config.models) {
     const steerYaw = view.steer * 0.38;
-    const sy = Math.sin(yaw);
-    const cy = Math.cos(yaw);
-    for (const w of HERO_COURIER_WHEEL_POSES) {
-      node(w.id)
-        .setPosition(view.x + w.ox * cy + w.oz * sy, w.oy, view.z - w.ox * sy + w.oz * cy)
-        .setRotation(pitch + wheelSpin, yaw + (w.front ? steerYaw : 0), 0);
+    const wheelCar = { x: view.x, z: view.z, yaw, pitch, steerYaw };
+    for (const w of config.idol ? IDOL_COURIER_WHEELS : HERO_COURIER_WHEEL_POSES) {
+      const p = courierWheelPlacement(w, wheelCar, wheelSpin);
+      const h = node(w.id).setPosition(p.position[0], p.position[1], p.position[2]).setRotation(p.rotation[0], p.rotation[1], p.rotation[2]);
+      if ("scale" in w) {
+        const k = (w as { readonly scale: number }).scale;
+        h.setScale([k, k, k]);
+      }
     }
   } else {
     place("car-paint", 0, 0, 0, false);
@@ -529,7 +583,7 @@ function placeNodes(dt: number, shown: Presented): void {
   // GU47 phase 2: in the shift look the additive cone runs at SHIFT_BEAM_VOLUME (at full strength the HDR grade and
   // bloom clipped it to a white dome over the courier's roof at sunset and blue hour); the headlight spot stays full
   node("car-beams").setUniform?.("beamAmount", beamAmount(shiftRuntime?.row().lamps ?? 0) * (shiftLook && !headlightForced ? SHIFT_BEAM_VOLUME : 1));
-  placeTraffic(shown.traffic);
+  placeTraffic(shown.traffic, dt);
   placePickups();
   if (look.tailHalos) {
     const halos = look.tailHalos;
@@ -555,6 +609,7 @@ function placeNodes(dt: number, shown: Presented): void {
   const totalBank = bank + impact.shakeRoll;
   const up: [number, number, number] = [Math.sin(totalBank) * hc, Math.cos(totalBank), -Math.sin(totalBank) * hs];
   if (look.shift) placeBoard(finalEye);
+  posedEye = finalEye;
   app!.camera!.setPose({ position: finalEye, target: [...camState.look], up, fov: camState.fov + impact.fovDeltaDeg }, { cut: false });
 }
 
@@ -566,6 +621,7 @@ function placeCinema(dt: number, shown: Presented): void {
   const reduced = document.body.classList.contains("reduced-motion");
   let pose = game.phase === "intro" ? introPose(cinemaTime, carPose, chase) : orbitPose(cinemaTime, carPose, reduced, cameraBlocked);
   if (cameraBlocked(...pose.position)) pose = chase;
+  posedEye = [...pose.position];
   app!.camera!.setPose({ position: pose.position, target: pose.target, fov: pose.fov }, { cut: false });
   if (game.phase === "results") placeFlare(pose.position, carPose);
   if (game.phase === "intro" && cinemaTime >= INTRO.seconds) endIntro();
@@ -579,8 +635,12 @@ function placeSideShot(dt: number, shown: Presented): void {
     sideShotTime = Infinity;
     return;
   }
-  const pose = sideShotPose(sideShotTime, { x: shown.car.x, z: shown.car.z, heading: shown.car.heading }, cameraBlocked);
-  if (pose) app!.camera!.setPose({ position: pose.position, target: pose.target, fov: pose.fov }, { cut: false });
+  const aspect = canvas.clientWidth > 0 && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
+  const pose = sideShotPose(sideShotTime, { x: shown.car.x, z: shown.car.z, heading: shown.car.heading }, cameraBlocked, aspect);
+  if (pose) {
+    posedEye = [...pose.position];
+    app!.camera!.setPose({ position: pose.position, target: pose.target, fov: pose.fov }, { cut: false });
+  }
 }
 
 /** GC-L5: the results-orbit headlight flare; `eye` null hides it. Writes only on a change (starts shown, so the first call hides it). */
@@ -597,22 +657,34 @@ function placeFlare(eye: [number, number, number] | null, car?: CarPose): void {
   }
 }
 
+/** Idol sidewalk walkers: presentation clock and the clip each pooled slot is playing (re-sent after a scene rebuild). */
+let walkerClock = 0;
+const walkerClips: (string | null)[] = Array.from({ length: WALKER_POOL }, () => null);
+
 function render(dt: number, alpha = 1): void {
   if (!app || !ready || renderFailed) return;
   try {
     const live = !config.manual && game.phase === "playing";
     const shown = presenter.present({ alpha }, live);
     placeNodes(dt, shown);
+    if (config.models && config.idol) {
+      // presentation clock only: the walkers never feed back into the sim, solids or replay
+      walkerClock += dt;
+      placeWalkers(node, shown.car.x, shown.car.z, walkerClock, walkerClips);
+    }
     if (look.shift && (game.phase === "intro" || game.phase === "results")) placeCinema(dt, shown);
     if (look.shift && game.phase !== "results") placeFlare(null);
     if (look.shift && game.phase === "playing" && sideShotTime < Infinity) placeSideShot(dt, shown);
+    occluderFader?.update(dt, posedEye, courierSightTargets(shown.car.x, shown.car.z, shown.car.heading), (id, list, colors) => node(id).setInstances?.(list as never, colors as never));
     if (shiftRuntime) {
       // GU47 WP-28: time of day, sodium pool, headlight spot, beacon, VFX (presentation reads only)
       const lampsOn = shiftRuntime.row().lamps;
       shiftRuntime.menu(game.phase === "splash" || game.phase === "results");
       shiftRuntime.frame(dt, shift, { x: shown.car.x, z: shown.car.z, heading: shown.car.heading, speed: shown.car.speed, drifting: car.drifting && live, boosting: car.boosting && live, braking: keys.s }, beamAmount(lampsOn));
     }
-    app.step(0);
+    // Engine clock follows frame time: the Idol walkers' walk / idle clips run on the engine's pose mixer, which advances by
+    // the step dt (`step(0)` froze them in their bind T-pose). QA / captures that render with dt 0 still draw a fixed frame.
+    app.step(Math.max(0, Math.min(0.1, dt)));
     frames++;
     blackWatch?.sample(frames);
   } catch (error) {
@@ -766,6 +838,15 @@ const onKey = (down: boolean) => (e: KeyboardEvent) => {
   else if (action === "pause") togglePause();
   else if (action === "mute") toggleMute();
   else if (action === "restart" && game.phase === "results") restart();
+  if (down && !e.repeat && e.code === "KeyC" && !config.manual) {
+    setChaseFraming(chaseFraming() === "bird" ? (look.shift ? "close" : "close-original") : "bird");
+    Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: car.speed, boosting: car.boosting, shake: 0 }));
+  }
+  if (down && !e.repeat && e.code === "KeyI" && !config.manual) {
+    autoplayOn = !autoplayOn;
+    if (!autoplayOn) Object.assign(keys, NO_KEYS);
+    else if (game.phase === "results") restart();
+  }
   const k = drivingKey(e);
   if (k) {
     keys[k] = down;
@@ -840,6 +921,8 @@ function endShift(): void {
   $("results").classList.remove("hidden");
   $<HTMLButtonElement>("restart").focus();
   syncQa();
+  // Autoplay: hold the results ~3.5 s, then start the next shift (loops forever, never parks on this card)
+  if (autoplayOn) setTimeout(() => { if (game.phase === "results" && autoplayOn) restart(); }, AUTOPLAY_RESULTS_MS);
 }
 
 function safeStorage(): Storage | null {
@@ -852,6 +935,7 @@ function safeStorage(): Storage | null {
 
 /** A fresh shift: car, pickups, traffic, streak, presenter, camera and clock all back to the start. */
 function restart(): void {
+  pilot.reset();
   Object.assign(car, createCar());
   pickups.forEach((p) => (p.taken = false));
   traffic.forEach((t, i) => Object.assign(t, trafficStart[i]!));
@@ -1006,6 +1090,16 @@ const hooks = installQaHooks("drift-and-deliver", {
       return status();
     },
     /** the chase eye the rig wanted and the eye shown after the building clearance, and whether each is inside a building */
+    /** occluder fade: instances out of their opaque draw per layer, and the eye the camera was posed at */
+    faded: () => ({ layers: occluderFader?.faded() ?? [], eye: [...posedEye] }),
+    /** occluder fade: per layer the draw ids, whether each is mounted and how many of its instances are parked */
+    fadeDraws: () =>
+      (occluderFader?.layers() ?? []).map((l) =>
+        [...l.opaqueIds, ...l.ghostIds].map((id) => {
+          const h = app?.nodes.get(id) as { instances?: readonly { position?: readonly number[] }[] } | undefined;
+          return { id, mounted: Boolean(h), instances: h?.instances?.length ?? -1, parked: h?.instances?.filter((t) => (t.position?.[1] ?? 0) < -100).length ?? -1 };
+        })
+      ),
     camera: () => ({ wanted: [...camState.eye], shown: [...shownEye], wantedBlocked: cameraBlocked(...camState.eye), shownBlocked: cameraBlocked(...shownEye), factor: clearance.factor }),
     /** GU47 WP-28: named QA crops (normalised, top-left) for E-I's capture; also published on window.__AURA_QA__ */
     crops: () => qaCrops(),
@@ -1101,7 +1195,7 @@ const loop = createFixedStepLoop({
     if (manualInput) {
       simulateStep(manualInput);
       followCamera(1);
-    } else simulate(1);
+    } else simulate(1, autoplayOn ? pilot.step(car, pilotWorld, STEP) : keys);
     presenter.afterStep();
   }
 });
@@ -1147,7 +1241,7 @@ addEventListener("pointerdown", () => endIntro());
 $("resume").addEventListener("click", togglePause);
 $("restart").addEventListener("click", restart);
 addEventListener("blur", () => {
-  if (config.manual) return;
+  if (config.manual || autoplayOn) return;
   if (game.phase === "playing") togglePause();
   else audio?.suspend();
 });
@@ -1156,7 +1250,7 @@ document.addEventListener("visibilitychange", () => {
   if (isDocumentHidden()) {
     stopTick();
     if (!config.manual) {
-      if (game.phase === "playing") togglePause();
+      if (game.phase === "playing" && !autoplayOn) togglePause();
       else audio?.suspend();
     }
     return;

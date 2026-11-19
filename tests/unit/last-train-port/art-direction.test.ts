@@ -76,13 +76,15 @@ describe("Lamplight Line art direction (GU47 WP-31 LT-19)", () => {
     expect(JSON.stringify(buildWorld(data, "original").scene.toJSON())).not.toContain('"catenary"');
   });
 
-  it("replaces all external/Meshy GLBs with procedural multi-material meshes, clean distance fog, and valid WebGPU WGSL twins (WP-25)", { timeout: 120_000 }, () => {
-    expect(direction.assets).toHaveLength(0);
+  it("mounts only the contracted Idol GLBs (no Meshy GLBs), clean distance fog, and valid WebGPU WGSL twins (WP-25, Idol wow pass)", { timeout: 120_000 }, () => {
+    const contracted = new Set(direction.assets.map((a) => a.assetKey));
+    expect([...contracted].every((k) => k.startsWith("ll"))).toBe(true);
     for (const band of BAND_IDS) {
       const bandJson = world.sceneFor(band).toJSON();
       const serialized = JSON.stringify(bandJson);
       expect(serialized).not.toContain("assets/meshy/");
-      expect(serialized).not.toContain(".glb");
+      for (const m of serialized.matchAll(/"id":"(ll[A-Za-z0-9]+)"/g)) expect(contracted.has(m[1]!), m[1]).toBe(true);
+      expect(serialized).toContain("llTram");
       expect(serialized).not.toContain('"sun-flare"');
       expect(serialized).not.toContain('"tilt-shift"');
       expect(BANDS[band].fog.near).toBe(260);

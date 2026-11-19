@@ -3,6 +3,7 @@
 // code blocks, visualQA() confinement to failure-gallery.md, craft-ratio
 // targets (§6.5), look-recipes row density and quality-bar category coverage.
 // The pure rule helpers are exported for tests/unit/tools/agent-skills-check.
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -392,6 +393,14 @@ function buildExportSet(repoRoot: string): { exportSet: Set<string>; engineNames
   return { exportSet: set, engineNamespaces };
 }
 
+/** Commands and flags from `aura3d help --json`, run from source (the catalog cli-reference.md is generated from). */
+function readCliCatalog(repoRoot: string): readonly { readonly name: string; readonly flags: readonly string[] }[] {
+  const stdout = execFileSync(resolve(repoRoot, "node_modules/.bin/tsx"), ["--tsconfig", "tsconfig.base.json", "packages/aura3d-cli/src/cli.ts", "help", "--json"], {
+    cwd: repoRoot, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 32 * 1024 * 1024
+  });
+  return (JSON.parse(stdout) as { commands: { name: string; flags: string[] }[] }).commands;
+}
+
 function readIfExists(path: string): string | undefined {
   return existsSync(path) ? readFileSync(path, "utf8") : undefined;
 }
@@ -416,6 +425,14 @@ function main(): void {
     if (m[2]) helpCommands.add(`${m[1]} ${m[2]}`);
   }
   const helpFlags = new Set([...cliHelp.matchAll(/--[a-z][a-z0-9-]*/g)].map((m) => m[0]));
+  // 5.6.0: registry verbs (assets generate/convert/normalize/..., animation import/generate, look *, vfx *)
+  // live outside cli-help.ts; the CLI's own catalog (`aura3d help --json`) lists every command and flag.
+  for (const command of readCliCatalog(repoRoot)) {
+    const [top, sub] = command.name.split(" ");
+    helpCommands.add(top!);
+    if (sub) helpCommands.add(command.name);
+    for (const flag of command.flags) helpFlags.add(flag);
+  }
   // Flags consumed by delegated scripts (animation scene verbs) are validated against the scene script.
   const sceneFlags = new Set([...sceneScript.matchAll(/--[a-z][a-z0-9-]*/g)].map((m) => m[0]));
 

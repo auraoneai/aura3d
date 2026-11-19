@@ -38,7 +38,9 @@ describe("pips-big-leap prop motion (PBL-AN1)", () => {
       const built = buildWorld(worldSpec(id));
       const nodes = sceneOf(id);
       const animated = worldSpec(id).decor.filter((d) => ANIMATED_DECOR_KINDS.has(d.kind));
-      expect(built.presentation.animatedDecor.map((d) => d.name)).toEqual(animated.map((d) => `${d.id}:${d.kind}`));
+      // (Idol moving parts — windmill sails, hawks, clouds — ride the same list; tests/unit/pips-big-leap/moving-parts.test.ts.)
+      const bannersAndFans = built.presentation.animatedDecor.filter((d) => d.kind === "banner" || d.kind === "fan");
+      expect(bannersAndFans.map((d) => d.name)).toEqual(animated.map((d) => `${d.id}:${d.kind}`));
       for (const d of animated) {
         const n = nodes.find((x) => x.name === `${d.id}:${d.kind}`)!;
         expect(n.runtime, n.name).toBeDefined();
@@ -92,7 +94,7 @@ describe("pips-big-leap prop motion (PBL-AN1)", () => {
         const rot = rec.writes.get(d.name)?.rot;
         expect(rot, d.name).toBeDefined();
         if (d.kind === "banner") expect(rot![2]).toBeCloseTo(bannerTilt(1.1, d.phase, motion), 9);
-        else expect(rot![1]).toBeCloseTo(fanYaw(d.yaw, 1.1, motion), 9);
+        else if (d.kind === "fan") expect(rot![1]).toBeCloseTo(fanYaw(d.yaw, 1.1, motion), 9);
       }
       for (const name of built.presentation.bobNodes) expect(rec.writes.get(name)?.pos?.[1]).toBeCloseTo(padBob(1.1, motion), 9);
     }

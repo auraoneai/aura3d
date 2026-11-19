@@ -30,8 +30,8 @@ describe("iron crown fighter restyle & zero-Meshy procedural rigs", () => {
 
   it("gives Player 1 vs Player 2 distinct heraldic armor colors across all 6 sculpted gladiator archetypes", () => {
     for (const fighter of FIGHTERS) {
-      const p1Json = JSON.stringify(createFighterNode("player", fighter, `${fighter.name} P1`, [-2.2, 0, 0], 1, {}).toJSON());
-      const p2Json = JSON.stringify(createFighterNode("rival", fighter, `${fighter.name} P2`, [2.2, 0, 0], -1, {}).toJSON());
+      const p1Json = JSON.stringify(createFighterNode("player", fighter, `${fighter.name} P1`, [-2.2, 0, 0], 1, {}, undefined, true, false).toJSON());
+      const p2Json = JSON.stringify(createFighterNode("rival", fighter, `${fighter.name} P2`, [2.2, 0, 0], -1, {}, undefined, true, false).toJSON());
       expect(p1Json).not.toContain('"kind":"model"');
       expect(p2Json).not.toContain('"kind":"model"');
       expect(p1Json).not.toEqual(p2Json);

@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoTaxiNW",
+  "generatedAt": "2026-11-19T00:25:38.483Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f131-daee-7950-8fe8-9f041edf40a1",
+      "prompt": "A single city taxi cab, a four-door sedan of a fictional unbranded design painted glossy saffron yellow, a plain blank white rectangular roof light box with no writing, a thin black checker stripe along the doors, tinted windows, a plain smooth grille with no badge or emblem, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates. Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f132-b343-78b0-91fd-9c01724cbab1",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 21,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1342658,
+        "num_faces": 2685508,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single city taxi cab, a four-door sedan of a fictional unbranded design painted glossy saffron yellow, a plain blank white rectangular roof light box with no writing, a thin black checker stripe along the doors, tinted windows, a plain smooth grille with no badge or emblem, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates. Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 177,
+    "scale": 4.602,
+    "size": [
+      2.008,
+      1.674,
+      4.6
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoTaxiNW.glb",
+  "sizeBytes": 1867080,
+  "preview": "artifacts/idol/apex-overdrive/aoTaxiNW/views.png",
+  "usd": 0.37,
+  "renormalizedAt": "2026-11-19T00:36:22.719Z"
+}

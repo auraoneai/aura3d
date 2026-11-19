@@ -12,7 +12,7 @@
 import { attachRootRenderSource, camera, cameras, effects, geometry, instances, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { groundFrame, laneOffset, smooth, COURSE_LENGTH } from "./course";
 import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, slashSpec, solidSpec, sparksSpec, threatRingSpec, waterSpec } from "./materials";
-import { buildRouteGroups, buildSheet, buildTownFloor, buildWater } from "./meshes";
+import { buildFallsCascade, buildRouteGroups, buildSheet, buildTownFloor, buildWater, type FallsLayer } from "./meshes";
 import { hexLinear, type Rgb } from "./palette";
 import { LAYERS, buildProceduralCourseAccents, buildScenery, cameraEye, type LayerSpec, type ModelSink, type ShapeId, type SurfaceKey } from "./scenery";
 import { unitBox, unitCone, unitCrescentArc, unitCylinder, unitDisc, unitGable, unitHip, unitRock, unitSphere, type Shape } from "./shapes";
@@ -26,6 +26,8 @@ import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Enti
 import { EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, SLOT_MODEL, type CharacterId } from "./models";
 import { buildProceduralActorNodes, createProceduralActorAssets, syncProceduralActorSceneNodes } from "./art/proceduralActors";
 import { eveningSetPieces, shrineCentre } from "./setpieces";
+import { BEAM_SCALE_X } from "./hazards";
+import { IDOL_SCENERY, buildIdolBarrierNodes, buildIdolDistrictProps, buildIdolSetPieceNode, buildIdolWeaponNode } from "./art/idolScenery";
 import {
   buildBarrierHazardNodes,
   buildKanaboWeaponNode,
@@ -47,6 +49,10 @@ import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 
 /** The rig faces +Z; characters are turned so +Z points along the route (or back at the runner). */
 const MODEL_YAW_OFFSET = 0;
+/** Share of the deep-teal lake look the evening river always carries (F3: 0 read as salmon slabs under the sunset sky). */
+export const EVENING_RIVER_LAKE = 0.88;
+/** Ember-form shell strength (F3: 1.1 buried the hero inside an opaque gold bubble). */
+export const EMBER_AURA_STRENGTH = 0.42;
 export const ACTOR_COUNT = 13;
 const HERO = 0;
 const CLONE_SLOTS = [1, 2, 3] as const;
@@ -118,6 +124,8 @@ const mapped = (s: Surface, color: string, roughness: number, extra: { metallic?
 });
 
 type PathKind = "cobble" | "tiles" | "planks" | "dirt";
+/** Rooftop path tile UV density over the ribbon's 4 m-per-repeat UVs (2.5 = one repeat every 1.6 m). */
+export const ROOF_TILE_UV_SCALE = 2.5;
 const PATH_SURFACE: Record<string, readonly [PathKind, string]> = {
   village: ["cobble", "#ffffff"], alley: ["cobble", "#d6cabb"], stairs: ["cobble", "#ffffff"], rooftops: ["tiles", "#ffffff"], descent: ["cobble", "#ffffff"],
   riverside: ["cobble", "#d6cabb"], bridge: ["planks", "#ffffff"], forest_entry: ["dirt", "#ffffff"], forest: ["dirt", "#ffffff"], forest_exit: ["dirt", "#ffffff"], water: ["cobble", "#ffffff"]
@@ -304,8 +312,6 @@ const IBL_HDRI = typeof location !== "undefined" && new URLSearchParams(location
 
 /** GU47 phase 4: the evening's worn path stones take a soft sheen of the sky (IBL) at grazing angles; 4.6.2 keeps 0.92. */
 const EVENING_PATH_ROUGHNESS = 0.68;
-/** GU47 phase 6: evening valley falls bend (m). */
-const FALLS_BEND = 9;
 
 /**
  * Rock behind the evening valley falls: rounded cliffB boulders (manifest size 1.778 x 1.393 x 1.896, centred origin),
@@ -318,7 +324,37 @@ export function fallsCliff(end: { x: number; y: number; z: number }): { position
     const k = height / 1.393;
     return { position: [end.x + x, end.y + 22 - height / 2, end.z + z] as Vec3, yaw, scale: [k, k, k] as Vec3, tint: "#9c8a7a" };
   };
-  return [rock(46, -70, 42, 0.5), rock(10, -140, 46, 2.6)];
+  const L = fallsLayout(end);
+  return [L.cliff, rock(10, -140, 46, 2.6)];
+}
+
+/** cliffB manifest size (m, centred origin). */
+const CLIFF_B: Vec3 = [1.778, 1.393, 1.896];
+/**
+ * Evening valley falls, grounded: the water leaves a lip just inside the crest of a cliff wall (a cliffB boulder drawn
+ * 64 m wide, 25 m tall, 20 m deep) 46 m right of and 62 m past the end frame, arcs out clear of the wall's face and
+ * drops into the river pool (y -2.5) in three staggered curved curtains plus a mist skirt at the plunge line.
+ */
+export const FALLS_POOL_Y = -2.5;
+export function fallsLayout(end: { x: number; y: number; z: number }) {
+  const lip: Vec3 = [end.x + 46, end.y + 20.5, end.z - 62];
+  const top = lip[1] - FALLS_POOL_Y;
+  const wall = { w: 64, h: lip[1] + 1.5 - (FALLS_POOL_Y - 2), d: 20 };
+  const cliff = {
+    // crest 1.5 m over the lip, foot 2 m under the pool; the wall's centre 6 m behind the lip (face 4 m in front of it)
+    position: [lip[0], lip[1] + 1.5 - wall.h / 2, lip[2] - 6] as Vec3,
+    yaw: 0,
+    scale: [wall.w / CLIFF_B[0], wall.h / CLIFF_B[1], wall.d / CLIFF_B[2]] as Vec3,
+    tint: "#8f7f70"
+  };
+  const layers: FallsLayer[] = [
+    { width: 40, x: 0, z: 0, top, throw: 9, bend: 7, v0: 0, v1: 1 },
+    { width: 26, x: -6, z: 1.2, top: top - 2, throw: 7.5, bend: 5, v0: 0, v1: 0.94 },
+    { width: 14, x: 9, z: 2.4, top: top - 4, throw: 6, bend: 3, v0: 0, v1: 0.88 },
+    // mist skirt at the plunge line (the shader's foot: soft white, fading up)
+    { width: 52, x: 0, z: 9.5, top: 7, throw: 1.5, bend: 6, v0: 0, v1: 0.2 }
+  ];
+  return { lip, pool: FALLS_POOL_Y, top, cliff, wall, layers };
 }
 
 export interface World { readonly scene: Scene; bind(app: AuraApp): WorldRuntime }
@@ -385,7 +421,10 @@ export function buildWorld(options: WorldOptions): World {
     if (!m) merged.set(key, m = { surf, tint, rough: path ? (evening ? EVENING_PATH_ROUGHNESS : 0.92) : 0.88, positions: [], normals: [], uvs: [], indices: [] });
     const base = m.positions.length / 3;
     for (let i = 0; i < g.mesh.positions.length; i++) { m.positions.push(g.mesh.positions[i]!); m.normals.push(g.mesh.normals[i]!); }
-    for (let i = 0; i < g.mesh.uvs.length; i++) m.uvs.push(g.mesh.uvs[i]!);
+    // Roof tiles at 4 m a repeat drew ~1.2 m scales (as big as the runner), smeared into one long chevron roof: the
+    // rooftop path repeats every 1.6 m so the scales read at real kawara size.
+    const uvScale = (path ? kind === "tiles" : g.biome === "rooftops") ? ROOF_TILE_UV_SCALE : 1;
+    for (let i = 0; i < g.mesh.uvs.length; i++) m.uvs.push(g.mesh.uvs[i]! * uvScale);
     for (const idx of g.mesh.indices) m.indices.push(idx + base);
   }
   for (const [key, m] of merged) {
@@ -439,14 +478,19 @@ export function buildWorld(options: WorldOptions): World {
   const courseAccents = buildProceduralCourseAccents(clearing);
   for (const p of modelSink.lantern ?? []) lanternSpots.push([p.position[0], p.position[1] + p.scale[1] * 1.3, p.position[2]]);
   for (const p of courseAccents.rooftopToroLanterns) lanternSpots.push([p.position[0], p.position[1] + 1.26, p.position[2]]);
-  for (const batchNode of buildProceduralDistrictBatches(modelSink, courseAccents, { castShadow: SUN_SHADOW })) {
+  // Idol wow pass: houses, towers, teahouses, stalls, gates, lanterns, pines and maples are Idol GLB instances; the
+  // fences, bushes, rocks, cliffs and ridges stay procedural batches (`?idol=0` keeps them all procedural).
+  const idolProps = IDOL_SCENERY ? buildIdolDistrictProps(modelSink, courseAccents.sakuraMapleTrees, { castShadow: SUN_SHADOW }) : null;
+  for (const n of idolProps?.nodes ?? []) builder.add(n);
+  const batchAccents = idolProps?.maplesHandled ? { ...courseAccents, sakuraMapleTrees: [] } : courseAccents;
+  for (const batchNode of buildProceduralDistrictBatches(idolProps?.rest ?? modelSink, batchAccents, { castShadow: SUN_SHADOW })) {
     builder.add(batchNode);
   }
 
   if (setPieces) {
-    for (const p of setPieces.shrineGate) builder.add(buildShrineGateSetpieceNode(p));
+    for (const p of setPieces.shrineGate) builder.add((IDOL_SCENERY ? buildIdolSetPieceNode("nrShrineGate", p) : null) ?? buildShrineGateSetpieceNode(p));
     for (const p of setPieces.waterWheel) builder.add(buildWaterWheelSetpieceGroup(p));
-    for (const p of setPieces.pagoda) builder.add(buildPagodaSetpieceNode(p));
+    for (const p of setPieces.pagoda) builder.add((IDOL_SCENERY ? buildIdolSetPieceNode("nrPagoda", p) : null) ?? buildPagodaSetpieceNode(p));
   }
 
   const water = buildWater();
@@ -456,14 +500,20 @@ export function buildWorld(options: WorldOptions): World {
   const endFrame = groundFrame(COURSE_LENGTH - 90, 0, 0);
   // GU47 phase 6: the evening falls curve into a horseshoe with soft edges, a crest lip and a mist foot (the judges
   // named the 4.6.2 card "a flat billboard"); same draw, same triangles.
-  const sheet = buildSheet(56, 63, 24, 12, evening ? FALLS_BEND : 0);
-  builder.add(geometry.custom(geometry.dynamic({ positions: f32(sheet.positions), normals: f32(sheet.normals), uvs: f32(sheet.uvs), indices: Uint32Array.from(sheet.indices) }), { name: "valley-falls", material: material.custom(fallsSpec(evening ? 1 : 0)), position: [endFrame.x + 30, endFrame.y - 40, endFrame.z - 30] }).runtime({ id: "valley-falls" }));
+  // Real-GPU audit (21:12): the evening's single bent card still read as a flat sheet hanging in the air. The evening
+  // falls are now staggered curtains pouring off a cliff lip into the river pool (fallsLayout); ?look=original keeps 4.6.2.
+  const fallsL = fallsLayout(endFrame);
+  const sheet = evening ? buildFallsCascade(fallsL.layers) : buildSheet(56, 63, 24, 12, 0);
+  const fallsAt: Vec3 = evening ? [fallsL.lip[0], FALLS_POOL_Y, fallsL.lip[2]] : [endFrame.x + 30, endFrame.y - 40, endFrame.z - 30];
+  builder.add(geometry.custom(geometry.dynamic({ positions: f32(sheet.positions), normals: f32(sheet.normals), uvs: f32(sheet.uvs), indices: Uint32Array.from(sheet.indices) }), { name: "valley-falls", material: material.custom(fallsSpec(evening ? 1 : 0)), position: fallsAt }).runtime({ id: "valley-falls" }));
 
-  const crate = evening ? material.lacquer({ color: "#5e3622", roughness: 0.38, clearcoat: 0.72, clearcoatRoughness: 0.12 }) : material.pbr({ color: "#8a5a35", roughness: 0.86 });
+  // QA GPU review: the glossy lacquer debris read as flat orange slabs at sunset; the broken-crate planks now carry the
+  // painted plank grain (albedo + normal) the bridge paths use, matte and darker so they read as splintered wood.
+  const crate = mapped(ground.planks, evening ? "#8a6448" : "#9a7050", 0.82);
   const strap = evening ? material.brushedMetal({ color: "#3d4654", roughness: 0.26, metallic: 0.92 }) : material.pbr({ color: "#3a3028", roughness: 0.6, metallic: 0.3 });
   const beam = hexLinear(evening ? "#485468" : "#c2603a"), glowOrange = hexLinear("#ff8a3a");
   for (let i = 0; i < BARRIER_POOL; i++) {
-    for (const barrierPart of buildBarrierHazardNodes(i)) builder.add(barrierPart);
+    for (const barrierPart of (IDOL_SCENERY ? buildIdolBarrierNodes(i) : null) ?? buildBarrierHazardNodes(i)) builder.add(barrierPart);
   }
   for (let i = 0; i < BEAM_POOL; i++) builder.add(buildSpikedBeamHazardNode(i));
 
@@ -493,11 +543,11 @@ export function buildWorld(options: WorldOptions): World {
 
   const enemySlotCount = hasMeshy07Slots(options.actors.actors.length) ? EVENING_ENEMY_SLOTS.length : ENEMY_SLOTS.length;
   for (let i = 0; i < enemySlotCount; i++) {
-    builder.add(buildKatanaWeaponNode(`blade-${i}`));
-    builder.add(buildKanaboWeaponNode(`club-${i}`));
+    builder.add((IDOL_SCENERY ? buildIdolWeaponNode("nrKatana", `blade-${i}`) : null) ?? buildKatanaWeaponNode(`blade-${i}`));
+    builder.add((IDOL_SCENERY ? buildIdolWeaponNode("nrKanabo", `club-${i}`) : null) ?? buildKanaboWeaponNode(`club-${i}`));
     builder.add(primitives.sphere({ name: `orb-${i}`, size: 0.3, material: material.custom(ballSpec()), castShadow: false, receiveShadow: false }).runtime({ id: `orb-${i}` }));
   }
-  builder.add(buildKatanaWeaponNode("hero-blade"));
+  builder.add((IDOL_SCENERY ? buildIdolWeaponNode("nrKatana", "hero-blade") : null) ?? buildKatanaWeaponNode("hero-blade"));
 
   const blobShadow = solidSpec([0.02, 0.025, 0.02], { alpha: 0.4 });
   const disc = defineShape(unitDisc(20));
@@ -577,7 +627,7 @@ export function buildWorld(options: WorldOptions): World {
 interface Particle { life: number; max: number; vx: number; vy: number; vz: number; gravity: number; size: number; r: number; g: number; b: number; x: number; y: number; z: number }
 interface SlashArc { age: number; maxAge: number; x: number; y: number; z: number; yaw: number; scale: number }
 interface FlipBurst { left: number; x: number; y: number; z: number }
-interface Anim { clip: string; t?: number; rate?: number }
+interface Anim { clip: string; t?: number; rate?: number; /** hero vertical speed (captured jump sync) */ vy?: number; /** hero shadow-step dash */ dash?: boolean }
 interface SceneNodeLike { transform: { worldMatrix: ArrayLike<number> } }
 
 const normalize = (v: Vec3): Vec3 => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
@@ -724,7 +774,9 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     river.setUniform?.("waterSky", 1);
     // GU47 phase 6: past the forest the valley lake turns deep teal with ripple glints (judges: "flat pink ground",
     // then "flat grey plane" at a 0.4 sky share).
-    river.setUniform?.("waterLake", smooth(2200, 2300, s));
+    // F3 GPU QA: at the river crossing and the forest bowl the sky-tinted river read as flat salmon slabs at sunset;
+    // the river carries the deep teal lake look everywhere (peach sky only at grazing angles, ripple glints).
+    river.setUniform?.("waterLake", EVENING_RIVER_LAKE + (1 - EVENING_RIVER_LAKE) * smooth(2200, 2300, s));
     river.setUniform?.("waterZenith", [...look.skyZenith]);
     river.setUniform?.("waterHorizon", [...look.skyHorizon]);
     river.setUniform?.("waterKey", [...look.toKey]);
@@ -854,7 +906,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     }
     const yaw = Math.atan2(f.dx, f.dz) + MODEL_YAW_OFFSET + yawExtra;
     modelMatrixInto(mm[slot]!, f.x, f.y, f.z, yaw, scale);
-    syncProceduralActorSceneNodes(node, visualSlot, actor, true, f.x, f.y, f.z, yaw, scale);
+    syncProceduralActorSceneNodes(node, visualSlot, actor, true, f.x, f.y, f.z, yaw, scale, { travel: entity.s, dt, y: entity.y, vy: anim.vy, dash: anim.dash });
     (actor as TypedGLBActor & { __mm?: number[] }).__mm = mm[slot];
     const g = groundFrame(entity.s, entity.x, 0.1);
     const lift = Math.max(0, entity.y);
@@ -986,9 +1038,9 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       else if (hitAge < 0.32 && state.phase === "running") anim = { clip: CLIPS.hit, t: hitAge };
       else if (state.shurikenCast > 0) anim = { clip: CLIPS.sword, t: Math.min(1, (state.time - state.shurikenStartedAt) / TUNING.shurikenWindup) * clipLength(CLIPS.sword) * 0.55 };
       else if (state.attack > 0) anim = { clip: CLIPS.punch, t: Math.min(1, (state.time - state.attackStartedAt) / TUNING.attackDuration) * clipLength(CLIPS.punch) * 0.9 };
-      else if (!grounded) anim = { clip: CLIPS.jump, rate: 0.9 };
+      else if (!grounded) anim = { clip: CLIPS.jump, rate: 0.9, vy: state.vy };
       else if (state.slide > 0) anim = { clip: CLIPS.slide, rate: 1 };
-      else anim = { clip: CLIPS.run, rate: (state.dash > 0 ? 1.7 : 1) * (1.15 + (state.speed - 18) * 0.05) };
+      else anim = { clip: CLIPS.run, rate: (state.dash > 0 ? 1.7 : 1) * (1.15 + (state.speed - 18) * 0.05), dash: state.dash > 0 };
       const heroScale = state.form === "beast" ? 1.12 : 1;
       const flash = state.invulnerable > 0 && Math.floor(state.time * 14) % 2 === 0;
       const heroTint = flash ? FLASH_TINT : FORM_TINT[state.form]!;
@@ -1029,7 +1081,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         const lateral = [-1.5, 1.5, 0][k]!;
         const behind = [0.6, 0.6, 2.4][k]!;
         setTint(slot, "clone", CLONE_TINT);
-        place(slot, { s: s - behind, x: state.x + lateral, y: state.y }, 0, 0.96, state.attack > 0 ? anim : { clip: grounded ? CLIPS.run : CLIPS.jump, rate: 1.15 * (1 + k * 0.07) }, animDt, show);
+        place(slot, { s: s - behind, x: state.x + lateral, y: state.y }, 0, 0.96, state.attack > 0 ? anim : { clip: grounded ? CLIPS.run : CLIPS.jump, rate: 1.15 * (1 + k * 0.07), vy: state.vy }, animDt, show);
       });
 
       /* enemies: stable slot per entity while in window */
@@ -1157,7 +1209,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         const e = beams[i];
         const h = node(`beam-${i}`);
         h.setVisible(!!e);
-        if (e) { const f = groundFrame(e.s, e.lane * laneOffset(e.s), 1.1); h.setPosition(f.x, f.y, f.z); h.setRotation(0, Math.atan2(f.dx, f.dz), 0); }
+        // drawn at the sim's hit width (hazards.ts), so a runner in the next lane never passes through its ends
+        if (e) { const f = groundFrame(e.s, e.lane * laneOffset(e.s), 1.1); h.setPosition(f.x, f.y, f.z); h.setRotation(0, Math.atan2(f.dx, f.dz), 0); h.setScale([BEAM_SCALE_X, 1, 1]); }
       }
 
       /* debris from broken crates and beams */
@@ -1244,7 +1297,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         aura.setPosition(c.x, c.y, c.z);
         aura.setScale([(kur ? 1.0 : 0.78) * pulse, (kur ? 1.35 : 1.15) * pulse, (kur ? 1.0 : 0.78) * pulse]);
         aura.setUniform?.("auraTime", time);
-        aura.setUniform?.("auraStrength", (kur ? 1.1 : 0.7) + Math.max(0, 1 - (time - lastFormShift) / 1.2) * 0.8);
+        // F3 GPU QA: the ember shell hid the hero; it is a faint rim now (the transform flash still blooms for 1.2 s)
+        aura.setUniform?.("auraStrength", (kur ? EMBER_AURA_STRENGTH : 0.7) + Math.max(0, 1 - (time - lastFormShift) / 1.2) * (kur ? 0.5 : 0.8));
         aura.setUniform?.("auraColor", kur ? [1, 0.78, 0.22] : [1, 0.5, 0.14]);
         auraClock += dt * (kur ? 70 : 28);
         while (auraClock >= 1) {

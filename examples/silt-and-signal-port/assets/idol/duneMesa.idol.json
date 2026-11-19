@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "silt-and-signal-port",
+  "key": "duneMesa",
+  "generatedAt": "2026-11-18T22:42:58.500Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f094-6543-72f2-b427-56560d8fba42",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1124812,
+        "num_faces": 2249636,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A large red-rock desert mesa butte rock formation: a flat-topped stratified sandstone mesa with clearly visible horizontal rock layers in red, orange and cream bands, steep eroded cliffs with vertical cracks and a sloping scree base, a wind-carved slender yardang spire rising at one side, about one and a half times wider than tall",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.934,
+    "size": [
+      3.928,
+      2.05,
+      3.928
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/silt-and-signal-port/assets/idol/duneMesa.glb",
+  "sizeBytes": 2870788,
+  "preview": "artifacts/idol/silt-and-signal-port/duneMesa/views.png",
+  "usd": 0.37
+}

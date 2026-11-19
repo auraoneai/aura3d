@@ -1,0 +1,68 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "drift-and-deliver-port",
+  "key": "gcLighthouse",
+  "generatedAt": "2026-11-18T22:12:01.336Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b7-84d4-7cc2-847e-0bb8faeeea7c",
+      "prompt": "A classic tapering round coastal lighthouse tower painted in broad red and white horizontal bands, standing on a low grey stone base, a black iron gallery balcony with railings near the top, a glazed lantern room with a large glass lens inside, a domed black metal roof with a small vent ball on top, weathered paint and salt stains. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b9-a849-7791-8470-b88c39db9252",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 829280,
+        "num_faces": 1658624,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A classic tapering round coastal lighthouse tower painted in broad red and white horizontal bands, standing on a low grey stone base, a black iron gallery balcony with railings near the top, a glazed lantern room with a large glass lens inside, a domed black metal roof with a small vent ball on top, weathered paint and salt stains. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 23.963,
+    "size": [
+      9.065,
+      24,
+      9.799
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/drift-and-deliver-port/assets/idol/gcLighthouse.glb",
+  "sizeBytes": 2487692,
+  "preview": "artifacts/idol/drift-and-deliver-port/gcLighthouse/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "texture-jpeg",
+      "maxTexPx": 1536,
+      "before": 6204412,
+      "after": 3488924
+    },
+    {
+      "step": "texture-jpeg",
+      "maxTexPx": 1024,
+      "before": 3488924,
+      "after": 2487692
+    }
+  ]
+}

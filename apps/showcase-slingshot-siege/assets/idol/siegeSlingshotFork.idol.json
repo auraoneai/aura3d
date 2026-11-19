@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeSlingshotFork",
+  "generatedAt": "2026-11-18T23:36:31.272Z",
+  "generator": "tools/idol/generate.mjs (post steps finished locally from the downloaded Idol result)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f09c-8b0f-73b1-87cc-53d2b405d039",
+      "prompt": "A large carved oak Y-shaped slingshot fork standing upright on its own, one thick round trunk splitting into two smoothly curved prongs of equal height rising in a symmetric Y, a dark iron band around the trunk, braided hemp rope lashing at the fork crotch, small brass caps on both prong tips, no elastic band, no pouch, flat cut base. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09d-5e6d-7922-9e16-a5fff592b244",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 712218,
+        "num_faces": 1424448,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A large carved oak Y-shaped slingshot fork standing upright on its own, one thick round trunk splitting into two smoothly curved prongs of equal height rising in a symmetric Y, a dark iron band around the trunk, braided hemp rope lashing at the fork crotch, small brass caps on both prong tips, no elastic band, no pouch, flat cut base. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.24,
+    "size": [
+      0.8,
+      1.24,
+      0.339
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeSlingshotFork.glb",
+  "sizeBytes": 1253668,
+  "preview": "artifacts/idol/slingshot-siege/siegeSlingshotFork/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90",
+    "bytesBefore": 2441148,
+    "bytesAfter": 1253668
+  }
+}

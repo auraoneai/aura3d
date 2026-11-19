@@ -15,15 +15,18 @@ import {
   camera, decals, defineAuraAssets, effects, environments, game, gameFeel, lights, material,
   primitives, resolveQrFlags, scene, text3D, type AuraNodeBuilder, type AuraSceneNode
 } from "@aura3d/engine";
-import { createGame, sfxUrl, type ForwardAxis } from "@aura3d/engine/game";
+import { createGame, sfxUrl, warmPrograms, type ForwardAxis } from "@aura3d/engine/game";
 import { CELL, WALL_H, SILO_H, FLOORS, KILL_HOUSE, isSolid, type FloorDef } from "./maps";
 import {
   createSim, cellCenter, captureLoadout, defaultLoadout, drainEvents, ENEMIES, MAX_SUMMONS, WEAPONS,
-  type Enemy, type Loadout, type Sim, type SimInput, type WeaponId
+  type Enemy, type EnemyKind, type Loadout, type Sim, type SimInput, type WeaponId
 } from "./sim";
+import { IDOL_VIEWMODELS, buildIdolEnemyNode, idolDroneNode, idolDroneRotorId, idolDroneRotorYaw, idolEnemyBodyId, idolEnemyGunId, idolModel, idolPropInstances, idolPropNode, idolViewmodelNode, poseIdolEnemy } from "./art/idolModels";
 import { autopilotInput, createAutopilot } from "./autopilot";
+import { BZ_COLUMN_SIDE, dressingPlacements, wallFace } from "./obstacles";
 import {
-  betterMedal, cosmeticRng, DEFAULT_BINDINGS, enemyNodeStem, floorOutcome, floorResult, hudKey, keyLabel, MEDAL_MARK,
+  AUTOPLAY_RESULTS_HOLD, AUTOPLAY_TOGGLE_KEY, autoplayRequested, PENDING_DEATH, pendingAfter,
+  betterMedal, cosmeticRng, DEFAULT_BINDINGS, drawnEnemyState, enemyNodeStem, nextGroundSpeed, floorOutcome, floorResult, hudKey, keyLabel, MEDAL_MARK,
   outcomeView, parseBindings, REMAPPABLE, rebind, runTotals, scaleHex, type BindAction, type Bindings, type FloorOutcome, type FloorResult
 } from "./flow";
 import {
@@ -38,7 +41,9 @@ import {
   formatTacticalFeed,
   viewmodelFraming,
   VIEWMODEL_YAW_OFFSET,
-  weaponHudLabel
+  weaponHudLabel,
+  bulletTracerVisible,
+  enemyTracerSpan
 } from "./weapons-view";
 import {
   buildArticulatedEnemyNode,
@@ -68,6 +73,7 @@ import {
   ENEMY_RIG_PARTS,
   makeEnemyRigIds,
   type BunkerEnemyKind,
+  type EnemyRigPart,
   type EnemyRigIds
 } from "./art/proceduralModels";
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
@@ -108,17 +114,38 @@ declare global {
 
 const bootParams = new URLSearchParams(location.search);
 const DEMO = bootParams.get("demo") === "1" || bootParams.has("demo");
-let autoPilot = bootParams.get("autoplay") === "1" || DEMO;
+/** `?autoplay=1` (alias `?autopilot=1`): the computer plays from boot, loops the run forever; O toggles it in game. */
+let autoPilot = autoplayRequested(bootParams) || DEMO;
+/**
+ * Owner watches `?autoplay=1`: a click (focus, sound unlock) or a scroll while the pilot drives does not take over or grab
+ * the pointer, so the run never stops at the spawn because the page was clicked. Keys (and O) still take the controls.
+ */
+const AUTOPLAY_BOOT = autoplayRequested(bootParams);
+const pilotKeepsMouse = () => AUTOPLAY_BOOT && autoPilot && !pointerLocked;
 let appReady = false;
+/** True while the boot's second warm pass steps frames: the sim holds (the loading screen is still up). */
+let bootWarming = false;
+/** True while a new floor warms behind the elevator card (prewarmActiveFloor): the sim and the pose hold. */
+let floorWarming = false;
 /** GU47 WP-21: no look preset; the scene is lit by its own fixtures (art/look.ts, art/lightRig.ts). */
 const LOOK_ID = "bunker-practicals" as const;
 /** BZ-20: `?floor=1..6|kh` boots that floor at its fixed reference viewpoint with the sim held (capture variants). */
 const BOOT_FLOOR = parseFloorParam(bootParams);
 /** The floor slot the scene mounts posed for (the rig is re-aimed per floor at runtime). */
 const BOOT_SLOT = BOOT_FLOOR?.slot ?? 0;
-const DEFER_FLOOR_SURFACES = resolveQrFlags({ options: ["game"], url: location.href }).on("A3D_QR_COMPILER");
-/** WP-10: moonlit volumetric shaft down the Floor 6 silo hatch (`?godrays=0` opts out). */
-const BZ_GOD_RAYS = bootParams.get("godrays") !== "0";
+/**
+ * F6 perf pass (2026-11-19, real GPU): every floor's mapped surfaces mount with the scene again. Adding them later through
+ * `app.nodes.add` leaves runtime additions in the registry, and from then on every `setPosition`/`setRotation` rebuilds
+ * the scene node list (engine `sceneWithCompiledAdds` via the change listener): 45-65 ms of CPU per frame after the
+ * 5 -> 6 transition (7-10 fps). `?deferfloors=1` keeps the deferred path for the software-WebGL2 capture lane.
+ */
+const DEFER_FLOOR_SURFACES = bootParams.get("deferfloors") === "1" && resolveQrFlags({ options: ["game"], url: location.href }).on("A3D_QR_COMPILER");
+/**
+ * WP-10: moonlit volumetric shaft down the Floor 6 silo hatch. Opt-in (`?godrays=1`) since the F6 perf pass: the shaft
+ * streams from the shadowed directional moon, whose shadow pass and programs cost F6 half its frame rate; by default the
+ * moon is the key spot over the hatch (art/lightRig.ts visibleRigLights).
+ */
+const BZ_GOD_RAYS = bootParams.get("godrays") === "1";
 /** BZ-18: `?lut=0` turns the per-floor LUT off (the LUT on/off A/B); cosmetic only. */
 const LUT_ON = bootParams.get("lut") !== "0";
 const floorLut = (slot: number) => (LUT_ON ? lutOfSlot(slot) : null);
@@ -174,7 +201,7 @@ const hash2 = (x: number, z: number) => {
 /** GU47 phase 9 / WP-11 procedural prop placement: crack lamp on the push block's face, exit shutter and lamp, columns. */
 const BZ_CRACK_LAMP = { height: 0.5, out: 0.47, y: 1.15 } as const;
 const BZ_EXIT_SHUTTER = { heightFrac: 0.78, maxHeight: 2.4, wallGap: CELL / 2 - 0.17, lampGap: CELL / 2 - 0.08, lampHeight: 0.42 } as const;
-const BZ_COLUMN = { side: 1.2 } as const;
+const BZ_COLUMN = { side: BZ_COLUMN_SIDE } as const;
 /** Crack-lamp offset from its push block (the lamp rides the block's face while it slides). */
 const CRACK_OFFSET = new Map<string, [number, number]>();
 
@@ -441,7 +468,7 @@ function buildScene() {
             { position: [wx, wallH - 0.1, wz], scale: facesZ ? [CELL, 0.2, 0.36] : [0.36, 0.2, CELL] }
           );
           nodes.push(
-            buildBlastDoorBulkheadNode(wallH, cast, `f${slot} door ${dI}`)
+            (idolPropNode("door", `f${slot} door ${dI}`, cast) ?? buildBlastDoorBulkheadNode(wallH, cast, `f${slot} door ${dI}`))
               .position(wx, 0, wz).rotate(0, facesZ ? 0 : Math.PI / 2, 0)
               .runtime(slotNode(slot, `f${slot}-door-${x}-${z}`, ["door"]))
           );
@@ -488,7 +515,7 @@ function buildScene() {
           );
           nodes.push(
             // WP-11: procedural multi-material corrugated steel roller-shutter lift door + caged bulkhead lamp
-            buildShutterDoorNode(exitShutterH, cast, `f${slot} exit`)
+            (idolPropNode("shutter", `f${slot} exit`, cast) ?? buildShutterDoorNode(exitShutterH, cast, `f${slot} exit`))
               .position(wx + exitWall[0] * BZ_EXIT_SHUTTER.wallGap, 0, wz + exitWall[1] * BZ_EXIT_SHUTTER.wallGap)
               .rotate(0, Math.atan2(-exitWall[0], -exitWall[1]), 0).runtime(staticNode(slot, "exit")),
             buildBulkheadLampNode(BZ_EXIT_SHUTTER.lampHeight, `f${slot} exitpost`)
@@ -511,14 +538,14 @@ function buildScene() {
         }
         case "K":
           nodes.push(
-            buildClearanceKeycardNode(false, `f${slot} key`)
+            (idolPropNode("keycard", `f${slot} key`) ?? buildClearanceKeycardNode(false, `f${slot} key`))
               .position(wx, 1.1, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "key"]))
           );
           break;
         case "t": case "T":
           nodes.push(
-            buildBullionCaseNode(ch === "T" ? "gold" : "silver", false, `f${slot} treasure ${kI}`)
+            (idolPropNode(ch === "T" ? "bullionGold" : "bullionSilver", `f${slot} treasure ${kI}`) ?? buildBullionCaseNode(ch === "T" ? "gold" : "silver", false, `f${slot} treasure ${kI}`))
               .position(wx, 0.55, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "treasure"]))
           );
@@ -526,35 +553,35 @@ function buildScene() {
           break;
         case "+": case "*": case "!":
           nodes.push(
-            buildMedicalBoxNode(ch === "*" ? "plate" : "medkit", false, `f${slot} medkit ${x}-${z}`)
+            (idolPropNode(ch === "*" ? "plate" : "medkit", `f${slot} medkit ${x}-${z}`) ?? buildMedicalBoxNode(ch === "*" ? "plate" : "medkit", false, `f${slot} medkit ${x}-${z}`))
               .position(wx, 0.55, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "health"]))
           );
           break;
         case "a":
           nodes.push(
-            buildMunitionBoxNode(false, `f${slot} ammo`)
+            (idolPropNode("munition", `f${slot} ammo`) ?? buildMunitionBoxNode(false, `f${slot} ammo`))
               .position(wx, 0.55, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "ammo"]))
           );
           break;
         case "r":
           nodes.push(
-            buildBallisticArmorNode(false, `f${slot} armor`)
+            (idolPropNode("armor", `f${slot} armor`) ?? buildBallisticArmorNode(false, `f${slot} armor`))
               .position(wx, 0.55, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "armor"]))
           );
           break;
         case "w":
           nodes.push(
-            buildPulseCarbineNode(`f${slot} mgpickup`, false)
+            (idolViewmodelNode("mg", `f${slot} mgpickup`) ?? buildPulseCarbineNode(`f${slot} mgpickup`, false))
               .position(wx, 0.55, wz).rotate(0, 0.7, 0)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "weapon"]))
           );
           break;
         case "W":
           nodes.push(
-            buildRocketLauncherNode(`f${slot} rocketpickup`, false)
+            (idolViewmodelNode("rocket", `f${slot} rocketpickup`) ?? buildRocketLauncherNode(`f${slot} rocketpickup`, false))
               .position(wx, 0.55, wz).rotate(0, -0.7, 0)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "weapon"]))
           );
@@ -582,7 +609,7 @@ function buildScene() {
           break;
         case "g":
           nodes.push(
-            buildArticulatedEnemyNode(
+            enemyNode(
               "guard",
               `f${slot} guard ${eI}`,
               (partId, part) => slotNode(slot, partId, ["enemy", "guard", part]),
@@ -595,7 +622,7 @@ function buildScene() {
           break;
         case "d":
           nodes.push(
-            buildArticulatedEnemyNode(
+            enemyNode(
               "dog",
               `f${slot} hound ${eI}`,
               (partId, part) => slotNode(slot, partId, ["enemy", "dog", part]),
@@ -608,7 +635,7 @@ function buildScene() {
           break;
         case "G":
           nodes.push(
-            buildArticulatedEnemyNode(
+            enemyNode(
               "gunner",
               `f${slot} gunner ${eI}`,
               (partId, part) => slotNode(slot, partId, ["enemy", "gunner", part]),
@@ -621,7 +648,7 @@ function buildScene() {
           break;
         case "B":
           nodes.push(
-            buildArticulatedEnemyNode(
+            enemyNode(
               "boss",
               `f${slot} boss ${eI}`,
               (partId, part) => slotNode(slot, partId, ["enemy", "boss", part]),
@@ -638,7 +665,7 @@ function buildScene() {
     if (rows.some((r) => r.includes("B"))) {
       for (let i = 0; i < MAX_SUMMONS; i++) {
         nodes.push(
-          buildArticulatedEnemyNode(
+          enemyNode(
             "guard",
             `f${slot} summon ${i}`,
             (partId, part) => slotNode(slot, partId, ["enemy", "guard", "summon", part]),
@@ -661,12 +688,21 @@ function buildScene() {
           .runtime(staticNode(slot, "corridor-steel"))
       );
     }
-    if (barrelInst.length) {
+    const idolBarrels = barrelInst.length ? idolPropInstances("bzDrum", `f${slot} barrels`, barrelInst, castBarrelShadows) : undefined;
+    if (idolBarrels) {
+      // Idol wow pass: one instanced Idol drum draw; the pool writes its matrices to barrels-0 only.
+      nodes.push(idolBarrels.runtime(staticNode(slot, "barrels-0")));
+      PROP_POOLS.barrel[slot]!.matSlots = 1;
+    } else if (barrelInst.length) {
       buildHazardDrumPoolNodes(`f${slot} barrels`, barrelInst, castBarrelShadows).forEach((bNode, mIdx) => {
         nodes.push(bNode.runtime(staticNode(slot, `barrels-${mIdx}`)));
       });
     }
-    if (crateInst.length) {
+    const idolCrates = crateInst.length ? idolPropInstances("bzCrate", `f${slot} crates`, crateInst, castCrateShadows) : undefined;
+    if (idolCrates) {
+      nodes.push(idolCrates.runtime(staticNode(slot, "crates-0")));
+      PROP_POOLS.crate[slot]!.matSlots = 1;
+    } else if (crateInst.length) {
       buildMilitaryCratePoolNodes(`f${slot} crates`, crateInst, castCrateShadows).forEach((cNode, mIdx) => {
         nodes.push(cNode.runtime(staticNode(slot, `crates-${mIdx}`)));
       });
@@ -676,56 +712,33 @@ function buildScene() {
         mappedSurface(slot, "columns", (maps) => buildPilasterColumnInstances(`f${slot} columns`, columnInst, wallMat(maps)))
       );
     }
-    // Tactical command console, cryo containment canister, and autonomous ceiling patrol drone per floor (`staticNode` zero-sim-impact dressing)
-    {
-      const refCell = look.reference.cell;
-      let placedConsole = false;
-      let placedCryo = false;
-      let placedDrone = false;
-      const touchesSolid = (cx: number, cz: number) =>
-        isSolid(rows[cz + 1]?.[cx] ?? "#") ||
-        isSolid(rows[cz - 1]?.[cx] ?? "#") ||
-        isSolid(rows[cz]?.[cx + 1] ?? "#") ||
-        isSolid(rows[cz]?.[cx - 1] ?? "#");
-      for (let z = 1; z < h - 1; z++) {
-        for (let x = 1; x < w - 1; x++) {
-          if (placedConsole && placedCryo && placedDrone) break;
-          const ch = rows[z]![x]!;
-          if (Math.abs(x - refCell[0]) <= 1 && Math.abs(z - refCell[1]) <= 1) continue;
-          if (underHatch(def, x, z)) continue;
-          const wx = cellX(slot, x), wz = cellCenter(z);
-          if (!placedDrone && (ch === "g" || ch === "d" || ch === ".")) {
-            nodes.push(
-              buildPatrolDroneNode(false, `f${slot} patrol-drone`)
-                .position(wx, wallH - 0.54, wz)
-                .rotate(0, hash2(x + slot, z) * Math.PI * 2, 0)
-                .runtime(staticNode(slot, "patrol-drone"))
-            );
-            placedDrone = true;
-            continue;
-          }
-          if (ch === "." && touchesSolid(x, z)) {
-            const wf = wallFace(rows, x, z);
-            const wallYaw = Math.atan2(-wf[0], -wf[1]);
-            if (!placedConsole) {
-              nodes.push(
-                buildCommandConsoleNode(false, `f${slot} console`)
-                  .position(wx + wf[0] * (CELL / 2 - 0.34), 0, wz + wf[1] * (CELL / 2 - 0.34))
-                  .rotate(0, wallYaw, 0)
-                  .runtime(staticNode(slot, "console"))
-              );
-              placedConsole = true;
-            } else if (!placedCryo) {
-              nodes.push(
-                buildCryoCanisterNode(false, `f${slot} cryo`)
-                  .position(wx + wf[0] * (CELL / 2 - 0.36), 0, wz + wf[1] * (CELL / 2 - 0.36))
-                  .rotate(0, wallYaw, 0)
-                  .runtime(staticNode(slot, "cryo"))
-              );
-              placedCryo = true;
-            }
-          }
-        }
+    // Tactical command console, cryo containment canister, and autonomous ceiling patrol drone per floor. Pass-through
+    // pass: console and cryo are static obstacles in the sim (obstacles.ts footprints); the drone hangs above head height.
+    for (const d of dressingPlacements(def, wallH)) {
+      const wx = d.x + slot * FLOOR_SPAN;
+      if (d.kind === "drone") {
+        nodes.push(
+          // isStatic: hideAllRuntime hides every slot node and re-shows only the active slot's static ones; the rotors
+          // were registered non-static, so they stayed hidden and the ducts read empty on the real GPU (audit 2026-11-18).
+          (idolDroneNode(`f${slot} patrol-drone`, slot, (id) => slotNode(slot, id, ["floor-static", "moving-part"], true)) ?? buildPatrolDroneNode(false, `f${slot} patrol-drone`))
+            .position(wx, d.y, d.z)
+            .rotate(0, hash2(d.cx + slot, d.cz) * Math.PI * 2, 0)
+            .runtime(staticNode(slot, "patrol-drone"))
+        );
+      } else if (d.kind === "console") {
+        nodes.push(
+          (idolPropNode("console", `f${slot} console`) ?? buildCommandConsoleNode(false, `f${slot} console`))
+            .position(wx, d.y, d.z)
+            .rotate(0, d.yaw, 0)
+            .runtime(staticNode(slot, "console"))
+        );
+      } else {
+        nodes.push(
+          (idolPropNode("cryo", `f${slot} cryo`) ?? buildCryoCanisterNode(false, `f${slot} cryo`))
+            .position(wx, d.y, d.z)
+            .rotate(0, d.yaw, 0)
+            .runtime(staticNode(slot, "cryo"))
+        );
       }
     }
     // GU47 phase 6: every contact blob of the floor in one instanced draw (one draw per prop and hostile made F6 +11)
@@ -739,16 +752,16 @@ function buildScene() {
 
   // ---- player rig: WP-11 sculpted multi-material viewmodels + tactical sleeves/gloves + muzzle starburst ---------
   nodes.push(
-    buildCombatMacheteNode("vm knife")
+    (idolViewmodelNode("knife", "vm knife") ?? buildCombatMacheteNode("vm knife"))
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-knife", { tags: ["viewmodel"] })),
-    buildServicePistolNode("vm pistol")
+    (idolViewmodelNode("pistol", "vm pistol") ?? buildServicePistolNode("vm pistol"))
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-pistol", { tags: ["viewmodel"] })),
-    buildPulseCarbineNode("vm mg")
+    (idolViewmodelNode("mg", "vm mg") ?? buildPulseCarbineNode("vm mg"))
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-mg", { tags: ["viewmodel"] })),
-    buildRocketLauncherNode("vm rocket")
+    (idolViewmodelNode("rocket", "vm rocket") ?? buildRocketLauncherNode("vm rocket"))
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-rocket", { tags: ["viewmodel"] })),
     buildTacticalSleeveNode("right", "vm sleeve right")
@@ -1003,10 +1016,6 @@ function doorFacesZ(rows: readonly string[], x: number, z: number): boolean {
   return solid(x - 1, z) || solid(x + 1, z) ? !(solid(x, z - 1) && solid(x, z + 1)) : false;
 }
 /** GU47 phase 9: direction from an exit cell to its first solid neighbour (the lift shutter stands against that wall). */
-function wallFace(rows: readonly string[], x: number, z: number): [number, number] {
-  for (const [dx, dz] of [[0, 1], [0, -1], [1, 0], [-1, 0]] as const) if (isSolid(rows[z + dz]?.[x + dx] ?? "#")) return [dx, dz];
-  return [0, 1];
-}
 // crack cue faces the first open neighbor
 function pushFace(rows: readonly string[], x: number, z: number): [number, number] {
   const at = (x2: number, z2: number) => rows[z2]?.[x2] ?? " ";
@@ -1138,8 +1147,22 @@ function setEnemyRigVisible(ids: EnemyRigIds, shown: boolean) {
   enemyRigShown.set(ids.body, shown);
   opt(ids.body)?.setVisible(shown);
   for (const part of ENEMY_RIG_PARTS) opt(ids[part])?.setVisible(shown);
+  opt(idolEnemyBodyId(ids.body))?.setVisible(shown);
+  opt(idolEnemyGunId(ids.body))?.setVisible(shown);
 }
-function applyEnemyRigPose(ids: EnemyRigIds, pose: ReturnType<typeof computeEnemyRigPose>) {
+/** Idol wow pass: the rigged Idol enemy when its model is admitted, else the procedural articulated enemy. */
+function enemyNode(
+  kind: BunkerEnemyKind,
+  name: string,
+  bind: (partId: string, part: EnemyRigPart) => ReturnType<typeof game.runtimeNode>,
+  bodyId: string,
+  castShadow: boolean
+) {
+  return buildIdolEnemyNode(kind as EnemyKind, name, bind, bodyId, castShadow) ?? buildArticulatedEnemyNode(kind, name, bind, bodyId, castShadow);
+}
+function applyEnemyRigPose(ids: EnemyRigIds, pose: ReturnType<typeof computeEnemyRigPose>, kind?: EnemyKind, state?: string, timing?: { stateT: number; deathT: number; phase: number }) {
+  // Idol wow pass: the rigged Idol enemy takes the same pose (procedural parts are absent then, so the writes below no-op).
+  if (kind) poseIdolEnemy(opt as Parameters<typeof poseIdolEnemy>[0], ids.body, kind, pose, state ?? "idle", sim.state.time, timing);
   const rig = opt(ids.rig);
   if (rig) {
     rig.setPosition(pose.rigPos[0], pose.rigPos[1], pose.rigPos[2]);
@@ -1158,6 +1181,13 @@ function applyEnemyRigPose(ids: EnemyRigIds, pose: ReturnType<typeof computeEnem
   }
 }
 const vmNodes = { knife: req("vm-knife"), pistol: req("vm-pistol"), mg: req("vm-mg"), rocket: req("vm-rocket") };
+/** Weapons drawn with an Idol viewmodel (art/idolModels.ts); undefined models fall back to the procedural build. */
+const IDOL_VM_IN_USE: Record<WeaponId, boolean> = {
+  knife: idolModel(IDOL_VIEWMODELS.knife.key) !== undefined,
+  pistol: idolModel(IDOL_VIEWMODELS.pistol.key) !== undefined,
+  mg: idolModel(IDOL_VIEWMODELS.mg.key) !== undefined,
+  rocket: idolModel(IDOL_VIEWMODELS.rocket.key) !== undefined
+};
 const vmHands = {
   sleeveR: req("vm-sleeve-r"),
   cuffR: req("vm-cuff-r"),
@@ -1196,6 +1226,11 @@ const rocketNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`rocket-${
 const tracerNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`tracer-${i}`));
 const enemyTracerNodes = Array.from({ length: ENEMY_TRACERS }, (_, i) => req(`etracer-${i}`));
 const rocketShown: boolean[] = Array.from({ length: MAX_ROCKETS }, () => true);
+/** The sim projectile each tracer slot drew last frame, and the sim time its current bullet took the slot (bulletTracerVisible). */
+const tracerOwner: (object | null)[] = Array.from({ length: MAX_ROCKETS }, () => null);
+const tracerHeldSince: number[] = Array.from({ length: MAX_ROCKETS }, () => -Infinity);
+/** Drawn ground speed per enemy body (drawnEnemyState): last sim position and time, smoothed m/s. */
+const enemyGait = new Map<string, { x: number; z: number; t: number; speed: number }>();
 const enemyTracerShown: boolean[] = Array.from({ length: ENEMY_TRACERS }, () => true);
 const sparkShown: boolean[] = Array.from({ length: SPARK_CARD_POOL }, () => true);
 let muzzleShown = true;
@@ -1217,7 +1252,8 @@ const lightRig = createLightRigDriver((id) => opt(id) as RigLightHandle | null, 
     const st = sim?.state;
     if (!st || cx < 0 || cz < 0 || cx >= st.w || cz >= st.h) return false;
     return !isSolid(st.grid[cz * st.w + cx] ?? "#");
-  }
+  },
+  moonKey: () => BZ_GOD_RAYS
 });
 /** BZ-02 / BZ-05: one lamp colour, dark-slate linear fog, IBL scale and white balance per floor (presentation only, PRD D8). */
 function applyFloorLook(slot: number, transitionSeconds = 0) {
@@ -1323,6 +1359,35 @@ function doorAlongX(cx: number, cz: number): boolean {
 }
 /** BZ-16: letterbox bars over the elevator descent between floors; skipped under reduced motion. */
 let descentTimer = 0;
+/**
+ * F6 perf pass (2026-11-19, real GPU): a model's textures are created the first time it is drawn, and textures with mip
+ * chains are built on the CPU through a 2D canvas (engine WebGPU device; ~85 textures for F6's enemies and props: a 6 s
+ * frame plus 4 s of GC at the 5 -> 6 elevator). Each new floor is drawn once from overhead (every node of the floor in
+ * frustum) behind a black elevator card before the sim resumes, so its textures and programs exist before play.
+ */
+const WARM_FLOORS = bootParams.get("warm") !== "0";
+async function warmFloorFromAbove(slot: number) {
+  const def = floorDefOf(slot);
+  const cx = (def.rows[0]!.length * CELL) / 2, cz = (def.rows.length * CELL) / 2;
+  app.camera?.setPose({ position: [cx, 45, cz + 0.01], target: [cx, 0, cz], up: [0, 0, -1], fov: 80 });
+  // the pose merges into the presented one: syncScenePose writes `up: [0, 1, 0]` every frame, so the first-person view is not left rolled
+  try { await warmPrograms(app, { waitForEnvironment: false, textureTimeoutMs: 8_000, maxFrames: 8 }); } finally { app.camera?.setPose({ up: [0, 1, 0] }); }
+}
+let liftCard: HTMLDivElement | null = null;
+async function prewarmActiveFloor() {
+  if (!WARM_FLOORS || floorWarming) return;
+  liftCard ??= Object.assign(document.createElement("div"), { id: "bz-lift", className: "bz-lift" });
+  liftCard.setAttribute("style", "position:fixed;inset:0;z-index:44;background:#050505;display:flex;align-items:center;justify-content:center;color:#b2bcc8;font:600 14px/1.4 var(--font-ui, system-ui);letter-spacing:0.18em;pointer-events:none");
+  liftCard.textContent = `DESCENDING · FLOOR ${floorIdx + 1}`;
+  if (!liftCard.isConnected) document.body.append(liftCard);
+  floorWarming = true;
+  try { await warmFloorFromAbove(activeSlot()); } catch { /* warming is best effort */ } finally {
+    floorWarming = false;
+    liftCard.style.display = "none";
+    lastWall = performance.now();
+    syncScenePose(NO_INPUT);
+  }
+}
 function playDescent() {
   const secs = descentSeconds(reducedMotion());
   if (secs <= 0 || DEMO || BOOT_FLOOR) return;
@@ -1496,7 +1561,7 @@ function requestLock() {
   try { const r = canvas.requestPointerLock() as unknown; if (r instanceof Promise) r.catch(() => { lockUnavailable = true; }); } catch { lockUnavailable = true; }
 }
 canvas.addEventListener("click", () => {
-  if (!DEMO) { autoPilot = false; if (!touchMode) requestLock(); }
+  if (!DEMO && !pilotKeepsMouse()) { autoPilot = false; if (!touchMode) requestLock(); }
   void mg.sound?.unlock();
   cue("ambience");
 });
@@ -1519,6 +1584,7 @@ window.addEventListener("mousedown", (e) => {
   const target = e.target as HTMLElement | null;
   if (target && (target.closest(".aura3d-top-bar") || target.closest(".bz-overlay") || target.closest("#bz-menu") || target.closest("#bz-touch"))) return;
   if (pending?.kind === "retry" && pending.age > 0.6) { runPending(); return; }
+  if (pilotKeepsMouse()) return;
   // C26: the click that acquires pointer lock does not also fire (unless the browser cannot lock at all)
   if (!DEMO && !touchMode && !pointerLocked && !lockUnavailable) {
     if (lockRequestedAt > 0 && performance.now() - lockRequestedAt > 1500) lockUnavailable = true;
@@ -1531,6 +1597,7 @@ window.addEventListener("mousedown", (e) => {
 window.addEventListener("mouseup", (e) => { if (e.button === 0) pointerFireHeld = false; }, { capture: true });
 document.addEventListener("wheel", (e) => {
   if ((e.target as HTMLElement | null)?.closest?.(".bz-panel")) return;
+  if (pilotKeepsMouse()) return;
   if (!DEMO) autoPilot = false;
   pendingWheel += Math.sign(e.deltaY);
 });
@@ -1557,6 +1624,7 @@ const onKeyDown = (e: KeyboardEvent) => {
   // C11: Enter, Tab, Space and arrows act in game only; they never re-click a focused button or move browser focus
   if (boundCodes().has(e.code)) e.preventDefault();
   if (bindings.pause.includes(e.code)) { if (isPaused()) resume(); else setPaused("user", true); return; }
+  if (e.code === AUTOPLAY_TOGGLE_KEY && !DEMO && !boundCodes().has(e.code)) { autoPilot = !autoPilot; banner(autoPilot ? "AUTOPILOT ON" : "AUTOPILOT OFF", "O toggles the computer pilot"); return; }
   if (bindings.map.includes(e.code)) { toggleMap(); return; }
   if (!DEMO) autoPilot = false;
   if (!keysHeld.has(e.code)) keysPressed.add(e.code);
@@ -1701,6 +1769,8 @@ function syncScenePose(inp: SimInput) {
   if (p.alive) deadAt = -1; else if (deadAt < 0) deadAt = sim.state.time;
   const sinceDeath = deadAt < 0 ? 0 : sim.state.time - deadAt;
   app.camera?.setPose({
+    // +Y up every frame: setPose merges into the presented pose, so the overhead warm's up vector would otherwise persist
+    up: [0, 1, 0],
     position: [p.x + ox + impX, eyeY + p.pitch * 0.4 + impY, p.z + impZ],
     target: [p.x + ox + impX + fx, eyeY + Math.tan(p.pitch) + impY, p.z + impZ + fz],
     roll: deathRoll(sinceDeath, reducedMotion()) + impactFrame.shakeRoll * feelScale,
@@ -1790,10 +1860,15 @@ function syncScenePose(inp: SimInput) {
       vmHands.gloveL.setPosition(p.x + ox + fx * supFwd + rx * supSide, vmy - 0.042, p.z + fz * supFwd + rz * supSide);
       vmHands.gloveL.setRotation(glrx, glry, glrz);
       vmHands.gloveL.setVisible(true);
-      unparkViewmodel(vmHands.optic);
-      vmHands.optic.setPosition(vmx + fx * 0.03, vmy + 0.088, vmz + fz * 0.03);
-      vmHands.optic.setRotation(orx, ory, orz);
-      vmHands.optic.setVisible(true);
+      if (IDOL_VM_IN_USE[p.weapon]) {
+        // Idol wow pass: the Idol carbine and launcher model their own sights; the procedural reflex optic would float.
+        parkViewmodel(vmHands.optic);
+      } else {
+        unparkViewmodel(vmHands.optic);
+        vmHands.optic.setPosition(vmx + fx * 0.03, vmy + 0.088, vmz + fz * 0.03);
+        vmHands.optic.setRotation(orx, ory, orz);
+        vmHands.optic.setVisible(true);
+      }
     } else {
       parkViewmodel(vmHands.sleeveL);
       parkViewmodel(vmHands.gloveL);
@@ -1838,6 +1913,8 @@ function syncScenePose(inp: SimInput) {
 
   // ---- enemies (articulated hierarchical group pivots + deterministic ZYX joint poses); nodes that do not exist are skipped (C1)
   const slot = activeSlot();
+  // Idol moving parts: the patrol drone's four rotors (art/idolModels.ts); still on reduced motion.
+  if (!reducedMotion()) for (let i = 0; i < 4; i++) opt(idolDroneRotorId(slot, i))?.setRotation(0, idolDroneRotorYaw(sim.state.time, i), 0);
   let vulnerable: Enemy | null = null;
   let bossAlive = false;
   for (const e of sim.state.enemies) {
@@ -1860,7 +1937,7 @@ function syncScenePose(inp: SimInput) {
           painT: e.painT,
           deathT: e.deathT,
           phaseSeed
-        }));
+        }), e.kind, "dead", { stateT: e.stateT, deathT: e.deathT, phase: phaseSeed });
         setEnemyRigVisible(ids, true);
       } else {
         setEnemyRigVisible(ids, false);
@@ -1874,12 +1951,18 @@ function syncScenePose(inp: SimInput) {
     const yaw = nextEnemyYaw(enemyYaw.get(ids.body) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind)), e.kind, e.facing, poseDt, enemyForward(e.kind));
     enemyYaw.set(ids.body, yaw);
     node.setRotation(0, yaw, 0);
+    // run clip only while the body actually moves (drawnEnemyState): no running in place between bursts
+    const gait = enemyGait.get(ids.body);
+    const gaitDt = gait ? sim.state.time - gait.t : 0;
+    const groundSpeed = gait && gaitDt >= 0 && gaitDt < 0.5 ? nextGroundSpeed(gait.speed, Math.hypot(e.x - gait.x, e.z - gait.z), gaitDt) : 0;
+    if (!gait || gaitDt !== 0) enemyGait.set(ids.body, { x: e.x, z: e.z, t: sim.state.time, speed: groundSpeed });
+    const poseState = drawnEnemyState(e.state, e.kind, gait && gaitDt === 0 ? gait.speed : groundSpeed);
     const shoulderY = e.kind === "dog" ? 0.72 : e.kind === "boss" ? 2.22 : e.kind === "gunner" ? 1.5 : 1.48;
     const tracking = e.state === "alert" || e.state === "chase" || e.state === "attack";
     const aimPitch = tracking ? -Math.atan2(EYE - shoulderY, Math.max(1.2, Math.hypot(p.x - e.x, p.z - e.z))) : 0;
     applyEnemyRigPose(ids, computeEnemyRigPose({
       kind: e.kind,
-      state: e.state,
+      state: poseState,
       time: sim.state.time,
       stateT: e.stateT,
       painT: e.painT,
@@ -1887,7 +1970,7 @@ function syncScenePose(inp: SimInput) {
       vulnerableT: e.vulnerableT,
       phaseSeed,
       aimPitch
-    }));
+    }), e.kind, poseState, { stateT: e.state === "pain" ? Math.max(0, 0.32 - e.painT) : e.stateT, deathT: 0, phase: phaseSeed });
     setEnemyRigVisible(ids, true);
   }
   if (vulnerable) {
@@ -1969,20 +2052,31 @@ function syncScenePose(inp: SimInput) {
       const ry = r.y ?? 1.18;
       const projYaw = Math.atan2(r.vx, r.vz);
       const isRocket = r.kind === "rocket" || r.fromEnemy;
-      rocketNodes[i]!.setPosition(r.x + ox, ry, r.z);
-      rocketNodes[i]!.setRotation(0, projYaw, r.t * 16);
-      rocketNodes[i]!.setScale(isRocket ? 1 : 0.62);
-      rocketNodes[i]!.setVisible(true);
-      tracerNodes[i]!.setPosition(r.x + ox - r.dx * 0.16, ry, r.z - r.dz * 0.16);
-      tracerNodes[i]!.setRotation(0, projYaw, 0);
-      tracerNodes[i]!.setScale(isRocket ? [0.09, 0.09, 0.52] : [0.05, 0.05, 0.42]);
-      tracerNodes[i]!.setVisible(true);
+      // Real-GPU QA: a rocket-sized warhead stood upright beside the pistol, then flew off. setRotation is "ZYX"
+      // (Rz·Ry·Rx), so the old spin on z turned about the WORLD z axis after the yaw and stood any shot fired along x on
+      // end; and bullets borrowed the rocket warhead at 0.62 scale. Rockets now fly level along their heading, and bullets
+      // show only their tracer dart.
+      rocketNodes[i]!.setPosition(isRocket ? r.x + ox : 0, isRocket ? ry : -50, isRocket ? r.z : 0);
+      rocketNodes[i]!.setRotation(0, projYaw, 0);
+      rocketNodes[i]!.setScale(1);
+      rocketNodes[i]!.setVisible(isRocket);
+      if (tracerOwner[i] !== r) { tracerOwner[i] = r; tracerHeldSince[i] = sim.state.time; }
+      if (isRocket || bulletTracerVisible(sim.state.time - tracerHeldSince[i]!, r.t * r.speed)) {
+        tracerNodes[i]!.setPosition(r.x + ox - r.dx * 0.16, ry, r.z - r.dz * 0.16);
+        tracerNodes[i]!.setRotation(0, projYaw, 0);
+        tracerNodes[i]!.setScale(isRocket ? [0.09, 0.09, 0.52] : [0.05, 0.05, 0.42]);
+        tracerNodes[i]!.setVisible(true);
+      } else {
+        // held still and hidden where it is, so its trail's parked points expire before the dart jumps to the bullet
+        tracerNodes[i]!.setVisible(false);
+      }
       rocketShown[i] = true;
     } else if (rocketShown[i]) {
       rocketNodes[i]!.setVisible(false);
       rocketNodes[i]!.setPosition(0, -50, 0);
+      // the tracer stays where its bullet ended (hidden): parking it under the floor drew a trail streak up to the next muzzle
       tracerNodes[i]!.setVisible(false);
-      tracerNodes[i]!.setPosition(0, -50, 0);
+      tracerOwner[i] = null;
       rocketShown[i] = false;
     }
   }
@@ -1990,15 +2084,16 @@ function syncScenePose(inp: SimInput) {
   const eshots = sim.state.enemyShots;
   for (let i = 0; i < ENEMY_TRACERS; i++) {
     const s = eshots[i];
-    if (s && s.t < 0.12) {
+    const span = s && s.t < 0.12 ? enemyTracerSpan(Math.hypot(s.x1 - s.x0, s.z1 - s.z0), s.t / 0.12) : null;
+    if (s && s.t < 0.12 && firstSight(s)) fireVfx("enemy-fire", [s.x0 + ox, s.y0, s.z0]);
+    if (s && span) {
       const dx = s.x1 - s.x0, dz = s.z1 - s.z0, len = Math.hypot(dx, dz);
-      const k = Math.min(1, s.t / 0.12);
-      enemyTracerNodes[i]!.setPosition(s.x0 + dx * (0.5 + k * 0.2) + ox, s.y0 - 0.1 * k, s.z0 + dz * (0.5 + k * 0.2));
+      const k = Math.min(1, s.t / 0.12), f = span.along / len;
+      enemyTracerNodes[i]!.setPosition(s.x0 + dx * f + ox, s.y0 - 0.1 * k, s.z0 + dz * f);
       enemyTracerNodes[i]!.setRotation(0, Math.atan2(dx, dz), 0);
-      enemyTracerNodes[i]!.setScale([0.045, 0.045, Math.max(0.2, len * 0.6)]);
+      enemyTracerNodes[i]!.setScale([0.045, 0.045, span.length]);
       enemyTracerNodes[i]!.setVisible(true);
       enemyTracerShown[i] = true;
-      if (firstSight(s)) fireVfx("enemy-fire", [s.x0 + ox, s.y0, s.z0]);
     } else if (enemyTracerShown[i]) {
       enemyTracerNodes[i]!.setVisible(false);
       enemyTracerNodes[i]!.setPosition(0, -50, 0);
@@ -2115,10 +2210,7 @@ function checkOutcome() {
       runResults.push(floorResult(sim, floorIdx));
       recordMedal(floorIdx, sim.state.medal);
     }
-    pending = {
-      kind: outcome === "killhouse-timeup" ? "killhouse-retry" : outcome === "killhouse-clear" ? "to-descent" : outcome === "campaign-complete" ? "results" : "next",
-      t: outcome === "campaign-complete" ? 2.2 : 2.6, age: 0
-    };
+    pending = { ...pendingAfter(outcome), age: 0 };
     // GU47 g11 phase 10: the next floor's surface maps load behind the outcome banner and the descent
     const nextSlot = nextSlotOf(pending.kind, floorIdx, activeSlot(), FLOORS.length);
     if (nextSlot !== null) SURFACES.prepare(nextSlot);
@@ -2127,7 +2219,7 @@ function checkOutcome() {
   if (!p.alive && !sim.state.finished && !pending) {
     cue("lose");
     banner("YOU DIED", "press any key to retry the floor");
-    pending = { kind: "retry", t: 2.2, age: 0 };
+    pending = { ...PENDING_DEATH, age: 0 };
   }
 }
 function tickPending(dt: number) {
@@ -2144,14 +2236,14 @@ function runPending() {
     case "retry": startFloor(floorIdx, mode, { loadout: entryLoadout }); break;
     case "killhouse-retry": startFloor(0, "killhouse"); break;
     case "to-descent": startFloor(0, "descent", { newRun: true }); break;
-    case "next": playDescent(); startFloor(floorIdx + 1, "descent", { loadout: captureLoadout(sim) }); break;
+    case "next": playDescent(); startFloor(floorIdx + 1, "descent", { loadout: captureLoadout(sim) }); void prewarmActiveFloor(); break;
     case "results": showResults(); break;
   }
 }
 
 app.onFrame(({ dt }) => {
   if (isDocumentHidden()) return;
-  if (!appReady || !sim) return;
+  if (!appReady || !sim || bootWarming || floorWarming) return;
   const now = performance.now();
   const wallDt = Math.min(1, Math.max(0, (now - lastWall) / 1000));
   lastWall = now;
@@ -2355,6 +2447,8 @@ function showResults() {
     : bestNow ? `${isBest ? "NEW BEST RUN" : "best run"}: ${bestNow.score} in ${fmtTime(bestNow.time)}` : "";
   setResultsVisible(true);
   publishEvidence(true);
+  // autoplay: hold the results, then a fresh run from floor 1 (tickPending keeps running while campaignDone)
+  if (autoPilot || DEMO) pending = { kind: "to-descent", t: AUTOPLAY_RESULTS_HOLD, age: 0 };
 }
 
 // ---------------------------------------------------------------------------
@@ -2574,14 +2668,21 @@ function publishQaCrops() {
 // ---------------------------------------------------------------------------
 // evidence at 4 Hz (C25), with draw calls per floor (C18)
 let lastEvidenceAt = -1;
+let lastDrawCallsAt = -1e9;
+let lastDrawCalls: number | null = null;
 const drawCallsByFloor: Record<string, number> = {};
 function publishEvidence(force = false) {
   const now = performance.now();
   if (!force && lastEvidenceAt >= 0 && now - lastEvidenceAt < 250) return;
   lastEvidenceAt = now;
   const p = sim.state.player;
-  let drawCalls: number | null = null;
-  try { drawCalls = (app.diagnostics?.() as { drawCalls?: number } | undefined)?.drawCalls ?? null; } catch { drawCalls = null; }
+  // F6 perf pass: a full app.diagnostics() costs ~19 ms on the real GPU (profiled); at 4 Hz that was a hitch every 250 ms
+  // and ~8% of the frame budget, so the draw-call count is sampled every 2 s (or on a forced publish).
+  if (force || now - lastDrawCallsAt >= 2000) {
+    lastDrawCallsAt = now;
+    try { lastDrawCalls = (app.diagnostics?.() as { drawCalls?: number } | undefined)?.drawCalls ?? null; } catch { lastDrawCalls = null; }
+  }
+  const drawCalls = lastDrawCalls;
   const floorKey = mode === "killhouse" ? "killhouse" : `f${floorIdx + 1}`;
   if (drawCalls) drawCallsByFloor[floorKey] = drawCalls;
   const payload = {
@@ -2676,7 +2777,7 @@ function renderRemap() {
 $("bz-remap-reset").addEventListener("click", () => { bindings = parseBindings(null); store.set("bz-bindings", JSON.stringify(bindings)); renderRemap(); });
 function updateHint() {
   const k = (a: BindAction) => keyLabel(bindings[a][0]);
-  $("bz-controls-hint").textContent = `${k("forward")}${k("strafeLeft")}${k("back")}${k("strafeRight")} MOVE · MOUSE AIM · CLICK/${k("fire")} FIRE · ${k("reload")} RELOAD · ${k("use")} USE · 1–4/WHEEL WEAPONS · ${k("map")} MAP · P PAUSE`;
+  $("bz-controls-hint").textContent = `${k("forward")}${k("strafeLeft")}${k("back")}${k("strafeRight")} MOVE · MOUSE AIM · CLICK/${k("fire")} FIRE · ${k("reload")} RELOAD · ${k("use")} USE · 1–4/WHEEL WEAPONS · ${k("map")} MAP · P PAUSE · O AUTOPILOT`;
 }
 
 // floor select cards (C22: the medal mark shows the best medal earned on each floor)
@@ -2730,10 +2831,32 @@ placeAtReference();
 updateHint();
 elHud.classList.remove("hidden");
 void loading.track(mg.ready(), 1, "Starting renderer");
-void mg.ready().then(() => {
+void mg.ready().then(async () => {
+  // Idol wow pass (artifacts/idol/FIRST-SECONDS.md, lessons R2): every floor's Idol weapons, enemies, doors and pickups
+  // are mounted with the scene (all floors still visible here, before hideAllRuntime). Settle their programs, the HDRI
+  // and every texture upgrade before the sim starts (appReady) and the loading screen hides, so no program compiles in
+  // the first seconds of play and no draw is skipped. `?warm=0` skips it.
+  const WARM = bootParams.get("warm") !== "0";
+  if (WARM) {
+    // F6 perf pass: warm with the boot floor's light set (every rig light was still on here, so the warm compiled
+    // programs for a light set the game never draws and ~80 compiled again after the loading screen hid).
+    lightRig.applyFloor(activeSlot());
+    loading.set(0.97, "Warming shaders");
+    await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+    // F6 perf pass: a wet floor (F2 cellars, F6 hatch rain) switches every material to its wet program variant, which
+    // compiled 122 programs at the 5 -> 6 elevator (a 2.5 s frame, then a 5 s one, measured on the real GPU). Warm the
+    // wet variants here too; the dry ones stay cached, so later floor changes compile nothing.
+    const wet = Math.max(...BZ_WETNESS);
+    if (wet > 0 && app.atmosphere?.setWetness) {
+      try {
+        app.atmosphere.setWetness(wet);
+        await warmPrograms(app, { waitForEnvironment: false, waitForTextures: false, maxFrames: 12 });
+      } finally { app.atmosphere.setWetness(BZ_WETNESS[activeSlot()] ?? 0); }
+    }
+  }
   appReady = true;
+  bootWarming = WARM;
   nodeCache.clear();
-  loading.done();
   lastWall = performance.now();
   SURFACES.prepare(activeSlot());
   // C18: visibility set before the renderer mounted does not stick, so hide the inactive floors again once it is up
@@ -2743,6 +2866,15 @@ void mg.ready().then(() => {
   ensureVfx();
   syncScenePose(NO_INPUT);
   placeAtReference();
+  if (WARM) {
+    // the gameplay state (inactive floors hidden, decals, VFX, the floor's light pool) once more, still behind the loading screen
+    // the boot floor from overhead too, so its enemies' and props' textures exist before the first frame (prewarmActiveFloor)
+    try { await warmFloorFromAbove(activeSlot()); } catch { /* best effort */ } finally { bootWarming = false; }
+    syncScenePose(NO_INPUT);
+    placeAtReference();
+  }
+  loading.done();
+  lastWall = performance.now();
   publishQaCrops();
   document.body.dataset.aura3dReady = "true";
   installQa();

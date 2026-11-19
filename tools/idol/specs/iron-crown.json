@@ -1,0 +1,529 @@
+{
+  "game": "iron-crown",
+  "outDir": "apps/showcase-iron-crown/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "icKenjiP1",
+      "subject": "Original adult male martial-arts fighter, lean athletic muscular build, short swept-back black hair under a frayed charcoal cloth headband with a small antique gold pin, determined face, sleeveless heavy cotton karate jacket in near-black charcoal with worn frayed edges and teal stitching, dark knotted belt at the waist, loose near-black charcoal training trousers gathered at the ankles, off-white cotton hand wraps on both fists and forearms, bare feet with cloth ankle wraps",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.78
+      },
+      "tex": 2048,
+      "seed": 11
+    },
+    {
+      "key": "icKenjiP2",
+      "subject": "Original adult male martial-arts fighter, lean athletic muscular build, short swept-back black hair under a frayed charcoal cloth headband with a small antique gold pin, determined face, sleeveless heavy cotton karate jacket in deep crimson red with worn frayed edges and gold stitching, dark knotted belt at the waist, loose deep crimson red training trousers gathered at the ankles, off-white cotton hand wraps on both fists and forearms, bare feet with cloth ankle wraps",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.78
+      },
+      "tex": 2048,
+      "seed": 12
+    },
+    {
+      "key": "icVoltP1",
+      "subject": "Original adult female boxer, toned athletic muscular build, dark brown hair in a tight high braid, focused face, navy blue sleeveless sports tank top with thin electric-cyan piping, navy blue satin boxing trunks with a pale steel-blue waistband, padded navy blue leather boxing gloves on both hands, light blue ankle wraps over navy blue high-top boxing shoes",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.74
+      },
+      "tex": 2048,
+      "seed": 41
+    },
+    {
+      "key": "icVoltP2",
+      "subject": "Original adult female boxer, toned athletic muscular build, dark brown hair in a tight high braid, focused face, deep wine red sleeveless sports tank top with thin electric-cyan piping, deep wine red satin boxing trunks with a pale steel-blue waistband, padded deep wine red leather boxing gloves on both hands, light blue ankle wraps over deep wine red high-top boxing shoes",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.74
+      },
+      "tex": 2048,
+      "seed": 14
+    },
+    {
+      "key": "icBoulderP1",
+      "subject": "Original huge heavyweight gladiator wrestler, very broad shoulders, massive arms and barrel chest, shaved head, thick braided dark brown beard, tanned skin with old scars, one heavy riveted bronze pauldron on the left shoulder, dark oiled leather chest harness straps, wide studded leather belt, crimson red cloth loincloth over dark leather trunks, heavy bronze knuckle gauntlets with short blunt studs on both fists, leather-wrapped shins and sandal boots",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.84
+      },
+      "tex": 2048,
+      "seed": 15
+    },
+    {
+      "key": "icBoulderP2",
+      "subject": "Original huge heavyweight gladiator wrestler, very broad shoulders, massive arms and barrel chest, shaved head, thick braided dark brown beard, tanned skin with old scars, one heavy riveted bronze pauldron on the left shoulder, dark oiled leather chest harness straps, wide studded leather belt, navy blue cloth loincloth over dark leather trunks, heavy bronze knuckle gauntlets with short blunt studs on both fists, leather-wrapped shins and sandal boots",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.84
+      },
+      "tex": 2048,
+      "seed": 42
+    },
+    {
+      "key": "icSeraphP1",
+      "subject": "Original graceful adult female warrior monk, slim athletic build, black hair tied in a high bun with a gold hairpin, calm face, fitted deep teal high-collared martial tunic with gold embroidered trim, cream silk sash belt with hanging ends, slim dark trousers, brown leather forearm bracers, a string of wooden prayer beads around the left wrist, soft dark leather boots, empty hands",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.76
+      },
+      "tex": 2048,
+      "seed": 17
+    },
+    {
+      "key": "icSeraphP2",
+      "subject": "Original graceful adult female warrior monk, slim athletic build, black hair tied in a high bun with a gold hairpin, calm face, fitted deep crimson high-collared martial tunic with gold embroidered trim, cream silk sash belt with hanging ends, slim dark trousers, brown leather forearm bracers, a string of wooden prayer beads around the left wrist, soft dark leather boots, empty hands",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.76
+      },
+      "tex": 2048,
+      "seed": 18
+    },
+    {
+      "key": "icJinxP1",
+      "subject": "Original slim agile adult male trickster fighter, messy silver-white hair, sly grin, fitted deep violet purple wrap jacket with an asymmetric layered sash and short scarf tails at the neck, dark leather vest straps, close-fitting dark trousers wrapped at the shins, split-toe dark ninja boots, pale silver metal arm guards, empty hands",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.74
+      },
+      "tex": 2048,
+      "seed": 19
+    },
+    {
+      "key": "icJinxP2",
+      "subject": "Original slim agile adult male trickster fighter, messy silver-white hair, sly grin, fitted dark magenta red wrap jacket with an asymmetric layered sash and short scarf tails at the neck, dark leather vest straps, close-fitting dark trousers wrapped at the shins, split-toe dark ninja boots, pale silver metal arm guards, empty hands",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.74
+      },
+      "tex": 2048,
+      "seed": 20
+    },
+    {
+      "key": "icSovereignP1",
+      "subject": "Original imposing armored warlord king, tall and broad, ornate blackened steel full plate armor with gold filigree trim, rounded gold-edged pauldrons, articulated gauntlets and sabatons, a short deep crimson velvet tabard over the armor reaching mid-thigh, closed dark steel helmet with a narrow glowing amber visor slit, a jagged dark iron crown with gold inlay fixed on the helmet, empty hands, no cape",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.9
+      },
+      "tex": 2048,
+      "seed": 21
+    },
+    {
+      "key": "icSovereignP2",
+      "subject": "Original imposing armored warlord king, tall and broad, ornate blackened steel full plate armor with gold filigree trim, rounded gold-edged pauldrons, articulated gauntlets and sabatons, a short royal purple velvet tabard over the armor reaching mid-thigh, closed dark steel helmet with a narrow glowing amber visor slit, a jagged dark iron crown with gold inlay fixed on the helmet, empty hands, no cape",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.9
+      },
+      "tex": 2048,
+      "seed": 22
+    },
+    {
+      "key": "icSeraphSpear",
+      "subject": "Ornate monastery war spear: long polished dark hardwood shaft with brass bands, a leaf-shaped steel spearhead with a gold lotus-petal collar, two small bronze rings hanging from the collar and a short teal silk tassel, steel butt cap",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 1.98
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icJinxKunai",
+      "subject": "Large curved throwing dagger: dark blued steel blade with a polished edge, black cord-wrapped grip and a round steel pommel ring",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 0.62
+      },
+      "tex": 1024,
+      "seed": 7,
+      "image": "artifacts/idol/iron-crown/_refs/icJinxKunai.png"
+    },
+    {
+      "key": "icSovereignSword",
+      "subject": "Ornate royal longsword: long blackened steel blade with a glowing molten-orange central fuller line, swept gold winged crossguard, dark leather-wrapped grip, heavy gold pommel with an amber gem",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 1.5
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icSovereignShield",
+      "subject": "Heater-shaped knight shield of blackened steel with a raised gold crown-shaped boss in the centre, gold riveted rim, battle scratches, seen from the front",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 0.62
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icNtPagoda",
+      "subject": "Two-tier rooftop pagoda shrine tower: dark charcoal steel-clad lower block with vermilion lacquered beams, two curved dark grey ceramic tile roofs with upturned eaves, a slim gold finial spire, a thin horizontal pink neon tube bar under each eave",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 5.8
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icNtVending",
+      "subject": "Pair of tall city street vending machines side by side, glossy white and red enclosures, lit display windows with rows of colourful plain cans and bottles, coin and button panels, scuffed urban wear",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.92
+      },
+      "tex": 1024,
+      "seed": 31
+    },
+    {
+      "key": "icNtArcade",
+      "subject": "Upright retro arcade cabinet, complete clean flat top, black side panels with thin cyan edge trim, glowing screen with abstract colours, control panel with a joystick and round buttons, coin door, nothing else around it",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.78
+      },
+      "tex": 1024,
+      "seed": 23
+    },
+    {
+      "key": "icNtHvac",
+      "subject": "Rooftop industrial air-handling unit: weathered galvanized steel box with a large round fan grille on top, louvered side vents, pipes and electrical conduit",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.34
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icDkCrane",
+      "subject": "Harbour dockside gantry crane section: rusted orange-painted steel lattice tower with a horizontal boom arm reaching to one side, a hanging hook block on steel cables, riveted plates, weathered paint",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 4.6
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icDkPavilion",
+      "subject": "Open-sided Southeast Asian riverside pavilion: four carved teak wooden pillars on a raised stone platform, steep layered red and gold tiled roof with upswept gable finials, small brass bell lanterns hanging from the eaves, inside only a low wooden table with a large brass bowl and candles, no statues, no figures",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 4.3
+      },
+      "tex": 1024,
+      "seed": 29
+    },
+    {
+      "key": "icDkCart",
+      "subject": "Asian street food vendor cart: weathered wooden cart on two spoked wheels with a striped red and cream canvas awning, stacked steel pots, woven baskets, hanging paper lanterns",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 2.38
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icDkGirders",
+      "subject": "Stack of rusty steel I-beam girders resting on wooden blocks, chained together, harbour yard",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 2.57
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icDkCargo",
+      "subject": "Dockside cargo cluster: two stacked weathered wooden shipping crates beside three dented steel oil drums in faded blue and rust red, a coil of heavy rope",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.77
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icCoArch",
+      "subject": "Ancient stone triumphal archway of weathered travertine blocks with a keystone and carved pilasters, chipped edges",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 3.64
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icCoColumn",
+      "subject": "Tall fluted Corinthian marble column with an ornate acanthus leaf capital on a square plinth base, weathered and chipped, ancient",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 4.62
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icCoBust",
+      "subject": "Bronze bust of a helmeted ancient gladiator warrior on a tall square marble pedestal, green patina on the bronze",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.78
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icCoStandard",
+      "subject": "Ancient legion battle standard: tall bronze pole topped with a laurel wreath and a crossbar holding a hanging crimson banner with gold fringe, square stone base",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 3.68
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icAbJet",
+      "subject": "Modern single-seat fighter jet parked on the ground with landing gear down, matte desert-grey camouflage paint, closed tinted canopy, twin vertical tails, plain unmarked panels",
+      "kind": "object",
+      "role": "vehicle",
+      "size": {
+        "length": 4.77
+      },
+      "tex": 2048,
+      "seed": 7
+    },
+    {
+      "key": "icAbRadar",
+      "subject": "Military airfield radar tower: steel lattice tower with a flat rectangular radar antenna on top, side ladder, desert dust",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 4.19
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icAbFuel",
+      "subject": "Military fuel depot: two horizontal olive drab cylindrical fuel tanks lying side by side on steel cradles, long sides facing the viewer, pipes, valves and a hand pump, plain unmarked paint",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 2.3
+      },
+      "tex": 1024,
+      "seed": 19
+    },
+    {
+      "key": "icAbSpire",
+      "subject": "Tall jagged black obsidian monolith spire with carved geometric grooves glowing faint amber, rough volcanic base",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 3.7
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icMoTemple",
+      "subject": "Mountain temple hall: dark timber frame and white plaster walls, sweeping dark grey tiled hip-and-gable roof with gold ridge ornaments, wide wooden front steps, light snow on the roof",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 5.55
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icMoTorii",
+      "subject": "Traditional vermilion lacquered wooden shrine gate with a black curved top lintel and stone footings, light snow on top",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 3.56
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icMoBell",
+      "subject": "Temple bell pavilion: four dark timber posts under a curved tiled roof, a large bronze temple bell hanging inside, a wooden striker log on ropes, stone base",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 4.26
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icMoLantern",
+      "subject": "Tall traditional granite stone lantern with a pagoda-style cap, moss and a dusting of snow",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.81
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icMoPine",
+      "subject": "Ancient windswept pine tree in bonsai style: gnarled twisted trunk, layered flat cloud-like pads of dark green needles, standing on a rocky mound",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 2.88
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icMoDragonColumn",
+      "subject": "Carved weathered grey granite column wrapped by a coiling dragon relief, on a square stone plinth",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 3.58
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icCrThrone",
+      "subject": "Imposing dark iron and gold royal throne with a tall pointed spiked back, crimson velvet seat and back cushion, clawed feet",
+      "kind": "object",
+      "role": "hero",
+      "size": {
+        "height": 3.08
+      },
+      "tex": 2048,
+      "seed": 7
+    },
+    {
+      "key": "icCrRelic",
+      "subject": "Jagged dark iron crown with gold inlay and amber gemstones, ornate, resting upright",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.47
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icCrColonnade",
+      "subject": "Section of a white marble colonnade: three fluted columns supporting a carved entablature, gold leaf accents, polished stone",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 4.24
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "icAbRadarBase",
+      "subject": "Military airfield radar tower without any antenna: steel lattice tower with a small railed platform and a round turntable mount on top, side ladder, desert dust",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 3.5
+      },
+      "tex": 1024,
+      "seed": 7
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bellkeepers-walk",
+  "key": "bkBelfry",
+  "generatedAt": "2026-11-18T22:23:58.972Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/bellkeepers-walk/bkBelfry/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 35,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 929514,
+        "num_faces": 1859060,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "An empty open timber bell frame shrine with no bell hanging in it: two sturdy carved oak posts on a mossy fieldstone plinth with two stone steps, a heavy oak crossbeam between the posts, a small pitched roof of grey slate shingles on top, carved wooden brackets, an empty open space under the crossbeam. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 5.123,
+    "size": [
+      4.74,
+      5.13,
+      5.081
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/where-the-wind-wanders-port/assets/idol/bkBelfry.glb",
+  "sizeBytes": 5502228,
+  "preview": "artifacts/idol/bellkeepers-walk/bkBelfry/views.png",
+  "usd": 0.2
+}

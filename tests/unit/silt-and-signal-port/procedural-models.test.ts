@@ -16,17 +16,28 @@ const chapterNodes = (chapter: number, look: "inked" | "original" = "inked"): Js
   (buildWorld(chapter, { look }).scene as unknown as { toJSON(): { nodes: JsonNode[] } }).toJSON().nodes;
 
 describe("WP-28 Duneglide multi-material procedural art overhaul", () => {
-  it("mounts ZERO external GLB model or instances.model nodes across all 7 chapters and uses procedural articulated surfer rig", { timeout: 60_000 }, () => {
+  it("mounts the Idol skiff, rider and landmark GLBs (Idol wow pass) and keeps the rider's bindable articulation ids", { timeout: 60_000 }, () => {
+    const flat = (nodes: readonly JsonNode[]): JsonNode[] => nodes.flatMap((n) => [n, ...flat((n.children ?? []) as JsonNode[])]);
     for (let chapter = 0; chapter <= 6; chapter++) {
       for (const look of ["inked", "original"] as const) {
-        const list = chapterNodes(chapter, look);
-        const modelNodes = list.filter((n) => n.kind === "model");
-        expect(modelNodes, `ch${chapter} ${look} model nodes`).toEqual([]);
-        const instancedModels = list.filter((n) => n.kind === "instances" && n.instanceSource === "model");
-        expect(instancedModels, `ch${chapter} ${look} instanced models`).toEqual([]);
+        const list = flat(chapterNodes(chapter, look));
+        const json = JSON.stringify(list.filter((n) => n.kind === "model" || (n.kind === "instances" && n.instanceSource === "model")));
+        for (const key of ["duneSkiffAlt", "duneRiderRig", "duneTowShell", "duneBuggy"]) expect(json, `ch${chapter} ${look} ${key}`).toContain(key);
+        for (const n of list.filter((m) => m.kind === "model")) expect(n.scaleMode, `ch${chapter} ${look} ${n.name}`).toBe("world");
         const rider = list.find((n) => n.name === "rider");
         expect(rider?.runtime?.id, `ch${chapter} ${look} rider runtime id`).toBe("rider");
+        for (const partId of ["rider-pelvis", "rider-torso", "rider-head", "rider-arm-lead", "rider-arm-trail", "rider-scarf", "rider-scarf-tip"]) {
+          expect(list.some((n) => n.runtime?.id === partId), `ch${chapter} ${look} ${partId}`).toBe(true);
+        }
+        const board = list.find((n) => n.name === "board");
+        expect(board?.runtime?.id, `ch${chapter} ${look} board`).toBe("board");
+        // the courier rides inside the board node, so it banks about the deck instead of swinging off it
+        expect(flat((board?.children ?? []) as JsonNode[]).some((c: JsonNode) => c.name === "rider-idol" && c.kind === "model"), `ch${chapter} ${look} rider on board`).toBe(true);
       }
+    }
+    const chapter0 = JSON.stringify(flat(chapterNodes(0, "inked")));
+    for (const key of ["duneViaduct", "duneGatehouse", "duneCanyonGate", "duneRelayTower", "duneObelisk", "duneMesa", "duneStall", "duneSignalPylon", "duneBannerMast"]) {
+      expect(chapter0, key).toContain(key);
     }
     const surferJson = JSON.stringify(createDesertSurferRigNode({ inked: true }).toJSON());
     for (const partId of [
@@ -93,7 +104,7 @@ describe("WP-28 Duneglide multi-material procedural art overhaul", () => {
     expect(ring.indices?.length ?? 0).toBeGreaterThan(300);
   });
 
-  it("mounts sculpted multi-material Chapter-0 landmarks and stratified red-rock mesas", () => {
+  it("mounts the Chapter-0 landmarks (Idol GLBs, unshadowed, at the procedural names) and the mesa spire", () => {
     const ch0 = chapterNodes(0, "inked");
     for (const landmark of [
       "gatehouse-neri",
@@ -109,7 +120,9 @@ describe("WP-28 Duneglide multi-material procedural art overhaul", () => {
       const found = ch0.find((n) => n.name === landmark);
       expect(found, `missing ${landmark}`).toBeDefined();
       if (Array.isArray(found?.children)) {
-        expect(found.children.length, `${landmark} material children`).toBeGreaterThanOrEqual(3);
+        // Idol wow pass: each landmark is one Idol model child (the procedural builders had >= 3 material slots)
+        const idol = found.children.length === 1 && found.children[0].kind === "model";
+        if (!idol) expect(found.children.length, `${landmark} material children`).toBeGreaterThanOrEqual(3);
         for (const child of found.children) {
           expect(child.castShadow, `${landmark} child castShadow`).toBe(false);
         }

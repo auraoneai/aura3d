@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrHouseB",
+  "generatedAt": "2026-11-18T22:37:29.036Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/nrHouseB/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 32,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2603692,
+        "num_faces": 5210176,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A narrow tall three-storey feudal-era town house with a deep plan, dark timber frame, cream plaster walls, wooden lattice windows, a small wooden balcony on the second floor, stacked curved grey clay tiled eaves on each floor and a steep gabled tiled roof. Photograph of a real, hand-built painted wood and clay architectural miniature in Japanese woodblock-print colours: weathered dark cedar timber, real fired grey clay roof tiles, cream lime plaster, persimmon-vermilion painted trim, fine ink-line edging, soft warm golden-hour light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.786,
+    "size": [
+      1.093,
+      1.9,
+      1.908
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrHouseB.glb",
+  "sizeBytes": 4205160,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrHouseB/views.png",
+  "usd": 0.2
+}

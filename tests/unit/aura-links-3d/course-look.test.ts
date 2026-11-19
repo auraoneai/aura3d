@@ -42,7 +42,7 @@ describe("Aura Links GU47 course looks (WP-20)", () => {
     expect(COURSE_LOOKS.mapleHollow.sun).toEqual({ azimuthDeg: 235, elevationDeg: 30 });
     expect(COURSE_LOOKS.cinderRim.sun).toEqual({ azimuthDeg: 265, elevationDeg: 7 });
     expect(COURSE_LOOKS.cloudTerrace.sun).toEqual({ azimuthDeg: 160, elevationDeg: 62 });
-    expect(COURSE_LOOKS.mareCourse.sun).toEqual({ azimuthDeg: 40, elevationDeg: 25 });
+    expect(COURSE_LOOKS.mareCourse.sun).toEqual({ azimuthDeg: 195, elevationDeg: 25 });
     for (let i = 0; i < IDS.length; i++) {
       for (let j = i + 1; j < IDS.length; j++) {
         const a = keyDirection(COURSE_LOOKS[IDS[i]!]);

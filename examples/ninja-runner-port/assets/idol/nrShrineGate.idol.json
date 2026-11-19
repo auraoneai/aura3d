@@ -1,0 +1,52 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrShrineGate",
+  "generatedAt": "2026-11-19T01:55:42.346Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/_refs/nrShrineGate.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f125-b414-7c93-bed4-8e640aa59355",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 57,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1059168,
+        "num_faces": 2118504,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A grand shrine gate seen straight from the front: two thick round vermilion pillars on stone plinths, a single thick solid vermilion top lintel beam that is chunky and blocky with gently upswept ends (no black cap, no thin edges), a second straight vermilion tie beam below it, a small blank central strut between the beams, symmetrical, every part thick and solid. Photograph of a real, hand-built painted wood and stone architectural miniature in Japanese woodblock-print colours: thick solid timber lacquered all over in persimmon vermilion, weathered granite plinths, fine ink-line edging, soft warm golden-hour light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "admitRole": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 9.833,
+    "size": [
+      11.4,
+      11.266,
+      2.397
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrShrineGate.glb",
+  "sizeBytes": 3779212,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrShrineGate/views.png",
+  "usd": 0.2
+}

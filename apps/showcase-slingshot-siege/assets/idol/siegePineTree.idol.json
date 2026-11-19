@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegePineTree",
+  "generatedAt": "2026-11-18T23:36:00.862Z",
+  "generator": "tools/idol/generate.mjs (post steps finished locally from the downloaded Idol result)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0bc-570d-7763-b368-3534453a8db7",
+      "prompt": "A windswept coastal pine tree: a slightly leaning brown trunk with two side branches, layered tiers of dark green pine boughs forming an irregular cone crown, two smaller bough clusters on the side branches. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0bf-89b6-7a31-abbe-98a1cabc1ac9",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 876092,
+        "num_faces": 1752188,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A windswept coastal pine tree: a slightly leaning brown trunk with two side branches, layered tiers of dark green pine boughs forming an irregular cone crown, two smaller bough clusters on the side branches. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 9.509,
+    "size": [
+      6.801,
+      9.5,
+      5.751
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegePineTree.glb",
+  "sizeBytes": 1129192,
+  "preview": "artifacts/idol/slingshot-siege/siegePineTree/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90, textures capped at 512px",
+    "bytesBefore": 3020820,
+    "bytesAfter": 1129192
+  }
+}

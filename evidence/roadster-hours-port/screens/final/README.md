@@ -1,36 +1,26 @@
-# Saltwind Highway: final screenshots
+# Saltwind Highway: final screenshots (2026-11-19)
 
-## 4.7.1 retake (GU47 phase 3, 2026-10-31)
+Route: `/apps/saltwind-highway/` (app `apps/showcase-roadster-hours-port`, source `examples/roadster-hours-port`).
 
-- **Build:** `gu47/g22` phase-3 commit 9a5c7ac5f (Aura3D 4.7.0 engine, GU47 default look), runs `g22p3-r2-1` (`screens`) and `g22p3-r2-5` (`card`), same spec and decoder as below. **Software WebGL2 (SwiftShader) on the remote ACR runner, not a GPU.**
-- **Retaken:** `title.*`, `gameplay-early.*`, `key-drive.*`, `card.2x.1440x900` (+ `card.1x` downscale and the index posters), `mid-drive.1280x720` (the second of the three steady-state shots, 20 s after the first: the screens run hit its time limit before the third shot and `results`).
-- **Not retaken:** `results.1280x720` stays the 4.5.0 frame (open for 4.7.2). Raw frames and `meta.jsonl`: `evidence/game-upgrades-47/roadster-hours-port/p3-r2/screens/`.
+**Runner:** headed Chrome on a real GPU (Apple Metal) via REA, production build from the QA snapshot. Title from the plain URL; play from `?autoplay=1` (autostart + autopilot + results-to-next-route loop; I toggles autopilot), Halo via `&level=2`. The 390 frames were retaken on 2026-11-19 in the same headed Chrome on the real GPU over CDP (`Page.captureScreenshot`, 390x844, dpr 1) after the portrait HUD fix.
 
-## 4.5.0 set (audit fix 2026-10-29)
+| Viewport | State | Meaning |
+|---|---|---|
+| 1280 | 01-title | Sunbreak Coast route card with the controls list |
+| 1280 | 02-early | coastal highway after the first lineup |
+| 1280 | 03-close-pass | threading past a semi in the city act |
+| 1280 | 04-relay | Terrace approach, relay 4 of 5 |
+| 1280 | 05-redline | Redline Canyon, lineup cleared under the car |
+| 1280 | 06-halo | Halo Skyway maglev-tube rings |
+| 390 | 01-title .. 05-halo | the same route on a phone viewport |
+| 1440 | card | close pass in the city act |
 
-- **Build:** `audit-fix/g22` (Aura3D 4.5.0 engine from the workspace, examples dev server, QA hooks). Capture: `tests/browser/audit-fix/roadster-hours-port.spec.ts` (`screens` and `card` tests), decoder `evidence/roadster-hours-port/audit-fix/decode.mjs`; numbers in `metrics.jsonl` (one JSON object per frame: sim state, draw calls, render path, canvas luma from the game's `stats()` read-back).
-- **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. Runs `g22-after-screens3` and `g22-after-card`. These frames are not real-GPU evidence.
-- **Method:** `?manual=1&level=0`, so the sim only advances through `stepSteps` and every state is reproducible. Each page waited until `textures()` reported 0 pending (about 9.5 minutes on this runner) before the first frame. Phone frames come from the same page resized to 390x844 with the touch class the page sets on a coarse pointer. The card frame loads at 1440x900 from the start (resizing a page larger after load leaves the old backing size on screen; handed off to E1).
-- **Before/after:** the same states on the base build are in `evidence/roadster-hours-port/audit-fix/before-screens/`.
+## Checked in the frames
 
-## States
+- Full autoplay run of all three routes (frame every ~3 s, every frame read) plus 50 ms screencast bursts on the Sunbreak ramp lip, the Redline inversion and both vents.
+- Chase camera: no dip over the Sunbreak ramp lip (~19 s), never inside the Redline canyon wall on the inversion, clear of relay bars, Halo rings, lineups, traffic and vents (unit-tested along every route's autopilot run).
+- Driver seated with legs inside the cockpit (no feet under the car on jumps); treaded tyres visible and rolling; vent columns only drawn while they blow.
 
-| File | State |
-|---|---|
-| `title.1280x720`, `title.390x844` | title card after the texture settle: route picker, key summary, "Change keys" and "Motion" switches, corrected credit line |
-| `gameplay-early.*` | run begins, countdown "3"; pause button in the HUD; touch buttons on the phone frame |
-| `key-drive.*` | 330 autopilot steps: launch moment (0:00.04, 2 km/h); coach line "W to accelerate · A / D to steer" (button names on the phone frame) |
-| `mid-drive.1280x720` | 330 + 1440 steps: 217 km/h, Relay 2 / 5 "Break the horizon", 1,503 points, "CLEAN LANDING"; third of three shots 20 s apart (draw calls 88; mean luma 86.9, 87.7, 85.6) |
-| `results.1280x720` | Silver Medal, 0:48.32, 26,949 points, 1 / 9 data cells, 0 crashes, "First finish on this route" |
-| `card.2x.1440x900`, `card.1x` | 1.29 s into the run at 71 km/h, 1440x900 viewport; the 1x image is the 2x frame downscaled to 720x450 |
+## Known issues
 
-## Changes visible against the previous set (0d965903c)
-
-- One lighthouse and one town: the procedural tiers and plaster town no longer render under the generated models (draw calls at the title 121 to 105).
-- HUD pause button and coach line; touch controls on the phone frames; credit line no longer says the cars are CC0 models.
-
-## Problems still visible
-
-1. **Low:** a heavy white exhaust trail sits behind the car at speed (`mid-drive`, card).
-2. **Low:** `key-drive` shows the launch moment (2 km/h), as before.
-3. **Low (likeness review):** the car still reads as a classic cobra-style roadster.
+- none. 390 px HUD (retaken 2026-11-19): the event toast and the coach share one line above the dash (the toast hides the coach while it shows), the route bar docks above the dash, the countdown digit sits above the car; live rects sampled every 1.5 s through an autoplay run, with and without `?touch=1`, showed no overlaps.

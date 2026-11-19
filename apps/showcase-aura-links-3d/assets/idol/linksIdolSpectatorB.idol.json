@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-links-3d",
+  "key": "linksIdolSpectatorB",
+  "generatedAt": "2026-11-18T22:36:19.152Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/aura-links-3d/_refs/linksIdolSpectatorB.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0cd-cc6d-7522-a0f4-47e3f41a133e",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 445434,
+        "num_faces": 890896,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Single full-body adult woman golf tournament spectator standing relaxed, arms hanging naturally at her sides, wearing a plain claret red quarter-zip pullover, white sun visor, navy trousers, white sneakers, short brown hair. Front view facing the camera, head to feet in frame with margin, centered. Photoreal studio render, physically based materials, real-world fabric detail, high detail. Even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.679,
+    "size": [
+      0.521,
+      1.68,
+      0.315
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-links-3d/assets/idol/linksIdolSpectatorB.glb",
+  "sizeBytes": 2491068,
+  "preview": "artifacts/idol/aura-links-3d/linksIdolSpectatorB/views.png",
+  "usd": 0.2
+}

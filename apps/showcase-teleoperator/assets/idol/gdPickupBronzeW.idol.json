@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "teleoperator",
+  "key": "gdPickupBronzeW",
+  "generatedAt": "2026-11-19T00:25:53.750Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-16a0-7833-b10e-0eb0788e3956",
+      "prompt": "A modern full-size crew-cab pickup truck, bronze brown metallic paint, open empty cargo bed with a black tubular utility rack, dark grille without badge, tinted windows, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f133-a9b4-7d82-b047-5a13f4807c4c",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 9,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 904800,
+        "num_faces": 1809676,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A modern full-size crew-cab pickup truck, bronze brown metallic paint, open empty cargo bed with a black tubular utility rack, dark grille without badge, tinted windows, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 5.189,
+    "size": [
+      1.846,
+      1.471,
+      5.19
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-teleoperator/assets/idol/gdPickupBronzeW.glb",
+  "sizeBytes": 1295988,
+  "preview": "artifacts/idol/teleoperator/gdPickupBronzeW/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": 0,
+    "tex": null,
+    "maxVerts": null,
+    "baked": true,
+    "reason": "Idol rebuilt the three-quarter reference diagonally; yaw re-fitted to the minimum-area footprint"
+  }
+}

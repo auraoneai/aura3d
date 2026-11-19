@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swVillaOchre",
+  "generatedAt": "2026-11-18T22:25:46.385Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the client's 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0ba-296f-7750-a56d-8cd082bac7db",
+      "prompt": "A single two-storey Mediterranean seaside villa house: warm pale ochre stucco walls, a terracotta clay tile roof, a roof terrace with a white parapet, arched windows with sage-green wooden louvred shutters, a ground-floor arched doorway, terracotta potted lemon trees by the door. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0bd-2f95-7783-aa3b-28e33953315e",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 8,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2839526,
+        "num_faces": 5682044,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single two-storey Mediterranean seaside villa house: warm pale ochre stucco walls, a terracotta clay tile roof, a roof terrace with a white parapet, arched windows with sage-green wooden louvred shutters, a ground-floor arched doorway, terracotta potted lemon trees by the door. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.01,
+    "size": [
+      1.004,
+      1,
+      0.993
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swVillaOchre.glb",
+  "sizeBytes": 1488632,
+  "preview": "artifacts/idol/saltwind-highway/swVillaOchre/views.png",
+  "usd": 0.37,
+  "postProcess": "textures re-encoded as JPEG, <= 512 px, to fit the per-game byte budget"
+}

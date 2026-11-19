@@ -38,6 +38,7 @@ import {
   crowdHeadSpec,
   trophyGobletSpec
 } from "../art/proceduralModels";
+import { idolCranePiece, idolHvacPiece, idolRadarPiece, idolSetPiece, idolSetPieces, idolWindPiece } from "./idolStage";
 import { stageLook } from "./look";
 import { venueBackdrop } from "./backdrop";
 import { floorDetailFields } from "./surfaces";
@@ -352,15 +353,15 @@ const NEO_TOKYO = makeStage(
   "rooftop-city",
   { floor: "#0d1119", lane: "#ff5cbe", aura: "#6ee7ff", warning: "#ffd166", skyline: "#141c33", fog: "#060a14" },
   [
-    buildNeoTokyoPagodaTower("nt-tower-l", [-4.6, 0, -3.5], 0.22, "#ff3fa4"),
-    buildNeoTokyoPagodaTower("nt-tower-r", [4.8, 0, -3.6], -0.22, "#3fe0ff"),
+    (idolSetPiece("nt-tower-l", "icNtPagoda", [-4.6, 0, -3.5], 0.22, 0.75) ?? buildNeoTokyoPagodaTower("nt-tower-l", [-4.6, 0, -3.5], 0.22, "#ff3fa4")),
+    (idolSetPiece("nt-tower-r", "icNtPagoda", [4.8, 0, -3.6], -0.22, 0.75) ?? buildNeoTokyoPagodaTower("nt-tower-r", [4.8, 0, -3.6], -0.22, "#3fe0ff")),
     buildNeoTokyoNeonPylon("nt-pylon-l", [-3.7, 0, -2.2], 0.24, "#ff3fa4", "#3fe0ff"),
     buildNeoTokyoNeonPylon("nt-pylon-r", [3.7, 0, -2.2], -0.24, "#3fe0ff", "#ff3fa4"),
-    buildNeoTokyoVendingBank("nt-vending-l", [-2.7, 0, -2.0], 0.18),
-    buildNeoTokyoArcadeCabinet("nt-arcade-r", [2.6, 0, -1.95], -0.22, "#3fe0ff"),
-    buildNeoTokyoArcadeCabinet("nt-arcade-c", [1.65, 0, -2.15], -0.14, "#ff4fb2"),
-    buildNeoTokyoHvacTower("nt-vent-1", [-1.75, 0, -1.9], 0.35),
-    buildNeoTokyoHvacTower("nt-vent-2", [3.95, 0, -1.75], -0.35),
+    (idolSetPiece("nt-vending-l", "icNtVending", [-2.7, 0, -2.0], 0.18) ?? buildNeoTokyoVendingBank("nt-vending-l", [-2.7, 0, -2.0], 0.18)),
+    (idolSetPiece("nt-arcade-r", "icNtArcade", [2.6, 0, -1.95], -0.22) ?? buildNeoTokyoArcadeCabinet("nt-arcade-r", [2.6, 0, -1.95], -0.22, "#3fe0ff")),
+    (idolSetPiece("nt-arcade-c", "icNtArcade", [1.65, 0, -2.15], -0.14) ?? buildNeoTokyoArcadeCabinet("nt-arcade-c", [1.65, 0, -2.15], -0.14, "#ff4fb2")),
+    (idolHvacPiece("nt-vent-1", [-1.75, 0, -1.9], 0.35) ?? buildNeoTokyoHvacTower("nt-vent-1", [-1.75, 0, -1.9], 0.35)),
+    (idolHvacPiece("nt-vent-2", [3.95, 0, -1.75], -0.35) ?? buildNeoTokyoHvacTower("nt-vent-2", [3.95, 0, -1.75], -0.35)),
     buildNeoTokyoStreetLamp("nt-lamp-l", [-3.2, 0, -1.4], 0.15, "#ffad5c"),
     buildNeoTokyoStreetLamp("nt-lamp-r", [3.2, 0, -1.4], -0.15, "#6ee7ff"),
     buildSearchlightPylon("nt-speaker-c", [0, 0, -3.0], 0, "#ffe3ad")
@@ -377,22 +378,24 @@ const BANGKOK = makeStage(
   "training-grid",
   { floor: "#241a12", lane: "#ffab4d", aura: "#ffe08a", warning: "#ff6b4a", skyline: "#3a2418", fog: "#1c1008" },
   [
-    buildDockCruciblePavilion("bk-shrine", [0, 0, -3.5], 0),
-    buildDockGantryCrane("bk-crane-l", [-4.1, 0, -2.9], 0.22),
-    buildDockGantryCrane("bk-crane-r", [4.1, 0, -2.9], -0.22),
-    buildDockVendorCart("bk-kiosk-l", [-2.35, 0, -1.95], 0.28),
-    buildDockVendorCart("bk-kiosk-r", [2.35, 0, -1.95], -0.28),
-    buildDockGirderStack("bk-girders-l", [-3.5, 0, -1.9], 0.2),
-    buildBarrelCrateCluster("bk-drums-r", [3.5, 0, -1.85], -0.24),
+    (idolSetPiece("bk-shrine", "icDkPavilion", [0, 0, -3.5], 0) ?? buildDockCruciblePavilion("bk-shrine", [0, 0, -3.5], 0)),
+    (idolCranePiece("bk-crane-l", [-4.1, 0, -2.9], 0.22, Math.PI) ?? buildDockGantryCrane("bk-crane-l", [-4.1, 0, -2.9], 0.22)),
+    (idolCranePiece("bk-crane-r", [4.1, 0, -2.9], -0.22) ?? buildDockGantryCrane("bk-crane-r", [4.1, 0, -2.9], -0.22)),
+    (idolSetPiece("bk-kiosk-l", "icDkCart", [-2.35, 0, -1.95], 0.28, 0.8) ?? buildDockVendorCart("bk-kiosk-l", [-2.35, 0, -1.95], 0.28)),
+    (idolSetPiece("bk-kiosk-r", "icDkCart", [2.35, 0, -1.95], -0.28, 0.8) ?? buildDockVendorCart("bk-kiosk-r", [2.35, 0, -1.95], -0.28)),
+    (idolSetPiece("bk-girders-l", "icDkGirders", [-3.5, 0, -1.9], 0.2, 0.6) ?? buildDockGirderStack("bk-girders-l", [-3.5, 0, -1.9], 0.2)),
+    (idolSetPiece("bk-drums-r", "icDkCargo", [3.5, 0, -1.85], -0.24, 0.75) ?? buildBarrelCrateCluster("bk-drums-r", [3.5, 0, -1.85], -0.24)),
     buildForgedBrazierNode("bk-lan-l", [-3.05, 0, -1.4], 1.9, "#ff8c2b", 0.1, IC_MATERIALS.castTempleBronze),
     buildForgedBrazierNode("bk-lan-r", [3.05, 0, -1.4], 1.9, "#ff8c2b", -0.1, IC_MATERIALS.castTempleBronze),
-    buildBarrelCrateCluster("bk-crate-l", [-1.45, 0, -1.5], 0.35)
+    (idolSetPiece("bk-crate-l", "icDkCargo", [-1.45, 0, -1.5], 0.35, 0.75) ?? buildBarrelCrateCluster("bk-crate-l", [-1.45, 0, -1.5], 0.35))
   ]
 );
 
 /* ------------------------------------------------------------------ */
 /* 3 · Roman colosseum ruins — voussoir arches, columns, braziers.     */
 /* ------------------------------------------------------------------ */
+/** z of the Colosseum battle standards (plinth 1.73 x 0.64 m, yaw 0.22): far enough behind the fight lane for a KO sprawl */
+export const COLOSSEUM_STANDARD_Z = -2.15;
 const COLOSSEUM = makeStage(
   "colosseum-ruins",
   "Colosseum Ruins",
@@ -400,17 +403,19 @@ const COLOSSEUM = makeStage(
   "industrial-arena",
   { floor: "#3a2f22", lane: "#e8c98a", aura: "#ffe9b0", warning: "#c86a3a", skyline: "#6b5636", fog: "#caa66a" },
   [
-    buildColosseumVoussoirArch("co-gate-center", [0, 0, -3.45], 1.12, 0),
-    buildColosseumVoussoirArch("co-arch-l", [-2.95, 0, -2.55], 0.82, 0.18),
-    buildColosseumVoussoirArch("co-arch-r", [2.95, 0, -2.55], 0.82, -0.18),
-    buildColosseumCorinthianColumn("co-tower-l", [-4.3, 0, -2.7], 4.4, 0.2, false),
-    buildColosseumCorinthianColumn("co-tower-r", [4.3, 0, -2.7], 4.2, -0.2, true),
-    buildColosseumGladiatorBust("co-bust-l", [-1.65, 0, -1.55], 0.35),
-    buildColosseumGladiatorBust("co-bust-r", [1.65, 0, -1.55], -0.35),
+    (idolSetPiece("co-gate-center", "icCoArch", [0, 0, -3.45], 0, 1.12) ?? buildColosseumVoussoirArch("co-gate-center", [0, 0, -3.45], 1.12, 0)),
+    (idolSetPiece("co-arch-l", "icCoArch", [-2.95, 0, -2.55], 0.18, 0.82) ?? buildColosseumVoussoirArch("co-arch-l", [-2.95, 0, -2.55], 0.82, 0.18)),
+    (idolSetPiece("co-arch-r", "icCoArch", [2.95, 0, -2.55], -0.18, 0.82) ?? buildColosseumVoussoirArch("co-arch-r", [2.95, 0, -2.55], 0.82, -0.18)),
+    (idolSetPiece("co-tower-l", "icCoColumn", [-4.3, 0, -2.7], 0.2, 4.4 / 4.4) ?? buildColosseumCorinthianColumn("co-tower-l", [-4.3, 0, -2.7], 4.4, 0.2, false)),
+    (idolSetPiece("co-tower-r", "icCoColumn", [4.3, 0, -2.7], -0.2, 4.2 / 4.4) ?? buildColosseumCorinthianColumn("co-tower-r", [4.3, 0, -2.7], 4.2, -0.2, true)),
+    (idolSetPiece("co-bust-l", "icCoBust", [-1.65, 0, -1.55], 0.35) ?? buildColosseumGladiatorBust("co-bust-l", [-1.65, 0, -1.55], 0.35)),
+    (idolSetPiece("co-bust-r", "icCoBust", [1.65, 0, -1.55], -0.35) ?? buildColosseumGladiatorBust("co-bust-r", [1.65, 0, -1.55], -0.35)),
     buildForgedBrazierNode("co-brazier-l", [-2.75, 0, -1.45], 1.85, "#ff7b29", 0.2, IC_MATERIALS.castTempleBronze),
     buildForgedBrazierNode("co-brazier-r", [2.75, 0, -1.45], 1.85, "#ff7b29", -0.2, IC_MATERIALS.castTempleBronze),
-    buildColosseumImperialStandard("co-standard-l", [-3.7, 0, -1.9], 0.22),
-    buildColosseumImperialStandard("co-standard-r", [3.7, 0, -1.9], -0.22)
+    // owner pass-through pass: the 1.73 m wide standard plinths stood 1.4 m behind the lane, so a knocked-down fighter
+    // sprawled into the stone block; they now stand clear behind the braziers (front corner ~1.6 m behind the lane)
+    (idolWindPiece("co-standard-l", "icCoStandard", [-3.7, 0, COLOSSEUM_STANDARD_Z], 0.22, 0.45) ?? buildColosseumImperialStandard("co-standard-l", [-3.7, 0, COLOSSEUM_STANDARD_Z], 0.22)),
+    (idolWindPiece("co-standard-r", "icCoStandard", [3.7, 0, COLOSSEUM_STANDARD_Z], -0.22, 0.45) ?? buildColosseumImperialStandard("co-standard-r", [3.7, 0, COLOSSEUM_STANDARD_Z], -0.22))
   ]
 );
 
@@ -425,13 +430,13 @@ const AIRBASE = makeStage(
   { floor: "#2b2620", lane: "#ffb03c", aura: "#ffe08a", warning: "#ff5c3c", skyline: "#54402a", fog: "#241a10" },
   [
     // Grounded stealth fighter ("ab-jet-center" at y = 0 satisfies refinedLook.ts GROUNDED_PROPS).
-    ...buildAirbaseTacticalJetNodes([0.4, 0, -3.0], -0.12),
-    buildAirbaseRadarTower("ab-tower-l", [-4.1, 0, -2.85], 0.25),
-    buildAirbaseFuelDepot("ab-fuel-r", [3.9, 0, -2.65], -0.22),
-    buildObsidianRunicSpire("ab-spire-l", [-2.85, 0, -2.35], 3.7, 0.28),
-    buildObsidianRunicSpire("ab-spire-r", [2.95, 0, -2.4], 3.5, -0.32),
-    buildBarrelCrateCluster("ab-drum-1", [-2.25, 0, -1.55], 0.24),
-    buildBarrelCrateCluster("ab-crate-1", [2.35, 0, -1.55], -0.28),
+    ...(idolSetPieces([idolSetPiece("ab-jet-center", "icAbJet", [0.4, 0, -3.0], -0.12, 0.85, Math.PI / 4)]) ?? buildAirbaseTacticalJetNodes([0.4, 0, -3.0], -0.12)),
+    (idolRadarPiece("ab-tower-l", [-4.1, 0, -2.85], 0.25) ?? buildAirbaseRadarTower("ab-tower-l", [-4.1, 0, -2.85], 0.25)),
+    (idolSetPiece("ab-fuel-r", "icAbFuel", [3.9, 0, -2.65], -0.22, 1, Math.PI / 2) ?? buildAirbaseFuelDepot("ab-fuel-r", [3.9, 0, -2.65], -0.22)),
+    (idolSetPiece("ab-spire-l", "icAbSpire", [-2.85, 0, -2.35], 0.28, 3.7 / 3.7) ?? buildObsidianRunicSpire("ab-spire-l", [-2.85, 0, -2.35], 3.7, 0.28)),
+    (idolSetPiece("ab-spire-r", "icAbSpire", [2.95, 0, -2.4], -0.32, 3.5 / 3.7) ?? buildObsidianRunicSpire("ab-spire-r", [2.95, 0, -2.4], 3.5, -0.32)),
+    (idolSetPiece("ab-drum-1", "icDkCargo", [-2.25, 0, -1.55], 0.24, 0.75) ?? buildBarrelCrateCluster("ab-drum-1", [-2.25, 0, -1.55], 0.24)),
+    (idolSetPiece("ab-crate-1", "icDkCargo", [2.35, 0, -1.55], -0.28, 0.75) ?? buildBarrelCrateCluster("ab-crate-1", [2.35, 0, -1.55], -0.28)),
     buildChainedPadBeacon("ab-light-l", [-3.5, 0, -1.3], 0.15, "#ffb03c"),
     buildChainedPadBeacon("ab-light-r", [3.5, 0, -1.3], -0.15, "#ffb03c")
   ]
@@ -447,15 +452,15 @@ const MONASTERY = makeStage(
   "training-grid",
   { floor: "#1c2230", lane: "#7dd7ff", aura: "#bfeaff", warning: "#ffb84d", skyline: "#2c3a55", fog: "#0d1420" },
   [
-    buildMonasteryTempleHall("mo-monastery", [0, 0, -3.55], 0),
-    buildMonasteryToriiGate("mo-torii-l", [-4.8, 0, -3.8], 0.28),
-    buildMonasteryBellPavilion("mo-bell-r", [4.75, 0, -3.7], -0.28),
-    buildMonasteryBonsaiPine("mo-pine-l", [-3.95, 0, -2.45], 0.2, 41),
-    buildMonasteryBonsaiPine("mo-pine-r", [3.95, 0, -2.45], -0.2, 73),
-    buildMonasteryGuardianStatue("mo-dragon-l", [-2.75, 0, -1.65], 0.42),
-    buildMonasteryGuardianStatue("mo-dragon-r", [2.75, 0, -1.65], -0.42),
-    buildMonasteryStoneLantern("mo-lantern-l", [-1.55, 0, -1.45], 0.12),
-    buildMonasteryStoneLantern("mo-lantern-r", [1.55, 0, -1.45], -0.12),
+    (idolSetPiece("mo-monastery", "icMoTemple", [0, 0, -4.1], 0, 0.7) ?? buildMonasteryTempleHall("mo-monastery", [0, 0, -3.55], 0)),
+    (idolSetPiece("mo-torii-l", "icMoTorii", [-4.8, 0, -3.8], 0.28, 0.88) ?? buildMonasteryToriiGate("mo-torii-l", [-4.8, 0, -3.8], 0.28)),
+    (idolSetPiece("mo-bell-r", "icMoBell", [4.75, 0, -3.7], -0.28) ?? buildMonasteryBellPavilion("mo-bell-r", [4.75, 0, -3.7], -0.28)),
+    (idolWindPiece("mo-pine-l", "icMoPine", [-3.95, 0, -2.45], 0.2, 0.7) ?? buildMonasteryBonsaiPine("mo-pine-l", [-3.95, 0, -2.45], 0.2, 41)),
+    (idolWindPiece("mo-pine-r", "icMoPine", [3.95, 0, -2.45], -0.2, 0.7) ?? buildMonasteryBonsaiPine("mo-pine-r", [3.95, 0, -2.45], -0.2, 73)),
+    (idolSetPiece("mo-dragon-l", "icMoDragonColumn", [-2.75, 0, -1.65], 0.42) ?? buildMonasteryGuardianStatue("mo-dragon-l", [-2.75, 0, -1.65], 0.42)),
+    (idolSetPiece("mo-dragon-r", "icMoDragonColumn", [2.75, 0, -1.65], -0.42) ?? buildMonasteryGuardianStatue("mo-dragon-r", [2.75, 0, -1.65], -0.42)),
+    (idolSetPiece("mo-lantern-l", "icMoLantern", [-1.55, 0, -1.45], 0.12) ?? buildMonasteryStoneLantern("mo-lantern-l", [-1.55, 0, -1.45], 0.12)),
+    (idolSetPiece("mo-lantern-r", "icMoLantern", [1.55, 0, -1.45], -0.12) ?? buildMonasteryStoneLantern("mo-lantern-r", [1.55, 0, -1.45], -0.12)),
     buildForgedBrazierNode("mo-braz-l", [-3.3, 0, -1.5], 1.7, "#ffad4d", 0, IC_MATERIALS.castTempleBronze),
     buildForgedBrazierNode("mo-braz-r", [3.3, 0, -1.5], 1.7, "#ffad4d", 0, IC_MATERIALS.castTempleBronze)
   ]
@@ -720,21 +725,21 @@ const CROWN = makeStage(
     ...buildCrownTheater(CROWN_PALETTE),
     // Stepped 0.34m obsidian-and-brass dais directly under the throne at z = -3.45 so nothing blocks the throne chair.
     ...buildThronePlinth(),
-    buildSovereignThroneChair("cr-throne-chair", [0, PLINTH_TOP, PLINTH_Z], 0),
+    idolSetPiece("cr-throne-chair", "icCrThrone", [0, PLINTH_TOP, PLINTH_Z], 0) ?? buildSovereignThroneChair("cr-throne-chair", [0, PLINTH_TOP, PLINTH_Z], 0),
     // The Iron Crown itself — forged black-iron & gilded-gold regalia on a crimson velvet cushion atop the throne seat.
-    buildIronCrownRelic("cr-iron-crown", [0, PLINTH_TOP + 0.48, PLINTH_Z + 0.14], 0),
-    buildSanctumMarbleColonnade("cr-colonnade-l", [-2.95, 0, -4.25], 0.18),
-    buildSanctumMarbleColonnade("cr-colonnade-r", [2.95, 0, -4.25], -0.18),
+    idolSetPiece("cr-iron-crown", "icCrRelic", [0, PLINTH_TOP + 0.48, PLINTH_Z + 0.14], 0) ?? buildIronCrownRelic("cr-iron-crown", [0, PLINTH_TOP + 0.48, PLINTH_Z + 0.14], 0),
+    idolSetPiece("cr-colonnade-l", "icCrColonnade", [-2.95, 0, -4.25], 0.18, 0.65) ?? buildSanctumMarbleColonnade("cr-colonnade-l", [-2.95, 0, -4.25], 0.18),
+    idolSetPiece("cr-colonnade-r", "icCrColonnade", [2.95, 0, -4.25], -0.18, 0.65) ?? buildSanctumMarbleColonnade("cr-colonnade-r", [2.95, 0, -4.25], -0.18),
     // Coiled bronze / vermilion-lacquer / imperial-jade dragon-relief columns flanking the throne & facing the ring
-    buildDragonReliefColumn("cr-dragon-l", [-1.72, 0, -2.32], 0.36, 1),
-    buildDragonReliefColumn("cr-dragon-r", [1.72, 0, -2.32], -0.36, -1),
+    idolSetPiece("cr-dragon-l", "icMoDragonColumn", [-1.72, 0, -2.32], 0.36) ?? buildDragonReliefColumn("cr-dragon-l", [-1.72, 0, -2.32], 0.36, 1),
+    idolSetPiece("cr-dragon-r", "icMoDragonColumn", [1.72, 0, -2.32], -0.36) ?? buildDragonReliefColumn("cr-dragon-r", [1.72, 0, -2.32], -0.36, -1),
     // Corner fire braziers
     buildForgedBrazierNode("cr-brazier-l", [-3.45, 0, -1.65], 2.1, "#ff5c26", 0.2, IC_MATERIALS.forgedBlackIron, 0.78),
     buildForgedBrazierNode("cr-brazier-r", [3.45, 0, -1.65], 2.1, "#ff5c26", -0.2, IC_MATERIALS.forgedBlackIron, 0.78),
     // Trophy cabinets & follow-spot searchlights at the arena wings
     ...buildTrophyCabinets(),
-    buildSearchlightPylon("cr-speaker-l", [-4.9, 0, -2.2], 0.35, "#ffd76a"),
-    buildSearchlightPylon("cr-speaker-r", [4.9, 0, -2.2], -0.35, "#ffd76a")
+    buildSearchlightPylon("cr-speaker-l", [-4.9, 0, -2.2], 0.35, "#f2efe8"),
+    buildSearchlightPylon("cr-speaker-r", [4.9, 0, -2.2], -0.35, "#f2efe8")
   ]
 );
 

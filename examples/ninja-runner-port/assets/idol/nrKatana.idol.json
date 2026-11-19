@@ -1,0 +1,52 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrKatana",
+  "generatedAt": "2026-11-19T01:55:42.370Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/_refs/nrKatana.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f125-ae25-78d2-96dc-47cd26fbf58e",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 51,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 84572,
+        "num_faces": 169140,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A museum display prop of a traditional curved single-edged blade with no sheath, lying flat in side profile: a slender gently curved polished steel blade with a soft wavy temper line, a round gilded hand guard, and a long grip wrapped in indigo silk cord in a diamond pattern with a gold end cap. Photograph of a real handcrafted museum replica prop: polished steel, gilded brass, indigo silk cord, soft studio light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 8.135,
+    "size": [
+      8.042,
+      1.021,
+      1
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrKatana.glb",
+  "sizeBytes": 1023800,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrKatana/views.png",
+  "usd": 0.2
+}

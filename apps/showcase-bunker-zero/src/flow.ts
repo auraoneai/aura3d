@@ -24,6 +24,29 @@ export function outcomeView(outcome: FloorOutcome, sim: Sim, fmtTime: (t: number
   }
 }
 
+// ---------------------------------------------------------------- transitions + hands-free autoplay loop
+export type PendingKind = "next" | "retry" | "killhouse-retry" | "to-descent" | "results";
+/** The one transition after a finished floor (C16): the banner holds for `t` seconds, then main.ts runs it. */
+export function pendingAfter(outcome: FloorOutcome): { kind: PendingKind; t: number } {
+  return {
+    kind: outcome === "killhouse-timeup" ? "killhouse-retry" : outcome === "killhouse-clear" ? "to-descent" : outcome === "campaign-complete" ? "results" : "next",
+    t: outcome === "campaign-complete" ? 2.2 : 2.6
+  };
+}
+/** Death: retry the floor with the loadout it was entered with. */
+export const PENDING_DEATH = { kind: "retry", t: 2.2 } as const;
+/**
+ * `?autoplay=1` (alias `?autopilot=1`, and `?demo`): the results panel holds this long, then a fresh descent run starts from
+ * floor 1, so a hands-free page loops forever and never sits on the results panel or a menu.
+ */
+export const AUTOPLAY_RESULTS_HOLD = 3;
+export const AUTOPLAY_TOGGLE_KEY = "KeyO";
+/** `?autoplay=1`, `?autopilot=1` or `?demo` turn the computer pilot on at boot. */
+export function autoplayRequested(params: URLSearchParams): boolean {
+  const on = (k: string) => params.has(k) && params.get(k) !== "0" && params.get(k) !== "false";
+  return on("autoplay") || on("autopilot") || on("demo");
+}
+
 // ---------------------------------------------------------------- run totals (C3, C14, C27)
 export interface FloorResult { floor: number; name: string; time: number; kills: number; totalEnemies: number; secrets: number; totalSecrets: number; medal: string; score: number; }
 export interface RunTotals { floors: number; time: number; kills: number; totalEnemies: number; secrets: number; totalSecrets: number; score: number; medals: Record<string, number>; }
@@ -154,3 +177,22 @@ export function scaleHex(hex: string, gain: number): string {
   return `#${((to(r) << 16) | (to(g) << 8) | to(b)).toString(16).padStart(6, "0")}`;
 }
 export function wallAlbedo(color: string, gain: number): number { return lum(hexLinear(scaleHex(color, gain))); }
+
+// ---------------------------------------------------------------- drawn enemy state (real-GPU audit 2026-11-18)
+/**
+ * A chasing enemy inside 70% of its firing range stops moving and waits out its attack cooldown (0.65 s guard,
+ * 1.35 s gunner, 2.4 s Warden) in the sim's "chase" state, which drew the run clip in place. Below STAND_SPEED
+ * (smoothed m/s) it is drawn standing: the alert scan for soldiers and the Warden, idle for the hound.
+ */
+export const STAND_SPEED = 0.3;
+export const STAND_SPEED_TAU = 0.12;
+export function drawnEnemyState<S extends string>(state: S, kind: string, speed: number): S | "alert" | "idle" {
+  if ((state === "chase" || state === "patrol") && speed < STAND_SPEED) return kind === "dog" ? "idle" : "alert";
+  return state;
+}
+/** Exponential moving average of ground speed from one frame's displacement; dt <= 0 (sim held) keeps the old value. */
+export function nextGroundSpeed(prev: number, moved: number, dt: number, tau = STAND_SPEED_TAU): number {
+  if (!(dt > 0)) return prev;
+  const a = 1 - Math.exp(-dt / tau);
+  return prev + (moved / dt - prev) * a;
+}

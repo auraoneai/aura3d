@@ -173,6 +173,8 @@ export interface SolidBox {
   vx: number;
   vy: number;
   vz: number;
+  /** Pass-through pass: the body of a solid decor prop (tree, rock, pillar…), not a course platform. */
+  readonly decor?: boolean;
 }
 
 export interface HazardBox {

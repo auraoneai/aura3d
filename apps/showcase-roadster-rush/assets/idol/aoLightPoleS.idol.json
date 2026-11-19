@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoLightPoleS",
+  "generatedAt": "2026-11-18T23:22:52.968Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered after its 20 min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A single tall tapered galvanized steel highway street light pole standing on a round bolted base flange, with one SHORT gently curved bracket arm at the top that reaches out to one side only about one fifth of the pole's height, ending in a compact flat cobra-head LED street lamp housing with its lens facing down, weathered zinc-grey metal finish, seen from the side so the short arm points to the right. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0e2-52b3-7a40-9f8f-1ebb4e4796ea",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 173236,
+        "num_faces": 346468,
+        "watertight": true
+      },
+      "seed": 7
+    }
+  ],
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 7.671,
+    "size": [
+      3.3,
+      7.7,
+      1.259
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoLightPoleS.glb",
+  "sizeBytes": 849456,
+  "preview": "artifacts/idol/apex-overdrive/aoLightPoleS/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "normal-jpeg",
+      "quality": 90,
+      "bytesBefore": 1658648,
+      "bytesAfter": 849456
+    }
+  ]
+}

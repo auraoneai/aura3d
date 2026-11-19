@@ -41,15 +41,6 @@
       "bytes": 219833
     },
     {
-      "id": "showcase-blockfall-reactor",
-      "source": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-line-clear.png",
-      "target": "marketing/public/previews/showcase/showcase-blockfall-reactor.png",
-      "width": 1920,
-      "height": 1080,
-      "sha256": "6b0d6df848de44159f7717d4424129aa1468033ef2e21e718c1bf9037e0b4990",
-      "bytes": 1645970
-    },
-    {
       "id": "showcase-turbo-drift-circuit",
       "source": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-high-speed-chase.png",
       "target": "marketing/public/previews/showcase/showcase-turbo-drift-circuit.png",
@@ -66,15 +57,6 @@
       "height": 1080,
       "sha256": "9cfd98578e5ffdd184cad76f847bc9e06fe862e23abec74ce952f73dbfbf3476",
       "bytes": 2101565
-    },
-    {
-      "id": "aura-clash-arena",
-      "source": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-special.png",
-      "target": "marketing/public/previews/aura-clash-poster.png",
-      "width": 1920,
-      "height": 1080,
-      "sha256": "5a615c03d532cc9ac7e8107ab6073a27ae44b5e1f2283c5b049ba6425cb1f6d6",
-      "bytes": 1124255
     }
   ]
 }

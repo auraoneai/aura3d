@@ -1,13 +1,15 @@
 /**
- * Aura Links 3D — 100% Procedural Articulated Pro Golfer Driver.
+ * Aura Links 3D — golfer driver.
  *
- * Drives the 14-joint `@aura3d/engine` procedural golfer (`buildArticulatedGolferNode`)
- * through an anatomic championship golf swing (`swingMath.ts` + `meshyProfile()`):
- * takeaway -> full backswing -> accelerating downswing -> impact -> high finish,
- * keeping both hands locked on the golf club grip and both tour golf shoes planted
- * on the turf with zero external or Meshy `.glb` files.
+ * Drives the player through an anatomic championship golf swing (`swingMath.ts`): takeaway -> full backswing ->
+ * accelerating downswing -> impact -> high finish, keeping both hands locked on the golf club grip and both shoes planted.
+ * Default: the rigged Idol golfer GLB for the studio polo (speridlabs/idol/max), its unnamed bones driven every frame by
+ * text-to-motion clips (`golferMotion.ts`: address waggle, swing, putt, re-aim shuffle, celebrate) with the solve as the club /
+ * contact authority and an arm IK overlay (`idolHumanoid.ts`, on the Idol body's own proportions), plus the Idol caddie
+ * (CaddieIdle clip), tour bag and cart.
+ * `?golfer=old` / `?look=original`: the 14-joint procedural golfer (`buildArticulatedGolferNode`) and procedural props.
  */
-import { game, material, primitives } from "@aura3d/engine";
+import { game, material, model, primitives } from "@aura3d/engine";
 import { gripQToEulerZYX } from "@aura3d/engine/game";
 import {
   buildArticulatedGolferNode,
@@ -19,7 +21,13 @@ import {
   buildTourBagNode
 } from "../art/proceduralModels";
 import type { GolferFit, Vec3 } from "./types";
-import { meshyProfile, retargetSolved } from "./golferRetarget";
+import { rigProfile, retargetSolved } from "./golferRetarget";
+import { assets } from "../aura-assets";
+import { IDOL_BINDS } from "./idolBinds";
+import { groundUnder, idolGolferKeyFor, type IdolGolferKey } from "./idolArt";
+import { idolProfile, retargetIdol, type IdolRigBind } from "./idolHumanoid";
+import { IDOL_CADDIE_BIND } from "./idolBinds";
+import { caddieIdleDeltas, celebrateDeltas, golferMotionDeltas, type GolferMotionPhase } from "./golferMotion";
 import {
   BALL_SHOT,
   CLUB_PARTS,
@@ -52,9 +60,20 @@ export type GolferPhase =
 
 const golfKit = game.racketSports("aura-links-golfer");
 
-export type GolferVariant = "meshy" | "athlete";
-let golferVariant: GolferVariant = "meshy";
-let appliedVariant: GolferVariant | null = null;
+/**
+ * "idol" (the default player): the rigged Idol golfer GLB for the fit's polo, its body playing text-to-motion clips
+ * (golferMotion.ts) with the swing solve as the club / contact authority and arm IK overlay, plus the Idol caddie, bag and cart. "athlete" (`?golfer=old` / `?look=original`): the
+ * 100% procedural articulated golfer and props, untouched.
+ */
+export type GolferVariant = "idol" | "athlete";
+let golferVariant: GolferVariant = "idol";
+let appliedVariant: string | null = null;
+let idolKey: IdolGolferKey = "linksIdolGolferBlue";
+/** true when the default (Idol GLB) golfer, caddie, bag and cart are mounted */
+export const idolGolferActive = (): boolean => golferVariant === "idol";
+const idolBind = (): IdolRigBind | undefined => IDOL_BINDS[idolKey];
+/** the Idol golfer GLB key the next scene build mounts for this fit (scene signature input for main.ts) */
+export const idolGolferKey = (fit: GolferFit): string => (idolGolferActive() ? idolGolferKeyFor(fit) : "procedural");
 
 interface VariantSpec {
   readonly ready: string;
@@ -63,7 +82,7 @@ interface VariantSpec {
   readonly celebrate: { clip: string; speed: number };
 }
 const VARIANTS: Record<GolferVariant, VariantSpec> = {
-  meshy: {
+  idol: {
     ready: "idle",
     readySpeed: 1,
     walk: null,
@@ -85,13 +104,18 @@ export function setGolferVariant(variant: GolferVariant): void {
 }
 export const golferVariantFromSearch = (search: string): GolferVariant => {
   const q = new URLSearchParams(search);
-  return q.get("golfer") === "old" || q.get("look") === "original" ? "athlete" : "meshy";
+  return q.get("golfer") === "old" || q.get("look") === "original" ? "athlete" : "idol";
 };
 const ensureSkeleton = (): void => {
-  if (appliedVariant === golferVariant) return;
-  useSkeleton(meshyProfile());
-  appliedVariant = golferVariant;
+  const bind = idolGolferActive() ? idolBind() : undefined;
+  const want = bind ? `idol:${idolKey}` : golferVariant;
+  if (appliedVariant === want) return;
+  useSkeleton(bind ? idolProfile(bind, idolKey) : rigProfile());
+  appliedVariant = want;
 };
+
+/** the loops (address waggle, re-aim shuffle, celebrate, caddie idle) run on the real frame clock */
+const motionClock = (): number => performance.now() / 1000;
 
 const HIDDEN = 0.0001;
 const UNI: [number, number, number] = [1, 1, 1];
@@ -139,6 +163,13 @@ export interface GolferRig {
 export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
   const rt = (name: string) => game.runtimeNode(name);
   const v = VARIANTS[golferVariant];
+  const idol = idolGolferActive();
+  if (idol) {
+    const want = idolGolferKeyFor(fit);
+    idolKey = IDOL_BINDS[want] ? want : "linksIdolGolferBlue";
+    appliedVariant = null;
+    calibGroundDy = null;
+  }
 
   return [
     primitives
@@ -161,10 +192,25 @@ export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
       } as any)
       .scale(HIDDEN)
       .runtime(rt("golfer-ring")),
-    buildArticulatedGolferNode(fit, refined, v.ready, v.readySpeed),
-    buildGolfCaddieNode(fit, refined),
-    buildTourBagNode(fit, refined),
-    buildGolfCartNode(refined),
+    ...(idol
+      ? [
+          model(assets[idolKey], { name: "golfer-body", scaleMode: "world", castShadow: true, receiveShadow: true })
+            .animate({ clip: v.ready, loop: true, speed: v.readySpeed })
+            .runtime(rt("golfer-body")),
+          model(assets.linksIdolCaddie, { name: "caddy-body", scaleMode: "world", castShadow: true, receiveShadow: true })
+            .animate({ clip: "idle", loop: true, speed: 0.9 })
+            .runtime(rt("caddy-body")),
+          model(assets.linksIdolTourBag, { name: "golfer-bag", scaleMode: "world", castShadow: true, receiveShadow: true })
+            .runtime(rt("golfer-bag")),
+          model(assets.linksIdolGolfCart, { name: "golfer-cart", scaleMode: "world", castShadow: true, receiveShadow: true })
+            .runtime(rt("golfer-cart"))
+        ]
+      : [
+          buildArticulatedGolferNode(fit, refined, v.ready, v.readySpeed),
+          buildGolfCaddieNode(fit, refined),
+          buildTourBagNode(fit, refined),
+          buildGolfCartNode(refined)
+        ]),
     buildClubGripNode(fit.cap),
     buildClubShaftNode(),
     buildClubHeadNode()
@@ -285,6 +331,8 @@ export function applyGolferFit(rig: GolferRig, fit: GolferFit): void {
 
 const clipFor = (phase: GolferPhase): { clip: string; speed: number } => {
   const v = VARIANTS[golferVariant];
+  // the Idol GLB ships only its idle clip; every phase is a code pose on top of it
+  if (idolGolferActive()) return { clip: v.ready, speed: v.readySpeed };
   if (phase === "walk" && v.walk) return v.walk;
   if (phase === "celebrate") return v.celebrate;
   return { clip: v.ready, speed: v.readySpeed };
@@ -302,6 +350,8 @@ export function poseGolfer(
   heightFn?: (x: number, z: number) => number
 ): void {
   ensureSkeleton();
+  // the Idol golfer re-aims with the Shuffle clip (feet stepping, hands kept on the club at address)
+  const idolWalk = idolGolferActive() && phase === "walk";
   phase = effectivePhase(phase);
   const W = (v: readonly number[]) => golfKit.localToWorld(at, faceYaw, UNI, v as any);
   const stanceW = W([0.52, 0, -0.02]);
@@ -334,8 +384,17 @@ export function poseGolfer(
       : 0;
     const key = evaluateSwing(posePhase(phase), t);
     const solved = solveSwing(key, root, breathe);
-    const bones = retargetSolved(solved);
-    rig.golferBody?.setAnimationPose?.({ bones, mode: "overlay" } as any);
+    const bind = idolGolferActive() ? idolBind() : undefined;
+    if (bind) {
+      // full swing: the motion-captured golf_drive body with the solve's grip as an arm IK overlay (the club and the contact
+      // stay on the solve); putting: the pure solve
+      // text-to-motion clip body (golferMotion.ts) with the solve's grip as an arm IK overlay; the club and the contact
+      // stay on the solve, and each stroke clip's impact frame is warped onto the solve's contact
+      const mp: GolferMotionPhase = idolWalk ? "walk" : posePhase(phase);
+      const pose = retargetIdol(bind, golferMotionDeltas(bind, idolKey, solved, root, mp, t, motionClock()));
+      rig.golferBody?.setAnimationPose?.({ bones: pose, morphTargets: {} } as any);
+    }
+    else rig.golferBody?.setAnimationPose?.({ bones: retargetSolved(solved), mode: "overlay" } as any);
 
     if (j) {
       j.hips?.setPosition?.(solved.hipsPos[0], solved.hipsPos[1], solved.hipsPos[2]);
@@ -383,9 +442,13 @@ export function poseGolfer(
       attached: telemetry.attached
     };
   } else {
-    rig.golferBody?.setAnimationPose?.(undefined);
+    const bind = idolGolferActive() ? idolBind() : undefined;
+    if (bind) {
+      // the Idol rig's bind is a T-pose: celebrate (the only non-swing phase) plays the Celebrate clip, never the bind
+      rig.golferBody?.setAnimationPose?.({ bones: retargetIdol(bind, celebrateDeltas(bind, motionClock())), morphTargets: {} } as any);
+    } else rig.golferBody?.setAnimationPose?.(undefined);
     if (j) {
-      const prof = meshyProfile();
+      const prof = rigProfile();
       const pump = phase === "celebrate" ? Math.sin(t * Math.PI * 3) : 0;
       j.hips?.setPosition?.(prof.rig.hipsBind[0], prof.rig.hipsBind[1], prof.rig.hipsBind[2]);
       j.hips?.setRotation?.(0, 0, 0);
@@ -408,22 +471,28 @@ export function poseGolfer(
   }
 
   const caddyW = W([3.1, 0, 2.2]);
-  const caddyGroundY = heightFn ? heightFn(caddyW[0], caddyW[2]) : at[1];
+  // Idol props stand on the lowest ground under their footprint (no hovering edge on a slope)
+  const under = (p: readonly number[], r: number, sink: number) =>
+    heightFn ? (idolGolferActive() ? groundUnder(heightFn, p[0]!, p[2]!, r) - sink : heightFn(p[0]!, p[2]!)) : at[1];
+  const caddyGroundY = under(caddyW, 0.2, 0.02);
   const caddyPump = phase === "celebrate" ? Math.abs(Math.sin(t * Math.PI * 2)) * 0.14 : 0;
   rig.caddy
     ?.setPosition(caddyW[0], caddyGroundY + caddyPump, caddyW[2])
     .setRotation(0, faceYaw - 0.38, 0)
     .setVisible(true);
+  // the Idol caddie's own GLB idle clip barely moves: it plays the CaddieIdle text-to-motion loop instead
+  if (idolGolferActive()) rig.caddy?.setAnimationPose?.({ bones: retargetIdol(IDOL_CADDIE_BIND, caddieIdleDeltas(IDOL_CADDIE_BIND, motionClock())), morphTargets: {} } as any);
 
   const bagW = W([3.6, 0, 2.7]);
-  const bagGroundY = heightFn ? heightFn(bagW[0], bagW[2]) : at[1];
+  const bagGroundY = under(bagW, 0.5, 0.03);
   rig.bag
-    ?.setPosition(bagW[0], bagGroundY + 0.46, bagW[2])
-    .setRotation(0.12, faceYaw - 0.5, 0)
+    ?.setPosition(bagW[0], bagGroundY + (idolGolferActive() ? 0 : 0.46), bagW[2])
+    // the Idol stand bag already leans on its own stand legs
+    .setRotation(idolGolferActive() ? 0 : 0.12, faceYaw - 0.5, 0)
     .setVisible(true);
 
   const cartW = W([6.4, 0, 3.0]);
-  const cartGroundY = heightFn ? heightFn(cartW[0], cartW[2]) : at[1];
+  const cartGroundY = under(cartW, 1.1, 0.04);
   rig.cart
     ?.setPosition(cartW[0], cartGroundY, cartW[2])
     .setRotation(0, faceYaw - 0.25, 0)

@@ -28,7 +28,7 @@ export interface EvidenceEnvironment {
 }
 
 export interface CapturedItem {
-  /** "bench:16-instancing@dpr1" | "game:showcase-bank-shot:scenario:action@1920x1080" */
+  /** "bench:16-instancing@dpr1" | "game:showcase-iron-crown:scenario:action@1920x1080" */
   readonly itemId: string;
   readonly kind: ItemKind;
   readonly aura: CaptureRef;

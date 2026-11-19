@@ -12,7 +12,7 @@ import type {
 } from "./types";
 import { VENUES } from "./content";
 import { stepFreeBall, spinBall, ROLL_DECEL } from "./ballPhysics";
-import { planCommand } from "./ai";
+import { planCommand, passLaneRisk } from "./ai";
 
 /* ------------------------------------------------------------------ *
  *  Dimensions live in ./dims (shared with ai.ts + scene.ts)           *
@@ -23,9 +23,11 @@ export {
   PEN_X, CIRCLE_R, BALL_R, BALL_VIS_R
 } from "./dims";
 import {
-  PITCH_HX, PITCH_HZ, GOAL_HALF_W, GOAL_H, PEN_X, BALL_R,
+  PITCH_HX, PITCH_HZ, GOAL_HALF_W, GOAL_H, GOAL_DEPTH, PEN_X, BALL_R, BALL_VIS_R,
   HALF_LEN, ET_LEN, RUN_SPEED, SPRINT_SPEED, GK_SPEED, ACCEL,
-  TRAP_R, TRAP_H, SLIDE_TIME, SLIDE_SPEED, KEEPER_REACH
+  TRAP_R, TRAP_H, SLIDE_TIME, SLIDE_SPEED, KEEPER_REACH,
+  POST_R, POST_X, POST_Z, BAR_Y, FRAME_HIT_R, PLAYER_R, PLAYER_MIN_SEP,
+  CAGE_INNER_X, CAGE_INNER_Z, CAGE_TOP, CAGE_GOAL_GAP
 } from "./dims";
 
 /* ------------------------------------------------------------------ */
@@ -58,6 +60,11 @@ const PEN_READ_SOFT = 0.22;
 const OPEN_KEEPER_REACH = 0.6;
 const OPEN_DIVE_REACH = 0.45;
 const CPU_BACKPASS_PENALTY = 6;
+/**
+ * Pass pick: score cost of a fully at-risk lane (ai.ts passLaneRisk: an opponent reaches the line of the pass before the
+ * ball). The goal-side cover and the held back line intercepted 1 pick in 3 when only the receiver's openness counted.
+ */
+const PASS_LANE_BLOCK = 12;
 /** Seconds a keeper holds a gathered ball before he distributes it. */
 const KEEPER_HOLD = 0.6;
 const PASS_ARRIVE = 5.2;          // weighted ground pass: speed left when it reaches the receiver (m/s)
@@ -113,6 +120,190 @@ export function shotOnTarget(b: { x: number; y: number; z: number; vx: number; v
   return Math.abs(z) < GOAL_HALF_W && y < GOAL_H;   // a low strike that bounces in still counts
 }
 
+/* ------------------------- solid colliders -------------------------- *
+ * Every collider is sized from what is drawn: the ball is drawn with radius BALL_VIS_R and its drawn centre sits
+ * BALL_LIFT above the sim centre (main.ts keeps it tangent to the grass); posts and bar are drawn tubes of radius POST_R. */
+const BALL_LIFT = BALL_VIS_R - BALL_R;
+const FRAME_RESTITUTION = 0.5;      // normal speed kept off the woodwork
+const FRAME_TANGENT_KEEP = 0.8;     // tangential speed kept off the woodwork
+const CAGE_RESTITUTION = 0.55;
+/** Player centre ↔ post axis contact distance. */
+const PLAYER_POST_R = POST_R + PLAYER_R;
+/** Inside the goal a player stays this far from the centre line: clear of the side netting (inner face of the posts). */
+const GOAL_INSIDE_Z = POST_Z - POST_R - PLAYER_R;
+/** Inside the goal a player stays in front of the back net. */
+const GOAL_INSIDE_X = PITCH_HX + GOAL_DEPTH - PLAYER_R;
+
+type FreeBall = Pick<BallState, "x" | "y" | "z" | "vx" | "vy" | "vz">;
+
+/** Squared distance from (px,py,pz) to the segment a→b, and the closest point on it. */
+function segClosest(px: number, py: number, pz: number, s: readonly number[]): [number, number, number, number] {
+  const [ax, ay, az, bx, by, bz] = s as [number, number, number, number, number, number];
+  const ex = bx - ax, ey = by - ay, ez = bz - az;
+  const ll = ex * ex + ey * ey + ez * ez;
+  const t = ll > 0 ? clamp(((px - ax) * ex + (py - ay) * ey + (pz - az) * ez) / ll, 0, 1) : 0;
+  const cx = ax + ex * t, cy = ay + ey * t, cz = az + ez * t;
+  return [(px - cx) ** 2 + (py - cy) ** 2 + (pz - cz) ** 2, cx, cy, cz];
+}
+
+/** The six woodwork axes (two posts + bar per goal), as drawn by buildFifaGoalFrameNode. */
+const FRAME_SEGS: readonly { readonly sx: -1 | 1; readonly kind: "post" | "crossbar"; readonly s: readonly number[] }[] =
+  ([-1, 1] as const).flatMap((sx) => {
+    const gx = sx * POST_X;
+    return [
+      { sx, kind: "post" as const, s: [gx, -1, -POST_Z, gx, BAR_Y, -POST_Z] },
+      { sx, kind: "post" as const, s: [gx, -1, POST_Z, gx, BAR_Y, POST_Z] },
+      { sx, kind: "crossbar" as const, s: [gx, BAR_Y, -POST_Z, gx, BAR_Y, POST_Z] }
+    ];
+  });
+
+/**
+ * Ball vs goal frame. Posts and crossbar are capsules of radius FRAME_HIT_R (drawn tube + drawn ball) around their drawn
+ * axes, swept along this step's path (prev → now) so a fast strike cannot tunnel through. The ball reflects off the
+ * contact normal from whichever side it arrives: a dipping ball bounces up off the top of the bar, a rising one down,
+ * a ball from behind bounces back. Returns what it hit (null for no impact; a resting touch is only pushed clear).
+ */
+export function collideGoalFrame(b: FreeBall, px0: number, py0: number, pz0: number): "post" | "crossbar" | null {
+  const R = FRAME_HIT_R, R2 = R * R;
+  for (const sx of [-1, 1] as const) {
+    const gx = sx * POST_X;
+    if (Math.max(px0, b.x) < gx - R || Math.min(px0, b.x) > gx + R) continue;
+    const segs = FRAME_SEGS.filter((f) => f.sx === sx);
+    const y0 = py0 + BALL_LIFT, y1 = b.y + BALL_LIFT;
+    const at = (t: number): [number, number, number] => [lerp(px0, b.x, t), lerp(y0, y1, t), lerp(pz0, b.z, t)];
+    const probe = (t: number) => {
+      const [x, y, z] = at(t);
+      let best = -1, bd = R2;
+      for (let k = 0; k < segs.length; k++) {
+        const d = segClosest(x, y, z, segs[k]!.s)[0];
+        if (d < bd) { bd = d; best = k; }
+      }
+      return best;
+    };
+    const pathLen = Math.hypot(b.x - px0, y1 - y0, b.z - pz0);
+    const n = Math.max(1, Math.ceil(pathLen / (R * 0.25)));
+    let prevT = 0;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      if (probe(t) < 0) { prevT = t; continue; }
+      // first sample inside a capsule: bisect back to the moment of contact
+      let lo = i === 0 ? 0 : prevT, hi = t;
+      if (i > 0) for (let it = 0; it < 10; it++) { const mid = (lo + hi) / 2; if (probe(mid) >= 0) hi = mid; else lo = mid; }
+      const k = probe(hi);
+      const seg = segs[k < 0 ? 0 : k]!;
+      const [x, y, z] = at(hi);
+      const [d2, cx, cy, cz] = segClosest(x, y, z, seg.s);
+      const d = Math.sqrt(d2);
+      let nx: number, ny: number, nz: number;
+      if (d > 1e-6) { nx = (x - cx) / d; ny = (y - cy) / d; nz = (z - cz) / d; }
+      else {
+        const sp = Math.hypot(b.vx, b.vy, b.vz) || 1;
+        nx = -b.vx / sp; ny = -b.vy / sp; nz = -b.vz / sp;
+      }
+      b.x = cx + nx * (R + 1e-4); b.z = cz + nz * (R + 1e-4);
+      b.y = Math.max(BALL_R, cy + ny * (R + 1e-4) - BALL_LIFT);
+      const vn = b.vx * nx + b.vy * ny + b.vz * nz;
+      if (vn >= -0.3) return null;   // resting / grazing touch: pushed clear, no impact
+      const tx = b.vx - vn * nx, ty = b.vy - vn * ny, tz = b.vz - vn * nz;
+      b.vx = tx * FRAME_TANGENT_KEEP - vn * FRAME_RESTITUTION * nx;
+      b.vy = ty * FRAME_TANGENT_KEEP - vn * FRAME_RESTITUTION * ny;
+      b.vz = tz * FRAME_TANGENT_KEEP - vn * FRAME_RESTITUTION * nz;
+      // balanced dead on top of the bar: tip it off behind the goal (deterministic) so it can never sit there
+      if (seg.kind === "crossbar" && ny > 0.95 && Math.abs(b.vx) < 0.3) b.vx += sx * 0.5;
+      return seg.kind;
+    }
+  }
+  return null;
+}
+
+// hot-path copies of the shared dimensions (module locals, not re-read through the import binding every call)
+const L_POST_X = POST_X, L_POST_Z = POST_Z, L_HX = PITCH_HX, L_HZ = PITCH_HZ, L_MOUTH = GOAL_HALF_W;
+const L_CAGE_X = CAGE_INNER_X - PLAYER_R, L_CAGE_Z = CAGE_INNER_Z - PLAYER_R, L_CAGE_GAP = CAGE_GOAL_GAP - PLAYER_R;
+
+/**
+ * Push a point out of the post circles (horizontal), `r` = contact distance from the post axis (r < half the post
+ * spacing, so only the nearest post can touch it).
+ */
+function pushOutOfPosts(o: { x: number; z: number }, r: number): boolean {
+  const sx = o.x < 0 ? -1 : 1, sz = o.z < 0 ? -1 : 1;
+  const dx = o.x - sx * L_POST_X, dz = o.z - sz * L_POST_Z;
+  if (dx >= r || dx <= -r || dz >= r || dz <= -r) return false;
+  const dd = dx * dx + dz * dz;
+  if (dd >= r * r) return false;
+  const d = Math.sqrt(dd);
+  // coincident with the axis: out toward the pitch
+  const nx = d > 1e-6 ? dx / d : -sx, nz = d > 1e-6 ? dz / d : 0;
+  o.x = sx * L_POST_X + nx * r; o.z = sz * L_POST_Z + nz * r;
+  return true;
+}
+
+/**
+ * Keep a player out of everything solid: the outer run-off, the Favela cage walls (body clear of the inner face), the
+ * goal frame (behind the goal line only through the mouth and then inside the side and back netting) and the posts.
+ */
+export function constrainPlayerPosition(p: { x: number; z: number }, walled: boolean): void {
+  p.x = clamp(p.x, -L_HX - 0.6, L_HX + 0.6);
+  p.z = clamp(p.z, -L_HZ - 0.4, L_HZ + 0.4);
+  if (walled) {
+    p.z = clamp(p.z, -L_CAGE_Z, L_CAGE_Z);
+    if (Math.abs(p.z) > L_CAGE_GAP && Math.abs(p.x) > L_CAGE_X) p.x = Math.sign(p.x) * L_CAGE_X;
+  }
+  if (Math.abs(p.x) > L_HX) {
+    if (Math.abs(p.z) < L_MOUTH) {
+      // in through the mouth: inside the goal, clear of the side netting and the back net
+      p.z = clamp(p.z, -GOAL_INSIDE_Z, GOAL_INSIDE_Z);
+      p.x = Math.sign(p.x) * Math.min(Math.abs(p.x), GOAL_INSIDE_X);
+    } else {
+      // beside the goal: the goal line (side netting + boards) stops him
+      p.x = Math.sign(p.x) * L_HX;
+    }
+  }
+  pushOutOfPosts(p, PLAYER_POST_R);
+}
+
+/**
+ * Player ↔ player separation: deterministic ordered pair pass (fixed index order, a few relaxation sweeps) pushing every
+ * overlapping pair apart to PLAYER_MIN_SEP and removes their closing speed. A pinned player (scripted: mid-swing, diving, holding the ball, restart
+ * taker) is never moved; his partner takes the whole correction. Two pinned players are left alone.
+ */
+const SEP_TEST2 = (PLAYER_MIN_SEP - 1e-4) ** 2;
+export function separatePlayers(
+  ps: readonly { x: number; z: number; vx: number; vz: number }[],
+  pinned: (i: number) => boolean,
+  constrain: (i: number) => void
+): void {
+  for (let sweep = 0; sweep < 32; sweep++) {
+    let moved = false;
+    for (let i = 0; i < ps.length; i++) {
+      for (let j = i + 1; j < ps.length; j++) {
+        const a = ps[i]!, c = ps[j]!;
+        let dx = c.x - a.x, dz = c.z - a.z;
+        const dd = dx * dx + dz * dz;
+        if (dd >= SEP_TEST2) continue;
+        const pa = pinned(i), pc = pinned(j);
+        if (pa && pc) continue;
+        let d = Math.sqrt(dd);
+        const pen = PLAYER_MIN_SEP - d;
+        if (d < 1e-6) { dx = 0; dz = 1; d = 1; }   // coincident: split along z, lower index to -z
+        const nx = dx / d, nz = dz / d;
+        const wa = pa ? 0 : pc ? 1 : 0.5, wc = 1 - wa;
+        a.x -= nx * pen * wa; a.z -= nz * pen * wa;
+        c.x += nx * pen * wc; c.z += nz * pen * wc;
+        // contact also takes out the closing speed, so the pair stops pressing into each other rather than jittering
+        const closing = (c.vx - a.vx) * nx + (c.vz - a.vz) * nz;
+        if (closing < 0) {
+          a.vx += nx * closing * wa; a.vz += nz * closing * wa;
+          c.vx -= nx * closing * wc; c.vz -= nz * closing * wc;
+        }
+        if (wa > 0) constrain(i);
+        if (wc > 0) constrain(j);
+        moved = true;
+      }
+    }
+    if (!moved) break;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 
 export interface Sim {
@@ -121,6 +312,8 @@ export interface Sim {
   readonly chargeLevel: number;
   readonly autopilot: boolean;
   setAutopilot(on: boolean): void;
+  /** QA only (`?qaHalf=<s>`): shorten each half to `s` seconds (10–90) so a capture reaches full time; normal play never calls it. */
+  setQaHalfLength(seconds: number): void;
   /** Assist: with no stick input the user's player chases a loose ball and dribbles at goal (off by default). */
   readonly assist: boolean;
   setAssist(on: boolean): void;
@@ -161,10 +354,15 @@ export const SIM_DT = 1 / 60;
 export function createSim(): Sim {
   const events: SimEvent[] = [];
   let seed = SIM_SEED;
+  let halfLen = HALF_LEN;   // QA `?qaHalf` only; HALF_LEN in every real match
   let rng = makeRng(seed);
   let matchIndex = 0;
   let assist = false;
   let userCelebration = 0;
+  /** The player walking to a restart spot (pinned against the separation pass). */
+  let restartTakerId: string | null = null;
+  /** The venue has the Favela cage (refreshed every step: the page can switch venue on a live sim). */
+  let walledVenue = false;
   let firstHalfKickoff: TeamId = 0;
   let secondHalfKickoff: TeamId = 1;
   let cfg: MatchConfig = {
@@ -213,11 +411,12 @@ export function createSim(): Sim {
     const players: PlayerInternal[] = [];
     for (const team of [0, 1] as const) {
       const s = state.attackSign[team];
+      // the away side is the home side turned through 180° (x and z): see ai.ts planCommand on why both ends must match
       for (const [suffix, [ax, az], role] of ROSTER) {
         players.push({
           id: `${team === 0 ? "h" : "a"}-${suffix}`,
           team, role, anchor: [ax, az],
-          x: s * ax, z: az, vx: 0, vz: 0, yaw: s > 0 ? 0 : Math.PI,
+          x: s * ax, z: s * az, vx: 0, vz: 0, yaw: s > 0 ? 0 : Math.PI,
           speed: 0, stamina: 1, slideT: 0, slideDir: [0, 0], slideCooldown: 0,
           kickT: 0, kickDur: 0.32, kickPower: 0, skillT: 0, skill: "none",
           celebrateT: 0, celebrateKind: 0, diveT: 0, diveDir: 0, diveVx: 0,
@@ -241,7 +440,7 @@ export function createSim(): Sim {
       let ax = p.anchor[0], az = p.anchor[1];
       if (kickoffShift && p.role === "FW") ax -= 5.5; // strikers start near the centre spot
       if (kickoffShift && p.role === "MF") ax -= 2;
-      p.x = s * ax; p.z = az; p.vx = 0; p.vz = 0; p.speed = 0;
+      p.x = s * ax; p.z = s * az; p.vx = 0; p.vz = 0; p.speed = 0;
       p.yaw = s > 0 ? 0 : Math.PI;
       p.slideT = 0; p.skillT = 0; p.diveT = 0; p.stunT = 0; p.holdT = 0;
       p.kickT = 0; p.celebrateT = 0; p.trapT = 0; p.pendKick = null;
@@ -418,7 +617,8 @@ export function createSim(): Sim {
       // a CPU back-pass to the keeper is the last resort (he holds it a second and boots it long; as an ordinary
       // option half of all CPU passes recycled through him and matches stalled at 0-0)
       const backPass = m.isKeeper && !p.controlled ? CPU_BACKPASS_PENALTY : 0;
-      const score = dot * 4 + open * 0.9 + forward * 0.12 - Math.abs(d - (driven ? 11 : 7)) * 0.25 - backPass;
+      const score = dot * 4 + open * 0.9 + forward * 0.12 - Math.abs(d - (driven ? 11 : 7)) * 0.25 - backPass
+        - PASS_LANE_BLOCK * passLaneRisk(state, p.team, p.x, p.z, m.x, m.z, driven);
       if (score > bestScore) { bestScore = score; best = m; }
     }
     if (!best) return null;
@@ -466,7 +666,7 @@ export function createSim(): Sim {
     startKickoff(state.kickoffTeam);
   }
 
-  function clockLimit() { return state.half === 3 ? ET_LEN : HALF_LEN; }
+  function clockLimit() { return state.half === 3 ? ET_LEN : halfLen; }
 
   function timeUp() {
     if (state.half === 1) {
@@ -677,24 +877,32 @@ export function createSim(): Sim {
 
   /* --------------------------- out / walls ------------------------ */
 
+  /**
+   * Favela cage walls: the ball's drawn surface meets the drawn inner faces (CAGE_INNER_X / CAGE_INNER_Z). Only a ball
+   * whose bottom is below the top of the wall bounces; the end walls stop at CAGE_GOAL_GAP (the mouth stays open, FC-10).
+   * A ball that was already past an inner face (it came over the top) is left to go out of play.
+   */
+  function cageBounce(px0: number, pz0: number) {
+    const b = state.ball;
+    if (b.y - BALL_R >= CAGE_TOP) return;          // drawn bottom (centre + lift - drawn radius) clears the wall
+    const mx = CAGE_INNER_X - BALL_VIS_R, mz = CAGE_INNER_Z - BALL_VIS_R;
+    let bounced = false;
+    if (Math.abs(b.z) > mz && Math.abs(pz0) <= CAGE_INNER_Z) {
+      b.z = Math.sign(b.z) * mz; b.vz = -b.vz * CAGE_RESTITUTION; b.vx *= 0.85; bounced = true;
+    }
+    if (Math.abs(b.x) > mx && Math.abs(b.z) + BALL_VIS_R > CAGE_GOAL_GAP && Math.abs(px0) <= CAGE_INNER_X) {
+      b.x = Math.sign(b.x) * mx; b.vx = -b.vx * CAGE_RESTITUTION; b.vz *= 0.85; bounced = true;
+    }
+    if (bounced) {
+      emit({ type: "wall", label: "off the boards", severity: "info", position: [b.x, b.y, b.z] });
+      if (Math.hypot(b.vx, b.vz) < 2.2) { b.mode = "loose"; }
+    }
+  }
+
   function outOfBounds() {
     const b = state.ball;
-    const v = VENUES[state.venue];
-    // Walled cage: bounce off the boards, play on.
-    if (v.walled) {
-      const mx = PITCH_HX - BALL_R, mz = PITCH_HZ - BALL_R;
-      let bounced = false;
-      // the end walls stop at the posts (scene.ts CAGE_GOAL_GAP): a ball inside the goal mouth is not bounced, so
-      // the goal test sees it cross the line (FC-10)
-      const inMouth = Math.abs(b.z) < GOAL_HALF_W - 0.06 && b.y < GOAL_H - 0.05;
-      if (Math.abs(b.x) > mx && !inMouth) { b.x = Math.sign(b.x) * mx; b.vx = -b.vx * 0.55; b.vz *= 0.85; bounced = true; }
-      if (Math.abs(b.z) > mz) { b.z = Math.sign(b.z) * mz; b.vz = -b.vz * 0.55; b.vx *= 0.85; bounced = true; }
-      if (bounced) {
-        emit({ type: "wall", label: "off the boards", severity: "info", position: [b.x, b.y, b.z] });
-        if (Math.hypot(b.vx, b.vz) < 2.2) { b.mode = "loose"; }
-      }
-      return;
-    }
+    // Walled cage: below the wall top the ball already bounced off the boards (cageBounce); one that reaches here
+    // cleared the wall (or the bar) and is out of play like anywhere else.
     const last = b.lastTouchTeam;
     const other: TeamId = last === 0 ? 1 : 0;
     // side-line out → kick-in
@@ -708,7 +916,9 @@ export function createSim(): Sim {
     }
     // goal line out
     if (Math.abs(b.x) > PITCH_HX) {
-      const defendingTeam: TeamId = b.x > 0 ? 1 : 0;   // goal at +X is defended by team 1
+      // the team defending this end: sides swap at half-time, so it follows attackSign (a fixed "+X is team 1's goal"
+      // handed every second-half corner / goal kick to the wrong side)
+      const defendingTeam: TeamId = Math.sign(b.x) === state.attackSign[0] ? 1 : 0;
       if (last === defendingTeam) {
         // corner for the attackers
         state.restartKind = "corner"; state.restartTeam = other;
@@ -731,6 +941,7 @@ export function createSim(): Sim {
     const spot = state.restartSpot!;
     const team = state.restartTeam!;
     const taker = nearestOf(team, spot[0], spot[1], false);
+    restartTakerId = taker?.id ?? null;
     if (!taker) {
       // nobody on that side to take it (never in a match): drop the ball on the spot and play on
       const b = state.ball;
@@ -799,7 +1010,7 @@ export function createSim(): Sim {
     b.freeT += dt;
     if (b.mode === "held") {
       const gk = findPlayer(b.ownerId);
-      if (gk) { b.x = gk.x + Math.cos(gk.yaw) * 0.45; b.z = gk.z + Math.sin(gk.yaw) * 0.45; b.y = 0.95; }
+      if (gk) { b.x = gk.x + Math.cos(gk.yaw) * 0.45; b.z = gk.z + Math.sin(gk.yaw) * 0.45; b.y = 0.95; pushOutOfPosts(b, FRAME_HIT_R); }
       return true;
     }
     if (b.mode === "dribble" || b.mode === "controlled") {
@@ -815,6 +1026,7 @@ export function createSim(): Sim {
         b.x = lerp(b.x, f[0], Math.min(1, dt * 30));
         b.z = lerp(b.z, f[1], Math.min(1, dt * 30));
         b.y = BALL_R; b.vx = o.vx; b.vz = o.vz; b.vy = 0;
+        pushOutOfPosts(b, FRAME_HIT_R);
         pend.minFootDist = Math.min(pend.minFootDist, dist2(b.x, b.z, f[0], f[1]));
         if (pend.T - o.kickT >= pend.contactAt) launchKick(o, pend);
         return true;
@@ -828,6 +1040,7 @@ export function createSim(): Sim {
       b.x = lerp(b.x, tx, Math.min(1, dt * 13));
       b.z = lerp(b.z, tz, Math.min(1, dt * 13));
       b.y = BALL_R; b.vx = o.vx; b.vz = o.vz; b.vy = 0; b.spin = 0;
+      pushOutOfPosts(b, FRAME_HIT_R);
       b.rolling = false;
       spinBall(b, b.vz / BALL_R, 0, -b.vx / BALL_R, dt);
       state.possessionTeam = o.team;
@@ -840,31 +1053,18 @@ export function createSim(): Sim {
     const impact = stepFreeBall(b, dt);
     if (impact > 0) emit({ type: "bounce", label: "bounce", severity: "info", position: [b.x, b.y, b.z], value: impact });
 
-    // goal posts / bar — swept against the goal-line plane, so a fast strike cannot step past a post between two frames
-    for (const gx of [-PITCH_HX, PITCH_HX]) {
-      const crossed = (px0 - gx) * (b.x - gx) <= 0 && px0 !== b.x;
-      const near = Math.abs(b.x - gx) <= 0.38;
-      if (!crossed && !near) continue;
-      // where the ball was when it met the plane (or where it is now when it only skims it)
-      const t = crossed ? clamp((gx - px0) / (b.x - px0), 0, 1) : 1;
-      const cz = lerp(pz0, b.z, t), cy = lerp(py0, b.y, t);
-      const post = Math.abs(Math.abs(cz) - GOAL_HALF_W) < 0.16 && cy < GOAL_H;
-      const bar = Math.abs(cy - GOAL_H) < 0.18 && Math.abs(cz) < GOAL_HALF_W + 0.1;
-      if (post && Math.sign(b.vx) === Math.sign(gx)) {
-        b.x = gx - Math.sign(b.vx) * 0.24; b.z = cz; b.y = Math.max(BALL_R, cy); b.vx = -b.vx * 0.5; b.vz *= 0.6;
-        emit({ type: "post", label: "off the post", severity: "warn", position: [b.x, b.y, b.z] });
-        continue;
-      }
-      if (bar && b.vy > 0) {
-        b.y = GOAL_H - 0.18; b.vy = -b.vy * 0.45; b.vx *= 0.72;
-        emit({ type: "crossbar", label: "off the bar", severity: "warn", position: [b.x, b.y, b.z] });
-        continue;
-      }
-    }
+    // goal posts / bar — capsules the size of the drawn woodwork, swept along this step so a fast strike cannot tunnel
+    const woodwork = collideGoalFrame(b, px0, py0, pz0);
+    if (woodwork === "post") emit({ type: "post", label: "off the post", severity: "warn", position: [b.x, b.y, b.z] });
+    else if (woodwork === "crossbar") emit({ type: "crossbar", label: "off the bar", severity: "warn", position: [b.x, b.y, b.z] });
+    // Favela cage: the ball bounces off the drawn inner faces, only below the top of the wall
+    if (!woodwork && walledVenue) cageBounce(px0, pz0);
 
     // goal!
     if (Math.abs(b.x) > PITCH_HX + 0.1 && Math.abs(b.z) < GOAL_HALF_W - 0.06 && b.y < GOAL_H - 0.05) {
-      const scoringTeam: TeamId = b.x > 0 ? 0 : 1; // goal at +X belongs to team 1
+      // the team attacking this end scores. Sides swap at half-time: the old fixed "+X goal is team 0's" credited
+      // every second-half goal to the wrong team (autoplay showed the away side on ~2x the home side's goals)
+      const scoringTeam: TeamId = Math.sign(b.x) === state.attackSign[0] ? 0 : 1;
       if (state.phase === "shootout") { resolvePenalty("goal"); return true; }
       if (state.mode === "touch") { labRefeed("in the net"); return true; }
       goal(scoringTeam, b.lastToucherId);
@@ -931,7 +1131,26 @@ export function createSim(): Sim {
 
   /* --------------------------- players ---------------------------- */
 
+  /** Every branch of the player step (dive, slide, stun, celebration, run) ends inside the solid-world constraints. */
   function applyCommand(p: PlayerInternal, c: PlayerCommand, dt: number) {
+    movePlayer(p, c, dt);
+    constrainPlayerPosition(p, walledVenue);
+  }
+
+  /** Scripted players the separation pass must not move. */
+  function pinnedPlayer(p: PlayerInternal): boolean {
+    const b = state.ball;
+    return p.pendKick !== null || (p.isKeeper && p.diveT > 0) || (b.mode === "held" && b.ownerId === p.id) ||
+      (state.phase === "restart" && p.id === restartTakerId);
+  }
+
+  const pinnedAt = (i: number) => pinnedPlayer(state.players[i] as PlayerInternal);
+  const constrainAt = (i: number) => constrainPlayerPosition(state.players[i]!, walledVenue);
+  function separateAll() {
+    separatePlayers(state.players, pinnedAt, constrainAt);
+  }
+
+  function movePlayer(p: PlayerInternal, c: PlayerCommand, dt: number) {
     // timers
     p.slideT = Math.max(0, p.slideT - dt);
     p.slideCooldown = Math.max(0, p.slideCooldown - dt);
@@ -1016,8 +1235,7 @@ export function createSim(): Sim {
       p.vz = lerp(p.vz, dir[1] * cap * Math.min(1, ml) * skillBoost, Math.min(1, dt * accelRate));
     }
     p.x += p.vx * dt; p.z += p.vz * dt;
-    p.x = clamp(p.x, -PITCH_HX - 0.6, PITCH_HX + 0.6);
-    p.z = clamp(p.z, -PITCH_HZ - 0.4, PITCH_HZ + 0.4);
+    constrainPlayerPosition(p, walledVenue);   // before the skill / tackle checks read the position
     p.speed = Math.hypot(p.vx, p.vz);
     if (windup || p.speed > 0.4) {
       // a swing turns the kicker to face the kick so the boot drives the ball along its line
@@ -1087,7 +1305,11 @@ export function createSim(): Sim {
         startKick(p, norm2(gx - p.x, tz - p.z), power, {
           kind: "shot",
           aimLiftDeg: (c.shootAim?.lift ?? 0) * 4,
-          spin: lat * -7.5  // release direction curls the flight
+          // a placed shot bends away from the keeper toward its corner. The curl is relative to the attack direction:
+          // the old world-space `lat * -7.5` bent every shot at the +X goal back to the keeper and every shot at the -X
+          // goal out onto the post (47 woodwork hits vs 1 over 48 CPU matches), so the end attacking -X scored ~3x as
+          // often (tests/unit/aura-fc-3d/side-balance.test.ts)
+          spin: lat * 3 * gSign
         });
       }
     }
@@ -1098,6 +1320,7 @@ export function createSim(): Sim {
   function step(dt: number, input: UserInputFrame): SimEvent[] {
     events.length = 0;
     if (state.paused) return events;
+    walledVenue = VENUES[state.venue].walled;
     const b = state.ball;
     state.phaseT += dt;
     state.simT += dt;
@@ -1195,6 +1418,7 @@ export function createSim(): Sim {
       case "restart":
         stepRestart(dt);
         for (const p of state.players as PlayerInternal[]) applyCommand(p, { move: [0, 0], sprint: false }, dt);
+        separateAll();
         return events;
       case "ended":
         for (const p of state.players as PlayerInternal[]) applyCommand(p, { move: [0, 0], sprint: false }, dt);
@@ -1210,6 +1434,7 @@ export function createSim(): Sim {
       for (const p of state.players as PlayerInternal[]) {
         applyCommand(p, { move: [0, 0], sprint: false }, dt);
       }
+      separateAll();
       publishPossession(dt);
       return events;
     }
@@ -1236,6 +1461,8 @@ export function createSim(): Sim {
       (p as PlayerInternal).cmd = cmd;
       applyCommand(p, cmd, dt);
     }
+    // nobody walks through anybody: ordered pair separation after everyone moved
+    separateAll();
 
     // ball
     if (state.phase === "live" || state.phase === "extratime") {
@@ -1250,6 +1477,7 @@ export function createSim(): Sim {
         b.x = gk.x + Math.cos(gk.yaw) * 0.4;
         b.z = gk.z + Math.sin(gk.yaw) * 0.4;
         b.y = 0.95;
+        pushOutOfPosts(b, FRAME_HIT_R);
         if (gk.holdT <= 0) {
           giveBall(gk, false);
           const target = choosePassTarget(gk, [state.attackSign[gk.team], 0], true);
@@ -1325,6 +1553,7 @@ export function createSim(): Sim {
     get chargeLevel() { return chargeHeld ? charge : 0; },
     get autopilot() { return autopilot; },
     setAutopilot(on: boolean) { autopilot = on; },
+    setQaHalfLength(seconds: number) { halfLen = clamp(seconds, 10, HALF_LEN); },
     get assist() { return assist; },
     setAssist(on: boolean) { assist = on; },
     get seed() { return seed; },

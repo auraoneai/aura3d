@@ -74,13 +74,28 @@ describe("aura-slam view: scene composition", () => {
     expect(new Set(all).size).toBe(all.length);
   });
 
-  it("WP-01: World Tour mounts sculpted procedural multi-material venue set-pieces with zero static GLB models", () => {
-    const walk = (nodes: Doc["nodes"] = []): NonNullable<Doc["nodes"]> =>
-      nodes.flatMap((n) => [n, ...walk(n.children as Doc["nodes"])]);
-    const allNodes = walk(doc.nodes);
+  const walk = (nodes: Doc["nodes"] = []): NonNullable<Doc["nodes"]> =>
+    nodes.flatMap((n) => [n, ...walk(n.children as Doc["nodes"])]);
+
+  it("Idol wow pass: the World Tour set pieces are Idol GLB models with the procedural pieces' names", () => {
+    const models = walk(doc.nodes).filter((n) => n.kind === "model").map((n) => n.name);
+    for (const id of ["wt-umpire-stand", "umpire-idol", "net-post-left", "net-post-right", "stadium-floodlight-left-tower", "stadium-floodlight-right-tower",
+      "stadium-scoreboard-board", "wt-sideline-bench-north", "wt-sideline-bench-south", "wt-tv-camera-left", "wt-tv-camera-right"]) {
+      expect(models, id).toContain(id);
+    }
+    // the cantilever roof truss, centre strap and the 240 instanced bucket seats stay procedural; the lamp lenses and score LEDs stay lit
+    for (const id of ["wt-stadium-bowl", "wt-stadium-seats", "wt-center-strap-anchor", "stadium-floodlight-left-lenses", "stadium-scoreboard-leds", "stadium-scoreboard-gantry"]) expect(names.has(id), id).toBe(true);
+    // the renderer's `umpire-head` handle still resolves (hidden procedural head)
+    expect(names.has("umpire-head")).toBe(true);
+  });
+
+  it("WP-01: `?idol=0` keeps the sculpted procedural multi-material venue set-pieces with zero static GLB models", () => {
+    const procedural = buildTennisScene(createPoseRig(), { idol: false }).toJSON() as unknown as Doc;
+    const allNodes = walk(procedural.nodes);
+    const procNames = new Set(flatten(procedural.nodes));
     expect(allNodes.filter((n) => n.kind === "model")).toHaveLength(0);
     for (const proceduralId of ["wt-umpire-stand", "wt-sideline-kit-north", "wt-sideline-kit-south", "wt-center-strap-anchor", "stadium-floodlight-left", "stadium-floodlight-right", "stadium-scoreboard-gantry", "wt-stadium-bowl"]) {
-      expect(names.has(proceduralId), proceduralId).toBe(true);
+      expect(procNames.has(proceduralId), proceduralId).toBe(true);
     }
   });
 

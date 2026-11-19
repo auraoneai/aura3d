@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-links-3d",
+  "key": "linksIdolClumpDunes",
+  "generatedAt": "2026-11-19T02:58:43.504Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f1be-020e-7172-adbb-fa33195d6d8a",
+      "prompt": "Single small compact clump of wild coastal dune grass: short dense golden-green and straw-coloured grass blades all growing up from one tight base, no loose or detached blades, a little sandy soil at the root. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f1be-8a97-7043-ad0c-7fefef1d4f34",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 11,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1739232,
+        "num_faces": 3481680,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Single small compact clump of wild coastal dune grass: short dense golden-green and straw-coloured grass blades all growing up from one tight base, no loose or detached blades, a little sandy soil at the root. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.621,
+    "size": [
+      0.432,
+      0.55,
+      0.472
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-links-3d/assets/idol/linksIdolClumpDunes.glb",
+  "sizeBytes": 1907312,
+  "preview": "artifacts/idol/aura-links-3d/linksIdolClumpDunes/views.png",
+  "usd": 0.37
+}

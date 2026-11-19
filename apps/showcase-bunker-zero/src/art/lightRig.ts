@@ -36,10 +36,18 @@ export const BZ_MOON = { color: "#9fb4ff", intensity: 2.6, elevationDeg: 74, azi
 
 export type QualityTierName = keyof typeof BZ_FIXTURE_LIGHTS;
 
-/** Rig lights shown on a floor slot (the per-floor visible set the art-direction audit mirrors). */
-export function visibleRigLights(slot: number, tier: QualityTierName = "high"): readonly string[] {
+/**
+ * Rig lights shown on a floor slot (the per-floor visible set the art-direction audit mirrors).
+ *
+ * F6 perf pass (2026-11-19, real GPU): the shadowed directional moon was the only light in the game that renders a
+ * shadow pass (every wall, prop and enemy drawn again: 106 -> 240 draws, 16-29 fps at the F6 reference view) and the
+ * only light whose kind is new on F6, so the 5 -> 6 transition compiled ~140 programs mid-play (a 7 s frame, then
+ * 7-10 fps). F6's key is now the key spot hung above the hatch in the moon's colour: the same light set as every other
+ * floor (no new programs, no shadow pass). `moonKey` (the `?godrays=1` capture variant) brings the directional back.
+ */
+export function visibleRigLights(slot: number, tier: QualityTierName = "high", moonKey = false): readonly string[] {
   const ids: string[] = [];
-  if (slot === 5) ids.push(RIG_IDS.moon); else ids.push(RIG_IDS.key);
+  if (slot === 5 && moonKey) ids.push(RIG_IDS.moon); else ids.push(RIG_IDS.key);
   ids.push(slot === 4 ? RIG_IDS.tube : RIG_IDS.fill);
   ids.push(RIG_IDS.player);
   for (let i = 0; i < BZ_FIXTURE_LIGHTS[tier]; i++) ids.push(fixtureLightId(i));
@@ -214,8 +222,9 @@ export interface LightRigDriver {
 
 export function createLightRigDriver(
   get: (id: string) => RigLightHandle | null,
-  options: { readonly tier: () => QualityTierName; readonly reducedMotion: () => boolean; readonly isOpen: (cx: number, cz: number) => boolean }
+  options: { readonly tier: () => QualityTierName; readonly reducedMotion: () => boolean; readonly isOpen: (cx: number, cz: number) => boolean; readonly moonKey?: () => boolean }
 ): LightRigDriver {
+  const moonKey = () => options.moonKey?.() ?? false;
   let slot = 0;
   let look = lookOfSlot(0);
   let cells: readonly (readonly [number, number])[] = fixtureCells(floorDefOfSlot(0));
@@ -247,14 +256,15 @@ export function createLightRigDriver(
       pool = Array.from({ length: FIXTURE_POOL_SIZE }, () => -1);
       rankAt = -1;
       rampNext.clear();
-      aimSpot(RIG_IDS.key, look.key, look.lamp.color, look.key.intensity);
+      // F6 (no `moonKey`): the key spot is the moon through the hatch, in the moon's colour.
+      aimSpot(RIG_IDS.key, look.key, next === 5 ? BZ_MOON.color : look.lamp.color, look.key.intensity);
       aimSpot(RIG_IDS.fill, look.fill, look.lamp.color, look.fill.intensity);
       if (next === 4) {
         const tube = handle(RIG_IDS.tube);
         const pose = spotPose(look.fill, next);
         tube?.setPosition(pose.position[0], pose.position[1], pose.position[2]);
       }
-      show(visibleRigLights(next, options.tier()));
+      show(visibleRigLights(next, options.tier(), moonKey()));
     },
     update(cam, timeSeconds) {
       const reduced = options.reducedMotion();

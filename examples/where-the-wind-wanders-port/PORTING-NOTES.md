@@ -91,3 +91,9 @@ Cost: 362 credits of the 800 cap (ledger tag `wind`), including the probe clips.
 Blind judge (model, not a human; seed 20261023, 4 states x 12 passes): the original is still picked 48/48. Structural distance to the original (4 frames), art-pass -> Meshy: luma JSD 0.060 -> 0.051, RGB JSD 0.554 -> 0.495, palette distance 0.113 -> 0.114, edge-density ratio 0.53 -> 0.75, luma mean delta 2.6 -> -3.6. Before/after sheets: `evidence/where-the-wind-wanders-port/compare-meshy-*.jpg` (frames `meshy-before/`, `meshy-after/`).
 
 Remaining differences: the traveller is dark and realistic next to the painted scene, static trees, no painted texture detail on the new models, the wisp reads pink rather than violet, fewer hills.
+
+## Idol wow pass (2026-11-18, render layer only)
+
+- The Bellkeeper is a rigged Idol GLB (`assets/idol/bkHero.glb`, style: a handcrafted storybook miniature in gouache colours) posed every frame from the same `BellkeeperRigPose` (hips height, torso, head gaze, arm swing, two-bone leg IK with planted soles) through the runtime handle's `setAnimationPose` live pose (`art/idolModels.ts`, `art/idolRig.ts`, bone map `art/idolRigData.ts`). The bell-staff, chime and ribbon stay procedural and ride in the posed right hand; the kite thread anchors to that hand.
+- Villagers, cottages, windmill tower and sails, bell frame and bell, wayside shrine, packhorse bridge, ancient oak, rowboat and lantern posts are Idol models fitted to the measured procedural sizes and pivots (sails centred on the spinning hub, bell hung from its yoke, boat waterline at the node origin).
+- `?idol=0` restores the procedural models. Assets resolve through `apps/showcase-where-the-wind-wanders-port/src/idol-assets.ts`. `sim.ts` and the replay tests are untouched.

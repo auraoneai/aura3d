@@ -1,0 +1,66 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cross-hop",
+  "key": "hopCarSuv",
+  "generatedAt": "2026-11-19T00:25:58.748Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-2a1b-71a0-966c-dbb65be2f206",
+      "prompt": "A toy SUV car carved from wood and painted glossy leaf-green, roof rails, round headlights, long and low realistic car proportions: the body is about two and a half times longer than it is wide and about three times longer than it is tall, a low flat roofline, vehicle body only with NO wheels and NO tyres: four empty dark round wheel arches cut into the lower sides, the body held slightly above the ground, telephoto side-three-quarter view, opaque dark tinted glass. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f134-0da2-7381-a736-733763afad99",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 41,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 933964,
+        "num_faces": 1867932,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A toy SUV car carved from wood and painted glossy leaf-green, roof rails, round headlights, long and low realistic car proportions: the body is about two and a half times longer than it is wide and about three times longer than it is tall, a low flat roofline, vehicle body only with NO wheels and NO tyres: four empty dark round wheel arches cut into the lower sides, the body held slightly above the ground, telephoto side-three-quarter view, opaque dark tinted glass. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -130,
+    "scale": 1.841,
+    "size": [
+      1.017,
+      0.672,
+      2.15
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-cross-hop/assets/idol/hopCarSuv.glb",
+  "sizeBytes": 705772,
+  "preview": "artifacts/idol/cross-hop/hopCarSuv/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": -40,
+    "note": "facing re-fixed from opt.glb with tools/idol/normalize.mjs after inspecting views.png"
+  },
+  "postprocess": {
+    "step": "shrink",
+    "tool": "aura3d assets optimize + gltf-transform jpeg (normal map PNG->JPEG q90)",
+    "maxVerts": 8000,
+    "tex": 512,
+    "sizeBytesBefore": 2407920
+  }
+}

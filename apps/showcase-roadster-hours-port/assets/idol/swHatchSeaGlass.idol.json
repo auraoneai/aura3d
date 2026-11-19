@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swHatchSeaGlass",
+  "generatedAt": "2026-11-18T22:27:37.733Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the client's 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f089-f05d-7933-8931-c561898ee76e",
+      "prompt": "A single compact five-door hatchback car of a fictional unbranded design, pale sea-glass mint-teal paint with a white roof, black plastic lower trim, dark tinted windows, black tyres on white-painted steel wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08f-4f91-7dc2-b0e9-19f0c71d22dc",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 8,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1167570,
+        "num_faces": 2335328,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single compact five-door hatchback car of a fictional unbranded design, pale sea-glass mint-teal paint with a white roof, black plastic lower trim, dark tinted windows, black tyres on white-painted steel wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.12,
+    "size": [
+      2.578,
+      2.442,
+      4.12
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swHatchSeaGlass.glb",
+  "sizeBytes": 2838044,
+  "preview": "artifacts/idol/saltwind-highway/swHatchSeaGlass/views.png",
+  "usd": 0.37
+}

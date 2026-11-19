@@ -31,10 +31,9 @@ import {
 } from "@aura3d/engine";
 import {
   buildBatchedSceneryNode,
-  buildCombatDroneNode,
   buildHeatsinkFinSpec,
-  buildLaserBoltSpec,
   buildProximityMineNode,
+  buildLaserBoltSpec,
   buildSeekerMissileNode,
   buildShockwaveRingNode,
   buildSingleSceneryNode,
@@ -44,6 +43,7 @@ import {
   MAT_INSTANCED_WALL_ARMOR,
   MAT_LASER_BOLT
 } from "./art/proceduralModels";
+import { buildIdolBatchedSceneryNode, buildIdolDroneNode, buildIdolMineNode, buildIdolSceneryNode, hasIdolScenery, idolAsset, IDOL_BATCH_KEYS } from "./art/idolModels";
 import { ASPHALT_ROUGHNESS_MEAN, HDRI_BY_ID, luts, textures } from "./aura-assets";
 import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec, type SceneryAnchor } from "./data";
 import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./look";
@@ -510,19 +510,21 @@ export function buildThermalDriftScene(options: SceneOptions) {
   ]);
 
   // Repeated track-side arches, tunnels, iron towers, and holo billboards batched into GPU `instances.custom` pools (always visible -> stable UniformArena slots).
+  // Batched arches, tunnel portals, L towers and holo billboards stay procedural (Idol batches would mount via `instances.model`).
   for (const batch of SCENERY_BATCHES) {
-    s.add(buildBatchedSceneryNode(batch));
+    s.add(buildIdolBatchedSceneryNode(batch) ?? buildBatchedSceneryNode(batch));
   }
-  // Sculpted multi-material foundry megastructures, hazards, and track pickups.
+  // Idol foundry megastructures, hazards and pickups; lava curtain, spillway, overpass and boost pad stay procedural.
   for (const anchor of SINGLE_SCENERY_ANCHORS) {
-    s.add(buildSingleSceneryNode(anchor, !UNSHADOWED_ANCHOR_ASSETS.has(anchor.assetKey)));
+    const castShadow = !UNSHADOWED_ANCHOR_ASSETS.has(anchor.assetKey);
+    s.add(hasIdolScenery(anchor) ? buildIdolSceneryNode(anchor, castShadow) : buildSingleSceneryNode(anchor, castShadow));
   }
-  // Playable & rival hover-drones with tinted canopies (`castShadow: false`) and `+Z` afterburner rings.
+  // Playable & rival Idol hover-drones (nose along -Z), with instanced `+Z` afterburner plumes written by main.ts.
   for (const id of DRONE_ORDER) {
-    s.add(buildCombatDroneNode(id, DRONE_SPECS[id]));
+    s.add(buildIdolDroneNode(id, DRONE_SPECS[id]));
   }
   // Transient visibility-toggling ordnance & VFX quads placed last so toggling `.setVisible()` never shifts UniformArena offsets of steady draws.
-  s.add(buildProximityMineNode(IDS.mine));
+  s.add(buildIdolMineNode(IDS.mine) ?? buildProximityMineNode(IDS.mine));
   s.addMany([
     buildShockwaveRingNode(IDS.ring),
     buildSeekerMissileNode(IDS.missile, false),
@@ -560,5 +562,10 @@ export function droneLivery(color: string): AuraModelMaterialOverride {
   return { color: lifted, colorMode: "multiply", clearcoat: paint.clearcoat ?? 0.88, clearcoatRoughness: paint.clearcoatRoughness ?? 0.08, metallic: paint.metallic ?? 0.52, roughness: paint.roughness ?? 0.28, envMapIntensity: paint.envMapIntensity ?? 1.8, rim: DRONE_HEAT_RIM };
 }
 
-/** Static GLB model nodes in the scene (`0`: 100% procedural multi-material meshes in WP-03). */
-export const MODEL_NODE_COUNT = 0;
+/**
+ * Idol GLB model nodes in the foundry scene (Idol wow pass): 7 drones, the mine, the Idol single anchors and the instanced
+ * Idol batches (one `instances.model` node each).
+ */
+export const MODEL_NODE_COUNT =
+  DRONE_ORDER.length + (idolAsset("tdMine") ? 1 : 0) + SINGLE_SCENERY_ANCHORS.filter(hasIdolScenery).length +
+  SCENERY_BATCHES.filter((b) => { const key = IDOL_BATCH_KEYS[b.assetKey]; return key !== undefined && idolAsset(key) !== undefined; }).length;

@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "ninja-runner-port": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "route": "/apps/shadowstep-gauntlet/",
+      "states": [
+        "1280x720 title: title card with controls incl. P autoplay",
+        "1280x720 early play: Lantern Village, echo clones flanking the hero, Owl Caster ahead",
+        "1280x720 action: 0.7 s later: stride changed, clones mid-run",
+        "1280x720 second venue: Rooftop Run on tiled roofs with ridge cap, clones and Sunfire",
+        "1280x720 third venue: Whispering Forest log path, Ember form, clones",
+        "1280x720 finale: Valley Gate at 2,496 m: Ember form with clones, the rebuilt cascading falls behind",
+        "1280x720 results: run complete card",
+        "390x844 title: title card",
+        "390x844 early play: village with clones",
+        "390x844 second venue: rooftop run",
+        "390x844 third venue: forest log path, sword swing",
+        "390x844 action: gale star thrown under a torii",
+        "390x844 finale: valley gate"
+      ],
+      "frames": [
+        "1280-01-title.jpg",
+        "1280-02-village-clones.jpg",
+        "1280-03-village-run.jpg",
+        "1280-04-rooftop-run.jpg",
+        "1280-05-forest.jpg",
+        "1280-06-valley-gate-ember.jpg",
+        "1280-07-results.jpg",
+        "390-01-title.jpg",
+        "390-02-village-clones.jpg",
+        "390-03-rooftop-run.jpg",
+        "390-04-forest.jpg",
+        "390-05-gale-star.jpg",
+        "390-06-valley-gate.jpg",
+        "card-1x.jpg",
+        "card-2x.jpg"
+      ],
+      "results": "autoplay finishes the 2,640 m course in ~112 s: 'The village is safe', 102 defeated, score 39,735; restarts after 3 s",
+      "autoplay": "?autoplay=1 (alias ?autopilot=1, P toggles): no title, built-in autopilot changes lanes, jumps, slides, uses clones/orb/gale star/dash and all three forms; loops",
+      "errors": "none",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

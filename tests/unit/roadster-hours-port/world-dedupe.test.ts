@@ -23,7 +23,10 @@ describe("Saltwind Highway landmarks are built once (audit C3)", () => {
     ]);
   });
   it("with sculpted procedural scenery (GU47), only the sculpted models (and the rock island under them) are built", () => {
-    expect(landmarks(nodeNames(buildWorld(0, "gu47").scene))).toEqual(["lighthouse-model", "lighthouse-rock", "town-townhouses", "town-villas"]);
+    expect(landmarks(nodeNames(buildWorld(0, "gu47", { idol: false }).scene))).toEqual(["lighthouse-model", "lighthouse-rock", "town-townhouses", "town-villas"]);
+  });
+  it("with the Idol models (GU47 default), one lighthouse GLB and one instanced GLB per house variant replace them", () => {
+    expect(landmarks(nodeNames(buildWorld(0, "gu47").scene))).toEqual(["lighthouse-model", "lighthouse-rock", "town-townhouses", "town-townhouses-1", "town-villas", "town-villas-1"]);
   });
   it("other routes have no coastal landmarks", () => {
     expect(landmarks(nodeNames(buildWorld(1, "gu47").scene))).toEqual([]);

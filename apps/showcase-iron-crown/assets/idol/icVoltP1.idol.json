@@ -1,0 +1,83 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icVoltP1",
+  "generatedAt": "2026-11-18T23:39:13.496Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08a-d6e7-7a21-b6f2-148403e8483a",
+      "usd": 0.17,
+      "note": "reused"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ff-d01e-75c0-94e3-6ad9b2a2e8fc",
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 490344,
+        "num_faces": 980684,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 28,
+        "animations": [
+          "idle"
+        ]
+      }
+    }
+  ],
+  "subject": "Original adult female boxer, toned athletic muscular build, dark brown hair in a tight high braid, focused face, navy blue sleeveless sports tank top with thin electric-cyan piping, navy blue satin boxing trunks with a pale steel-blue waistband, padded navy blue leather boxing gloves on both hands, light blue ankle wraps over navy blue high-top boxing shoes",
+  "role": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 1 m, 1 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000        2.48x          51      0\n  bind-pose mismatch (SKIN_BIND_MISMATCH): bone_22 41% off-axis, bone_2 96% off-axis\n  ERROR material0 (mesh 0 prim 0): 51 of 30000 triangles stretch past 1.6x their rest edges (worst 2.48x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n  warn  2 bone(s) are not inside the mesh they move: bone_22 (vertices 0.034 m off a 0.085 m bone), bone_2 (vertices 0.063 m off a 0.066 m bone) (SKIN_BIND_MISMATCH). The mesh was modelled in a different pose than the skeleton assumes (typically mid-stride), so every clip rotates the limbs about joints off the limb. Rebuild the limbs in the skeleton's pose (assets repair-skin --rebuild-limbs) or re-rig.",
+    "repairLog": "Bind-pose mismatch on bone_22, bone_2: the mesh was modelled in a different pose than the skeleton assumes. Weight smoothing and triangle cuts only mask it. For a recognised humanoid run repair-skin --rebuild-limbs (rebuilds the legs in the skeleton's pose); otherwise rebuild the limbs in your DCC tool or regenerate and re-rig the model in the pose the skeleton assumes.\nStill failing after smooth-bridges: SKIN_STRETCH, SKIN_BIND_MISMATCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand.\n",
+    "mocapRepairReverted": {
+      "at": "2026-11-19T03:07:16.305Z",
+      "reason": "Real-GPU QA: the repair-skin pass (weight smoothing, normalize/prune, --cut-stretch holes) shredded hands and straps and opened see-through holes although its stretch count fell. Shipped weights are the generator's own (bit-identical POSITION/JOINTS_0/WEIGHTS_0/indices); the game limits arm elevation (100 deg) and forearm/wrist twist (75/60 deg) instead.",
+      "revertedRepair": {
+        "at": "2026-11-19T02:15:47.001Z",
+        "clips": "fal text-to-motion clips (tools/idol/motion-specs/iron-crown.json) baked from the shipped pose code",
+        "command": "aura3d assets repair-skin --keep-clips <those clips> --refit-skeleton --normalize --prune-distant --smooth-bridges --smooth-threshold 1.25 --smooth-rounds 12 --smooth-rings 6 --cut-stretch 4 (from the unrepaired Idol GLB)",
+        "note": "Skeleton unchanged (refit moved 0 joints); weights smoothed, triangles past 4x removed. Only the idle clip is stored; the game drives the bones from code.",
+        "beforeRepairMeshyClips": {
+          "max": "11.14x",
+          "over": "1685/30000"
+        },
+        "beforeRepairFalClips": {
+          "max": "5.00x",
+          "over": "832/29868"
+        }
+      }
+    }
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1,
+    "sceneScale": 1.74,
+    "size": [
+      0.932,
+      1,
+      0.2
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icVoltP1.glb",
+  "sizeBytes": 3723072,
+  "preview": "artifacts/idol/iron-crown/icVoltP1/views.png",
+  "usd": 0.42,
+  "admitRole": "character",
+  "renormalizedAt": "2026-11-18T23:47:12.425Z",
+  "doubleSided": {
+    "at": "2026-11-19T03:36:23.814Z",
+    "reason": "Real-GPU / CPU-skinned QA: skin folds at extreme generated-motion poses and single-sided cloth showed back faces, which back-face culling turned into see-through holes. Materials are double-sided (cull none) and opaque."
+  }
+}

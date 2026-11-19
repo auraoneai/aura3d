@@ -50,9 +50,22 @@ export default defineArtDirection({
   },
   framing: { rig: "chase", subjectHeightFraction: [0.22, 0.5], fovDeg: [30, 44], mobile: "both" },
   assets: [
-    // 100% procedural multi-material `@aura3d/engine` art: all streetball athletes (guards & bigs), seated animated
-    // courtside fans, standing instanced crowds, hoop stanchions, backboards, rims, basketballs, and 6 world venues
-    // are sculpted in `src/art/proceduralModels.ts` with zero Meshy `.glb` model assets.
+    // Nov 2026 Idol pass: the streetballers are rigged image-to-3D Idol GLBs (one per kit colour, src/idolBodies.ts),
+    // driven by the procedural joint pose; the ball rack and trophy are Idol props. Seated fans, crowds, stanchions,
+    // backboards, rims, basketballs and the six venues stay procedural (src/art/proceduralModels.ts); ?idol=off restores
+    // the procedural athletes.
+    { role: "character", assetKey: "hoopsIdolOrange", maxTriangles: 32000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "hoopsIdolOrangeBig", maxTriangles: 32000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "hoopsIdolGold", maxTriangles: 32000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "hoopsIdolCyan", maxTriangles: 32000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "hoopsIdolGreen", maxTriangles: 32000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "hoopsIdolViolet", maxTriangles: 32000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "hoopsIdolVioletBig", maxTriangles: 32000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "hoopsIdolRed", maxTriangles: 32000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "hoopsIdolCream", maxTriangles: 32000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "hoopsIdolCharcoal", maxTriangles: 32000, minTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "hoopsIdolBallCart", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "hoopsIdolTrophy", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   // Every juice event that draws maps to one kind of the src/fxPack.ts pack (H47-V1); the spray tag is H47-V3.
   vfx: [

@@ -10,7 +10,7 @@ export function registerPrd07Cli(): void {
       name: "vfx validate-atlas",
       owner: "prd07",
       summary: "Check a flipbook atlas JSON against the frame-grid contract",
-      usage: "aura3d vfx validate-atlas <atlas.json>",
+      usage: "aura3d vfx validate-atlas <atlas.json|manifest.json>",
       async run(argv, io) {
         const file = argv[0];
         if (!file) {
@@ -21,7 +21,7 @@ export function registerPrd07Cli(): void {
           const { readFile } = await import("node:fs/promises");
           const path = await import("node:path");
           const zlib = await import("node:zlib");
-          const raw = await readFile(`${io.cwd}/${file}`, "utf8");
+          const raw = await readFile(path.resolve(io.cwd, file), "utf8");
           const atlas = JSON.parse(raw) as {
             columns?: number; rows?: number; frames?: number;
             version?: number;

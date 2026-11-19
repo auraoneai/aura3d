@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import {
   addAssetAsync,
   bindGameRouteEvidence,
   certifyGameGeometry,
   checkDeploy,
   createCharacterAssemblyPlan,
-  createAssetThumbnails,
   doctor,
   initAgentFiles,
   initAgentSetup,
@@ -28,12 +27,25 @@ import {
   printSearchReport,
   profileUsage,
 } from "./cli-options.js";
-import { assetsAddHelp, mainHelp } from "./cli-help.js";
+import {
+  ANIMATION_SCRIPT_BY_VERB,
+  cliCatalog,
+  cliCatalogCommands,
+  formatCommandHelp,
+  formatGroupHelp,
+  mainHelp,
+  matchCatalogCommand,
+  readCliVersion,
+  registeredCommandsHelp,
+  unknownCommandMessage
+} from "./cli-help.js";
+import { monorepoOnlyMessage, unmetMonorepoRule } from "./monorepo-only.js";
+import { detectPackageManager, readPackageScripts, runScriptCommand } from "./package-manager.js";
 import { writeRouteTypedAssets } from "./asset-route-typegen.js";
 import { runBrowserDeployCheck } from "./deploy-browser-check.js";
 import { runResolve, runSearch } from "./pull-bridge.js";
 import { LADDER_ROLES, printLadderReport, runResolveLadder, type LadderRole } from "./resolve-ladder.js";
-import { cliCommandFor, cliCommandNames } from "./contracts/commands.js";
+import { cliCommandFor, type AuraCliCommand } from "./contracts/commands.js";
 import "./commands/registry.js";
 import { importMeshyIsolated, importMeshyIsolatedUsage, isAuraMonorepoRoot } from "./commands/assets/importMeshy.js";
 import { CERTIFY_CATEGORY_USAGE, isCertifyCategory } from "./commands/assets/certifyCategories.js";
@@ -62,13 +74,35 @@ const helpRequested = hasFlag("--help") || hasFlag("-h");
 
 async function main(): Promise<void> {
   const command = args[0];
+  if (command === "--version" || command === "-v") {
+    const { name, version } = readCliVersion();
+    console.log(hasFlag("--json") ? JSON.stringify({ name, version }) : version);
+    return;
+  }
+  if (command === undefined || command === "help" || command === "--help" || command === "-h") {
+    process.exitCode = printHelp(args.slice(1));
+    return;
+  }
+  // `<command> --help` prints that command's usage and never runs it, so no verb can write
+  // anything when asked for help (assets typegen/thumbnail/resolve, animation, init, …).
+  if (helpRequested) {
+    process.exitCode = printHelp(args);
+    return;
+  }
+  // C-39 registry first (longest argv-prefix match): lane verbs and the 5.6.0 work-package verbs
+  // resolve here, and a registered verb may replace a built-in of the same name.
+  const registered = findRegisteredCommand(args);
+  if (registered) {
+    process.exitCode = await runRegistered(registered.command, registered.argv);
+    return;
+  }
   if (command === "assets") {
     const action = args[1];
+    if (action === undefined) {
+      process.exitCode = printHelp(["assets"]);
+      return;
+    }
     if (action === "add") {
-      if (helpRequested) {
-        console.log(assetsAddHelp());
-        return;
-      }
       const file = args[2];
       const name = readOption("--name");
       if (!file || !name) throw new Error("Usage: aura3d assets add ./model.glb --name robot");
@@ -212,14 +246,13 @@ async function main(): Promise<void> {
         license: hasFlag("--license")
       }));
     } else if (action === "validate" && hasFlag("--skin")) {
-      if (helpRequested) { console.log(SKIN_HELP); return; }
       const skinOptions = readSkinCliOptions();
       const report = checkProjectSkins(process.cwd(), skinOptions);
       if (hasFlag("--json")) console.log(JSON.stringify(report, null, 2));
       else console.log(formatProjectSkinReport(report));
       if (!report.ok) process.exitCode = 1;
     } else if (action === "repair-skin") {
-      if (helpRequested || !args[2] || args[2].startsWith("--")) { console.log(SKIN_HELP); if (!helpRequested) process.exitCode = 1; return; }
+      if (!args[2] || args[2].startsWith("--")) { console.error(SKIN_HELP); process.exitCode = 2; return; }
       const stretch = readOption("--cut-stretch");
       const influences = readOption("--max-influences");
       const result = runRepairSkin(process.cwd(), args[2], {
@@ -311,8 +344,6 @@ async function main(): Promise<void> {
         const path = writeTypedAssets(process.cwd(), readAssetManifest(process.cwd()));
         console.log(`Wrote ${path}`);
       }
-    } else if (action === "thumbnail") {
-      print(createAssetThumbnails());
     } else if (action === "serve") {
       const manifest = readAssetManifest(process.cwd());
       console.log(`Serve ${manifest.outputDir} at ${manifest.assetBasePath}`);
@@ -380,20 +411,8 @@ async function main(): Promise<void> {
       }
       if (!report.ok) process.exitCode = 1;
     } else {
-      // C-39 fallthrough inside `assets`: lane-registered verbs
-      // (`assets admit`, `assets review`, …) resolve before the unknown error.
-      for (let words = Math.min(args.length, 4); words >= 2; words--) {
-        const registered = cliCommandFor(args.slice(0, words).join(" "));
-        if (registered) {
-          process.exitCode = await registered.run(args.slice(words), {
-            cwd: process.cwd(),
-            stdout: (line) => console.log(line),
-            stderr: (line) => console.error(line)
-          });
-          return;
-        }
-      }
-      throw new Error(`Unknown assets command: ${String(action)}`);
+      // Registered `assets` verbs (admit, review, optimize, …) already dispatched above.
+      unknownCommand(args);
     }
   } else if (command === "doctor") {
     if (args.includes("--look")) {
@@ -449,77 +468,127 @@ async function main(): Promise<void> {
     const setup = initAgentSetup({ agent: agent as "claude" | "cursor" | "copilot" | "generic" | "all", skills: skills as "core" | "all" | "none", template: readOption("--template") });
     console.log(JSON.stringify(setup, null, 2));
   } else {
-    // C-39 fallthrough: lane-registered commands resolve by longest argv-prefix match;
-    // the remaining argv is passed to the command's run().
-    for (let words = Math.min(args.length, 4); words > 0; words--) {
-      const registered = cliCommandFor(args.slice(0, words).join(" "));
-      if (registered) {
-        process.exitCode = await registered.run(args.slice(words), {
-          cwd: process.cwd(),
-          stdout: (line) => console.log(line),
-          stderr: (line) => console.error(line)
-        });
-        return;
-      }
-    }
-    console.log(mainHelp(profileUsage()) + registeredCommandsHelp());
+    // Not built in and not registered: a bare group name (`aura3d look`) lists its commands,
+    // anything else is an unknown command (exit 2, with "did you mean").
+    unknownCommand(args);
   }
 }
 
-async function runAnimationCommand(action: string | undefined): Promise<void> {
-  const scriptByAction: Record<string, string> = {
-    plan: "episode:plan",
-    preview: "episode:preview",
-    render: "episode:render",
-    package: "episode:package",
-    review: "episode:review",
-    verify: "episode:verify",
-    // The agent-native Scene-Tool CLI (#10 promotion): the user's own coding agent drives
-    // `aura3d animation scene <new|cast add|prop add|set|block|shot|dialogue|render|...>`.
-    scene: "scene"
-  };
-  const script = action ? scriptByAction[action] : undefined;
-  if (!script) {
-    // C-39: lane-registered `aura3d animation <sub>` commands (prd06's
-    // `animation inspect-clips`, T0.7) resolve through the registry before the
-    // delegated-script usage error fires.
-    if (action) {
-      const registered = cliCommandFor(`animation ${action}`);
-      if (registered) {
-        process.exitCode = await registered.run(args.slice(2), {
-          cwd: process.cwd(),
-          stdout: (line) => console.log(line),
-          stderr: (line) => console.error(line)
-        });
-        return;
-      }
-    }
-    throw new Error("Usage: aura3d animation plan|preview|render|package|review|verify|scene [--dry-run]");
+const cliIo = { cwd: process.cwd(), stdout: (line: string) => console.log(line), stderr: (line: string) => console.error(line) };
+
+/** Longest registered command whose words prefix argv (up to 4 words); the rest of argv goes to its run(). */
+function findRegisteredCommand(argv: readonly string[]): { readonly command: AuraCliCommand; readonly argv: readonly string[] } | undefined {
+  for (let words = Math.min(argv.length, 4); words > 0; words--) {
+    if (argv.slice(0, words).some((word) => word.startsWith("-"))) continue;
+    const command = cliCommandFor(argv.slice(0, words).join(" "));
+    if (command) return { command, argv: argv.slice(words) };
   }
-  const command = process.env.npm_execpath && process.env.npm_execpath.includes("pnpm")
-    ? "pnpm"
-    : "npm";
+  return undefined;
+}
+
+/** Runs a registered verb unless it is monorepo-only here, which prints one message and exits 2. */
+async function runRegistered(command: AuraCliCommand, argv: readonly string[]): Promise<number> {
+  const unmet = unmetMonorepoRule(command.name, argv, process.cwd());
+  if (unmet) {
+    console.error(monorepoOnlyMessage(command.name, unmet.needs, unmet));
+    return 2;
+  }
+  return command.run(argv, cliIo);
+}
+
+/**
+ * `aura3d help [words] [--json]` and `aura3d <words> --help`: main help, the full JSON catalog,
+ * one command's usage, or a group's command list. Unknown → exit 2 with suggestions.
+ */
+function printHelp(rawWords: readonly string[]): number {
+  const json = rawWords.includes("--json");
+  const words = rawWords.filter((word) => !word.startsWith("-"));
+  if (words.length === 0) {
+    console.log(json ? JSON.stringify(cliCatalog(profileUsage()), null, 2) : mainHelp(profileUsage()) + registeredCommandsHelp());
+    return 0;
+  }
+  const commands = cliCatalogCommands(profileUsage());
+  const hit = matchCatalogCommand(words, commands);
+  if (hit) {
+    if (json) console.log(JSON.stringify(hit, null, 2));
+    else if (hit.name === "assets validate" && rawWords.includes("--skin")) console.log(SKIN_HELP);
+    else console.log(formatCommandHelp(hit));
+    return 0;
+  }
+  const group = formatGroupHelp(words[0]!, commands);
+  if (group && words.length === 1) {
+    if (json) console.log(JSON.stringify(commands.filter((entry) => entry.name.startsWith(`${words[0]} `)), null, 2));
+    else console.log(group);
+    return 0;
+  }
+  console.error(unknownCommandMessage(words, commands));
+  return 2;
+}
+
+/** Bare group → its command list (exit 0); anything else → unknown command (exit 2). */
+function unknownCommand(argv: readonly string[]): void {
+  const words = argv.filter((word) => !word.startsWith("-"));
+  const commands = cliCatalogCommands(profileUsage());
+  if (words.length === 1 && argv.length === 1) {
+    const group = formatGroupHelp(words[0]!, commands);
+    if (group) {
+      console.log(group);
+      return;
+    }
+  }
+  console.error(unknownCommandMessage(argv, commands));
+  process.exitCode = 2;
+}
+
+async function runAnimationCommand(action: string | undefined): Promise<void> {
+  // `aura3d animation <verb>` runs the project's own npm script for that verb (ANIMATION_SCRIPT_BY_VERB);
+  // registered `animation <sub>` verbs (inspect-clips, validate-hero, …) were dispatched before this.
+  if (action === undefined) {
+    process.exitCode = printHelp(["animation"]);
+    return;
+  }
+  const script = ANIMATION_SCRIPT_BY_VERB[action];
+  if (!script) {
+    unknownCommand(args);
+    return;
+  }
+  const cwd = process.cwd();
+  const { manager, reason } = detectPackageManager(cwd);
   // Forward everything AFTER the action to the delegated script (so `aura3d animation scene
-  // cast add --query robot` reaches animation-scene.ts intact). npm/pnpm both use `--` to
-  // pass through args to the script.
+  // cast add --query robot` reaches animation-scene.ts intact).
   const forwarded = args.slice(2).filter((a) => a !== "--dry-run");
-  const commandArgs = [...(command === "pnpm" ? ["run", script] : ["run", script]), ...(forwarded.length ? ["--", ...forwarded] : [])];
+  const run = runScriptCommand(manager, script, forwarded);
+  const scripts = readPackageScripts(cwd);
+  const scriptFound = scripts !== undefined && typeof scripts[script] === "string";
   const report = {
-    ok: true,
+    ok: scriptFound,
     command: "animation",
     action,
     delegatedScript: script,
+    scriptFound,
     forwardedArgs: forwarded,
-    runner: command,
-    cwd: process.cwd(),
+    runner: manager,
+    runnerReason: reason,
+    commandLine: [run.command, ...run.args],
+    cwd,
     dryRun: hasFlag("--dry-run")
   };
+  if (!scriptFound) {
+    const available = scripts ? Object.keys(scripts).sort() : [];
+    const error = scripts === undefined
+      ? `aura3d animation ${action} runs this project's "${script}" npm script, but ${cwd} has no package.json. Run it from an animation project (npx create-aura3d@latest my-episode --template animation-studio).`
+      : `aura3d animation ${action} runs this project's "${script}" npm script, and ${join(cwd, "package.json")} has none${available.length ? ` (scripts: ${available.join(", ")})` : ""}. Run it from a project whose package.json defines "${script}" (npx create-aura3d@latest my-episode --template animation-studio ships "scene").`;
+    if (hasFlag("--dry-run") || hasFlag("--json")) console.log(JSON.stringify({ ...report, error }, null, 2));
+    else console.error(error);
+    process.exitCode = 1;
+    return;
+  }
   if (hasFlag("--dry-run")) {
     console.log(JSON.stringify(report, null, 2));
     return;
   }
-  const result = spawnSync(command, commandArgs, {
-    cwd: process.cwd(),
+  const result = spawnSync(run.command, [...run.args], {
+    cwd,
     stdio: "inherit",
     shell: process.platform === "win32"
   });
@@ -527,15 +596,10 @@ async function runAnimationCommand(action: string | undefined): Promise<void> {
   process.exitCode = result.status ?? 1;
 }
 
-function registeredCommandsHelp(): string {
-  const names = cliCommandNames();
-  if (names.length === 0) return "";
-  return `\nLane commands:\n${names.map((name) => `  aura3d ${name} — ${cliCommandFor(name)?.summary ?? ""}`).join("\n")}`;
-}
-
 main().catch((error) => {
   console.error(error instanceof Error ? (process.env.AURA3D_DEBUG ? error.stack : error.message) : String(error));
-  process.exitCode = 1;
+  // Usage errors (missing/invalid arguments) exit 2; failures while running exit 1.
+  process.exitCode = error instanceof Error && /^usage:/i.test(error.message) ? 2 : 1;
 });
 
 function readSkinCliOptions(): SkinCliOptions {

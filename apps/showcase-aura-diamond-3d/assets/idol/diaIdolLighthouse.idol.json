@@ -1,0 +1,39 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-diamond-3d",
+  "key": "diaIdolLighthouse",
+  "generatedAt": "2026-11-18T22:14:32.352Z",
+  "generator": "tools/idol/generate.mjs (finished by apps/showcase-aura-diamond-3d/scripts/idol-recover.mjs after the client poll timed out)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08d-2d31-73d3-843c-4b412526742c",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1523916,
+        "num_faces": 3049192,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 21.281,
+    "size": [
+      16.199,
+      24,
+      13.465
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-diamond-3d/assets/idol/diaIdolLighthouse.glb",
+  "sizeBytes": 4026888,
+  "preview": "artifacts/idol/aura-diamond-3d/diaIdolLighthouse/views.png",
+  "usd": 0.37
+}

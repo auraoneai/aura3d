@@ -1,0 +1,61 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-slam",
+  "key": "slamTvCamera",
+  "generatedAt": "2026-11-18T21:20:54.330Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f088-b92f-7ca1-83f8-0bcdc8a874ba",
+      "prompt": "A professional television broadcast camera with a long telephoto lens and side viewfinder, mounted on a fluid head on a tall black three-legged tripod with spreader, unbranded. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f089-db8e-73b1-a7d4-a6956320f143",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 547310,
+        "num_faces": 1094724,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A professional television broadcast camera with a long telephoto lens and side viewfinder, mounted on a fluid head on a tall black three-legged tripod with spreader, unbranded. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.793,
+    "size": [
+      1.346,
+      1.9,
+      1.311
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/aura-slam/assets/idol/slamTvCamera.glb",
+  "sizeBytes": 1189444,
+  "preview": "artifacts/idol/aura-slam/slamTvCamera/views.png",
+  "usd": 0.37,
+  "postOptimize": {
+    "tool": "aura3d assets optimize",
+    "role": "prop",
+    "tex": 512,
+    "maxVerts": 8000,
+    "reason": "~20-40 px under the broadcast camera; per-game byte budget"
+  }
+}

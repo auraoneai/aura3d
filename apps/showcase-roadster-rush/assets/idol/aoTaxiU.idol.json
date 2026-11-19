@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoTaxiU",
+  "generatedAt": "2026-11-18T22:46:03.953Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered after its 20 min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A single city taxi cab, a four-door sedan of a fictional unbranded design painted glossy saffron yellow, a plain blank white rectangular roof light box with no writing, a thin black checker stripe along the doors, tinted windows, black tyres on steel wheels with silver hubcaps, a plain smooth grille with no badge or emblem. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0be-f807-74f2-85b8-c5bca2d8f36f",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 750192,
+        "num_faces": 1500420,
+        "watertight": true
+      },
+      "seed": 5
+    }
+  ],
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.596,
+    "size": [
+      1.749,
+      1.637,
+      4.6
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoTaxiU.glb",
+  "sizeBytes": 1437780,
+  "preview": "artifacts/idol/apex-overdrive/aoTaxiU/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "normal-jpeg",
+      "quality": 90,
+      "bytesBefore": 2482796,
+      "bytesAfter": 1437780
+    }
+  ]
+}

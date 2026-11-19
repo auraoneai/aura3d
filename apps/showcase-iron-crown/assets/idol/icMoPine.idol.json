@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icMoPine",
+  "generatedAt": "2026-11-18T23:35:25.370Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0cc-a797-7c40-a87d-8d1408d62bdc",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0e1-6356-7961-b7f0-23dd49d47de6",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 906820,
+        "num_faces": 1813836,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Ancient windswept pine tree in bonsai style: gnarled twisted trunk, layered flat cloud-like pads of dark green needles, standing on a rocky mound",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 2.902,
+    "size": [
+      2.765,
+      2.88,
+      2.794
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icMoPine.glb",
+  "sizeBytes": 4012120,
+  "preview": "artifacts/idol/iron-crown/icMoPine/views.png",
+  "usd": 0.37
+}

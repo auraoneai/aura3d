@@ -1,3 +1,501 @@
 {
-  "$comment": "Rigged characters that still ship with a known skin defect (assets validate --skin). Each entry needs a reason; remove the entry when the asset is rebuilt. Tracked in docs/audit/game-leftovers.md (F11, F12)."
+  "$comment": "Rigged characters that still ship with a known skin defect (assets validate --skin). Each entry needs a reason; remove the entry when the asset is rebuilt. Tracked in docs/audit/game-leftovers.md (F11, F12).",
+  "gdCommuter": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 108/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 3.35x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "icKenjiP1": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 43/30000 triangles (0.1%) stretch past 1.6x in the GLB's stored clips (worst 2.08x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "icVoltP2": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 53/30000 triangles (0.2%) stretch past 1.6x in the GLB's stored clips (worst 3.3x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "icKenjiP2": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 42/30000 triangles (0.1%) stretch past 1.6x in the GLB's stored clips (worst 2.44x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "icVoltP1": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 51/30000 triangles (0.2%) stretch past 1.6x in the GLB's stored clips (worst 2.48x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "icBoulderP1": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, A-pose bind, regenerated 2026-11-18 with a compact torso and clear arm-torso gap. Stored idle clip: 46/30000 triangles past 1.6x (worst 2.73x). Gameplay (generated-motion clips through the game's pose code, arm elevation <= 75 deg, twist limits): 3512/30000 (11.7%, worst 13.8x on a few slivers), armpit / crotch / loincloth bridging; CPU-skinned strike frames reviewed (artifacts/idol/iron-crown, /tmp previews). Remove when the asset is re-rigged."
+  },
+  "icBoulderP2": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, A-pose bind, regenerated 2026-11-18 with a compact torso and clear arm-torso gap. Stored idle clip: 135/30000 triangles past 1.6x (worst 2.55x). Gameplay (generated-motion clips through the game's pose code, arm elevation <= 75 deg, twist limits): 3786/30000 (12.6%, worst 6.65x), armpit / crotch / loincloth bridging; CPU-skinned strike frames reviewed (artifacts/idol/iron-crown, /tmp previews). Remove when the asset is re-rigged."
+  },
+  "icSeraphP2": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 31/30000 triangles (0.1%) stretch past 1.6x in the GLB's stored clips (worst 2.33x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "icJinxP1": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 70/29998 triangles (0.2%) stretch past 1.6x in the GLB's stored clips (worst 3.09x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "icJinxP2": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 44/30000 triangles (0.1%) stretch past 1.6x in the GLB's stored clips (worst 2.98x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "icSovereignP1": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 106/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 3.73x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "icSovereignP2": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 104/30000 triangles (0.3%) stretch past 1.6x in the GLB's stored clips (worst 3.96x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "pipHero": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 663/30000 triangles (2.2%) stretch past 1.6x in the GLB's stored clips (worst 7.1x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "pipBrambleback": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 1678/30000 triangles (5.6%) stretch past 1.6x in the GLB's stored clips (worst 11.25x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "diaIdolFielderA": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 784/30000 triangles (2.6%) stretch past 1.6x in the GLB's stored clips (worst 10.11x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "diaIdolBatterA": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 834/30000 triangles (2.8%) stretch past 1.6x in the GLB's stored clips (worst 8.75x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "diaIdolCatcher": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 1113/30000 triangles (3.7%) stretch past 1.6x in the GLB's stored clips (worst 5.39x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "diaIdolFielderB": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 838/30000 triangles (2.8%) stretch past 1.6x in the GLB's stored clips (worst 7.8x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "fcIdolFanA": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 127/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 2.93x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "fcIdolFanB": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 141/30000 triangles (0.5%) stretch past 1.6x in the GLB's stored clips (worst 5.01x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "fcIdolFanC": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 150/30000 triangles (0.5%) stretch past 1.6x in the GLB's stored clips (worst 4.85x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "fcIdolReferee": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 223/30000 triangles (0.7%) stretch past 1.6x in the GLB's stored clips (worst 5.07x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "fcIdolKeeperHome": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 150/30000 triangles (0.5%) stretch past 1.6x in the GLB's stored clips (worst 3.34x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "fcIdolHomeA": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 138/30000 triangles (0.5%) stretch past 1.6x in the GLB's stored clips (worst 5.55x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "fcIdolHomeB": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 176/30000 triangles (0.6%) stretch past 1.6x in the GLB's stored clips (worst 4.22x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "fcIdolKeeperAway": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 73/30000 triangles (0.2%) stretch past 1.6x in the GLB's stored clips (worst 5.2x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "fcIdolAwayA": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 143/30000 triangles (0.5%) stretch past 1.6x in the GLB's stored clips (worst 2.98x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "fcIdolAwayB": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 128/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 4.87x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "linksIdolGolferBlue": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 134/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 2.79x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "linksIdolCaddie": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 111/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 2.76x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "linksIdolGolferNavy": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 151/30000 triangles (0.5%) stretch past 1.6x in the GLB's stored clips (worst 3.71x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "linksIdolGolferOrange": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 130/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 3x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "linksIdolGolferRed": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 144/30000 triangles (0.5%) stretch past 1.6x in the GLB's stored clips (worst 3.52x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "linksIdolGolferWhite": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 137/30000 triangles (0.5%) stretch past 1.6x in the GLB's stored clips (worst 5.83x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "bzGuard": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 71/30000 triangles (0.2%) stretch past 1.6x in the GLB's stored clips (worst 2.64x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "bzGunner": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 232/30000 triangles (0.8%) stretch past 1.6x in the GLB's stored clips (worst 5.64x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "bzWarden": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 200/30000 triangles (0.7%) stretch past 1.6x in the GLB's stored clips (worst 3.35x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "bzHound": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 446/30000 triangles (1.5%) stretch past 1.6x in the GLB's stored clips (worst 3.61x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "ssrHeroViolet": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 1064/30000 triangles (3.5%) stretch past 1.6x in the GLB's stored clips (worst 5.97x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "ssrHeroTide": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 946/30000 triangles (3.2%) stretch past 1.6x in the GLB's stored clips (worst 6.2x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "ssrHeroVerdant": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 1053/30000 triangles (3.5%) stretch past 1.6x in the GLB's stored clips (worst 4.78x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "gcWalkerA": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 137/30000 triangles (0.5%) stretch past 1.6x in the GLB's stored clips (worst 2.81x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "gcWalkerB": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 123/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 2.49x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "gcWalkerC": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 227/30000 triangles (0.8%) stretch past 1.6x in the GLB's stored clips (worst 3.59x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "gcWalkerD": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 233/30000 triangles (0.8%) stretch past 1.6x in the GLB's stored clips (worst 3.83x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "nrBrute": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 246/30000 triangles (0.8%) stretch past 1.6x in the GLB's stored clips (worst 6.85x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "nrCaster": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 613/30000 triangles (2.0%) stretch past 1.6x in the GLB's stored clips (worst 9.78x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "nrEmber": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 117/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 3.27x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "nrHero": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 110/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 3.24x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "nrHeroClone": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 888/30000 triangles (3.0%) stretch past 1.6x in the GLB's stored clips (worst 5.03x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "nrSage": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 124/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 5.94x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "nrScout": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 71/30000 triangles (0.2%) stretch past 1.6x in the GLB's stored clips (worst 3.11x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "nrSoldier": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 324/30000 triangles (1.1%) stretch past 1.6x in the GLB's stored clips (worst 4.56x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "llWalkerA": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 205/30000 triangles (0.7%) stretch past 1.6x in the GLB's stored clips (worst 3.04x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "llWalkerB": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 192/30000 triangles (0.6%) stretch past 1.6x in the GLB's stored clips (worst 2.89x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "llWalkerC": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 279/30000 triangles (0.9%) stretch past 1.6x in the GLB's stored clips (worst 3.15x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "llWalkerD": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 100/30000 triangles (0.3%) stretch past 1.6x in the GLB's stored clips (worst 3.29x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "bkHero": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 123/30000 triangles (0.4%) stretch past 1.6x in the GLB's stored clips (worst 3.37x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "cdSkyKidHero": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 913/30000 triangles (3.0%) stretch past 1.6x in the GLB's stored clips (worst 5.02x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "nsGuardRig": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 140/29951 triangles (0.5%) stretch past 1.6x in the GLB's stored clips (worst 2.27x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "bhSkaterBot": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, T-pose bind, refit skeleton. 179/29854 triangles (0.6%) stretch past 1.6x in the GLB's stored clips (worst 2.36x, armpit/crotch bridging). The game drives the bones from its own pose code (or plays only the listed clips); reviewed in real-GPU gameplay frames for the 2026-11-18 Idol pass. Remove when the asset is re-rigged."
+  },
+  "icSeraphP1": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 90/29861 triangles past 1.6x (worst 3.71x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "pipHedgehogRigged": {
+    "allow": [
+      "SKIN_FLAP",
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 113/29990 triangles past 1.6x (worst 4.74x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "pipBeetleRigged": {
+    "allow": [
+      "SKIN_FLAP"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; thin-triangle flap within 1% of the flap limit at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "bzWardenNoPack": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 97/29773 triangles past 1.6x (worst 3.44x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "cgRiderCream": {
+    "allow": [
+      "SKIN_STRETCH",
+      "SKIN_BIND_MISMATCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 73/29998 triangles past 1.6x (worst 3.77x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged. SKIN_BIND_MISMATCH: game drives bones directly (seated rider pose), the bind-pose idle clip is never played."
+  },
+  "cgRiderCobalt": {
+    "allow": [
+      "SKIN_STRETCH",
+      "SKIN_BIND_MISMATCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 84/30000 triangles past 1.6x (worst 3.9x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged. SKIN_BIND_MISMATCH: game drives bones directly (seated rider pose), the bind-pose idle clip is never played."
+  },
+  "cgRiderCrimson2": {
+    "allow": [
+      "SKIN_STRETCH",
+      "SKIN_BIND_MISMATCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 45/30000 triangles past 1.6x (worst 3.37x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged. SKIN_BIND_MISMATCH: game drives bones directly (seated rider pose), the bind-pose idle clip is never played."
+  },
+  "splatRunnerRig": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 74/30000 triangles past 1.6x (worst 4.47x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "llPaxEasy": {
+    "allow": [
+      "SKIN_FLAP",
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 104/30000 triangles past 1.6x (worst 2.23x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "llPaxSightseer": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 75/30000 triangles past 1.6x (worst 2.98x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "llPaxRushed": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 103/30000 triangles past 1.6x (worst 4.03x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "llPaxSleeper": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 140/30000 triangles past 1.6x (worst 3.99x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "llMotorman": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 112/30000 triangles past 1.6x (worst 2.44x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "duneRiderRig": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 836/30000 triangles past 1.6x (worst 4.75x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "turfHeroDriverRig": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 175/30000 triangles past 1.6x (worst 3.84x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "turfRivalDriverRig": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig driven by fal hunyuan-motion clips / code poses; 92/30000 triangles past 1.6x (worst 5.36x) at armpit/crotch bridging in the shipped clips; reviewed in real-GPU gameplay for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "swDriver": {
+    "allow": [
+      "SKIN_STRETCH",
+      "SKIN_BIND_MISMATCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, seated Saltwind driver posed directly by game code (idle clip never played); 48 triangles past 1.6x (worst 3.26x) at armpit/crotch bridging plus a 2-bone bind mismatch in the unused idle clip; reviewed for the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "gdWalkerA": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, Teleoperator background pedestrian on fal hunyuan-motion walk; 260/30000 triangles past 1.6x (worst 5.41x) at armpit/crotch bridging in the walk clip; seen at street distance only, GPU-checked in the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "gdWalkerB": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, Teleoperator background pedestrian on fal hunyuan-motion walk; 156/30000 triangles past 1.6x (worst 2.9x) at armpit/crotch bridging in the walk clip; seen at street distance only, GPU-checked in the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "gdWalkerC": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, Teleoperator background pedestrian on fal hunyuan-motion walk; 142/29998 triangles past 1.6x (worst 2.93x) at armpit/crotch bridging in the walk clip; seen at street distance only, GPU-checked in the 2026-11-18 Idol pass. Remove when re-rigged."
+  },
+  "gdWalkerD": {
+    "allow": [
+      "SKIN_STRETCH"
+    ],
+    "reason": "Idol (speridlabs/idol/max) auto-rig, Teleoperator background pedestrian on fal hunyuan-motion walk; 235/30000 triangles past 1.6x (worst 3.48x) at armpit/crotch bridging in the walk clip; seen at street distance only, GPU-checked in the 2026-11-18 Idol pass. Remove when re-rigged."
+  }
 }

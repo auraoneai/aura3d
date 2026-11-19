@@ -1,0 +1,332 @@
+{
+  "game": "bunker-zero",
+  "outDir": "apps/showcase-bunker-zero/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "bzVmMachete",
+      "subject": "Heavy tactical combat machete knife, side view with the blade pointing right: dark brushed steel full-tang bolo blade with a satin polished cutting edge and small sawback teeth on the spine, brass S-shaped crossguard, contoured black textured grip with three brass rivets and a lanyard loop",
+      "kind": "object",
+      "role": "hero",
+      "size": {
+        "maxDim": 0.66
+      },
+      "tex": 2048,
+      "seed": 7,
+      "image": "artifacts/idol/bunker-zero/_refs/bzVmMachete.png"
+    },
+    {
+      "key": "bzVmPistol",
+      "subject": "Fictional futuristic military service pistol, side view with the muzzle pointing left: machined two-tone gunmetal slide with angled cocking serrations and a ported compensator, black polymer frame with a stippled raked grip, under-barrel laser module with a small cyan lens, small green glowing sight dots, extended magazine",
+      "kind": "object",
+      "role": "hero",
+      "size": {
+        "maxDim": 0.36
+      },
+      "tex": 2048,
+      "seed": 7
+    },
+    {
+      "key": "bzVmCarbine",
+      "subject": "Fictional futuristic pulse carbine rifle, side view with the muzzle pointing left: machined gunmetal receiver with a top rail, slotted lattice barrel shroud and a multi-port muzzle brake, black polymer buttstock with a cheek riser, raked pistol grip, angled foregrip, curved box magazine, small glowing cyan display panel on the side",
+      "kind": "object",
+      "role": "hero",
+      "size": {
+        "maxDim": 0.74
+      },
+      "tex": 2048,
+      "seed": 7,
+      "image": "artifacts/idol/bunker-zero/_refs/bzVmCarbine.png"
+    },
+    {
+      "key": "bzVmRocket",
+      "subject": "Fictional shoulder-fired recoilless rocket launcher, side view with the front opening pointing right: olive drab composite launch tube with steel clamp collars, flared steel exhaust bell at the rear, two black pistol grips underneath, padded shoulder rest, carry handle, side-mounted targeting optic with a blue coated lens",
+      "kind": "object",
+      "role": "hero",
+      "size": {
+        "maxDim": 0.9
+      },
+      "tex": 2048,
+      "seed": 7,
+      "image": "artifacts/idol/bunker-zero/_refs/bzVmRocket.png"
+    },
+    {
+      "key": "bzGuard",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.9
+      },
+      "tex": 1024,
+      "seed": 31,
+      "subject": "Original bunker guard soldier: olive ballistic helmet with flipped-up night vision goggles and headset ear cups, woodland camouflage combat shirt and trousers, coyote tan plate carrier vest with magazine pouches and a small radio, olive elbow and knee pads, fingerless tan shooting gloves, black combat boots, stern face, empty hands"
+    },
+    {
+      "key": "bzGunner",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 2
+      },
+      "tex": 1024,
+      "seed": 32,
+      "subject": "Original heavily armored heavy-weapons trooper: bulky olive and slate-grey bomb-disposal style armor suit with thick padded plates and a high blast collar, full-face armored helmet with a dark steel visor, ammunition belts across the chest, armored gauntlets, heavy black boots, broad and hulking, empty hands"
+    },
+    {
+      "key": "bzWarden",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 3
+      },
+      "tex": 1024,
+      "seed": 33,
+      "subject": "Original towering scarred bunker commander, huge and broad: long charcoal grey military greatcoat with crimson lapels and crimson epaulettes, dark slate armored chest cuirass over the coat, black leather cross-belt and officer belt, tall polished black jackboots, crimson peaked officer cap with a plain brass badge, black eyepatch, short dark stubble, black leather gloves, compact armored backpack with two small antennas, empty hands"
+    },
+    {
+      "key": "bzHound",
+      "kind": "creature",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run"
+      ],
+      "size": {
+        "length": 1.1
+      },
+      "tex": 1024,
+      "seed": 34,
+      "subject": "Original armored military attack dog: muscular lean dark sable black and tan short-haired guard dog with cropped pointed ears, wearing an olive tactical harness vest with two side pouches and a black collar, alert stance"
+    },
+    {
+      "key": "bzGuardRifle",
+      "subject": "Fictional compact military assault carbine: dark gunmetal receiver with a quad-rail handguard, collapsible black stock, curved magazine, angled foregrip, small reflex sight, flash suppressor",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 0.86
+      },
+      "tex": 1024,
+      "seed": 7,
+      "image": "artifacts/idol/bunker-zero/_refs/bzGuardRifle.png"
+    },
+    {
+      "key": "bzGunnerMinigun",
+      "subject": "Fictional heavy six-barrel rotary machine gun: cluster of six long steel barrels, bulky dark olive motor housing, top carry handle, rear twin grips, ammunition belt feed chute",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 1.2
+      },
+      "tex": 1024,
+      "seed": 7,
+      "image": "artifacts/idol/bunker-zero/_refs/bzGunnerMinigun.png"
+    },
+    {
+      "key": "bzBlastDoor",
+      "subject": "Wide heavy sliding steel bunker blast door panel: one flat rectangular riveted dark grey steel slab, slightly wider than it is tall and only a hand thick, clean straight edges, yellow and black hazard stripes along the bottom edge, flush recessed locking wheel, reinforced cross braces, scratches and grime, no frame, no rubble",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 2.94
+      },
+      "tex": 1024,
+      "seed": 17
+    },
+    {
+      "key": "bzShutter",
+      "subject": "Industrial corrugated steel roller shutter door in a heavy steel frame, flat front face, olive grey paint, hazard-striped bottom rail, grime and rust streaks",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 2.14
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "bzBullionSilver",
+      "subject": "Open steel-banded strongbox case filled with neatly stacked shiny silver bullion bars",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 0.82
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "bzBullionGold",
+      "subject": "Open steel-banded strongbox case filled with neatly stacked shiny gold bullion bars",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 0.82
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "bzMunition",
+      "subject": "Stack of two closed olive drab steel military ammunition cans with latched lids, carry handles and worn paint edges, plain unmarked",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 0.76
+      },
+      "tex": 1024,
+      "seed": 11
+    },
+    {
+      "key": "bzArmor",
+      "subject": "Ballistic plate carrier vest standing upright on its own, coyote tan with armor plates, straps and magazine pouches",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.83
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "bzMedkit",
+      "subject": "Military field first-aid case: rugged dark green hard case with steel latches, a carry handle and a white plus-shaped first-aid symbol on the lid",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 0.7
+      },
+      "tex": 1024,
+      "seed": 12
+    },
+    {
+      "key": "bzKeycard",
+      "subject": "Large brass security key card with a cut-out grip ring at the top and engraved circuit lines, thick and polished",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.63
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "bzDrum",
+      "subject": "Dented steel hazard oil drum painted yellow with black hazard stripes, rusty rims, grime",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.27
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "bzCrate",
+      "subject": "Large military supply crate: olive drab painted wooden crate with steel corner brackets, rope handles and stencil-free panels, scuffed",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.17
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "bzConsole",
+      "subject": "Military bunker command console desk: angled grey steel desk with three glowing green and amber monitor screens showing abstract graphs, rows of switches, knobs and buttons, cable bundles",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 1.32
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "bzCryo",
+      "subject": "Cryogenic containment canister: tall steel cylinder with a frosted glass window showing glowing blue liquid inside, pipes, valves and pressure gauges, yellow hazard bands",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.38
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "bzDrone",
+      "subject": "Military surveillance quadcopter drone: four ducted rotors on short arms, dark grey armored body, front camera turret with a red lens",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 1.04
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "bzMinigunBody",
+      "subject": "Rotary cannon housing without barrels",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 0.75
+      },
+      "tex": 1024,
+      "seed": 7,
+      "image": "artifacts/idol/bunker-zero/_refs/bzMinigunBody.png"
+    },
+    {
+      "key": "bzDroneBody",
+      "subject": "Military surveillance quadcopter drone body with no propellers: dark grey armored central body, four short arms each ending in an empty open round duct ring with nothing inside, front camera turret with a red lens",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 1.04
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "bzWardenNoPack",
+      "subject": "Original towering scarred bunker commander, huge and broad: long charcoal grey military greatcoat with crimson lapels and crimson epaulettes, dark slate armored chest cuirass over the coat, black leather cross-belt and officer belt, tall polished black jackboots, crimson peaked officer cap with a plain brass badge, black eyepatch, short dark stubble, black leather gloves, empty hands, nothing on the back",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 3
+      },
+      "tex": 1024,
+      "seed": 33
+    },
+    {
+      "key": "bzWardenPack",
+      "subject": "Compact armored military backpack unit: dark slate armored case with two short whip antennas on top, cooling louvers and a small glowing red status light, shoulder straps cut off",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 0.75
+      },
+      "tex": 1024,
+      "seed": 7
+    }
+  ]
+}

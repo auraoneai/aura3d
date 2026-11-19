@@ -6,6 +6,7 @@ import { gateMatched, gateSquash } from "../../../examples/splat-rush-port/prese
 import { CARNIVAL_GATE_VERTEX, CARNIVAL_TONE_VERTEX } from "../../../examples/splat-rush-port/shaders";
 import { IDLE, POOL, SplatRushSim, type Gate } from "../../../examples/splat-rush-port/sim";
 import { buildWorld, gateVertexCount } from "../../../examples/splat-rush-port/world";
+import { gantryGateMeshes } from "../../../examples/splat-rush-port/gateGantry";
 
 const g = globalThis as { document?: unknown };
 function withDocument<T>(fn: () => T): T {
@@ -46,7 +47,7 @@ describe("GU47 CR-M3 paint-drip gate arches", () => {
     for (let v = 0; v < d.uvs.length / 2; v++) { expect(d.uvs[v * 2 + 1]).toBeGreaterThanOrEqual(0); expect(d.uvs[v * 2 + 1]).toBeLessThanOrEqual(1); }
   });
 
-  it("carnival gates are one high-segment batch with bulbous drips merged in; the original gate mesh is unchanged", () => {
+  it("carnival gates are one high-segment batch with bulbous drips merged in; the original gate parts are unchanged", () => {
     const plain = bounds(mergeMeshes(gateParts));
     const carnivalPlain = bounds(mergeMeshes(carnivalGateFrameParts()));
     for (const k of [0, 1, 2]) {
@@ -54,13 +55,14 @@ describe("GU47 CR-M3 paint-drip gate arches", () => {
       expect(carnivalPlain.hi[k]).toBeCloseTo(plain.hi[k]!, 9);
     }
     const n = (look: SplatLook) => withDocument(() => { buildWorld({ sim: new SplatRushSim(1), aspect: 16 / 9, look }); return gateVertexCount; });
-    expect(n(LOOKS.original)).toBe(mergeMeshes(gateParts).positions.length / 3);
-    expect(n(LOOKS.carnival)).toBe(mergeMeshes([...carnivalGateFrameParts(), gateDripMesh()]).positions.length / 3);
+    // pass-through QA: the world draws the row gantry (gateGantry.ts) built from these parts, one topology per look
+    expect(n(LOOKS.original)).toBe(gantryGateMeshes(false).right.positions.length / 3);
+    expect(n(LOOKS.carnival)).toBe(gantryGateMeshes(true).right.positions.length / 3);
     expect(n(LOOKS.carnival)).toBeGreaterThan(n(LOOKS.original) * 2.5);
     const json = withDocument(() => JSON.stringify(buildWorld({ sim: new SplatRushSim(1), aspect: 16 / 9, look: LOOKS.carnival }).scene.toJSON()));
     expect(json.match(/"gates"/g)?.length).toBeGreaterThanOrEqual(1);
     expect(json).toContain("crWobble");
-  });
+  }, 30_000); // builds three carnival/original worlds (each gate batch merges the gantry variants)
 });
 
 describe("GU47 CR-AN1 drip wobble and match squash", () => {

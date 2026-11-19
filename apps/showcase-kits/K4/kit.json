@@ -4,10 +4,8 @@
   "kit": "K4",
   "name": "Interior kit",
   "consumers": [
-    "showcase-bank-shot",
     "showcase-gallery-shift",
-    "showcase-mech-hangar",
-    "showcase-blockfall-reactor"
+    "showcase-mech-hangar"
   ],
   "budget": {
     "summary": "<= 20 MB -> <= 7 MB",

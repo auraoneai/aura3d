@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swSedanClayP",
+  "generatedAt": "2026-11-18T23:15:48.938Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/saltwind-highway/swSedanClayP/ref-src.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0f1-fa4f-74e2-b86b-5b38ee62b10b",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 109,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 933604,
+        "num_faces": 1867236,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single ordinary four-door family saloon car of a fictional unbranded timeless design, warm terracotta clay-orange metallic paint, dark tinted windows, chrome window trim, black lower trim, black tyres on grey alloy wheels, clean body panels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 3,
+    "scale": 4.799,
+    "size": [
+      2.105,
+      1.728,
+      4.8
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swSedanClayP.glb",
+  "sizeBytes": 1193008,
+  "preview": "artifacts/idol/saltwind-highway/swSedanClayP/views.png",
+  "usd": 0.2,
+  "orientationFix": "yawDeg 93 (long axis fitted; reference was a three-quarter view)",
+  "postProcess": "textures re-encoded as JPEG, <= 512 px, to fit the per-game byte budget"
+}

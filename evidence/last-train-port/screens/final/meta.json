@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "last-train-port": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "route": "/apps/lamplight-line/",
+      "states": [
+        "1280x720 title: title card with controls incl. P autoplay",
+        "1280x720 platform: doors opening at Mango Tide, crowd on the platform",
+        "1280x720 boarding: steps out, riders boarding (walkers move between frames)",
+        "1280x720 departing: tram leaving the town at 17 km/h, 4/12 aboard",
+        "1280x720 peak: cruising on the viaduct over the cloud sea",
+        "1280x720 second venue: approaching the Folded Gardens island",
+        "390x844 title: title card",
+        "390x844 departing: leaving the platform",
+        "390x844 peak: viaduct",
+        "390x844 second venue: island approach"
+      ],
+      "frames": [
+        "1280-01-title.jpg",
+        "1280-02-doors-open.jpg",
+        "1280-03-boarding.jpg",
+        "1280-04-departing.jpg",
+        "1280-05-viaduct.jpg",
+        "1280-06-island-approach.jpg",
+        "390-01-title.jpg",
+        "390-02-departing.jpg",
+        "390-03-viaduct.jpg",
+        "390-04-island-approach.jpg",
+        "card-1x.jpg",
+        "card-2x.jpg"
+      ],
+      "results": "service results not reached inside the capture windows (a full service runs several minutes; autoplay shows results 3 s then starts a new service, unit-tested)",
+      "autoplay": "?autoplay=1 (alias ?autopilot=1, P toggles): skips the title, opens doors, boards riders, departs and balances the lean; loops services",
+      "errors": "none",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

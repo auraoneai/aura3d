@@ -206,18 +206,21 @@ struct FallsVarying {
 
 export const FALLS_FRAGMENT_WGSL = stage([POW, NOISE], /* wgsl */ `
 @fragment fn fs_main(@location(0) vUv: vec2<f32>) -> @location(0) vec4<f32> {
-  let q = vec2<f32>(vUv.x * 52.0, vUv.y * 7.0 + aura.u_fallsTime * 2.7);
-  let n = vnoise(q) + vnoise(q * 2.13) * 0.35 + vnoise(q * 5.1) * 0.13;
-  let veins = a3dPow(vnoise(vec2<f32>(vUv.x * 140.0, vUv.y * 3.0 + aura.u_fallsTime * 1.5)), 2.0);
+  let q = vec2<f32>(vUv.x * 96.0, vUv.y * 3.2 + aura.u_fallsTime * 3.4);
+  let n0 = (vnoise(q) + vnoise(q * vec2<f32>(2.3, 1.6)) * 0.5 + vnoise(q * vec2<f32>(5.2, 2.9)) * 0.25) / 1.75;
+  let strand = smoothstep(0.32, 0.78, n0);
+  let veins = a3dPow(vnoise(vec2<f32>(vUv.x * 240.0, vUv.y * 1.4 + aura.u_fallsTime * 4.6)), 3.0);
+  let foam = smoothstep(0.62, 0.92, vnoise(vec2<f32>(vUv.x * 34.0, vUv.y * 14.0 + aura.u_fallsTime * 7.0)));
+  let n = clamp(strand * 0.85 + foam * 0.35, 0.0, 1.0);
   let rag = (vnoise(vec2<f32>(vUv.y * 9.0 + aura.u_fallsTime * 1.2, 3.0)) - 0.5) * 0.08 * aura.u_fallsSoft;
   let ew = mix(0.04, 0.16, aura.u_fallsSoft);
   let edge = smoothstep(0.0, ew, vUv.x + rag) * smoothstep(0.0, ew, 1.0 - vUv.x + rag);
   let foot = mix(1.0, smoothstep(0.0, 0.22, vUv.y), aura.u_fallsSoft);
   let lip = aura.u_fallsSoft * smoothstep(0.93, 0.99, vUv.y);
-  var c = mix(vec3<f32>(0.24, 0.48, 0.51), vec3<f32>(0.90, 0.97, 0.96), clamp(n * 0.64 + veins * 0.4, 0.0, 1.0));
+  var c = mix(vec3<f32>(0.12, 0.32, 0.36), vec3<f32>(0.92, 0.97, 0.98), clamp(n * 0.8 + veins * 0.5, 0.0, 1.0));
   c = mix(c, vec3<f32>(0.96, 0.98, 0.97), lip * 0.7 + aura.u_fallsSoft * (1.0 - foot) * 0.5);
   let top = mix(1.0, 1.0 - smoothstep(0.985, 1.0, vUv.y) * 0.6, aura.u_fallsSoft);
-  return vec4<f32>(c, edge * top * mix(1.0, 0.35 + 0.65 * foot, aura.u_fallsSoft) * (0.88 + 0.1 * veins));
+  return vec4<f32>(c, edge * top * mix(1.0, 0.35 + 0.65 * foot, aura.u_fallsSoft) * (0.42 + 0.5 * n + 0.15 * veins));
 }`);
 
 /** BALL_VERTEX (shared by the Spiralorb ball and the form aura). */

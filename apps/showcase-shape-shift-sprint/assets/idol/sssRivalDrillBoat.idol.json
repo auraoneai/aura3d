@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shape-shift-sprint",
+  "key": "sssRivalDrillBoat",
+  "generatedAt": "2026-11-18T22:01:38.397Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-a62f-7752-8af2-1325f7dc471c",
+      "prompt": "A small toy hover boat with a spiral auger drill nose: glossy coral-red painted hull, champagne and brass trim, a dark smoked glass cockpit canopy, a cyan glowing thruster at the back. Photograph of a real handmade toy miniature, glossy painted wood and smooth glazed ceramic, pastel candy colours, soft bright daylight, tactile surface detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f097-b4c8-7462-953f-c8661059cfc6",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 859162,
+        "num_faces": 1718348,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A small toy hover boat with a spiral auger drill nose: glossy coral-red painted hull, champagne and brass trim, a dark smoked glass cockpit canopy, a cyan glowing thruster at the back. Photograph of a real handmade toy miniature, glossy painted wood and smooth glazed ceramic, pastel candy colours, soft bright daylight, tactile surface detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -45,
+    "scale": 0.838,
+    "size": [
+      0.597,
+      0.57,
+      1.1
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-shape-shift-sprint/assets/idol/sssRivalDrillBoat.glb",
+  "sizeBytes": 3205808,
+  "preview": "artifacts/idol/shape-shift-sprint/sssRivalDrillBoat/views.png",
+  "usd": 0.37,
+  "renormalizedAt": "2026-11-18T22:12:07.204Z"
+}

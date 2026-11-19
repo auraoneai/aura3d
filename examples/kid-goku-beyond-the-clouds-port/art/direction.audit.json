@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/kid-goku-beyond-the-clouds-port/art/direction.ts",
-  "sourceSha256": "f93410ee940d4470cb8aaeae2217fa9cd18417b141c1b765b74f71447ec0be21",
+  "sourceSha256": "3f8783053c4363971885cfa5b1fd74fb70cfbaaab32f5563424e9e0fee644c98",
   "id": "showcase-cloud-runner-port",
   "genre": "platformer",
   "signatureEffect": "A rainbow over silver-lined storm towers: a 40-42 degree bow in the antisolar sky over rain curtains and sunward silver cloud edges.",
@@ -37,7 +37,106 @@
       "kind": "hdri",
       "background": false
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "cdSkyKidHero",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdCloudSteed",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdSkyWyvernBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdSkyWyvernWingL",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdSkyWyvernWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdStormTyrantRig",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdHermitCottage",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdShrinePillar",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdBoulder",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdHoneyRoast",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdRideLog",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdCanopyTree",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdBonsaiPine",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "cdShoulderRock",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "materials": [
       {
         "node": "ball",
@@ -113,7 +212,112 @@
       ],
       "mobile": "both"
     },
-    "assets": [],
+    "assets": [
+      {
+        "role": "hero",
+        "assetKey": "cdSkyKidHero",
+        "maxTriangles": 40000,
+        "minTriangles": 10000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "cdCloudSteed",
+        "maxTriangles": 40000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "enemy",
+        "assetKey": "cdSkyWyvernBody",
+        "maxTriangles": 30000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "enemy",
+        "assetKey": "cdSkyWyvernWingL",
+        "maxTriangles": 30000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "enemy",
+        "assetKey": "cdSkyWyvernWingR",
+        "maxTriangles": 30000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "enemy",
+        "assetKey": "cdStormTyrantRig",
+        "maxTriangles": 30000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "cdHermitCottage",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "cdShrinePillar",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "cdBoulder",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "cdHoneyRoast",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "cdRideLog",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "cdCanopyTree",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "cdBonsaiPine",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "cdShoulderRock",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
     "vfx": [
       {
         "event": "skypearl",

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-last-train-port/art/direction.ts",
-  "sourceSha256": "383d308a151119b5cef431e31cabd858a03547529c9c1cfaf187325da5c8dc55",
+  "sourceSha256": "81c6d99548c2f5355accf2149fa8d03432609ca84636c728f718b4edee90bbf1",
   "id": "showcase-last-train-port",
   "genre": "racing",
   "signatureEffect": "Earned sky lanterns: every clean arrival releases paper lanterns that stay aloft, so the dusk sky fills with the lights the driver earned.",
@@ -64,7 +64,729 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "llClockTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llKeep",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llClockTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llKeep",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llLighthouse",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llClockTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWatchtower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llClockTowerSnow",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWatchtower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llClockTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWatchtower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llLighthouse",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llClockTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llKeep",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llCrates",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llHouse2",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llHouse0",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llHouse1",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llHouseSnow2",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llHouseSnow0",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llHouseSnow1",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llFolk0",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llFolk1",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llFolk2",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llFolk3",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llFolk4",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llFolk5",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerD",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerD",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerD",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llWalkerD",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llTram",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxEasy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSightseer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxRushed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "llPaxSleeper",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "materials": [
       {
         "node": "sky",
@@ -111,37 +833,9 @@
         "practical": false
       },
       {
-        "node": "lighthouse-1-tower material 0",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-1-tower material 1",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-1-tower material 2",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-1-tower material 3",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-1-tower material 4",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-1-tower material 5",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-1-tower material 6",
+        "node": "lighthouse-1-optic",
         "emissiveIntensity": 1.496,
         "practical": true
-      },
-      {
-        "node": "lighthouse-1-tower material 7",
-        "practical": false
       },
       {
         "node": "lighthouse-1-beam-a",
@@ -164,37 +858,9 @@
         "practical": false
       },
       {
-        "node": "lighthouse-4-tower material 0",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-4-tower material 1",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-4-tower material 2",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-4-tower material 3",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-4-tower material 4",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-4-tower material 5",
-        "practical": false
-      },
-      {
-        "node": "lighthouse-4-tower material 6",
+        "node": "lighthouse-4-optic",
         "emissiveIntensity": 1.496,
         "practical": true
-      },
-      {
-        "node": "lighthouse-4-tower material 7",
-        "practical": false
       },
       {
         "node": "lighthouse-4-beam-a",
@@ -228,185 +894,6 @@
         "node": "town-static-4",
         "emissiveIntensity": 3.2,
         "practical": true
-      },
-      {
-        "node": "town-static-5",
-        "practical": false
-      },
-      {
-        "node": "town-static-6",
-        "practical": false
-      },
-      {
-        "node": "town-static-7",
-        "practical": false
-      },
-      {
-        "node": "town-static-8",
-        "practical": false
-      },
-      {
-        "node": "town-static-9",
-        "practical": false
-      },
-      {
-        "node": "town-static-10",
-        "emissiveIntensity": 2.394,
-        "practical": true
-      },
-      {
-        "node": "town-static-11",
-        "practical": false
-      },
-      {
-        "node": "town-static-12",
-        "practical": false
-      },
-      {
-        "node": "town-static-13",
-        "practical": false
-      },
-      {
-        "node": "town-static-14",
-        "practical": false
-      },
-      {
-        "node": "town-static-15",
-        "practical": false
-      },
-      {
-        "node": "town-static-16",
-        "practical": false
-      },
-      {
-        "node": "town-static-17",
-        "practical": false
-      },
-      {
-        "node": "town-static-18",
-        "practical": false
-      },
-      {
-        "node": "town-static-19",
-        "practical": false
-      },
-      {
-        "node": "town-static-20",
-        "practical": false
-      },
-      {
-        "node": "town-static-21",
-        "practical": false
-      },
-      {
-        "node": "town-static-22",
-        "practical": false
-      },
-      {
-        "node": "town-static-23",
-        "emissiveIntensity": 2.394,
-        "practical": true
-      },
-      {
-        "node": "town-static-24",
-        "practical": false
-      },
-      {
-        "node": "town-static-25",
-        "practical": false
-      },
-      {
-        "node": "town-static-26",
-        "practical": false
-      },
-      {
-        "node": "town-static-27",
-        "practical": false
-      },
-      {
-        "node": "town-static-28",
-        "practical": false
-      },
-      {
-        "node": "town-static-29",
-        "practical": false
-      },
-      {
-        "node": "town-static-30",
-        "practical": false
-      },
-      {
-        "node": "town-static-31",
-        "practical": false
-      },
-      {
-        "node": "town-static-32",
-        "practical": false
-      },
-      {
-        "node": "town-static-33",
-        "practical": false
-      },
-      {
-        "node": "town-static-34",
-        "practical": false
-      },
-      {
-        "node": "town-static-35",
-        "practical": false
-      },
-      {
-        "node": "town-static-36",
-        "practical": false
-      },
-      {
-        "node": "town-static-37",
-        "practical": false
-      },
-      {
-        "node": "town-static-38",
-        "emissiveIntensity": 2.394,
-        "practical": true
-      },
-      {
-        "node": "town-static-39",
-        "practical": false
-      },
-      {
-        "node": "town-static-40",
-        "practical": false
-      },
-      {
-        "node": "town-static-41",
-        "practical": false
-      },
-      {
-        "node": "town-static-42",
-        "practical": false
-      },
-      {
-        "node": "town-static-43",
-        "practical": false
-      },
-      {
-        "node": "town-static-44",
-        "practical": false
-      },
-      {
-        "node": "town-static-45",
-        "practical": false
-      },
-      {
-        "node": "town-static-46",
-        "practical": false
-      },
-      {
-        "node": "town-static-47",
-        "practical": false
-      },
-      {
-        "node": "town-static-48",
-        "practical": false
       },
       {
         "node": "islands",
@@ -549,1401 +1036,48 @@
         "practical": false
       },
       {
-        "node": "tram-body material 0",
+        "node": "tram-body saloon wood",
         "practical": false
       },
       {
-        "node": "tram-body material 1",
+        "node": "tram-body saloon ceiling",
         "practical": false
       },
       {
-        "node": "tram-body material 2",
+        "node": "tram-body saloon brass",
         "practical": false
       },
       {
-        "node": "tram-body material 3",
-        "practical": false
-      },
-      {
-        "node": "tram-body material 4",
-        "practical": false
-      },
-      {
-        "node": "tram-body material 5",
-        "practical": false
-      },
-      {
-        "node": "tram-body material 6",
-        "practical": false
-      },
-      {
-        "node": "tram-body material 7",
-        "practical": false
-      },
-      {
-        "node": "tram-body material 8",
-        "practical": false
-      },
-      {
-        "node": "tram-body material 9",
+        "node": "tram-body saloon lamps",
         "emissiveIntensity": 1.5,
         "practical": true
       },
       {
-        "node": "tram-body material 10",
-        "emissiveIntensity": 2.7600000000000002,
-        "practical": true
-      },
-      {
-        "node": "tram-body material 11",
-        "practical": false
-      },
-      {
-        "node": "tram-body material 12",
-        "practical": false
-      },
-      {
-        "node": "pax-0-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-0-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-0-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-0-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-0-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-0-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-0-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-0-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-0-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-0-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-0-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-0-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-0-rushed material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-0-rushed material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sleeper material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sleeper material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sleeper material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sleeper material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-0-sleeper material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-1-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-1-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-1-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-1-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-1-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-1-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-1-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-1-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-1-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-1-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-1-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-1-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-1-rushed material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-1-rushed material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sleeper material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sleeper material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sleeper material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sleeper material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-1-sleeper material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-2-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-2-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-2-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-2-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-2-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-2-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-2-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-2-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-2-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-2-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-2-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-2-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-2-rushed material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-2-rushed material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sleeper material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sleeper material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sleeper material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sleeper material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-2-sleeper material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-3-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-3-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-3-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-3-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-3-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-3-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-3-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-3-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-3-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-3-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-3-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-3-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-3-rushed material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-3-rushed material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sleeper material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sleeper material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sleeper material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sleeper material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-3-sleeper material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-4-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-4-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-4-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-4-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-4-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-4-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-4-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-4-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-4-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-4-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-4-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-4-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-4-rushed material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-4-rushed material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sleeper material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sleeper material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sleeper material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sleeper material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-4-sleeper material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-5-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-5-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-5-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-5-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-5-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-5-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-5-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-5-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-5-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-5-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-5-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-5-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-5-rushed material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-5-rushed material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sleeper material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sleeper material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sleeper material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sleeper material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-5-sleeper material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-6-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-6-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-6-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-6-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-6-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-6-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-6-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-6-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-6-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-6-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-6-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-6-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-6-rushed material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-6-rushed material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sleeper material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sleeper material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sleeper material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sleeper material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-6-sleeper material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-7-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-7-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-7-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-7-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-7-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-7-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-7-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-7-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-7-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-7-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-7-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-7-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-7-rushed material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-7-rushed material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sleeper material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sleeper material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sleeper material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sleeper material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-7-sleeper material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-8-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-8-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-8-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-8-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-8-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-8-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-8-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-8-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-8-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-8-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-8-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-8-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-8-rushed material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-8-rushed material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sleeper material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sleeper material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sleeper material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sleeper material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-8-sleeper material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-9-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-9-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-9-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-9-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-9-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-9-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-9-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-9-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-9-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-9-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-9-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-9-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-9-rushed material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-9-rushed material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sleeper material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sleeper material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sleeper material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sleeper material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-9-sleeper material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-10-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-10-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-10-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-10-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-10-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-10-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-10-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-10-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-10-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-10-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-10-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-10-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-10-rushed material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-10-rushed material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sleeper material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sleeper material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sleeper material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sleeper material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-10-sleeper material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-11-easy material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-11-easy material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-11-easy material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-11-easy material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-11-easy material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-11-easy material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-11-easy material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-11-sightseer material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-11-sightseer material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-11-sightseer material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-11-sightseer material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-11-sightseer material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-11-sightseer material 5",
-        "practical": false
-      },
-      {
-        "node": "pax-11-sightseer material 6",
-        "practical": false
-      },
-      {
-        "node": "pax-11-sightseer material 7",
-        "practical": false
-      },
-      {
-        "node": "pax-11-sightseer material 8",
-        "practical": false
-      },
-      {
-        "node": "pax-11-rushed material 0",
-        "practical": false
-      },
-      {
-        "node": "pax-11-rushed material 1",
-        "practical": false
-      },
-      {
-        "node": "pax-11-rushed material 2",
-        "practical": false
-      },
-      {
-        "node": "pax-11-rushed material 3",
-        "practical": false
-      },
-      {
-        "node": "pax-11-rushed material 4",
-        "practical": false
-      },
-      {
-        "node": "pax-11-rushed material 5",
+        "node": "tram-body pantograph iron",
         "practical": false
       },
       {
-        "node": "pax-11-rushed material 6",
+        "node": "tram-body pantograph brass",
         "practical": false
       },
       {
-        "node": "pax-11-sleeper material 0",
+        "node": "tram-body pantograph insulators",
         "practical": false
       },
       {
-        "node": "pax-11-sleeper material 1",
+        "node": "tram-body cowcatcher",
         "practical": false
       },
       {
-        "node": "pax-11-sleeper material 2",
+        "node": "tram-body bogies",
         "practical": false
       },
       {
-        "node": "pax-11-sleeper material 3",
+        "node": "tram-wheels-iron",
         "practical": false
       },
       {
-        "node": "pax-11-sleeper material 5",
+        "node": "tram-wheels-steel",
         "practical": false
       },
       {
@@ -2035,7 +1169,248 @@
       ],
       "mobile": "both"
     },
-    "assets": [],
+    "assets": [
+      {
+        "role": "vehicle",
+        "assetKey": "llTram",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "character",
+        "assetKey": "llMotorman",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "character",
+        "assetKey": "llPaxEasy",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llPaxSightseer",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llPaxRushed",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llPaxSleeper",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llFolk0",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llFolk1",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llFolk2",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llFolk3",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llFolk4",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llFolk5",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llWalkerA",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llWalkerB",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llWalkerC",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "llWalkerD",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "llHouse0",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "llHouse1",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "llHouse2",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "llHouseSnow0",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "llHouseSnow1",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "llHouseSnow2",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "llClockTower",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "llClockTowerSnow",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "llLighthouse",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "llKeep",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "llWatchtower",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "llCrates",
+        "kit": "K2",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
     "vfx": [
       {
         "event": "clean-arrival",

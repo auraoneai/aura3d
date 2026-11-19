@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { COLONY_FOOTPRINT, COLONY_STATIONS } from "../../../examples/strange-orbit-port/obstacles";
 import { GATES, COURSE_LENGTH } from "../../../examples/strange-orbit-port/course";
 import { dressingPlan, lehmer, staticColliders, type Collider } from "../../../examples/strange-orbit-port/obstacles";
 import { STEP, createRace, startCountdown, stepRace, type RaceEvent, type RaceState } from "../../../examples/strange-orbit-port/race";
@@ -81,7 +82,7 @@ describe("dressing plan", () => {
 describe("static colliders", () => {
   it("covers every gate pillar and lintel and every dressing piece with sane capsules", () => {
     const colliders = staticColliders();
-    expect(colliders).toHaveLength(GATES.length * 3 + dressingPlan().length);
+    expect(colliders).toHaveLength(GATES.length * 3 + dressingPlan().length + COLONY_STATIONS.length);
     for (const c of colliders) {
       expect(c.radius).toBeGreaterThan(0.3);
       for (const v of [c.a, c.b]) expect(Number.isFinite(v.x + v.y + v.z)).toBe(true);
@@ -203,5 +204,25 @@ describe("flying up into the underside of the track", () => {
     const impacts = e.impacts;
     for (let i = 0; i < 20; i++) stepRace(e, {}, STEP);
     expect(e.impacts).toBe(impacts);
+  });
+});
+
+describe("pass-through (owner QA Nov 18): every solid set piece beside the ribbon is a collider matching its model", () => {
+  it("each colony station has a capsule at its placement whose radius/height follow the Idol model footprint", () => {
+    const colliders = staticColliders();
+    for (const c of COLONY_STATIONS) {
+      const hit = colliders.find((k) => k.id === c.name);
+      expect(hit, c.name).toBeDefined();
+      const fp = COLONY_FOOTPRINT[c.kind];
+      expect(hit!.radius).toBeCloseTo(0.9 * fp.half * c.scale, 6);
+      const top = Math.max(hit!.a.distanceTo(hit!.b) + 2 * hit!.radius, 0);
+      expect(top).toBeGreaterThan(fp.h * c.scale * 0.95);
+      const f = mainFrame(c.s);
+      expect(Math.abs(hit!.a.clone().sub(f.p).dot(f.side) - c.lateral)).toBeLessThan(1e-6);
+    }
+  });
+
+  it("no colony station or dressing piece footprint reaches into the 11.5 m ribbon", () => {
+    for (const c of COLONY_STATIONS) expect(Math.abs(c.lateral) - COLONY_FOOTPRINT[c.kind].half * c.scale).toBeGreaterThan(11.5);
   });
 });

@@ -35,6 +35,10 @@ export function codemodFor(name: string): AuraCodemod | undefined {
   return codemods.get(name);
 }
 
+export function codemodNames(): readonly string[] {                             // `aura3d help --json` lists them
+  return [...codemods.keys()].sort();
+}
+
 export interface AuraDoctorRule { readonly code: string /* "feel/evidence-only", "look/capture-branch" */; readonly owner: string; check(file: { readonly path: string; readonly text: string }): readonly { readonly line: number; readonly message: string; readonly severity: "error" | "warning" }[]; }
 
 const doctorRules = new Map<string, AuraDoctorRule>();

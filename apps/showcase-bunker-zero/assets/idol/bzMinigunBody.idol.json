@@ -1,0 +1,52 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzMinigunBody",
+  "generatedAt": "2026-11-19T00:26:03.310Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/bunker-zero/_refs/bzMinigunBody.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f132-45d4-7e21-b16a-a299da451d32",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1039848,
+        "num_faces": 2079744,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Rotary cannon housing without barrels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.748,
+    "size": [
+      0.75,
+      0.718,
+      0.59
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzMinigunBody.glb",
+  "sizeBytes": 1542124,
+  "preview": "artifacts/idol/bunker-zero/bzMinigunBody/views.png",
+  "usd": 0.2
+}

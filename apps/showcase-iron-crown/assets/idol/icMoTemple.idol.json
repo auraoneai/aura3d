@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icMoTemple",
+  "generatedAt": "2026-11-18T23:51:24.262Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0c6-b7f4-7340-97a4-ef822e0600fb",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0de-6907-79a0-b075-a95b182a99e9",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2094060,
+        "num_faces": 4190344,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Mountain temple hall: dark timber frame and white plaster walls, sweeping dark grey tiled hip-and-gable roof with gold ridge ornaments, wide wooden front steps, light snow on the roof",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 6.521,
+    "size": [
+      6.515,
+      5.55,
+      6.53
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icMoTemple.glb",
+  "sizeBytes": 4271132,
+  "preview": "artifacts/idol/iron-crown/icMoTemple/views.png",
+  "usd": 0.37
+}

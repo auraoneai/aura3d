@@ -18,14 +18,20 @@ export interface DressingInstance {
 
 /** Half-width of the keep-out band around the flight lane (z = 0), metres, before an item's own radius. */
 export const LANE_CLEARANCE = 1.2;
-/** The flight lane runs from behind the sling to beyond the fort along x. */
-export const LANE_X: readonly [number, number] = [-9.5, 11];
+/**
+ * The flight lane runs from behind the sling along x to the sim's right wall (x 20, inner face 19.5): an overshot
+ * rolls on past the fort, so the beach behind it is lane too (pass-through pass: a lobster pot and a rope post stood at
+ * x 11.4-11.6 right on z = 0, where long shots land; nothing collides with this dressing).
+ */
+export const LANE_X: readonly [number, number] = [-9.5, 19.5];
 
 /** Authored props and set pieces the dressing keeps off: [x, z, radius]. */
 export const DRESSING_KEEP_OUT: readonly (readonly [number, number, number])[] = [
-  [-7.4, 0, 2.2], [7.2, 0, 3.6], [-12.4, 4.2, 1.6], [9.8, -2.4, 1.8], [4.2, -3.2, 1.4], [0.2, -2.4, 1.6], [5.2, 2.1, 1.0],
-  [-6.0, -5.4, 2.6], [9.4, -4.8, 2.8], [-11.6, -3.0, 1.6], [8.1, 2.9, 1.4],
-  [-10.2, -2.8, 0.8], [-5.0, -3.6, 0.8], [3.8, -3.8, 0.8], [10.8, -2.6, 0.8], [11.6, 2.2, 0.8],
+  [-7.4, 0, 2.2], [7.2, 0, 3.6], [-12.4, 4.2, 1.6], [9.8, -2.4, 1.8], [4.2, -4.0, 1.4], [0.2, -2.4, 1.6], [5.2, 2.1, 1.0],
+  [-6.0, -5.4, 2.6], [9.4, -4.8, 2.8], [-11.6, -3.0, 1.6], [8.1, 3.35, 1.4],
+  [-10.2, -2.8, 0.8], [-5.0, -3.6, 0.8], [1.5, -4.6, 0.8], [10.8, -2.6, 0.8], [10.4, 2.6, 0.8],
+  // Pass-through pass: the fortress flag bastion now stands behind the fort (decorLayout.ts FLAG_BASTION_PLACEMENT).
+  [6.6, -3.0, 0.9],
   // SS47-H1 wooden level sign (sign.ts SIGN_KEEP_OUT).
   [-5.6, 3.2, 1.2]
 ];

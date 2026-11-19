@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icDkCargo",
+  "generatedAt": "2026-11-18T23:34:44.517Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b3-34f3-71d3-a6bf-ec301726e6fd",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b6-277a-71f3-ba1c-9b75ba6f1abc",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1502260,
+        "num_faces": 3004968,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Dockside cargo cluster: two stacked weathered wooden shipping crates beside three dented steel oil drums in faded blue and rust red, a coil of heavy rope",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.989,
+    "size": [
+      1.983,
+      1.77,
+      1.982
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icDkCargo.glb",
+  "sizeBytes": 3674848,
+  "preview": "artifacts/idol/iron-crown/icDkCargo/views.png",
+  "usd": 0.37
+}

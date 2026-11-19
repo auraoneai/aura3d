@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "drift-and-deliver-port": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "01-title",
+        "02-early",
+        "03-avenue",
+        "04-intersection",
+        "05-park",
+        "06-at-speed",
+        "07-tree-fade",
+        "390-06-side-shot"
+      ],
+      "results": "not captured as a still (autoplay full-shift runs reached the Shift over card, 10-13 deliveries, then auto-restart)",
+      "errors": "none (no page errors in any capture)",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

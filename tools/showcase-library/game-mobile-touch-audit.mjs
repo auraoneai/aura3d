@@ -48,9 +48,7 @@ const playbook = JSON.parse(
   readFileSync(resolve(repoRoot, "tools/showcase-library/game-play-playbook.json"), "utf8"),
 );
 const gameIds = new Set(Object.keys(playbook).filter((k) => !k.startsWith("$")));
-const EXTRA_ROUTES = [
-  { id: "aura-clash-showcase", label: "Aura Clash Arena", path: "/apps/aura-clash-showcase/" },
-];
+const EXTRA_ROUTES = [];
 const routes = [...EXTRA_ROUTES, ...routesJson.routes]
   .filter((r) => gameIds.has(r.id))
   .filter((r) => {

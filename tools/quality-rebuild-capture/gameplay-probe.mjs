@@ -43,7 +43,7 @@ const log = (...p) => process.stderr.write(`[qrg ${new Date().toISOString().slic
 const variantLabel = (v) => (v === DEFAULTS ? "defaults" : v.replace(DEFAULTS, "defaults"));
 
 function startServer() {
-  const roots = [siteRoot, path.join(repoRoot, "public"), path.join(repoRoot, "apps", "aura-clash-showcase", "public"), path.join(repoRoot, "marketing", "public")];
+  const roots = [siteRoot, path.join(repoRoot, "public"), path.join(repoRoot, "marketing", "public")];
   const tryFile = (root, rel) => {
     const full = path.resolve(root, `.${rel}`);
     if (!full.startsWith(path.resolve(root) + path.sep)) return null;

@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-turf",
+  "key": "turfAerosolCan",
+  "generatedAt": "2026-11-18T22:14:05.286Z",
+  "generator": "tools/idol/generate.mjs (client-timeout resume)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A single short wide aerosol spray paint can standing upright, glossy amber-orange lacquered metal body with a rolled rim, a chrome domed top with a white spray actuator nozzle, a few amber paint drips running down the side. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17,
+      "note": "billed in the timed-out generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f098-5c19-76f2-971d-601a4b6405db",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 935350,
+        "num_faces": 1870696,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single short wide aerosol spray paint can standing upright, glossy amber-orange lacquered metal body with a rolled rim, a chrome domed top with a white spray actuator nozzle, a few amber paint drips running down the side. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.691,
+    "size": [
+      0.443,
+      0.69,
+      0.443
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-turf/assets/idol/turfAerosolCan.glb",
+  "sizeBytes": 1104904,
+  "preview": "artifacts/idol/splat-turf/turfAerosolCan/views.png",
+  "usd": 0.37,
+  "postProcess": "PNG textures re-encoded as JPEG q90 (normal map) by the splat Idol pass to fit the per-game byte budget"
+}

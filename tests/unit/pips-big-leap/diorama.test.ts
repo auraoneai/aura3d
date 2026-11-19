@@ -104,12 +104,12 @@ describe("pips-big-leap diorama scene", () => {
     }
   });
 
-  it("adds a starry gradient sky node in w6 only, never capturing the environment (the daylight worlds draw their HDRI; phase 3)", () => {
-    const skyOf = (id: (typeof WORLD_IDS)[number]) => sceneOf(id).find((n) => n.kind === "sky");
-    expect(skyOf("w6")?.spec?.stars).toBeDefined();
-    expect(skyOf("w6")?.captureEnvironment).toBe(false);
-    for (const id of ["academy", "w1", "w2", "w3"] as const) expect(skyOf(id), id).toBeUndefined();
-    for (const id of ["w4", "w5"] as const) expect(skyOf(id)).toBeUndefined();
+  it("mounts no engine sky node in any world (a swap into one killed the renderer); w6 draws an instanced star dome", () => {
+    // Full-run GPU audit 2026-11-19: see world-swap-sky.test.ts.
+    for (const id of WORLD_IDS) expect(sceneOf(id).find((n) => n.kind === "sky"), id).toBeUndefined();
+    const dome = sceneOf("w6").filter((n) => n.name === dioramaName.sky);
+    expect(dome).toHaveLength(1);
+    for (const id of WORLD_IDS.filter((w) => w !== "w6")) expect(sceneOf(id).filter((n) => n.name === dioramaName.sky), id).toHaveLength(0);
   });
 
   it("hangs the aurora curtain in the w6 night garden only (PBL-V3, aurora half)", () => {

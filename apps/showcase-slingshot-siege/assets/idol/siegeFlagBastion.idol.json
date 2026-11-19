@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeFlagBastion",
+  "generatedAt": "2026-11-18T23:35:49.845Z",
+  "generator": "tools/idol/generate.mjs (post steps finished locally from the downloaded Idol result)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0bb-d473-77c1-a0be-6c1ef251359b",
+      "prompt": "A small square grey stone bastion block: a stepped stone plinth, a square ashlar stone body, a projecting stone cornice with eight square crenellation merlons around the top edge and a round dark iron socket in the centre of the top, nothing mounted in the socket. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0bd-cac2-7bb1-97be-fb08e73da0dd",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1200464,
+        "num_faces": 2400924,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A small square grey stone bastion block: a stepped stone plinth, a square ashlar stone body, a projecting stone cornice with eight square crenellation merlons around the top edge and a round dark iron socket in the centre of the top, nothing mounted in the socket. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.242,
+    "size": [
+      1.089,
+      1.24,
+      1.096
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeFlagBastion.glb",
+  "sizeBytes": 608248,
+  "preview": "artifacts/idol/slingshot-siege/siegeFlagBastion/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90, textures capped at 512px",
+    "bytesBefore": 2033412,
+    "bytesAfter": 608248
+  }
+}

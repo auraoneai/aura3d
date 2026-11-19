@@ -1,0 +1,65 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cross-hop",
+  "key": "hopRiverLog",
+  "generatedAt": "2026-11-18T23:26:07.382Z",
+  "generator": "tools/idol/generate.mjs (request resumed after its 20-min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A single long round fallen tree log toy, rough brown bark with moss patches, cut ends showing pale tree rings, lying horizontally. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b2-d270-76b1-b5ad-7c8729707f54",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 894610,
+        "num_faces": 1789236,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single long round fallen tree log toy, rough brown bark with moss patches, cut ends showing pale tree rings, lying horizontally. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -178.5,
+    "scale": 3.773,
+    "size": [
+      1.356,
+      1.525,
+      3.8
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-cross-hop/assets/idol/hopRiverLog.glb",
+  "sizeBytes": 549392,
+  "preview": "artifacts/idol/cross-hop/hopRiverLog/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": -88.5,
+    "note": "facing re-fixed from opt.glb with tools/idol/normalize.mjs after inspecting views.png"
+  },
+  "postprocess": {
+    "step": "shrink",
+    "tool": "aura3d assets optimize + gltf-transform jpeg (normal map PNG->JPEG q90)",
+    "maxVerts": 5000,
+    "tex": 512,
+    "sizeBytesBefore": 2329256
+  },
+  "baked": {
+    "step": "node transforms baked into vertices (gltf-transform flatten + clearNodeTransform) so manifest bounds are exact"
+  }
+}

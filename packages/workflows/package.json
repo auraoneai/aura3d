@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/workflows",
-  "version": "5.5.6",
+  "version": "5.6.0",
   "type": "module",
   "exports": {
     ".": {

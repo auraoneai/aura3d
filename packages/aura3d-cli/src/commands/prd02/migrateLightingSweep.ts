@@ -9,7 +9,7 @@
  * Usage:
  *   aura3d migrate lighting [dir|glob...] [--report|--write] [--out <dir>]
  * Default targets (PRD-02 Phase 7 item): apps/showcase-*,
- * apps/aura-clash-showcase, templates/*, packages/create-aura3d/templates/*,
+ * templates/*, packages/create-aura3d/templates/*,
  * examples/*.
  */
 
@@ -22,7 +22,6 @@ type Row = { file: string; line: number; construct: string; mapping: "exact" | "
 
 const DEFAULT_TARGETS = [
   "apps/showcase-*",
-  "apps/aura-clash-showcase",
   "templates/*",
   "packages/create-aura3d/templates/*",
   "examples/*"

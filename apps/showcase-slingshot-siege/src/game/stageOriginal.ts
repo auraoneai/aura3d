@@ -28,13 +28,11 @@ import {
   buildFacetedSeaCliffMesh,
   buildFortressFoundationNode,
   buildGatehouseNode,
-  buildHeroSiegeBirdNode,
   buildLaunchBastionNode,
   buildPlankScatterNode,
   buildProceduralBarrelSpec,
   buildProceduralCrateSpec,
   buildProceduralPlankSpec,
-  buildRaiderBossNode,
   buildSiegeSlingshotRigNode,
   buildWatchtowerNode,
   buildWindmillNode,
@@ -42,6 +40,7 @@ import {
   latheMesh,
   mergeRawMeshes
 } from "../art/proceduralModels";
+import { idolBirdNode, idolRaiderNode } from "../art/idolModels";
 import type { AmmoId } from "./ammo";
 import {
   POOL, PROP_IDS, SLING_IDS, barrelNodeId, bladeNodeId, blockNodeId, crateNodeId, debrisNodeId, dotNodeId, gullPartId,
@@ -304,10 +303,10 @@ function buildStageOriginal(chapter: OriginalChapterLook, options: StageOptions)
       .position(-7.5, 1.7, -0.16).scale([0.05, 0.05, 0.05]).runtime({ id: SLING_IDS.bandL, tags: ["sling"] }),
     primitives.box({ name: "sling-band-r", material: pbr("#d94f30", { roughness: 0.6 }) })
       .position(-7.5, 1.7, 0.16).scale([0.05, 0.05, 0.05]).runtime({ id: SLING_IDS.bandR, tags: ["sling"] }),
-    buildHeroSiegeBirdNode("sling-loaded", "pebble", [-7.4, 1.62, 0], Math.PI * 0.5, 0.46, SLING_IDS.loaded, "sling"),
-    buildHeroSiegeBirdNode("ammo-wait-0", "stone", [-8.35, 0.25, 0.52], Math.PI * 0.42, 0.52, "ammo-wait-0", "stage"),
-    buildHeroSiegeBirdNode("ammo-wait-1", "triple", [-8.95, 0.2, -0.42], Math.PI * 0.48, 0.48, "ammo-wait-1", "stage"),
-    buildHeroSiegeBirdNode("ammo-wait-2", "ember", [-9.45, 0.16, 0.28], Math.PI * 0.45, 0.45, "ammo-wait-2", "stage")
+    ...idolBirdNode("sling-loaded", "pebble", [-7.4, 1.62, 0], Math.PI * 0.5, 0.46, SLING_IDS.loaded, "sling"),
+    ...idolBirdNode("ammo-wait-0", "stone", [-8.35, 0.25, 0.52], Math.PI * 0.42, 0.52, "ammo-wait-0", "stage"),
+    ...idolBirdNode("ammo-wait-1", "triple", [-8.95, 0.2, -0.42], Math.PI * 0.48, 0.48, "ammo-wait-1", "stage"),
+    ...idolBirdNode("ammo-wait-2", "ember", [-9.45, 0.16, 0.28], Math.PI * 0.45, 0.45, "ammo-wait-2", "stage")
   );
 
   // ------------------------------------------------------- piece pools ------
@@ -330,13 +329,13 @@ function buildStageOriginal(chapter: OriginalChapterLook, options: StageOptions)
 
   // ------------------------------------------------------- gull rigs --------
   for (let g = 0; g < POOL.gullRigs; g += 1) {
-    nodes.push(buildRaiderBossNode(g, gullPartId(g, "body")));
+    nodes.push(idolRaiderNode(g, gullPartId(g, "body")));
   }
 
   // ------------------------------------------------- projectiles + debris ---
   const projAmmos: readonly AmmoId[] = ["pebble", "stone", "triple", "squid", "ember"];
   for (let i = 0; i < POOL.projectiles; i += 1) {
-    nodes.push(buildHeroSiegeBirdNode(projectileNodeId(i), projAmmos[i % projAmmos.length]!, [0, -120, 0], Math.PI * 0.5, 0.5, projectileNodeId(i), "projectile"));
+    nodes.push(...idolBirdNode(projectileNodeId(i), projAmmos[i % projAmmos.length]!, [0, -120, 0], Math.PI * 0.5, 0.5, projectileNodeId(i), "projectile"));
   }
   for (let i = 0; i < POOL.debris; i += 1) {
     nodes.push(geometry.custom(plankSpec, { name: debrisNodeId(i), material: CRAFT_MATS.cratePine, castShadow: true, receiveShadow: false })

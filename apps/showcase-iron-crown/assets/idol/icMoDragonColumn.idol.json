@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icMoDragonColumn",
+  "generatedAt": "2026-11-18T23:18:04.184Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0cf-407d-7201-b00f-44fdfc212d7c",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0e1-6e26-7a12-91a6-f8a1e4bd2b67",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 834122,
+        "num_faces": 1668240,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Carved weathered grey granite column wrapped by a coiling dragon relief, on a square stone plinth",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.578,
+    "size": [
+      1.364,
+      3.58,
+      1.31
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icMoDragonColumn.glb",
+  "sizeBytes": 2846476,
+  "preview": "artifacts/idol/iron-crown/icMoDragonColumn/views.png",
+  "usd": 0.37
+}

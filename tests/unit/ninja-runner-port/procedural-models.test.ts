@@ -32,8 +32,9 @@ const PROP_IDS: readonly PropId[] = [
 ];
 
 describe("WP-24 Shadowstep Gauntlet procedural multi-material overhaul", () => {
-  it("prunes art/direction.ts assets down to ONLY the 6 rigged ninja/rival skeletons", () => {
-    expect(direction.assets.map((a) => a.assetKey)).toEqual([
+  it("prunes art/direction.ts assets down to ONLY the 6 rigged ninja/rival skeletons (plus the Idol water-wheel set dressing)", () => {
+    expect(direction.assets.filter((a) => a.role === "set-dressing").map((a) => a.assetKey)).toEqual(["nrWaterWheel"]);
+    expect(direction.assets.filter((a) => a.role !== "set-dressing").map((a) => a.assetKey)).toEqual([
       "ninja-hero",
       "ninja-soldier",
       "ninja-brute",
@@ -41,7 +42,7 @@ describe("WP-24 Shadowstep Gauntlet procedural multi-material overhaul", () => {
       "ninja-caster",
       "ninja-scout"
     ]);
-    for (const asset of direction.assets) {
+    for (const asset of direction.assets.filter((a) => a.role !== "set-dressing")) {
       expect(asset.animated?.clips.length ?? 0).toBeGreaterThanOrEqual(4);
     }
   });

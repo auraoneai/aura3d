@@ -1,30 +1,33 @@
-# Duneglide: final screenshots (4.5.0 build, after the live-games audit fixes)
+# Duneglide: final screenshots
 
-- **Build:** `audit-fix/g24` (commits `dcd9c6b2b`..`71c708b4d` on 4.5.0 `31f8945ad`), the **live app page** `/apps/showcase-silt-and-signal-port/index.html` with its credit badge, served by the example dev server. Earlier frames (2026-10-25, `0d965903c`) came from the examples page.
-- **Capture:** `tests/browser/audit-fix/silt-and-signal-port.spec.ts`, remote runs `g24after3-a` (titles), `g24after2-b` (play states), `g24after2-c` (card). Decoded with the lane's decoder; numbers in `metrics.jsonl` (luma per frame and per third, HUD rects, sim state, `diagnostics().renderPath`, draw calls, texture status).
-- **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. Timing, shading and anti-aliasing differ from a real GPU; these frames are not real-GPU evidence.
-- **Render path on every frame:** `hdr-msaa`, quality `auto`, `bloomFusion: "separable"`. Draw calls 87-124.
-- **Method:** each play state waited for the textured-material upgrade (14 of 31 materials carry textures; one stays `pending` on this runner, so the wait ran to its 9-minute budget on desktop). Titles were taken at least 70 s after mount. Every frame was opened and looked at.
+Route: `/apps/duneglide/`
 
-## States
+Runner: headed Chrome on a real GPU (Apple Metal) via REA `capture_browser_scenario`, production build served from http://127.0.0.1:8790 (2026-11-18).
 
-| File | State |
-|---|---|
-| `title.1280x720`, `title.390x844` | title card (default load). The phone title shows the Text size button and the touch-button row in the controls table |
-| `gameplay-early.*` | chapter 1 start, objective 2 ("Land and hold steady"), throttle 0 |
-| `key-boost.*` | 120 frames of throttle, steer and boost: Speed 6, Turbo, one impact (toast "Impact: speed 60 to 50"); the hint line reads "Slow down, then hold F / the Hold button for 2.5 s"; the phone frame shows the Hold, Boost and Pause buttons |
-| `mid-fly.1280x720` | 360 more frames of throttle: Speed 3, impact toast, textured plaster walls |
-| `results.1280x720` | the results card reached by play (chapter 0 portal completed, then the last chapter's final objective): Time in flight 0:01, Lamps restored 9, Chapters flown 2 of 7, Impacts 0, Rating Glass-smooth (run `g24after2-d`) |
-| `card.2x.1440x900`, `card.1x` | 720x450 card frame from `key-boost`; the 1x image is the 2x frame downscaled in the page |
+| Viewport | File | State | Meaning |
+|---|---|---|---|
+| 1280x720 | 1280-01-title.jpg | title | title screen over the chase framing, chapter list |
+| 1280x720 | 1280-02-early.jpg | early | ?autoplay=1: through ring 7 in the village, rider balanced with arms low |
+| 1280x720 | 1280-03-action.jpg | action | carving along the canal past the banner mast (ring 5) |
+| 1280x720 | 1280-04-hold.jpg | hold | stopped in the ring, holding for the passenger (objective 2) |
+| 1280x720 | 1280-05-turbo.jpg | turbo | Turbo (speed 50) down the tree-lined road, camera holds 11-12 m behind past the trees |
+| 1280x720 | 1280-06-venue2.jpg | venue2 | chapter 5 Orchard of Storms (?chapter=4&start=1&autoplay=1), through ring 3 at altitude 99 |
+| 1280x720 | 1280-07-results.jpg | results | Journey complete card (QA jump ?chapter=6&objective=4&start=1&autoplay=1, so 1 of 7 chapters) |
+| 390x844 | 390-01-title.jpg | title | title screen, portrait |
+| 390x844 | 390-02-early.jpg | early | autoplay through ring 6 in the village, touch Boost/Hold buttons |
+| 390x844 | 390-03-scene.jpg | scene | story card after the first objective (autoplay continues it after 3 s) |
+| 390x844 | 390-04-turbo.jpg | turbo | Turbo (speed 50) toward the standing arches |
+| 390x844 | 390-05-venue2.jpg | venue2 | chapter 5 Orchard of Storms |
+| 1440x900 | card-2x.jpg | card | autoplay through ring 7 in the village (rider, skiff, rings, town and strata) |
+| 720x450 | card-1x.jpg | card | card-2x.jpg downscaled (LANCZOS, q88) |
 
-## Problems still visible
+## Checked in the frames
 
-1. **Low:** the touch Pause label is wider than its 48 px button in `key-boost.390x844` (fixed in `4551fcb07`, after these frames).
-2. **Low:** the rider is small on a flat white disc with two cyan ovals in every frame.
-3. **Low:** on mobile the chapter buttons truncate long names ("2. The Broken Wat...").
+- Rider arms stay low at every speed and in hard carves (hands >= 40 deg below the shoulders on the GPU Turbo burst; was level with the shoulders before)
+- Chase camera never closer than 8.9 m to the rider over the full journey (was 2.6 m past roadside trees); crowns between camera and rider fade
+- ?autoplay=1 flies around piers and trees (1 impact over 7 chapters, was 27), uses Turbo on clear legs, no watchdog restarts
+- Rings, trees and buildings grounded; no pass-through
 
-## GU47 phase 6 (4.7.4) retake
+## Known issues
 
-`title.1280x720`, `title.390x844` (lean `g24-t` tests, runs `g24p6-r3-tdesk` and `g24p6-r3-tphone`) and `results.1280x720`
-(run `g24p6-r2-results`, the ch6 dawn behind the card) were retaken on the 4.7.4 build. Remote runner, software WebGL2.
-Copies are in `evidence/game-upgrades-47/silt-and-signal-port/p6-r2/screens` and `p6-r3/screens`.
+- Fixed 2026-11-19: flying far off a chapter route used to show a flat untextured sand plane and the far dune-ring backdrop as floating ribbons. A soft play boundary (examples/silt-and-signal-port/boundary.ts) now eases in a crosswind 64-100 m from the route that banks the skiff back and bleeds outward motion (no wall snap); verified on the real GPU holding Turbo + steer off the route in chapters 1 and 2 and past the chapter-2 finish (rider never beyond 98 m, only dressed village / hills in frame). Autoplay is bit-identical, so these frames are unchanged.

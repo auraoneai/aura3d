@@ -4,10 +4,11 @@
  * triangle count stays bounded. Landmarks (clock tower, lighthouse, rooftop water tanks), bus shelters and hydrants are
  * sparse static placements derived from the same deterministic layout data.
  */
-import type { PropSkip, Furniture } from "./city";
+import { ROOF_CAP_H, type PropSkip, type Furniture, type RoofInfo } from "./city";
 import type { Solid } from "./sim";
 import type { PropKey } from "./models";
-import { buildProceduralPropNodes } from "./art/proceduralModels";
+import { buildProceduralPropNodes, type PropReplacement } from "./art/proceduralModels";
+import { idolPropNodes } from "./idol";
 import type { Block, Building } from "./world";
 
 /** radius (metres, from the start) inside which furniture is drawn from the procedural models (`tree: 900` covers 100% of city trees with smooth `layeredCanopyMesh`) */
@@ -34,7 +35,17 @@ export interface PropPlan {
 
 const within = (start: { x: number; z: number }, r: number) => (x: number, z: number): boolean => Math.hypot(x - start.x, z - start.z) < r;
 
-export function planProps(f: Furniture, blocks: readonly Block[], buildings: readonly Building[], start: { x: number; z: number }): PropPlan {
+/**
+ * How far each prop's base is sunk below the surface it stands on, so no base edge floats over the road plane, park decal
+ * or roof cap (the Idol models' lowest vertex is their base, grounded at y = 0).
+ */
+export const PROP_SINK: Readonly<Partial<Record<PropKey, number>>> = { tree: 0.12, palm: 0.12, hydrant: 0.05, clocktower: 0.15, lighthouse: 0.15, watertank: 0.1 };
+
+/**
+ * `roofs` (from `buildCity`, by building index) puts the rooftop water tanks on the actual roof cap; without it the tanks
+ * assume the flat cap on top of `b.height`.
+ */
+export function planProps(f: Furniture, blocks: readonly Block[], buildings: readonly Building[], start: { x: number; z: number }, roofs?: readonly RoofInfo[]): PropPlan {
   const out = new Map<PropKey, Transform[]>();
   const solids: Solid[] = [];
   const add = (key: PropKey, t: Transform): void => {
@@ -95,11 +106,15 @@ export function planProps(f: Furniture, blocks: readonly Block[], buildings: rea
   add("clocktower", propPose("clocktower", plaza.x, plaza.z, 0, 38));
   const lighthouse = { x: -90, z: 498 };
   add("lighthouse", propPose("lighthouse", lighthouse.x, lighthouse.z, 0, 24));
-  // rooftop water tanks on every sixth tall building (the tops are flat and the footprints are the collision solids)
+  // rooftop water tanks on every sixth tall building, standing on the flat roof cap (never on a gable or off a setback)
   let tanks = 0;
   buildings.forEach((b, i) => {
     if (b.height < 40 || i % 6 !== 0 || tanks >= 24) return;
-    add("watertank", propPose("watertank", b.x + b.hw * 0.3, b.z - b.hd * 0.3, (i * 1.7) % 6.28, 3.4, b.height));
+    const roof = roofs?.[i] ?? { y: b.height + ROOF_CAP_H, flat: true, hw: b.hw, hd: b.hd };
+    const ox = b.hw * 0.3;
+    const oz = b.hd * 0.3;
+    if (!roof.flat || ox + 1.0 > roof.hw || oz + 1.0 > roof.hd) return;
+    add("watertank", propPose("watertank", b.x + ox, b.z - oz, (i * 1.7) % 6.28, 3.4, roof.y - (PROP_SINK.watertank ?? 0)));
     tanks++;
   });
 
@@ -115,6 +130,13 @@ export function planProps(f: Furniture, blocks: readonly Block[], buildings: rea
 export const CASTING_PROPS: readonly PropKey[] = ["lamp", "signal", "shelter", "hydrant", "clocktower", "lighthouse", "watertank"];
 
 /** Procedural multi-material instanced & landmark nodes for near-field street furniture, rooftops & shopfronts. */
-export function propNodes(plan: PropPlan, cast = false) {
-  return [...buildProceduralPropNodes(plan, cast)];
+/**
+ * Idol pass: image-to-3D landmarks and street props stand in for the procedural ones (`idol.ts`). `liteVegetation` keeps the
+ * ~760 code-built street trees and palms (one Idol tree is ~4-5k triangles) on the mobile handset tier.
+ */
+export function propNodes(plan: PropPlan, cast = false, idol = false, liteVegetation = false) {
+  const replace: PropReplacement | undefined = idol
+    ? (kind, transforms, castShadow) => (liteVegetation && (kind === "tree" || kind === "palm") ? null : idolPropNodes(kind, transforms, castShadow))
+    : undefined;
+  return [...buildProceduralPropNodes(plan, cast, replace)];
 }

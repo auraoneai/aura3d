@@ -1,0 +1,57 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "serpentine-sky-run",
+  "key": "ssrIslandPagoda",
+  "generatedAt": "2026-11-18T22:40:41.741Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/serpentine-sky-run/ssrIslandPagoda/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f092-a381-7c41-9326-9f4e358691af",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 867666,
+        "num_faces": 1735412,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Floating sky island: an inverted cone of layered stratified ochre and slate rock hanging beneath a flat grassy top wreathed in soft white cloud, on top a tall five-tier vermilion lacquer pagoda with black roofs and gold finial, a small vermilion shrine gate and a gnarled bonsai pine. Photograph of a real museum-quality handcrafted East Asian temple artefact: glossy cinnabar-red and black urushi lacquer, carved celadon jade, mother-of-pearl inlay, hand-applied gold leaf and carved granite, crisp real material wear and patina, warm soft studio light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 17.67,
+    "size": [
+      16.8,
+      17.609,
+      16.038
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-serpentine-sky-run-port/assets/idol/ssrIslandPagoda.glb",
+  "sizeBytes": 3979124,
+  "preview": "artifacts/idol/serpentine-sky-run/ssrIslandPagoda/views.png",
+  "usd": 0.2,
+  "postProcess": {
+    "by": "serpentine Idol pass (gltf-transform textureCompress + meshopt simplify)",
+    "textures": "JPEG q85-88; base/normal 1024 (ssrHeroViolet 2048), metallicRoughness 512 for props/backdrops, normal 512 for far backdrops",
+    "simplify": "static meshes only (lockBorder, error 0.002) to 7k-17k verts; rigged heroes untouched",
+    "sizeBytes": 1512288
+  }
+}

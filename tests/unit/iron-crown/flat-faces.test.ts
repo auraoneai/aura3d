@@ -121,7 +121,7 @@ describe("iron crown fighters: sculpted visored helms & multi-material gladiator
 
   for (const fighter of FIGHTERS) {
     it(`${fighter.id}: builds grounded sabatons, greaves, cuirass, pauldrons, articulated arms, weapon, shield and visored helm with baked cavity AO`, () => {
-      const root = createFighterNode("player", fighter, fighter.name, [0, 0, 0], 1, {}).toJSON();
+      const root = createFighterNode("player", fighter, fighter.name, [0, 0, 0], 1, {}, undefined, true, false).toJSON();
       expect(root.kind).toBe("group");
       const meshes = collectMeshes(root);
       expect(meshes.length).toBeGreaterThanOrEqual(40);

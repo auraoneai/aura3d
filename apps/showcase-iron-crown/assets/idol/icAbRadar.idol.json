@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icAbRadar",
+  "generatedAt": "2026-11-18T23:35:00.005Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0bf-09e7-72f2-b4e7-5d6cd0ae3289",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ec-695c-7733-9b5c-885b7d4d5287",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1029300,
+        "num_faces": 2058840,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Military airfield radar tower: steel lattice tower with a flat rectangular radar antenna on top, side ladder, desert dust",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.939,
+    "size": [
+      1.767,
+      4.19,
+      1.926
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icAbRadar.glb",
+  "sizeBytes": 3701748,
+  "preview": "artifacts/idol/iron-crown/icAbRadar/views.png",
+  "usd": 0.37
+}

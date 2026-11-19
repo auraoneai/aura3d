@@ -1,0 +1,57 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "serpentine-sky-run",
+  "key": "ssrArch",
+  "generatedAt": "2026-11-18T22:40:41.122Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/serpentine-sky-run/ssrArch/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 638658,
+        "num_faces": 1277312,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Low shrine slide-under arch: two slender vermilion lacquer posts on black lacquer bases with gold caps, a single horizontal vermilion beam with a thin black lacquer top rail crossing between them at chest height, a small hanging silk tag and a jade bead at the centre of the beam, a small pleated paper lantern hanging on the outside of each post, open empty space below the beam, wide, straight-on front facing the viewer. Photograph of a real museum-quality handcrafted East Asian temple artefact: glossy cinnabar-red and black urushi lacquer, carved celadon jade, mother-of-pearl inlay, hand-applied gold leaf and carved granite, crisp real material wear and patina, warm soft studio light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 2.2,
+    "size": [
+      2.195,
+      2.1,
+      0.422
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-serpentine-sky-run-port/assets/idol/ssrArch.glb",
+  "sizeBytes": 2364352,
+  "preview": "artifacts/idol/serpentine-sky-run/ssrArch/views.png",
+  "usd": 0.2,
+  "postProcess": {
+    "by": "serpentine Idol pass (gltf-transform textureCompress + meshopt simplify)",
+    "textures": "JPEG q85-88; base/normal 1024 (ssrHeroViolet 2048), metallicRoughness 512 for props/backdrops, normal 512 for far backdrops",
+    "simplify": "static meshes only (lockBorder, error 0.002) to 7k-17k verts; rigged heroes untouched",
+    "sizeBytes": 1048224
+  }
+}

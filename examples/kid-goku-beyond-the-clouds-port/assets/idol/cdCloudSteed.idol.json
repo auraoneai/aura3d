@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cumulus-dash",
+  "key": "cdCloudSteed",
+  "generatedAt": "2026-11-18T22:31:07.964Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/cumulus-dash/cdCloudSteed/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 812750,
+        "num_faces": 1625544,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A small magical flying cloud steed: one fluffy rounded golden-amber cumulus cloud cushion, about three times longer than it is wide, plump billowing puffs at the front tapering into a wispy curled comet tail at the back, warm gold on top fading to cream underneath, soft sunlit volume like real cotton wool, seen from the side so its full length shows, front of the cloud on the right. Photoreal storm-washed mountain realism: real physical materials as if photographed on a high sandstone ridge just after a squall, crisp physically based surface detail and gentle wear, saturated rain-washed colours, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 180,
+    "scale": 2.915,
+    "size": [
+      1.319,
+      1.151,
+      2.9
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/kid-goku-beyond-the-clouds-port/assets/idol/cdCloudSteed.glb",
+  "sizeBytes": 3033272,
+  "preview": "artifacts/idol/cumulus-dash/cdCloudSteed/views.png",
+  "usd": 0.2
+}

@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "aura-diamond-3d": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "title",
+        "early",
+        "batter",
+        "contact",
+        "venue-ivy",
+        "venue-canyon",
+        "venue-midtown",
+        "results"
+      ],
+      "results": "captured: Derby Lab final card at Midtown Skyline (3 HR, longest 365 ft) via ?mode=derby&autoplay=1&finishAfter=40 (QA query: ends the match on its score after 40 s of live play and holds the card); 1280-08-results.jpg, 390-06-results.jpg",
+      "errors": "none",
+      "capturedAt": "2026-11-19"
+    }
+  }
+}

@@ -20,7 +20,7 @@ import {
 } from "./course";
 import { paintOriginalAt, pigmentsAt } from "./palette";
 import { loopFrame } from "./race";
-import { mainFrame, routeFrame, surfaceNoise } from "./track";
+import { drawnSurfaceNoise, mainFrame, routeFrame } from "./track";
 import { Vec3 } from "./vec3";
 
 export interface MeshData {
@@ -81,7 +81,7 @@ export function computeNormals(positions: readonly number[], indices: readonly n
 
 const surfacePoint = (s: number, lane: number, route: Route, lift = 0): Vec3 => {
   const f = routeFrame(s, route);
-  return f.p.addScaledVector(f.side, lane).addScaledVector(f.up, (islandHeight(s, route) ?? 0) + lift + surfaceNoise(s, trackLane(s, lane, route)));
+  return f.p.addScaledVector(f.side, lane).addScaledVector(f.up, (islandHeight(s, route) ?? 0) + lift + drawnSurfaceNoise(s, trackLane(s, lane, route)));
 };
 
 /** One rideable strip of `route` between distances `from` and `to` (the original's `p(...)`). */
@@ -99,7 +99,7 @@ export function trackStrip(from: number, to: number, route: Route = "main", half
       [half, drop]
     ];
     for (const [lane, lift] of columns) {
-      const p = frame.p.clone().addScaledVector(frame.side, lane).addScaledVector(frame.up, ground + lift + surfaceNoise(s, trackLane(s, lane, route)));
+      const p = frame.p.clone().addScaledVector(frame.side, lane).addScaledVector(frame.up, ground + lift + drawnSurfaceNoise(s, trackLane(s, lane, route)));
       m.positions.push(p.x, p.y, p.z);
       const [u, v] = trackUv(s, lane, route);
       m.uvs.push(u, v + lift * 0.04);
@@ -143,7 +143,7 @@ export function railStrip(from: number, to: number, route: Route, half: number, 
     const ground = islandHeight(s, route) ?? 0;
     for (const d of [-0.1, 0.1]) {
       const lane = side * half + d;
-      const p = f.p.clone().addScaledVector(f.side, lane).addScaledVector(f.up, ground + 0.035 + surfaceNoise(s, trackLane(s, lane, route)));
+      const p = f.p.clone().addScaledVector(f.side, lane).addScaledVector(f.up, ground + 0.035 + drawnSurfaceNoise(s, trackLane(s, lane, route)));
       m.positions.push(p.x, p.y, p.z);
       m.uvs.push(s * 0.05, d);
       m.normals.push(f.up.x, f.up.y, f.up.z);
@@ -231,7 +231,7 @@ function rampMesh(ramp: Ramp): MeshData {
   const at = (u: number, lane: number, lift = 0): Vec3 => {
     const s = ramp.s + u * ramp.length;
     const f = mainFrame(s);
-    return f.p.addScaledVector(f.side, lane).addScaledVector(f.up, surfaceNoise(s, lane) + ramp.height * u * u + lift);
+    return f.p.addScaledVector(f.side, lane).addScaledVector(f.up, drawnSurfaceNoise(s, lane) + ramp.height * u * u + lift);
   };
   for (let i = 0; i <= 32; i++) {
     const u = i / 32;
@@ -288,5 +288,41 @@ export function veilQuad(s: number): MeshData {
     m.uvs.push(...uv[k]!);
   });
   m.indices.push(0, 1, 2, 0, 2, 3);
+  return m;
+}
+
+/**
+ * Floating regolith islet under an off-track set piece (Idol pass grounding, Nov 2026): the course is a ribbon hung
+ * 55-90 m above the crater basin, and the colony props, lander, observatories and the gantry's towers stand beside it
+ * (|lateral| > 11.5 m), where nothing supports them. Each gets a jagged inverted-cone rock like the opal islands: top
+ * disc at local y = `top` (just under the prop's base), radius `radius` at (`cx`, `cz`), tapering over `depth` metres.
+ * Built in the prop's local frame (same node transform), pigments sampled at course distance `s`.
+ */
+export function buildIslet(cx: number, cz: number, radius: number, depth: number, s: number, seed = 1, top = -0.03): MeshData {
+  const m = emptyMesh();
+  const segs = 16;
+  const rings: readonly [number, number][] = [[1, 0], [0.97, 0.12], [0.78, 0.38], [0.48, 0.7], [0.12, 1]];
+  const jag = (k: number, i: number): number => 1 + 0.09 * Math.sin(i * 2.7 + seed * 1.9 + k) + 0.05 * Math.sin(i * 5.3 + seed * 0.7 - k * 2);
+  // top cap centre
+  m.positions.push(cx, top, cz); m.uvs.push(0.5, 0.5); pushPigment(m, s);
+  for (let k = 0; k < rings.length; k++) {
+    const [rf, df] = rings[k]!;
+    for (let i = 0; i < segs; i++) {
+      const a = (i / segs) * Math.PI * 2;
+      const r = radius * rf * (k === 0 ? 1 : jag(k, i));
+      m.positions.push(cx + Math.cos(a) * r, top - depth * df, cz + Math.sin(a) * r);
+      m.uvs.push(i / segs, df);
+      pushPigment(m, s);
+    }
+  }
+  const ring = (k: number, i: number): number => 1 + k * segs + (i % segs);
+  for (let i = 0; i < segs; i++) m.indices.push(0, ring(0, i + 1), ring(0, i));
+  for (let k = 0; k < rings.length - 1; k++) {
+    for (let i = 0; i < segs; i++) {
+      const a = ring(k, i), b = ring(k, i + 1), c = ring(k + 1, i), d = ring(k + 1, i + 1);
+      m.indices.push(a, b, c, b, d, c);
+    }
+  }
+  m.normals = computeNormals(m.positions, m.indices);
   return m;
 }

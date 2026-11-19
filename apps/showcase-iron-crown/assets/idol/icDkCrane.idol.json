@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icDkCrane",
+  "generatedAt": "2026-11-18T23:33:57.363Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0a6-5fc9-7483-a284-eeefc629e967",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ac-b0e3-77f0-a2ad-9afdd1d55034",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 861372,
+        "num_faces": 1723116,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Harbour dockside gantry crane section: rusted orange-painted steel lattice tower with a horizontal boom arm reaching to one side, a hanging hook block on steel cables, riveted plates, weathered paint",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.325,
+    "size": [
+      3.898,
+      4.6,
+      2.236
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icDkCrane.glb",
+  "sizeBytes": 3987448,
+  "preview": "artifacts/idol/iron-crown/icDkCrane/views.png",
+  "usd": 0.37
+}

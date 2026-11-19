@@ -72,9 +72,12 @@ describe("IRON CROWN LUTs (IC47-P2)", () => {
     }
   });
 
-  it("binds a LUT on the four open-air venues only, through the look grade node", () => {
+  it("binds a LUT on the three open-air look rows a refined look replaces, through the look grade node", () => {
     const withLut = STAGE_ORDER.filter((id) => STAGE_LOOKS[id].grade.lut !== undefined);
-    expect(withLut.sort()).toEqual(["bangkok-dock", "colosseum-ruins", "desert-airbase", "himalayan-monastery"]);
+    // Owner neutral-grade pass: the Dock (mounted on its look row) drops its warm dusk LUT; the other three rows are
+    // replaced by the LUT-free refined look by default (refinedLook.ts). The four .cube files stay served and regenerable.
+    expect(withLut.sort()).toEqual(["colosseum-ruins", "desert-airbase", "himalayan-monastery"]);
+    expect(STAGE_LOOKS["bangkok-dock"].grade.lut).toBeUndefined();
     for (const id of withLut) {
       const grade = (((stageLookNode(STAGE_LOOKS[id]) as { children?: AuraSceneNode[] }).children) ?? []).find(
         (child: AuraSceneNode) => child.kind === "effect" && (child as { effect?: string }).effect === "color-grade"

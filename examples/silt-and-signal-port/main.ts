@@ -10,11 +10,13 @@
  */
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, effects, installQaHooks, type AuraApp } from "@aura3d/engine";
-import { updateCompass } from "@aura3d/engine/game";
+import { updateCompass, warmPrograms } from "@aura3d/engine/game";
+import { preloadRiderDriver } from "./art/idolRider";
+import { DUNE_IDOL } from "../../apps/showcase-silt-and-signal-port/src/idol-assets";
 import { createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
 import { createSiltPresenter, viewOf } from "./presentation";
 import { CHAPTERS } from "./chapters-data";
-import { autopilot } from "./autopilot";
+import { AUTOPLAY_CARD_MS, autopilot, autoplayChapterSearch, autoplayPilot, createAutoplayWatchdog } from "./autopilot";
 import { createSiltAudio, type SiltAudio } from "./audio";
 import { CHAPTER_COPY, ENDING_COPY, OBJECTIVE_TITLES, SCENE_COPY } from "./copy";
 import { STEP, createSim, objectiveOf, stepSim, targetOf, type Input, type Sim, type SimEvent } from "./sim";
@@ -35,7 +37,10 @@ const intParam = (key: string, fallback: number, lo: number, hi: number): number
 const config = {
   chapter: intParam("chapter", 0, 0, 6),
   objective: intParam("objective", 0, 0, 5),
-  autopilot: params.get("autopilot") === "1",
+  /** owner standard: `?autoplay=1` is the hands-free viewer mode (title skipped, the reference controller flies, scenes and
+   *  results auto-advance, the journey loops); `?autopilot=1` stays the QA flight mode */
+  autoplay: params.get("autoplay") === "1",
+  autopilot: params.get("autopilot") === "1" || params.get("autoplay") === "1",
   manual: params.get("manual") === "1",
   /** `norig=1` skips the animation controller (rider stays in the model's rest pose): an A/B for animation problems */
   norig: params.get("norig") === "1",
@@ -49,7 +54,8 @@ const config = {
   exposure: Number.isFinite(Number(params.get("exposure"))) && params.has("exposure") ? Number(params.get("exposure")) : undefined as number | undefined
 };
 config.objective = Math.min(config.objective, CHAPTERS[config.chapter]!.objectives.length - 1);
-const { qa, skipTitle } = pageFlags(params);
+const { qa, skipTitle: startParam } = pageFlags(params);
+const skipTitle = startParam || config.autoplay;
 
 type Mode = "title" | "play" | "paused" | "scene" | "done";
 let mode: Mode = qa || skipTitle ? "play" : "title";
@@ -79,6 +85,7 @@ let world: World | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let autopilotOn = config.autopilot;
+const autoplayWatchdog = createAutoplayWatchdog();
 let renderTime = 0;
 let frames = 0;
 let hudTimer = 0;
@@ -189,6 +196,8 @@ function openScene(): void {
   $("scene-lines").innerHTML = lines.map((line) => `<p>${line.replace(/[<>&]/g, "")}</p>`).join("");
   audio.chime("scene");
   setMode("scene");
+  // autoplay: read the scene for AUTOPLAY_CARD_MS, then continue (never parks on a "Continue" card)
+  if (config.autoplay) setTimeout(continueScene, AUTOPLAY_CARD_MS);
 }
 
 /** Results for the whole journey: every chapter flown since the title screen, summed from sessionStorage. */
@@ -205,10 +214,12 @@ function openDone(): void {
     cell("Rating", ratingOf(totals.impacts), true)
   ].join("");
   setMode("done");
+  // autoplay: show the results, then fly the journey again from chapter 1 (loops forever)
+  if (config.autoplay) setTimeout(() => { if (mode === "done") { clearJourney(session); goToChapter(0); } }, AUTOPLAY_CARD_MS);
 }
 
 function goToChapter(chapter: number): void {
-  location.search = `?chapter=${chapter}&start=1`;
+  location.search = autoplayChapterSearch(chapter, config.autoplay);
 }
 
 function continueScene(): void {
@@ -247,7 +258,7 @@ addEventListener("keydown", (e) => {
   }
 });
 addEventListener("keyup", (e) => down.delete(e.code));
-addEventListener("blur", () => { down.clear(); pointers.clear(); touch.hold = false; touch.boost = false; if (mode === "play" && !qa) setMode("paused"); });
+addEventListener("blur", () => { down.clear(); pointers.clear(); touch.hold = false; touch.boost = false; if (mode === "play" && !qa && !config.autoplay) setMode("paused"); });
 
 const held = (...codes: string[]): boolean => codes.some((c) => down.has(c));
 
@@ -325,7 +336,8 @@ function readPad(): Partial<Input> {
 
 function sampleInput(): Input {
   if (heldInput) return heldInput;
-  if (autopilotOn) return autopilot(sim);
+  // ?autopilot=1 (QA) flies the reference controller; ?autoplay=1 and the P toggle in play fly the autoplay pilot
+  if (autopilotOn) return qa && !config.autoplay ? autopilot(sim) : autoplayPilot(sim);
   return mergeInput({
     keys: {
       throttle: held("KeyW", "ArrowUp") ? 1 : held("KeyS", "ArrowDown") ? -1 : 0,
@@ -450,6 +462,8 @@ const loop = createFixedStepLoop({
   manual: config.manual,
   step: () => {
     if (mode !== "play") return;
+    // autoplay: an objective the controller cannot finish (wedged on scenery) restarts after AUTOPLAY_STUCK_SECONDS
+    if (config.autoplay && autopilotOn && autoplayWatchdog.update(sim, STEP)) reset(sim.state.chapter, sim.state.objective);
     const events = stepSim(sim, sampleInput(), STEP);
     presenter.afterStep();
     if (events.length) onEvents(events);
@@ -692,6 +706,10 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+/** The last boot warm-up (`window.__DUNEGLIDE_WARM__`): programs, HDRI and Idol texture upgrades settled before play. */
+let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+if (typeof window !== "undefined") (window as unknown as { __DUNEGLIDE_WARM__?: () => typeof warmResult }).__DUNEGLIDE_WARM__ = () => warmResult;
+
 async function boot(): Promise<void> {
   const size = (): void => {
     const maxDpr = isCoarseOrMobile() ? 1.25 : 1.5;
@@ -747,6 +765,18 @@ async function boot(): Promise<void> {
   installHooks();
   render(0);
   updateHud();
+  // Idol wow pass: settle every program before the player can start. The 13 Idol GLBs (about 25 MB) stream in after
+  // the mount, so their 1-2K texture upgrades and the chapter HDRI used to land in the first seconds of play; each
+  // landing switches materials to new program variants, and draws whose program is still compiling are skipped, so
+  // the first acceleration showed seconds of bare dusk clear colour (a frozen orange screen) until the compiles
+  // finished. warmPrograms waits for the HDRI and every pending texture upgrade, then steps until the draw count is
+  // stable (lessons-learned R2). QA pages keep the old no-wait boot.
+  // the rigged courier's skeleton (read from its GLB) is ready before the first posed frame, QA pages included
+  await preloadRiderDriver(DUNE_IDOL.duneRiderRig.url);
+  if (!qa) {
+    $("loading-status").textContent = "Painting the valley";
+    warmResult = await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+  }
   if (isPageHidden()) {
     audio.setHidden(true);
   } else {

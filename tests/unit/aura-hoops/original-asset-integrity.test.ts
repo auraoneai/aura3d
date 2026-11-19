@@ -40,9 +40,17 @@ function countFiniteVertices(node: unknown): number {
 }
 
 describe("Aura Hoops procedural equipment & audio route manifest integrity", () => {
-  it("contains zero .glb model entries in aura-assets.route.ts and keeps all 17 audio SFX entries synced with root aura.assets.json", () => {
-    const entries = Object.entries(assets as Record<string, { type: string; format: string; url: string; hash: string; sizeBytes: number }>);
-    expect(entries.filter(([, entry]) => entry.type === "model" || entry.format === "glb")).toEqual([]);
+  it("route models are only the Idol pass GLBs, and all 17 audio SFX entries stay synced with root aura.assets.json", () => {
+    const all = Object.entries(assets as Record<string, { type: string; format: string; url: string; hash: string; sizeBytes: number }>);
+    const models = all.filter(([, entry]) => entry.type === "model" || entry.format === "glb");
+    for (const [id, entry] of models) {
+      expect(id).toMatch(/^hoopsIdol/);
+      expect(entry.format).toBe("glb");
+      const m = MANIFEST.assets.find((item) => item.id === id);
+      expect(m, `missing ${id} in root manifest`).toBeDefined();
+      expect(entry.hash).toBe(m!.hash);
+    }
+    const entries = all.filter(([, entry]) => entry.type !== "model");
     expect(entries).toHaveLength(17);
     for (const [id, entry] of entries) {
       expect(entry.type).toBe("audio");

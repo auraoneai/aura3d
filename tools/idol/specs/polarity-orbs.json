@@ -1,0 +1,79 @@
+{
+  "game": "polarity-orbs",
+  "outDir": "apps/showcase-polarity-orbs/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "poResonanceCoil",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "maxDim": 5.8
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A large laboratory high-voltage resonance coil: a tall cylinder wound with fine shiny copper wire, a polished aluminium toroid ring on top, white ceramic insulator stacks, a heavy octagonal machined steel base plinth with bolts, deep red painted accents on the base"
+    },
+    {
+      "key": "poHorseshoeMagnet",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "maxDim": 6.0
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A giant upright U-shaped horseshoe magnet monument standing on its curved base: one leg glossy red painted steel and the other glossy blue painted steel, bright polished silver pole tips at the top ends, a band of copper coil windings wrapped around each leg, mounted on a heavy machined steel plinth"
+    },
+    {
+      "key": "poCrystalRed",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 6.6
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A cluster of large translucent rose-red quartz crystal points growing upward from a dark rock base, sharp faceted hexagonal prisms of different heights, glassy with internal veils"
+    },
+    {
+      "key": "poCrystalBlue",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 7.0
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A cluster of large translucent ice-blue quartz crystal points growing upward from a dark rock base, sharp faceted hexagonal prisms of different heights, glassy with internal veils"
+    },
+    {
+      "key": "poIslandWarm",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 10.5
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A floating rock island: an inverted jagged cone of dark layered slate stone, a flat top with a few small dark pine trees and a cluster of rose-red quartz crystals, a small copper coil pylon at the edge"
+    },
+    {
+      "key": "poIslandCool",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 10.5
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A floating rock island: an inverted jagged cone of dark layered slate stone, a flat top with a few small dark pine trees and a cluster of ice-blue quartz crystals, a small steel antenna mast at the edge"
+    }
+  ]
+}

@@ -60,6 +60,41 @@ export function dressingPlan(): readonly Dress[] {
   return out;
 }
 
+/** Lunar colony outposts beside the course (course distance, lateral offset, drop along the frame's up, yaw, scale). */
+export const COLONY_STATIONS: readonly {
+  readonly name: string;
+  readonly kind: "habitat" | "dish" | "solar" | "trailer" | "fuel";
+  readonly s: number;
+  readonly lateral: number;
+  readonly drop: number;
+  readonly yaw: number;
+  readonly scale: number;
+}[] = [
+  { name: "colony-habitat-grid", kind: "habitat", s: 30, lateral: 23.5, drop: -0.6, yaw: Math.PI * 0.64, scale: 1.05 },
+  { name: "colony-trailer-grid", kind: "trailer", s: 41, lateral: 18.2, drop: -0.35, yaw: 0.18, scale: 1 },
+  { name: "colony-dish-grid", kind: "dish", s: 47, lateral: -21.5, drop: -0.5, yaw: 0.65, scale: 1.05 },
+  { name: "colony-fuel-grid", kind: "fuel", s: 53, lateral: -19.2, drop: -0.45, yaw: -0.25, scale: 1 },
+  { name: "colony-solar-grid", kind: "solar", s: 59, lateral: 22.0, drop: -0.45, yaw: 0.4, scale: 1.08 },
+  { name: "colony-habitat-violet", kind: "habitat", s: 368, lateral: -24.5, drop: -0.7, yaw: -Math.PI * 0.62, scale: 1.15 },
+  { name: "colony-dish-ridge", kind: "dish", s: 642, lateral: 25.0, drop: -0.6, yaw: -0.5, scale: 1.18 },
+  { name: "colony-solar-ridge", kind: "solar", s: 824, lateral: -23.0, drop: -0.5, yaw: -0.35, scale: 1.15 },
+  { name: "colony-fuel-jade", kind: "fuel", s: 1108, lateral: 22.0, drop: -0.5, yaw: 0.52, scale: 1.1 },
+  { name: "colony-trailer-opal", kind: "trailer", s: 1286, lateral: -20.5, drop: -0.4, yaw: -0.28, scale: 1.08 }
+];
+
+/**
+ * Footprint of each colony set piece, from its admitted Idol model (manifest bounds, metres at scale 1): half the larger
+ * horizontal side and the height. Pass-through QA (Nov 18): a rider knocked into zero-G flight off the rim flew straight
+ * through the habitats, dishes and tanks (scenery only); they now collide like the boulders and observatories.
+ */
+export const COLONY_FOOTPRINT: Readonly<Record<(typeof COLONY_STATIONS)[number]["kind"], { readonly half: number; readonly h: number; readonly label: string }>> = {
+  habitat: { half: 11.1 / 2, h: 7.822, label: "colony habitat" },
+  dish: { half: 7.993 / 2, h: 9.2, label: "colony dish" },
+  solar: { half: 5.768 / 2, h: 4.8, label: "solar array" },
+  trailer: { half: 2.865 / 2, h: 2.4, label: "colony trailer" },
+  fuel: { half: 4.1 / 2, h: 3.518, label: "fuel tank" }
+};
+
 /** A solid capsule (a sphere when `a` equals `b`). */
 export interface Collider {
   readonly id: string;
@@ -119,6 +154,21 @@ export function staticColliders(): readonly Collider[] {
       b: base.clone().addScaledVector(f.up, Math.max(height - radius, height / 2)),
       radius,
       approach: f.side.clone().multiplyScalar(-Math.sign(d.lateral))
+    });
+  }
+  for (const c of COLONY_STATIONS) {
+    const f = mainFrame(c.s);
+    const fp = COLONY_FOOTPRINT[c.kind];
+    const radius = 0.9 * fp.half * c.scale;
+    const height = fp.h * c.scale;
+    const base = f.p.clone().addScaledVector(f.side, c.lateral).addScaledVector(f.up, c.drop);
+    out.push({
+      id: c.name,
+      label: fp.label,
+      a: base.clone().addScaledVector(f.up, Math.min(radius, height / 2)),
+      b: base.clone().addScaledVector(f.up, Math.max(height - radius, height / 2)),
+      radius,
+      approach: f.side.clone().multiplyScalar(-Math.sign(c.lateral))
     });
   }
   cache = { id, colliders: out };

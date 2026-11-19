@@ -156,7 +156,10 @@ function ribbon(step: number): Ribbon {
       const f = groundFrame(d, lat);
       const tone = onPath ? toneAt(d, false) : lerp3(toneAt(d, false), toneAt(d, true), Math.min(1, (Math.abs(lat) - w / 2) / 6));
       const edgeDrop = onPath ? 0 : vergeDrop(d, Math.abs(lat) - w / 2);
-      b.vertex(f.x, f.y + edgeDrop, f.z, lat / 4, d / 4, tone);
+      // u runs along the surface across the route: on the verges it adds the drop, so a steep bank (the forest log's
+      // flanks, the rooftop eaves, the river banks) is not one texel row smeared down tens of metres.
+      const u = onPath ? lat / 4 : Math.sign(lat) * (w / 2 + (Math.abs(lat) - w / 2) + Math.abs(edgeDrop)) / 4;
+      b.vertex(f.x, f.y + edgeDrop, f.z, u, d / 4, tone);
     });
   }
   for (let r = 0; r < rows; r++) {
@@ -245,6 +248,44 @@ export function buildWater(): MeshData {
     b.tri(a + 1, a + nx + 1, a + nx + 2);
   }
   return b.data;
+}
+
+/** One curtain of the valley falls (metres, in the falls' own frame: x across, y up from the pool, z toward the viewer). */
+export interface FallsLayer {
+  /** Width and centre across. */
+  readonly width: number; readonly x: number;
+  /** Where the water leaves the lip (z) and how high above the pool (y). */
+  readonly z: number; readonly top: number;
+  /** How far the curtain has arced out from the lip when it reaches the pool (water leaving a lip falls on a parabola). */
+  readonly throw: number;
+  /** Horseshoe: the side edges come this far toward the viewer. */
+  readonly bend: number;
+  /** v range of the strand shader (0 = mist foot, 1 = crest lip); the mist skirt uses only the foot. */
+  readonly v0: number; readonly v1: number;
+}
+/**
+ * The valley falls as staggered curved curtains in ONE mesh (one draw): each pours from its lip on a parabolic arc
+ * (z grows with the square root of the drop), bends into a horseshoe and ends in the pool at y = 0; a short wide mist
+ * skirt stands at the plunge line. Replaces the single flat 56 x 63 m card in the evening look.
+ */
+export function buildFallsCascade(layers: readonly FallsLayer[], segmentsX = 20, segmentsY = 14): MeshData {
+  const b = new MeshBuilder();
+  const tone: Rgb = [1, 1, 1];
+  for (const L of layers) {
+    const base = b.data.positions.length / 3;
+    for (let j = 0; j <= segmentsY; j++) for (let i = 0; i <= segmentsX; i++) {
+      const u = (i / segmentsX - 0.5) * 2, t = j / segmentsY; // t: 0 at the pool, 1 at the lip
+      const drop = (1 - t) * L.top;
+      const z = L.z + L.throw * Math.sqrt(drop / Math.max(1e-6, L.top)) + L.bend * u * u;
+      b.vertex(L.x + (u / 2) * L.width, t * L.top, z, i / segmentsX, L.v0 + (L.v1 - L.v0) * t, tone);
+    }
+    for (let j = 0; j < segmentsY; j++) for (let i = 0; i < segmentsX; i++) {
+      const a = base + j * (segmentsX + 1) + i;
+      b.tri(a, a + 1, a + segmentsX + 1);
+      b.tri(a + 1, a + segmentsX + 2, a + segmentsX + 1);
+    }
+  }
+  return b.computeNormals().data;
 }
 
 /**

@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icDkPavilion",
+  "generatedAt": "2026-11-18T23:16:47.515Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0f2-d252-70c1-ab8c-29a9e2e1fa94",
+      "prompt": "Open-sided Southeast Asian riverside pavilion: four carved teak wooden pillars on a raised stone platform, steep layered red and gold tiled roof with upswept gable finials, small brass bell lanterns hanging from the eaves, inside only a low wooden table with a large brass bowl and candles, no statues, no figures. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0fc-aee4-7fc2-b42b-64a28636ccd7",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 29,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2113882,
+        "num_faces": 4229396,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Open-sided Southeast Asian riverside pavilion: four carved teak wooden pillars on a raised stone platform, steep layered red and gold tiled roof with upswept gable finials, small brass bell lanterns hanging from the eaves, inside only a low wooden table with a large brass bowl and candles, no statues, no figures. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.103,
+    "size": [
+      3.571,
+      4.3,
+      4.092
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icDkPavilion.glb",
+  "sizeBytes": 4361964,
+  "preview": "artifacts/idol/iron-crown/icDkPavilion/views.png",
+  "usd": 0.37
+}

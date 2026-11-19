@@ -68,10 +68,11 @@ export const HULL_TAIL_MOUNT: Readonly<
   Record<PlayableCarId, { readonly heightFrac: number; readonly spreadFrac: number; readonly rearFrac: number; readonly barScale: readonly [number, number, number]; readonly roofCrownY: number | null; readonly roofCrownZ: number }>
 > = {
   cruiser: { heightFrac: 0.285, spreadFrac: 0.3, rearFrac: 0.482, barScale: [1.08, 0.76, 0.75], roofCrownY: 0.652, roofCrownZ: -0.04 },
-  coupe: { heightFrac: 0.36, spreadFrac: 0.31, rearFrac: 0.445, barScale: [1.05, 0.75, 0.8], roofCrownY: 0.76, roofCrownZ: -0.02 },
+  // Idol wow pass: the Idol crossover and interceptor carry their own roof sensor, so the spinning crown is only on the pod.
+  coupe: { heightFrac: 0.36, spreadFrac: 0.31, rearFrac: 0.445, barScale: [1.05, 0.75, 0.8], roofCrownY: null, roofCrownZ: -0.02 },
   truck: { heightFrac: 0.44, spreadFrac: 0.34, rearFrac: 0.465, barScale: [1.15, 0.95, 0.85], roofCrownY: null, roofCrownZ: 0 },
   gt: { heightFrac: 0.46, spreadFrac: 0.33, rearFrac: 0.455, barScale: [1.08, 0.7, 0.8], roofCrownY: null, roofCrownZ: 0 },
-  interceptor: { heightFrac: 0.47, spreadFrac: 0.33, rearFrac: 0.455, barScale: [1.1, 0.72, 0.8], roofCrownY: 0.84, roofCrownZ: -0.05 }
+  interceptor: { heightFrac: 0.47, spreadFrac: 0.33, rearFrac: 0.455, barScale: [1.1, 0.72, 0.8], roofCrownY: null, roofCrownZ: -0.05 }
 };
 
 type Mat3 = readonly [
@@ -217,4 +218,26 @@ export function roofSensorCrownPose(pose: CarBodyPose, size: FittedSize, carId: 
     housingRot: eulerZYXFromMat3(bodyMat, pose.yaw),
     laserRot: eulerZYXFromMat3(mulMat3(bodyMat, rotYMat3(spin)), pose.yaw + spin)
   };
+}
+
+/**
+ * Idol wow pass: instance transform of one spinning road wheel (unit wheel, axle along X) on a vehicle body. `hub` is in
+ * the vehicle's body frame (front is -Z); the wheel is steered about the body's up axis, then rolled about its axle by
+ * `spin` (negative is forward rolling for a -Z-facing vehicle). `R = body * R_y(steer) * R_x(spin)`, decomposed with the
+ * same "ZYX" Euler the rear lamps use.
+ */
+export function wheelInstanceTransform(
+  pose: CarBodyPose,
+  hub: readonly [number, number, number],
+  radius: number,
+  width: number,
+  spin: number,
+  steer = 0
+): AuraTransformSpec {
+  const body = carBodyMatrix(pose.pitch, pose.yaw, pose.roll);
+  const c = Math.cos(spin), s = Math.sin(spin);
+  const rotX: Mat3 = [1, 0, 0, 0, c, -s, 0, s, c];
+  const m = mulMat3(mulMat3(body, rotYMat3(steer)), rotX);
+  const off = rotateByMat3(body, hub);
+  return { position: [pose.x + off[0], pose.y + off[1], pose.z + off[2]], rotation: eulerZYXFromMat3(m, pose.yaw + steer), scale: [width, radius, radius] };
 }

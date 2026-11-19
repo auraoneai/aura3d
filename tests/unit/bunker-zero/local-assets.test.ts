@@ -23,12 +23,18 @@ function findGlbFiles(dir: string): string[] {
   return found;
 }
 
-describe("bunker zero zero-GLB procedural asset contract", () => {
-  it("ships zero .glb files and zero model entries in aura.assets.json", () => {
+describe("bunker zero asset contract", () => {
+  it("ships zero model entries in aura.assets.json and only provenance-tracked Idol GLBs", () => {
     expect(manifest.schema).toBe("aura3d.assets/1.0");
     expect(manifest.assets).toEqual([]);
     expect(Object.keys(localAssets)).toEqual([]);
-    expect(findGlbFiles(APP)).toEqual([]);
+    // Idol wow pass: the only GLBs in the app are the Idol image-to-3D sources under assets/idol (admitted to the shared
+    // catalog through tools/idol/admit.sh), each with its .idol.json provenance next to it.
+    const glbs = findGlbFiles(APP);
+    for (const file of glbs) {
+      expect(file.startsWith(path.join("assets", "idol") + path.sep), file).toBe(true);
+      expect(existsSync(path.join(APP, file.replace(/\.glb$/, ".idol.json"))), file).toBe(true);
+    }
   });
 
   it("types all 4 first-person weapon viewmodels as procedural descriptors", () => {

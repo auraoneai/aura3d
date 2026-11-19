@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzDrum",
+  "generatedAt": "2026-11-18T23:04:05.834Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f09f-6a6a-70d1-ae45-38639892624c",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a4-0c48-7623-abd6-5f05d555a04f",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1152066,
+        "num_faces": 2304128,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Dented steel hazard oil drum painted yellow with black hazard stripes, rusty rims, grime",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.27,
+    "size": [
+      0.871,
+      1.27,
+      0.861
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzDrum.glb",
+  "sizeBytes": 2664352,
+  "preview": "artifacts/idol/bunker-zero/bzDrum/views.png",
+  "usd": 0.37
+}

@@ -7,7 +7,9 @@ import type { AuraSlamHandle, SlamRenderer } from "./shell/boot";
 import { createBootProgress } from "./shell/bootProgress";
 import { createSceneRenderer, type SceneRendererHandle, type SceneRendererOptions } from "./view/renderer";
 import { createAthletePose } from "./view/pose";
-import { createPoseRig } from "./view/poseRig";
+import { createIdolPoseRig } from "./view/idolAthleteRig";
+import { idolEnabled } from "./view/idolVenue";
+import { lookMode } from "./ui/lookMode";
 import type { ActorState, BallState } from "./contract/sim";
 import { labRenderWorker } from "../shared/lab-flags";
 
@@ -38,11 +40,20 @@ export function labAppOptions(search: string, defaultBackend?: "auto" | "webgpu"
   return renderer || output || worker ? { appOptions: { ...(renderer ? { renderer } : {}), ...(output ? { output } : {}), ...(worker ? { worker } : {}) } } : {};
 }
 
+/** Idol athletes render in the World Tour look unless `?idol=0`. */
+export function idolAthletesEnabled(search: string): boolean {
+  return lookMode(search) === "world-tour" && idolEnabled(search);
+}
+
 /** The scene renderer (M-RENDER) with the M-POSE athlete rig and the native outfit resolver, in the shape the shell expects. */
 export function createNativeRenderer(options: { safety?: boolean; search?: string; onBootProgress?: SceneRendererOptions["onBootProgress"] } = {}): NativeRenderer {
   const handle = createSceneRenderer({
     pose: createAthletePose(),
-    rig: createPoseRig({ resolveAppearance: (value, role) => appearance.resolve(value, role === "ai" ? "ai" : "player") }),
+    // Idol wow pass: rigged GLB athletes driven from the same pose (view/idolAthleteRig.ts); `?look=original` / `?idol=0` keep the 28-part rig.
+    rig: createIdolPoseRig({
+      resolveAppearance: (value, role) => appearance.resolve(value, role === "ai" ? "ai" : "player"),
+      enabled: idolAthletesEnabled(options.search ?? (typeof window !== "undefined" ? window.location.search : ""))
+    }),
     landing: (ball: BallState) => physics.landing(ball),
     ...(options.safety !== undefined ? { safety: options.safety } : {}),
     ...(options.search !== undefined ? { search: options.search } : {}),

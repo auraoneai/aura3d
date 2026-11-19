@@ -1,11 +1,11 @@
 /** Glint Courier — circuit-board chase (PRD: docs/prd/dot-dash-3d.md). */
 import { createFixedStepLoop, game, installQaHooks } from "@aura3d/engine";
-import { createFixedStepPresenter, createGame, sfxUrl } from "@aura3d/engine/game";
+import { createFixedStepPresenter, createGame, sfxUrl, warmPrograms } from "@aura3d/engine/game";
 import {
   buildScene, bindApp, syncVisuals, wx, wz, cameraPose, setMotionPrefs, tileToScreen,
   CYBER_NEON_LUT, spawnSparkBurst, snapshotActors, blendActors
 } from "./game/world";
-import { BOARD_LOOKS, LENS } from "./game/look";
+import { ARCADE } from "./game/look";
 import { registerVfxPack, VFX_KINDS, type VfxPrefs } from "./game/vfx";
 import { st, frame, startRun, bootToTitle, evidenceExtra, GHOST_LABEL } from "./game/sim";
 import { mountUI, tickUI, isPaused, autoPause } from "./game/hud";
@@ -44,7 +44,8 @@ const inputOptions = {
     right: ["KeyD", "ArrowRight"],
     dash: ["Space"],
     camera: ["KeyV"],
-    reset: ["KeyR"]
+    reset: ["KeyR"],
+    autoplay: ["KeyP"]
   },
   bufferMs: 140
 } as const;
@@ -65,7 +66,7 @@ const g = createGame({
   ...(() => {
     const { output, renderer } = labAppOptions(readLabFlags(), { backend: "auto" });
     return {
-      output: { toneMapping: LENS.toneMapping, exposure: LENS.exposure, dither: true, ...(output ?? {}) },
+      output: { toneMapping: ARCADE.toneMapping, exposure: ARCADE.exposure, dither: true, ...(output ?? {}) },
       ...(renderer ? { renderer } : {})
     };
   })(),
@@ -124,7 +125,7 @@ let appReady = false;
 // A1: shared loading/readiness helper drives the engine shell loading progress.
 const loading = createLoadingProgress({ shell: g.shell });
 loading.set(0.1, "Building board");
-st.autopilot = params.get("autoplay") === "1" || params.get("demo") === "1";
+st.autopilot = params.get("autoplay") === "1" || params.get("autopilot") === "1" || params.get("demo") === "1";
 bindApp(app);
 g.start();
 if (isPageHidden()) {
@@ -151,11 +152,12 @@ const ACTION_CODES: Record<string, readonly string[]> = {
   right: ["KeyD", "ArrowRight"],
   dash: ["Space"],
   camera: ["KeyV"],
-  reset: ["KeyR"]
+  reset: ["KeyR"],
+  autoplay: ["KeyP"]
 };
 const onCaptureKeyDown = (e: KeyboardEvent): void => {
   if ((document.activeElement as HTMLElement | null)?.tagName === "INPUT") return;
-  if (/^(Key[WASDVR]|Arrow(Up|Down|Left|Right)|Space)$/.test(e.code)) {
+  if (/^(Key[WASDVRP]|Arrow(Up|Down|Left|Right)|Space)$/.test(e.code)) {
     if (!keysHeld.has(e.code)) keysPressed.add(e.code);
     keysHeld.add(e.code);
     if (e.code === "Space" || e.code.startsWith("Arrow")) e.preventDefault();
@@ -302,7 +304,15 @@ if (AUTOSTART) {
   tickUI();
 }
 
-void loading.track(g.ready(), 1, "Starting").then(() => {
+void loading.track(g.ready(), 1, "Starting").then(async () => {
+  // Idol wow pass: the courier, hunter and pylon GLBs (about 27 MB, all mounted at boot; hunters parked off-board)
+  // stream in after the mount, so their texture upgrades and new program variants used to compile in the first seconds
+  // of play (draws skipped: a frozen board). Settle every program, the IBL and every texture upgrade before the loop
+  // runs and the loading screen hides (lessons-learned R2).
+  loading.set(0.9, "Polishing the board");
+  try {
+    await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+  } catch { /* warm-up is best effort; the game still starts */ }
   loading.done("Ready");
   appReady = true;
   // A2: backend selection + readiness report for diagnostics and capture tools (read-only).
@@ -312,19 +322,6 @@ void loading.track(g.ready(), 1, "Starting").then(() => {
   syncVisuals(0);
   tickUI();
 }).catch(() => { /* mount error handled by engine */ });
-
-// trail effect handle
-let trail: { stop(o?: { immediate?: boolean }): void } | null = null;
-function ensureTrail(): void {
-  if (trail || st.mode !== "play") return;
-  try {
-    trail = app.effects?.spawn("streak", { node: "byte" }, { color: st.profile.trailColor, scale: 1.22 }) ?? null;
-  } catch { trail = null; }
-}
-function killTrail(): void {
-  try { trail?.stop({ immediate: true }); } catch { /* */ }
-  trail = null;
-}
 
 let frames = 0;
 let lastMode = st.mode;
@@ -339,7 +336,7 @@ function handleStepEvents(): void {
   const ev = st.events;
   if (ev.dot) {
     g.sound?.cue("dot");
-    spawnSparkBurst(st.player.px, st.player.py, BOARD_LOOKS[st.mazeId].led, 0.68);
+    spawnSparkBurst(st.player.px, st.player.py, ARCADE.pellet, 0.68);
   }
   if (ev.orb) {
     g.sound?.cue("orb");
@@ -382,7 +379,6 @@ function handleStepEvents(): void {
     g.sound?.cue("death");
     g.juice?.fire("death");
     impactRig.trigger({ freezeSeconds: 0.085, trauma: 0.75, fovKickDeg: -2.2 });
-    killTrail();
     if (vfxRegistered) fx(VFX_KINDS.blownFuse, st.player.px, st.player.py, 0.5);
     else {
       try {
@@ -401,6 +397,11 @@ const simLoop = createFixedStepLoop({
   minFrameSeconds: 0.0001,
   maxFrameSeconds: 0.05,
   step(stepSeconds) {
+    // P toggles the computer player (autoplay); any direction key hands control back to the player
+    if (consumeCode("autoplay")) {
+      st.autopilot = !st.autopilot;
+      if (st.autopilot && (st.mode === "gameover" || st.mode === "win")) st.endT = 0;
+    }
     frame(stepSeconds, input);
     keysPressed.clear();
     handleStepEvents();
@@ -426,10 +427,6 @@ app.onFrame(({ dt }) => {
       simClockMs += feel.simDt * 1000;
       simLoop.tick(simClockMs);
     }
-
-    if (st.mode === "play") ensureTrail();
-    else if (st.mode !== lastMode && trail) killTrail();
-    if (trail && st.mode === "dying") killTrail();
 
     const blended = presenter.present(simLoop, st.mode === "play" && !feel.frozen);
     syncVisuals(d, blended, { shakeOffset: feel.shakeOffset, fovDeltaDeg: feel.fovDeltaDeg });

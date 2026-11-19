@@ -9,7 +9,8 @@
  * light, no fill light), at most four unshadowed practicals.
  * - Crown Arena: the key is one hard overhead follow-spot (PCSS) that tracks the pair; the look's sun is dropped.
  * - Outdoor venues: the look's sun is the key at its own elevation (Colosseum 72, Airstrip 10, Monastery 18, Dock 8 deg).
- * - Neo-Tokyo: a shadowed sodium flood key, magenta/cyan rect panels, fill through the env intensity only (IC47-L2).
+ * - Neo-Tokyo: a shadowed cool-neutral key (owner neutral-grade pass; the sodium colour lives in the flood shaft behind
+ *   the lane), magenta/cyan rect panels, fill through the env intensity only (IC47-L2).
  * - Every stage: two back rims behind the fighters in each fighter's own emissive colour (IC47-L1), and no look rim
  *   (the pink `arena-fight` rim is removed with `rim: false`).
  *
@@ -39,6 +40,47 @@ export const CORE_PALETTE = [BLACK_IRON, MOLTEN_GOLD, EMBER_CRIMSON] as const;
 
 /** Letterbox bar height (fraction of the viewport, each bar) for the intro, K.O. and win cinematics (signature). */
 export const LETTERBOX_BAR = 0.11;
+
+/**
+ * Owner neutral-grade pass ("too much orange / sun-bright fade"): the frame output every venue shares. ACES keeps blacks
+ * deep and restores contrast and saturation (AgX plus the `cinema-warm` LUT washed every venue into one brown-orange);
+ * the strip LUT is the neutral `broadcast-crisp` S-curve, never a warm tint.
+ */
+export const IRON_CROWN_OUTPUT = {
+  toneMapping: "aces",
+  exposure: 1,
+  lut: { preset: "broadcast-crisp", intensity: 0.2 }
+} as const;
+
+/** Bloom tint on every venue (the look's bloom was tinted by the venue accent: a gold or orange glow over the frame). */
+export const NEUTRAL_BLOOM_TINT = "#fff8f0";
+
+/**
+ * Back edge of the fight lane (m, the fight plane is z = 0). Atmosphere (light shafts, ambient embers, motes and dust)
+ * stays behind it so nothing hazes the fighters.
+ */
+export const FIGHT_LANE_BACK_Z = -1;
+
+/** Largest z a light cone reaches: its apex or the rim of its far cap (a conservative bound). */
+export function lightConeMaxZ(position: AuraVec3, direction: AuraVec3, length: number, coneAngle: number): number {
+  const len = Math.hypot(direction[0], direction[1], direction[2]) || 1;
+  const endZ = position[2] + (direction[2] / len) * length;
+  return Math.max(position[2], endZ + length * Math.tan(coneAngle));
+}
+
+/** Lowest y a light cone reaches: its apex or the rim of its far cap (a conservative bound). */
+export function lightConeMinY(position: AuraVec3, direction: AuraVec3, length: number, coneAngle: number): number {
+  const len = Math.hypot(direction[0], direction[1], direction[2]) || 1;
+  const endY = position[1] + (direction[1] / len) * length;
+  return Math.min(position[1], endY - length * Math.tan(coneAngle));
+}
+
+/**
+ * Floor clearance for atmosphere (m): a light cone over the fight lane ends above the fighters' knees, so its glow never
+ * pools on the floor at their feet (owner: Neo-Tokyo "floor steam" drifting over the fighters' feet) and the mirror floor
+ * has no floor-level haze to reflect into the foreground. Neo-Tokyo's flood shaft now stops above head height.
+ */
+export const ATMOSPHERE_FLOOR_CLEAR_Y = 1.2;
 
 export interface SunKey {
   readonly kind: "sun";
@@ -152,7 +194,14 @@ export interface StageLookRow {
    * Precipitation (IC47-E2). `particles` is the weather volume's live count (A3D_QR_VFX, default on; inside the
    * 2,000-particle budget); `streakLimit` caps the flag-off primitive streaks `weather.precipitation` also emits.
    */
-  readonly weather?: { readonly type: "rain" | "snow"; readonly streakLimit: number; readonly particles: number; readonly color: AuraColor };
+  readonly weather?: {
+    readonly type: "rain" | "snow";
+    readonly streakLimit: number;
+    readonly particles: number;
+    readonly color: AuraColor;
+    /** Volume alpha (0..1, the engine scales drop alpha and fall speed by it); default the weather state's. */
+    readonly intensity?: number;
+  };
   readonly shafts: readonly LightShaft[];
   readonly floor: FloorFinish;
 }
@@ -191,10 +240,12 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     bloom: { intensity: 0.24, threshold: 1.24, knee: 0.5, scatter: 0.62 },
     vignette: 0.3,
     grain: 0.05,
+    // Owner neutral-grade pass: every shaft stays behind the fight lane (the follow-spot shaft over the pair and the
+    // forge shafts that reached z = +0.7 hazed the fighters); the overhead shaft now falls on the throne.
     shafts: [
-      { name: "crown follow-spot shaft", position: [0, 7.3, 0.6], direction: [0, -1, -0.08], color: "#ffd9a0", intensity: 0.14, length: 7.2, coneAngle: 0.32 },
-      { name: "crown forge smoke shaft left", position: [-5.8, 6.2, -6.2], direction: [0.52, -0.62, 0.58], color: "#ff7a3a", intensity: 0.1, length: 8.5, coneAngle: 0.22 },
-      { name: "crown forge smoke shaft right", position: [5.8, 6.2, -6.2], direction: [-0.52, -0.62, 0.58], color: "#ff7a3a", intensity: 0.1, length: 8.5, coneAngle: 0.22 }
+      { name: "crown throne spot shaft", position: [0, 7.3, -3.1], direction: [0, -1, -0.05], color: "#ffe2bf", intensity: 0.1, length: 6, coneAngle: 0.2 },
+      { name: "crown forge smoke shaft left", position: [-5.8, 6.2, -6.2], direction: [0.52, -0.62, 0.58], color: "#ff7a3a", intensity: 0.08, length: 6, coneAngle: 0.18 },
+      { name: "crown forge smoke shaft right", position: [5.8, 6.2, -6.2], direction: [-0.52, -0.62, 0.58], color: "#ff7a3a", intensity: 0.08, length: 6, coneAngle: 0.18 }
     ],
     floor: { name: "obsidian with gold inlay", base: "#0a080d", plank: "#14111b", roughness: 0.19, metallic: 0.24, clearcoat: 0.44, inlay: MOLTEN_GOLD, inlayGlow: 0.26, mirror: true }
   },
@@ -204,26 +255,38 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     look: "night-city",
     post: "neon-night",
     hdri: "rooftop_night",
-    environmentIntensity: 0.72,
-    environmentRotationDeg: 140,
+    environmentIntensity: 0.58,
+    // The wet clearcoat floor mirrors the HDRI: at 140 deg the rooftop_night street lights reflected as a white blotchy
+    // cloud on the floor around the fighters' feet and smears in the foreground (owner: "floor steam"). Real-GPU A/B
+    // (environment off removed it; rotations 50 / 140 / 320 kept glare, 230 leaves the floor in front of the lane clean).
+    environmentRotationDeg: 230,
     background: "look",
     accent: "#ff3fa4",
-    key: { kind: "sun", elevationDeg: 52, azimuthDeg: 300, color: "#ffad5c", intensity: 2.6, filter: "pcf" },
-    backRim: { ...RIM, intensity: 10 },
+    // Owner neutral-grade pass: a cool-neutral key (the sodium #ffad5c key turned the fighters orange); the sodium stays
+    // in the flood shaft and the street lamps behind the lane.
+    key: { kind: "sun", elevationDeg: 52, azimuthDeg: 300, color: "#e6ecff", intensity: 2.8, filter: "pcf" },
+    // The back rims' cone runs on past each fighter onto the wet floor in front of them, and its specular glare on
+    // the clearcoat (plus its diffuse pool) read as white "floor steam" over the fighters' feet that moved with them.
+    // A 5 m range (spot range window) ends the light just past the fighter; the intensity is raised so the rim on the
+    // fighter's back stays what it was (window 0.958 at 9 m vs 0.606 at 5 m, 3.43 m from the light).
+    backRim: { ...RIM, intensity: 28, distance: 5 },
     panels: [
       { name: "neo-tokyo magenta panel", color: "#ff3fa4", position: [-4.7, 2.6, -1.9], target: [-1.2, 1.1, 0], width: 1.1, height: 2.6, intensity: 7 },
       { name: "neo-tokyo cyan panel", color: "#3fe0ff", position: [4.7, 2.4, -1.9], target: [1.2, 1.1, 0], width: 1.1, height: 2.4, intensity: 6 }
     ],
     fog: { color: "#0b1020", near: 100, far: 320, maxOpacity: 0.16 },
     fogDensityScale: 0.15,
-    exposureEv: 0.25,
-    grade: { contrast: 1.16, saturation: 1.15, temperature: -0.12, tint: 0.06 },
-    bloom: { intensity: 0.32, threshold: 1.2, knee: 0.5, scatter: 0.62 },
-    vignette: 0.22,
+    exposureEv: 0.1,
+    grade: { contrast: 1.22, saturation: 1.12, temperature: -0.1, tint: 0.02 },
+    bloom: { intensity: 0.22, threshold: 1.4, knee: 0.5, scatter: 0.55 },
+    vignette: 0.28,
     grain: 0,
-    weather: { type: "rain", streakLimit: 90, particles: 900, color: "#b8c8ff" },
+    weather: { type: "rain", streakLimit: 60, particles: 560, color: "#8e9cc0", intensity: 0.4 },
+    // The flood shaft ended on the floor between the fighters (a 4.8 m glowing pool: the "white floor steam" over their
+    // legs), then on the floor behind the lane by the vending bank, where its glow (and its mirror-floor reflection) still
+    // read as steam at the fighters' feet. It now stops above head height (2.4 m) over the vending bank.
     shafts: [
-      { name: "neo-tokyo sodium flood shaft", position: [-5.2, 6.4, -3.4], direction: [0.55, -0.7, 0.45], color: "#ffad5c", intensity: 0.07, length: 9, coneAngle: 0.26 }
+      { name: "neo-tokyo sodium flood shaft", position: [-5.2, 6.4, -3.4], direction: [0.446, -0.893, 0.06], color: "#ffad5c", intensity: 0.06, length: 3.6, coneAngle: 0.2 }
     ],
     floor: { name: "wet concrete", base: "#0b0e15", plank: "#141925", roughness: 0.16, metallic: 0.08, clearcoat: 0.72, inlay: "#ff3fa4", inlayGlow: 0.26, mirror: true }
   },
@@ -233,19 +296,21 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     look: "golden-hour",
     post: "cinematic-film",
     hdri: "venice_sunset",
-    environmentIntensity: 1,
+    environmentIntensity: 0.72,
     environmentRotationDeg: 205,
     background: "look",
     accent: "#36c9a4",
-    key: { kind: "sun", elevationDeg: 8, azimuthDeg: 235, color: "#ff9a52", intensity: 3, filter: "pcf" },
-    backRim: { ...RIM, intensity: 12 },
+    // Owner neutral-grade pass: a warm-neutral dusk key (was #ff9a52), a near-neutral grade and no dusk LUT (temperature
+    // 0.3 plus the split-tone LUT washed the dock orange); the sunset stays in the drawn sky.
+    key: { kind: "sun", elevationDeg: 8, azimuthDeg: 235, color: "#ffdcbf", intensity: 3.2, filter: "pcf" },
+    backRim: { ...RIM, intensity: 18 },
     panels: [],
     fog: { color: "#c47a4e", near: 110, far: 360, maxOpacity: 0.16 },
     fogDensityScale: 0.15,
-    exposureEv: 0.04,
-    grade: { contrast: 1.14, saturation: 1.12, temperature: 0.3, tint: -0.02, lut: assets.ironcrownLutDockDusk },
-    bloom: { intensity: 0.3, threshold: 1.24, knee: 0.5, scatter: 0.64 },
-    vignette: 0.2,
+    exposureEv: 0,
+    grade: { contrast: 1.22, saturation: 1.1, temperature: 0.04, tint: 0 },
+    bloom: { intensity: 0.18, threshold: 1.45, knee: 0.5, scatter: 0.55 },
+    vignette: 0.28,
     grain: 0,
     shafts: [],
     floor: { name: "oiled teak deck", base: "#24160d", plank: "#352013", roughness: 0.36, metallic: 0.04, clearcoat: 0.32, inlay: "#36c9a4", inlayGlow: 0.2, mirror: false }
@@ -362,7 +427,7 @@ export function stageLookOverrides(row: StageLookRow): AuraLookOverrides {
       height: { mode: "linear", near: row.fog.near, far: row.fog.far, maxOpacity: row.fog.maxOpacity, affectsBackground: false }
     },
     grade: row.grade,
-    post: { bloom: row.bloom }
+    post: { bloom: { ...row.bloom, color: NEUTRAL_BLOOM_TINT } }
   };
 }
 

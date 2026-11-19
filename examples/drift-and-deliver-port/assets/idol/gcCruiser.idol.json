@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "drift-and-deliver-port",
+  "key": "gcCruiser",
+  "generatedAt": "2026-11-19T00:26:06.016Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-4620-78e0-9cef-f2ad606892a2",
+      "prompt": "A fictional plain white four-door harbour patrol sedan, rounded modern shape, glossy white paint with black lower door panels, a black steel push bar on the front bumper, a slim low roof light bar with one red and one blue lens, black glass windows, plain blank number plates, no markings. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor. Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f135-7944-7261-bcc2-7762db323dcb",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 721506,
+        "num_faces": 1443036,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A fictional plain white four-door harbour patrol sedan, rounded modern shape, glossy white paint with black lower door panels, a black steel push bar on the front bumper, a slim low roof light bar with one red and one blue lens, black glass windows, plain blank number plates, no markings. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor. Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.598,
+    "size": [
+      1.669,
+      1.278,
+      4.6
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/drift-and-deliver-port/assets/idol/gcCruiser.glb",
+  "sizeBytes": 1234756,
+  "preview": "artifacts/idol/drift-and-deliver-port/gcCruiser/views.png",
+  "usd": 0.37
+}

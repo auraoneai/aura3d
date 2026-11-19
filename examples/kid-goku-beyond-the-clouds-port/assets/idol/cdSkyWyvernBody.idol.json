@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cumulus-dash",
+  "key": "cdSkyWyvernBody",
+  "generatedAt": "2026-11-18T22:31:08.577Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/cumulus-dash/cdSkyWyvern/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 427806,
+        "num_faces": 855616,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A fierce flying sky pterosaur creature in mid-glide with both large leathery wings spread fully out to the sides, slate-blue scaled hide with paler underbelly, translucent dusky-violet wing membranes stretched over long finger bones, a long narrow ivory beak, a swept-back crimson head crest, small amber eyes, short clawed legs tucked under the body and a thin tail, viewed from the front and slightly above. Photoreal creature-feature practical model: real scaled reptile hide, leathery wing membrane, polished horn and bone, physically based materials, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 180,
+    "scale": 3.278,
+    "size": [
+      2.58,
+      2.304,
+      3.26
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/kid-goku-beyond-the-clouds-port/assets/idol/cdSkyWyvernBody.glb",
+  "sizeBytes": 2993484,
+  "preview": "artifacts/idol/cumulus-dash/cdSkyWyvern/views.png",
+  "usd": 0,
+  "derivedFrom": {
+    "key": "cdSkyWyvern",
+    "op": "triangle split (Body) along the measured wing-span axis for flapping wings; no new generation, $0",
+    "usd": 0
+  }
+}

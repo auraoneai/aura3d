@@ -43,14 +43,14 @@ Read [`llms.txt`](./llms.txt) (one screen, the fast path), then [`docs/agents/ag
 
 ## What you get
 
-- **Typed scene API.** `scene`, `model`, `looks`, `lights`, `camera`, `effects`, `interactions`, `primitives`, `instances` and the `game.*` genre kits through one entry, `@aura3d/engine`.
+- **Typed scene API.** `scene`, `model`, `looks`, `lights`, `camera`, `effects`, `interactions`, `primitives`, `instances` and the `game.*` genre kits through one entry, `@aura3d/engine`. `@aura3d/engine/sculpt` (5.5.6) builds procedural meshes (lathe, loft, sweeps, SDF sculpting, limb chains) for `geometry.custom`, and `computeCameraClearance` (5.5.6) keeps a follow camera in front of circle and box occluders.
 - **Typed, provenance-checked assets.** `assets search`, `assets resolve`, `assets add`, `assets import-meshy`, `assets optimize`, `assets validate`. In production a model needs a same-origin URL, a sha256 and provenance, otherwise it draws nothing. Meshy generation goes through the CLI with admission records.
-- **Game kit.** `@aura3d/engine/game` (`createGame`: lifecycle, pause, results, DOM HUD, touch, juice, sound), `createFixedStepLoop`, `installQaHooks` and seeded replay, `createCueBank` audio synth, `defineModelAssets`, racket-sports and other genre kits.
-- **Safety net.** `installSafetyNet` from `@aura3d/debug`: `?diag=1` panel, quality switches and black-frame self-heal. Custom shader failures are reported, not silent.
+- **Game kit.** `@aura3d/engine/game` (`createGame`: lifecycle, pause, results, DOM HUD, touch, juice, sound), `createFixedStepLoop`, `installQaHooks` and seeded replay, `createCueBank` audio synth, `defineModelAssets`, racket-sports and other genre kits. The 5.5.5 QA kit adds run telemetry (`createQaRunMonitor`), virtual gamepads, offline audio checks and the `createAuraTuneOverlay` tuning panel.
+- **Safety net.** `installSafetyNet` from `@aura3d/debug`: `?diag=1` panel, quality switches and black-frame self-heal. Custom shader failures are reported, not silent. Since 5.5.3 an auto-quality app steps resolution, post, shadows and particles up and down at runtime without remounting (`RuntimeQualityGovernor`).
 - **Checks.** `aura3d doctor`, `aura3d check-deploy` (add `--browser` to load every route in headless Chromium and fail on failed requests and console errors), route-health and screenshot evidence, the look-dev loop (`aura3d look capture`, `aura3d look lint`).
 - **Migration.** `aura3d migrate three` is a codemod that records each approximation. It is not a drop-in claim.
 
-Kit documentation: [`docs/api/game-kit.md`](./docs/api/game-kit.md), [`qa-kit.md`](./docs/api/qa-kit.md), [`safety-net.md`](./docs/api/safety-net.md), [`audio-synth.md`](./docs/api/audio-synth.md), [`model-loader.md`](./docs/api/model-loader.md), [`glsl-chunks.md`](./docs/api/glsl-chunks.md), [`scatter-merge.md`](./docs/api/scatter-merge.md), [`cli-asset-tools.md`](./docs/api/cli-asset-tools.md), [`toon.md`](./docs/api/toon.md).
+Kit documentation: [`docs/api/game-kit.md`](./docs/api/game-kit.md), [`qa-kit.md`](./docs/api/qa-kit.md), [`safety-net.md`](./docs/api/safety-net.md), [`audio-synth.md`](./docs/api/audio-synth.md), [`model-loader.md`](./docs/api/model-loader.md), [`glsl-chunks.md`](./docs/api/glsl-chunks.md), [`scatter-merge.md`](./docs/api/scatter-merge.md), [`cli-asset-tools.md`](./docs/api/cli-asset-tools.md), [`toon.md`](./docs/api/toon.md), [`sculpt.md`](./docs/api/sculpt.md), [`motion-camera-clear.md`](./docs/api/motion-camera-clear.md), [`quality-governor.md`](./docs/api/quality-governor.md).
 
 ## Readiness and top-level await
 

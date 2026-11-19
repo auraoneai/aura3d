@@ -47,6 +47,8 @@ describe("presentation: flashes and vignette", () => {
     expect(flashFor({ sound: "perfect", level: 3 }, 1)!.strength).toBeGreaterThan(flashFor({ sound: "match", level: 3 }, 1)!.strength);
     expect(flashFor({ sound: "hit", level: 0 }, 2)!.color).toBe("#f0433a");
     expect(flashFor({ sound: "gameover", level: 0 }, 0)).toBeNull();
+    // streak events fire every second or so: keep their screen flash faint so a good run is not washed out
+    for (const sound of ["match", "perfect", "pickup", "switch"] as const) expect(flashFor({ sound, level: 3 }, 1)!.strength).toBeLessThanOrEqual(0.18);
   });
   it("the vignette is off below x2, pulses above it and never exceeds 0.5", () => {
     expect(vignetteOpacity(1, false, 3)).toBe(0);

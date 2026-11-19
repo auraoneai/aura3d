@@ -60,6 +60,8 @@ Flipbook VFX sheets:
    fails when the width or height does not divide by the grid, when the frame
    count exceeds the grid, or when the PNG has no alpha channel. It does not
    inspect pixels, so review the transparent background and edges visually.
+   A grid JSON (`{ "columns": 8, "rows": 4, "frames": 30 }`) or a multi-page
+   atlas manifest is checked by `npx @aura3d/cli@latest vfx validate-atlas <file.json>`.
 4. Admit it as a typed texture with provenance:
 
    ```sh

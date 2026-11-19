@@ -1,0 +1,397 @@
+{
+ "game": "drift-and-deliver-port",
+ "outDir": "examples/drift-and-deliver-port/assets/idol",
+ "style": "realistic",
+ "items": [
+  {
+   "key": "gcCourier",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 4.28
+   },
+   "tex": 2048,
+   "seed": 7,
+   "subject": "A fictional long-wheelbase three-door widebody hot-hatch delivery car about 4.3 m long: short rounded nose with twin round projector headlamps and small amber fog lamps in a black mesh lower grille, flared box wheel arches, short fastback Kammback tail, glossy teal-turquoise metallic paint on the body with a cream-white roof and a thin cream stripe over the bonnet, black glass windows, black plastic side skirts and front splitter, a brushed aluminium roof rack carrying a rounded insulated orange delivery cargo box strapped down with dark canvas straps, a small teal translucent beacon dome on the roof front, plain blank white number plates. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcSedanCoral",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 4.5
+   },
+   "tex": 1024,
+   "maxVerts": 9000,
+   "seed": 7,
+   "subject": "A fictional ordinary mid-size four-door family sedan car, soft rounded modern-classic shape, glossy warm coral-red paint, black glass windows, chrome window trim, round-cornered headlamps and red tail lamps, plain blank number plates. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor",
+   "yawDeg": 90
+  },
+  {
+   "key": "gcSedanBlue",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 4.5
+   },
+   "tex": 1024,
+   "maxVerts": 9000,
+   "seed": 7,
+   "subject": "A fictional ordinary mid-size four-door family sedan car, soft rounded modern-classic shape, glossy dusty steel-blue paint, black glass windows, chrome window trim, round-cornered headlamps and red tail lamps, plain blank number plates. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcHatchMint",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 3.86
+   },
+   "tex": 1024,
+   "maxVerts": 9000,
+   "seed": 7,
+   "subject": "A fictional small cute five-door city hatchback car, short bonnet, tall rounded cabin and upright tailgate, glossy pastel mint-green paint with a white roof, black glass windows, round headlamps, plain blank number plates. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcHatchOrange",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 3.86
+   },
+   "tex": 1024,
+   "maxVerts": 9000,
+   "seed": 7,
+   "subject": "A fictional small cute five-door city hatchback car, short bonnet, tall rounded cabin and upright tailgate, glossy warm apricot-orange paint with a cream roof, black glass windows, round headlamps, plain blank number plates. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcVanCream",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 4.86
+   },
+   "tex": 1024,
+   "maxVerts": 9000,
+   "seed": 7,
+   "subject": "A fictional compact boxy city delivery panel van, short sloped nose, tall flat-sided cargo body with a sliding side door and no side windows behind the cab, glossy cream-white paint with a thin muted teal stripe along the sides, black glass windscreen and cab windows, black bumpers, plain blank number plates. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcVanTerracotta",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 4.86
+   },
+   "tex": 1024,
+   "maxVerts": 9000,
+   "seed": 7,
+   "subject": "A fictional compact boxy city delivery panel van, short sloped nose, tall flat-sided cargo body with a sliding side door and no side windows behind the cab, glossy terracotta-orange paint, black glass windscreen and cab windows, black bumpers, plain blank number plates. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcTruckWhite",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 5.6
+   },
+   "tex": 1024,
+   "maxVerts": 9000,
+   "seed": 11,
+   "subject": "A fictional small cab-over harbour freight box truck: flat-fronted short cab with a large windscreen and rounded wind fairing on the cab roof, behind it a tall plain cream-white rectangular cargo box with aluminium corner rails and a roll-up rear shutter, cab painted pale cream, black bumper and side underride rails, plain blank number plates. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcTruckBlue",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 5.6
+   },
+   "tex": 1024,
+   "maxVerts": 9000,
+   "seed": 7,
+   "subject": "A fictional small cab-over harbour freight box truck: flat-fronted short cab with a large windscreen and rounded wind fairing on the cab roof, behind it a tall plain light-grey rectangular cargo box with aluminium corner rails and a roll-up rear shutter, cab painted soft sky-blue, black bumper and side underride rails, plain blank number plates. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcTaxi",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 4.5
+   },
+   "tex": 1024,
+   "maxVerts": 9000,
+   "seed": 7,
+   "subject": "A fictional mid-size four-door city taxi sedan, rounded classic shape, glossy saffron-yellow paint with a thin black checker band along the doors, a small plain white blank roof light box on the roof, black glass windows, chrome trim, plain blank number plates. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcBusCream",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 5.56
+   },
+   "tex": 1024,
+   "maxVerts": 10000,
+   "seed": 7,
+   "subject": "A fictional short boxy city minibus shuttle, tall flat sides with a long row of black glass passenger windows, large flat windscreen, rounded roof edges with two low roof-mounted equipment pods, glossy cream body with a broad muted sea-green band below the windows, black bumpers, plain blank destination panel above the windscreen. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcBusCoral",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 5.56
+   },
+   "tex": 1024,
+   "maxVerts": 10000,
+   "seed": 7,
+   "subject": "A fictional short boxy city minibus shuttle, tall flat sides with a long row of black glass passenger windows, large flat windscreen, rounded roof edges with two low roof-mounted equipment pods, glossy cream body with a broad warm coral-red band below the windows, black bumpers, plain blank destination panel above the windscreen. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcCruiser",
+   "kind": "vehicle",
+   "role": "vehicle",
+   "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+   "size": {
+    "length": 4.6
+   },
+   "tex": 1024,
+   "maxVerts": 9000,
+   "seed": 7,
+   "subject": "A fictional plain white four-door harbour patrol sedan, rounded modern shape, glossy white paint with black lower door panels, a black steel push bar on the front bumper, a slim low roof light bar with one red and one blue lens, black glass windows, plain blank number plates, no markings. Vehicle body only with no wheels and no tyres at all: the wheel arches are empty dark openings with nothing inside them, the body shown floating slightly above the floor"
+  },
+  {
+   "key": "gcPedA",
+   "kind": "object",
+   "role": "background",
+   "size": {
+    "height": 1.72
+   },
+   "tex": 1024,
+   "maxVerts": 3000,
+   "seed": 7,
+   "prompt": "Single full-body adult man pedestrian walking mid-stride, front view facing the camera, wearing a mustard-yellow casual jacket over a white t-shirt, dark grey trousers and brown leather shoes, short dark hair, arms swinging naturally at his sides. Photoreal studio photograph, real fabric folds and stitching, high detail. Head to feet in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere."
+  },
+  {
+   "key": "gcPedB",
+   "kind": "object",
+   "role": "background",
+   "size": {
+    "height": 1.66
+   },
+   "tex": 1024,
+   "maxVerts": 3000,
+   "seed": 7,
+   "prompt": "Single full-body adult woman pedestrian standing relaxed, front view facing the camera, wearing a forest-green knee-length coat, navy trousers and white sneakers, shoulder-length brown hair, a tan canvas tote bag on one shoulder, arms relaxed at her sides. Photoreal studio photograph, real fabric folds and stitching, high detail. Head to feet in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere."
+  },
+  {
+   "key": "gcPedC",
+   "kind": "object",
+   "role": "background",
+   "size": {
+    "height": 1.76
+   },
+   "tex": 1024,
+   "maxVerts": 3000,
+   "seed": 7,
+   "prompt": "Single full-body older man pedestrian walking mid-stride, front view facing the camera, wearing a brick-red knitted sweater, beige chino trousers, dark brown shoes and a flat grey wool cap, short grey beard, arms swinging naturally. Photoreal studio photograph, real fabric folds and knit texture, high detail. Head to feet in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere."
+  },
+  {
+   "key": "gcPedD",
+   "kind": "object",
+   "role": "background",
+   "size": {
+    "height": 1.68
+   },
+   "tex": 1024,
+   "maxVerts": 3000,
+   "seed": 7,
+   "prompt": "Single full-body young woman pedestrian walking mid-stride, front view facing the camera, wearing a plum-purple denim jacket over a cream top, black jeans and white sneakers, dark curly hair tied back, a small crossbody bag, arms swinging naturally. Photoreal studio photograph, real fabric folds and stitching, high detail. Head to feet in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere."
+  },
+  {
+   "key": "gcPedE",
+   "kind": "object",
+   "role": "background",
+   "size": {
+    "height": 1.8
+   },
+   "tex": 1024,
+   "maxVerts": 3000,
+   "seed": 7,
+   "prompt": "Single full-body adult man pedestrian standing relaxed, front view facing the camera, wearing a navy-blue rain jacket, olive cargo trousers and dark boots, short black hair, holding a paper coffee cup in one hand, other arm relaxed at his side. Photoreal studio photograph, real fabric folds and stitching, high detail. Head to feet in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere."
+  },
+  {
+   "key": "gcPedF",
+   "kind": "object",
+   "role": "background",
+   "size": {
+    "height": 1.64
+   },
+   "tex": 1024,
+   "maxVerts": 3000,
+   "seed": 7,
+   "prompt": "Single full-body adult woman pedestrian walking mid-stride, front view facing the camera, wearing a burnt-orange light trench coat, charcoal trousers and black ankle boots, straight black bob haircut, arms swinging naturally. Photoreal studio photograph, real fabric folds and stitching, high detail. Head to feet in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere."
+  },
+  {
+   "key": "gcClocktower",
+   "kind": "object",
+   "role": "background",
+   "size": {
+    "height": 38
+   },
+   "tex": 2048,
+   "maxVerts": 30000,
+   "seed": 7,
+   "subject": "A tall slender square harbour plaza clock tower in warm cream limestone with a rusticated stone base and arched doorway, long shaft with narrow arched windows, a belfry stage with open round arches, four large round white clock faces with black hands and simple dash marks (no numerals) on each side, a cornice and a weathered green copper pyramid cupola roof with a small finial on top"
+  },
+  {
+   "key": "gcLighthouse",
+   "kind": "object",
+   "role": "background",
+   "size": {
+    "height": 24
+   },
+   "tex": 2048,
+   "maxVerts": 30000,
+   "seed": 7,
+   "subject": "A classic tapering round coastal lighthouse tower painted in broad red and white horizontal bands, standing on a low grey stone base, a black iron gallery balcony with railings near the top, a glazed lantern room with a large glass lens inside, a domed black metal roof with a small vent ball on top, weathered paint and salt stains"
+  },
+  {
+   "key": "gcTree",
+   "kind": "object",
+   "role": "background",
+   "size": {
+    "height": 4.6
+   },
+   "tex": 1024,
+   "maxVerts": 6000,
+   "seed": 7,
+   "subject": "A single young broadleaf city street tree, a straight grey-brown trunk and a full rounded bushy crown of fresh green leaves, a small square of dark soil at the base"
+  },
+  {
+   "key": "gcPalm",
+   "kind": "object",
+   "role": "background",
+   "size": {
+    "height": 7.5
+   },
+   "tex": 1024,
+   "maxVerts": 6000,
+   "seed": 7,
+   "subject": "A single tall coastal date palm tree, a slightly curved textured diamond-patterned trunk, a full crown of long arching green pinnate fronds with a few dry brown fronds below"
+  },
+  {
+   "key": "gcHydrant",
+   "kind": "object",
+   "role": "prop",
+   "size": {
+    "height": 0.8
+   },
+   "tex": 1024,
+   "maxVerts": 3000,
+   "seed": 7,
+   "subject": "A classic cast-iron street fire hydrant painted glossy red with chipped paint, brass caps on the side outlets and a domed top with a pentagonal brass nut"
+  },
+  {
+   "key": "gcWatertank",
+   "kind": "object",
+   "role": "background",
+   "size": {
+    "height": 3.4
+   },
+   "tex": 1024,
+   "maxVerts": 6000,
+   "seed": 7,
+   "subject": "A rooftop wooden water tank: a weathered cedar-plank cylindrical barrel bound with three black iron hoops, a conical wooden lid, standing on a short black steel trestle frame with cross-bracing and a small ladder"
+  },
+  {
+   "key": "gcScooter",
+   "kind": "object",
+   "role": "prop",
+   "size": {
+    "length": 1.8
+   },
+   "tex": 1024,
+   "maxVerts": 5000,
+   "seed": 7,
+   "yawDeg": 45,
+   "subject": "A fictional small step-through delivery motor scooter parked on its stand,: rounded cream-white body panels with a curved leg shield, round headlamp on the handlebars, black seat, a square orange insulated delivery box mounted on a rear rack, small black tyres"
+  },
+  {
+   "kind": "character",
+   "role": "character",
+   "rig": true,
+   "animations": [
+    "idle",
+    "walk"
+   ],
+   "tex": 1024,
+   "seed": 7,
+   "key": "gcWalkerA",
+   "size": {
+    "height": 1.76
+   },
+   "subject": "An adult man in his thirties, short dark hair, light-blue denim shirt with rolled sleeves, khaki chino trousers, brown leather sneakers, friendly neutral face, no bag, no hat brim covering the face"
+  },
+  {
+   "kind": "character",
+   "role": "character",
+   "rig": true,
+   "animations": [
+    "idle",
+    "walk"
+   ],
+   "tex": 1024,
+   "seed": 7,
+   "key": "gcWalkerB",
+   "size": {
+    "height": 1.66
+   },
+   "subject": "An adult woman in her twenties, dark hair in a ponytail, coral-red light knit sweater, slim navy jeans, white canvas shoes, friendly neutral face, no bag, no hat brim covering the face"
+  },
+  {
+   "kind": "character",
+   "role": "character",
+   "rig": true,
+   "animations": [
+    "idle",
+    "walk"
+   ],
+   "tex": 1024,
+   "seed": 7,
+   "key": "gcWalkerC",
+   "size": {
+    "height": 1.72
+   },
+   "subject": "An older adult man in his sixties, grey hair, olive-green zip jacket over a cream polo shirt, charcoal trousers, black walking shoes, friendly neutral face, no bag, no hat brim covering the face"
+  },
+  {
+   "kind": "character",
+   "role": "character",
+   "rig": true,
+   "animations": [
+    "idle",
+    "walk"
+   ],
+   "tex": 1024,
+   "seed": 7,
+   "key": "gcWalkerD",
+   "size": {
+    "height": 1.68
+   },
+   "subject": "An adult woman in her forties, shoulder-length auburn hair, mustard-yellow light trench coat, black leggings, tan ankle boots, friendly neutral face, no bag, no hat brim covering the face"
+  }
+ ]
+}

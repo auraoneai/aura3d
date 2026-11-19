@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icCoBust",
+  "generatedAt": "2026-11-18T23:04:05.529Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0be-69f4-7db2-853c-c2a5f2a6d60e",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0c1-db94-72e2-95dc-e76c6ac4f67b",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 582172,
+        "num_faces": 1164352,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Bronze bust of a helmeted ancient gladiator warrior on a tall square marble pedestal, green patina on the bronze",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.773,
+    "size": [
+      0.679,
+      1.78,
+      0.58
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icCoBust.glb",
+  "sizeBytes": 2829256,
+  "preview": "artifacts/idol/iron-crown/icCoBust/views.png",
+  "usd": 0.37
+}

@@ -13,5 +13,5 @@ export interface AthleteRigPort<Handles = unknown> {
   /** Resolve the runtime handles once the app is ready. */
   resolve(app: RigNodeResolver, prefix: "player" | "rival"): Handles;
   /** Pose the rig for this frame (never touches gameplay state). */
-  update(handles: Handles, actor: Readonly<ActorState>, pose: PoseResult, ctx: { isPlayer: boolean; isMoon: boolean }): void;
+  update(handles: Handles, actor: Readonly<ActorState>, pose: PoseResult, ctx: { isPlayer: boolean; isMoon: boolean; state?: Readonly<{ phase?: string; time?: number; serveAttempt?: unknown }> }): void;
 }

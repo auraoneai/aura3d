@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoSkyRivalT",
+  "generatedAt": "2026-11-18T22:14:53.168Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0ba-25c7-79e0-a0b7-966d59873ef1",
+      "prompt": "A single fictional futuristic flying sports car without wheels, sleek low graphite-grey metallic hover fuselage, dark smoked glass canopy, four small ducted lift fans recessed into the body corners, short swept winglets, two canted vivid red V-shaped tail fins, red accent stripes, glowing red thruster nozzle at the rear. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0bc-a81c-7771-a10a-84cae5780f2c",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 11,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 751550,
+        "num_faces": 1503160,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single fictional futuristic flying sports car without wheels, sleek low graphite-grey metallic hover fuselage, dark smoked glass canopy, four small ducted lift fans recessed into the body corners, short swept winglets, two canted vivid red V-shaped tail fins, red accent stripes, glowing red thruster nozzle at the rear. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.305,
+    "size": [
+      2.945,
+      0.918,
+      4.3
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoSkyRivalT.glb",
+  "sizeBytes": 1632852,
+  "preview": "artifacts/idol/apex-overdrive/aoSkyRivalT/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "normal-jpeg",
+      "quality": 90,
+      "bytesBefore": 2764860,
+      "bytesAfter": 1632852
+    }
+  ]
+}

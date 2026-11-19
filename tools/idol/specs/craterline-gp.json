@@ -1,0 +1,346 @@
+{
+  "game": "craterline-gp",
+  "outDir": "apps/showcase-strange-orbit-port/assets/idol",
+  "style": "Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting",
+  "items": [
+    {
+      "key": "cgBikeAlabaster",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side, with its rider in a full racing tuck: the rider wears a sleek warm cream white pressurised racing spacesuit with armoured shoulder, elbow and knee plates and a rounded racing space helmet with a dark gold mirrored visor, chest pressed low over the tank, both hands on the low clip-on handlebars, knees tucked against the fairing, boots on the rear foot pegs. The motorcycle has a smooth streamlined monocoque fairing painted pearl alabaster white ceramic with thin burnt orange accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle and rider fully in frame",
+      "tex": 2048,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 7,
+      "front": "-z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      }
+    },
+    {
+      "key": "cgBikeCobalt",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side, with its rider in a full racing tuck: the rider wears a sleek pale grey-blue pressurised racing spacesuit with armoured shoulder, elbow and knee plates and a rounded racing space helmet with a dark gold mirrored visor, chest pressed low over the tank, both hands on the low clip-on handlebars, knees tucked against the fairing, boots on the rear foot pegs. The motorcycle has a smooth streamlined monocoque fairing painted deep lunar cobalt blue with thin pale gold accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle and rider fully in frame",
+      "tex": 2048,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 7,
+      "front": "-z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      }
+    },
+    {
+      "key": "cgBikeCrimson",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side, with its rider in a full racing tuck: the rider wears a sleek pale grey-pink pressurised racing spacesuit with armoured shoulder, elbow and knee plates and a rounded racing space helmet with a dark gold mirrored visor, chest pressed low over the tank, both hands on the low clip-on handlebars, knees tucked against the fairing, boots on the rear foot pegs. The motorcycle has a smooth streamlined monocoque fairing painted solar crimson red with thin sea-green accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle and rider fully in frame",
+      "tex": 2048,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 7,
+      "front": "-z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      }
+    },
+    {
+      "key": "cgBikeViolet",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side, with its rider in a full racing tuck: the rider wears a sleek pale lilac grey pressurised racing spacesuit with armoured shoulder, elbow and knee plates and a rounded racing space helmet with a dark gold mirrored visor, chest pressed low over the tank, both hands on the low clip-on handlebars, knees tucked against the fairing, boots on the rear foot pegs. The motorcycle has a smooth streamlined monocoque fairing painted lavender violet purple with thin amber gold accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle and rider fully in frame",
+      "tex": 1024,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 7,
+      "front": "-z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      }
+    },
+    {
+      "key": "cgBikeTeal",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side, with its rider in a full racing tuck: the rider wears a sleek pale grey-green pressurised racing spacesuit with armoured shoulder, elbow and knee plates and a rounded racing space helmet with a dark gold mirrored visor, chest pressed low over the tank, both hands on the low clip-on handlebars, knees tucked against the fairing, boots on the rear foot pegs. The motorcycle has a smooth streamlined monocoque fairing painted deep jade teal green with thin warm ochre accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle and rider fully in frame",
+      "tex": 1024,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 7,
+      "front": "-z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      }
+    },
+    {
+      "key": "cgBikeSand",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side, with its rider in a full racing tuck: the rider wears a sleek light khaki pressurised racing spacesuit with armoured shoulder, elbow and knee plates and a rounded racing space helmet with a dark gold mirrored visor, chest pressed low over the tank, both hands on the low clip-on handlebars, knees tucked against the fairing, boots on the rear foot pegs. The motorcycle has a smooth streamlined monocoque fairing painted warm desert sand ochre tan with thin dark chocolate brown accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle and rider fully in frame",
+      "tex": 1024,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 7,
+      "front": "-z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      }
+    },
+    {
+      "key": "cgLander",
+      "role": "background",
+      "size": {
+        "width": 0.84
+      },
+      "subject": "A retro lunar descent lander module standing on the moon: an octagonal descent stage wrapped in crinkled gold metallic thermal foil, four splayed tubular landing legs with round dish footpads, a cone-shaped engine bell underneath, a faceted white ceramic ascent cabin on top with two small triangular windows, a small dish antenna and a short mast, fine grey moon dust on the footpads",
+      "kind": "object",
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "cgObservatory",
+      "role": "background",
+      "size": {
+        "maxDim": 0.95
+      },
+      "subject": "A small lunar crater observatory building: a low stepped dark basalt stone plinth, a ribbed white ceramic cylindrical drum, a smooth brushed titanium hemispherical dome with an open shutter slit from which a white telescope barrel points up at an angle, a thin telemetry mast with a small teal beacon lamp beside the dome",
+      "kind": "object",
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "cgHabitat",
+      "role": "background",
+      "size": {
+        "maxDim": 11.1
+      },
+      "subject": "A lunar colony habitat: a large white ceramic geodesic pressure dome made of segmented triangular panels with dark gunmetal rib arches, sitting on a low ring berm of sintered grey regolith, a corrugated cylindrical pressurised airlock tunnel sticking out from one side with a round hatch, gold thermal-foil equipment bays, small warmly lit recessed windows, a round skylight cupola on the crown",
+      "kind": "object",
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "cgDish",
+      "role": "background",
+      "size": {
+        "height": 9.2
+      },
+      "subject": "A lunar deep-space communications dish antenna: a large white parabolic dish reflector on a tilting yoke, with a tripod feed horn at the focus, mounted on a dark gunmetal turntable pedestal and a stepped concrete-grey base with gold foil service boxes and cable conduits",
+      "kind": "object",
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "cgSolarArray",
+      "role": "background",
+      "size": {
+        "height": 4.8
+      },
+      "subject": "A lunar colony solar power array: a long row of tilted dark blue photovoltaic solar panels with thin silver grid lines, mounted on a gunmetal truss frame on two sturdy support posts with a tracking motor and a small gold-foil battery box at the base",
+      "kind": "object",
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "cgTrailer",
+      "role": "background",
+      "size": {
+        "height": 2.4
+      },
+      "subject": "A lunar rover service trailer: a boxy white ceramic and brushed aluminium cargo trailer on four wide wire-mesh moon rover wheels, with a front tow hitch, side equipment lockers with latches, a coiled orange umbilical hose, a small radiator panel and a gold foil wrapped instrument box on top",
+      "kind": "object",
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "cgFuelTank",
+      "role": "background",
+      "size": {
+        "maxDim": 4.1
+      },
+      "subject": "A pressurized cryogenic fuel tank station on the moon: two large horizontal white capsule-shaped pressure tanks with rounded ends lying side by side on a gunmetal steel skid cradle, frost streaks, valve manifolds and insulated pipes along the top, hazard-striped orange bands, small gauges",
+      "kind": "object",
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "cgGantry",
+      "role": "background",
+      "size": {
+        "width": 33.8
+      },
+      "subject": "A monumental lunar race start and finish gantry arch spanning a very wide road, about twice as wide as it is tall: two slender square steel lattice truss towers on heavy concrete footings standing far apart at the two outer ends, joined at the top by one long thin horizontal steel lattice truss bridge with a row of round marshal signal lamps and a blank dark display panel in the middle, small diagonal knee braces where the bridge meets the towers, a huge empty open space under the bridge between the towers, brushed gunmetal steel with white ceramic accents, front view",
+      "kind": "object",
+      "tex": 1024,
+      "seed": 7,
+      "imageSize": "landscape_16_9",
+      "yawDeg": -45
+    },
+    {
+      "key": "cgBikeAlabasterNR",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side with NO rider and nobody on it, an empty racing saddle: Low clip-on handlebars and rear foot pegs are empty. The motorcycle has a smooth streamlined monocoque fairing painted pearl alabaster white ceramic with thin burnt orange accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle fully in frame",
+      "tex": 1024,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 11,
+      "front": "+z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      },
+      "yawDeg": 213.4
+    },
+    {
+      "key": "cgBikeCobaltNR",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side with NO rider and nobody on it, an empty racing saddle: Low clip-on handlebars and rear foot pegs are empty. The motorcycle has a smooth streamlined monocoque fairing painted deep lunar cobalt blue with thin pale gold accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle fully in frame",
+      "tex": 1024,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 11,
+      "front": "+z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      },
+      "yawDeg": 207.8
+    },
+    {
+      "key": "cgBikeCrimsonNR",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side with NO rider and nobody on it, an empty racing saddle: Low clip-on handlebars and rear foot pegs are empty. The motorcycle has a smooth streamlined monocoque fairing painted solar crimson red with thin sea-green accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle fully in frame",
+      "tex": 1024,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 11,
+      "front": "+z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      },
+      "yawDeg": 211.6
+    },
+    {
+      "key": "cgBikeVioletNR",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side with NO rider and nobody on it, an empty racing saddle: Low clip-on handlebars and rear foot pegs are empty. The motorcycle has a smooth streamlined monocoque fairing painted lavender violet purple with thin amber gold accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle fully in frame",
+      "tex": 1024,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 11,
+      "front": "+z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      },
+      "yawDeg": 206.1
+    },
+    {
+      "key": "cgBikeTealNR",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side with NO rider and nobody on it, an empty racing saddle: Low clip-on handlebars and rear foot pegs are empty. The motorcycle has a smooth streamlined monocoque fairing painted deep jade teal green with thin warm ochre accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle fully in frame",
+      "tex": 1024,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 11,
+      "front": "+z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      },
+      "yawDeg": 213.3
+    },
+    {
+      "key": "cgBikeSandNR",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side with NO rider and nobody on it, an empty racing saddle: Low clip-on handlebars and rear foot pegs are empty. The motorcycle has a smooth streamlined monocoque fairing painted warm desert sand ochre tan with thin dark chocolate brown accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle fully in frame",
+      "tex": 1024,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 11,
+      "front": "+z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      },
+      "yawDeg": 215
+    },
+    {
+      "key": "cgRiderCream",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.8
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A lunar Grand Prix motorcycle racer wearing a sleek warm cream-white pressurised racing spacesuit with armoured shoulder, elbow and knee plates, padded racing gloves, sturdy racing boots and a rounded racing space helmet with a dark gold mirrored visor, slim athletic build"
+    },
+    {
+      "key": "cgRiderCobalt",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.8
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A lunar Grand Prix motorcycle racer wearing a sleek deep lunar cobalt-blue and pale grey pressurised racing spacesuit with armoured shoulder, elbow and knee plates, padded racing gloves, sturdy racing boots and a rounded racing space helmet with a dark gold mirrored visor, slim athletic build"
+    },
+    {
+      "key": "cgRiderCrimson",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.8
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A lunar Grand Prix motorcycle racer wearing a sleek solar crimson-red and charcoal pressurised racing spacesuit with armoured shoulder, elbow and knee plates, padded racing gloves, sturdy racing boots and a rounded racing space helmet with a dark gold mirrored visor, slim athletic build"
+    },
+    {
+      "key": "cgBikeWheel",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 0.63
+      },
+      "tex": 512,
+      "maxVerts": 3000,
+      "seed": 7,
+      "front": "+z",
+      "subject": "A single lunar racing motorcycle wheel seen exactly side-on, the wheel face looking straight at the camera: a chunky dark grey rubber tyre with deep blocky tread and a raised sidewall, a bright gold six-spoke rim with clearly separated wide spokes and a brushed steel centre hub with bolts, no brake disc"
+    },
+    {
+      "key": "cgBikeSandNR2",
+      "subject": "A futuristic lunar Grand Prix racing motorcycle shown as a display model with BOTH WHEELS REMOVED, seen exactly from the right side with NO rider and nobody on it, an empty racing saddle: Low clip-on handlebars and rear foot pegs are empty. The motorcycle has a smooth streamlined monocoque fairing painted warm desert sand ochre tan with thin dark chocolate brown accent stripes, a small dark smoked windscreen, an exposed gunmetal twin-spar frame, twin short titanium exhaust nozzles under the tail. There are NO wheels and NO tyres at all: the gold front fork legs end in a bare round front axle hub, the gunmetal rear swingarm ends in a bare round rear axle hub, empty space below and around both hubs, no stand, nothing touching the ground. The whole motorcycle fully in frame",
+      "tex": 1024,
+      "kind": "vehicle",
+      "role": "vehicle",
+      "seed": 23,
+      "front": "+z",
+      "imageSize": "landscape_4_3",
+      "size": {
+        "length": 1.9
+      },
+      "yawDeg": 208.3
+    },
+    {
+      "key": "cgRiderCrimson2",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.8
+      },
+      "tex": 1024,
+      "seed": 13,
+      "subject": "A lunar Grand Prix motorcycle racer wearing a sleek solar crimson-red and charcoal pressurised racing spacesuit with armoured shoulder, elbow and knee plates, padded racing gloves, sturdy racing boots and a rounded racing space helmet with a dark gold mirrored visor, slim athletic build"
+    }
+  ]
+}

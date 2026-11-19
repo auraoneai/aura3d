@@ -11,7 +11,38 @@ const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const rootCatalog = resolve(appDir, "../../src/aura-assets.ts");
 const outFile = resolve(appDir, "src/aura-assets.shared.ts");
 
-export const SHARED_KEYS = [];
+// Idol wow pass (2026-11): the image-to-3D GLBs mounted by src/art/idolModels.ts.
+export const SHARED_KEYS = [
+  "pipHero",
+  "pipBrambleback",
+  "pipSunseed",
+  "pipGoldenAcorn",
+  "pipHeartBerry",
+  "pipSunGate",
+  "pipCheckpointStand",
+  "pipOakTree",
+  "pipConifer",
+  "pipToadstool",
+  "pipFlower",
+  "pipBoulder",
+  "pipStonePillar",
+  "pipStoneArch",
+  "pipWatchtower",
+  "pipCrate",
+  "pipBarrel",
+  "pipLantern",
+  "pipCrystal",
+  "pipEmberVent",
+  "pipCloud",
+  "pipHawkBody",
+  "pipHawkWing",
+  "pipHedgehogRigged",
+  "pipBeetleRigged",
+  "pipStarRelic",
+  "pipSpringBase",
+  "pipWindmillTower",
+  "pipWindmillSails"
+];
 
 // The world backdrops are never mounted (world.ts); certify.ts reads only their
 // hash, so they are copied without their large metadata blocks.
@@ -27,6 +58,9 @@ const HASH_ONLY_FIELDS = new Set(["type", "format", "url", "hash", "bounds", "si
 
 const src = readFileSync(rootCatalog, "utf8");
 const lines = src.split("\n");
+// Idol keys still being generated are skipped until tools/idol/admit.sh adds them to the root catalog
+// (src/art/idolModels.ts keeps the procedural builder for any optional set piece that is absent).
+const PRESENT_KEYS = SHARED_KEYS.filter((key) => lines.includes(`  "${key}": {`));
 
 function typeLine(key) {
   const line = lines.find((l) => l.startsWith(`  readonly "${key}": `));
@@ -60,11 +94,11 @@ const out = [
   'import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";',
   "",
   "type PipsSharedAssetDefinitions = {",
-  ...SHARED_KEYS.map(typeLine),
+  ...PRESENT_KEYS.map(typeLine),
   "};",
   "",
   "export const sharedAssets: AuraAssetMap<PipsSharedAssetDefinitions> = defineAuraAssets({",
-  ...SHARED_KEYS.map(entryBlock),
+  ...PRESENT_KEYS.map(entryBlock),
   "} as const);",
   ""
 ].join("\n");
@@ -78,5 +112,5 @@ if (process.argv.includes("--check")) {
   console.log("src/aura-assets.shared.ts is current");
 } else {
   writeFileSync(outFile, out);
-  console.log(`wrote ${outFile} (${SHARED_KEYS.length} entries, ${out.length} bytes)`);
+  console.log(`wrote ${outFile} (${PRESENT_KEYS.length} entries, ${out.length} bytes)`);
 }

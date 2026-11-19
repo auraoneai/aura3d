@@ -3,7 +3,7 @@
  *
  * - `silt-sand-wake` (DG-V1, the signature): sand thrown up under the board, scaled by speed and low altitude.
  * - `silt-canal-spray` (DG-V1 variant): the same wake over the canal, white spray instead of sand.
- * - `silt-signal` (DG-V3): ring pass burst, jade flash and a beacon pulse light.
+ * - `silt-signal` (DG-V3): ring pass burst and jade flash (no burst light: it recompiled every lit program mid-flight).
  * - `silt-impact` (DG-V3): dust and debris on a collision.
  * - `silt-motes-<kind>` (DG-V4): the chapter's ambient emitter (sand, fireflies, lantern motes, pollen, embers).
  * - `SILT_TRAIL` (DG-V2): twin jade ribbons from the board, widening on boost.
@@ -63,8 +63,11 @@ export function siltVfxPresets(options: SiltVfxOptions): Readonly<Record<SiltVfx
       name: "silt-signal",
       layers: [
         { type: "emitter", preset: "pickup-gem", count: n(18), speed: [3, 8], life: [0.35, 0.7], size: [0.12, 0.3], color: SILT_PALETTE.jade, intensity: 2.6, sprite: "flare", additive: true, maxScreen: 0.05 },
-        { type: "emitter", preset: "ring", count: n(8), speed: 0, life: 0.45, size: [6, 6], color: SILT_PALETTE.jadeWhite, intensity: 1.6, sprite: "ring-thin", additive: true, maxScreen: 0.25 },
-        { type: "light", intensity: 8, range: 60, duration: 0.35, color: SILT_PALETTE.jade }
+        { type: "emitter", preset: "ring", count: n(8), speed: 0, life: 0.45, size: [6, 6], color: SILT_PALETTE.jadeWhite, intensity: 1.6, sprite: "ring-thin", additive: true, maxScreen: 0.25 }
+        // No `light` layer (owner bug 2026-11-18, the Turbo-start "broken world"): a transient burst light adds a point light
+        // to the frame, every lit material switches to a new program variant at once (~140 compiles per ring on the real
+        // GPU), and draws whose program is still compiling are skipped, so the props, trees, rider and skiff vanished for
+        // the first rings while only the terrain and canyon walls drew. The jade flash is the additive emitters above.
       ]
     },
     "silt-impact": {

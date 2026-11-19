@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrPagoda",
+  "generatedAt": "2026-11-18T22:11:48.418Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/nrPagoda/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 21,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1219034,
+        "num_faces": 2439100,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A tall five-tiered feudal castle pagoda tower standing on a battered dry-stone rampart base, each tier with sweeping upturned curved tiled eaves, white plaster walls with dark timber framing and small lattice windows, gold finials on the roof ridge tips, a tall bronze spire on top, square symmetrical plan. Photograph of a real, hand-built painted wood and clay architectural miniature in Japanese woodblock-print colours: weathered cedar timber, real fired dark-grey clay roof tiles, white plaster walls, persimmon-vermilion lacquered railings and brackets, fine ink-line edging on the trim, soft warm golden-hour light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 32.914,
+    "size": [
+      26.497,
+      36,
+      24.265
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrPagoda.glb",
+  "sizeBytes": 8929532,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrPagoda/views.png",
+  "usd": 0.2
+}

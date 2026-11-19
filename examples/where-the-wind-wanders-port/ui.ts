@@ -144,6 +144,7 @@ export function createUi(): WindUi {
           <tr><td>E</td><td>pick up, ring, look</td></tr>
           <tr><td>J</td><td>journal</td></tr>
           <tr><td>M / P (Esc)</td><td>sound / pause</td></tr>
+          <tr><td>O</td><td>autopilot (walks herself)</td></tr>
         </table>
         <p class="sub" id="wwui-touch-help" style="display:none">On a touch screen: the pad walks, Hop and Act are on the right.</p>
         <button id="wwui-begin" type="button">Begin the walk (Enter)</button>

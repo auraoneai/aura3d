@@ -35,7 +35,7 @@ describe("aura-fc-3d sculpted multi-material athlete mesh integrity & zero-GLB v
   it.each(["h-fw", "h-gk", "a-df0"] as const)(
     "%s: builds watertight finite multi-material sub-meshes with grounded cleats and compact triangles",
     (id) => {
-      const rawNode = athleteNodes(id)[0] as { toJSON?: () => unknown };
+      const rawNode = athleteNodes(id, undefined, undefined, false)[0] as { toJSON?: () => unknown };
       const body = (typeof rawNode.toJSON === "function" ? rawNode.toJSON() : rawNode) as SerialMeshNode;
       const meshes = collectCustomMeshes(body);
       expect(meshes.length).toBeGreaterThanOrEqual(24);

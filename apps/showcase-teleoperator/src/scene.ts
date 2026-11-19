@@ -3,20 +3,13 @@ import type { GridAssetKey } from "./aura-assets";
 import {
   beaconDiscGeometrySpec,
   beaconRingGeometrySpec,
-  buildAvenueTrafficCarNode,
   buildCoitTowerLandmarkNode,
-  buildFerryClocktowerNode,
-  buildPlayableFleetCarNode,
-  buildRivalFleetCarNode,
   buildSkylineTowerNode,
   buildStreetBuildingNode,
   buildSuspensionBridgeSpanNode,
   buildSuspensionBridgeTowerNode,
-  buildTransamericaSpireNode,
-  buildUrbanCommuterNode,
   curbBollardGeometrySpec,
   INSTANCED_STREET_MATERIALS,
-  parkedVehicleGeometrySpec,
   podSensorHousingGeometrySpec,
   podSensorLaserGeometrySpec,
   podTurretMaterial,
@@ -25,9 +18,11 @@ import {
   signalPoleGeometrySpec,
   streetLampGlobeGeometrySpec,
   streetLampPoleGeometrySpec,
-  streetTreeCrownGeometrySpec,
-  streetTreeTrunkGeometrySpec
+  streetTreeCrownGeometrySpec
 } from "./art/proceduralModels";
+import { wheelPoolNode } from "./wheels";
+import { walkerNodes } from "./walkers";
+import { buildIdolCommuterNode, buildIdolFerryTerminalNode, buildIdolPyramidTowerNode, buildIdolParkedPool, buildIdolStreetTreePool, buildIdolPlayableCarNode, buildIdolRivalCarNode, buildIdolTrafficCarNode } from "./art/idolModels";
 import { BRAKE_RED, KEY_SHADOW, SODIUM, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
 import { MANHOLES, createBeaconRippleTexture } from "./vfx";
@@ -540,12 +535,12 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
   const BRIDGE_Z = -315;
   const BRIDGE_TOWER_X = 88;
   s.addMany([
-    buildTransamericaSpireNode(look, [44, 0, -210]),
+    buildIdolPyramidTowerNode([44, 0, -210]),
     buildSkylineTowerNode("glass", "sf-glass-landmark", look, [-70, 0, -235], 110),
     buildSuspensionBridgeTowerNode("sf-bridge-tower-l", [-BRIDGE_TOWER_X, 0, BRIDGE_Z], Math.PI / 2),
     buildSuspensionBridgeTowerNode("sf-bridge-tower-r", [BRIDGE_TOWER_X, 0, BRIDGE_Z], -Math.PI / 2),
     buildSuspensionBridgeSpanNode([0, 30.2, BRIDGE_Z], BRIDGE_TOWER_X),
-    buildFerryClocktowerNode(look, [0, 0, -268]),
+    buildIdolFerryTerminalNode([0, 0, -268]),
     buildCoitTowerLandmarkNode(look, [-48, 0, -222])
   ]);
 
@@ -577,7 +572,8 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     instances.custom(streetLampPoleGeometrySpec(), { name: "sf-lamp-poles", material: INSTANCED_STREET_MATERIALS.castIronPole, castShadow: false, receiveShadow: false, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-poles")),
     instances.custom(streetLampGlobeGeometrySpec(), { name: "sf-lamp-globes", material: lampMat, castShadow: false, receiveShadow: false, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-globes")),
     instances.custom(curbBollardGeometrySpec(), { name: "sf-curb-bollards", material: INSTANCED_STREET_MATERIALS.castIronPole, castShadow: false, receiveShadow: false, transforms: pool(INTERSECTION_COUNT * CURB_BOLLARD_OFFSETS.length) }).runtime(game.runtimeNode("sf-curb-bollards")),
-    instances.custom(streetTreeTrunkGeometrySpec(), { name: "sf-tree-trunks", material: INSTANCED_STREET_MATERIALS.treeBark, castShadow: false, receiveShadow: true, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-tree-trunks")),
+    // Idol wow pass: one instanced Idol plane tree (trunk + leaf canopy) per sidewalk tree; the procedural crown pool stays mounted but hidden.
+    buildIdolStreetTreePool(pool(LAMP_PAIRS * 2)).runtime(game.runtimeNode("sf-tree-trunks")),
     instances.custom(streetTreeCrownGeometrySpec(), {
       name: "sf-tree-crowns",
       material: INSTANCED_STREET_MATERIALS.treeFoliage,
@@ -610,14 +606,8 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     instances.box({ name: "sf-catenary-spans", size: CATENARY.span, material: wireMat, castShadow: false, receiveShadow: false, transforms: pool(LAMP_PAIRS) }).runtime(game.runtimeNode("sf-catenary-spans")),
     ...PARKED.map((p, k) => {
       const count = INTERSECTION_COUNT * p.slots.length;
-      return instances
-        .custom(parkedVehicleGeometrySpec(k === 0 ? "sedan" : "hatchback"), {
-          name: `sf-parked-${k}`,
-          material: INSTANCED_STREET_MATERIALS.parkedCoat,
-          castShadow: false,
-          transforms: pool(count),
-          colors: Array.from({ length: count }, (_, idx) => parkedPalette[(idx + k * 2) % parkedPalette.length]!)
-        })
+      // Idol wow pass: instanced Idol pearl sedan / white hatch, tinted per instance by the same palette.
+      return buildIdolParkedPool(k, count, Array.from({ length: count }, (_, idx) => parkedPalette[(idx + k * 2) % parkedPalette.length]!), pool)
         .runtime(game.runtimeNode(`sf-parked-${k}`));
     }),
     instances.box({ name: "sf-sign-plates", size: SIGN.plate, material: material.pbr({ color: SIGN.plateColor, roughness: 0.45, metalness: 0.18, clearcoat: 0, sheen: 0 }), castShadow: false, receiveShadow: false, transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-plates")),
@@ -642,7 +632,8 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     primitives.cylinder({ name: "taxi-beacon-beam", size: [0.56, 34, 0.56], material: beaconEnergyMaterial("pickup", 0.72), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 17, -38).runtime(game.runtimeNode("taxi-beacon-beam")),
     primitives.cylinder({ name: "taxi-beacon-core", size: [0.16, 36, 0.16], material: material.emissive({ color: "#ffffff", emissive: "#8ff0e6", emissiveIntensity: 2.4 }), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 18, -38).runtime(game.runtimeNode("taxi-beacon-core")),
     // GD-16: sculpted multi-material procedural Urban Commuter Rig grounded on the sidewalk (`y = 0.18`), waving & boarding cleanly.
-    buildUrbanCommuterNode({
+    // Idol wow pass: rigged Idol commuter (idle / walk clips + a code-driven hail-wave overlay), same kerb transform.
+    buildIdolCommuterNode({
       id: PASSENGER_NODE,
       position: [11.35, 0.18, -38],
       rotation: [0, PASSENGER_YAW, 0]
@@ -652,7 +643,7 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
   // 7. Five sculpted playable AV fleet cars + WebGPU-safe spinning 10 Hz roof LiDAR crown + conformal rear LED lightbars.
   s.addMany([
     ...PLAYABLE_IDS.map((id, i) =>
-      buildPlayableFleetCarNode(id, {
+      buildIdolPlayableCarNode(id, {
         nodeId: `player-car-${id}`,
         position: [i === 0 ? 0 : HIDDEN_POS[0], i === 0 ? 0 : HIDDEN_POS[1], i === 0 ? -0.8 : HIDDEN_POS[2]],
         scale: i === 0 ? [1, 1, 1] : HIDDEN_SCALE,
@@ -680,15 +671,19 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     ...sodiumPointNodes(look),
     instances.box({ name: "player-tail-lamps", size: TAIL_LAMP.size, material: tailLampMaterial(look, false), castShadow: false, receiveShadow: false, transforms: pool(2) }).runtime(game.runtimeNode("player-tail-lamps")),
     instances.plane({ name: TAIL_TRAIL_ID, material: material.custom(tailTrailMaterial()), castShadow: false, receiveShadow: false, frustumCulled: false, transforms: pool(TAIL_TRAIL_CAPACITY) }).runtime(game.runtimeNode(TAIL_TRAIL_ID)),
-    ...headlightNodes(look)
+    ...headlightNodes(look),
+    // Idol wow pass: spinning road wheels for every Idol body (one instanced draw, placed per frame in main.ts)
+    wheelPoolNode(pool),
+    // Idol wow pass: 12 rigged sidewalk walkers (walk / idle clips), placed per frame in main.ts
+    ...walkerNodes()
   ]);
 
   // 8. Five sculpted AI rivals (including SF Powell-Mason Cable Car) and ten traffic cars across 6 SF traffic classes.
   RIVALS.forEach((r, k) => {
-    s.add(buildRivalFleetCarNode(k, [r.laneX, 0, r.z]));
+    s.add(buildIdolRivalCarNode(k, [r.laneX, 0, r.z]));
   });
   TRAFFIC_SPECS.forEach((t, i) => {
-    s.add(buildAvenueTrafficCarNode(i, t.asset, [0, 0, -80]));
+    s.add(buildIdolTrafficCarNode(i, t.asset, [0, 0, -80]));
   });
   return s;
 }

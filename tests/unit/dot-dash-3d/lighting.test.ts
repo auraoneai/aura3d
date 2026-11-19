@@ -1,20 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { buildScene } from "../../../apps/showcase-dot-dash-3d/src/game/world";
-import { BOARD_LOOKS, LAMP, LOOK_HDRI } from "../../../apps/showcase-dot-dash-3d/src/game/look";
+import { ARCADE, LOOK_HDRI } from "../../../apps/showcase-dot-dash-3d/src/game/look";
 
 type SceneNode = {
   kind: string;
   name?: string;
   light?: string;
+  effect?: string;
   intensity?: number;
-  color?: string;
   position?: readonly number[];
   shadow?: unknown;
   environment?: string;
   background?: unknown;
   texture?: { url?: string };
-  look?: string;
-  probe?: string;
   children?: SceneNode[];
 };
 
@@ -24,7 +22,7 @@ function sceneNodes(): SceneNode[] {
   const walk = (list: readonly SceneNode[]): void => {
     for (const n of list) {
       out.push(n);
-      if (n.kind === "group" && n.children) walk(n.children);
+      if (n.children) walk(n.children);
     }
   };
   walk(nodes);
@@ -33,43 +31,36 @@ function sceneNodes(): SceneNode[] {
 
 const isShadowed = (n: SceneNode): boolean => n.shadow === true || (typeof n.shadow === "object" && n.shadow !== null);
 
-describe("dot-dash-3d lighting: desk-lamp key (DD47-L1) and workshop IBL (DD47-E1)", () => {
-  it("mounts no ambient or hemisphere light and no look preset (not neon-arcade)", () => {
-    const nodes = sceneNodes();
-    const lights = nodes.filter((n) => n.kind === "light");
-    expect(lights.map((l) => l.light)).not.toContain("ambient");
-    expect(lights.map((l) => l.light)).not.toContain("hemisphere");
-    expect(nodes.some((n) => n.kind === "look" || (n.kind === "group" && n.name?.startsWith("aura-look:")))).toBe(false);
+/** Arcade-readability pass: one overhead key, a low undrawn IBL, no off-maze clutter. */
+describe("dot-dash-3d arcade lighting and clutter", () => {
+  it("one shadowed overhead directional key, no ambient / hemisphere / point / spot lights", () => {
+    const lights = sceneNodes().filter((n) => n.kind === "light");
+    expect(lights).toHaveLength(1);
+    expect(lights[0]!.light).toBe("directional");
+    expect(isShadowed(lights[0]!)).toBe(true);
+    expect(lights[0]!.position?.[1]).toBeGreaterThan(20);
+    expect(lights[0]!.intensity).toBe(ARCADE.key.intensity);
   });
 
-  it("has exactly one shadow caster: a PCSS spot from the upper left of the bench", () => {
-    const shadowed = sceneNodes().filter((n) => n.kind === "light" && isShadowed(n));
-    expect(shadowed).toHaveLength(1);
-    const lamp = shadowed[0]!;
-    expect(lamp.light).toBe("spot");
-    expect(lamp.position).toEqual([-16, 13, 8]);
-    expect(LAMP.position).toEqual([-16, 13, 8]);
-    expect((lamp.shadow as { filter?: string }).filter).toBe("pcss");
-    expect(lamp.color).toBe(BOARD_LOOKS.classic.lamp.color);
-  });
-
-  it("turns the old directional into a cool 0.25 unshadowed bounce", () => {
-    const directional = sceneNodes().filter((n) => n.kind === "light" && n.light === "directional");
-    expect(directional).toHaveLength(1);
-    expect(directional[0]!.intensity).toBe(0.25);
-    expect(isShadowed(directional[0]!)).toBe(false);
-    const [r, , b] = [1, 3, 5].map((i) => parseInt(directional[0]!.color!.slice(i, i + 2), 16));
-    expect(b!).toBeGreaterThan(r!);
-  });
-
-  it("fills with the indoor-workshop catalogue HDRI at 0.38 without drawing it, plus one box probe", () => {
-    const nodes = sceneNodes();
-    const env = nodes.filter((n) => n.kind === "environment");
+  it("fills with the workshop HDRI at a low intensity without drawing it", () => {
+    const env = sceneNodes().filter((n) => n.kind === "environment");
     expect(env).toHaveLength(1);
-    expect(env[0]!.environment).toBe("hdri");
     expect(env[0]!.texture?.url).toBe(LOOK_HDRI.url);
-    expect(env[0]!.intensity).toBe(0.38);
+    expect(env[0]!.intensity).toBe(ARCADE.ibl);
     expect(env[0]!.background).toBe(false);
-    expect(nodes.filter((n) => n.kind === "probe" && n.probe === "reflection")).toHaveLength(1);
+  });
+
+  it("draws nothing off the maze: no bench, lamp, pylons, gem caches, models, silkscreen or lens clutter", () => {
+    const nodes = sceneNodes();
+    const names = nodes.map((n) => n.name ?? "");
+    for (const gone of ["walnut bench", "anti-static mat", "workshop wall", "pegboard", "desk lamp", "silk title", "mounting holes"]) {
+      expect(names.some((n) => n.includes(gone)), gone).toBe(false);
+    }
+    expect(nodes.filter((n) => n.kind === "model")).toHaveLength(0);
+    expect(names.some((n) => n.startsWith("gem-cache"))).toBe(false);
+    const json = JSON.stringify(buildScene());
+    for (const fx of ["vignette", "chromaticAberration", "filmGrain", "fog", "screenSpaceReflections", "particles"]) {
+      expect(json.includes(`"${fx}"`), fx).toBe(false);
+    }
   });
 });

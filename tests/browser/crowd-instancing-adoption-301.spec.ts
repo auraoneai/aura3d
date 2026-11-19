@@ -12,8 +12,7 @@ interface Capture {
   diagnostics: { drawCalls: number; errors: string[]; renderer?: { runtime?: { nativeInstancedSubmissions?: number } } };
 }
 for (const route of [
-  { name: "smart-city", path: "apps/showcase-smart-city-control/", probe: "__AURA3D_CITY_CROWD_PROBE__", copies: 6 },
-  { name: "aura-clash", path: "apps/aura-clash-showcase/", probe: "__AURA3D_CLASH_CROWD_PROBE__", copies: 28 }
+  { name: "smart-city", path: "apps/showcase-smart-city-control/", probe: "__AURA3D_CITY_CROWD_PROBE__", copies: 6 }
 ]) {
   test(`I03 ${route.name} actual route preserves typed copies while reducing native draws`, async ({ page }) => {
     test.setTimeout(route.name === "smart-city" ? 600_000 : 300_000);

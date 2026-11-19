@@ -314,7 +314,20 @@ export function applyMaterialOverrides(
     if (resolved.envMapIntensity !== undefined) {
       writeToAuthoredKeys(["u_environmentIntensity", "u_envMapIntensity"], resolved.envMapIntensity);
     }
-    if (resolved.opacity !== undefined) writeToAuthoredKeys(["u_opacity", "u_alpha"], resolved.opacity);
+    if (resolved.opacity !== undefined) {
+      if ("u_opacity" in authored || "u_alpha" in authored) writeToAuthoredKeys(["u_opacity", "u_alpha"], resolved.opacity);
+      else {
+        // glTF PBR materials carry no opacity scalar: scale the base-colour alpha (after any colour override above).
+        // The model's loader switched the matching materials to alpha blending (`modelOpacityRenderStateOverrides`).
+        const opacity = clampRange(resolved.opacity, 1, 0, 1);
+        for (const name of opacity < 1 ? ["u_baseColorFactor", "u_baseColor"] : []) {
+          if (!(name in authored)) continue;
+          const value = material.getParameter(name) as unknown;
+          const current = Array.isArray(value) || value instanceof Float32Array ? value as ArrayLike<number> : undefined;
+          if (current && current.length === 4) material.setParameter(name, [current[0]!, current[1]!, current[2]!, current[3]! * opacity]);
+        }
+      }
+    }
     if (resolved.transmission !== undefined) writeToAuthoredKeys(["u_transmissionFactor"], clampRange(resolved.transmission, 0, 0, 1));
     if (resolved.iridescence !== undefined) writeToAuthoredKeys(["u_iridescenceFactor"], clampRange(resolved.iridescence, 0, 0, 1));
     if (resolved.iridescenceIor !== undefined) writeToAuthoredKeys(["u_iridescenceIor"], resolved.iridescenceIor);
@@ -335,8 +348,11 @@ function lowerSheenColor(sheen: number | undefined, color: AuraModelMaterialOver
 function targetPredicate(
   target: string | RegExp | readonly (string | RegExp)[] | undefined
 ): ((materialName: string) => boolean) | undefined {
-  if (target === undefined) return undefined;
-  const matchers = (Array.isArray(target) ? target : [target]).map((entry) => {
+  // "*" means every material (as TypedGLBActorMaterials already treats it); a literal "*" material name is not a thing.
+  if (target === undefined || target === "*") return undefined;
+  const entries = Array.isArray(target) ? target : [target];
+  if (entries.some((entry) => entry === "*")) return undefined;
+  const matchers = entries.map((entry) => {
     if (typeof entry === "string") return (name: string) => name === entry;
     const expression = new RegExp(entry.source, entry.flags);
     return (name: string) => { expression.lastIndex = 0; return expression.test(name); };
@@ -390,6 +406,8 @@ export function lowerModelMaterialOverrides(
     ...(spec?.roughness !== undefined && authored("roughness") ? { roughness: spec.roughness } : {}),
     ...(metallic !== undefined && authored("metallic") && authored("metalness") ? { metallic } : {}),
     ...(spec?.clearcoat !== undefined && authored("clearcoat") ? { clearcoat: spec.clearcoat } : {}),
+    // `model(asset, { material: { opacity } })` was dropped here; it now lowers like an override's `opacity`.
+    ...(typeof spec?.opacity === "number" && spec.opacity < 1 && authored("opacity") ? { opacity: spec.opacity } : {}),
     ...(spec?.clearcoatRoughness !== undefined && authored("clearcoatRoughness")
       ? { clearcoatRoughness: spec.clearcoatRoughness }
       : {}),
@@ -431,4 +449,9 @@ export function lowerModelMaterialOverrides(
     });
   }
   return lowered;
+}
+
+/** True when a model material spec or override asks for a see-through surface (`opacity` below 1). */
+export function modelOpacityIsTranslucent(opacity: unknown): boolean {
+  return typeof opacity === "number" && Number.isFinite(opacity) && opacity < 1;
 }

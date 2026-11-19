@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzVmCarbine",
+  "generatedAt": "2026-11-18T22:16:56.862Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/bunker-zero/_refs/bzVmCarbine.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0bc-0bbe-7ea2-9483-1d23b648ee8d",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 277782,
+        "num_faces": 555568,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Fictional futuristic pulse carbine rifle, side view with the muzzle pointing left: machined gunmetal receiver with a top rail, slotted lattice barrel shroud and a multi-port muzzle brake, black polymer buttstock with a cheek riser, raked pistol grip, angled foregrip, curved box magazine, small glowing cyan display panel on the side. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "hero",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.706,
+    "size": [
+      0.74,
+      0.189,
+      0.057
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzVmCarbine.glb",
+  "sizeBytes": 4306008,
+  "preview": "artifacts/idol/bunker-zero/bzVmCarbine/views.png",
+  "usd": 0.2
+}

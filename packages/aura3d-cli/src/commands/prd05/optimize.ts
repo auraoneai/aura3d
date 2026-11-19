@@ -10,6 +10,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { monorepoOnlyMessage } from "../../monorepo-only.js";
 
 export interface OptimizeVerbOptions {
   readonly projectDir: string;
@@ -29,8 +30,8 @@ export function optimizeAssetsVerb(opts: OptimizeVerbOptions): number {
   const repoRoot = resolve(opts.projectDir);
   const toolEntry = join(repoRoot, "tools", "asset-optimize", "index.ts");
   if (!existsSync(toolEntry)) {
-    stderr("tools/asset-optimize/index.ts missing — Phase 2 not installed in this checkout.");
-    return 1;
+    stderr(monorepoOnlyMessage("assets optimize", "tools/asset-optimize/index.ts", { mode: "<id…> mode", base: "cwd-exact", alternative: "`aura3d assets optimize --file in.glb --out out.glb` works anywhere" }));
+    return 2;
   }
 
   const positional = argv.filter((a) => !a.startsWith("--") && !["--profile", "--geometry", "--ktx", "--report", "--remote", "--blender"].includes(argv[argv.indexOf(a) - 1] ?? ""));

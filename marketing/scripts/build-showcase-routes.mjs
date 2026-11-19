@@ -565,8 +565,8 @@ function copyAuraAssets(onlyRoute) {
       ignoredTokens.add(assetId);
       continue;
     }
-    // All 30 public showcase games mount 100% @aura3d/engine procedural geometry (zero GLB models).
-    // Skip model entries so historical sourcePath / documentation mentions never copy root GLBs into marketing/dist/aura-assets/.
+    // Model GLBs are copied by copyReferencedBuiltAuraAssets() from the URLs the built routes actually reference, so
+    // historical sourcePath / documentation mentions never pull unused root GLBs into marketing/dist/aura-assets/.
     if (asset.type === "model") {
       continue;
     }
@@ -596,6 +596,40 @@ function copyAuraAssets(onlyRoute) {
       copyRouteLocalAuraAssets(route);
     }
   }
+  copyReferencedBuiltAuraAssets();
+}
+
+/**
+ * Copy every `/aura-assets/<file>` the built showcase output references (Idol GLBs admitted to the root manifest and
+ * imported through route asset modules) from repo-root public/aura-assets. Exact by construction: only files a built
+ * route can request are shipped, and verify-asset-urls then proves each one resolves.
+ */
+function copyReferencedBuiltAuraAssets() {
+  const urlPattern = /\/aura-assets\/[A-Za-z0-9_.\-/]+\.(?:glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|svg|mp3|ogg|wav|json)/g;
+  const referenced = new Set();
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (full === path.join(distDir, "aura-assets")) continue;
+        walk(full);
+      } else if (/\.(?:js|mjs|html|json|css)$/.test(entry.name)) {
+        for (const match of readFileSync(full, "utf8").matchAll(urlPattern)) referenced.add(match[0]);
+      }
+    }
+  };
+  walk(distDir);
+  let copied = 0;
+  const unresolved = [];
+  for (const url of referenced) {
+    const target = path.join(distDir, url);
+    if (existsSync(target)) continue;
+    const source = path.join(repoRoot, "public", url);
+    if (!existsSync(source)) { unresolved.push(url); continue; }
+    copyAuraAssetFile(url);
+    copied += 1;
+  }
+  console.log(`Copied ${copied} referenced root /aura-assets files into the built site${unresolved.length ? ` (${unresolved.length} referenced URL(s) have no source file; verify-asset-urls reports them)` : ""}.`);
 }
 
 function resolveShowcaseAssetBaseUrl() {

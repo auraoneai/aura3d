@@ -42,7 +42,8 @@ export interface TurfSplatSurface {
 /**
  * Allocates the persistent RGBA8 GPU splat map (`96 x 2400`), broadcast-crisp 3D strip LUT, and
  * 32-frame ink-droplet flipbook atlas. Mutates `splat.pixels` in place and flags `texture.needsUpdate = true`
- * only on frames where at least one cell changed.
+ * only on frames where at least one cell changed (`texture.data` retains `splat.pixels` by reference, so the
+ * re-upload carries the painted bytes).
  */
 export function createTurfSplatSurface(rows: number, cols: number): TurfSplatSurface {
   const width = cols * SPLAT_TEXELS_PER_COL;
@@ -52,7 +53,9 @@ export function createTurfSplatSurface(rows: number, cols: number): TurfSplatSur
     data: splat.pixels,
     width,
     height,
-    colorSpace: "srgb"
+    // Raw sRGB bytes: both wet-ink stages decode with srgbToLin(splat.rgb) themselves, so an "srgb"
+    // (rgba8unorm-srgb / SRGB8_ALPHA8) texture would decode twice and crush the team colours.
+    colorSpace: "linear"
   });
   splatTex.wrapS = "clamp";
   splatTex.wrapT = "clamp";

@@ -1,0 +1,45 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdReactorRing",
+  "generatedAt": "2026-11-18T22:07:23.932Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09a-084d-78c3-bda7-739f0277ecb0",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1578302,
+        "num_faces": 3157184,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A giant upright toroidal magnetic reactor ring standing in a heavy steel cradle: a thick closed metal torus ring wrapped with eight large copper field coils evenly around it, cables and coolant pipes running down into the cradle base, brushed steel and oxidised copper, faint cyan glow inside the ring",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 24.009,
+    "size": [
+      24,
+      23.985,
+      12.466
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdReactorRing.glb",
+  "sizeBytes": 2113252,
+  "preview": "artifacts/idol/heatsink/tdReactorRing/views.png",
+  "usd": 0.37,
+  "admitRole": "set-dressing",
+  "renormalizedAt": "2026-11-18T23:37:09.036Z"
+}

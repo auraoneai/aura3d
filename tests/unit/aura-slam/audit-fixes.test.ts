@@ -18,6 +18,7 @@ import { SPECTATOR_COLORS, buildSpectatorNodes, createSpectatorUpdater, spectato
 import { STATIC_RUNTIME_IDS, buildTennisScene } from "../../../examples/aura-slam/view/scene";
 import { createPoseRig } from "../../../examples/aura-slam/view/poseRig";
 import { resolveAppearance } from "../../../examples/aura-slam/view/appearance";
+import { idolModels } from "../../../examples/aura-slam/view/assets";
 import { clampServePosition, createAdapterController, SERVE_Y_MIN } from "../../../examples/aura-slam/shell/controller";
 import { createMatchLoop } from "../../../examples/aura-slam/shell/loop";
 import { controlsHintText, SWING_ALIAS_KEYS, swingAliasesFree } from "../../../examples/aura-slam/ui/controlsHint";
@@ -241,11 +242,20 @@ describe("top-tennis-C7 / C9 / C10 / C13: scene structure", () => {
     expect(stand.rotation?.[1]).toBeCloseTo(Math.PI / 2, 9);
     expect(stand.size?.[2]).toBe(24);
     // GU47 TT-A2 (wave 10): the World Tour look stands the generated lattice tower on the plain (no cylinder mast, no lamp head).
+    // Idol wow pass: the tower is the Idol GLB normalised to 9.5 m (bounds), `?idol=0` keeps the procedural tower (targetHeight 9.5).
+    const procedural = buildTennisScene(createPoseRig({ resolveAppearance }) as never, { idol: false }).toJSON() as AuraSceneSnapshot;
     for (const side of ["left", "right"]) {
       expect(snapshot.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-mast-${side}`)).toBeUndefined();
-      const tower = snapshot.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-${side}`) as { position?: number[]; targetHeight?: number };
-      expect(tower.position?.[1]).toBe(0);
-      expect(tower.targetHeight).toBe(9.5);
+      const tower = snapshot.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-${side}`) as { position?: number[]; kind?: string; children?: Array<{ kind?: string; scale?: number[] }> };
+      // stands on the outer ground plane (-0.024), its base sunk 2.5 cm so no gap shows under the footing
+      expect(tower.position?.[1]).toBeLessThanOrEqual(-0.024);
+      expect(tower.position?.[1]).toBeGreaterThan(-0.1);
+      const body = tower.children?.find((c) => c.kind === "model");
+      expect(body).toBeDefined();
+      expect(idolModels.slamFloodlightTower.bounds[1] * (body?.scale?.[1] ?? 1)).toBeCloseTo(9.5, 1);
+      const proc = procedural.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-${side}`) as { position?: number[]; targetHeight?: number };
+      expect(proc.position?.[1]).toBe(0);
+      expect(proc.targetHeight).toBe(9.5);
     }
     // ?look=original keeps the C10 cylinder mast with the procedural lamp head on top (0 borrowed rooftop assets).
     const original = buildTennisScene(createPoseRig({ resolveAppearance }) as never, { look: "original" }).toJSON() as AuraSceneSnapshot;

@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swPickupRust",
+  "generatedAt": "2026-11-18T22:26:37.444Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the client's 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f089-f05d-7b01-a804-030f9d4fe57d",
+      "prompt": "A single full-size crew-cab pickup truck of a fictional unbranded design, sun-faded burnt-orange red paint, open cargo bed with black bed liner, chrome grille surround and chrome bumpers, dark tinted windows, chunky all-terrain tyres on silver wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08f-0100-7f20-8846-a3598e78493b",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1472206,
+        "num_faces": 2944708,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single full-size crew-cab pickup truck of a fictional unbranded design, sun-faded burnt-orange red paint, open cargo bed with black bed liner, chrome grille surround and chrome bumpers, dark tinted windows, chunky all-terrain tyres on silver wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -91,
+    "scale": 4.55,
+    "size": [
+      4.879,
+      3.261,
+      5.84
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swPickupRust.glb",
+  "sizeBytes": 1872500,
+  "preview": "artifacts/idol/saltwind-highway/swPickupRust/views.png",
+  "usd": 0.37,
+  "orientationFix": "yawDeg -1 (long axis fitted; reference was a three-quarter view)",
+  "postProcess": "PNG textures re-encoded as JPEG q90 (4:4:4) to fit the per-game byte budget"
+}

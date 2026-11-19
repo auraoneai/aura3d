@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-slam",
+  "key": "slamUmpireChair",
+  "generatedAt": "2026-11-18T21:37:25.168Z",
+  "generator": "tools/idol/generate.mjs (+ manual optimise/normalise after the generator's optimise step rejected role set-dressing)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f088-b92f-7073-a22a-e76d63943eb7",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f089-ec22-70c1-952d-6e37cf0f5bda",
+      "usd": 0.2
+    }
+  ],
+  "prompt": "A tall empty tennis umpire high chair: dark green powder-coated tubular steel frame with a built-in step ladder at the front, a varnished teak wooden seat with a curved backrest and armrests at about two metres height, a small cream canvas sun canopy on a pole above the seat, empty seat",
+  "role": "background",
+  "rig": false,
+  "usd": 0.37,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.067,
+    "size": [
+      1.698,
+      3.1,
+      2.744
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/aura-slam/assets/idol/slamUmpireChair.glb",
+  "sizeBytes": 2885064,
+  "preview": "artifacts/idol/aura-slam/slamUmpireChair/views.png",
+  "manualNormalize": {
+    "role": "background",
+    "front": "+x",
+    "yawDeg": 0,
+    "size": {
+      "height": 3.1
+    },
+    "tex": 1024
+  },
+  "postEdit": {
+    "tool": "examples/aura-slam/tools/idol-clip-above.mjs",
+    "cutAboveMetres": 2.48,
+    "reason": "baked sun canopy (2.6-3.1 m) hid the seated umpire's head"
+  }
+}

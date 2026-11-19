@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { afterburnerKick, AFTERBURNER_KICK, directCamera, MENU_HERO, SWEEP, vignettePulse, HEAT_STEPS, heatStep } from "../../../examples/heatsink-port/art/director";
+import { afterburnerKick, AFTERBURNER_KICK, directCamera, MENU_HERO, SWEEP, WARM_SWEEP_COUNTDOWNS, vignettePulse, HEAT_STEPS, heatStep } from "../../../examples/heatsink-port/art/director";
 import { LOOKS } from "../../../examples/heatsink-port/art/look";
 
 const base = { target: [0, 1, 0] as const, eye: [-7.6, 3, 0] as const, look: [20, 1.8, 0] as const, finishedFor: 0 };
@@ -28,6 +28,22 @@ describe("heatsink-port IC-22 camera direction", () => {
     for (const r of [run(LOOKS.original, true, { state: "menu" }), run(LOOKS.twilight, false, { state: "menu" })]) {
       expect(r.w).toBe(0);
       expect(r.eye).toEqual([...base.eye]);
+    }
+  });
+
+  it("boot warms the whole countdown sweep: poses from its start to GO, no two more than 30 degrees apart (countdown fps)", () => {
+    const azimuth = (cd: number): number => {
+      const r = run(LOOKS.twilight, true, { state: "countdown", countdown: cd });
+      return Math.atan2(r.eye[2] - base.target[2], r.eye[0] - base.target[0]);
+    };
+    const cds = WARM_SWEEP_COUNTDOWNS;
+    expect(cds[0]).toBeLessThan(SWEEP.seconds);
+    expect(cds[0]).toBeGreaterThan(SWEEP.seconds - 0.1);
+    expect(cds.at(-1)).toBeLessThan(0.1);
+    const angles = [SWEEP.seconds - 1e-6, ...cds, 0].map(azimuth);
+    for (let i = 1; i < angles.length; i++) {
+      const d = Math.abs(Math.atan2(Math.sin(angles[i]! - angles[i - 1]!), Math.cos(angles[i]! - angles[i - 1]!)));
+      expect(d).toBeLessThan((30 * Math.PI) / 180);
     }
   });
 

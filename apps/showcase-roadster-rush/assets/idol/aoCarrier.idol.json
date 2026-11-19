@@ -1,0 +1,58 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoCarrier",
+  "generatedAt": "2026-11-18T22:13:50.706Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered after its 20 min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A single empty car-transporter tractor-trailer of a fictional unbranded design, side view emphasis, bright safety-orange cab-over tractor at the front, long open steel-frame trailer with a flat upper deck running at roof height and a lower deck, open lattice side frames, the rear end of the upper deck slopes down to the road as a long loading ramp, many black wheels, no vehicles loaded. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09c-ec10-7632-998b-21f82ac266b6",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 978780,
+        "num_faces": 1957932,
+        "watertight": true
+      },
+      "seed": 7
+    }
+  ],
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -42,
+    "scale": 12.518,
+    "size": [
+      4.129,
+      5.083,
+      16
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoCarrier.glb",
+  "sizeBytes": 2247416,
+  "preview": "artifacts/idol/apex-overdrive/aoCarrier/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "front": "+z",
+    "yawDeg": -42,
+    "note": "re-normalised from opt.glb after preview showed the wrong facing"
+  },
+  "postprocess": [
+    {
+      "step": "normal-jpeg",
+      "quality": 90,
+      "bytesBefore": 4074584,
+      "bytesAfter": 2247416
+    }
+  ]
+}

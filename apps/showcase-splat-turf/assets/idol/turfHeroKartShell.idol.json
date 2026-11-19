@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-turf",
+  "key": "turfHeroKartShell",
+  "generatedAt": "2026-11-19T00:41:03.914Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f13f-fa31-7281-9c4d-934b89a0af56",
+      "prompt": "Telephoto rear three-quarter view from behind-left and slightly above of a small open-cockpit kids' street go-kart body only, NO wheels: four empty rounded wheel arches with nothing inside them, the body floating level. An EMPTY open cockpit: a black bucket seat with nobody in it and a small black steering wheel on a column, no driver, no person. Low wide streamlined hot-magenta clearcoat body with flared fenders, small twin chrome spray nozzles on the side pods, a cylindrical glass tank of pink ink strapped upright behind the seat on a chrome roll bar, a clean smooth plain magenta rear bumper panel with twin chrome exhaust tips. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, brushed and chromed metal, real fabric, fine surface detail and light wear. Single isolated object, entire object in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No people, no wheels, no tyres, no text, no logos, no lettering, no numbers, no number plates, no brand marks anywhere.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f144-4c4e-77c0-a283-85f9e04dc3d5",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1094662,
+        "num_faces": 2189384,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Telephoto rear three-quarter view from behind-left and slightly above of a small open-cockpit kids' street go-kart body only, NO wheels: four empty rounded wheel arches with nothing inside them, the body floating level. An EMPTY open cockpit: a black bucket seat with nobody in it and a small black steering wheel on a column, no driver, no person. Low wide streamlined hot-magenta clearcoat body with flared fenders, small twin chrome spray nozzles on the side pods, a cylindrical glass tank of pink ink strapped upright behind the seat on a chrome roll bar, a clean smooth plain magenta rear bumper panel with twin chrome exhaust tips. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, brushed and chromed metal, real fabric, fine surface detail and light wear. Single isolated object, entire object in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No people, no wheels, no tyres, no text, no logos, no lettering, no numbers, no number plates, no brand marks anywhere.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 90,
+    "scale": 1.252,
+    "size": [
+      1.225,
+      0.822,
+      1.25
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-turf/assets/idol/turfHeroKartShell.glb",
+  "sizeBytes": 2239744,
+  "preview": "artifacts/idol/splat-turf/turfHeroKartShell/views.png",
+  "usd": 0.37,
+  "renormalizedAt": "2026-11-19T00:51:51.007Z"
+}

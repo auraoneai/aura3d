@@ -1,0 +1,45 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdCoolingTower",
+  "generatedAt": "2026-11-18T23:26:37.957Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b1-5bb2-7681-8ca0-19a9f9477736",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1207912,
+        "num_faces": 2416300,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A massive weathered concrete natural-draft cooling tower of a power plant: a tall smooth curved hyperboloid hourglass-shaped shell, narrow waist two thirds up and flaring out again at the top rim, standing on a ring of slanted concrete colonnade legs at its base, smooth stained grey concrete with vertical rust and soot streaks, a thin maintenance catwalk ring near the top",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 35.822,
+    "size": [
+      34.887,
+      36,
+      34.855
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdCoolingTower.glb",
+  "sizeBytes": 1394700,
+  "preview": "artifacts/idol/heatsink/tdCoolingTower/views.png",
+  "usd": 0.37,
+  "admitRole": "set-dressing",
+  "renormalizedAt": "2026-11-18T23:36:59.678Z"
+}

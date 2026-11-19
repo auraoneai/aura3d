@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzGuardRifle",
+  "generatedAt": "2026-11-18T22:16:56.866Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/bunker-zero/_refs/bzGuardRifle.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0bc-0d54-7b70-850c-df935901577f",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 403268,
+        "num_faces": 806556,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Fictional compact military assault carbine: dark gunmetal receiver with a quad-rail handguard, collapsible black stock, curved magazine, angled foregrip, small reflex sight, flash suppressor. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.86,
+    "size": [
+      0.86,
+      0.401,
+      0.849
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzGuardRifle.glb",
+  "sizeBytes": 2483284,
+  "preview": "artifacts/idol/bunker-zero/bzGuardRifle/views.png",
+  "usd": 0.2
+}

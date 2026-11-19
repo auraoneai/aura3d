@@ -18,6 +18,7 @@ import {
   group,
   instances,
   material,
+  primitives,
   type AuraColor,
   type AuraMaterialSpec,
   type AuraTransformSpec
@@ -1931,80 +1932,80 @@ function buildAeroGliderRotorMorphSlots(): MultiMatSlot[] {
   return slots;
 }
 
+/** Gate-shape colours (LOOK.shapes): red circle / sphere, yellow square / cube, blue triangle / cone. */
+export const MORPH_SHAPE_COLORS = ["#e8453c", "#f7c531", "#2f6fe4"] as const;
+
+/**
+ * Morph mascot: a gel creature whose whole body IS the shape it must match (sphere / cube / cone = the circle / square
+ * / triangle holes, the exact gameplay mesh): a glossy tinted-gel shell around a glowing core of the same shape, in the
+ * gate colour, with big googly eyes on the camera-facing side and two stubby running feet (runtime nodes
+ * `player-<i>-foot-0/1`, strided in world.ts). Eyes and feet stay inside the body's outline from the chase camera, so
+ * the silhouette reads as the gate shape.
+ */
 export function buildMorphPlayerNode(
   shapeIndex: 0 | 1 | 2,
   coreMesh: PlainMeshLike
 ): GroupNodeBuilder {
   const id = `player-${shapeIndex}`;
-  const coreRaw = meshLikeToRaw(coreMesh);
-  const coreB = rawBounds(coreRaw);
-  const maxSpanX = coreB.max[0] - coreB.min[0] + 0.012;
-  const maxSpanY = coreB.max[1] - coreB.min[1] + 0.012;
-
-  if (shapeIndex === 0) {
-    const mats: readonly AuraMaterialSpec[] = [
-      HERO_MORPH_MATERIALS.runnerCrimson,
-      SPRINT_MATERIALS.runnerSuitFabric,
-      HERO_MORPH_MATERIALS.champagneTrim,
-      HERO_MORPH_MATERIALS.brassTrim,
-      HERO_MORPH_MATERIALS.visorSmoke,
-      SPRINT_MATERIALS.boostCyanEmissive
-    ];
-    const slots = memoizeGeometry(`sss-morph-player-0:v6:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
-      fitSlotsWithinEnvelope(buildGyroRunnerMorphSlots(), maxSpanX, maxSpanY)
-    );
-    return assembleMultiMaterialNode(id, slots, mats, {
-      id,
-      castShadow: true,
-      receiveShadow: true
-    });
-  }
-
-  if (shapeIndex === 1) {
-    const mats: readonly AuraMaterialSpec[] = [
-      HERO_MORPH_MATERIALS.coupeSolar,
-      HERO_MORPH_MATERIALS.visorSmoke,
-      SPRINT_MATERIALS.tireBlackRubber,
-      HERO_MORPH_MATERIALS.champagneTrim,
-      HERO_MORPH_MATERIALS.slateTrim,
-      SPRINT_MATERIALS.stencilCubeEmissive
-    ];
-    const slots = memoizeGeometry(`sss-morph-player-1:v6:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
-      fitSlotsWithinEnvelope(buildSolarGtCoupeMorphSlots(), maxSpanX, maxSpanY)
-    );
-    return assembleMultiMaterialNode(id, slots, mats, {
-      id,
-      castShadow: true,
-      receiveShadow: true
-    });
-  }
-
+  const color = MORPH_SHAPE_COLORS[shapeIndex];
+  const shell = meshLikeToRaw(coreMesh);
+  const b = rawBounds(shell);
+  const cy = (b.min[1] + b.max[1]) / 2;
+  const scaledAboutCentre = (k: number): RawMesh =>
+    transformMesh(transformMesh(transformMesh(shell, { pos: [0, -cy, 0] }), { scale: k }), { pos: [0, cy, 0] });
   const mats: readonly AuraMaterialSpec[] = [
-    HERO_MORPH_MATERIALS.gliderCobalt,
-    HERO_MORPH_MATERIALS.champagneTrim,
-    HERO_MORPH_MATERIALS.brassTrim,
-    HERO_MORPH_MATERIALS.slateTrim,
-    HERO_MORPH_MATERIALS.visorSmoke,
-    SPRINT_MATERIALS.boostCyanEmissive
+    material.studioGlass({
+      name: `morph gel ${shapeIndex}`, tint: color, color, roughness: 0.05, ior: 1.45, thickness: 0.6,
+      clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 0.9, emissive: color, emissiveIntensity: 0.3
+    }),
+    material.glowingEmissive({ name: `morph core ${shapeIndex}`, color, emissive: color, emissiveIntensity: 2.2, roughness: 0.3 })
   ];
-  const slots = memoizeGeometry(`sss-morph-player-2:v6:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
-    fitSlotsWithinEnvelope(buildAeroGliderRotorMorphSlots(), maxSpanX, maxSpanY)
+  const body = assembleMultiMaterialNode(`${id}-body`, [
+    { mesh: shell, materialIndex: 0 },
+    { mesh: scaledAboutCentre(0.66), materialIndex: 1 }
+  ], mats, { id: `${id}-body`, castShadow: true, receiveShadow: false });
+  const face = morphFaceAnchor(shell, shapeIndex);
+  const eyeWhite = material.pbr({ name: "mascot eye white", color: "#ffffff", roughness: 0.15, clearcoat: 1, emissive: "#ffffff", emissiveIntensity: 0.35 });
+  const pupil = material.pbr({ name: "mascot pupil", color: "#14121c", roughness: 0.1, clearcoat: 1 });
+  const foot = material.pbr({ name: "mascot foot", color: "#1d1b26", roughness: 0.45, clearcoat: 0.6 });
+  const eyes = [-1, 1].flatMap((side) => [
+    primitives.sphere({ name: `${id}-eye-${side}`, material: eyeWhite, castShadow: false })
+      .position(side * face.dx, face.y, face.z).scale(MORPH_EYE.r * 2),
+    primitives.sphere({ name: `${id}-pupil-${side}`, material: pupil, castShadow: false })
+      .position(side * face.dx, face.y + 0.012, face.z + MORPH_EYE.r * 0.72).scale(MORPH_EYE.r * 1.05)
+  ]);
+  const feet = [0, 1].map((f) =>
+    group(`${id}-foot-${f}`, [
+      primitives.roundedBox({ name: `${id}-foot-${f}-mesh`, material: foot, castShadow: true }).scale([0.17, 0.09, 0.24])
+    ]).position(f === 0 ? -MORPH_FOOT.dx : MORPH_FOOT.dx, b.min[1] + MORPH_FOOT.y, 0).runtime({ id: `${id}-foot-${f}` })
   );
-  return assembleMultiMaterialNode(id, slots, mats, {
-    id,
-    castShadow: true,
-    receiveShadow: true
-  });
+  return group(id, [body, ...eyes, ...feet]).runtime({ id });
 }
 
-/**
- * 4th Sculpted Terrain Morph & Flank Rival Pacer (`rival-0`, `rival-1`):
- * - `variant === 0`: **Spiral Auger Hydrofoil Drill-Boat Pacer** — sleek `sculptOrganicSdfMesh` (`analyticNormals: true`)
- *   hydro-planing hull + twin catamaran hydrofoil sponsons & airfoil outrigger struts + lathed conical titanium bore head
- *   wrapped with dual-start smooth helical `tubeSweepMesh` spiral auger flutes + smoked bubble cockpit + pilot bust.
- * - `variant === 1`: **Plum/Coral Rival Aero-Coupe Pacer** — sculpted streamlined GT/glider pacer with
- *   helmeted pilot bust, swept aero bodywork, and 4 `wheelAssemblySlots`.
- */
+/** Mascot eye size and foot placement (m, in the morph mesh frame). */
+export const MORPH_EYE = { r: 0.105 } as const;
+export const MORPH_FOOT = { dx: 0.17, y: -0.02 } as const;
+
+/** Where the eyes sit: on the camera-facing (+Z) surface at ~70% height (cone: 45%, where it is still wide). */
+export function morphFaceAnchor(shell: RawMesh, shapeIndex: number): { readonly y: number; readonly z: number; readonly dx: number } {
+  const b = rawBounds(shell);
+  const y = b.min[1] + (b.max[1] - b.min[1]) * (shapeIndex === 2 ? 0.45 : 0.68);
+  const p = shell.positions;
+  // Vertex rows are not evenly placed (the bevelled cube's rows are ~0.12 m apart, the cone's rings ~0.08 m), so a
+  // fixed +-0.05 m band can be empty (that left the eyes at z = -Infinity: PARENTED_TRANSFORM_NON_FINITE at mount).
+  // Widen the band until it holds front vertices; a mesh with no surface at that height is a bug, so throw.
+  for (const band of [0.04, 0.08, 0.16, 0.32]) {
+    let z = -Infinity, halfW = 0;
+    for (let i = 0; i < p.length; i += 3) {
+      if (Math.abs(p[i + 1]! - y) > band) continue;
+      halfW = Math.max(halfW, Math.abs(p[i]!));
+      if (Math.abs(p[i]!) < 0.2) z = Math.max(z, p[i + 2]!);
+    }
+    if (Number.isFinite(z) && halfW > 0) return { y, z: z - MORPH_EYE.r * 0.35, dx: Math.min(0.17, halfW * 0.42) };
+  }
+  throw new Error(`morphFaceAnchor: shape ${shapeIndex} has no front surface near y=${y.toFixed(3)}`);
+}
+
 export function buildRivalMorphPacerNode(id: string, variant: 0 | 1): GroupNodeBuilder {
   if (variant === 0) {
     const mats: readonly AuraMaterialSpec[] = [
@@ -2242,9 +2243,11 @@ export function buildShapeGatePortalNode(id: string, variant = 0): GroupNodeBuil
   const cached = memoizeGeometry(`sss-gate-portal-v2:${vKey}`, () => {
     const slots: MultiMatSlot[] = [];
     const glassParts: RawMesh[] = [];
-    const pierX = 4.38;
+    // 4.42: the 0.44 m plinth's inner edge (3.98) clears the runner's widest reach (lane clamp 3 + cone half-width
+    // 0.58 x scale cap 1.6 = 3.93) with a margin, so no runner can visually pass through a bollard without a collider.
+    const pierX = 4.42;
 
-    // Low-profile flanking trackside bollards (`x = ±4.38, y <= 1.92`) — 100% open forward track sightline!
+    // Low-profile flanking trackside bollards (`x = ±4.42, y <= 1.92`) — 100% open forward track sightline!
     for (const side of [-1, 1] as const) {
       const px = side * pierX;
       slots.push({
@@ -2950,4 +2953,61 @@ export function sculptedParallaxTurretParts(
   const roof = transformMesh(latheMesh([[0, height + 0.22], ...roofCurve], 16, false), { pos: [x, 0, z] });
   const finial = transformMesh(bezierUrnRaw(0.08, 0.12, 0.04, 0.08, 0.36, 10), { pos: [x, height + 1.64, z] });
   return { wall, band, roof, finial };
+}
+
+// ---------------------------------------------------------------------------
+// Idol wow pass: spinning parts on the rigid Idol rival GLBs (the auger and turbines turn every frame in world.ts).
+// ---------------------------------------------------------------------------
+
+/**
+ * Spinning auger for the Idol drill boat: the procedural pacer's lathed bore head + dual-start helical flutes, scaled
+ * to the Idol drill (base radius 0.1 m at z = 0, tip at z = -0.26). The node's local Z is the spin axis.
+ */
+export function buildIdolRivalAugerNode(id: string): GroupNodeBuilder {
+  const k = 0.42;
+  const slots = memoizeGeometry("sss-idol-rival-auger-v1", () => {
+    const s: MultiMatSlot[] = [];
+    const cone = taubinSmoothMesh(
+      latheMesh([[0, 0], [0.24 * k, 0], [0.21 * k, 0.14 * k], [0.14 * k, 0.34 * k], [0.06 * k, 0.52 * k], [0, 0.62 * k]], 22, false),
+      2,
+      0.44,
+      -0.46
+    );
+    s.push({ mesh: transformMesh(cone, { rot: [-Math.PI * 0.5, 0, 0] }), materialIndex: 0 });
+    for (const startPhase of [0, Math.PI] as const) {
+      const helix: V4[] = [];
+      for (let i = 0; i <= 20; i += 1) {
+        const t = i / 20;
+        const ang = startPhase + t * TAU * 2.25;
+        const rad = (1 - t * 0.88) * 0.235 * k;
+        helix.push([Math.cos(ang) * rad, Math.sin(ang) * rad, -t * 0.56 * k, ((1 - t * 0.65) * 0.028 + 0.006) * k]);
+      }
+      s.push({ mesh: taubinSmoothMesh(tubeSweepMesh(helix, 9, false), 2, 0.44, -0.46), materialIndex: 1 });
+    }
+    return s;
+  });
+  return assembleMultiMaterialNode(id, slots, [HERO_MORPH_MATERIALS.champagneTrim, HERO_MORPH_MATERIALS.brassTrim], {
+    id,
+    castShadow: false,
+    receiveShadow: false
+  });
+}
+
+/** Five-blade turbine fan (radius 0.045 m) for the Idol coupe's rear thrusters; spins about its local Z. */
+export function buildIdolThrusterFanNode(id: string): GroupNodeBuilder {
+  const slots = memoizeGeometry("sss-idol-thruster-fan-v1", () => {
+    const s: MultiMatSlot[] = [
+      { mesh: transformMesh(latheMesh([[0, -0.01], [0.014, -0.01], [0.014, 0.008], [0, 0.012]], 14, false), { rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 0 }
+    ];
+    for (let i = 0; i < 5; i += 1) {
+      const blade = transformMesh(bevelBoxMesh(0.013, 0.034, 0.004, 0.0015), { pos: [0, 0.027, 0], rot: [0, 0.45, 0] });
+      s.push({ mesh: transformMesh(blade, { rot: [0, 0, (i / 5) * TAU] }), materialIndex: 1 });
+    }
+    return s;
+  });
+  return assembleMultiMaterialNode(id, slots, [HERO_MORPH_MATERIALS.slateTrim, SPRINT_MATERIALS.boostCyanEmissive], {
+    id,
+    castShadow: false,
+    receiveShadow: false
+  });
 }

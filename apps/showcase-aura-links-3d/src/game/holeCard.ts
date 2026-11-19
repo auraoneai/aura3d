@@ -108,8 +108,12 @@ export function shotStatsLabel(o: { readonly club: string; readonly carry: numbe
  * in a round on a real hole. Hidden during the swing and the ball flight (the tracer owns the frame), in the Range and
  * Putting Labs (their rings and spots are not the hole), in the menu and on the closing card.
  */
-export function holeCardVisible(o: { readonly look: "gu47" | "original"; readonly phase: string; readonly lab: boolean; readonly hasRound: boolean }): boolean {
-  return o.look !== "original" && o.hasRound && !o.lab && (o.phase === "address" || o.phase === "between");
+export function holeCardVisible(o: { readonly look: "gu47" | "original"; readonly phase: string; readonly lab: boolean; readonly hasRound: boolean; readonly strokes?: number }): boolean {
+  // Owner report (2026-11-18): from the second shot on, the aim camera puts the ball in the lower-left corner, right under
+  // the card, so the ball looked missing / 2 m from the golfer. The card (hole intro + last-shot stats) stays up on the
+  // tee address and between shots, and drops once the player addresses a later shot.
+  const address = o.phase === "address" && (o.strokes ?? 0) === 0;
+  return o.look !== "original" && o.hasRound && !o.lab && (address || o.phase === "between");
 }
 
 /** The lower third's CSS transition: a short fade and rise; reduced motion cuts it (PRD §6.3: no slide, no fade). */

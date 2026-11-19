@@ -70,7 +70,7 @@ describe("iron crown clip map & procedural gladiator rig (IC-12)", () => {
 
   it("poses every articulated gladiator joint statelessly in ZYX Euler order across all 13 FighterClip states", () => {
     const fighter = FIGHTERS[0]!;
-    const json = JSON.stringify(createFighterNode("player", fighter, "Kenji", [-2.2, 0, 0], 1, {}).toJSON());
+    const json = JSON.stringify(createFighterNode("player", fighter, "Kenji", [-2.2, 0, 0], 1, {}, undefined, true, false).toJSON());
     expect(json).not.toContain('"kind":"model"');
     for (const suffix of GLADIATOR_JOINT_SUFFIXES) {
       expect(json).toContain(`"id":"player-${suffix}"`);

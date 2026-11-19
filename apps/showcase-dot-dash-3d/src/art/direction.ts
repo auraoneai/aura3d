@@ -1,7 +1,7 @@
-// apps/showcase-dot-dash-3d/src/art/direction.ts — C-35 art direction (GU47 WP-23, "Night shift on the workbench").
-// A tilt-shift macro view of a powered circuit board under one warm desk lamp late at night: glossy solder mask,
-// black epoxy chip walls with silver pins, copper traces that light up behind the courier, edges dissolving into an
-// out-of-focus walnut bench. Six boards are six PCB types (src/game/look.ts holds one row per board).
+// apps/showcase-dot-dash-3d/src/art/direction.ts — art direction (arcade-readability pass, owner review 2026-11-18).
+// Classic maze-chase cabinet readability with original characters: a near-top-down camera on the whole maze, thin
+// neon wall outlines on a near-black floor, a glowing gold courier orb-bot, four flat spinning star drones in solid
+// red / magenta / cyan / orange with big white eyes, warm-white pellets and pulsing power cells (look.ts ARCADE).
 //
 // Proven by tests/unit/dot-dash-3d/art-direction.test.ts, which audits the authored scene (buildScene) with
 // auditArtDirection and writes art/direction.audit.json for the `art-direction` game-check.
@@ -10,21 +10,21 @@ import { defineArtDirection } from "@aura3d/engine/game/art";
 export default defineArtDirection({
   id: "dot-dash-3d",
   genre: "maze-arcade",
-  fantasy: "Night shift on the workbench: a courier drone races the copper traces of a powered circuit board under one warm desk lamp.",
+  fantasy: "A glowing courier orb-bot races a neon circuit maze, collecting data pellets while four spinning sentry drones hunt it.",
   rebuildTier: "S-world",
   wave: 4,
   references: [
     {
       file: "references/references.json#macro-board",
-      source: "genre comparable: macro product photography of populated circuit boards (glossy solder mask, raised copper, a millimetre-thin focal plane)",
+      source: "genre comparable: neon vector-outline arcade mazes (thin glowing wall lines on black, no fill)",
       licence: "reference-only",
-      why: "Glossy solder mask, copper traces and silver pads read at macro scale while everything off the focal plane melts into blur"
+      why: "Thin single-colour glowing outlines on black make every corridor readable at a glance and leave the actors the brightest things"
     },
     {
       file: "references/references.json#lamp-bench",
-      source: "genre comparable: a night-time electronics workbench lit by one articulated desk lamp (warm cone, dark room, walnut top)",
+      source: "genre comparable: high-contrast arcade sprite colour coding (one saturated colour per pursuer, white eyes, a shared frightened colour)",
       licence: "reference-only",
-      why: "One warm cone of light pools on the board from the left, the bench falls away into warm dark wood and the room stays dark"
+      why: "Each pursuer is one flat saturated colour with big white eyes looking where it moves; frightened pursuers share one dark blue"
     },
     {
       file: "references/references.json#maze-chase",
@@ -35,23 +35,22 @@ export default defineArtDirection({
   ],
   palette: {
     // Board 1 (Relay Grid): solder-mask green, copper, silver. The other five boards are other PCB types (look.ts).
-    primary: ["#1f4a38", "#c8743a", "#c9ced6"],
-    accent: "#5ff3ff",
-    reservedObjective: "#ffb23e"
+    primary: ["#05060c", "#2f6bff", "#fff1cf"],
+    accent: "#ffd21a",
+    reservedObjective: "#ffe6a8"
   },
   lighting: {
-    // One shadowed PCSS spot (the desk lamp) from the upper left; the indoor-workshop HDRI plus a cool unshadowed
-    // directional bounce fill; no ambient or hemisphere light.
-    key: { type: "spot", colorTemperatureK: 3000, shadow: true },
-    fill: "ibl+bounce",
-    // The bounce directional, the courier's cyan point and four pooled event points (amber on live surge cells,
-    // slate on the sentries during a surge): six non-key lights.
-    practicals: 6,
+    // One overhead shadowed directional key and a low indoor-workshop IBL fill (never drawn); the actors, pellets and
+    // neon walls are self-lit practical materials. No ambient or hemisphere light, no other lights.
+    key: { type: "directional", colorTemperatureK: 6500, shadow: true },
+    fill: "ibl",
+    practicals: 0,
     environment: { hdri: "indoor-workshop", background: "enclosed" },
     exposureEV: 0
   },
-  framing: { rig: "topDown", subjectHeightFraction: [0.025, 0.08], fovDeg: [45, 52], mobile: "both" },
-  // WP-12: 100% native @aura3d/engine multi-material procedural assemblies in src/art/proceduralModels.ts (zero static .glb mounts).
+  framing: { rig: "topDown", subjectHeightFraction: [0.04, 0.08], fovDeg: [30, 40], mobile: "both" },
+  // Arcade-readability pass: nothing off the maze is drawn, so the Idol pylon GLBs (assets/idol/gcCapacitor,
+  // gcHeatsink) are no longer mounted or typed for this route. Every drawn mesh is procedural (src/art/arcadeActors.ts).
   assets: [],
   vfx: [
     { event: "shard-pickup", kind: "trace-light" },
@@ -61,9 +60,7 @@ export default defineArtDirection({
     { event: "courier-intercepted", kind: "blown-fuse" },
     { event: "dash", kind: "solder-spark" },
     { event: "cache-gem", kind: "solder-spark" },
-    { event: "board-ready", kind: "power-up-wave" },
-    { event: "board-clear", kind: "trace-sweep" },
-    { event: "lamp-cone", kind: "dust-motes" }
+    { event: "board-clear", kind: "neon-flash" }
   ],
   audio: [
     { event: "shard-pickup", cue: "ui.score-tick", variants: 1 },
@@ -75,10 +72,10 @@ export default defineArtDirection({
     { event: "dash", cue: "whoosh.dash", variants: 1 },
     { event: "bench-room", cue: "ambience.space-hum", variants: 1 }
   ],
-  signatureEffect: "Shallow macro depth of field on a lamp-lit circuit board whose copper traces light up along the courier's path.",
+  signatureEffect: "Neon maze outlines that blink white when a board is cleared, under a gold courier with a glowing trail.",
   criticalCategories: ["lighting", "material_quality", "postprocessing", "composition", "gameplay_readability"],
   tiers: {
-    // Runtime VFX stay at or under 60 live particles; the lamp-cone motes add 60 on Medium and up.
+    // Runtime VFX stay at or under 60 live particles.
     low: { particles: 60, shadowMap: 1024, cascades: 1, textureMax: 1024 },
     medium: { particles: 120, shadowMap: 2048, cascades: 1, textureMax: 1024 },
     high: { particles: 120, shadowMap: 2048, cascades: 1, textureMax: 1024 },

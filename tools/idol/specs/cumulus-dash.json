@@ -1,0 +1,179 @@
+{
+  "game": "cumulus-dash",
+  "outDir": "examples/kid-goku-beyond-the-clouds-port/assets/idol",
+  "style": "Photoreal storm-washed mountain realism: real physical materials as if photographed on a high sandstone ridge just after a squall, crisp physically based surface detail and gentle wear, saturated rain-washed colours, high detail",
+  "items": [
+    {
+      "key": "cdSkyKidHero",
+      "subject": "A cheerful ten-year-old boy sky adventurer with a friendly round face, big bright brown eyes and tousled spiky jet-black hair held back by a short sky-blue cloth headband; he wears a sleeveless teal quilted martial-arts wrap tunic with cream piping over a long-sleeved deep indigo undershirt, a knotted amber cloth sash at the waist, loose deep indigo trousers wrapped below the knee with cream cloth leg wraps, cream cloth wrist wraps, and soft cloud-white padded wrap boots with amber soles. Original character design, empty hands",
+      "kind": "character",
+      "role": "hero",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.54
+      },
+      "tex": 2048,
+      "seed": 7,
+      "style": "Photoreal stylised adventure-film hero character: real woven cotton and quilted silk cloth with visible stitching and folds, natural sun-warmed skin, real hair strands, physically based materials, saturated rain-washed colours, high detail"
+    },
+    {
+      "key": "cdCloudSteed",
+      "subject": "A small magical flying cloud steed: one fluffy rounded golden-amber cumulus cloud cushion, about three times longer than it is wide, plump billowing puffs at the front tapering into a wispy curled comet tail at the back, warm gold on top fading to cream underneath, soft sunlit volume like real cotton wool, seen from the side so its full length shows, front of the cloud on the right",
+      "kind": "object",
+      "role": "vehicle",
+      "size": {
+        "length": 2.9
+      },
+      "tex": 1024,
+      "seed": 7,
+      "front": "-z"
+    },
+    {
+      "key": "cdSkyWyvern",
+      "subject": "A fierce flying sky pterosaur creature in mid-glide with both large leathery wings spread fully out to the sides, slate-blue scaled hide with paler underbelly, translucent dusky-violet wing membranes stretched over long finger bones, a long narrow ivory beak, a swept-back crimson head crest, small amber eyes, short clawed legs tucked under the body and a thin tail, viewed from the front and slightly above",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "width": 2.58
+      },
+      "tex": 1024,
+      "seed": 7,
+      "front": "-z",
+      "style": "Photoreal creature-feature practical model: real scaled reptile hide, leathery wing membrane, polished horn and bone, physically based materials, high detail"
+    },
+    {
+      "key": "cdStormTyrant",
+      "subject": "A huge fearsome tyrant lizard dinosaur standing upright on two powerful legs with a long counterbalancing tail, deep emerald-green armoured scaled hide, ochre-yellow belly scales, a massive head with a gaping toothy jaw, two curved ivory horns above the eyes, a row of crimson dorsal spines along its back, small clawed forearms, glowing amber eyes",
+      "kind": "creature",
+      "role": "character",
+      "size": {
+        "height": 8.42
+      },
+      "tex": 1024,
+      "seed": 7,
+      "style": "Photoreal creature-feature practical model: real wet armoured reptile scales, horn, bone and teeth, physically based materials, high detail",
+      "yawDeg": -45
+    },
+    {
+      "key": "cdHermitCottage",
+      "subject": "A small round hermit's cottage on a mountain top: whitewashed lime-plaster round walls on a stepped dressed sandstone plinth, a wide sweeping two-tier conical roof of glazed crimson clay tiles with upturned eaves and a brass finial, a cedar plank front door with stone entry steps, one round porthole window, celadon flower pots by the door, a hanging paper lantern",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 5.4
+      },
+      "tex": 1024,
+      "seed": 7,
+      "yawDeg": 40
+    },
+    {
+      "key": "cdShrinePillar",
+      "subject": "One single tall freestanding vermilion lacquered round wooden shrine pillar on a black lacquered stone base, topped by a small curved pagoda roof cap of dark glazed tiles with upturned corners and a brass finial, with a cast bronze temple bell hanging from a short wooden bracket under the roof cap; a tall slender vertical object",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 7.94
+      },
+      "tex": 1024,
+      "seed": 7,
+      "maxVerts": 8000
+    },
+    {
+      "key": "cdBoulder",
+      "subject": "A large almost perfectly round weathered terracotta sandstone boulder ball with layered sediment bands, small pits and cracks, and a few patches of green moss on top, rain-wet sheen",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 2.0
+      },
+      "tex": 1024,
+      "seed": 7
+    },
+    {
+      "key": "cdHoneyRoast",
+      "subject": "A big glazed honey-roasted meat haunch on a large white bone, the bone sticking out of both ends with rounded knobs, glistening caramel-brown crackling glaze, appetising, cartoon-feast proportions",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "length": 1.8
+      },
+      "tex": 512,
+      "seed": 7,
+      "yawDeg": 90,
+      "maxVerts": 4000
+    },
+    {
+      "key": "cdCanopyTree",
+      "subject": "A single small broadleaf mountain tree with a short gnarled grey-brown trunk splitting into two low branches and a full rounded layered crown of dense glossy green leaves, sunlit lighter green on top, freestanding with no ground or pot",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.0
+      },
+      "tex": 512,
+      "seed": 7,
+      "maxVerts": 8000
+    },
+    {
+      "key": "cdBonsaiPine",
+      "subject": "A single windswept mountain pine tree with a twisting reddish-brown scaly trunk and flat layered tiers of dark green needle pads, like a large wild bonsai growing on a cliff, freestanding with no ground or pot",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.0
+      },
+      "tex": 512,
+      "seed": 7,
+      "maxVerts": 8000
+    },
+    {
+      "key": "cdShoulderRock",
+      "subject": "A single weathered terracotta sandstone rock outcrop about as tall as it is wide, with stepped horizontal sediment layers, rounded wind-worn edges and a cap of green moss and grass tufts on top, flat bottom",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 0.96
+      },
+      "tex": 512,
+      "seed": 7,
+      "maxVerts": 8000
+    },
+    {
+      "key": "cdStormTyrantRig",
+      "subject": "A huge fearsome tyrant lizard dinosaur standing upright on two powerful legs with a long counterbalancing tail, deep emerald-green armoured scaled hide, ochre-yellow belly scales, a massive head with a gaping toothy jaw, two curved ivory horns above the eyes, a row of crimson dorsal spines along its back, small clawed forearms, glowing amber eyes",
+      "kind": "creature",
+      "role": "character",
+      "size": {
+        "height": 8.42
+      },
+      "tex": 1024,
+      "seed": 7,
+      "style": "Photoreal creature-feature practical model: real wet armoured reptile scales, horn, bone and teeth, physically based materials, high detail",
+      "yawDeg": -45,
+      "rig": true,
+      "image": "artifacts/idol/cumulus-dash/cdStormTyrant/ref.png",
+      "animations": [
+        "idle",
+        "walk"
+      ]
+    },
+    {
+      "key": "cdRideLog",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 6.44
+      },
+      "seed": 71,
+      "tex": 1024,
+      "maxVerts": 10000,
+      "subject": "A single long felled cedar tree trunk lying horizontally, seen from the side: thick deeply furrowed reddish-brown bark with clear vertical plates and cracks, a few patches of green moss on top, both ends sawn flat showing pale golden end grain with concentric growth rings, perfectly straight and round, no branches"
+    }
+  ]
+}

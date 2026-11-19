@@ -14,6 +14,14 @@ export const DEFAULT_AUTOPILOT: AutopilotParams = { maxDx: 0.5, reckless: false 
 const clamp = (v: number, lo: number, hi: number): number => (v < lo ? lo : v > hi ? hi : v);
 const colX = (col: number): number => col - CONFIG.LANE_LIMIT;
 
+/** Eraser kart lateral position `t` seconds ahead (the sim's slide at ERASER_SPEED, bouncing off ±LANE_LIMIT). */
+function botXAt(x: number, dir: number, t: number): number {
+  const L = CONFIG.LANE_LIMIT, span = 4 * L;
+  let u = (((x + L + dir * CONFIG.ERASER_SPEED * t) % span) + span) % span;
+  if (u > 2 * L) u = span - u;
+  return u - L;
+}
+
 export function steerDx(sim: SplatTurfSim, params: AutopilotParams = DEFAULT_AUTOPILOT): number {
   const o = sim.o;
   if (o.phase !== "playing") return 0;
@@ -24,10 +32,20 @@ export function steerDx(sim: SplatTurfSim, params: AutopilotParams = DEFAULT_AUT
     if (!s.active || s.row > horizon || s.row + CONFIG.SOLVENT_LENGTH < o.distance) continue;
     danger[s.col] = (danger[s.col] as number) + 3;
   }
+  // Eraser karts: mark every lane the kart's footprint (summed with the rover's) sweeps between now and the moment
+  // the footprints meet, predicting its lateral slide (bouncing off the lane limits) plus a 0.35 m margin.
+  const clear = CONFIG.ROVER_HALF_WIDTH + CONFIG.ERASER_HALF_WIDTH + 0.35;
   for (const b of o.bots) {
-    if (!b.active || b.hit || b.row < o.distance - 1 || b.row > o.distance + 14) continue;
+    if (!b.active || b.hit) continue;
+    const gap = b.row - CONFIG.ERASER_REACH_FRONT - CONFIG.ROVER_REACH_FRONT - o.distance;
+    if (gap > 22 || b.row + CONFIG.ERASER_REACH_BACK + CONFIG.ROVER_REACH_BACK < o.distance) continue;
+    const tMeet = Math.max(0, gap) / Math.max(1, o.speed);
+    const tLeave = (b.row + CONFIG.ERASER_REACH_BACK + CONFIG.ROVER_REACH_BACK - o.distance) / Math.max(1, o.speed);
     for (let c = 0; c < CONFIG.GRID_COLS; c++) {
-      if (Math.abs(colX(c) - b.x) < 1.5) danger[c] = (danger[c] as number) + 4;
+      for (let k = 0; k <= 4; k++) {
+        const x = botXAt(b.x, b.dir, tMeet + ((tLeave - tMeet) * k) / 4);
+        if (Math.abs(colX(c) - x) < clear) { danger[c] = (danger[c] as number) + 4; break; }
+      }
     }
   }
   let nearestCan: { row: number; col: number } | null = null;
@@ -67,5 +85,33 @@ export class TurfAutopilot {
     if (stepIndex === 0 && sim.o.phase !== "playing") return { ...IDLE, start: true };
     if (stepIndex === 1) return { ...IDLE, down: true };
     return { ...IDLE, dx: steerDx(sim, this.params) };
+  }
+}
+/** Seconds the results card stays up before autoplay starts the next run. */
+export const RESULTS_HOLD_SECONDS = 3;
+
+/**
+ * `?autoplay=1` driver (also `?autopilot=1` / `?autostart=1`): the TurfAutopilot plays each run through the normal
+ * `Input` path (start, then steering dx), and at gameOver / finished it holds the results for RESULTS_HOLD_SECONDS
+ * of sim time, then presses start again, looping forever. Until the first run ends its inputs are exactly
+ * `TurfAutopilot.next(sim, stepIndex)` with a 0-based step counter, so the first run replays the previous autopilot.
+ */
+export class AutoplayDriver {
+  private runStep = 0;
+  private hold = 0;
+
+  constructor(readonly pilot: TurfAutopilot = new TurfAutopilot()) {}
+
+  next(sim: SplatTurfSim): Input {
+    const phase = sim.o.phase;
+    if (phase === "gameOver" || phase === "finished") {
+      this.hold += CONFIG.DT;
+      if (this.hold < RESULTS_HOLD_SECONDS - 1e-9) return { ...IDLE };
+      this.hold = 0;
+      this.runStep = 0;
+    } else {
+      this.hold = 0;
+    }
+    return this.pilot.next(sim, this.runStep++);
   }
 }

@@ -159,10 +159,12 @@ describe("iron-crown look table (GU47 WP-15)", () => {
     expect(rim.target[1]).toBeCloseTo(1.65);
   });
 
-  it("IC47-L2: Neo-Tokyo has a shadowed sodium key, magenta and cyan rect panels, and fill from the environment only", () => {
+  it("IC47-L2: Neo-Tokyo has a shadowed cool-neutral key, magenta and cyan rect panels, and fill from the environment only", () => {
     const row = stageLook("neo-tokyo-rooftop");
     expect(row.key.kind).toBe("sun");
-    if (row.key.kind === "sun") expect(row.key.color).toBe("#ffad5c");
+    // Owner neutral-grade pass: the sodium #ffad5c key turned the fighters orange; sodium stays in the flood shaft.
+    if (row.key.kind === "sun") expect(row.key.color).toBe("#e6ecff");
+    expect(row.shafts.map((shaft) => shaft.color)).toContain("#ffad5c");
     expect(row.panels.map((panel) => panel.color)).toEqual(["#ff3fa4", "#3fe0ff"]);
     const lights = lightsOf(stageLightNodes(row, { p1: "#2b6cff", p2: "#ff7a2e" }, { p1: -2.2, p2: 2.2 }));
     expect(lights.filter((light) => light.light === "rect")).toHaveLength(2);

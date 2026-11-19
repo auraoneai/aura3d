@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoPickupT",
+  "generatedAt": "2026-11-18T22:14:53.168Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0ba-25c5-7472-b1a5-a6d552476b4c",
+      "prompt": "A single full-size four-door crew-cab pickup truck of a fictional unbranded design, deep oxblood-red metallic paint, open cargo bed with black bed liner, chrome grille surround, black step bars, dark tinted windows, chunky all-terrain tyres on silver alloy wheels, a plain smooth grille with no badge or emblem. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0bb-c8a1-7653-920d-e383a25b53be",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 11,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 948426,
+        "num_faces": 1896996,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single full-size four-door crew-cab pickup truck of a fictional unbranded design, deep oxblood-red metallic paint, open cargo bed with black bed liner, chrome grille surround, black step bars, dark tinted windows, chunky all-terrain tyres on silver alloy wheels, a plain smooth grille with no badge or emblem. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 5.403,
+    "size": [
+      1.93,
+      1.741,
+      5.4
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoPickupT.glb",
+  "sizeBytes": 1459556,
+  "preview": "artifacts/idol/apex-overdrive/aoPickupT/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "normal-jpeg",
+      "quality": 90,
+      "bytesBefore": 3002204,
+      "bytesAfter": 1459556
+    }
+  ]
+}

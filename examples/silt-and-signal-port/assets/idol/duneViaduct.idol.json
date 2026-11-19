@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "silt-and-signal-port",
+  "key": "duneViaduct",
+  "generatedAt": "2026-11-18T23:06:35.400Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b0-db6e-7581-a42f-74b052b01f2f",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1236370,
+        "num_faces": 2472792,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A monumental ancient two-tier sandstone aqueduct viaduct seen from the front: a long straight bridge with three big round arches on the lower tier standing on four massive tapered stone piers, six smaller round arches on the upper tier, a flat water channel along the top, warm weathered sandstone blocks with eroded edges and darker keystones, wind-carved, about twice as long as tall",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 62.852,
+    "size": [
+      63,
+      36.638,
+      15.205
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/silt-and-signal-port/assets/idol/duneViaduct.glb",
+  "sizeBytes": 3479172,
+  "preview": "artifacts/idol/silt-and-signal-port/duneViaduct/views.png",
+  "usd": 0.37
+}

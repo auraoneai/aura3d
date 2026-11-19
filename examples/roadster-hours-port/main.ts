@@ -25,7 +25,9 @@ import { ROAD_PASS_NAME, autoExposureFor, roadPass, streakFor } from "./art/post
 
 const params = new URLSearchParams(location.search);
 let levelIndex = Math.max(0, Math.min(LEVELS.length - 1, Number(params.get("level") ?? 0) | 0));
-const config = { autostart: params.get("autostart") === "1", autopilot: params.get("autopilot") === "1", manual: params.get("manual") === "1" };
+/** `?autoplay=1` (owner standard, Nov 18) = autostart + autopilot + results -> next route loop; `?autopilot=1` stays an alias. */
+const autoplayParam = params.get("autoplay") === "1";
+const config = { autostart: params.get("autostart") === "1" || autoplayParam, autopilot: params.get("autopilot") === "1" || autoplayParam, manual: params.get("manual") === "1" };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -61,6 +63,8 @@ let app: AuraApp | undefined;
 let world: World | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
+/** Enter pressed on the loading screen: start the route as soon as it is ready (no intro rail). */
+let startQueued = false;
 /** `performance.now()` when the route last became ready (0 while loading); bounds the texture wait. */
 let readyAt = 0;
 let screen: "home" | "play" | "results" = "home";
@@ -97,7 +101,14 @@ addEventListener("keydown", (e) => {
   const action = input.actionOf(e.code);
   if (action === "mute") { toggleMute(); return; }
   if (action === "pause") { togglePause(); return; }
-  if (e.code === "Enter" && (screen === "home" || screen === "results") && $("controls").classList.contains("hidden")) { begin(); return; }
+  if (e.code === "KeyI" && !action) { autopilotOn = !autopilotOn; if (autopilotOn && screen === "results") scheduleAutoAdvance(); return; }
+  if (e.code === "Enter" && (screen === "home" || screen === "results") && $("controls").classList.contains("hidden")) {
+    // Enter before the route is ready (the Drive button is still disabled) queues the start: beginning early ran the
+    // countdown under the intro rail boot starts afterwards, so the car was off screen for the whole count (QA, Nov 19).
+    if (!ready) { if (screen === "home") startQueued = true; return; }
+    begin();
+    return;
+  }
   input.keydown(e.code);
 });
 const isDocumentHidden = (): boolean =>
@@ -120,7 +131,7 @@ document.addEventListener("visibilitychange", () => {
 
 /** A run in progress pauses itself when the window loses focus or the tab is hidden (never in QA manual mode). */
 function autoPause(): void {
-  if (config.manual || screen !== "play" || paused) return;
+  if (config.manual || autopilotOn || screen !== "play" || paused) return;
   if (run.phase === "running" || run.phase === "countdown") togglePause();
 }
 function syncAudioSuspend(): void { sound.setSuspended(isDocumentHidden() || paused); }
@@ -188,12 +199,22 @@ function stepOnce(stepInput: RunInput): void {
     runtime?.startFinish();
     screen = "results";
     panels();
+    if (autopilotOn && !config.manual) scheduleAutoAdvance();
   }
 }
 
+/** Autoplay: hold the results ~3.5 s, then drive the next route (the last route wraps to the first), forever. */
+const AUTOPLAY_RESULTS_MS = 3500;
+function scheduleAutoAdvance(): void {
+  setTimeout(() => {
+    if (screen !== "results" || !autopilotOn) return;
+    void nextRoute(levelIndex + 1 < LEVELS.length ? levelIndex + 1 : 0);
+  }, AUTOPLAY_RESULTS_MS);
+}
+
 /** Next route without a page reload: the models are already decoded, so only the scene is rebuilt. Falls back to a reload. */
-async function nextRoute(): Promise<void> {
-  const next = Math.min(LEVELS.length - 1, levelIndex + 1);
+async function nextRoute(to?: number): Promise<void> {
+  const next = Math.max(0, Math.min(LEVELS.length - 1, to ?? levelIndex + 1));
   if (!app || next === levelIndex) return;
   $("loading-status").textContent = "Loading the next route";
   $("loading").classList.remove("hidden");
@@ -215,7 +236,7 @@ async function nextRoute(): Promise<void> {
     begin();
   } catch (error) {
     console.warn("roadster-hours-port: in-place route change failed, reloading", error);
-    location.search = `?level=${levelIndex}&autostart=1`;
+    location.search = `?level=${levelIndex}&autostart=1${autopilotOn ? "&autoplay=1" : ""}`;
   }
 }
 
@@ -256,7 +277,7 @@ function renderControls(): void {
   const k = (a: Action): string => keyLabel(b[a][0]!);
   const rows: [string, string][] = touch
     ? [["Drive / Brake", "Hold to drive, brake (with steer to drift)"], ["Left / Right", "Steer, and spin in the air"], ["Thrust", "Hold to fly"], ["Nitro", "Tap again when the bar turns green"], ["Roll", "Roll in the air"], ["Recover", "Back to the last relay"]]
-    : [[`${k("up")} / ${k("down")}`, `Drive, brake (hold with ${k("left")}/${k("right")} to drift)`], [`${k("left")} / ${k("right")}`, "Steer, and spin in the air"], [k("thrust"), "Thrust"], [k("nitro"), "Nitro (tap again when the bar turns green)"], [`${k("rollLeft")} / ${k("rollRight")}`, "Roll in the air"], [`${k("recover")}, ${k("pause")}, ${k("mute")}`, "Recover, pause, mute"]];
+    : [[`${k("up")} / ${k("down")}`, `Drive, brake (hold with ${k("left")}/${k("right")} to drift)`], [`${k("left")} / ${k("right")}`, "Steer, and spin in the air"], [k("thrust"), "Thrust"], [k("nitro"), "Nitro (tap again when the bar turns green)"], [`${k("rollLeft")} / ${k("rollRight")}`, "Roll in the air"], [`${k("recover")}, ${k("pause")}, ${k("mute")}`, "Recover, pause, mute"], ["I", "Autopilot on / off"]];
   const keys = $("keys");
   keys.textContent = "";
   for (const [dt, dd] of rows) {
@@ -626,10 +647,11 @@ async function boot(): Promise<void> {
   readyAt = performance.now();
   $("loading").classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;
-  if (!config.autostart && !config.manual) runtime.startIntro();
+  const startNow = config.autostart || startQueued;
+  if (!startNow && !config.manual) runtime.startIntro();
   render(0, 0);
   panels();
-  if (config.autostart) begin();
+  if (startNow) begin();
 }
 
 $("start").addEventListener("click", begin);

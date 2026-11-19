@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "aura-hoops-3d": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "title",
+        "early",
+        "action",
+        "venue-venice",
+        "venue-orbit",
+        "venue-shanghai",
+        "results"
+      ],
+      "results": "1280-07-results.jpg / 390-06-results.jpg: ?autoplay=1&target=3 (short-match hook), final card RUN LOST 0-3 with box score; autoplay shows it ~3 s then rematches",
+      "errors": "none",
+      "capturedAt": "2026-11-19"
+    }
+  }
+}

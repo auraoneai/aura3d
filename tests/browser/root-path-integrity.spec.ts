@@ -189,15 +189,10 @@ test.describe("K1 root path integrity (T)", () => {
     ]);
     expect(templateFiles.length).toBeGreaterThan(3);
     expect(findUndisclosedPrimitiveHeroes(templateFiles)).toEqual([]);
-    const wwxPath = "apps/world-war-x-showcase/src/WorldWarXApp.ts";
-    const wwxViolations = findUndisclosedPrimitiveHeroes([
-      { path: wwxPath, content: readFileSync(wwxPath, "utf8") },
-    ]);
-    expect(wwxViolations).toHaveLength(1);
-    expect(wwxViolations[0]?.heroes).toContain("character.lowPolyHumanoid");
+    // The one open route violation lived in the World War X showcase, which has been deleted.
     gate.t2 = {
       templateFiles: templateFiles.length,
-      openViolation: `${wwxViolations[0]?.path} :: ${wwxViolations[0]?.heroes.join(",")}`,
+      openViolation: null,
     };
 
     // T3: zero logic-less passes + resource flow validated from source.

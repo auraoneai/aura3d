@@ -10,7 +10,7 @@ import {
 } from "./themes";
 import { laneFor, laneZ, laneMovers, moverHalf, railCycle, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
-import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunShadowFootprint, mixHex, sunVector, sunDirection, p5DuskFor, candyRaftFor, P5_DUSK_SKY, P5_CANDY_RAFT } from "./look";
+import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunShadowFootprint, mixHex, sunVector, sunDirection, p5DuskFor, candyRaftFor, P5_DUSK_SKY } from "./look";
 import {
   BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, composeCharacterEulerXYZ,
   damp, dioramaPose, hopPitch, hopScale, HOP_YAW, idleBreathScale, kitLod, kitSlots,
@@ -19,27 +19,26 @@ import {
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
 import {
   CROSS_HOP_PROCEDURAL_MATERIALS,
-  buildHollowRiverLogSpec,
   buildHorizonRidgeSpec,
   buildLogEndGrainSpec,
-  buildMeadowBushSpec,
-  buildMossySteppingBoulderSpec,
-  buildNotchedLilyPadSpec,
   buildProceduralCritterNode,
   buildProceduralVehicleSpec,
   buildRailTrackStripSpec,
   buildRescuePodNode,
   buildStarCoinStandingSpec,
   buildStarCoinUnitSpec,
-  buildStoopingHawkNode,
-  buildTimberRaftSpec,
   buildVergeArchitectureSpec,
   buildWoodlandCanopySpec,
-  buildWoodlandTreeSpec,
   buildWoodlandTrunkSpec
 } from "../art/proceduralModels";
+import { critterPartAngles, critterPartPose, type CritterMotionState } from "./critterRig";
+import {
+  IDOL_ALONG_X, IDOL_POOL_ASSET, buildIdolCritterNode, buildIdolHawkNode, idolCritterKey, idolBodyLift, idolHeight, idolPool, IDOL_GROUND_SINK, IDOL_WATERLINE,
+  idolScale, vehicleWheelPoses, type IdolPoolKey
+} from "./idolModels";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 import { shadeMaterial } from "./shade";
+import { planAutopilot, planGamble, planSurvival, type ApPlan, type ApRules, type ApStep } from "./autopilot";
 import { broadcastCrispLutAsset, flipbookQuadMaterial, lavaMagmaMaterial, riverWaterMaterial } from "./surfaceShaders";
 
 // ---------------- pool capacities ----------------
@@ -49,6 +48,14 @@ const CAP = {
   truck: 18, tram: 28, train: 6 * TRAIN_CARS, hover: 26,
   log: 48, logEnd: 96, raft: 196, pad: 48, stone: 48, coin: 26,
   trunk: 220, canopy: 120, tree: 260, bush: 96, railTrack: 20, dressB: 280,
+  // Idol pass: train coaches, candy rafts and blossom trees get their own Idol model pools.
+  coach: 6 * (TRAIN_CARS - 1), raftCandy: 48, treeB: 260,
+  // Moving parts: the Idol vehicle bodies have no wheels; separate spinning wheels (4-6 per car, 8 per rail car).
+  wheel: 320, railWheel: 192,
+  // Real-GPU audit 2026-11-19: the dark couplers between train cars move every frame, so they need a dynamic pool. They
+  // used to go into the static "detail" pool, whose slots are only reset when the visible rows change, so each frame's
+  // couplers piled up (up to ~220 dark slabs standing in a row along the rail lane).
+  coupler: 6 * (TRAIN_CARS - 1),
   // GU47 CH47-07 + WP-14: one instanced pool per ground surface + distant horizon hills/skyline.
   felt: 44, asphalt: 44, water: 32, gravel: 26, lava: 26, horizon: 44,
   // GU47 phase 4: sun-cast shadow decals (vivid and 4.6 looks; empty in the diorama).
@@ -179,9 +186,13 @@ export const st: GameState = {
 
 const ROW_AHEAD = 26, ROW_BEHIND = 8;
 const HOP_DUR = 0.16;
+/** Critter half-width added to a mover's half-length in the hit test (standing and mid-hop). */
+export const CRITTER_HIT_HALF = 0.3;
 const HAWK_KILL = 5.2;
 /** Row 0 is hawk-free only for this long after a run starts (CH-17). */
 export const ROW0_GRACE = 3.0;
+/** Autoplay (`?autoplay=1` / O): the results card stays up this long before the autopilot starts the next run. */
+export const AUTOPLAY_RESULTS_SECONDS = 3;
 /** A dead critter ignores hop keys for this long, so a buffered key cannot skip the death card (CH-9). */
 export const RESTART_LOCKOUT = 0.6;
 /** A river or lava hop snaps sideways onto a platform only within this distance; further away it lands in the hazard (CH-11). */
@@ -210,6 +221,26 @@ const CAM = {
   followX: 0.42,
   targetX: 0.36
 } as const;
+/** Furthest the player may sit from the screen centre line, as a fraction of the half view width at its depth. */
+const CHASE_EDGE = 0.6;
+/**
+ * Real-GPU audit 2026-11-19: with the partial follow (0.42 / 0.36) a critter at the outer columns sat on or past the
+ * screen edge (cut off at col +7 at 1280x720, and much sooner in portrait). The chase rig keeps the partial follow and
+ * slides camera and target together just enough to hold the player within CHASE_EDGE of the half view width.
+ * Returns [camera x, target x].
+ */
+export function chaseCameraX(px: number, aspect: number): [number, number] {
+  const camX = px * CAM.followX, tgtX = px * CAM.targetX;
+  const lineX = camX + (tgtX - camX) * (CAM.back / (CAM.back + CAM.ahead));
+  const off = px - lineX;
+  const viewDist = Math.hypot(CAM.back, CAM.y - CAM.targetY);
+  const lim = CHASE_EDGE * viewDist * Math.tan((CAM.fov * Math.PI) / 360) * Math.max(0.3, aspect);
+  const shift = Math.abs(off) > lim ? off - Math.sign(off) * lim : 0;
+  return [camX + shift, tgtX + shift];
+}
+function viewAspect(): number {
+  return typeof window !== "undefined" && window.innerHeight > 0 ? window.innerWidth / window.innerHeight : 16 / 9;
+}
 
 /** One upright gold disc per coin, about half a column wide, so one drawn coin is one pickup (CH-13). */
 const COIN_DIAMETER = 0.5;
@@ -230,6 +261,78 @@ function surfaceTopY(l: Lane): number {
 /** Lilypad top surface; the pad is drawn centred at PAD_TOP - PAD_H / 2 so the critter's feet touch it (CH-16). */
 export const PAD_TOP = 0.12;
 export const PAD_H = 0.08;
+/** Idol pass: drawn tops of the river rafts/logs (the old slab top) and the lava stones' flat playable top. */
+const IDOL_TOP = { raft: IDOL_WATERLINE.raftTop, stone: 0.16 } as const;
+/** Top of the meadow strip (felt / ground slab, |x| < STRIP_W / 2) or of the world floor beyond it. */
+function groundTopAt(x: number): number {
+  return Math.abs(x) < STRIP_W / 2 ? 0.12 : FLOOR_Y;
+}
+/** Idol terrain props stand on the surface under them, sunk IDOL_GROUND_SINK so no base edge floats. */
+function propBaseY(x: number): number {
+  return groundTopAt(x) - IDOL_GROUND_SINK;
+}
+/** Idol pool instance scales (length kept, over-wide bodies narrowed into their lane; see idolScale). */
+const IDOL_SCALE = Object.fromEntries(
+  (Object.keys(IDOL_POOL_ASSET) as IdolPoolKey[]).map((k) => [k, idolScale(k)])
+) as Record<IdolPoolKey, [number, number, number]>;
+/** A runtime handle as far as the critter part posing needs it. */
+interface PartPosable {
+  part?(name: string): { setRotation(x: number, y: number, z: number): unknown } | undefined;
+  setAnimationPose?(pose: never): unknown;
+}
+type PartHandle = { setRotation(x: number, y: number, z: number): unknown };
+const partHandles = new WeakMap<object, Map<string, PartHandle>>();
+/**
+ * Idol critter body animation: writes each split part's local rotation (critterRig.ts) every frame. The primary path
+ * is the model handle's named-part handles (`handle.part("legL").setRotation(...)`, which edits the GLB node's local
+ * transform inside the model and draws from the next frame); found parts are cached per model handle, and parts not
+ * resolvable yet (GLB still loading) are looked up again next frame. Without `part` it falls back to an overlay pose.
+ */
+function poseCritterParts(handle: PartPosable | undefined, assetKey: string, s: CritterMotionState): void {
+  if (!handle) return;
+  const angles = critterPartAngles(assetKey, s);
+  let missing = typeof handle.part !== "function";
+  if (!missing) {
+    let cache = partHandles.get(handle);
+    if (!cache) { cache = new Map(); partHandles.set(handle, cache); }
+    for (const [name, [x, y, z]] of Object.entries(angles)) {
+      let p = cache.get(name);
+      if (!p) { p = handle.part!(name); if (p) cache.set(name, p); }
+      if (p) p.setRotation(x, y, z);
+      else missing = true;
+    }
+  }
+  // Real-GPU audit 2026-11-19: on the production build `handle.part(name)` answers undefined for every critter part
+  // (the GLB has legL/legR nodes; the live-actor lookup misses), which left the legs frozen in every hop. Any part
+  // that does not resolve is driven through the overlay pose instead, which the model applies by GLB node name.
+  if (missing) handle.setAnimationPose?.(critterPartPose(assetKey, s) as never);
+}
+/** Drawn height (m) of an Idol pool model after its fit scale. */
+function idolDrawnHeight(k: IdolPoolKey): number {
+  return idolHeight(IDOL_POOL_ASSET[k]) * IDOL_SCALE[k][1];
+}
+/** inst() for an Idol pool: white instance colour (the textures carry the paint) and the pool's fit scale. */
+function instIdol(k: IdolPoolKey, x: number, y: number, z: number, ry = 0): void {
+  const [sx, sy, sz] = IDOL_SCALE[k];
+  inst(k, x, y, z, sx, sy, sz, "#ffffff", ry);
+}
+/**
+ * Moving parts: draws a wheeled Idol vehicle body (raised by its wheel lift) and its separate wheels, which spin by the
+ * distance travelled (`travel`, along the vehicle's forward axis) over the wheel radius (see vehicleWheelPoses).
+ */
+function instIdolVehicle(k: IdolPoolKey, x: number, roadY: number, z: number, ry: number, travel: number): void {
+  instIdol(k, x, roadY + idolBodyLift(k), z, ry);
+  for (const w of vehicleWheelPoses(k, x, roadY, z, ry, travel)) {
+    const p = P(w.pool);
+    if (p.n >= CAP[w.pool]) return;
+    const sp = p.specs[p.n]!;
+    sp.position[0] = w.position[0]; sp.position[1] = w.position[1]; sp.position[2] = w.position[2];
+    sp.rotation[0] = w.rotation[0]; sp.rotation[1] = w.rotation[1]; sp.rotation[2] = w.rotation[2];
+    sp.scale[0] = w.scale; sp.scale[1] = w.scale; sp.scale[2] = w.scale;
+    p.cols[p.n] = "#ffffff";
+    p.n++;
+  }
+}
 
 function playerBaseY(l: Lane): number {
   return surfaceTopY(l) + CRITTER_FOOT_OFFSET;
@@ -857,25 +960,29 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
     }).position(0, -0.16, -20).rotate(flatFloor ? 0 : -Math.PI / 2, 0, 0).scale(flatFloor ? [220, 1, 220] : [220, 220, 1]).runtime(game.runtimeNode("world-floor")),
     instances.box({ name: "lane-ground", size: [1, 1, 1], material: groundMat, transforms: pad(CAP.ground), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-ground")),
     instances.box({ name: "lane-detail", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.detail), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-detail")),
+    instances.box({ name: "train-coupler", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.coupler), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-coupler")),
     instances.box({ name: "lane-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
     instances.box({ name: "scenery-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glowS), castShadow: false }).runtime(game.runtimeNode("pool-glowS")),
     instances.custom(buildHorizonRidgeSpec(), { name: "horizon-ridge", material: material.pbr({ color: "#ffffff", roughness: 0.94, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.horizon), castShadow: false, receiveShadow: false }).runtime(game.runtimeNode("pool-horizon")),
-    // Full fleet of sculpted smooth-normal procedural traffic vehicles & express trains (length along +X, CH-5).
-    instances.custom(buildProceduralVehicleSpec("car", { targetMaxDimension: MOVER_LENGTH.car }), { name: "m-cars", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.car), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-car")),
-    instances.custom(buildProceduralVehicleSpec("hatch", { targetMaxDimension: MOVER_LENGTH.hatch }), { name: "m-hatch", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.hatch), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-hatch")),
-    instances.custom(buildProceduralVehicleSpec("suv", { targetMaxDimension: MOVER_LENGTH.suv }), { name: "m-suv", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.suv), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-suv")),
-    instances.custom(buildProceduralVehicleSpec("taxi", { targetMaxDimension: MOVER_LENGTH.taxi }), { name: "m-taxi", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.taxi), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-taxi")),
-    instances.custom(buildProceduralVehicleSpec("van", { targetMaxDimension: MOVER_LENGTH.van }), { name: "m-van", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.van), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-van")),
-    instances.custom(buildProceduralVehicleSpec("pickup", { targetMaxDimension: MOVER_LENGTH.pickup }), { name: "m-pickup", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.pickup), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-pickup")),
-    instances.custom(buildProceduralVehicleSpec("truck", { targetMaxDimension: MOVER_LENGTH.truck }), { name: "m-trucks", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.truck), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-truck")),
-    instances.custom(buildProceduralVehicleSpec("tram", { targetMaxDimension: MOVER_LENGTH.tram }), { name: "m-trams", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.tram), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-tram")),
-    instances.custom(buildProceduralVehicleSpec("train", { targetMaxDimension: TRAIN_CAR_LENGTH }), { name: "m-trains", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.train), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-train")),
-    instances.custom(buildProceduralVehicleSpec("hover", { targetMaxDimension: MOVER_LENGTH.hover }), { name: "m-hover", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedVehicleBody, transforms: pad(CAP.hover), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-hover")),
-    // Bark-textured hollow river logs, concentric heartwood end-grain rings, notched lily pads & mossy boulders.
-    instances.custom(buildHollowRiverLogSpec(), { name: "m-logs", material: material.pbr({ color: "#ffffff", roughness: 0.88, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.log), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-log")),
+    // Idol pass: image-to-3D toy traffic fleet, express train, river rafts/logs/pads, lava stones and verge trees
+    // (length along +X via IDOL_ALONG_X yaw; pool names and runtime ids unchanged).
+    idolPool("car", "m-cars", "pool-car", pad(CAP.car)),
+    idolPool("hatch", "m-hatch", "pool-hatch", pad(CAP.hatch)),
+    idolPool("suv", "m-suv", "pool-suv", pad(CAP.suv)),
+    idolPool("taxi", "m-taxi", "pool-taxi", pad(CAP.taxi)),
+    idolPool("van", "m-van", "pool-van", pad(CAP.van)),
+    idolPool("pickup", "m-pickup", "pool-pickup", pad(CAP.pickup)),
+    idolPool("truck", "m-trucks", "pool-truck", pad(CAP.truck)),
+    idolPool("tram", "m-trams", "pool-tram", pad(CAP.tram)),
+    idolPool("train", "m-trains", "pool-train", pad(CAP.train)),
+    idolPool("coach", "m-coaches", "pool-coach", pad(CAP.coach)),
+    idolPool("hover", "m-hover", "pool-hover", pad(CAP.hover)),
+    idolPool("wheel", "m-wheels", "pool-wheel", pad(CAP.wheel)),
+    idolPool("railWheel", "m-rail-wheels", "pool-railWheel", pad(CAP.railWheel)),
+    idolPool("log", "m-logs", "pool-log", pad(CAP.log)),
     instances.custom(buildLogEndGrainSpec(), { name: "m-log-ends", material: material.pbr({ color: "#ffffff", roughness: 0.78, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.logEnd), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-logEnd")),
-    instances.custom(buildNotchedLilyPadSpec(), { name: "m-pads", material: material.pbr({ color: "#ffffff", roughness: 0.76, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.pad), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-pad")),
-    instances.custom(buildMossySteppingBoulderSpec(), { name: "m-stones", material: material.pbr({ color: "#ffffff", roughness: 0.84, metalness: 0.04, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.stone), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-stone")),
+    idolPool("pad", "m-pads", "pool-pad", pad(CAP.pad)),
+    idolPool("stone", "m-stones", "pool-stone", pad(CAP.stone)),
     p4Dress && !diorama
       ? instances.custom(buildStarCoinStandingSpec(COIN_DIAMETER), { name: "m-coins", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedCoinGold, transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin"))
       : diorama
@@ -883,15 +990,16 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
         : instances.cylinder({ name: "m-coins", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", metalness: 0.55, roughness: 0.3, emissive: "#ffb21f", emissiveIntensity: 0.32, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin")),
     instances.custom(buildWoodlandTrunkSpec(), { name: "d-trunks", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedWoodBark, transforms: pad(CAP.trunk), castShadow: rich, receiveShadow: true }).runtime(game.runtimeNode("pool-trunk")),
     instances.custom(buildWoodlandCanopySpec(), { name: "d-canopy", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedFoliage, transforms: pad(CAP.canopy), castShadow: rich, receiveShadow: true, ...(rich ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-canopy")),
-    instances.custom(buildWoodlandTreeSpec(), { name: "d-trees", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedFoliage, transforms: pad(CAP.tree), castShadow: rich, receiveShadow: true, ...(rich ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-tree")),
-    instances.custom(buildMeadowBushSpec(), { name: "d-bushes", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedFoliage, transforms: pad(CAP.bush), castShadow: false, receiveShadow: true, ...(rich ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-bush")),
+    idolPool("tree", "d-trees", "pool-tree", pad(CAP.tree), { castShadow: rich }),
+    idolPool("treeB", "d-trees-blossom", "pool-treeB", pad(CAP.treeB), { castShadow: rich }),
+    idolPool("bush", "d-bushes", "pool-bush", pad(CAP.bush), { castShadow: false }),
     instances.custom(buildRailTrackStripSpec(STRIP_W), { name: "m-rail-tracks", material: material.pbr({ color: "#ffffff", roughness: 0.42, metalness: 0.34, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.railTrack), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-railTrack")),
     instances.custom(buildVergeArchitectureSpec(), { name: "d-b", material: detailMat, transforms: pad(CAP.dressB), castShadow: rich, receiveShadow: true }).runtime(game.runtimeNode("pool-dressb")),
-    buildProceduralCritterNode("hop", { name: "player", targetHeight: 1.05, castShadow: true })
+    buildIdolCritterNode("hop", { name: "player", targetHeight: 1.05, castShadow: true })
       .position(0, 0.12, 0)
       .rotate(0, Math.PI, 0)
       .runtime(game.runtimeNode("player")),
-    buildStoopingHawkNode()
+    buildIdolHawkNode()
       .position(0, -999, 0)
       .runtime(game.runtimeNode("hawk")),
     buildRescuePodNode()
@@ -899,7 +1007,7 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
       .runtime(game.runtimeNode("pod")),
     // Sculpted multi-material spectator critters cheering along the outer meadow banks (lazy-mounted on diorama via `mountSpectators`).
     ...(diorama ? [] : SPECTATOR_CRITTERS).map((key, idx) =>
-      buildProceduralCritterNode(key, { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true })
+      buildIdolCritterNode(key, { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true })
         .position((idx % 2 === 0 ? -1 : 1) * (SCENERY_X + 0.6 + (idx % 3) * 1.1), FLOOR_Y, -idx * 2.2)
         .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
         .runtime(game.runtimeNode(`spectator-${idx}`))
@@ -911,7 +1019,10 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
   }
   if (!diorama && p4Dress) {
     // Damp wet-bark timber rafters & rope lashings (kept named `m-rafts` for GU47 phase-4 parity).
-    out.push(instances.custom(buildTimberRaftSpec(), { name: "m-rafts", material: material.pbr({ color: "#ffffff", roughness: 0.56, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.raft), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-raft")));
+    out.push(
+      idolPool("raft", "m-rafts", "pool-raft", pad(CAP.raft)),
+      idolPool("raftCandy", "m-rafts-candy", "pool-raftCandy", pad(CAP.raftCandy))
+    );
   }
   if (!diorama && lookMode === "vivid") {
     out.push(
@@ -944,7 +1055,7 @@ export function mountSpectators(): void {
   SPECTATOR_CRITTERS.forEach((key, idx) => {
     try {
       n0.add(
-        buildProceduralCritterNode(key, { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true })
+        buildIdolCritterNode(key, { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true })
           .position((idx % 2 === 0 ? -1 : 1) * (SCENERY_X + 0.6 + (idx % 3) * 1.1), FLOOR_Y, -idx * 2.2)
           .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
           .runtime(game.runtimeNode(`spectator-${idx}`))
@@ -982,8 +1093,8 @@ export function bindApp(a: AuraApp): void {
   }
 }
 
-const CAR_POOLS: readonly (keyof typeof CAP)[] = ["car", "hatch", "suv", "taxi", "van", "pickup"];
-const VEHICLE_POOL: Record<string, keyof typeof CAP> = { car: "car", truck: "truck", tram: "tram", train: "train", hover: "hover" };
+const CAR_POOLS: readonly IdolPoolKey[] = ["car", "hatch", "suv", "taxi", "van", "pickup"];
+const VEHICLE_POOL: Record<string, IdolPoolKey> = { car: "car", truck: "truck", tram: "tram", train: "train", hover: "hover" };
 
 export interface GameInput { buffered(d: string, w: number): boolean; consume?(d: string): boolean }
 const DIRS = ["up", "down", "left", "right"] as const;
@@ -1007,7 +1118,7 @@ export function step(dt: number, input: GameInput): void {
       return;
     }
     const manualRestart = DIRS.some((d) => input.buffered(d, 0.14));
-    if (manualRestart || (st.autopilot && st.time - st.deadAt > 1.4)) {
+    if (manualRestart || (st.autopilot && st.time - st.deadAt > AUTOPLAY_RESULTS_SECONDS)) {
       if (manualRestart) { st.autopilot = false; consumeAll(input); }
       restartRun();
     }
@@ -1068,6 +1179,7 @@ function runFrame(dt: number, input: GameInput): void {
   } else {
     st.hop.t += dt / HOP_DUR;
     if (st.hop.t >= 1) landHop();
+    else midHopHit();
   }
 
   // squash check on hazard lanes (while standing, not hopping); movers only hit inside the playfield
@@ -1077,7 +1189,7 @@ function runFrame(dt: number, input: GameInput): void {
       const n = laneMovers(l, st.time, XS);
       for (let i = 0; i < n; i++) {
         const dist = Math.abs(XS[i] - p);
-        if (dist < moverHalf(l) + 0.3) {
+        if (dist < moverHalf(l) + CRITTER_HIT_HALF) {
           if (laneType === "rail") die("flattened", "Flattened by the train");
           else die("squashed", "Squashed");
           break;
@@ -1307,6 +1419,41 @@ function syncCombo(): void {
   if (comboHandle && st.time >= comboUntil) { try { comboHandle.stop(); } catch { /* gone */ } comboHandle = null; }
 }
 
+/**
+ * Pass-through pass (owner, 2026-11-18): the 0.16 s hop used to skip the hit test, so a car, tram or train sweeping
+ * the cell the critter was leaving drove straight through it. Mid-hop the critter is hit in the lane it is drawn over
+ * (the one it leaves for the first half, the one it lands in for the second) at its drawn x, with the standing hit size.
+ */
+export const MID_HOP_SWITCH = 0.5;
+function midHopHit(): void {
+  if (st.dead) return;
+  const u = st.hop.t;
+  const row = u < MID_HOP_SWITCH ? Math.max(0, Math.round(-st.hop.fromZ / LANE_D)) : st.playerRow;
+  const l = lane(row);
+  if (l.type !== "road" && l.type !== "tram" && l.type !== "rail") return;
+  const x = st.hop.fromX + (st.hop.toX - st.hop.fromX) * u;
+  const n = laneMovers(l, st.time, XS);
+  for (let i = 0; i < n; i++) {
+    if (Math.abs(XS[i] - x) >= moverHalf(l) + CRITTER_HIT_HALF) continue;
+    // Drop out of the hop where it was hit, so the death card and squash play on that lane.
+    st.hop.active = false;
+    st.playerRow = row;
+    st.playerCol = x / COL_W;
+    if (l.type === "rail") die("flattened", "Flattened by the train");
+    else die("squashed", "Squashed");
+    return;
+  }
+}
+
+/**
+ * Pass-through pass: the level-crossing posts stand at |x| = RAIL_SIGNAL_X so the lowered arm (RAIL_ARM_REACH long,
+ * hinged at the post) ends beyond the outermost hop column plus the critter's half-width; it used to stand at |x| = 8
+ * and the lowered arm crossed columns 6 and 7, where critters hopped straight through it.
+ */
+export const RAIL_SIGNAL_X = 9.7;
+/** Lowered arm reach from the post: 4 segments 0.48 m long, the first centred 0.28 m out. */
+export const RAIL_ARM_REACH = 0.28 + 3 * 0.48 + 0.24;
+
 /** The death effect for a death kind (CH47-13), fired by main.ts. */
 export function deathEffect(kind: Death["kind"], at: [number, number, number]): void {
   if (!app?.effects) return;
@@ -1321,58 +1468,71 @@ function platformUnder(l: Lane, x: number): number {
 }
 
 /**
- * Demo and QA autopilot. It checks a target cell over a short time window with the real hit sizes, so it only steps
- * into a gap it can stand in, steps aside or back when the cell it stands on is about to be hit, and works back toward
- * the centre while riding a platform.
+ * Demo and QA autopilot (`?autoplay=1` / O). It plans with exact lookahead (autopilot.ts): the movers are pure functions
+ * of time, so it replays the game's own hop timing and hit tests over "wait" and "hop" choices and follows the earliest
+ * schedule that reaches the next meadow, re-planning on every meadow and whenever the schedule no longer matches.
  */
-function autopilot(dt: number): void {
-  st.apTimer += dt;
-  if (st.apTimer < 0.12) return;
-  st.apTimer = 0;
-  const curCol = Math.round(st.playerCol);
-  const ahead = lane(st.playerRow + 1);
-  const curLane = lane(st.playerRow);
-  /** Will a mover hit column x of lane l at any time in [from, to] seconds from now? */
-  const hit = (l: Lane, px: number, from: number, to: number): boolean => {
-    for (let dtk = from; dtk <= to + 1e-6; dtk += 0.04) {
-      const n = laneMovers(l, st.time + dtk, XS);
-      for (let i = 0; i < n; i++) if (Math.abs(XS[i] - px) < moverHalf(l) + 0.55) return true;
+const AP_RULES: ApRules = {
+  dt: SIM_STEP, hopDur: HOP_DUR, hitHalf: CRITTER_HIT_HALF, midHopSwitch: MID_HOP_SWITCH, platformSnap: PLATFORM_SNAP,
+  fieldHalf: FIELD_HALF, colMin: COL_MIN, colMax: COL_MAX, hawkKill: HAWK_KILL
+};
+let apPlan: ApPlan | null = null;
+let apRun = -1;
+/** No route found: the planner is not asked again before this sim time. */
+let apRetryAt = 0;
+/** Row the autopilot has been held at without a route, and since when (sim seconds). */
+let apStuckRow = -1, apStuckSince = 0;
+/** After this long at one kerb with no safe route, the autopilot goes for the best gap it can find. */
+export const AUTOPLAY_GAMBLE_SECONDS = 7;
+/** First meadow row ahead of `row` (lanes never stack more than two hazards, so it is at most three rows on). */
+function nextMeadowRow(row: number): number {
+  for (let r = row + 1; r <= row + 6; r++) if (lane(r).type === "meadow") return r;
+  return row + 1;
+}
+function autopilot(_dt: number): void {
+  const eps = SIM_STEP / 2;
+  if (apRun !== st.runId) { apRun = st.runId; apPlan = null; apRetryAt = 0; apStuckRow = -1; }
+  const x = st.playerCol * COL_W;
+  let next = apPlan?.steps[0];
+  // A stale plan (missed its frame, or the critter is not where the plan expects): drop it.
+  if (next && (st.time > next.at + eps || next.row !== st.playerRow || Math.abs(next.x - x) > 0.05)) next = undefined;
+  if (!next) apPlan = null;
+  if (!apPlan) {
+    const here = lane(st.playerRow);
+    const onMeadow = here.type === "meadow";
+    if (onMeadow && st.time < apRetryAt) return;
+    const now = { time: st.time, row: st.playerRow, x, idle: st.idle };
+    const goal = nextMeadowRow(st.playerRow);
+    apPlan = planAutopilot(lane, AP_RULES, now, goal);
+    if (apPlan) apStuckRow = -1;
+    else {
+      if (apStuckRow !== st.playerRow) { apStuckRow = st.playerRow; apStuckSince = st.time; }
+      const stuck = st.time - apStuckSince;
+      if (onMeadow && stuck > AUTOPLAY_GAMBLE_SECONDS) {
+        for (const shave of [0.15, 0.3, 0.45]) if ((apPlan = planGamble(lane, AP_RULES, now, goal, shave))) break;
+      }
+      if (!apPlan && onMeadow) {
+        // Wait at the kerb like a player reading the traffic; shuffle a column toward the centre (or back out) when
+        // the hawk is getting close.
+        apRetryAt = st.time + 0.1;
+        if (st.idle > 2.6) {
+          const c = Math.round(st.playerCol);
+          tryHop(c > 0 || (c === 0 && st.runId % 2 === 0) ? "left" : "right");
+        }
+        return;
+      }
+      if (!apPlan) {
+        // Caught on a hazard lane without a way off: take only the first move of the longest-surviving schedule.
+        const s = planSurvival(lane, AP_RULES, now, goal);
+        apPlan = { ...s, steps: s.steps.slice(0, 1) };
+      }
     }
-    return false;
-  };
-  const platformAt = (l: Lane, px: number, when: number): boolean => {
-    const n = laneMovers(l, st.time + when, XS);
-    for (let i = 0; i < n; i++) if (Math.abs(XS[i] - px) < moverHalf(l) - 0.12 && Math.abs(XS[i]) < FIELD_HALF - 1.5) return true;
-    return false;
-  };
-  const safe = (l: Lane, col: number, hold = 0.7): boolean => {
-    const px = col * COL_W;
-    if (Math.abs(px) > FIELD_HALF - 1.5) return false;
-    if (l.type === "road" || l.type === "tram" || l.type === "rail") {
-      if (l.type === "rail" && railWarning(l, st.time + HOP_DUR) > 0) return false;
-      if (l.type === "rail" && railWarning(l, st.time + HOP_DUR + hold) > 0) return false;
-      return !hit(l, px, 0, HOP_DUR + hold);
-    }
-    if (l.type === "river" || l.type === "lava") return platformAt(l, px, HOP_DUR);
-    return true;
-  };
-  const onPlatform = curLane.type === "river" || curLane.type === "lava";
-  const hereInDanger = (curLane.type === "road" || curLane.type === "tram" || curLane.type === "rail")
-    && hit(curLane, st.playerCol * COL_W, 0, 0.5);
-  if (safe(ahead, curCol)) { tryHop("fwd"); return; }
-  const inward = curCol < 0 ? 1 : -1;
-  if (onPlatform && Math.abs(curCol) >= 3 && safe(curLane, curCol + inward)) { tryHop(inward > 0 ? "right" : "left"); return; }
-  if (hereInDanger) {
-    if (safe(curLane, curCol + inward, 0.5)) { tryHop(inward > 0 ? "right" : "left"); return; }
-    if (safe(curLane, curCol - inward, 0.5)) { tryHop(inward > 0 ? "left" : "right"); return; }
-    if (st.playerRow > 0 && safe(lane(st.playerRow - 1), curCol, 0.5)) { tryHop("back"); return; }
-    return;
+    next = apPlan.steps[0];
   }
-  // Waiting on solid, quiet ground: look for a column with a better chance of a gap ahead.
-  if (onPlatform || curLane.type !== "meadow") return;
-  if (curCol !== 0 && safe(ahead, curCol + inward) && safe(curLane, curCol + inward)) tryHop(inward > 0 ? "right" : "left");
-  else if (st.idle > 2.2 && safe(curLane, curCol + inward)) tryHop(inward > 0 ? "right" : "left");
-  else if (st.idle > 3.4 && safe(curLane, curCol - inward)) tryHop(inward > 0 ? "left" : "right");
+  if (next && st.time >= next.at - eps) {
+    (apPlan!.steps as ApStep[]).shift();
+    tryHop(next.action);
+  }
 }
 
 // -------------------- visuals --------------------
@@ -1527,10 +1687,8 @@ function swapLook(ti: number): void {
   } catch { /* look swap best-effort */ }
 }
 
-const TRUCK_TINTS = ["#eef3f8", "#f7f3ec", "#e8f0f6"] as const;
-
 /** Pools whose content depends only on the visible rows, their themes and the run: rebuilt when that key changes (CH-E3). */
-const STATIC_POOLS: readonly (keyof typeof CAP)[] = ["ground", "detail", "glowS", "trunk", "canopy", "tree", "bush", "railTrack", "dressB", "felt", "asphalt", "water", "gravel", "lava", "horizon"];
+const STATIC_POOLS: readonly (keyof typeof CAP)[] = ["ground", "detail", "glowS", "trunk", "canopy", "tree", "treeB", "bush", "railTrack", "dressB", "felt", "asphalt", "water", "gravel", "lava", "horizon"];
 const DYNAMIC_POOLS = (Object.keys(CAP) as (keyof typeof CAP)[]).filter((k) => !STATIC_POOLS.includes(k));
 let staticKey = "";
 /** Pools submitted while empty and already hidden; they need no upload until they hold something again. */
@@ -1644,33 +1802,23 @@ export function syncVisuals(alpha = 1): void {
       if (l.moverKind === "log") {
         // Round log along X: radius 0.3, top at 0.22 like the old slab, so it rides half sunk in the water.
         if (p4Dress && lookMode !== "diorama") {
+          // Idol pass: one lashed three-log raft (or the pink-and-cream candy raft on Critter Core), deck top at 0.22.
           const candy = candyRaftFor(lookMode, p4Dress, THEMES[appliedLook]?.id ?? "");
-          if (candy) {
-            inst("raft", x, 0.22 - 0.07, z, MOVER_LENGTH.log, 0.14, 0.78, P5_CANDY_RAFT.deck);
-            for (const e of [-1, 1]) inst("raft", x, 0.03, z + e * 0.27, MOVER_LENGTH.log * 0.92, 0.16, 0.2, P5_CANDY_RAFT.pontoon);
-          } else {
-            // WP-14 damp dark-bark multi-timber log raft with hemp rope lashings & heartwood grain ends.
-            inst("raft", x, 0.22 - 0.075, z, MOVER_LENGTH.log, 0.15, 0.30, "#633d22");
-            inst("raft", x, 0.22 - 0.085, z - 0.27, MOVER_LENGTH.log * 0.96, 0.15, 0.24, "#764b2c");
-            inst("raft", x, 0.22 - 0.085, z + 0.27, MOVER_LENGTH.log * 0.96, 0.15, 0.24, "#58351d");
-            for (const strap of [-1, 1]) {
-              inst("raft", x + strap * (MOVER_LENGTH.log * 0.31), 0.22 - 0.068, z, 0.14, 0.165, 0.80, "#dfc086");
-              inst("logEnd", x + strap * (MOVER_LENGTH.log / 2 + 0.008), 0.14, z, 0.26, 0.025, 0.26, "#ebd19e", 0, Math.PI / 2);
-            }
-          }
+          const raftKey = candy ? "raftCandy" : "raft";
+          instIdol(raftKey, x, IDOL_TOP.raft - idolDrawnHeight(raftKey), z, IDOL_ALONG_X);
           shade(x, 0.0, z, MOVER_LENGTH.log * 0.96, 0.7, 0.22);
           continue;
         }
-        inst("log", x, 0.22 - 0.3, z, 0.6, MOVER_LENGTH.log, 0.6, "#6b4223", 0, Math.PI / 2);
-        for (const e of [-1, 1]) inst("logEnd", x + e * (MOVER_LENGTH.log / 2 + 0.01), 0.22 - 0.3, z, 0.5, 0.03, 0.5, "#e6c792", 0, Math.PI / 2);
+        // Idol pass: one round bark log along X, top at 0.22, riding half sunk in the water.
+        instIdol("log", x, IDOL_TOP.raft - idolDrawnHeight("log"), z, IDOL_ALONG_X);
       }
       // Lilypads: single-draw merged notched leaf + vein star + lotus bud with top surface at PAD_TOP (CH-16, WP-13).
       else if (l.moverKind === "pad") {
-        inst("pad", x, PAD_TOP - PAD_H / 2, z, 0.94, PAD_H, 0.94, lookMode === "original" ? "#3d9950" : "#5bc96c", (r * 1.7 + i) % (Math.PI * 2));
+        instIdol("pad", x, IDOL_WATERLINE.padTop - idolDrawnHeight("pad"), z, (r * 1.7 + i) % (Math.PI * 2));
       }
       // Lava stones: single-draw merged basalt boulder + flat playable top at y = 0.16, sz = 0.88 inside LANE_D = 1.15
       else if (l.moverKind === "stone") {
-        inst("stone", x, 0.06, z, 1.05, 0.20, 0.88, "#565866");
+        instIdol("stone", x, IDOL_TOP.stone - idolDrawnHeight("stone"), z);
       }
       else {
         const th2 = THEMES[l.theme];
@@ -1678,26 +1826,21 @@ export function syncVisuals(alpha = 1): void {
         const pool = kind === "car" ? CAR_POOLS[(r * 3 + i) % CAR_POOLS.length]! : VEHICLE_POOL[kind]!;
         const roadTopY = l.type === "rail" ? 0.13 : l.type === "tram" ? 0.128 : 0.12;
         const lift = kind === "hover" ? 0.32 : 0;
-        const tint = pool === "truck" ? TRUCK_TINTS[(r + i) % TRUCK_TINTS.length]! : "#ffffff";
         if (pool === "train") {
           // One train is TRAIN_CARS coupled cars; lead locomotive + passenger coaches share exact hitbox (CH-5).
           const leadIdx = l.dir > 0 ? TRAIN_CARS - 1 : 0;
-          const coachScaleX = TRAIN_CAR_LENGTH / MOVER_LENGTH.tram;
           for (let c = 0; c < TRAIN_CARS; c++) {
             const cx = x + (c - (TRAIN_CARS - 1) / 2) * TRAIN_CAR_LENGTH;
-            if (lookMode !== "original" && c !== leadIdx) {
-              inst("tram", cx, roadTopY, z, coachScaleX, 0.96, 0.96, c === 1 ? "#dbe7f6" : "#e8f0fa", ry);
-            } else {
-              inst("train", cx, roadTopY, z, 1, 1, 1, tint, ry);
-            }
+            // Idol pass: the lead car is the bullet-nose locomotive, the rest are matching coaches (every look).
+            instIdolVehicle(c !== leadIdx ? "coach" : "train", cx, roadTopY, z, ry + IDOL_ALONG_X, cx * l.dir);
             if (lookMode !== "original" && c < TRAIN_CARS - 1) {
-              inst("detail", cx + TRAIN_CAR_LENGTH * 0.5, roadTopY + 0.34, z, 0.16, 0.36, 0.52, "#1f2430");
+              inst("coupler", cx + TRAIN_CAR_LENGTH * 0.5, roadTopY + 0.34, z, 0.16, 0.36, 0.52, "#1f2430");
             }
           }
           const [th, td] = SHADE_SIZE.train!;
           shade(x, roadTopY, z, TRAIN_CARS * TRAIN_CAR_LENGTH * 0.98, td, th);
         } else {
-          inst(pool, x, roadTopY + lift, z, 1, 1, 1, tint, ry);
+          instIdolVehicle(pool, x, roadTopY + lift, z, ry + IDOL_ALONG_X, x * l.dir);
           const [sh, sd] = SHADE_SIZE[pool] ?? [0.8, 0.95];
           const lengths = MOVER_LENGTH as Record<string, number>;
           shade(x, roadTopY, z, (lengths[pool] ?? lengths[kind] ?? 2) * 0.96, sd, sh + lift);
@@ -1777,6 +1920,10 @@ export function syncVisuals(alpha = 1): void {
         );
       }
     }
+    // Idol pass: body animation (crouch, push-off, flap, ear/tail trail, landing settle, idle sway) on the split parts.
+    poseCritterParts(nodes.get("player-body"), idolCritterKey(st.critter.asset), {
+      t: st.hop.t, hopping: pose.hopping && !st.dead, landSince, time: tr, reducedMotion
+    });
   } catch (e) { nodeOk = false; nodeErr = `player: ${String(e).slice(0, 120)}`; }
 
   // Spectator critters cheer from the meadow banks beyond the lane strips (CH-12): meadow rows only, on the floor.
@@ -1798,6 +1945,10 @@ export function syncVisuals(alpha = 1): void {
     const specPitch = reducedMotion ? 0 : -bounceWave * 0.09;
     const specRoll = reducedMotion ? 0 : Math.sin(phase * 0.5) * 0.08;
     const spTilt = nodes.get(`spectator-${idx}-tilt`);
+    // Idol pass: spectators cheer with their parts too (each bounce is a little hop: t runs 0..1 per bounce).
+    poseCritterParts(nodes.get(`spectator-${idx}-body`), idolCritterKey(SPECTATOR_CRITTERS[idx]!), {
+      t: ((phase / Math.PI) % 1 + 1) % 1, hopping: !reducedMotion, landSince: -1, time: tr + idx, reducedMotion
+    });
     const cheerSy = reducedMotion ? 1 : 0.94 + bounceWave * 0.14;
     const cheerSxz = 1 / Math.sqrt(cheerSy);
     if (spTilt) {
@@ -1836,11 +1987,13 @@ export function syncVisuals(alpha = 1): void {
       hk.setVisible(true);
       hk.setPosition(px, Math.max(1.1, hy), pz - 2.5 + warn * 1.5);
       hk.setRotation(Math.PI * 0.2 * warn, 0, Math.sin(tr * 7) * 0.12);
+      poseCritterParts(nodes.get("hawk-body"), "hopHawk", { t: (tr * 1.6) % 1, hopping: true, landSince: -1, time: tr, reducedMotion });
     } else if (st.dead?.kind === "snatched") {
       const since = st.time - st.deadAt;
       hk.setVisible(true);
       hk.setPosition(px + Math.sin(since * 2) * 0.4, 1.2 + since * 3.2, pz - 2 - since * 4);
       hk.setRotation(-0.3, 0, 0);
+      poseCritterParts(nodes.get("hawk-body"), "hopHawk", { t: (tr * 2.2) % 1, hopping: true, landSince: -1, time: tr, reducedMotion });
       nodes.require("player").setPosition(px, 1.0 + since * 3.2, pz - 2 - since * 4);
     } else hk.setVisible(false);
     // rescue pod marker
@@ -1875,9 +2028,10 @@ export function syncVisuals(alpha = 1): void {
     const sy = reducedMotion ? 0 : camImpactOffset[1];
     const sz = reducedMotion ? 0 : camImpactOffset[2];
     const kickFov = reducedMotion ? 0 : camImpactFov;
+    const [chaseX, chaseTX] = chaseCameraX(px, viewAspect());
     app.camera?.setPose({
-      position: [px * CAM.followX + sx, camY + sy, camZ + sz],
-      target: [px * CAM.targetX + sx * 0.45, CAM.targetY + sy * 0.35, pz - CAM.ahead],
+      position: [chaseX + sx, camY + sy, camZ + sz],
+      target: [chaseTX + sx * 0.45, CAM.targetY + sy * 0.35, pz - CAM.ahead],
       fov: CAM.fov + (reducedMotion ? 0 : warn * 6) + kickFov
     });
   }
@@ -1892,7 +2046,7 @@ export function syncVisuals(alpha = 1): void {
     for (let i = p.n; i < p.dirty; i++) {
       const s = p.specs[i];
       s.position[0] = HIDDEN.position[0]; s.position[1] = HIDDEN.position[1]; s.position[2] = HIDDEN.position[2];
-      s.rotation[1] = 0; s.rotation[2] = 0;
+      s.rotation[0] = 0; s.rotation[1] = 0; s.rotation[2] = 0;
       s.scale[0] = HIDDEN.scale[0]; s.scale[1] = HIDDEN.scale[1]; s.scale[2] = HIDDEN.scale[2];
     }
     p.dirty = p.n;
@@ -1996,10 +2150,11 @@ function paintLaneDetails(l: Lane, r: number, tr: number, statics: boolean, play
         // Crossing posts, porcelain crossbuck X blades & brass signal bell crown at both signals (CH-E5, WP-13).
         for (const side of [-1, 1] as const) {
           const sz = z + side * LANE_D * 0.42;
-          inst("trunk", side * 8, 0.48, sz, 0.11, 0.96, 0.11, "#3a3d44");
-          inst("detail", side * 8, 0.98, sz, 0.16, 0.11, 0.16, "#e8c252");
-          inst("detail", side * 8, 0.76, sz + side * 0.03, 0.56, 0.075, 0.03, "#f7f4ec", 0, 0.62);
-          inst("detail", side * 8, 0.76, sz + side * 0.035, 0.56, 0.075, 0.03, "#f7f4ec", 0, -0.62);
+          const sx = side * RAIL_SIGNAL_X;
+          inst("trunk", sx, 0.48, sz, 0.11, 0.96, 0.11, "#3a3d44");
+          inst("detail", sx, 0.98, sz, 0.16, 0.11, 0.16, "#e8c252");
+          inst("detail", sx, 0.76, sz + side * 0.03, 0.56, 0.075, 0.03, "#f7f4ec", 0, 0.62);
+          inst("detail", sx, 0.76, sz + side * 0.035, 0.56, 0.075, 0.03, "#f7f4ec", 0, -0.62);
         }
       }
       // Smooth hinged crossing arms & dual alternating crossbuck strobes (CH-4, CH-E5, WP-14).
@@ -2021,19 +2176,20 @@ function paintLaneDetails(l: Lane, r: number, tr: number, statics: boolean, play
       const blink = Math.sin(tr * 16) > 0;
       for (const side of [-1, 1] as const) {
         const sz = z + side * LANE_D * 0.42;
+        const sx = side * RAIL_SIGNAL_X;
         if (lit) {
-          inst("glow", side * 8 - 0.12, 0.88, sz, 0.17, 0.17, 0.17, blink ? "#ff2e4c" : "#44101c");
-          inst("glow", side * 8 + 0.12, 0.88, sz, 0.17, 0.17, 0.17, !blink ? "#ff2e4c" : "#44101c");
+          inst("glow", sx - 0.12, 0.88, sz, 0.17, 0.17, 0.17, blink ? "#ff2e4c" : "#44101c");
+          inst("glow", sx + 0.12, 0.88, sz, 0.17, 0.17, 0.17, !blink ? "#ff2e4c" : "#44101c");
         } else {
-          inst("glow", side * 8 - 0.12, 0.88, sz, 0.16, 0.16, 0.16, "#361018");
-          inst("glow", side * 8 + 0.12, 0.88, sz, 0.16, 0.16, 0.16, "#361018");
+          inst("glow", sx - 0.12, 0.88, sz, 0.16, 0.16, 0.16, "#361018");
+          inst("glow", sx + 0.12, 0.88, sz, 0.16, 0.16, 0.16, "#361018");
         }
         const rz = -side * ang;
         const cosA = Math.cos(ang);
         const sinA = Math.sin(ang);
         for (let seg = 0; seg < 4; seg++) {
           const d = 0.28 + seg * 0.48;
-          const ax = side * 8 - side * d * cosA;
+          const ax = sx - side * d * cosA;
           const ay = 0.64 + d * sinA;
           inst("glow", ax, ay, sz, 0.48, 0.075, 0.075, seg % 2 === 0 ? "#ff3355" : "#f4f1ea", 0, rz);
         }
@@ -2110,9 +2266,10 @@ function paintDressing(lo: number, hi: number): void {
     const off = SCENERY_X + 0.4 + rndB * 3.2;
     if (softTheme) {
       if (rndA < 0.55) {
-        const treeTint = th.dress === "candy" ? "#ffe0f2" : "#ffffff";
-        inst("tree", side * off, b, z, 1.15, 2.05, 1.15, treeTint, rndB * Math.PI * 2);
-        inst("tree", -side * (off + 2.4), b, z, 1.12, 1.98, 1.12, treeTint, rndA * Math.PI * 2);
+        // Idol pass: candy themes plant the blossom tree model instead of tinting the green one pink.
+        const treeKey = th.dress === "candy" ? "treeB" : "tree";
+        inst(treeKey, side * off, propBaseY(side * off), z, 1.15, 2.05, 1.15, "#ffffff", rndB * Math.PI * 2);
+        inst(treeKey, -side * (off + 2.4), propBaseY(-side * (off + 2.4)), z, 1.12, 1.98, 1.12, "#ffffff", rndA * Math.PI * 2);
       }
     } else if (th.dress === "city" || th.dress === "neon") {
       const h = 2.2 + rndB * 3.4;
@@ -2151,16 +2308,17 @@ function paintDioramaKit(lo: number, hi: number): void {
         case "candy": {
           const w = (1.02 + k.variant * 0.18) * sc;
           const h = (1.72 + k.variant * 0.16) * sc;
+          // Idol pass: candy themes plant the blossom tree model; a faint per-variant tint keeps neighbours distinct.
           const treeTint = th.dress === "candy"
-            ? (k.variant === 1 ? "#ffd6ee" : "#e8dcff")
+            ? (k.variant === 1 ? "#fff4fa" : "#f6f2ff")
             : (k.variant === 1 ? "#f6fff0" : "#eefbe8");
-          inst("tree", k.x, b, z, w, h, w, treeTint, k.yaw);
+          inst(th.dress === "candy" ? "treeB" : "tree", k.x, propBaseY(k.x), z, w, h, w, treeTint, k.yaw);
           break;
         }
         case "reeds":
           inst("trunk", k.x, b + 0.4 * sc, z, 0.06, 0.8 * sc, 0.06, pal.dressingA);
           inst("trunk", k.x + 0.2, b + 0.5 * sc, z + 0.15, 0.06, 1.0 * sc, 0.06, pal.dressingA);
-          if (k.variant === 0) inst("bush", k.x, b, z, 1.15 * sc, 0.95 * sc, 1.15 * sc, "#eefce8", k.yaw);
+          if (k.variant === 0) inst("bush", k.x, propBaseY(k.x), z, 1.15 * sc, 0.95 * sc, 1.15 * sc, "#eefce8", k.yaw);
           break;
         case "city":
         case "neon": {
@@ -2231,7 +2389,9 @@ function paintMeadowEdge(r: number, z: number, fenceX: number, softTheme: boolea
     // Batched pillowy meadow shrubs (`d-bushes`) soften the fence line and outer verge in 1 instanced draw.
     if (rndA < 0.8) {
       const tw = 0.72 + rndB * 0.42;
-      inst("bush", (r % 2 === 0 ? -1 : 1) * (fenceX + 0.95 + rndB * 0.8), FLOOR_Y, z, tw, tw * 0.88, tw, softTheme ? "#ffffff" : "#eef6ea", rndB * Math.PI * 2);
+      // Idol pass grounding: these shrubs stand on the meadow strip (top 0.12), not 0.28 m below it on the world floor.
+      const bushX = (r % 2 === 0 ? -1 : 1) * (fenceX + 0.95 + rndB * 0.8);
+      inst("bush", bushX, propBaseY(bushX), z, tw, tw * 0.88, tw, softTheme ? "#ffffff" : "#eef6ea", rndB * Math.PI * 2);
     }
     // Occasional roadside sign gives midground scale and a pop of accent.
     if (r % 12 === 5) {
@@ -2253,7 +2413,7 @@ export function swapCritter(c: CritterDef): void {
     const py = playerBaseY(lane(st.playerRow));
     n0.remove("player");
     n0.add(
-      buildProceduralCritterNode(c.asset, { name: "player", targetHeight: 1.05, castShadow: true })
+      buildIdolCritterNode(c.asset, { name: "player", targetHeight: 1.05, castShadow: true })
         .position(st.playerCol * COL_W, py, pz)
         .rotate(0, drawnYaw, 0)
         .runtime(game.runtimeNode("player"))

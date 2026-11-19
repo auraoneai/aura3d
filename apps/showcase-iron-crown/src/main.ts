@@ -10,7 +10,8 @@ import {
   type GameCombatWorldSnapshot,
   type GameInputController
 } from "@aura3d/engine";
-import { createGame, sfxUrl } from "@aura3d/engine/game";
+import { createGame, sfxUrl, warmPrograms } from "@aura3d/engine/game";
+import { createFreezeFrame, leaseSafeWarmApp, swapVenue } from "./game/venueSwap";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { labAppOptions, parseLabFlags, resolveLabBackend } from "../../showcase-port-shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
@@ -52,17 +53,21 @@ import { frameDataLine, moveFor, specialChip, type AttackKind } from "./game/mov
 import {
   awardRound,
   BACK_WALK_SCALE,
+  BOUT_RESULT_DELAY_MS,
   canUseSpecial,
   createBoutResultTimer,
   hitCueFor,
+  KO_HOLD_SECONDS,
   koSlowMo,
   METER_MAX,
   moveAgainst,
   nextComboCount,
   resolveHoldBack,
+  ROUND_END_SECONDS,
   ROUNDS_TO_WIN,
   timeUpWinner
 } from "./game/rules";
+import { AUTOPLAY_RESULT_MS, AUTOPLAY_TOGGLE_KEY, autoplayHint, autoplayRequested, nextAutoplayStage, stageFromParams } from "./game/autoplay";
 import {
   controlsHint,
   EXTRA_TOUCH_BUTTONS,
@@ -80,23 +85,37 @@ import {
   cinematicShot,
   createCinematicClock,
   FIGHT_LENS,
+  dollyEye,
   fightCameraFrame,
+  FIGHTER_FRAME_HEIGHT,
+  fitDollyFactor,
   hudSlamFor,
+  cinematicPortraitSafe,
+  cinematicLandscapeSafe,
+  landscapeFitsShot,
+  PORTRAIT_FIGHT_DOLLY,
+  PORTRAIT_FIT_MAX_ASPECT,
+  portraitFightBase,
+  portraitKeepsShot,
+  shotSubjects,
+  type FrameSubject,
   letterboxWanted,
   type CinematicPost,
   type CinematicShot
 } from "./game/cinematics";
-import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, LETTERBOX_BAR, panelLightId, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
+import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, IRON_CROWN_OUTPUT, LETTERBOX_BAR, panelLightId, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
 import { AMBIENT_EMITTERS, createAmbientVfx, installIronCrownVfx, type IronCrownVfxKind } from "./game/vfx";
 import { venueLookMode } from "./game/originalLook";
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
 import { createHud, type MenuId, type ModeId } from "./game/hud";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
-import { fightCrops, type QaCrop } from "./game/qaCrops";
+import { fightCrops, projectToScreen, type QaCrop } from "./game/qaCrops";
 import { KO_SCORCH_ID, SCORCH_PARKED, scorchAt } from "./game/flareScorch";
 import { AIRSTRIP_HAZE_PASS, airstripHazePass } from "./game/airstripHaze";
 import { poseArticulatedGladiatorRig } from "./art/proceduralModels";
+import { idolBodyId, poseIdolFighter } from "./game/idolFighters";
+import { stepIdolStageMotion } from "./game/idolStage";
 
 installBlackFrameGuard();
 
@@ -131,7 +150,8 @@ const reducedFlash = reducedMotion;
 const params = new URLSearchParams(window.location.search);
 const freezeRaw = Number(params.get("freeze"));
 const freezeMs = Number.isFinite(freezeRaw) && freezeRaw > 0 ? freezeRaw : null;
-let autoDemo = params.get("autoplay") === "1" || params.get("demo") === "1";
+// `?autoplay=1`, its `?autopilot=1` alias and the original `?demo=1`: both fighters AI, bouts loop forever (game/autoplay.ts).
+let autoDemo = autoplayRequested(params);
 let appReady = false;
 let userEngaged = false;
 
@@ -239,7 +259,7 @@ interface BoutState {
 const lab = { stance: "stand" as DummyStance, frameData: false };
 let studioSelection = { fighter: "kenji" as FighterId, palette: "default" as PaletteId };
 let ladder: LadderState | null = null;
-let currentStageId: StageId = DEFAULT_STAGE;
+let currentStageId: StageId = stageFromParams(params) ?? DEFAULT_STAGE;
 let paused = false;
 let frozenByQuery = false;
 let elapsedMs = 0;
@@ -296,7 +316,7 @@ const initialConfig: BoutConfig = {
   mode: "quick",
   p1: fighterById("kenji"),
   cpu: fighterById("volt"),
-  stage: stageById(DEFAULT_STAGE),
+  stage: stageById(stageFromParams(params) ?? DEFAULT_STAGE),
   difficulty: "scrapper"
 };
 
@@ -304,7 +324,8 @@ const initialConfig: BoutConfig = {
 /* createGame mount                                                  */
 /* ================================================================ */
 
-const cinemaWarmLut = createGradingLut("cinema-warm");
+// Owner neutral-grade pass: a neutral S-curve strip LUT under ACES (was AgX + `cinema-warm`, a warm cast on every venue).
+const outputLut = createGradingLut(IRON_CROWN_OUTPUT.lut.preset);
 const isDocumentHidden = (): boolean =>
   typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden === true);
 const targetPixelRatio =
@@ -322,10 +343,10 @@ const fightingGame = createGame({
   // A5 lab: IES profiles need the opt-in renderer flag; scalar spots remain the fallback.
   ...(labRenderer || iesLab ? { renderer: { ...(labRenderer ?? {}), ...(iesLab ? { photometricProfiles: true } : {}) } } : {}),
   output: {
-    toneMapping: "agx",
-    exposure: 1.06,
+    toneMapping: IRON_CROWN_OUTPUT.toneMapping,
+    exposure: IRON_CROWN_OUTPUT.exposure,
     dither: true,
-    lut: { ...cinemaWarmLut, intensity: 0.24 },
+    lut: { ...outputLut, intensity: IRON_CROWN_OUTPUT.lut.intensity },
     ...(labOutput ?? {})
   } as AuraOutputOptions,
   ...(labWorker ? { worker: labWorker } : {}),
@@ -401,6 +422,18 @@ const vfxLive = installIronCrownVfx(app.effects, vfxComfort, params.get("vfx"));
 /** The venue's ambient emitters; none on a venue in its 4.6.2 look (4.6.2 had no runtime VFX). */
 const ambientEmittersFor = (id: StageId) => (venueLookMode(id, params) === "original" ? [] : AMBIENT_EMITTERS[id]);
 let ambientVfx = createAmbientVfx(ambientEmittersFor(DEFAULT_STAGE), vfxComfort);
+/**
+ * Idol wow pass (artifacts/idol/FIRST-SECONDS.md, lessons R2): the Idol fighters and venue GLBs finish loading after
+ * mount, and their texture upgrades switch materials to new program variants; draws whose program is still compiling are
+ * skipped, so the first seconds could freeze on the clear colour. Settle programs, the HDRI and every texture upgrade
+ * once the first frame is presented and before the loading screen hides (boot, below), and again after each venue or
+ * fighter change remounts the arena (configureBout). `?warm=0` skips it.
+ */
+/** Half the depth of a fighter's visible body (metres at scale 1): where a strike should land on the opponent. */
+const FOE_BODY_HALF_DEPTH = 0.24;
+const IC_WARM = { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 } as const;
+const warmEnabled = params.get("warm") !== "0";
+const venueFreeze = typeof document !== "undefined" ? createFreezeFrame(app.canvas) : undefined;
 fightingGame.start();
 const input = fightingGame.input as GameInputController;
 if (!input) throw new Error("Iron Crown: createGame failed to create runtime-owned input.");
@@ -526,7 +559,7 @@ function updateCombatVisualOverlays(realDt: number, hideSpawnRings: boolean): vo
     if (flash.timer <= 0) continue;
     flash.timer = Math.max(0, flash.timer - realDt);
     const intensity = flash.timer > 0 ? flash.peak * (flash.timer / 0.12) : 0;
-    for (const flashId of [id, `${id}-torso-mesh`, `${id}-head-mesh`, `${id}-weapon-mesh`]) {
+    for (const flashId of [id, idolBodyId(id), `${id}-torso-mesh`, `${id}-head-mesh`, `${id}-weapon-mesh`]) {
       const handle = app.nodes.get(flashId) as (AuraRuntimeNodeHandle & { materials?: { setEmissive(target: string, color: string, intensity: number): void } }) | undefined;
       handle?.materials?.setEmissive?.("*", flash.color, intensity);
     }
@@ -578,6 +611,21 @@ function setLetterbox(on: boolean): void {
   for (const bar of letterbox) bar.classList.toggle("on", on);
 }
 
+/** Portrait fight-lens dolly factor (eased); NaN until the first portrait frame. */
+let portraitDolly = Number.NaN;
+const PORTRAIT_DOLLY_OUT_TAU = 0.08;
+const PORTRAIT_DOLLY_IN_TAU = 0.45;
+const CINEMATIC_PORTRAIT_SAFE = cinematicPortraitSafe(LETTERBOX_BAR);
+const CINEMATIC_LANDSCAPE_SAFE = cinematicLandscapeSafe(LETTERBOX_BAR);
+/** The drawing surface's aspect (the canvas fills the window). */
+function viewAspect(): number {
+  return window.innerWidth / Math.max(1, window.innerHeight);
+}
+/** A fighter's framing box: feet at the body position, standing height from its model scale. */
+function frameSubject(f: FighterRuntime): FrameSubject {
+  return { position: [f.body.position[0], f.body.position[1], f.body.position[2]], height: FIGHTER_FRAME_HEIGHT * f.def.scale };
+}
+
 app.camera?.use({
   ...baseFightingRig,
   update(ctx) {
@@ -598,9 +646,30 @@ app.camera?.use({
       lastShotName = shot?.name ?? null;
       if (slam) hud.slam(slam);
       applyPostCue(cinematicPost(shot, performance.now() / 1000 - postPulseAt, venueVignette(state.config.stage.id, venueLookMode(state.config.stage.id, params)), reducedMotion));
-      if (shot) return { ...pose, position: shot.position, target: shot.target, fov: shot.fov };
+      const shotAspect = viewAspect();
+      const portraitView = shotAspect < PORTRAIT_FIT_MAX_ASPECT;
+      if (shot && (!portraitView || portraitKeepsShot(shot.name))) {
+        if (portraitView) {
+          // Portrait: the intro dolly, the K.O. orbit and the win shot pull back across the floor (same height) until their
+          // subject(s) are whole inside the letterbox (never closer than authored); close-ups hand over to the fight lens.
+          const p1s = frameSubject(P1);
+          const p2s = frameSubject(CPU);
+          const subjects = shotSubjects(shot.name, p1s, p2s, winnerSide ? frameSubject(winnerSide) : null);
+          const k = fitDollyFactor(shot.position, shot.target, shot.fov, shotAspect, subjects, { minK: 1, maxK: 4, safe: CINEMATIC_PORTRAIT_SAFE, keepHeight: true });
+          portraitDolly = Number.NaN;
+          return { ...pose, position: dollyEye(shot.position, shot.target, k, true), target: shot.target, fov: shot.fov };
+        }
+        if (landscapeFitsShot(shot.name) && winnerSide) {
+          // Landscape win shot: pull back across the floor (same lens height) until the winner is whole, head to feet,
+          // inside the letterbox (authored, it cut the winner at the knees on 1280x720).
+          const subjects = shotSubjects(shot.name, frameSubject(P1), frameSubject(CPU), frameSubject(winnerSide));
+          const k = fitDollyFactor(shot.position, shot.target, shot.fov, shotAspect, subjects, { minK: 1, maxK: 4, safe: CINEMATIC_LANDSCAPE_SAFE, keepHeight: true });
+          return { ...pose, position: dollyEye(shot.position, shot.target, k, true), target: shot.target, fov: shot.fov };
+        }
+        return { ...pose, position: shot.position, target: shot.target, fov: shot.fov };
+      }
     }
-    const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+    const aspect = viewAspect();
     const p1Pos: AuraVec3 = P1 ? [P1.body.position[0], P1.body.position[1], P1.body.position[2]] : [-2.2, 0, 0];
     const p2Pos: AuraVec3 = CPU ? [CPU.body.position[0], CPU.body.position[1], CPU.body.position[2]] : [2.2, 0, 0];
     const framed = fightCameraFrame({
@@ -621,21 +690,27 @@ app.camera?.use({
       framed.target[1] + impactFrame.shakeOffset[1] * 0.35,
       framed.target[2]
     ];
-    if (aspect < 1.2 && P1 && CPU) {
-      const halfWidth = Math.abs(CPU.body.position[0] - P1.body.position[0]) / 2 + 1.05;
-      const need = halfWidth / (Math.tan((framed.fov * Math.PI) / 360) * aspect);
-      const off = [position[0] - target[0], position[1] - target[1], position[2] - target[2]];
-      const dist = Math.hypot(off[0]!, off[1]!, off[2]!);
-      if (dist > 0 && need > dist) {
-        const k = Math.min(need, 16) / dist;
-        return {
-          ...pose,
-          position: [target[0] + off[0]! * k, target[1] + off[1]! * k, target[2] + off[2]! * k],
-          target,
-          fov: framed.fov
-        };
-      }
+    if (aspect < PORTRAIT_FIT_MAX_ASPECT && P1 && CPU) {
+      // Portrait: dolly the fight lens along its view line so both fighters' whole bodies (with reach) sit inside the
+      // HUD-safe rectangle: pulled back as far as needed, moved in when there is room, so the pair stays as large as the
+      // frame allows. The factor eases (fast out, slower in) so the frame does not pump with every step or jump.
+      const base = portraitFightBase(framed);
+      const want = fitDollyFactor(base.eye, base.target, framed.fov, aspect, [frameSubject(P1), frameSubject(CPU)], PORTRAIT_FIGHT_DOLLY);
+      const dt = Math.max(0, Math.min(0.1, ctx.dt));
+      if (!Number.isFinite(portraitDolly)) portraitDolly = want;
+      else portraitDolly += (want - portraitDolly) * (1 - Math.exp(-dt / (want > portraitDolly ? PORTRAIT_DOLLY_OUT_TAU : PORTRAIT_DOLLY_IN_TAU)));
+      // Never lag behind a needed pull-back by more than 4% (a crop would show for those frames).
+      portraitDolly = Math.max(portraitDolly, want * 0.96);
+      const eye = dollyEye(base.eye, base.target, portraitDolly);
+      const shake = [position[0] - framed.position[0], position[1] - framed.position[1], position[2] - framed.position[2]] as const;
+      return {
+        ...pose,
+        position: [eye[0] + shake[0], eye[1] + shake[1], eye[2] + shake[2]],
+        target: [base.target[0] + shake[0] * 0.35, base.target[1] + shake[1] * 0.35, base.target[2]],
+        fov: framed.fov
+      };
     }
+    portraitDolly = Number.NaN;
     return { ...pose, position, target, fov: framed.fov };
   }
 });
@@ -693,6 +768,14 @@ function setAutopilot(next: boolean): void {
   if (state) {
     hud.setModeLabel(`${modeLabel(state.config.mode)} · ${state.config.stage.label.toUpperCase()}${autoDemo ? " · AUTO" : ""}`);
   }
+  // Turned on while a result card waits for a click: autoplay takes the card's primary action after the usual hold.
+  if (next && state?.phase === "boutEnd" && resultPrimary && !autoplayAdvanceTimer.pending) scheduleAutoplayAdvance(resultPrimary);
+}
+
+/** The fight hint plus the autoplay key while it is free (O by default). */
+function fightHint(): string {
+  const extra = autoplayHint(MANUAL_FIGHT_KEYS, AUTOPLAY_TOGGLE_KEY);
+  return extra ? `${controlsHint(input.actions)} · ${extra}` : controlsHint(input.actions);
 }
 
 /** Keyboard codes bound to any fight action (rebuilt when the player rebinds). */
@@ -711,7 +794,7 @@ const controlsSheet = mountControlsSheet(document, {
   storage: safeStorage(),
   onChange: () => {
     refreshManualFightKeys();
-    if (state && state.config.mode !== "lab") hud.setHint(controlsHint(input.actions));
+    if (state && state.config.mode !== "lab") hud.setHint(fightHint());
   },
   onBack: () => setPaused(true)
 });
@@ -735,6 +818,11 @@ window.addEventListener("keydown", (ev) => {
   if (ev.key === "Escape" && paused) {
     if (controlsSheet.listening) return; // the sheet takes the key (Escape cancels the rebind)
     setPaused(false);
+    return;
+  }
+  if (ev.code === AUTOPLAY_TOGGLE_KEY && !MANUAL_FIGHT_KEYS.has(ev.code) && !ev.repeat && !paused && !controlsSheet.listening) {
+    setAutopilot(!autoDemo);
+    hud.announce(autoDemo ? "AUTOPLAY ON" : "AUTOPLAY OFF", autoDemo ? "O to take over" : "you have control", "pop");
     return;
   }
   if (MANUAL_FIGHT_KEYS.has(ev.code)) {
@@ -873,6 +961,8 @@ function arenaSignature(cfg: BoutConfig): string {
 async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<void> {
   if (paused) setPaused(false);
   boutResultTimer.cancel();
+  autoplayAdvanceTimer.cancel();
+  resultPrimary = null;
   input.clearReplay();
   replayCursor = 0;
   newBout(config);
@@ -888,8 +978,20 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   if (sig !== mountedArenaSig) {
     mountedArenaSig = sig;
     postSent = null;
-    await fightingGame.setScene(buildArena(config).toJSON());
-    app.post?.setEffectEnabled("depthOfField", false);
+    // New venue or fighters bring in new Idol GLBs: the old venue stays frozen on screen while the new one mounts and
+    // warms its programs and textures underneath (game/venueSwap.ts: no black frames, no device-lease collisions).
+    await swapVenue({
+      capture: () => (venueFreeze && warmEnabled ? app.screenshot().dataUrl : undefined),
+      showFreeze: (url) => venueFreeze?.show(url),
+      hideFreeze: () => venueFreeze?.hide(),
+      pauseLoop: () => app.pause(),
+      resumeLoop: () => app.resume(),
+      setScene: async () => {
+        await fightingGame.setScene(buildArena(config).toJSON());
+        app.post?.setEffectEnabled("depthOfField", false);
+      },
+      warm: async () => { if (warmEnabled) await warmPrograms(leaseSafeWarmApp(app), IC_WARM); }
+    });
   }
   // `lowTier` is `?tier=low`; `app.quality.tier` follows the engine tier once the tiers lane or a renderer quality is set.
   if (hazeRequest === airstripHazeRequest && config.stage.id === "desert-airbase" &&
@@ -925,7 +1027,7 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   hud.setAutopilotButton(autoDemo);
   hud.showMenu(null);
   hud.showLab(config.mode === "lab");
-  hud.setHint(config.mode === "lab" ? "Dummy stance panel is live — land LIGHT → HEAVY → SPECIAL." : controlsHint(input.actions));
+  hud.setHint(config.mode === "lab" ? "Dummy stance panel is live — land LIGHT → HEAVY → SPECIAL." : fightHint());
   if (postPhase === "attract") {
     state.phase = "attract";
     hud.setModeLabel("IRON CROWN · ATTRACT");
@@ -1472,6 +1574,23 @@ function onKnockout(winner: "p1" | "cpu"): void {
 
 // The result card shows 1.6 s after the bout ends. A new bout cancels it (audit IC-04).
 const boutResultTimer = createBoutResultTimer();
+// Autoplay leaves the result card after AUTOPLAY_RESULT_MS; a new bout (or a click on the card) cancels it.
+const autoplayAdvanceTimer = createBoutResultTimer();
+/** The primary action of the result card on screen, if any. */
+let resultPrimary: (() => void) | null = null;
+
+function scheduleAutoplayAdvance(run: () => void): void {
+  autoplayAdvanceTimer.schedule(() => {
+    if (autoDemo && state.phase === "boutEnd") run();
+  }, AUTOPLAY_RESULT_MS);
+}
+
+/** Show the result card; under autoplay its primary action runs by itself after the hold. */
+function showResultCard(spec: Parameters<typeof hud.showResult>[0]): void {
+  resultPrimary = spec.primary.run;
+  hud.showResult(spec);
+  if (autoDemo) scheduleAutoplayAdvance(spec.primary.run);
+}
 
 function endRound(winner: "p1" | "cpu" | "draw"): void {
   const award = awardRound({ p1: state.pipsP1, cpu: state.pipsCpu }, winner);
@@ -1489,7 +1608,7 @@ function endRound(winner: "p1" | "cpu" | "draw"): void {
     hud.announce(p1Won ? "YOU WIN" : "YOU LOSE", state.config.mode === "ladder" ? "the crown waits" : "", "hold");
     boutResultTimer.schedule(() => {
       if (state.phase === "boutEnd") showBoutResult(p1Won);
-    }, 1600);
+    }, BOUT_RESULT_DELAY_MS);
   } else {
     state.phase = "roundEnd";
     state.phaseT = 0;
@@ -1506,43 +1625,15 @@ function showBoutResult(p1Won: boolean): void {
     { label: "Throws", value: `${st.throws}` }
   ];
   const cfg = state.config;
-  if (autoDemo) {
-    if (cfg.mode === "ladder" && ladder) {
-      const l = ladder;
-      if (p1Won) {
-        advanceLadder(l);
-        renderLadderBracket();
-        if (l.cleared) {
-          startLadder(cfg.p1.id);
-          return;
-        }
-      }
-      const rung = currentRung(l);
-      if (rung) {
-        void configureBout({
-          mode: "ladder",
-          p1: fighterById(l.playerFighter),
-          cpu: fighterById(rung.opponent),
-          stage: stageById(rung.stage),
-          difficulty: rung.difficulty,
-          p1Tint: studioPaletteFor(l.playerFighter)
-        }).then(() => hud.announce(`RUNG ${rung.rung} OF 8`, rung.title, "hold"));
-        return;
-      }
-    }
-    void configureBout({
-      ...cfg,
-      cpu: randomCpu(cfg.p1.id)
-    });
-    return;
-  }
+  // Autoplay shows the same card as a player gets; showResultCard runs its primary action after AUTOPLAY_RESULT_MS
+  // (ladder: next rung, retry, or a new ascent; other modes: the next venue against a new opponent).
   if (cfg.mode === "ladder" && ladder) {
     const l = ladder;
     if (p1Won) {
       advanceLadder(l);
       renderLadderBracket();
       if (l.cleared) {
-        hud.showResult({
+        showResultCard({
           title: "IRON CROWN CLAIMED",
           sub: `${cfg.p1.name} takes the throne — all 8 rungs cleared.`,
           stats,
@@ -1552,7 +1643,7 @@ function showBoutResult(p1Won: boolean): void {
         return;
       }
       const next = currentRung(l);
-      hud.showResult({
+      showResultCard({
         title: `RUNG ${l.cursor} CLEARED`,
         sub: next ? `Next: ${fighterById(next.opponent).name} — ${next.title}` : "",
         stats,
@@ -1575,7 +1666,7 @@ function showBoutResult(p1Won: boolean): void {
       });
       return;
     }
-    hud.showResult({
+    showResultCard({
       title: "THE CROWN HOLDS",
       sub: `Rung ${l.cursor + 1} stopped the ascent.`,
       stats,
@@ -1598,9 +1689,21 @@ function showBoutResult(p1Won: boolean): void {
     });
     return;
   }
-  hud.showResult({
+  const sub = p1Won ? `${cfg.p1.name} stands tall on ${cfg.stage.label}.` : `${cfg.cpu.name} takes it on ${cfg.stage.label}.`;
+  if (autoDemo) {
+    const nextStage = stageById(nextAutoplayStage(cfg.stage.id));
+    showResultCard({
+      title: p1Won ? "VICTORY" : "DEFEAT",
+      sub: `${sub} Next: ${nextStage.label}.`,
+      stats,
+      primary: { label: "NEXT BOUT", run: () => void configureBout({ ...cfg, cpu: randomCpu(cfg.p1.id), stage: nextStage }) },
+      alt: { label: "Rematch", run: () => void configureBout(state.config) }
+    });
+    return;
+  }
+  showResultCard({
     title: p1Won ? "VICTORY" : "DEFEAT",
-    sub: p1Won ? `${cfg.p1.name} stands tall on ${cfg.stage.label}.` : `${cfg.cpu.name} takes it on ${cfg.stage.label}.`,
+    sub,
     stats,
     primary: { label: "REMATCH", run: () => void configureBout(state.config) },
     alt: { label: "Change fighter", run: () => openSheet("versus") }
@@ -1790,14 +1893,24 @@ function syncNodes(): void {
     const layerProgress =
       layerActive && f.layerDuration > 0 ? Math.max(0, Math.min(1, 1 - f.layer.timer / f.layerDuration)) : 0;
 
-    poseArticulatedGladiatorRig(lookup, f.nodeId, {
+    const poseState = {
       clip,
       time: timeSec,
       clipProgress,
       moveDir,
       layerAttack: layerActive ? (f.layerKind ?? undefined) : undefined,
-      layerProgress
-    });
+      layerProgress,
+      // Mocap timing (game/idolMocap.ts): state age and the sim holds the attack clips are time-warped onto.
+      clipTime: f.clipTime,
+      hold,
+      layerDuration: f.layerDuration,
+      // Strike reach (idolFighters.ts strikeLunge): forward distance to the opponent's body surface, fighter-local.
+      reachTo: foe ? (Math.abs(foe.body.position[0] - f.body.position[0]) - FOE_BODY_HALF_DEPTH * foe.def.scale) / f.def.scale : undefined
+    };
+    // Idol wow pass: the rigged Idol fighter takes the same joint pose; the procedural gladiator is the fallback.
+    if (!poseIdolFighter(lookup, f.nodeId, f.def.id, f.side === "p1" ? "p1" : "cpu", poseState)) {
+      poseArticulatedGladiatorRig(lookup, f.nodeId, poseState);
+    }
   }
 }
 
@@ -1963,6 +2076,8 @@ app.onFrame(({ dt }) => {
     (app.nodes.get(CROWD_IDS.heads) as AuraRuntimeNodeHandle | undefined)?.setPosition(0, crowdBob(now, now - crowdCheerAt, false, 0.06), 0);
   }
   updatePanelFlicker();
+  // Idol moving parts: radar antenna, HVAC fans, crane slew (game/idolStage.ts). Held still on reduced motion.
+  if (!reducedMotion) stepIdolStageMotion(elapsedMs / 1000, (id) => app.nodes.get(id) as AuraRuntimeNodeHandle | undefined);
   if (freezeMs !== null && elapsedMs >= freezeMs) {
     frozenByQuery = true;
     const pSnap = actorSnap("player");
@@ -2042,10 +2157,10 @@ app.onFrame(({ dt }) => {
     }
   } else if (s.phase === "ko") {
     s.koTimer += dt;
-    if (s.koTimer > 1.7) endRound(s.roundWinner ?? "draw");
+    if (s.koTimer > KO_HOLD_SECONDS) endRound(s.roundWinner ?? "draw");
   } else if (s.phase === "roundEnd") {
     s.phaseT += dt;
-    if (s.phaseT > 1.5) {
+    if (s.phaseT > ROUND_END_SECONDS) {
       s.round += 1;
       combat.reset();
       combat.addActor({ id: "player", team: "p1", position: [...PLAYER_START], facing: 1, health: P1.def.stats.maxHealth, ...actorDefaults(P1) });
@@ -2373,6 +2488,7 @@ hud.setAutopilotButton(autoDemo);
 void app.ready().then(async () => {
   await fightingGame.ready();
   app.post?.setEffectEnabled("depthOfField", false);
+  if (warmEnabled) await warmPrograms(leaseSafeWarmApp(app), IC_WARM);
   loadingProgress.done("Ready");
   // A2: publish backend selection + readiness on the QA hook (diagnostic only).
   const backendHook: Record<string, unknown> = { loadEvents, lab: { backend: resolveLabBackend(labFlags, "auto") ?? null, gamut: labFlags.gamut ?? null, ies: iesLab, ignored: labFlags.ignored } };
@@ -2421,7 +2537,7 @@ if (isDocumentHidden()) {
   app.pause();
 }
 
-hud.setHint(controlsHint(input.actions));
+hud.setHint(fightHint());
 
 if (debugHooks) {
   (window as unknown as { __IRON_CROWN_DEBUG__?: unknown }).__IRON_CROWN_DEBUG__ = {
@@ -2434,7 +2550,45 @@ if (debugHooks) {
       snap();
       onKnockout(p1Won ? "p1" : "cpu");
       // Skip the 1.7 s (sim time) K.O. beat: on software GL it is minutes of wall time.
-      state.koTimer = 1.7;
+      state.koTimer = KO_HOLD_SECONDS;
     }
   };
+  // `&icfinish=<s>`: a short match for the results-screen capture: the bout ends (P1 wins) after <s> s of fighting.
+  const finishAfter = Number(params.get("icfinish"));
+  if (Number.isFinite(finishAfter) && finishAfter > 0) {
+    let fought = 0;
+    let finished = false;
+    app.onFrame(({ dt }) => {
+      if (finished || state.phase !== "fight") return;
+      fought += dt;
+      if (fought < finishAfter) return;
+      finished = true;
+      (window as unknown as { __IRON_CROWN_DEBUG__: { finishBout(p1Won: boolean): void } }).__IRON_CROWN_DEBUG__.finishBout(true);
+    });
+  }
+}
+
+// `?icframelog=1`: logs both fighters' projected screen boxes (0..1, x right, y down; unclamped) on the presented camera
+// twice a second, so a real-GPU capture can measure portrait framing from the console.
+if (params.get("icframelog") === "1") {
+  let since = 0;
+  app.onFrame(({ dt }) => {
+    since += dt;
+    if (since < 0.5 || !P1 || !CPU || !state) return;
+    since = 0;
+    const vp = app.camera?.evidence().viewProjection;
+    if (!vp || vp.length !== 16) return;
+    const box = (f: FighterRuntime) => {
+      const [x, y, z] = f.body.position;
+      const h = FIGHTER_FRAME_HEIGHT * f.def.scale;
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (const cx of [x - 0.45, x + 0.45]) for (const cy of [Math.max(0, y), Math.max(0, y) + h]) for (const cz of [z - 0.3, z + 0.3]) {
+        const sp = projectToScreen(vp, [cx, cy, cz]);
+        if (!sp) return null;
+        x0 = Math.min(x0, sp[0]); x1 = Math.max(x1, sp[0]); y0 = Math.min(y0, sp[1]); y1 = Math.max(y1, sp[1]);
+      }
+      return [x0, y0, x1, y1].map((v) => Number(v.toFixed(3)));
+    };
+    console.info(`[icframe] ${JSON.stringify({ stage: state.config.stage.id, phase: state.phase, aspect: Number(viewAspect().toFixed(3)), sep: Number(Math.abs(CPU.body.position[0] - P1.body.position[0]).toFixed(2)), p1: box(P1), p2: box(CPU) })}`);
+  });
 }

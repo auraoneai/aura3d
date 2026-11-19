@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swBusCoachP",
+  "generatedAt": "2026-11-18T23:15:48.915Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/saltwind-highway/swBusCoachP/ref-src.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0f1-f9e2-79b3-8a26-61d35a3c4c50",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 107,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1219776,
+        "num_faces": 2439772,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single long single-deck touring coach bus of a fictional unbranded design, glossy cream-white body with broad sea-teal and sunset-orange sweeping side stripes, long continuous dark tinted side window band, large curved front windscreen, luggage bay doors along the lower sides, black tyres on silver wheels, plain livery. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0.5,
+    "scale": 10.089,
+    "size": [
+      4.57,
+      3.976,
+      12
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swBusCoachP.glb",
+  "sizeBytes": 1779172,
+  "preview": "artifacts/idol/saltwind-highway/swBusCoachP/views.png",
+  "usd": 0.2,
+  "orientationFix": "yawDeg 90.5 (long axis fitted; reference was a three-quarter view)",
+  "postProcess": "PNG textures re-encoded as JPEG q90 (4:4:4) to fit the per-game byte budget"
+}

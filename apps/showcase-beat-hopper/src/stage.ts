@@ -9,7 +9,7 @@
  *     two glowing ridge rings on the horizon, smooth 18-segment volumetric laser cones and drifting motes.
  * Tight `CORRIDOR_BOUNDS` and `STAGE_BOUNDS` replace `OPEN_BOUNDS` so zero unbounded batches leak into frustum/shadow cascades.
  */
-import { geometry, material, type AuraApp } from "@aura3d/engine";
+import { geometry, material, type AuraApp, type AuraTransformSpec } from "@aura3d/engine";
 import { Batch, CORRIDOR_BOUNDS, type BatchBounds, type MeshData } from "../../../examples/shared/runner-kit/index";
 import { boxMesh, mergeMeshes, sphereMesh } from "./meshes";
 import {
@@ -175,6 +175,12 @@ export interface StageOptions {
   readonly haze: Haze;
   readonly farHaze: Haze;
   readonly ridgeHaze: Haze;
+  /**
+   * Idol wow pass: when set, palms are not merged into the procedural batches; their placements (base at the
+   * transform origin, uniform scale = height in metres, the palm GLB being 1 m tall) are handed to this callback
+   * for each scrolling group (`grp-palms`, `grp-isles`) instead.
+   */
+  readonly palms?: (group: string, transforms: readonly AuraTransformSpec[]) => void;
 }
 
 export interface StageRuntime {
@@ -298,20 +304,24 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     const s = span(PALM_P);
     const copies = Math.ceil((s.near - s.far) / PALM_P);
     const per = 4;
-    const palm = palmMesh();
-    const palms = new Batch(palm, copies * per, [1, 1, 1], CORRIDOR_BOUNDS);
+    const palm = o.palms ? null : palmMesh();
+    const palms = palm ? new Batch(palm, copies * per, [1, 1, 1], CORRIDOR_BOUNDS) : null;
+    const palmTransforms: AuraTransformSpec[] = [];
     let i = 0;
     for (let c = 0; c < copies; c++) {
       for (let k = 0; k < per; k++) {
         const side = k % 2 === 0 ? -1 : 1;
         const sc = 8.5 + ((k * 7) % 5) * 0.6;
         const x = side * (11 + (k >> 1) * 4.5);
-        palms.place(i, x, FLOOR_Y, s.near - c * PALM_P - k * (PALM_P / per), side > 0 ? Math.PI : 0, sc, sc, sc);
-        palms.setTone(i, linear(k % 2 === 0 ? "#00f2ff" : "#ffbe2e"));
+        const z = s.near - c * PALM_P - k * (PALM_P / per);
+        palmTransforms.push({ position: [x, FLOOR_Y, z], rotation: [0, side > 0 ? Math.PI : 0, 0], scale: sc });
+        palms?.place(i, x, FLOOR_Y, z, side > 0 ? Math.PI : 0, sc, sc, sc);
+        palms?.setTone(i, linear(k % 2 === 0 ? "#00f2ff" : "#ffbe2e"));
         i++;
       }
     }
-    add("stage-palms", palms.geometry(), stageLitSpec({ base: linear("#072e30"), haze: o.haze, rim: linear("#00e5c8"), emissive: [0.004, 0.022, 0.020], trim: true }), { group: "grp-palms" });
+    if (palms) add("stage-palms", palms.geometry(), stageLitSpec({ base: linear("#072e30"), haze: o.haze, rim: linear("#00e5c8"), emissive: [0.004, 0.022, 0.020], trim: true }), { group: "grp-palms" });
+    else o.palms?.("grp-palms", palmTransforms);
     layers.push({ id: "grp-palms", period: PALM_P, parallax: 1 });
   }
 
@@ -342,8 +352,9 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     const per = 6;
     const isle = islandMesh(9, 1.7, lcg(0x15e));
     const isles = new Batch(isle, copies * per, [1, 1, 1], STAGE_BOUNDS);
-    const palm = palmMesh();
-    const props = new Batch(palm, copies * per, [1, 1, 1], STAGE_BOUNDS);
+    const palm = o.palms ? null : palmMesh();
+    const props = palm ? new Batch(palm, copies * per, [1, 1, 1], STAGE_BOUNDS) : null;
+    const islePalmTransforms: AuraTransformSpec[] = [];
     const spk = speakerMesh();
     const speakers = new Batch(spk, copies * per, [1, 1, 1], STAGE_BOUNDS);
     const tpl = Array.from({ length: per }, (_, k) => {
@@ -359,8 +370,9 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
         for (let q = 0; q < 1; q++) {
           const a = t.yaw + q * 2.4;
           const px = t.x + Math.cos(a) * t.r * 0.45, pz = z + Math.sin(a) * t.r * 0.45;
-          props.place(j, px, t.y, pz, a, t.r * 1.2, t.r * 1.2, t.r * 1.2);
-          props.setTone(j, linear((c + j) % 2 === 0 ? "#00f2ff" : "#ffbe2e"));
+          islePalmTransforms.push({ position: [px, t.y, pz], rotation: [0, a, 0], scale: t.r * 1.2 });
+          props?.place(j, px, t.y, pz, a, t.r * 1.2, t.r * 1.2, t.r * 1.2);
+          props?.setTone(j, linear((c + j) % 2 === 0 ? "#00f2ff" : "#ffbe2e"));
           const bx = t.x + Math.cos(a + 1.2) * t.r * 0.5, bz = z + Math.sin(a + 1.2) * t.r * 0.5;
           speakers.place(j, bx, t.y, bz, Math.atan2(-t.x, 8), 1.1, 1.1, 1.1);
           speakers.setTone(j, t.tone);
@@ -370,7 +382,8 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
       }
     }
     add("stage-isles", isles.geometry(), stageLitSpec({ base: linear("#181d38"), haze: o.haze, topGrid: true, trim: true, rim: linear("#00f2ff") }), { group: "grp-isles" });
-    add("stage-isle-palms", props.geometry(), stageLitSpec({ base: linear("#072e30"), haze: o.haze, rim: linear("#00e5c8"), emissive: [0.004, 0.022, 0.020], trim: true }), { group: "grp-isles" });
+    if (props) add("stage-isle-palms", props.geometry(), stageLitSpec({ base: linear("#072e30"), haze: o.haze, rim: linear("#00e5c8"), emissive: [0.004, 0.022, 0.020], trim: true }), { group: "grp-isles" });
+    else o.palms?.("grp-isles", islePalmTransforms);
     add("stage-isle-speakers", speakers.geometry(), stageLitSpec({ base: linear("#12162b"), haze: o.haze, trim: true }), { group: "grp-isles" });
     layers.push({ id: "grp-isles", period: ISLE_P, parallax: 0.5 });
   }

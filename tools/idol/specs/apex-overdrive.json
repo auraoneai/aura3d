@@ -1,0 +1,735 @@
+{
+  "game": "apex-overdrive",
+  "outDir": "apps/showcase-roadster-rush/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "aoHeroSupercar",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.3
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A single fictional near-future mid-engine hypercar roadster, very low and wide wedge-shaped body with smooth sculpted surfaces, deep cobalt-blue metallic clearcoat paint with bright tangerine-orange accent stripes along the sills and orange intake lips, dark smoked tinted teardrop wraparound glass canopy cockpit, exposed carbon-fibre front splitter, side skirts and rear diffuser, two small round thruster nozzles in the rear deck, slim LED headlight blades, a full-width thin red taillight bar, large black low-profile performance tyres on forged silver five-spoke alloy rims with visible brake calipers"
+    },
+    {
+      "key": "aoSedan",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.6
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single ordinary modern four-door family sedan car of a fictional unbranded design, steel-blue metallic paint, tinted dark windows, chrome window trim, black tyres on silver alloy wheels, clean body panels"
+    },
+    {
+      "key": "aoHatch",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.0
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single compact five-door hatchback car of a fictional unbranded design, bright burnt-orange metallic paint, black plastic lower trim, tinted dark windows, black tyres on grey alloy wheels",
+      "image": "artifacts/idol/apex-overdrive/aoHatch/ref-v1.png"
+    },
+    {
+      "key": "aoSuv",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 21,
+      "subject": "A single tall modern five-door sport utility vehicle of a fictional unbranded design, deep forest-green metallic paint, black roof rails, dark tinted windows, black wheel-arch cladding, chunky black tyres on dark alloy wheels",
+      "image": "artifacts/idol/apex-overdrive/aoSuv/ref-v1.png"
+    },
+    {
+      "key": "aoTaxi",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.6
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single city taxi cab, a four-door sedan of a fictional unbranded design painted glossy saffron yellow, a plain blank white rectangular roof light box with no writing, a thin black checker stripe along the doors, tinted windows, black tyres on steel wheels with silver hubcaps"
+    },
+    {
+      "key": "aoVan",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.2
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single tall modern high-roof delivery panel van of a fictional unbranded design, pale silver-white paint, short sloped nose, windowless cargo sides with a sliding side door, black bumpers, dark tinted windscreen, black tyres on steel wheels",
+      "image": "artifacts/idol/apex-overdrive/aoVan/ref-v1.png"
+    },
+    {
+      "key": "aoPickup",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.4
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single full-size four-door crew-cab pickup truck of a fictional unbranded design, deep oxblood-red metallic paint, open cargo bed with black bed liner, chrome grille surround, black step bars, dark tinted windows, chunky all-terrain tyres on silver alloy wheels"
+    },
+    {
+      "key": "aoBoxTruck",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 8.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 7,
+      "subject": "A single medium cab-over box truck of a fictional unbranded design, flat-fronted white cab with large windscreen and mirrors, tall plain white rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, dual rear wheels"
+    },
+    {
+      "key": "aoBus",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 12.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 21,
+      "subject": "A single modern long single-deck city transit bus of a fictional unbranded design, sleek ocean-blue body with a white roof and dark continuous tinted side window band, large curved front windscreen, rooftop air-conditioning pods, black tyres on silver wheels",
+      "image": "artifacts/idol/apex-overdrive/aoBus/ref-v1.png"
+    },
+    {
+      "key": "aoCarrier",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 16.0
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 7,
+      "subject": "A single empty car-transporter tractor-trailer of a fictional unbranded design, side view emphasis, bright safety-orange cab-over tractor at the front, long open steel-frame trailer with a flat upper deck running at roof height and a lower deck, open lattice side frames, the rear end of the upper deck slopes down to the road as a long loading ramp, many black wheels, no vehicles loaded"
+    },
+    {
+      "key": "aoSkyRival",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.3
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 7,
+      "subject": "A single fictional futuristic flying sports car without wheels, sleek low graphite-grey metallic hover fuselage, dark smoked glass canopy, four small ducted lift fans recessed into the body corners, short swept winglets, two canted vivid red V-shaped tail fins, red accent stripes, glowing red thruster nozzle at the rear"
+    },
+    {
+      "key": "aoGantryFrame",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 22.8
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single overhead highway sign gantry structure seen from the front: two tall square galvanized-steel lattice truss towers standing far apart on concrete footings, joined across the very top by one long horizontal box-truss steel beam, bolted gusset plates, weathered grey zinc finish, no sign panels attached, empty open space under the beam, very wide and tall",
+      "image": "artifacts/idol/apex-overdrive/aoGantryFrame/ref-v1.png"
+    },
+    {
+      "key": "aoLightPole",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 7.7
+      },
+      "tex": 1024,
+      "seed": 11,
+      "subject": "A single tall tapered galvanized steel highway street light pole standing on a round bolted base flange, with one long gently curved cantilever arm reaching out horizontally to one side at the top, ending in a flat elongated cobra-head LED street lamp housing with its lens facing down, weathered zinc-grey metal finish, seen from the side so the arm points to the right",
+      "image": "artifacts/idol/apex-overdrive/aoLightPole/ref-v1.png"
+    },
+    {
+      "key": "aoSuvB",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 42,
+      "subject": "A single tall modern five-door sport utility vehicle of a fictional unbranded design, deep forest-green metallic paint, black roof rails, dark tinted windows, black wheel-arch cladding, chunky black tyres on dark alloy wheels",
+      "image": "artifacts/idol/apex-overdrive/aoSuv/ref-v1.png"
+    },
+    {
+      "key": "aoBusB",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 12.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 42,
+      "subject": "A single modern long single-deck city transit bus of a fictional unbranded design, sleek ocean-blue body with a white roof and dark continuous tinted side window band, large curved front windscreen, rooftop air-conditioning pods, black tyres on silver wheels",
+      "image": "artifacts/idol/apex-overdrive/aoBus/ref-v1.png"
+    },
+    {
+      "key": "aoBoxTruckT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 8.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 7,
+      "subject": "A single medium cab-over box truck of a fictional unbranded design, flat-fronted white cab with large windscreen and mirrors, tall plain white rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, dual rear wheels. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin around it, clean even daylight, clean undamaged bodywork"
+    },
+    {
+      "key": "aoBusT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 12.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 7,
+      "subject": "A single modern long single-deck city transit bus of a fictional unbranded design, sleek ocean-blue body with a white roof and dark continuous tinted side window band, large curved front windscreen, rooftop air-conditioning pods, black tyres on silver wheels. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin around it, clean even daylight, clean undamaged bodywork"
+    },
+    {
+      "key": "aoSuvT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single tall modern five-door sport utility vehicle of a fictional unbranded design, deep forest-green metallic paint, black roof rails, dark tinted windows, black wheel-arch cladding, chunky black tyres on dark alloy wheels. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin around it, clean even daylight, clean undamaged bodywork"
+    },
+    {
+      "key": "aoSedanT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.6
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 11,
+      "subject": "A single ordinary modern four-door family sedan car of a fictional unbranded design, steel-blue metallic paint, tinted dark windows, chrome window trim, black tyres on silver alloy wheels, clean body panels, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoHatchT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.0
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 11,
+      "subject": "A single compact five-door hatchback car of a fictional unbranded design, bright burnt-orange metallic paint, black plastic lower trim, tinted dark windows, black tyres on grey alloy wheels, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoTaxiT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.6
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 11,
+      "subject": "A single city taxi cab, a four-door sedan of a fictional unbranded design painted glossy saffron yellow, a plain blank white rectangular roof light box with no writing, a thin black checker stripe along the doors, tinted windows, black tyres on steel wheels with silver hubcaps, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoVanT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.2
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 11,
+      "subject": "A single tall modern high-roof delivery panel van of a fictional unbranded design, pale silver-white paint, short sloped nose, windowless cargo sides with a sliding side door, black bumpers, dark tinted windscreen, black tyres on steel wheels, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoPickupT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.4
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 11,
+      "subject": "A single full-size four-door crew-cab pickup truck of a fictional unbranded design, deep oxblood-red metallic paint, open cargo bed with black bed liner, chrome grille surround, black step bars, dark tinted windows, chunky all-terrain tyres on silver alloy wheels, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoSkyRivalT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.3
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 11,
+      "subject": "A single fictional futuristic flying sports car without wheels, sleek low graphite-grey metallic hover fuselage, dark smoked glass canopy, four small ducted lift fans recessed into the body corners, short swept winglets, two canted vivid red V-shaped tail fins, red accent stripes, glowing red thruster nozzle at the rear",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoSedanU",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.6
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 5,
+      "subject": "A single ordinary modern four-door family sedan car of a fictional unbranded design, steel-blue metallic paint, black windows, chrome window trim, black tyres on silver alloy wheels, clean body panels, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoHatchU",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.0
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 5,
+      "subject": "A single compact five-door hatchback car of a fictional unbranded design, bright burnt-orange metallic paint, black plastic lower trim, black windows, black tyres on grey alloy wheels, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoSuvU",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 5,
+      "subject": "A single tall modern five-door sport utility vehicle of a fictional unbranded design, deep forest-green metallic paint, black roof rails, black windows, black wheel-arch cladding, chunky black tyres on dark alloy wheels, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoTaxiU",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.6
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 5,
+      "subject": "A single city taxi cab, a four-door sedan of a fictional unbranded design painted glossy saffron yellow, a plain blank white rectangular roof light box with no writing, a thin black checker stripe along the doors, tinted windows, black tyres on steel wheels with silver hubcaps, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoVanU",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.2
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 5,
+      "subject": "A single tall modern high-roof delivery panel van of a fictional unbranded design, pale silver-white paint, short sloped nose, windowless cargo sides with a sliding side door, black bumpers, dark tinted windscreen, black tyres on steel wheels, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoPickupU",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.4
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 5,
+      "subject": "A single full-size four-door crew-cab pickup truck of a fictional unbranded design, deep oxblood-red metallic paint, open cargo bed with black bed liner, chrome grille surround, black step bars, black windows, chunky all-terrain tyres on silver alloy wheels, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoBoxTruckU",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 8.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 5,
+      "subject": "A single medium cab-over box truck of a fictional unbranded design, flat-fronted white cab with large windscreen and mirrors, tall plain white rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, dual rear wheels, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoBusU",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 12.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 5,
+      "subject": "A single modern long single-deck city transit bus of a fictional unbranded design, sleek ocean-blue body with a white roof and continuous black side window band, large curved front windscreen, rooftop air-conditioning pods, black tyres on silver wheels, a plain smooth grille with no badge or emblem",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoLightPoleS",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 7.7
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A single tall tapered galvanized steel highway street light pole standing on a round bolted base flange, with one SHORT gently curved bracket arm at the top that reaches out to one side only about one fifth of the pole's height, ending in a compact flat cobra-head LED street lamp housing with its lens facing down, weathered zinc-grey metal finish, seen from the side so the short arm points to the right"
+    },
+    {
+      "key": "aoSuvV",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 13,
+      "subject": "A single tall modern five-door sport utility vehicle of a fictional unbranded design, deep forest-green metallic paint, black roof rails, black windows, black wheel-arch cladding, chunky black tyres on dark alloy wheels, a plain smooth grille with no badge or emblem, no license plates, a smooth blank rear tailgate",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoHeroBodyNW",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.3
+      },
+      "tex": 2048,
+      "seed": 21,
+      "subject": "A single fictional near-future mid-engine hypercar roadster, very low and wide wedge-shaped body with smooth sculpted surfaces, deep cobalt-blue metallic clearcoat paint with bright tangerine-orange accent stripes along the sills and orange intake lips, dark smoked tinted teardrop wraparound glass canopy cockpit, exposed carbon-fibre front splitter, side skirts and rear diffuser, two small round thruster nozzles in the rear deck, slim LED headlight blades, a full-width thin red taillight bar, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "front": "+z",
+      "yawDeg": 179.5
+    },
+    {
+      "key": "aoSedanNW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.6
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 21,
+      "subject": "A single ordinary modern four-door family sedan car of a fictional unbranded design, steel-blue metallic paint, tinted dark windows, chrome window trim, clean body panels, a plain smooth grille with no badge or emblem, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "front": "+z",
+      "yawDeg": 175
+    },
+    {
+      "key": "aoHatchNW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.0
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 21,
+      "subject": "A single compact five-door hatchback car of a fictional unbranded design, bright burnt-orange metallic paint, black plastic lower trim, tinted dark windows, a plain smooth grille with no badge or emblem, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoSuvNW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 21,
+      "subject": "A single tall modern five-door sport utility vehicle of a fictional unbranded design, deep forest-green metallic paint, black roof rails, black windows, black wheel-arch cladding, a plain smooth grille with no badge or emblem, no license plates, a smooth blank rear tailgate, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "front": "+z",
+      "yawDeg": 37
+    },
+    {
+      "key": "aoTaxiNW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.6
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 21,
+      "subject": "A single city taxi cab, a four-door sedan of a fictional unbranded design painted glossy saffron yellow, a plain blank white rectangular roof light box with no writing, a thin black checker stripe along the doors, tinted windows, a plain smooth grille with no badge or emblem, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "front": "+z",
+      "yawDeg": 177
+    },
+    {
+      "key": "aoVanNW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.2
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 21,
+      "subject": "A single tall modern high-roof delivery panel van of a fictional unbranded design, pale silver-white paint, short sloped nose, windowless cargo sides with a sliding side door, black bumpers, dark tinted windscreen, a plain smooth grille with no badge or emblem, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "front": "+z",
+      "yawDeg": 176.5
+    },
+    {
+      "key": "aoPickupNW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.4
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 21,
+      "subject": "A single full-size four-door crew-cab pickup truck of a fictional unbranded design, deep oxblood-red metallic paint, open cargo bed with black bed liner, chrome grille surround, black step bars, dark tinted windows, a plain smooth grille with no badge or emblem, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "front": "+z",
+      "yawDeg": 178
+    },
+    {
+      "key": "aoBoxTruckNW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 8.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 21,
+      "subject": "A single medium cab-over box truck of a fictional unbranded design, flat-fronted white cab with large windscreen and mirrors, tall plain white rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, a plain smooth grille with no badge or emblem, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "front": "+z",
+      "yawDeg": 182
+    },
+    {
+      "key": "aoBusNW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 12.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 21,
+      "subject": "A single modern long single-deck city transit bus of a fictional unbranded design, sleek ocean-blue body with a white roof and continuous black side window band, large curved front windscreen, rooftop air-conditioning pods, a plain smooth grille with no badge or emblem, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "front": "+z",
+      "yawDeg": 180
+    },
+    {
+      "key": "aoCarrierNW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 16.0
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 21,
+      "subject": "A single empty car-transporter tractor-trailer of a fictional unbranded design, side view emphasis, bright safety-orange cab-over tractor at the front, long open steel-frame trailer with a flat upper deck running at roof height and a lower deck, open lattice side frames, the rear end of the upper deck slopes down to the road as a long loading ramp, no vehicles loaded, vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, no license plates",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "aoWheelCar",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 0.66
+      },
+      "tex": 512,
+      "maxVerts": 2500,
+      "seed": 7,
+      "style": "Photoreal studio product render, physically based materials, high detail. Seen exactly side-on, the wheel face looking straight at the camera, long telephoto lens, generous empty margin",
+      "subject": "A single realistic car wheel: black rubber tyre with fine tread and sidewall, ten-spoke silver alloy rim, dark centre hub",
+      "front": "+z",
+      "yawDeg": 0
+    },
+    {
+      "key": "aoWheelHero",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 0.7
+      },
+      "tex": 512,
+      "maxVerts": 2500,
+      "seed": 7,
+      "style": "Photoreal studio product render, physically based materials, high detail. Seen exactly side-on, the wheel face looking straight at the camera, long telephoto lens, generous empty margin",
+      "subject": "A single realistic hypercar wheel: low-profile black performance tyre, forged dark titanium five-spoke rim, bright orange brake caliper behind the spokes, drilled brake disc",
+      "front": "+z",
+      "yawDeg": 0
+    },
+    {
+      "key": "aoWheelTruck",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 1.0
+      },
+      "tex": 512,
+      "maxVerts": 2500,
+      "seed": 7,
+      "style": "Photoreal studio product render, physically based materials, high detail. Seen exactly side-on, the wheel face looking straight at the camera, long telephoto lens, generous empty margin",
+      "subject": "A single realistic truck wheel: tall black rubber truck tyre with deep tread, painted dark grey steel disc rim with ring of lug nuts and a chrome hub cap",
+      "front": "+z",
+      "yawDeg": 0
+    },
+    {
+      "key": "aoHeroBodyNW2",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.3
+      },
+      "tex": 2048,
+      "seed": 3,
+      "meshResolution": 1536,
+      "style": "Photoreal studio product render of a clean, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All glass is fully opaque glossy dark tinted glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "subject": "A single fictional near-future mid-engine hypercar coupe, very low and wide wedge-shaped body with smooth sculpted surfaces, deep cobalt-blue metallic clearcoat paint with bright tangerine-orange accent stripes along the sills and orange intake lips, a closed fixed roof with a smooth dark smoked tinted glass canopy fully covering the cockpit, carbon-fibre front splitter, side skirts and rear diffuser, two small round thruster nozzles in the rear deck, slim LED headlight blades, a full-width thin red taillight bar. Vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, solid closed body with no holes"
+    },
+    {
+      "key": "aoHeroBodyNW3",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.3
+      },
+      "tex": 2048,
+      "seed": 11,
+      "meshResolution": 1536,
+      "style": "Photoreal studio product render of a clean, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All glass is fully opaque glossy dark tinted glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "subject": "A single fictional near-future mid-engine hypercar coupe, very low and wide wedge-shaped body with smooth sculpted surfaces, deep cobalt-blue metallic clearcoat paint with bright tangerine-orange accent stripes along the sills and orange intake lips, a closed fixed roof with a smooth dark smoked tinted glass canopy fully covering the cockpit, carbon-fibre front splitter, side skirts and rear diffuser, two small round thruster nozzles in the rear deck, slim LED headlight blades, a full-width thin red taillight bar. Vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, solid closed body with no holes"
+    },
+    {
+      "key": "aoHeroBodyNW4",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.3
+      },
+      "tex": 2048,
+      "seed": 29,
+      "meshResolution": 1536,
+      "style": "Photoreal studio product render of a clean, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All glass is fully opaque glossy dark tinted glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "subject": "A single fictional near-future mid-engine hypercar coupe, very low and wide wedge-shaped body with smooth sculpted surfaces, deep cobalt-blue metallic clearcoat paint with bright tangerine-orange accent stripes along the sills and orange intake lips, a closed fixed roof with a smooth dark smoked tinted glass canopy fully covering the cockpit, carbon-fibre front splitter, side skirts and rear diffuser, two small round thruster nozzles in the rear deck, slim LED headlight blades, a full-width thin red taillight bar. Vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, solid closed body with no holes"
+    },
+    {
+      "key": "aoHeroBodyNW5",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.3
+      },
+      "tex": 2048,
+      "seed": 47,
+      "meshResolution": 1536,
+      "style": "Photoreal studio product render of a clean, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All glass is fully opaque glossy dark tinted glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "subject": "A single fictional near-future mid-engine hypercar coupe, very low and wide wedge-shaped body with smooth sculpted surfaces, deep cobalt-blue metallic clearcoat paint with bright tangerine-orange accent stripes along the sills and orange intake lips, a closed fixed roof with a smooth dark smoked tinted glass canopy fully covering the cockpit, carbon-fibre front splitter, side skirts and rear diffuser, two small round thruster nozzles in the rear deck, slim LED headlight blades, a full-width thin red taillight bar. Vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, solid closed body with no holes"
+    },
+    {
+      "key": "aoBoxTruckNW2",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 8.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 5,
+      "subject": "A single medium cab-over box truck of a fictional unbranded design, flat-fronted white cab with large windscreen and mirrors, tall plain white rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, a plain smooth grille with no badge or emblem. Vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, solid closed body with no holes, no license plates",
+      "style": "Photoreal studio product render of a clean, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All glass is fully opaque glossy dark tinted glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "meshResolution": 1536
+    },
+    {
+      "key": "aoBoxTruckNW3",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 8.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 17,
+      "subject": "A single medium cab-over box truck of a fictional unbranded design, flat-fronted white cab with large windscreen and mirrors, tall plain white rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, a plain smooth grille with no badge or emblem. Vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, solid closed body with no holes, no license plates",
+      "style": "Photoreal studio product render of a clean, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All glass is fully opaque glossy dark tinted glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "meshResolution": 1536
+    },
+    {
+      "key": "aoBusNW2",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 12.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 5,
+      "subject": "A single modern long single-deck city transit bus of a fictional unbranded design, sleek ocean-blue body with a white roof and continuous black side window band, large curved front windscreen, rooftop air-conditioning pods, a plain smooth grille with no badge or emblem. Vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, solid closed body with no holes, no license plates",
+      "style": "Photoreal studio product render of a clean, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All glass is fully opaque glossy dark tinted glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "meshResolution": 1536
+    },
+    {
+      "key": "aoBusNW3",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 12.0
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 17,
+      "subject": "A single modern long single-deck city transit bus of a fictional unbranded design, sleek ocean-blue body with a white roof and continuous black side window band, large curved front windscreen, rooftop air-conditioning pods, a plain smooth grille with no badge or emblem. Vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, solid closed body with no holes, no license plates",
+      "style": "Photoreal studio product render of a clean, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All glass is fully opaque glossy dark tinted glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "meshResolution": 1536,
+      "front": "+z",
+      "yawDeg": 180
+    }
+  ]
+}

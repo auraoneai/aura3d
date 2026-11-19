@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrMaple",
+  "generatedAt": "2026-11-18T22:37:45.609Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/nrMaple/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 41,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1091518,
+        "num_faces": 2183392,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A rounded ornamental maple tree with a short gnarled dark trunk and a full rounded crown of small persimmon-orange and crimson autumn leaves, standing alone, no pot, no ground. Photograph of a real handmade miniature tree in Japanese woodblock-print colours: real bark, dense small leaves, soft warm golden-hour light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 2.107,
+    "size": [
+      2.016,
+      1.85,
+      1.952
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrMaple.glb",
+  "sizeBytes": 4369316,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrMaple/views.png",
+  "usd": 0.2
+}

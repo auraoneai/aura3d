@@ -1,0 +1,70 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bellkeepers-walk",
+  "key": "bkHero",
+  "generatedAt": "2026-11-18T22:24:54.647Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/bellkeepers-walk/bkHero/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024,
+        "rig": true,
+        "animations": [
+          "idle",
+          "walk",
+          "run"
+        ]
+      },
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 705240,
+        "num_faces": 1410512,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 22,
+        "animations": [
+          "idle",
+          "walk",
+          "run"
+        ]
+      }
+    }
+  ],
+  "prompt": "A gentle young wandering bell-keeper with a kind rounded face, rosy cheeks, teal eyes and chestnut hair with a side braid, wearing an olive-moss green hooded travelling cloak with a soft peaked hood pushed back off the face, a cream linen and saffron-yellow scarf wrapped at the neck, a fitted slate-blue tunic with a saddle-leather belt and small brass buckle, a leather cross-body satchel, olive knee-length coat skirt with a saffron hem band, soft brown breeches, cream linen calf wraps and worn brown leather boots, empty hands. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single full-body figure, head to feet in frame with margin, centered, standing in a T-pose: arms straight out horizontally to the sides, legs straight and apart at shoulder width, feet flat pointing forward, front view facing the camera, even soft studio lighting, no cast shadow, plain light-grey seamless background. Plain clothing back. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "hero",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 0.999 m, 3 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000        5.49x         844      0\n  bind-pose mismatch (SKIN_BIND_MISMATCH): bone_10 51% off-axis, bone_0 80% off-axis, bone_20 74% off-axis, bone_6 56% off-axis, bone_16 47% off-axis\n  ERROR material0 (mesh 0 prim 0): 844 of 30000 triangles stretch past 1.6x their rest edges (worst 5.49x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n  warn  5 bone(s) are not inside the mesh they move: bone_10 (vertices 0.034 m off a 0.067 m bone), bone_0 (vertices 0.058 m off a 0.072 m bone), bone_20 (vertices 0.063 m off a 0.085 m bone), bone_6 (vertices 0.034 m off a 0.06 m bone) (SKIN_BIND_MISMATCH). The mesh was modelled in a different pose than the skeleton assumes (typically mid-stride), so every clip rotates the limbs about joints off the limb. Rebuild the limbs in the skeleton's pose (assets repair-skin --rebuild-limbs) or re-rig.",
+    "repairLog": "skin check still fails after repair: SKIN_STRETCH, SKIN_BIND_MISMATCH\nBind-pose mismatch on bone_10, bone_0, bone_20, bone_6, bone_16: the mesh was modelled in a different pose than the skeleton assumes. Weight smoothing and triangle cuts only mask it. For a recognised humanoid run repair-skin --rebuild-limbs (rebuilds the legs in the skeleton's pose); otherwise rebuild the limbs in your DCC tool or regenerate and re-rig the model in the pose the skeleton assumes.\nStill failing after smooth-bridges: SKIN_STRETCH, SKIN_BIND_MISMATCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand."
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 2.903,
+    "size": [
+      2.789,
+      2.9,
+      0.964
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/where-the-wind-wanders-port/assets/idol/bkHero.glb",
+  "sizeBytes": 6237296,
+  "preview": "artifacts/idol/bellkeepers-walk/bkHero/views.png",
+  "usd": 0.25
+}

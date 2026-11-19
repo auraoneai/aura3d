@@ -21,6 +21,24 @@ export const CONFIG = {
   ERASER_PENALTY: 15,
   ERASER_WIPE_METERS: 15,
   ERASER_SPEED: 1.8,
+  /**
+   * Contact footprints (metres, lateral half-width + longitudinal reach from the sim position), measured from the Idol
+   * visuals world.ts draws (`art/idol.ts` IDOL_DIMS / HERO_ROVER_OFFSET / RIVAL_BRUSH_LOCAL; pinned by
+   * tests/unit/splat-turf/collision-footprints.test.ts). Rover: 0.45 m roller ball leading, kart shell trailing behind it.
+   * Eraser kart: shell centred on the bot, spinning scrub brush reaching toward the player (incl. its steer yaw).
+   */
+  ROVER_HALF_WIDTH: 0.62,
+  ROVER_REACH_FRONT: 0.45,
+  ROVER_REACH_BACK: 1.73,
+  ERASER_HALF_WIDTH: 0.62,
+  ERASER_REACH_FRONT: 1.1,
+  ERASER_REACH_BACK: 0.58,
+  /**
+   * Rival karts never interpenetrate: two karts whose footprints share rows keep at least this centre gap across the
+   * road (2 x ERASER_HALF_WIDTH plus the 0.12 m their yawed brush can swing past it on each side). Three karts fit
+   * side by side inside +-LANE_LIMIT.
+   */
+  ERASER_GAP: 1.48,
   STRETCH_METERS: 25,
   STRETCH_COVERAGE: 0.8,
   MAX_MULT: 5,
@@ -40,6 +58,8 @@ export const CONFIG = {
 } as const;
 
 export type Phase = "splash" | "playing" | "bursting" | "gameOver" | "finished";
+/** Along-road length of a rival kart's footprint; karts whose rows are closer than this share rows. */
+export const BOT_FOOTPRINT_LENGTH = CONFIG.ERASER_REACH_FRONT + CONFIG.ERASER_REACH_BACK;
 const PHASE_CODES: Record<Phase, number> = { splash: 0, playing: 1, bursting: 2, gameOver: 3, finished: 4 };
 
 export interface Input { start: boolean; down: boolean; up: boolean; dx: number; tap: boolean }
@@ -107,6 +127,7 @@ export class SplatTurfSim {
   private ye = 0;
   private dragging = false;
   private passedRows = 0;
+  private readonly botOrder: Bot[] = [];
   private stretchEnd = CONFIG.STRETCH_METERS;
   private nextCanRow = 40;
   private nextStripRow = 80;
@@ -269,10 +290,45 @@ export class SplatTurfSim {
 
   private moveBots(dt: number): void {
     for (const b of this.o.bots) {
-      if (!b.active) continue;
+      // A hit kart is being knocked off the road (world.ts eraserKnock); its lane slide stops so knocked neighbours
+      // fly off in formation instead of sliding into each other.
+      if (!b.active || b.hit) continue;
       b.x += b.dir * CONFIG.ERASER_SPEED * dt;
       if (b.x > CONFIG.LANE_LIMIT) { b.x = CONFIG.LANE_LIMIT; b.dir = -1; }
       else if (b.x < -CONFIG.LANE_LIMIT) { b.x = -CONFIG.LANE_LIMIT; b.dir = 1; }
+    }
+    this.separateBots();
+  }
+
+  /**
+   * Kart-vs-kart bump: un-hit rival karts whose footprints share rows are kept ERASER_GAP apart across the road (sweep
+   * left to right, then back from the right lane limit), and two karts that touch bounce away from each other, the
+   * same reversal they make at the lane limits. Recycled karts (pool rows +300 m) all land on the same row, so without
+   * this they would slide through one another.
+   */
+  private separateBots(): void {
+    const order = this.botOrder;
+    order.length = 0;
+    for (const b of this.o.bots) if (b.active && !b.hit) order.push(b);
+    order.sort((a, b) => a.row - b.row || a.x - b.x);
+    let start = 0;
+    while (start < order.length) {
+      let end = start + 1;
+      while (end < order.length && order[end]!.row - order[end - 1]!.row < BOT_FOOTPRINT_LENGTH) end++;
+      if (end - start > 1) {
+        const group = order.slice(start, end).sort((a, b) => a.x - b.x);
+        const gap = CONFIG.ERASER_GAP;
+        for (let k = 1; k < group.length; k++) group[k]!.x = Math.max(group[k]!.x, group[k - 1]!.x + gap);
+        const last = group[group.length - 1]!;
+        last.x = Math.min(last.x, CONFIG.LANE_LIMIT);
+        for (let k = group.length - 2; k >= 0; k--) group[k]!.x = Math.min(group[k]!.x, group[k + 1]!.x - gap);
+        for (let k = 1; k < group.length; k++) {
+          if (group[k]!.x - group[k - 1]!.x > gap + 1e-9) continue;
+          group[k - 1]!.dir = -1;
+          group[k]!.dir = 1;
+        }
+      }
+      start = end;
     }
   }
 
@@ -329,8 +385,19 @@ export class SplatTurfSim {
     const o = this.o;
     for (const b of o.bots) {
       if (!b.active || b.hit) continue;
-      if (o.distance >= b.row && o.distance - b.row < 0.7 && Math.abs(o.laneOffset - b.x) < 0.9) {
+      // Footprint overlap: rover [distance - back, distance + front] vs eraser [row - front, row + back] along the road,
+      // half-widths summed across it, so contact registers the frame the visuals touch (not after they interpenetrate).
+      const reachAhead = o.distance + CONFIG.ROVER_REACH_FRONT >= b.row - CONFIG.ERASER_REACH_FRONT;
+      const notPast = o.distance - CONFIG.ROVER_REACH_BACK <= b.row + CONFIG.ERASER_REACH_BACK;
+      if (reachAhead && notPast && Math.abs(o.laneOffset - b.x) < CONFIG.ROVER_HALF_WIDTH + CONFIG.ERASER_HALF_WIDTH) {
         b.hit = true;
+        // Strike: karts beside it on the far side are in its knock path, so they are knocked off with it (no extra
+        // penalty) instead of the flying kart passing through them.
+        const side = b.x > o.laneOffset ? 1 : b.x < o.laneOffset ? -1 : b.x >= 0 ? 1 : -1;
+        for (const other of o.bots) {
+          if (other === b || !other.active || other.hit || Math.abs(other.row - b.row) >= BOT_FOOTPRINT_LENGTH) continue;
+          if ((other.x - b.x) * side > 0) other.hit = true;
+        }
         o.tank = Math.max(0, o.tank - CONFIG.ERASER_PENALTY);
         o.eraserHits++;
         o.combo = 0; o.mult = 1;
@@ -371,6 +438,7 @@ export class SplatTurfSim {
         } else b.active = false;
       }
     }
+    this.separateBots();
     for (const seg of o.segments) {
       while (seg.row < o.distance - CONFIG.SEGMENT_BACK) seg.row += CONFIG.POOL_SEGMENTS;
     }

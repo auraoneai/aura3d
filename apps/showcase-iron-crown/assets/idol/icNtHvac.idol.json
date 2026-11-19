@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icNtHvac",
+  "generatedAt": "2026-11-18T23:33:48.627Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0a6-51ac-7db3-9e10-d05baf98023f",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ac-819b-7f93-9430-7fa6e3489140",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1573326,
+        "num_faces": 3146840,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Rooftop industrial air-handling unit: weathered galvanized steel box with a large round fan grille on top, louvered side vents, pipes and electrical conduit",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.547,
+    "size": [
+      1.553,
+      1.34,
+      1.245
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icNtHvac.glb",
+  "sizeBytes": 3409768,
+  "preview": "artifacts/idol/iron-crown/icNtHvac/views.png",
+  "usd": 0.37
+}

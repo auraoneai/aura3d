@@ -1,0 +1,68 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrSoldier",
+  "generatedAt": "2026-11-18T21:58:21.007Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/nrSoldier/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 15,
+        "mesh_resolution": 1024,
+        "rig": true,
+        "animations": [
+          "idle",
+          "run"
+        ]
+      },
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 561762,
+        "num_faces": 1123524,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 28,
+        "animations": [
+          "idle",
+          "run"
+        ]
+      }
+    }
+  ],
+  "prompt": "A feudal-era foot soldier in iron-slate blue cloth jacket and trousers, wearing crimson-lacquered laced lamellar chest armour, crimson shoulder plates and a short crimson armoured skirt, a shallow dark conical iron war hat, a dark cloth half mask over the lower face, cream cloth wraps on the shins, dark straw sandals over split-toe socks, sturdy build, empty hands. Photograph of a real hand-carved and hand-painted wooden figure in Japanese woodblock-print colours: carved basswood with soft chisel facets, flat matte mineral-pigment paint in deep indigo, persimmon vermilion and rice-paper cream, fine sumi-ink linework painted along hems, folds and edges, museum-quality craftsmanship, soft warm studio light. Single full-body figure, head to feet in frame with margin, centered, standing in a T-pose: arms straight out horizontally to the sides, legs straight and apart at shoulder width, feet flat pointing forward, front view facing the camera, even soft studio lighting, no cast shadow, plain light-grey seamless background. Plain clothing back. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 0.999 m, 2 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000        5.73x        1141      0\n  ERROR material0 (mesh 0 prim 0): 1141 of 30000 triangles stretch past 1.6x their rest edges (worst 5.73x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n\nrefit: material0 (mesh 0 prim 0): 1141 of 30000 triangles stretch past 1.6x their rest edges (worst 5.73x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.",
+    "repairLog": "wrote /Users/gurbakshchahal/platforms/A-LIVE/aura3d/artifacts/idol/shadowstep-gauntlet/nrSoldier/refit.glb (8561636 bytes)\nskin check still fails after repair: SKIN_STRETCH\nStill failing after smooth-bridges: SKIN_STRETCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand."
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.751,
+    "size": [
+      1.749,
+      1.75,
+      0.562
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrSoldier.glb",
+  "sizeBytes": 3846536,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrSoldier/views.png",
+  "usd": 0.25
+}

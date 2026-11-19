@@ -9,6 +9,7 @@ import {
   lights,
   looks,
   material,
+  model,
   primitives,
   scene,
   text3D,
@@ -39,7 +40,8 @@ import { APEX_PLUMES, plumeSpec } from "./art/plume";
 import { CONTACT_SIZE, DECAL_CAPACITY, DECAL_KIND_CODE, DECAL_SIZE, DECAL_Y, contactScaleY, decalLayout, decalSpec } from "./render/decals";
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { FIXED_DT, POWERUP_SECONDS } from "./native/constants";
-import { GANTRY_COUNT } from "./native/world";
+import { createFreewayAutopilot } from "./native/autopilot";
+import { GANTRY_COUNT, SIGN_BAND } from "./native/world";
 import { gantryBoxes, gantryGeometrySpecs } from "./render/gantry";
 import { installBlackFrameGuard } from "@aura3d/debug";
 // A2: `?diag=1` shows the shared GPU diagnostics panel (draw calls, backend, tier); inert without the query parameter.
@@ -49,7 +51,7 @@ import { labAppOptions, labCameraOptions, readLabFlags } from "../../showcase-po
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { HAZE_FLOOR_Y, groundSpec } from "./art/ground";
 import { asphaltMaterial, asphaltRutSpec, concreteMaterial } from "./art/surfaces";
-import { apexRampDeckMaterial } from "./art/paint";
+import { apexCanopyGlassMaterial, apexRampDeckMaterial } from "./art/paint";
 import {
   APEX_PROCEDURAL_MATERIALS,
   buildBayRidgeMountainSpec,
@@ -58,17 +60,41 @@ import {
   buildCarrierRampChevronSpec,
   buildCarrierRampDeckSpec,
   buildCarrierRampRailSpec,
-  buildHeroAeroSplitterNode,
-  buildHeroCanopyVisorNode,
   buildHeroHeadlightNode,
-  buildHeroSupercarNode,
   buildHeroTaillightBarNode,
   buildPowerupEmblemSpec,
   buildRoadsideBarrierPairSpec,
   buildRoadsideCorridorNode,
-  buildSkycarGeometries,
   buildTrafficClassGeometries
 } from "./art/proceduralModels";
+import {
+  HALF_TURN_MAT3,
+  IDOL_GANTRY,
+  IDOL_HERO,
+  IDOL_HERO_FIT,
+  IDOL_LAMP_REACH,
+  IDOL_LAMP_Y,
+  IDOL_POLE,
+  POLE_FIT,
+  POLE_SHAFT_SHIFT,
+  IDOL_SKY_FIT,
+  IDOL_SKY_RIVAL,
+  IDOL_TRAFFIC,
+  IDOL_TRAFFIC_NEAR,
+  IDOL_WHEEL_MODELS,
+  NEAR_BODY_FIT,
+  HERO_WHEELS,
+  HERO_FRONT_AXLE,
+  HERO_CANOPY,
+  SKY_FANS,
+  IDOL_TRAFFIC_FIT,
+  IDOL_YAW,
+  gantryFit,
+  idolHeroPaint,
+  idolRivalPaint,
+  idolTrafficPaint
+} from "./render/idolFleet";
+import { WHEEL_MODELS, easeSteer, fanSpin, heroSteerTarget, mat3FromEulerZYX, shownRollDistance, vehicleWheelTransforms, wheelCount, wheelHubs, wheelLocalMat3, wheelRoll, type WheelTransform } from "./render/idolWheels";
 import { createImpactRig } from "../../showcase-port-shared/feel";
 import { createGradingLut } from "../../showcase-port-shared/vfx-pack";
 import { PYLON_ROWS, pylonGeometrySpecs, pylonLayout } from "./render/pylons";
@@ -99,6 +125,7 @@ import {
 } from "./native/presentation";
 import { apexSpeedLines, apexVfxEvents, countSkyDodges, type ApexVfxFrame } from "./render/vfxDirector";
 import { APEX_CHASE_POSE, SLOW_MO_SECONDS, apexTitleDurationSeconds, apexTitleSequence, chaseCameraOffsets, createApexSlowMo } from "./render/cinematics";
+import { CHASE_CAMERA_BACK, CHASE_CAMERA_UP, createCameraClearance, type ClearanceVehicle } from "./render/cameraClearance";
 import { createApexSmokeAtlas, createApexSparkAtlas, flipbookBurstSpec, registerApexVfx } from "./art/vfx";
 import { InstancePool, parked } from "./render/instancePool";
 import { apexQaCrops, type QaCrop } from "./render/qa";
@@ -168,8 +195,20 @@ const SHOWCASE_CHIP = ["dev", "capture"].some((k) => urlParams.get(k) === "1");
  */
 const APEX_LUT_URL = new URL("./assets/luts/apex-bluehour.cube", import.meta.url).pathname;
 
-/** Procedural vehicles are authored facing `-Z` (`VEHICLE_SPECS` exact dimensions), so yaw offset is 0. */
-const TRAFFIC_YAW = trafficYawOffset(true);
+/**
+ * Idol traffic GLBs face `+Z` (render/idolFleet.ts), so each one turns half a circle onto its `-Z` travel direction; a class
+ * still drawn by its procedural `-Z` hull turns none (per-class yaw below).
+ */
+const TRAFFIC_YAW = trafficYawOffset(false);
+const PROCEDURAL_TRAFFIC_YAW = trafficYawOffset(true);
+
+/** Moving-parts pools: near-traffic wheels per model, the spoke-blur discs and the sky rivals' fan blades (3 bars per fan). */
+const CAR_WHEEL_CAPACITY = (["sedan", "hatch", "suv", "taxi", "van", "pickup"] as const).reduce((n, t) => n + NEAR_CAPACITY[t] * wheelCount(NEAR_BODY_FIT[t].wheels), 0);
+const TRUCK_WHEEL_CAPACITY = (["boxtruck", "bus", "carrier"] as const).reduce((n, t) => n + NEAR_CAPACITY[t] * wheelCount(NEAR_BODY_FIT[t].wheels), 0);
+const WHEEL_BLUR_CAPACITY = CAR_WHEEL_CAPACITY + TRUCK_WHEEL_CAPACITY + 4;
+const SKY_FAN_BLADE_CAPACITY = POOL_CAPACITY.skyCar * 4 * 3;
+/** Above this wheel speed a 5-10 spoke rim aliases at 60 fps (reads frozen or backward): a spoke-blur disc covers it. */
+const WHEEL_BLUR_RAD_S = 25;
 
 /** AO-L3 practical intensities at full night (phase 2 calibrates against the night bottom-centre cell). */
 const SODIUM_INTENSITY = 26;
@@ -201,6 +240,8 @@ const TRIM_Y = 1.07;
 
 /** Overhead gantry geometry, built from the collision band so what crashes the car is what is drawn (audit RR-6). */
 const GANTRY_BOXES = gantryBoxes();
+/** Per-axis fit of the Idol gantry model (truss underside on the sign band's top). */
+const GANTRY_FIT = gantryFit(SIGN_BAND.maxY);
 
 /** Power-ups: each kind has its own sculpted multi-tone emblem (art/proceduralModels.ts) and HUD timer bar colour. */
 const POWERUP_LOOK: Record<PowerupKind, { color: string }> = {
@@ -253,8 +294,7 @@ function rotateLocalOffset(
 
 interface PlayerHandles {
   car: AuraRuntimeNodeHandle;
-  canopyVisor: AuraRuntimeNodeHandle;
-  aeroSplitter: AuraRuntimeNodeHandle;
+  canopy: AuraRuntimeNodeHandle;
   lightbar: AuraRuntimeNodeHandle;
   headlightL: AuraRuntimeNodeHandle;
   headlightR: AuraRuntimeNodeHandle;
@@ -494,8 +534,9 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       // GU47 phase 3 (distinctness): tangerine light-line dashes, the identity colour on the deck
       .box({ name: "lane-dashes", size: [0.14, 0.02, 4.2], material: material.emissive({ color: "#ffb27a", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.1 }), castShadow: false, transforms: parked(LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER) })
       .runtime(game.runtimeNode(poolId("dashes"))),
+    // Idol wow pass: one generated lattice gantry (towers + top truss) per slot over the procedural boards (render/idolFleet.ts)
     instances
-      .custom(gantrySpecs.steel, { name: "gantry-steel", material: APEX_PROCEDURAL_MATERIALS.gantryTrussSteel(), castShadow: false, transforms: parked(GANTRY_COUNT * 3) })
+      .model(IDOL_GANTRY, { scaleMode: "world", name: "gantry-steel", castShadow: false, transforms: parked(GANTRY_COUNT) })
       .runtime(game.runtimeNode(poolId("gantry-steel"))),
     instances
       .custom(gantrySpecs.board, { name: "gantry-boards", material: APEX_PROCEDURAL_MATERIALS.gantrySignBoard(), castShadow: false, transforms: parked(GANTRY_COUNT * 2) })
@@ -504,7 +545,8 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .custom(gantrySpecs.trim, { name: "gantry-trims", material: APEX_PROCEDURAL_MATERIALS.gantryLuminaireTrim(), castShadow: false, transforms: parked(GANTRY_COUNT * 4) })
       .runtime(game.runtimeNode(poolId("gantry-trims"))),
     instances
-      .custom(dressingSpecs.lightPole, { name: "light-poles", material: APEX_PROCEDURAL_MATERIALS.lightPoleSteel(), castShadow: false, transforms: parked(POLE_ROWS * 2) })
+      // Idol wow pass: the generated galvanized cobra-head standard, fitted so its lamp head sits where the lamp pool draws
+      .model(IDOL_POLE, { scaleMode: "world", name: "light-poles", castShadow: false, transforms: parked(POLE_ROWS * 2) })
       .runtime(game.runtimeNode(poolId("poles"))),
     instances
       .custom(dressingSpecs.lightLamp, { name: "light-lamps", material: APEX_PROCEDURAL_MATERIALS.lightLampEmitter(), castShadow: false, transforms: parked(POLE_ROWS * 2) })
@@ -567,9 +609,12 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   const sidePlumeMat = material.custom(plumeSpec(APEX_PLUMES.side, REDUCED_MOTION));
 
   s.addMany([
-    buildHeroSupercarNode(),
-    buildHeroCanopyVisorNode(),
-    buildHeroAeroSplitterNode(),
+    // Idol wow pass: the generated hypercar (canopy, splitter and wheels in the one GLB) under the procedural lamp overlays
+    model(IDOL_HERO, { scaleMode: "world", name: "player-roadster-car", castShadow: true, receiveShadow: true, materialOverrides: idolHeroPaint() })
+      .runtime({ id: "player-roadster-car", tags: ["primarySubject", "primaryVehicle", "player"] }),
+    primitives
+      .sphere({ name: "player-canopy-glass", size: [2, 2, 2], material: apexCanopyGlassMaterial(), castShadow: false, receiveShadow: false })
+      .runtime({ id: "player-canopy-glass" }),
     buildHeroTaillightBarNode(),
     buildHeroHeadlightNode("l"),
     buildHeroHeadlightNode("r"),
@@ -651,50 +696,38 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     ]);
   }
 
-  // 4. Ground traffic: per type, sculpted multi-material near pools (<= 19 slots: carPaint body + studioGlass cabin + forged 5-spoke wheels)
-  //    for the first 90 m and a single-draw hardware-instanced far-LOD pool (clearcoat: 0) beyond, plus sculpted carrier ramps, brake bars and blinkers.
+  // 4. Ground traffic (Idol wow pass): one generated GLB per class (render/idolFleet.ts), drawn by a shadow-casting near pool
+  //    for the first 90 m and a shadowless far pool beyond (same model). A class without an admitted Idol model keeps its
+  //    sculpted procedural near body + glass + trim and far-LOD pools. Plus sculpted carrier ramps, brake bars and blinkers.
   for (const vType of VEHICLE_TYPES) {
+    const idol = IDOL_TRAFFIC[vType];
+    if (idol) {
+      s.addMany([
+        instances
+          .model(IDOL_TRAFFIC_NEAR[vType] ?? idol, { scaleMode: "world", name: `traffic-${vType}-near`, materialOverrides: idolTrafficPaint(), castShadow: true, receiveShadow: true, transforms: parked(NEAR_CAPACITY[vType]) })
+          .runtime(game.runtimeNode(poolId(`traffic-${vType}-near`))),
+        instances
+          .model(idol, { scaleMode: "world", name: `traffic-${vType}-far`, materialOverrides: idolTrafficPaint(), castShadow: false, receiveShadow: false, transforms: parked(POOL_CAPACITY[vType]) })
+          .runtime(game.runtimeNode(poolId(`traffic-${vType}-far`)))
+      ]);
+      continue;
+    }
     const vGeom = buildTrafficClassGeometries(vType);
     s.addMany([
       instances
-        .custom(vGeom.nearBody, {
-          name: `traffic-${vType}-near`,
-          material: APEX_PROCEDURAL_MATERIALS.trafficNearBodyPaint(vType),
-          castShadow: true,
-          receiveShadow: true,
-          transforms: parked(NEAR_CAPACITY[vType])
-        })
+        .custom(vGeom.nearBody, { name: `traffic-${vType}-near`, material: APEX_PROCEDURAL_MATERIALS.trafficNearBodyPaint(vType), castShadow: true, receiveShadow: true, transforms: parked(NEAR_CAPACITY[vType]) })
         .runtime(game.runtimeNode(poolId(`traffic-${vType}-near`))),
       instances
-        .custom(vGeom.nearGlass, {
-          name: `traffic-${vType}-glass`,
-          material: APEX_PROCEDURAL_MATERIALS.trafficNearGlass(),
-          castShadow: false,
-          receiveShadow: false,
-          transforms: parked(NEAR_CAPACITY[vType])
-        })
+        .custom(vGeom.nearGlass, { name: `traffic-${vType}-glass`, material: APEX_PROCEDURAL_MATERIALS.trafficNearGlass(), castShadow: false, receiveShadow: false, transforms: parked(NEAR_CAPACITY[vType]) })
         .runtime(game.runtimeNode(poolId(`traffic-${vType}-glass`))),
       instances
-        .custom(vGeom.nearTrim, {
-          name: `traffic-${vType}-trim`,
-          material: APEX_PROCEDURAL_MATERIALS.trafficNearWheelTrim(),
-          castShadow: false,
-          receiveShadow: true,
-          transforms: parked(NEAR_CAPACITY[vType])
-        })
+        .custom(vGeom.nearTrim, { name: `traffic-${vType}-trim`, material: APEX_PROCEDURAL_MATERIALS.trafficNearWheelTrim(), castShadow: false, receiveShadow: true, transforms: parked(NEAR_CAPACITY[vType]) })
         .runtime(game.runtimeNode(poolId(`traffic-${vType}-trim`))),
       instances
-        .custom(vGeom.farLod, {
-          name: `traffic-${vType}-far`,
-          material: APEX_PROCEDURAL_MATERIALS.trafficFarHardwarePbr(),
-          castShadow: false,
-          receiveShadow: false,
-          transforms: parked(POOL_CAPACITY[vType])
-        })
+        .custom(vGeom.farLod, { name: `traffic-${vType}-far`, material: APEX_PROCEDURAL_MATERIALS.trafficFarHardwarePbr(), castShadow: false, receiveShadow: false, transforms: parked(POOL_CAPACITY[vType]) })
         .runtime(game.runtimeNode(poolId(`traffic-${vType}-far`)))
     ]);
   }
-  const skycarSpecs = buildSkycarGeometries();
   s.addMany([
     instances
       .custom(buildCarrierRampDeckSpec(), { name: "carrier-ramps", material: apexRampDeckMaterial(), castShadow: false, transforms: parked(POOL_CAPACITY.carrier) })
@@ -720,16 +753,33 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
 
   // 5. Sky-lane traffic: sculpted aero-interceptors with ducted fans, swept winglets & canted rival-red V-tailfins
   s.addMany([
+    // Idol wow pass: the generated rival flyer (graphite, red V-tails) in both the near and the beyond-90 m pool, no shadow
     instances
-      .custom(skycarSpecs.nearSpec, { name: "sky-cars", material: APEX_PROCEDURAL_MATERIALS.skycarNearHardwareMetal(), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .model(IDOL_SKY_RIVAL, { scaleMode: "world", name: "sky-cars", materialOverrides: idolRivalPaint(), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars"))),
-    // sky cars beyond 90 m: hardware-instanced far LOD, no shadow
     instances
-      .custom(skycarSpecs.farSpec, { name: "sky-cars-far", material: APEX_PROCEDURAL_MATERIALS.skycarFarHardwarePbr(), castShadow: false, receiveShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .model(IDOL_SKY_RIVAL, { scaleMode: "world", name: "sky-cars-far", materialOverrides: idolRivalPaint(), castShadow: false, receiveShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars-far"))),
     instances
       .cylinder({ name: "sky-plumes", size: [0.42, 1.65, 0.42], material: material.custom(plumeSpec(APEX_PLUMES.sky, REDUCED_MOTION, true)), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-plumes"))),
+    // Moving-parts pass: spinning Idol wheels (car / truck models) under the near traffic, the hero's four wheels, spoke-blur
+    // discs over any wheel turning faster than WHEEL_BLUR_RAD_S, and the sky rivals' lift-fan rotors (render/idolWheels.ts)
+    instances
+      .model(IDOL_WHEEL_MODELS.car, { scaleMode: "world", name: "traffic-wheels-car", castShadow: true, receiveShadow: true, transforms: parked(CAR_WHEEL_CAPACITY) })
+      .runtime(game.runtimeNode(poolId("wheels-car"))),
+    instances
+      .model(IDOL_WHEEL_MODELS.truck, { scaleMode: "world", name: "traffic-wheels-truck", castShadow: true, receiveShadow: true, transforms: parked(TRUCK_WHEEL_CAPACITY) })
+      .runtime(game.runtimeNode(poolId("wheels-truck"))),
+    instances
+      .model(IDOL_WHEEL_MODELS.hero, { scaleMode: "world", name: "player-wheels", castShadow: true, receiveShadow: true, transforms: parked(4) })
+      .runtime(game.runtimeNode(poolId("wheels-hero"))),
+    instances
+      .cylinder({ name: "wheel-spoke-blur", size: [1, 1, 1], material: material.pbr({ color: "#3b3f46", metallic: 0.6, roughness: 0.45, opacity: 0.62, clearcoat: 0 }), castShadow: false, receiveShadow: false, transforms: parked(WHEEL_BLUR_CAPACITY) })
+      .runtime(game.runtimeNode(poolId("wheel-blur"))),
+    instances
+      .box({ name: "sky-fan-blades", size: [1, 1, 1], material: material.pbr({ color: "#2b2e34", metallic: 0.8, roughness: 0.35, clearcoat: 0 }), castShadow: false, receiveShadow: false, transforms: parked(SKY_FAN_BLADE_CAPACITY) })
+      .runtime(game.runtimeNode(poolId("sky-fan-blades"))),
     instances
       .torus({ name: "sky-halos", size: [1.55, 1.55, 0.075], material: material.emissive({ color: "#ff2a3c", emissive: "#ff2a3c", emissiveIntensity: 1.65, practical: true }), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-halos"))),
@@ -848,8 +898,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   // Resolve Player Handles
   const playerHandles: PlayerHandles = {
     car: req("player-roadster-car"),
-    canopyVisor: req("player-canopy-visor"),
-    aeroSplitter: req("player-aero-splitter"),
+    canopy: req("player-canopy-glass"),
     lightbar: req("player-lightbar"),
     headlightL: req("player-headlight-l"),
     headlightR: req("player-headlight-r"),
@@ -974,7 +1023,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
 
   const dashPool = pool("dashes", LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER);
   const decalPool = pool("road-decals", DECAL_CAPACITY);
-  const gantrySteel = pool("gantry-steel", GANTRY_COUNT * 3);
+  const gantrySteel = pool("gantry-steel", GANTRY_COUNT);
   const gantryBoards = pool("gantry-boards", GANTRY_COUNT * 2);
   const gantryTrims = pool("gantry-trims", GANTRY_COUNT * 4);
   const polePool = pool("poles", POLE_ROWS * 2);
@@ -997,13 +1046,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const pylonCaps = pool("pylon-caps", PYLON_ROWS);
 
   const trafficNear = {} as Record<VehicleType, InstancePool>;
-  const trafficNearGlass = {} as Record<VehicleType, InstancePool>;
-  const trafficNearTrim = {} as Record<VehicleType, InstancePool>;
   const trafficFar = {} as Record<VehicleType, InstancePool>;
+  /** Procedural-fallback classes only: their glass and wheel/trim pools follow the body pool. */
+  const trafficNearExtras = {} as Record<VehicleType, InstancePool[]>;
   for (const vType of VEHICLE_TYPES) {
+    trafficNearExtras[vType] = IDOL_TRAFFIC[vType] ? [] : [pool(`traffic-${vType}-glass`, NEAR_CAPACITY[vType]), pool(`traffic-${vType}-trim`, NEAR_CAPACITY[vType])];
     trafficNear[vType] = pool(`traffic-${vType}-near`, NEAR_CAPACITY[vType]);
-    trafficNearGlass[vType] = pool(`traffic-${vType}-glass`, NEAR_CAPACITY[vType]);
-    trafficNearTrim[vType] = pool(`traffic-${vType}-trim`, NEAR_CAPACITY[vType]);
     trafficFar[vType] = pool(`traffic-${vType}-far`, POOL_CAPACITY[vType]);
   }
   const rampPool = pool("carrier-ramps", POOL_CAPACITY.carrier);
@@ -1016,6 +1064,35 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const skyCarFarPool = pool("sky-cars-far", POOL_CAPACITY.skyCar);
   const skyPlumePool = pool("sky-plumes", POOL_CAPACITY.skyCar);
   const skyHaloPool = pool("sky-halos", POOL_CAPACITY.skyCar);
+  const carWheelPool = pool("wheels-car", CAR_WHEEL_CAPACITY);
+  const truckWheelPool = pool("wheels-truck", TRUCK_WHEEL_CAPACITY);
+  const heroWheelPool = pool("wheels-hero", 4);
+  const wheelBlurPool = pool("wheel-blur", WHEEL_BLUR_CAPACITY);
+  const fanBladePool = pool("sky-fan-blades", SKY_FAN_BLADE_CAPACITY);
+  const wheelScratch: WheelTransform[] = [];
+  /** Hero wheel state: distance-driven roll, steer from the lateral speed of a lane change. */
+  let heroPrevPz: number | null = null;
+  let heroPrevPx = 0;
+  let heroPrevT = 0;
+  let heroSteer = 0;
+  let heroSpeed = 0;
+  let heroWheelBlur = false;
+  /** Drawn rolling distance of the hero and of each traffic vehicle (spin capped at WHEEL_SPIN_SHOWN_MAX, idolWheels.ts). */
+  let heroRollDist = 0;
+  const trafficRoll = new WeakMap<object, { z: number; t: number; d: number }>();
+  const heroWheelBlurState: { at: Vec3; rot: [number, number, number]; d: number }[] = [];
+  /** A spinning wheel: its transform, plus a blur disc at its rim face when it turns faster than WHEEL_BLUR_RAD_S. */
+  const addWheel = (target: InstancePool, w: WheelTransform, radius: number, tyreWidth: number, omega: number): void => {
+    // the GLB origin is the tyre bottom: draw at `origin` so the wheel turns about its hub (`position`)
+    target.add(w.origin[0], w.origin[1], w.origin[2], w.rotation[0], w.rotation[1], w.rotation[2], w.scale[0], w.scale[1], w.scale[2]);
+    if (Math.abs(omega) < WHEEL_BLUR_RAD_S) return;
+    // disc: a unit cylinder (axis Y) turned onto the axle (Ry(yaw) * Rz(pi/2)), at the outer rim face
+    const yaw = w.rotation[1];
+    const m = mulMat3(mat3FromEulerZYX(0, yaw, 0), mat3FromEulerZYX(0, 0, Math.PI / 2));
+    const [bx, by, bz] = eulerZYXFromMat3(m, yaw);
+    const out = tyreWidth * 0.5 + 0.004;
+    wheelBlurPool.add(w.position[0] + Math.cos(yaw) * out, w.position[1], w.position[2] - Math.sin(yaw) * out, bx, by, bz, radius * 1.62, 0.012, radius * 1.62);
+  };
   // AO-V1 / WP-06 wakes: world-anchored twin-thruster wake, tail-light ribbons, wingtip vortices, and rival streak pool
   const playerWakePool = pool("player-wake", APEX_WAKE_CAPACITY);
   const rivalWakePool = pool("rival-wakes", POOL_CAPACITY.skyCar);
@@ -1050,9 +1127,6 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   let lastTodBucket = -1;
   let manualTodOverride: number | null = TOD_PARAM;
   let lastLightbarHot = false;
-  let lastAutopilotTickMs = 0;
-  let lastAutopilotStuntMs = 0;
-  let gameOverSinceMs = 0;
 
   // Camera feel (audit RR-E2 / WP-06): real-dt `createImpactRig` + `createCameraShake` + `createHitStop` + 2-DOF visual chassis suspension.
   const shake = createCameraShake({ maxOffset: 0.22, maxRoll: 0.02, decayPerSecond: 1.8 });
@@ -1062,6 +1136,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   let lastMode = "";
   let chaseX = 0;
   let camDrop = 0;
+  /** Vertical camera correction that keeps the chase camera out of gantry signs and vehicle bodies (render/cameraClearance.ts). */
+  let camLift = 0;
+  const camGantryZs: number[] = [];
+  const camClearance = createCameraClearance();
   let lastBank = 0;
   let lastFrameMs = 0;
   let lastFovKick = -1;
@@ -1161,159 +1239,9 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     outerGroundHandle.setUniform?.("windowSpecks", round3(frame.signature.windowSpecks) as never);
   }
 
+  const freewayAutopilot = createFreewayAutopilot();
   function runSmartFreewayAutopilot(g: any): void {
-    const now = performance.now();
-    if (!g || !autopilot) return;
-
-    // Auto-recover from Wrecked / Game Over screen if autopilot is active
-    if (g.mode === "gameover") {
-      if (gameOverSinceMs === 0) {
-        gameOverSinceMs = now;
-      } else if (now - gameOverSinceMs > 1600) {
-        gameOverSinceMs = 0;
-        g.start?.();
-      }
-      return;
-    }
-    gameOverSinceMs = 0;
-
-    if (g.mode !== "playing" || g.paused || g.activePreset) return;
-    // an autopiloted run is an assisted run: it cannot set the saved best (audit RR-7)
-    g.markAssisted?.();
-    if (now - lastAutopilotTickMs < 95) return;
-    lastAutopilotTickMs = now;
-
-    const p = g.player;
-    if (!p || p.alive === false || !p.position) return;
-
-    const px = Number(p.position.x ?? 0);
-    const py = Number(p.position.y ?? 0);
-    const pz = Number(p.position.z ?? 0);
-    const currentLane = clamp(Number(p.targetLane ?? p.lane ?? 2), 0, 4);
-    const vehicles: any[] = Array.isArray(g.traffic?.vehicles) ? g.traffic.vehicles : [];
-    const skyCars: any[] = Array.isArray(g.traffic?.skyCars) ? g.traffic.skyCars : [];
-
-    // 1. If in Sky Lane (py > 7), dodge oncoming sky-lane Roadsters
-    if (py > 7) {
-      let skyThreatInLane = false;
-      const safeSkyLane = [true, true, true, true, true];
-      for (let i = 0; i < skyCars.length; i++) {
-        const sc = skyCars[i];
-        if (!sc) continue;
-        const dz = pz - Number(sc.z ?? 0);
-        if (dz > -6 && dz < 72 && Math.abs(Number(sc.y ?? 12) - py) < 3.4) {
-          const sLane = clamp(Math.round(Number(sc.x ?? 0) / 3.6 + 2), 0, 4);
-          safeSkyLane[sLane] = false;
-          if (sLane === currentLane || Math.abs(Number(sc.x ?? 0) - px) < 2.5) {
-            skyThreatInLane = true;
-          }
-        }
-      }
-      if (skyThreatInLane) {
-        if (currentLane > 0 && safeSkyLane[currentLane - 1]) {
-          g.triggerAction?.((p.air ?? 0) > 40 ? "rollLeft" : "left");
-          return;
-        }
-        if (currentLane < 4 && safeSkyLane[currentLane + 1]) {
-          g.triggerAction?.((p.air ?? 0) > 40 ? "rollRight" : "right");
-          return;
-        }
-      }
-      return;
-    }
-
-    // 2. Check for a Carrier Ramp truck ahead in current or adjacent lane -> steer onto it for a Ramp Launch!
-    for (let i = 0; i < vehicles.length; i++) {
-      const v = vehicles[i];
-      if (!v || v.type !== "carrier") continue;
-      const rearZ = Number(v.z ?? 0) + Number(v.l ?? 16) * 0.5;
-      const distAhead = pz - rearZ;
-      if (distAhead > 4 && distAhead < 44 && Math.abs(v.lane - currentLane) <= 1) {
-        if (v.lane < currentLane) {
-          g.triggerAction?.("left");
-          return;
-        }
-        if (v.lane > currentLane) {
-          g.triggerAction?.("right");
-          return;
-        }
-        // Aligned with carrier ramp! Boost up the ramp!
-        g.triggerAction?.("boost", { duration: 0.7 });
-        return;
-      }
-    }
-
-    // 3. Evaluate closest obstacle distance in each of the 5 lanes
-    const laneClosestDist = [999, 999, 999, 999, 999];
-    let obstacleInCurrentLane: any = null;
-
-    for (let i = 0; i < vehicles.length; i++) {
-      const v = vehicles[i];
-      if (!v) continue;
-      const vLane = clamp(Number(v.lane ?? 2), 0, 4);
-      const rearZ = Number(v.z ?? 0) + Number(v.l ?? 4.6) * 0.5;
-      const frontZ = Number(v.z ?? 0) - Number(v.l ?? 4.6) * 0.5;
-      const distAhead = pz - rearZ;
-
-      // Ignore vehicles we are already safely above (e.g. roof-running)
-      const roofH = Number(v.roof ?? v.h ?? 1.5);
-      if (py >= roofH - 0.15 && v.type !== "carrier") continue;
-
-      if (pz >= frontZ - 2 && distAhead < laneClosestDist[vLane]! && distAhead > -8) {
-        laneClosestDist[vLane] = distAhead;
-        if (vLane === currentLane && distAhead < 28) {
-          obstacleInCurrentLane = v;
-        }
-      }
-    }
-
-    if (obstacleInCurrentLane) {
-      const dist = laneClosestDist[currentLane]!;
-      const air = Number(p.air ?? 100);
-
-      // Prefer clean lane changes first; use cold-gas hop or barrel-roll when lanes are tight or after 4s of run
-      const leftDist = currentLane > 0 ? laneClosestDist[currentLane - 1]! : -999;
-      const rightDist = currentLane < 4 ? laneClosestDist[currentLane + 1]! : -999;
-
-      if (leftDist >= rightDist && leftDist > 22) {
-        g.triggerAction?.("left");
-        return;
-      }
-      if (rightDist > 22) {
-        g.triggerAction?.("right");
-        return;
-      }
-
-      if (air > 48 && dist < 20) {
-        g.triggerAction?.("thrustHold", { duration: 0.75 });
-        lastAutopilotStuntMs = now;
-        return;
-      }
-
-      if (leftDist >= rightDist && leftDist > 14) {
-        g.triggerAction?.("left");
-        return;
-      }
-      if (rightDist > 14) {
-        g.triggerAction?.("right");
-        return;
-      }
-      // Both adjacent lanes tight — emergency cold-gas hop!
-      if (air > 25) {
-        g.triggerAction?.("thrustHold", { duration: 0.65 });
-      } else if (leftDist > rightDist && currentLane > 0) {
-        g.triggerAction?.("left");
-      } else if (currentLane < 4) {
-        g.triggerAction?.("right");
-      }
-      return;
-    }
-
-    // 4. Periodic showcase boost when the lane is clear
-    if (now - lastAutopilotStuntMs > 5600 && (p.air ?? 0) > 62 && p.grounded) {
-      lastAutopilotStuntMs = now;
-      g.triggerAction?.("boost", { duration: 1.1 });
-    }
+    if (autopilot) freewayAutopilot(g, performance.now());
   }
 
   let lastPz = 0;
@@ -1382,7 +1310,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       skyDodges
     };
     // effects spawn where the car is drawn: the chase anchor keeps it near x = px * 0.35, y ~ 0, z = -1.15
-    const carAt: Vec3 = [pos.x - chaseX, Math.max(0, pos.y * 0.15) + 0.4 + camDrop, -1.15];
+    const carAt: Vec3 = [pos.x - chaseX, Math.max(0, pos.y * 0.15) + 0.4 + camDrop - camLift, -1.15];
     for (const kind of apexVfxEvents(vfxPrev, frame)) {
       if (kind === "apex-land") {
         fireVfx(kind, [carAt[0], 0.05, carAt[2]]);
@@ -1441,7 +1369,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         shake.add(pulse * 0.6);
         if (pulse > 0.35 && py < 1.2) {
           sparkBurstAge = 0;
-          sparkBurstPos = [px - chaseX + (px < 0 ? -0.85 : 0.85), 0.45 + camDrop, -1.15];
+          sparkBurstPos = [px - chaseX + (px < 0 ? -0.85 : 0.85), 0.45 + camDrop - camLift, -1.15];
         }
       }
       real.player.shakePulse = 0;
@@ -1458,7 +1386,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     if (boostingNow && !lastBoosting && real.mode === "playing" && !real.manual) {
       impactRig.trigger({ freezeSeconds: 0, trauma: 0.18, fovKickDeg: 5.5 });
       smokeBurstAge = 0;
-      smokeBurstPos = [px - chaseX, Math.max(0.32, py * 0.15 + 0.32 + camDrop), 0.65];
+      smokeBurstPos = [px - chaseX, Math.max(0.32, py * 0.15 + 0.32 + camDrop) - camLift, 0.65];
     }
     lastBoosting = boostingNow;
     if (rocketActive && !lastRocketActive && real.mode === "playing") {
@@ -1472,7 +1400,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       startSlowMo(nowMs);
       if (!real.manual) impactRig.trigger({ freezeSeconds: 0.035, trauma: 0.34, fovKickDeg: 5.5 });
       sparkBurstAge = 0;
-      sparkBurstPos = [px - chaseX, Math.max(0.45, py * 0.15 + 0.45 + camDrop), 0.4];
+      sparkBurstPos = [px - chaseX, Math.max(0.45, py * 0.15 + 0.45 + camDrop) - camLift, 0.4];
     }
     lastFlipping = flipping;
     lastRocketActive = rocketActive;
@@ -1522,7 +1450,20 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         /* camera controller not mounted */
       }
     }
-    const camAnchorY = Math.max(0, py * 0.85) + sh.y + impactStep.shakeOffset[1] * 0.45 - camDrop;
+    const camAnchorYFree = Math.max(0, py * 0.85) + sh.y + impactStep.shakeOffset[1] * 0.45 - camDrop;
+    // Owner QA Nov 19: in a sign wreck the car tumbles on through the gantry and the camera following it went inside the
+    // sign. Keep the camera (rig at CHASE_CAMERA_UP / CHASE_CAMERA_BACK from the anchor) clear of the sign band and of
+    // vehicle bodies; render-only, the sim never reads it.
+    camGantryZs.length = 0;
+    for (const gq of (Array.isArray(g.world?.gantries) ? g.world.gantries : []) as any[]) camGantryZs.push(Number(gq?.position?.z ?? 1e5));
+    camLift = camClearance.update(
+      { x: camAnchorX, y: camAnchorYFree + CHASE_CAMERA_UP, z: pz + CHASE_CAMERA_BACK },
+      { y: py, z: pz },
+      camGantryZs,
+      (Array.isArray(g.traffic?.vehicles) ? g.traffic.vehicles : []) as ClearanceVehicle[],
+      real.manual ? 0 : realDt
+    );
+    const camAnchorY = camAnchorYFree + camLift;
     const rx = (wx: number) => wx - camAnchorX;
     const ry = (wy: number) => wy - camAnchorY;
     const rz = (wz: number) => wz - pz;
@@ -1572,8 +1513,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       if (wz > 1e4) continue;
       const gz = rz(wz);
       if (gz < -560 || gz > 40) continue;
+      gantrySteel.add(rx(0), ry(0), gz, 0, 0, 0, GANTRY_FIT[0], GANTRY_FIT[1], GANTRY_FIT[2]);
       for (const box of GANTRY_BOXES) {
-        const target = box.part === "steel" ? gantrySteel : box.part === "board" ? gantryBoards : gantryTrims;
+        if (box.part === "steel") continue;
+        const target = box.part === "board" ? gantryBoards : gantryTrims;
         target.add(rx(box.center[0]), ry(box.center[1]), gz + box.center[2], 0, 0, 0, box.size[0], box.size[1], box.size[2]);
       }
     }
@@ -1619,8 +1562,9 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       const poleZ = rz(poleBaseZ - row * POLE_STRIDE_Z);
       for (const side of [-1, 1] as const) {
         const poleX = rx(side * 12.1);
-        polePool.add(poleX, ry(3.8), poleZ, 0, side > 0 ? Math.PI : 0, 0);
-        lampPool.add(poleX - side * 1.55, ry(7.44), poleZ);
+        // The model's arm points +X like the procedural pole's; its origin is the footprint centre, so shift by the shaft offset
+        polePool.add(poleX + side * POLE_SHAFT_SHIFT, ry(0), poleZ, 0, side > 0 ? Math.PI : 0, 0, POLE_FIT[0], POLE_FIT[1], POLE_FIT[2]);
+        lampPool.add(poleX - side * IDOL_LAMP_REACH, ry(IDOL_LAMP_Y), poleZ);
       }
     }
     polePool.commit();
@@ -1630,7 +1574,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       const spot = sodiumSpots[k];
       if (!spot) continue;
       const side = k % 2 === 0 ? -1 : 1;
-      spot.setPosition(rx(side * 10.55), ry(7.3), rz(poleBaseZ - (k + 1) * POLE_STRIDE_Z));
+      spot.setPosition(rx(side * (12.1 - IDOL_LAMP_REACH)), ry(IDOL_LAMP_Y - 0.14), rz(poleBaseZ - (k + 1) * POLE_STRIDE_Z));
     }
 
     // AO-A1 / WP-06: glass towers + architectural penthouse crowns, spires and aviation beacons
@@ -1670,25 +1614,25 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const bodyMat = bodyMatrixFromYXZ(pitch, yaw, roll);
     const [rotX, rotY, rotZ] = eulerZYXFromMat3(bodyMat, yaw);
 
+    // The Idol hero GLB faces +Z: compose its half turn onto the body attitude, and fit it to PLAYER_BOX under the squash
+    const [heroRx, heroRy, heroRz] = eulerZYXFromMat3(mulMat3(bodyMat, HALF_TURN_MAT3), yaw + Math.PI);
+    // the wheel-less body rides HERO_WHEELS.lift above the root (its wheels are the spinning hero wheel pool below)
+    const heroBodyAt = rotateOffsetByMat3(pRoot, bodyMat, [0, HERO_WHEELS.lift * squash[1], 0]);
     playerHandles.car
-      .setPosition(pRoot[0], pRoot[1], pRoot[2])
-      .setRotation(rotX, rotY, rotZ)
-      .setScale(squash)
+      .setPosition(heroBodyAt[0], heroBodyAt[1], heroBodyAt[2])
+      .setRotation(heroRx, heroRy, heroRz)
+      .setScale([squash[0] * IDOL_HERO_FIT[0], squash[1] * IDOL_HERO_FIT[1], squash[2] * IDOL_HERO_FIT[2]])
       .setVisible(true);
-
-    const canopyWorld = rotateOffsetByMat3(pRoot, bodyMat, [0, 0.96, -0.08]);
-    playerHandles.canopyVisor
-      .setPosition(canopyWorld[0], canopyWorld[1], canopyWorld[2])
-      .setRotation(rotX, rotY, rotZ)
-      .setScale(squash)
-      .setVisible(true);
-
-    const splitterWorld = rotateOffsetByMat3(pRoot, bodyMat, [0, 0.22, -2.06]);
-    playerHandles.aeroSplitter
-      .setPosition(splitterWorld[0], splitterWorld[1], splitterWorld[2])
-      .setRotation(rotX, rotY, rotZ)
-      .setScale(squash)
-      .setVisible(true);
+    // clean glass canopy shell over the generated cockpit (GLB frame -> game frame: z flips under the half turn)
+    {
+      const c = HERO_CANOPY.center;
+      const canopyAt = rotateOffsetByMat3(pRoot, bodyMat, [-c[0] * IDOL_HERO_FIT[0] * squash[0], (c[1] * IDOL_HERO_FIT[1] + HERO_WHEELS.lift) * squash[1], -c[2] * IDOL_HERO_FIT[2] * squash[2]]);
+      playerHandles.canopy
+        .setPosition(canopyAt[0], canopyAt[1], canopyAt[2])
+        .setRotation(rotX, rotY, rotZ)
+        .setScale([HERO_CANOPY.radii[0] * IDOL_HERO_FIT[0] * squash[0], HERO_CANOPY.radii[1] * IDOL_HERO_FIT[1] * squash[1], HERO_CANOPY.radii[2] * IDOL_HERO_FIT[2] * squash[2]])
+        .setVisible(true);
+    }
 
     const lbWorld = rotateOffsetByMat3(pRoot, bodyMat, [0, 0.72, 2.12]);
     playerHandles.lightbar
@@ -1716,6 +1660,50 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     headlights[1]?.setPosition(hlRightW[0], hlRightW[1], hlRightW[2] - 0.2);
     playerHandles.headlampConeL.setPosition(hlLeftW[0], hlLeftW[1] - 0.04, hlLeftW[2] - 0.2);
     playerHandles.headlampConeR.setPosition(hlRightW[0], hlRightW[1] - 0.04, hlRightW[2] - 0.2);
+
+    // Moving-parts pass: the hero's four Idol wheels ride the body attitude, roll with the distance flown along the deck and
+    // the front pair steers with the lateral speed of a lane change; blur discs above WHEEL_BLUR_RAD_S
+    {
+      const dtW = heroPrevPz === null ? 0 : Math.max(1e-3, simTime - heroPrevT);
+      if (heroPrevPz !== null && simTime > heroPrevT) {
+        heroSpeed = Math.abs(pz - heroPrevPz) / dtW;
+        heroRollDist = shownRollDistance(heroRollDist, pz - heroPrevPz, dtW, HERO_WHEELS.axles[0]?.r ?? 0.27);
+        const lateral = (px - heroPrevPx) / dtW;
+        heroSteer = REDUCED_MOTION ? 0 : easeSteer(heroSteer, heroSteerTarget(lateral), dtW);
+      }
+      if (heroPrevPz === null || simTime !== heroPrevT) { heroPrevPz = pz; heroPrevPx = px; heroPrevT = simTime; }
+      heroWheelPool.begin();
+      const hubs = wheelHubs(HERO_WHEELS);
+      const heroModel = WHEEL_MODELS.hero;
+      for (let hI = 0; hI < hubs.length; hI++) {
+        const h = hubs[hI]!;
+        const isFront = hI < 2 * (HERO_FRONT_AXLE + 1) && hI >= 2 * HERO_FRONT_AXLE;
+        const local: Vec3 = [h.hub[0] * squash[0], h.hub[1] * squash[1], h.hub[2] * squash[2]];
+        const at = rotateOffsetByMat3(pRoot, bodyMat, local);
+        const steerM = mat3FromEulerZYX(0, isFront ? heroSteer : 0, 0);
+        const wm = mulMat3(bodyMat, mulMat3(steerM, wheelLocalMat3(h.side, wheelRoll(heroRollDist, h.r))));
+        const [wrx, wry, wrz] = eulerZYXFromMat3(wm, yaw);
+        const k = (2 * h.r) / heroModel.diameter;
+        const kw = HERO_WHEELS.width / heroModel.width;
+        // the GLB origin is the tyre bottom: shift by -wm * (scale * centre) so the wheel turns about its hub
+        const [cx, cy, cz] = heroModel.centre;
+        const o = rotateOffsetByMat3([0, 0, 0], wm, [kw * cx, k * cy, k * cz]);
+        heroWheelPool.add(at[0] - o[0], at[1] - o[1], at[2] - o[2], wrx, wry, wrz, kw, k, k);
+      }
+      heroWheelPool.commit();
+      heroWheelBlur = heroSpeed / (HERO_WHEELS.axles[0]?.r ?? 0.45) >= WHEEL_BLUR_RAD_S;
+      heroWheelBlurState.length = 0;
+      if (heroWheelBlur) {
+        for (let hI = 0; hI < hubs.length; hI++) {
+          const h = hubs[hI]!;
+          const out = h.side * (HERO_WHEELS.width * 0.5 + 0.004);
+          const at = rotateOffsetByMat3(pRoot, bodyMat, [h.hub[0] * squash[0] + out, h.hub[1] * squash[1], h.hub[2] * squash[2]]);
+          const isFront = hI < 2;
+          const m = mulMat3(bodyMat, mulMat3(mat3FromEulerZYX(0, isFront ? heroSteer : 0, 0), mat3FromEulerZYX(0, 0, Math.PI / 2)));
+          heroWheelBlurState.push({ at, rot: eulerZYXFromMat3(m, yaw), d: h.r * 1.62 });
+        }
+      }
+    }
 
     // Cold-Gas Thruster Plumes (no 8.8 Hz flicker under reduced motion, audit RR-E4)
     const rearPlumeLevel = clamp(
@@ -1969,17 +1957,27 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     blinkerPool.begin();
     const blinkOn = (simTime * 2.8) % 1 < 0.55;
     let groundDrawn = 0;
+    carWheelPool.begin();
+    truckWheelPool.begin();
+    wheelBlurPool.begin();
+    for (const b of heroWheelBlurState) wheelBlurPool.add(b.at[0], b.at[1], b.at[2], b.rot[0], b.rot[1], b.rot[2], b.d, 0.012, b.d);
     for (const vType of VEHICLE_TYPES) {
       const near = trafficNear[vType];
-      const nearGlass = trafficNearGlass[vType];
-      const nearTrim = trafficNearTrim[vType];
       const far = trafficFar[vType];
+      const extras = trafficNearExtras[vType];
       near.begin();
-      nearGlass.begin();
-      nearTrim.begin();
       far.begin();
+      for (const extra of extras) extra.begin();
       splitNearFar(groundSlots[vType], pz, NEAR_CAPACITY[vType], nearScratch, farScratch);
-      const widthScale = 1;
+      const isIdol = IDOL_TRAFFIC[vType] !== undefined;
+      const [fitX, fitY, fitZ] = isIdol ? IDOL_TRAFFIC_FIT[vType] : [1, 1, 1];
+      // Near pool: the wheel-less (or overlay) body, raised by its fitted lift over its spinning wheels
+      const nearBody = NEAR_BODY_FIT[vType];
+      const wheelPool = nearBody.wheels.kind === "truck" ? truckWheelPool : carWheelPool;
+      const wheelModel = WHEEL_MODELS[nearBody.wheels.kind];
+      const classYaw = isIdol ? TRAFFIC_YAW : PROCEDURAL_TRAFFIC_YAW;
+      // The Idol half turn mirrors the local pitch, so its brake dive keeps the sign with +vpitch
+      const pitchSign = isIdol ? 1 : -1;
       for (let part = 0; part < 2; part++) {
         const list = part === 0 ? nearScratch : farScratch;
         const target = part === 0 ? near : far;
@@ -2004,11 +2002,29 @@ async function bootRoadsterRushAura3D(): Promise<void> {
           const isBraking = Number(v.dv ?? 0) < -0.5 || laneBrake > 0.5;
           const vpitch = isBraking ? -0.012 * damp : 0;
 
-          if (!target.add(vx, ry(Math.max(0, hopY)), vz, -vpitch, vyaw + TRAFFIC_YAW, -vroll, widthScale, 1, 1)) continue;
-          if (part === 0) {
-            nearGlass.add(vx, ry(Math.max(0, hopY)), vz, -vpitch, vyaw + TRAFFIC_YAW, -vroll, widthScale, 1, 1);
-            nearTrim.add(vx, ry(Math.max(0, hopY)), vz, -vpitch, vyaw + TRAFFIC_YAW, -vroll, widthScale, 1, 1);
+          const nearIdol = part === 0 && isIdol;
+          const bodyFit = nearIdol ? nearBody.fit : [fitX, fitY, fitZ];
+          if (!target.add(vx, ry(Math.max(0, hopY) + (nearIdol ? nearBody.lift : 0)), vz, pitchSign * vpitch, vyaw + classYaw, -vroll, bodyFit[0], bodyFit[1], bodyFit[2])) continue;
+          if (nearIdol) {
+            // Wheels follow the body's hop (honk bounce, ride bob) so they never drop out of the arches
+            // drawn rolling distance: follows the vehicle's z but the spin is capped (no strobing at speed)
+            const simZv = Number(v.z ?? 0);
+            let roll = trafficRoll.get(v);
+            if (!roll) trafficRoll.set(v, (roll = { z: simZv, t: simTime, d: simZv }));
+            else if (simTime !== roll.t) {
+              roll.d = shownRollDistance(roll.d, simZv - roll.z, simTime - roll.t, nearBody.wheels.axles[0]?.r ?? 0.31);
+              roll.z = simZv;
+              roll.t = simTime;
+            }
+            vehicleWheelTransforms(nearBody.wheels, wheelModel, [vx, ry(0), vz], vyaw, roll.d, Math.max(0, hopY), wheelScratch);
+            const omega = vspd / (nearBody.wheels.axles[0]?.r ?? 0.33);
+            let wi = 0;
+            for (const axle of nearBody.wheels.axles) {
+              const n = axle.dualInset ? 4 : 2;
+              for (let j = 0; j < n; j++, wi++) addWheel(wheelPool, wheelScratch[wi]!, axle.r, nearBody.wheels.width, omega);
+            }
           }
+          if (part === 0) for (const extra of extras) extra.add(vx, ry(Math.max(0, hopY)), vz, -vpitch, vyaw + classYaw, -vroll, 1, 1, 1);
           groundDrawn++;
           if (part === 0) trafficContactPool.add(vx, ry(DECAL_Y + 0.003), vz, 0, vyaw, 0, vw * 1.3, contactScaleY(0), vl * 1.12);
 
@@ -2046,10 +2062,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         }
       }
       near.commit();
-      nearGlass.commit();
-      nearTrim.commit();
       far.commit();
+      for (const extra of extras) extra.commit();
     }
+    carWheelPool.commit();
+    truckWheelPool.commit();
+    wheelBlurPool.commit();
     rampPool.commit();
     rampRailPool.commit();
     rampChevronPool.commit();
@@ -2062,6 +2080,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     nearestAhead(rawSkyCars, pz, DRAW_WINDOW.skyCars, POOL_CAPACITY.skyCar, skySlots);
     skyCarPool.begin();
     skyCarFarPool.begin();
+    fanBladePool.begin();
     skyPlumePool.begin();
     skyHaloPool.begin();
     rivalWakePool.begin();
@@ -2073,7 +2092,23 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       const srx = Number(sc.rx ?? 0);
       const srz = Number(sc.rz ?? 0);
       const oncoming = Number(sc.dir ?? 1) > 0;
-      (pz - Number(sc.z ?? 0) <= SHADOW_NEAR ? skyCarPool : skyCarFarPool).add(sx, sy, sz, srx, oncoming ? 0 : Math.PI, srz);
+      // Idol rivals face +Z: the half turn mirrors the local pitch (-srx keeps the authored attitude)
+      const skyNear = pz - Number(sc.z ?? 0) <= SHADOW_NEAR;
+      const skyYaw = (oncoming ? 0 : Math.PI) + IDOL_YAW;
+      (skyNear ? skyCarPool : skyCarFarPool).add(sx, sy, sz, -srx, skyYaw, srz, IDOL_SKY_FIT[0], IDOL_SKY_FIT[1], IDOL_SKY_FIT[2]);
+      // Moving-parts pass: four lift-fan rotors (3 bars = 6 blades each) spinning in the hull's ducts, near rivals only
+      if (skyNear) {
+        const rm = mat3FromEulerZYX(-srx, skyYaw, srz);
+        for (const fan of SKY_FANS) {
+          const g: Vec3 = [-fan.at[0], fan.at[1], -fan.at[2]];
+          const at = rotateOffsetByMat3([sx, sy, sz], rm, g);
+          const spin = REDUCED_MOTION ? fan.phase : fanSpin(simTime, fan.phase) + i * 0.37;
+          for (let b = 0; b < 3; b++) {
+            const [frx, fry, frz] = eulerZYXFromMat3(mulMat3(rm, mat3FromEulerZYX(0, spin + (b * Math.PI) / 3, 0)), skyYaw);
+            fanBladePool.add(at[0], at[1], at[2], frx, fry, frz, fan.r * 1.9, 0.018, 0.075);
+          }
+        }
+      }
       const tailZ = oncoming ? sz - 2.35 : sz + 2.35;
       skyPlumePool.add(sx, sy + 0.45, tailZ, oncoming ? -Math.PI * 0.5 : Math.PI * 0.5, 0, 0, 0.9, 1.2 * flicker, 0.9);
       if (oncoming) skyHaloPool.add(sx, sy + 0.55, sz + 2.15, 0, 0, REDUCED_MOTION ? 0 : simTime * 4);
@@ -2091,6 +2126,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
     skyCarPool.commit();
     skyCarFarPool.commit();
+    fanBladePool.commit();
     skyPlumePool.commit();
     skyHaloPool.commit();
     wakeDrawn.rivals = rivalWakePool.count;

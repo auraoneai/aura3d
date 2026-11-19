@@ -1,0 +1,61 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cross-hop",
+  "key": "hopLilyPad",
+  "generatedAt": "2026-11-18T23:21:49.277Z",
+  "generator": "tools/idol/generate.mjs (request resumed after its 20-min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A single flat round green lily pad toy with a notch cut into one side and radiating veins, lying flat, very thin, no flower. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b3-a194-7a50-8cee-18b9c31a248c",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 982792,
+        "num_faces": 1965580,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single flat round green lily pad toy with a notch cut into one side and radiating veins, lying flat, very thin, no flower. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.941,
+    "size": [
+      0.904,
+      0.071,
+      0.94
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-cross-hop/assets/idol/hopLilyPad.glb",
+  "sizeBytes": 281624,
+  "preview": "artifacts/idol/cross-hop/hopLilyPad/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "shrink",
+    "tool": "aura3d assets optimize + gltf-transform jpeg (normal map PNG->JPEG q90)",
+    "maxVerts": 3000,
+    "tex": 512,
+    "sizeBytesBefore": 1486368
+  },
+  "baked": {
+    "step": "node transforms baked into vertices (gltf-transform flatten + clearNodeTransform) so manifest bounds are exact"
+  }
+}

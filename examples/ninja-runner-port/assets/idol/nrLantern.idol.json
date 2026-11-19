@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrLantern",
+  "generatedAt": "2026-11-18T22:37:38.430Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/nrLantern/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 38,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 793564,
+        "num_faces": 1587124,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A tall carved stone garden lantern: a round column on a lotus base, a square fire box with warm glowing rice-paper windows, a wide curved stone roof cap with upturned corners and a jewel finial, blank with no carvings of writing. Photograph of a real handmade miniature in Japanese woodblock-print colours: weathered granite stone, warm glowing rice-paper panels, fine ink-line edging, soft warm golden-hour light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.905,
+    "size": [
+      0.783,
+      1.9,
+      0.728
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrLantern.glb",
+  "sizeBytes": 2272972,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrLantern/views.png",
+  "usd": 0.2
+}

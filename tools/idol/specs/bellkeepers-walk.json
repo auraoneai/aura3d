@@ -1,0 +1,178 @@
+{
+  "game": "bellkeepers-walk",
+  "outDir": "examples/where-the-wind-wanders-port/assets/idol",
+  "style": "Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light",
+  "items": [
+    {
+      "key": "bkHero",
+      "kind": "character",
+      "role": "hero",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run"
+      ],
+      "size": {
+        "height": 2.9
+      },
+      "seed": 7,
+      "subject": "A gentle young wandering bell-keeper with a kind rounded face, rosy cheeks, teal eyes and chestnut hair with a side braid, wearing an olive-moss green hooded travelling cloak with a soft peaked hood pushed back off the face, a cream linen and saffron-yellow scarf wrapped at the neck, a fitted slate-blue tunic with a saddle-leather belt and small brass buckle, a leather cross-body satchel, olive knee-length coat skirt with a saffron hem band, soft brown breeches, cream linen calf wraps and worn brown leather boots, empty hands"
+    },
+    {
+      "key": "bkVillagerShepherdess",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.95
+      },
+      "seed": 21,
+      "subject": "A full-body figure of a friendly highland shepherdess standing relaxed with arms at her sides, front facing the camera, a pleated slate-blue skirt, woven linen apron, saffron-yellow shoulder shawl, knotted cloth kerchief over her hair with two side braids, worn leather boots"
+    },
+    {
+      "key": "bkVillagerMiller",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.95
+      },
+      "seed": 22,
+      "subject": "A full-body figure of a cheerful highland miller standing and raising one hand in a friendly wave, front facing the camera, a belted indigo travelling coat over striped breeches, a saffron-yellow mantle over the shoulders, a leather crossbody satchel, a soft wool beret, worn leather boots"
+    },
+    {
+      "key": "bkVillagerKeeper",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.97
+      },
+      "seed": 23,
+      "subject": "A full-body figure of a calm elderly sanctuary keeper woman standing with hands folded in front, front facing the camera, a layered indigo and cream linen long skirt, an olive-sage hooded capelet with the hood down, grey hair in a braided bun, a draped linen cowl, soft leather shoes"
+    },
+    {
+      "key": "bkCottageA",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 8.38
+      },
+      "seed": 31,
+      "tex": 2048,
+      "maxVerts": 25000,
+      "subject": "A cosy storybook highland cottage seen from the front: cream lime-plastered walls with dark oak half-timber framing and diagonal braces, a fieldstone foundation with corner quoin stones, a steep gabled roof of mossy grey slate tiles, a stone chimney, a green-painted wooden front door with a small porch hood, small-paned windows with flower boxes of red and yellow flowers, ivy climbing one corner"
+    },
+    {
+      "key": "bkCottageB",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 8.38
+      },
+      "seed": 32,
+      "tex": 2048,
+      "maxVerts": 25000,
+      "subject": "A cosy storybook highland cottage seen from the front: warm cream plastered walls with dark oak half-timbers, a thick golden straw thatched roof with a rounded ridge, a fieldstone chimney on the gable end, a blue-painted wooden door, small-paned windows with wooden shutters and flower boxes, a low dry-stone base"
+    },
+    {
+      "key": "bkWindmill",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 18.78
+      },
+      "seed": 33,
+      "tex": 2048,
+      "maxVerts": 30000,
+      "subject": "A tall tapered timber smock windmill tower without any sails: a battered round fieldstone base with an arched wooden door, a wooden wrap-around gallery with railing at the top of the stone base, an octagonal tapering body clad in warm weathered vertical wooden boards with a few small windows, a rounded dark wooden boat-shaped cap on top with a short horizontal wooden windshaft hub sticking out of the front, a small brass finial"
+    },
+    {
+      "key": "bkWindmillSails",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 22.0
+      },
+      "seed": 44,
+      "tex": 2048,
+      "subject": "A windmill sail assembly standing upright and seen straight from the front, on its own: four long weathered dark-brown oak sail arms in a perfect X-shaped cross from a round dark wooden hub with an iron cap, each arm carrying a long rectangular open wooden lattice frame of brown timber covered with off-white canvas sailcloth, symmetrical, flat and thin, no tower",
+      "style": "Photograph of a real handcrafted storybook miniature: weathered brown carved wood, forged iron, off-white woven canvas, matte natural colours, soft warm late-afternoon light"
+    },
+    {
+      "key": "bkBelfry",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 5.13
+      },
+      "seed": 35,
+      "tex": 2048,
+      "subject": "An empty open timber bell frame shrine with no bell hanging in it: two sturdy carved oak posts on a mossy fieldstone plinth with two stone steps, a heavy oak crossbeam between the posts, a small pitched roof of grey slate shingles on top, carved wooden brackets, an empty open space under the crossbeam"
+    },
+    {
+      "key": "bkBell",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 1.16
+      },
+      "seed": 46,
+      "tex": 1024,
+      "subject": "A single cast bronze church bell on its own, isolated, with nothing around it: no frame, no posts, no roof, no stand. Warm green-brown patina with a polished golden lip, smooth flared mouth, two plain raised bands with no writing, a small dark oak yoke block with iron straps bolted on the crown, a clapper ball visible just inside the mouth, hanging straight"
+    },
+    {
+      "key": "bkShrine",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 2.76
+      },
+      "seed": 37,
+      "subject": "A small pathside wayside shrine: a fieldstone base supporting a little timber house-shaped niche with a pitched slate roof, a tiny brass bell hanging inside and a small glowing candle lantern, wildflowers at its foot"
+    },
+    {
+      "key": "bkBridge",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 6.4
+      },
+      "seed": 38,
+      "tex": 2048,
+      "subject": "A small old humpbacked packhorse bridge: a single round stone arch of rough grey fieldstone with lichen and moss, low stone parapet walls along both sides, a cobbled walkway over the top, the arch opening facing the camera"
+    },
+    {
+      "key": "bkOak",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 13.1
+      },
+      "seed": 39,
+      "tex": 2048,
+      "maxVerts": 30000,
+      "subject": "A grand ancient oak tree standing alone: a massive gnarled mossy trunk with exposed roots, thick twisting branches and a broad, billowing rounded canopy of dense sage-green leaves, no ground plane"
+    },
+    {
+      "key": "bkBoat",
+      "kind": "object",
+      "role": "vehicle",
+      "size": {
+        "length": 5.67
+      },
+      "seed": 40,
+      "tex": 2048,
+      "subject": "A small clinker-built wooden sailing skiff: overlapping warm varnished wooden hull planks, a cream painted top strake, wooden thwart seats, a single wooden mast with a furled cream linen sail on a boom, a pair of oars resting inside, pointed bow"
+    },
+    {
+      "key": "bkLantern",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 2.2
+      },
+      "seed": 41,
+      "tex": 1024,
+      "subject": "A tall wrought-iron wayside lantern post: a slim black iron post with a curled bracket arm holding a brass and glass lantern with a warm glowing candle inside, set in a small stone base"
+    }
+  ]
+}

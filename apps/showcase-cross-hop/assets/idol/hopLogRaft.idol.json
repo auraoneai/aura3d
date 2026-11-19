@@ -1,0 +1,68 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cross-hop",
+  "key": "hopLogRaft",
+  "generatedAt": "2026-11-18T23:21:52.631Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0f7-7a49-7553-b261-878a13dd8351",
+      "prompt": "A long narrow flat toy river raft made of three very long thin round bark-covered logs lying side by side in a single flat layer, lashed together near each end with tan hemp rope, cut log ends showing pale tree rings, very long and low: about five times longer than it is wide and ten times longer than it is tall. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ff-1912-7163-9a93-69d36909c7b1",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 21,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 404158,
+        "num_faces": 808364,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A long narrow flat toy river raft made of three very long thin round bark-covered logs lying side by side in a single flat layer, lashed together near each end with tan hemp rope, cut log ends showing pale tree rings, very long and low: about five times longer than it is wide and ten times longer than it is tall. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -1,
+    "scale": 3.786,
+    "size": [
+      0.758,
+      0.35,
+      3.8
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-cross-hop/assets/idol/hopLogRaft.glb",
+  "sizeBytes": 510892,
+  "preview": "artifacts/idol/cross-hop/hopLogRaft/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": 89,
+    "note": "facing re-fixed from opt.glb with tools/idol/normalize.mjs after inspecting views.png"
+  },
+  "postprocess": {
+    "step": "shrink",
+    "tool": "aura3d assets optimize + gltf-transform jpeg (normal map PNG->JPEG q90)",
+    "maxVerts": 5000,
+    "tex": 512,
+    "sizeBytesBefore": 2157060
+  },
+  "baked": {
+    "step": "node transforms baked into vertices (gltf-transform flatten + clearNodeTransform) so manifest bounds are exact"
+  }
+}

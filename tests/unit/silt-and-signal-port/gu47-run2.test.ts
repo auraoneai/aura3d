@@ -47,7 +47,8 @@ describe("GU47 WP-34 DG-S2 horizon rings", () => {
 });
 
 describe("GU47 WP-34 DG-S4 god rays and DG-L5 contact shadows", () => {
-  it("god rays only in ch0 and ch2, never on Low or in ?look=original", () => {
+  // builds 21 worlds; the Idol nodes and footprint settling put it near the 5 s default under a loaded runner
+  it("god rays only in ch0 and ch2, never on Low or in ?look=original", { timeout: 30_000 }, () => {
     const rays = (c: number, o: Parameters<typeof buildWorld>[1] = {}) => nodes(c, o).filter((n) => n.effect === "volumetric-fog");
     for (let c = 0; c < 7; c++) expect(rays(c).length, `ch${c}`).toBe(c === 0 || c === 2 ? 1 : 0);
     expect(rays(0)[0]!.godRayDensity).toBe(GOD_RAY_DENSITY);

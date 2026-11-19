@@ -171,14 +171,19 @@ describe("Bunker Zero look table (BZ-01, BZ-02, BZ-05, BZ-08, BZ-20)", () => {
 });
 
 describe("Bunker Zero light rig (BZ-01, BZ-02, BZ-07)", () => {
-  it("shows one key per floor (the moon on F6), the fill spot or F5's tube, the carried lamp and the tier's fixture pool", () => {
+  it("shows one key per floor (on F6 the key spot is the moon over the hatch), the fill spot or F5's tube, the carried lamp and the tier's fixture pool", () => {
     for (const { slot } of BZ_LOOK) {
       const shown = visibleRigLights(slot, "high");
       expect(shown.filter((id) => id === RIG_IDS.key || id === RIG_IDS.moon), String(slot)).toHaveLength(1);
       expect(shown.length - 1).toBe(BZ_PRACTICALS);
       expect(shown).toContain(RIG_IDS.player);
     }
-    expect(visibleRigLights(5)).toContain(RIG_IDS.moon);
+    // F6 perf pass: the shadowed directional moon only with the `?godrays=1` variant; by default F6 shares every floor's light set
+    expect(visibleRigLights(5)).toContain(RIG_IDS.key);
+    expect(visibleRigLights(5)).not.toContain(RIG_IDS.moon);
+    expect(visibleRigLights(5, "high", true)).toContain(RIG_IDS.moon);
+    expect(visibleRigLights(5, "high", true)).not.toContain(RIG_IDS.key);
+    for (let slot = 0; slot < 7; slot++) if (slot !== 4) expect([...visibleRigLights(slot)].sort(), String(slot)).toEqual([...visibleRigLights(0)].sort());
     expect(visibleRigLights(4)).toContain(RIG_IDS.tube);
     expect(visibleRigLights(4)).not.toContain(RIG_IDS.fill);
     expect(visibleRigLights(0, "low").filter((id) => id.startsWith("bz-fixture-light-"))).toHaveLength(BZ_FIXTURE_LIGHTS.low);

@@ -120,10 +120,16 @@ export const REFEREE_PATROL_RATE = 0.22;
  * distance walked (the total variation of x, closed form per quarter period), so the planted foot stays planted
  * through the slow-down at each end instead of the clip playing at rate 1 while the body slides.
  */
-export function refereePatrol(t: number, modelScale: number): { x: number; yaw: number; clip: "Walk_Loop"; phase: number; duration: number } {
+/** Metres the touchline referee has walked by app time `t` (total variation of x = A sin(w t)). */
+export function refereeMetres(t: number): number {
   const a = REFEREE_PATROL_HALF, u = REFEREE_PATROL_RATE * t;
   const quarter = Math.floor(u / (Math.PI / 2));
-  const metres = a * (quarter + Math.abs(Math.sin(u) - Math.sin(quarter * Math.PI / 2)));
+  return a * (quarter + Math.abs(Math.sin(u) - Math.sin(quarter * Math.PI / 2)));
+}
+
+export function refereePatrol(t: number, modelScale: number): { x: number; yaw: number; clip: "Walk_Loop"; phase: number; duration: number } {
+  const a = REFEREE_PATROL_HALF, u = REFEREE_PATROL_RATE * t;
+  const metres = refereeMetres(t);
   const d = CLIP_SECONDS.Walk_Loop!;
   return {
     x: a * Math.sin(u),

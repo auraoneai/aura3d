@@ -45,7 +45,28 @@ export default defineArtDirection({
     exposureEV: 1.75
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [60, 76], mobile: "both" },
-  assets: [],
+  assets: [
+    // Idol pass (2026-11): rider-less, wheel-less image-to-3D bikes, rigged racers driven per frame (art/idolRider.ts),
+    // and the Idol moto wheel that rolls on every bike.
+    { role: "vehicle", assetKey: "cgBikeAlabasterNR", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "vehicle", assetKey: "cgBikeCobaltNR", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "vehicle", assetKey: "cgBikeCrimsonNR", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "vehicle", assetKey: "cgBikeVioletNR", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "vehicle", assetKey: "cgBikeSandNR2", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "vehicle", assetKey: "cgBikeTealNR", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "character", assetKey: "cgRiderCream", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "cgRiderCobalt", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "cgRiderCrimson2", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "cgBikeWheel", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    { role: "set-dressing", assetKey: "cgLander", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "cgObservatory", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "cgHabitat", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "cgDish", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "cgSolarArray", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "cgTrailer", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "cgFuelTank", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "cgGantry", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+  ],
   vfx: [
     { event: "land", kind: "craterline-land-dust" },
     { event: "hit", kind: "craterline-hit-debris" },

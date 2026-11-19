@@ -1,0 +1,66 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cross-hop",
+  "key": "hopCarHatch",
+  "generatedAt": "2026-11-19T00:25:58.748Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-2a1b-7623-85c3-8772c71e02ef",
+      "prompt": "A toy hatchback car carved from wood and painted glossy sky-blue with a dark charcoal roof, round headlights, long and low realistic car proportions: the body is about two and a half times longer than it is wide and about three times longer than it is tall, a low flat roofline, vehicle body only with NO wheels and NO tyres: four empty dark round wheel arches cut into the lower sides, the body held slightly above the ground, telephoto side-three-quarter view, opaque dark tinted glass. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f133-ed43-7941-9039-420c849da89f",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 41,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 879864,
+        "num_faces": 1759720,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A toy hatchback car carved from wood and painted glossy sky-blue with a dark charcoal roof, round headlights, long and low realistic car proportions: the body is about two and a half times longer than it is wide and about three times longer than it is tall, a low flat roofline, vehicle body only with NO wheels and NO tyres: four empty dark round wheel arches cut into the lower sides, the body held slightly above the ground, telephoto side-three-quarter view, opaque dark tinted glass. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -132.5,
+    "scale": 1.693,
+    "size": [
+      0.913,
+      0.619,
+      1.95
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-cross-hop/assets/idol/hopCarHatch.glb",
+  "sizeBytes": 733340,
+  "preview": "artifacts/idol/cross-hop/hopCarHatch/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": -42.5,
+    "note": "facing re-fixed from opt.glb with tools/idol/normalize.mjs after inspecting views.png"
+  },
+  "postprocess": {
+    "step": "shrink",
+    "tool": "aura3d assets optimize + gltf-transform jpeg (normal map PNG->JPEG q90)",
+    "maxVerts": 8000,
+    "tex": 512,
+    "sizeBytesBefore": 2402476
+  }
+}

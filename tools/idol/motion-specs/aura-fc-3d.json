@@ -1,0 +1,142 @@
+{
+  "game": "aura-fc-3d",
+  "out": "apps/showcase-aura-fc-3d/src/game/motion.generated.ts",
+  "clips": [
+    {
+      "key": "Idle",
+      "prompt": "A soccer player stands relaxed on the pitch between plays, shifting weight gently from foot to foot, arms loose at the sides, looking around.",
+      "duration": 4,
+      "loop": true,
+      "seed": 500,
+      "guidance": 5
+    },
+    {
+      "key": "Walk",
+      "prompt": "A soccer player walks forward in a straight line at a steady relaxed pace, arms swinging naturally.",
+      "duration": 3,
+      "loop": true,
+      "seed": 501,
+      "guidance": 5
+    },
+    {
+      "key": "Run",
+      "prompt": "A soccer player jogs forward in a straight line at a steady medium pace, arms swinging naturally.",
+      "duration": 2.4,
+      "loop": true,
+      "seed": 502,
+      "guidance": 5
+    },
+    {
+      "key": "Sprint",
+      "prompt": "A soccer player sprints forward in a straight line at full speed, leaning forward, arms pumping hard.",
+      "duration": 2,
+      "loop": true,
+      "seed": 503,
+      "guidance": 5
+    },
+    {
+      "key": "Kick",
+      "prompt": "A soccer player standing still takes one step forward with the left foot and kicks a ball hard with the right foot, swinging the right leg through with a full follow-through, then sets the right foot down and stands.",
+      "duration": 2,
+      "loop": false,
+      "seed": 504,
+      "guidance": 5
+    },
+    {
+      "key": "Header",
+      "prompt": "A soccer player jumps straight up and heads a ball with the forehead, snapping the neck forward, then lands on both feet.",
+      "duration": 2,
+      "loop": false,
+      "seed": 505,
+      "guidance": 5
+    },
+    {
+      "key": "KeeperIdle",
+      "prompt": "A goalkeeper stands in a low ready stance with knees bent and both hands raised in front of the chest, bouncing lightly on the balls of the feet.",
+      "duration": 3,
+      "loop": true,
+      "seed": 506,
+      "guidance": 5
+    },
+    {
+      "key": "KeeperDive",
+      "prompt": "A goalkeeper dives sideways to his right, stretching both arms out toward the ball, and lands on his right side on the ground.",
+      "duration": 2,
+      "loop": false,
+      "seed": 507,
+      "guidance": 5
+    },
+    {
+      "key": "SlideTackle",
+      "prompt": "A soccer player runs forward and performs a sliding tackle, dropping onto the left hip and sliding feet first along the ground with the right leg extended.",
+      "duration": 2,
+      "loop": false,
+      "seed": 508,
+      "guidance": 5
+    },
+    {
+      "key": "KneeSlide",
+      "prompt": "A soccer player celebrates a goal by dropping onto both knees and sliding forward on the knees with both arms spread wide and chest out.",
+      "duration": 2.5,
+      "loop": false,
+      "seed": 509,
+      "guidance": 5
+    },
+    {
+      "key": "Leap",
+      "prompt": "A soccer player celebrates a goal by jumping high into the air and punching the right fist upward, then landing.",
+      "duration": 2,
+      "loop": false,
+      "seed": 510,
+      "guidance": 5
+    },
+    {
+      "key": "Airplane",
+      "prompt": "A soccer player celebrates a goal by running around with both arms stretched out to the sides like airplane wings.",
+      "duration": 3,
+      "loop": true,
+      "seed": 511,
+      "guidance": 5
+    },
+    {
+      "key": "HandsHeart",
+      "prompt": "A soccer player stands and celebrates by forming a heart shape with both hands held in front of the chest, smiling, swaying slightly.",
+      "duration": 2.5,
+      "loop": true,
+      "seed": 512,
+      "guidance": 5
+    },
+    {
+      "key": "FanIdle",
+      "prompt": "A spectator stands watching a match, swaying slightly and clapping hands now and then.",
+      "duration": 4,
+      "loop": true,
+      "seed": 513,
+      "guidance": 5
+    },
+    {
+      "key": "FanCheer",
+      "prompt": "A spectator jumps up and down cheering with both hands raised high above the head.",
+      "duration": 2.5,
+      "loop": true,
+      "seed": 514,
+      "guidance": 5
+    },
+    {
+      "key": "FanPump",
+      "prompt": "A spectator stands and pumps the right fist into the air repeatedly, celebrating.",
+      "duration": 2,
+      "loop": true,
+      "seed": 515,
+      "guidance": 5
+    },
+    {
+      "key": "RefWalk",
+      "prompt": "A soccer referee walks briskly forward in a straight line along the sideline, arms swinging naturally.",
+      "duration": 3,
+      "loop": true,
+      "seed": 516,
+      "guidance": 5
+    }
+  ]
+}

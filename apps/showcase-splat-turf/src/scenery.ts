@@ -5,27 +5,33 @@
  * advances the simulation's random stream.
  *
  * Performance & draw-call consolidation:
- * - Corridor dressing batches (`keel`, `drips`, `posts`, `bulbs`, `pennants`, `islets`) carry tight `CORRIDOR_BOUNDS`
+ * - Corridor dressing batches (`keel`, `drips`, `posts`, `bulbs`, `pennants`, `islets`) carry `RUN_FRAME_BOUNDS` (the whole 1,200 m road frame)
  *   with `castShadow: false, receiveShadow: false` (zero shadow-pass vertex leak).
- * - Multi-material Street-Sport Ink Arena sideline architecture (pressurized chromed ink-reservoir tanks with
- *   translucent `material.physical` sight-glasses, skatepark bleachers with sun-sail canopies, truss speaker &
- *   floodlight towers, aerosol monuments, inflatable turf barriers, and potted street palms) is consolidated into
- *   2 seamless scrolling `ARENA_BELT_SPAN` belts (`assembleMultiMaterialNode` + `castShadow: false` sight-glass pass).
- * - The 14 sky-studio islands and hot-air balloons are consolidated into 6 procedural `instances.custom` nodes
- *   (`clearcoat: 0, sheen: 0`, zero static `.glb` assets).
+ * - Street-Sport Ink Arena sideline set pieces (ink-reservoir tanks, sun-sail bleachers, truss speaker & floodlight
+ *   towers, aerosol monuments, inflatable barriers, potted street palms) are Idol GLBs: one static `instances.model`
+ *   node per kind covering two seamless `ARENA_BELT_SPAN` tiles (`art/idol.ts`).
+ * - The 14 sky islands and hot-air balloons are 6 instanced Idol GLB nodes shared with Splat Rush's backdrop.
  */
 import { type AuraApp, type AuraSceneBuilder } from "@aura3d/engine";
-import { Batch, CORRIDOR_BOUNDS, hexToLinear, type BatchBounds, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
+import { Batch, hexToLinear, type BatchBounds, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
 import { boxMesh, cylinderMesh, merge, sphereMesh, translateMesh } from "./meshes";
 import { LOOK, paintColorFor } from "./look";
+import { CONFIG as SIM_CONFIG } from "./sim";
 import {
-  ARENA_BELT_SPAN,
-  createTurfArenaSidelineBelts,
-  createTurfBackdropIslandNodes,
   turfGooseneckPostMesh,
   turfLampBulbMesh,
   type TurfBackdropKind
 } from "./art/proceduralModels";
+import { ARENA_BELT_SPAN, createArenaBeltNodes, createIdolIslandNodes } from "./art/idol";
+
+const RUN_FRAME_LENGTH = SIM_CONFIG.RUN_LENGTH;
+/**
+ * Culling bounds for every batch in the scrolling road frame (instances at local z = -row under a node at `roadZ`).
+ * The run is 1,200 m, so local z spans [-1,200, 0] plus a run-out; the shared `CORRIDOR_BOUNDS` (local z >= -420) culled
+ * the road, curbs, lamp posts, pennants, solvent strips and can halos after ~420 m (real-GPU full-run QA).
+ */
+export const RUN_FRAME_BOUNDS: BatchBounds = { min: [-48, -24, -(RUN_FRAME_LENGTH + 240)], max: [48, 64, 60] };
+
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 
@@ -81,7 +87,7 @@ export function puffMesh(): MeshData {
 
 /** Floating turf islet: sunlit park turf cap over a slate rock cone, with per-vertex tone. */
 function isletParts(): { mesh: MeshData; tone: number[] } {
-  const grass = translateMesh(cylinderMesh(1.05, 0.22, 12), 0, -0.11, 0);
+  const grass = translateMesh(cylinderMesh(ISLET_RADIUS, 0.22, 12), 0, -0.11, 0);
   const rock = translateMesh(frustumMesh(0.98, 0.12, 1.5, 8), 0, -0.2, 0);
   const pebble = translateMesh(frustumMesh(0.32, 0.04, 0.5, 6), 0.55, -0.85, 0.2);
   const g = hexToLinear(LOOK.turf), r = hexToLinear("#56466d"), p = hexToLinear("#72608c");
@@ -116,6 +122,9 @@ export const LAMP_SPACING = 8;
 const PENNANTS_PER_SPAN = 6;
 /** Islets host the paint pots, one every PROP_SPACING rows per side (world.ts). */
 const ISLET_SPACING = 10;
+/** Islet plan scale per unit prop scale, and the islet mesh's widest radius (turf cap) at plan scale 1. */
+export const ISLET_SPREAD = 1.35;
+export const ISLET_RADIUS = 1.05;
 /** Paint drips may hang off every other row on each edge. */
 const DRIP_SPACING = 2;
 
@@ -223,15 +232,15 @@ export function addScenery(
   edgeX: number
 ): Scenery {
   const isletParts0 = isletParts();
-  const keel = new Batch(keelMesh(), segments, null, CORRIDOR_BOUNDS);
+  const keel = new Batch(keelMesh(), segments, null, RUN_FRAME_BOUNDS);
   const dripPool = new RowPool(Math.ceil((segments + WINDOW_BACK) / DRIP_SPACING) + 1, DRIP_SPACING);
-  const drips = new Batch(dripMesh(), dripPool.rows.length, [1, 1, 1], CORRIDOR_BOUNDS);
+  const drips = new Batch(dripMesh(), dripPool.rows.length, [1, 1, 1], RUN_FRAME_BOUNDS);
   const lampPool = new RowPool(Math.ceil((segments + WINDOW_BACK) / LAMP_SPACING) + 1, LAMP_SPACING);
   const isletPool = new RowPool(Math.ceil((segments + WINDOW_BACK) / ISLET_SPACING) + 1, ISLET_SPACING);
-  const posts = new Batch(postMesh(), lampPool.rows.length, [1, 1, 1], CORRIDOR_BOUNDS);
-  const bulbs = new Batch(bulbMesh(), lampPool.rows.length, [1, 1, 1], CORRIDOR_BOUNDS);
-  const pennants = new Batch(pennantMesh(), lampPool.rows.length * PENNANTS_PER_SPAN, [1, 1, 1], CORRIDOR_BOUNDS);
-  const islets = new Batch(isletParts0.mesh, isletPool.rows.length, isletParts0.tone, CORRIDOR_BOUNDS);
+  const posts = new Batch(postMesh(), lampPool.rows.length, [1, 1, 1], RUN_FRAME_BOUNDS);
+  const bulbs = new Batch(bulbMesh(), lampPool.rows.length, [1, 1, 1], RUN_FRAME_BOUNDS);
+  const pennants = new Batch(pennantMesh(), lampPool.rows.length * PENNANTS_PER_SPAN, [1, 1, 1], RUN_FRAME_BOUNDS);
+  const islets = new Batch(isletParts0.mesh, isletPool.rows.length, isletParts0.tone, RUN_FRAME_BOUNDS);
   const clouds = new Batch(puffMesh(), CLOUDS_PER_TILE * 3, [1, 1, 1], SKY_LAYER_BOUNDS);
   const horizon = new Batch(puffMesh(), HORIZON_PUFFS + HIGH_PUFFS, [1, 1, 1], SKY_LAYER_BOUNDS);
   const floor = new Batch(cylinderMesh(1, 0.02, 40), 1, [1, 1, 1], SKY_LAYER_BOUNDS);
@@ -246,15 +255,12 @@ export function addScenery(
   addBatch("pennants", pennants, programs.toonTone);
   addBatch("islets", islets, programs.toonTone);
 
-  // Multi-material Street-Sport Ink Arena sideline boulevard belts + translucent physical sight-glasses.
-  const arenaBelts = createTurfArenaSidelineBelts();
-  for (const belt of arenaBelts) {
-    builder.add(belt.opaqueNode);
-    builder.add(belt.glassNode);
-  }
+  // Idol street-sport arena sideline set pieces: one static instanced GLB node per kind spanning two 96 m belt tiles.
+  const arenaBelts = createArenaBeltNodes();
+  for (const belt of arenaBelts) builder.add(belt.node);
 
-  // Consolidate all 14 backdrop islands & balloons into 6 procedural GPU-instanced nodes (zero `.glb` assets).
-  const instancedKinds = createTurfBackdropIslandNodes(PIECES, ASSET_KINDS, SPAN, NEAR);
+  // The 14 sky islands & balloons: one instanced Idol GLB node per kind (shared with Splat Rush's backdrop).
+  const instancedKinds = createIdolIslandNodes(PIECES, ASSET_KINDS, SPAN, NEAR);
   for (const item of instancedKinds) {
     builder.add(item.node);
   }
@@ -335,7 +341,7 @@ export function addScenery(
   function placeIslet(row: number, side: number, x: number, sc: number): void {
     const slot = isletPool.slot(row, side);
     isletPool.rows[slot] = row;
-    islets.place(slot, x, -0.35, -row - 0.5, sc * 2.1, sc * 1.35, sc * 1.1, sc * 1.35);
+    islets.place(slot, x, -0.35, -row - 0.5, sc * 2.1, sc * ISLET_SPREAD, sc * 1.1, sc * ISLET_SPREAD);
   }
 
   function retire(distance: number): void {
@@ -366,11 +372,7 @@ export function addScenery(
     for (const id of SCENERY_BATCH_IDS) node(id).setPosition(0, 0, roadZ);
     node("clouds").setPosition(0, 0, ((roadZ % CLOUD_TILE) + CLOUD_TILE) % CLOUD_TILE);
     const arenaBaseZ = (((roadZ - 24) % ARENA_BELT_SPAN) + ARENA_BELT_SPAN) % ARENA_BELT_SPAN + 24;
-    for (const belt of arenaBelts) {
-      const bz = arenaBaseZ - belt.tileIndex * ARENA_BELT_SPAN;
-      node(belt.opaqueId).setPosition(0, 0, bz);
-      node(belt.glassId).setPosition(0, 0, bz);
-    }
+    for (const belt of arenaBelts) node(belt.id).setPosition(0, 0, arenaBaseZ);
     const beltZ = (((distance * 0.55) % SPAN) + SPAN) % SPAN;
     const t = reduced ? 0 : elapsed;
     for (const item of instancedKinds) {

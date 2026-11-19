@@ -1,33 +1,31 @@
-# Lamplight Line: final screenshots
+# Lamplight Line: final real-GPU frames
 
-**Retaken 2026-10-31 (GU47 phase 4, 4.7.2, lane g21)** on branch `gu47/g21` (commit with the bands A/B raking key, 4.3.0 shadow fit and the WP-36 enamel tram): the five 1280x720 frames from remote run `g21p4-r3-2` (same spec and file names), software WebGL2 (SwiftShader), not a GPU. The 390x844 and card frames come from run `g21p4-r3c` when it lands (see the lane report).
+Route: `/apps/lamplight-line/`
 
-**Retaken 2026-10-29 (audit RH-05, lane g21)** from branch `audit-fix/g21` on the 4.5.0 engine, same file names and sizes, same capture (`tests/browser/finc-lib.ts`, `finc-games.ts` `TRAIN` / `TRAIN_CARD`, wrappers `tests/browser/audit-fix/last-train-port-screens-*.spec.ts`). Runs: `g21w3-scrdesktop-131235` (1280x720 frames), `g21w3-scrmobile-131238` (390x844 frames), `g21w3-scrcard-142538` (card). Software WebGL2 (SwiftShader), not a GPU. The HUD now has the lean meter, streak and lanterns; the results card shows the per-service score, Gold, the grade rule and buttons; in `results` the tram sits parallel to the platform (audit D-11). The 390x844 frames come from a viewport without touch, so the touch bar is not shown (it is in `evidence/last-train-port/audit-fix-g21-wave3/after-phone-*.jpg`).
+Runner: headed Chrome on a real GPU (Apple Metal) via REA, production build (http://127.0.0.1:8790).
 
-The original notes from 2026-10-24 follow.
+| frame | viewport | state | meaning |
+|---|---|---|---|
+| `1280-01-title.jpg` | 1280x720 | title | title card with controls incl. P autoplay |
+| `1280-02-doors-open.jpg` | 1280x720 | platform | doors opening at Mango Tide, crowd on the platform |
+| `1280-03-boarding.jpg` | 1280x720 | boarding | steps out, riders boarding (walkers move between frames) |
+| `1280-04-departing.jpg` | 1280x720 | departing | tram leaving the town at 17 km/h, 4/12 aboard |
+| `1280-05-viaduct.jpg` | 1280x720 | peak | cruising on the viaduct over the cloud sea |
+| `1280-06-island-approach.jpg` | 1280x720 | second venue | approaching the Folded Gardens island |
+| `390-01-title.jpg` | 390x844 | title | title card |
+| `390-02-departing.jpg` | 390x844 | departing | leaving the platform |
+| `390-03-viaduct.jpg` | 390x844 | peak | viaduct |
+| `390-04-island-approach.jpg` | 390x844 | second venue | island approach |
+| `card-2x.jpg` / `card-1x.jpg` | 1440x900 (1x: 720x450) | card | the tram leaving Mango Tide over the cloud sea, riders aboard, the next island town ahead |
 
-- **Build:** `origin/game-rework` at `0d965903c` (examples dev server, QA hooks). Capture: `tests/browser/finc-lib.ts` + `finc-games.ts` (`TRAIN`, `TRAIN_RESULTS`, `TRAIN_CARD`), decoder `tools/shots/decode-finc.mjs`; numbers in `metrics.jsonl`.
-- **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. These frames are not real-GPU evidence.
-- **Method:** the route is the examples page, driven through `window.__AURA_LAST_TRAIN__` at `quality=low`. The route gives no texture diagnostics rows (`none`), so settling could not be measured; the frames show textured buildings, tram and station. Every frame was opened and looked at.
-- **Checks:** the title card reads "Lamplight Line"; no old name, "port" or lore term in any visible text; 0 console errors, 0 bad responses. Capture mistakes along the way: the first `key-depart` was still boarding (0 km/h) and the first results step started mid-leg and failed ("stuck waiting for ready"); both were redone.
+## Checked in the frames
 
-## States
+- motorman visible in the cab and riders seated; platform walkers change position between frames 0.7 s apart
+- tram on the rails, pantograph on the wire; clock not in view at this camera
+- no floating props; walkers no longer cross crates/stalls (pass-through fix)
 
-| File | State |
-|---|---|
-| `title.1280x720`, `title.390x844` | title card with controls |
-| `gameplay-early.*` | 2 frames in, tram at the station, "Press E to open the doors" |
-| `key-depart.*` | doors, boarding, depart, then 180 autopilot steps: Mango Tide to Folded Gardens, 22 km/h, 4 aboard |
-| `mid-leg.1280x720` | 900 more autopilot steps: 29 km/h on the open line |
-| `results.1280x720` | "Service complete", grade **Silver**, score 4039, fares 1800, tips 1939, bonuses 300, 0 riders lost: reached from a fresh service by autopilot (`advance(30000)`), a real end card |
-| `card.2x.1440x900`, `card.1x` | 720x450 card frame: the tram at the station before the passenger list grows; the 1x image is the 2x frame downscaled in the page |
+## Known issues
 
-Mobile (390x844) has title, `gameplay-early` and `key-depart`.
-
-## Problems still visible
-
-1. **Low-medium:** at 720x450 (card) the HUD panels are large and cover about a third of the frame and the bottom bar another sliver; the tram stays fully visible. A later-leg card (the first card attempt) buried the tram under a 7-row passenger list, so the station frame was used.
-2. **Low:** on the title card the controls grid and prompt sit over the tram and buildings with modest contrast.
-3. **Low:** on mobile the stacked HUD panels take about a third of the screen in `key-depart`.
-4. **Low:** in `results` the camera sits at an odd angle with the tram tilted partly through the station canopy.
-5. **Low:** the pine trees and the rock are flat-shaded low-poly shapes next to the textured buildings.
+- wheels are hidden by the body skirt at the chase camera, so wheel roll is not verified in these frames
+- results card not captured (service too long for the capture window)
+- 390 loads slower: first ~10 s is the 'Lighting the first view' card

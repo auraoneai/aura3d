@@ -1,0 +1,45 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-links-3d",
+  "key": "linksIdolOakGreen",
+  "generatedAt": "2026-11-18T22:27:55.307Z",
+  "generator": "tools/idol/generate.mjs (post-processing re-run on a request that completed after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09e-d6a1-7ae0-8a3e-1bad40d1db04",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1429482,
+        "num_faces": 2859280,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Single mature broadleaf oak tree with a thick gnarled brown trunk, spreading branches and a full rounded dense canopy of deep green leaves, a little grass at the base. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 8.593,
+    "size": [
+      8.556,
+      8,
+      7.959
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-links-3d/assets/idol/linksIdolOakGreen.glb",
+  "sizeBytes": 4401476,
+  "preview": "artifacts/idol/aura-links-3d/linksIdolOakGreen/views.png",
+  "usd": 0.37
+}

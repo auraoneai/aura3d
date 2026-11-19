@@ -24,6 +24,7 @@ import type {
   ShotCommit,
   ShotEnv,
   SwingState,
+  TreeObstacle,
   TourRival,
   TourRound,
   TourState,
@@ -335,6 +336,24 @@ export function stepBall(ball: BallState, env: ShotEnv, dt: number): { ball: Bal
   return { ball: cur, events };
 }
 
+/**
+ * Where a shot first comes down (first ground contact, water, out of bounds, the cup, or where it stops), run through the
+ * same launchBall / stepBall as the live shot from `from`: the aim preview uses it so its landing ring meets the same
+ * trees, flagstick and wind the ball will.
+ */
+export function predictLanding(env: ShotEnv, commit: ShotCommit, from: Vec3, maxSeconds = 20): Vec3 {
+  let ball: BallState = { ...launchBall(commit, env), pos: from };
+  const dt = 1 / 60;
+  for (let t = 0; t < maxSeconds; t += dt) {
+    const { ball: next, events } = stepBall(ball, env, dt);
+    ball = next;
+    const land = events.find((e) => e.kind !== "tree" && e.kind !== "lip");
+    if (land) return land.pos;
+    if (ball.status !== "flight") return ball.pos;
+  }
+  return ball.pos;
+}
+
 function outOfBounds(env: ShotEnv, x: number, z: number): boolean {
   const b = env.terrain.bounds;
   return x < b.minX - OOB_MARGIN || x > b.maxX + OOB_MARGIN || z < b.minZ - OOB_MARGIN || z > b.maxZ + OOB_MARGIN;
@@ -372,10 +391,17 @@ function stepFlight(b: BallState, env: ShotEnv, h: number, events: BallEvent[]):
 
   // integrate
   const ox = px;
+  const oy = py;
   const oz = pz;
   px += vx * h;
   py += vy * h;
   pz += vz * h;
+
+  // trees and the flagstick: a trunk or the pole turns the ball back, a canopy swallows its speed
+  if (env.obstacles?.length || env.pin) {
+    const hit = flightObstacles(env, ox, oy, oz, px, py, pz, vx, vy, vz, events);
+    if (hit) [px, py, pz, vx, vy, vz] = hit;
+  }
   const carry = b.carry + Math.hypot(px - ox, pz - oz);
 
   // flew out of the world
@@ -487,6 +513,14 @@ function stepRoll(b: BallState, env: ShotEnv, h: number, events: BallEvent[]): B
   const oz = pz;
   px += vx * h;
   pz += vz * h;
+  // a rolling ball bounces back off a trunk instead of rolling through it
+  if (env.obstacles?.length) {
+    const hit = trunkHit(env.obstacles, ox, oz, px, pz, vx, vz, -Infinity, 0, ROLL_TRUNK_KEEP);
+    if (hit) {
+      [px, pz, vx, vz] = hit;
+      events.push({ kind: "tree", pos: v3(px, env.terrain.height(px, pz), pz) });
+    }
+  }
   let ground = env.terrain.height(px, pz);
   const zone2 = env.terrain.zone(px, pz);
 
@@ -546,6 +580,155 @@ function stepRoll(b: BallState, env: ShotEnv, h: number, events: BallEvent[]): B
   }
 
   return nextBall(b, { pos: v3(px, ground, pz), vel: v3(vx, 0, vz), status: "roll" });
+}
+
+/* ------------------------------------------------------------------ *
+ *  Trees & flagstick                                                  *
+ * ------------------------------------------------------------------ */
+
+/** ball radius the obstacles are inflated by (m): the drawn ball (main.ts BALL_R) */
+export const BALL_COLLIDE_R = 0.05;
+/** normal restitution off a trunk or the pole */
+export const TRUNK_RESTITUTION = 0.3;
+/** share of the speed along the bark a glancing trunk hit keeps */
+const FLIGHT_TRUNK_KEEP = 0.6;
+const ROLL_TRUNK_KEEP = 0.8;
+/** leaves: speed falls by e every this many metres travelled inside a canopy */
+export const CANOPY_DRAG_LENGTH = 0.8;
+/** largest yaw kick (rad) a canopy gives a ball as it enters, either way */
+const CANOPY_DEFLECT = 0.35;
+
+/** canopy radius at world height y, or -1 outside the canopy's height band */
+function canopyRadiusAt(o: TreeObstacle, y: number): number {
+  if (y < o.canopyY0 || y > o.canopyY1) return -1;
+  const top = o.canopyTopR ?? o.canopyR;
+  const f = o.canopyY1 > o.canopyY0 ? (y - o.canopyY0) / (o.canopyY1 - o.canopyY0) : 0;
+  return o.canopyR + (top - o.canopyR) * f;
+}
+
+/** is the point inside the canopy of tree `o` */
+export function insideCanopy(o: TreeObstacle, x: number, y: number, z: number): boolean {
+  const r = canopyRadiusAt(o, y);
+  return r > 0 && Math.hypot(x - o.x, z - o.z) < r;
+}
+
+/** deterministic 0..1 from a position (no Math.random in the sim) */
+function hashPos(x: number, z: number): number {
+  const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+/**
+ * First entry of the segment (ax,az)→(bx,bz) into a circle of radius r around (cx,cz): the fraction along the segment, or
+ * 0 when it starts inside and moves further in, or null.
+ */
+function circleEntry(ax: number, az: number, bx: number, bz: number, cx: number, cz: number, r: number): number | null {
+  const dx = bx - ax, dz = bz - az;
+  const fx = ax - cx, fz = az - cz;
+  const c = fx * fx + fz * fz - r * r;
+  if (c <= 0) return fx * dx + fz * dz < 0 ? 0 : null;
+  const a = dx * dx + dz * dz;
+  if (a < 1e-12) return null;
+  const bh = fx * dx + fz * dz;
+  const disc = bh * bh - a * c;
+  if (disc < 0) return null;
+  const t = (-bh - Math.sqrt(disc)) / a;
+  return t >= 0 && t <= 1 ? t : null;
+}
+
+/**
+ * Swept trunk test for a horizontal move: the earliest trunk the move enters (below its canopy top). Returns the contact
+ * point nudged outside and the velocity reflected off the bark (normal part x -TRUNK_RESTITUTION, tangential x keep).
+ */
+function trunkHit(
+  obstacles: readonly TreeObstacle[], ox: number, oz: number, px: number, pz: number, vx: number, vz: number,
+  oy: number, dy: number, keep: number
+): [number, number, number, number] | null {
+  let best: { t: number; o: TreeObstacle } | null = null;
+  for (const o of obstacles) {
+    const cx = o.trunkX ?? o.x, cz = o.trunkZ ?? o.z;
+    const t = circleEntry(ox, oz, px, pz, cx, cz, o.trunkR + BALL_COLLIDE_R);
+    if (t === null || (best && t >= best.t)) continue;
+    if (oy + dy * t > o.canopyY1) continue; // passes over the tree
+    best = { t, o };
+  }
+  if (!best) return null;
+  return bounceOffPole(ox + (px - ox) * best.t, oz + (pz - oz) * best.t, best.o.trunkX ?? best.o.x, best.o.trunkZ ?? best.o.z, best.o.trunkR + BALL_COLLIDE_R, vx, vz, keep);
+}
+
+/** reflect (vx,vz) off a vertical pole of radius r at (cx,cz) touched at (qx,qz); returns position just outside + velocity */
+function bounceOffPole(qx: number, qz: number, cx: number, cz: number, r: number, vx: number, vz: number, keep: number): [number, number, number, number] {
+  let nx = qx - cx, nz = qz - cz;
+  let nl = Math.hypot(nx, nz);
+  if (nl < 1e-9) {
+    // dead centre: push back along the travel direction
+    const sp = Math.hypot(vx, vz) || 1;
+    nx = -vx / sp; nz = -vz / sp; nl = 1;
+  } else {
+    nx /= nl; nz /= nl;
+  }
+  const vn = vx * nx + vz * nz;
+  const tx = vx - vn * nx, tz = vz - vn * nz;
+  const rn = vn < 0 ? -vn * TRUNK_RESTITUTION : vn;
+  return [cx + nx * (r + 1e-3), cz + nz * (r + 1e-3), tx * keep + nx * rn, tz * keep + nz * rn];
+}
+
+/**
+ * Trunks, canopies and the flagstick for one flight substep from (ox,oy,oz) to (px,py,pz) with velocity (vx,vy,vz).
+ * Returns the corrected position and velocity, or null when the ball touched nothing.
+ */
+function flightObstacles(
+  env: ShotEnv, ox: number, oy: number, oz: number, px: number, py: number, pz: number,
+  vx: number, vy: number, vz: number, events: BallEvent[]
+): [number, number, number, number, number, number] | null {
+  const obstacles = env.obstacles ?? [];
+  // the flagstick (only the part above the turf): reflect the horizontal velocity
+  const pin = env.pin;
+  if (pin) {
+    const t = circleEntry(ox, oz, px, pz, pin.x, pin.z, pin.radius + BALL_COLLIDE_R);
+    if (t !== null) {
+      const y = oy + (py - oy) * t;
+      if (y >= pin.y0 - BALL_COLLIDE_R && y <= pin.y0 + pin.height) {
+        const [qx, qz, nvx, nvz] = bounceOffPole(ox + (px - ox) * t, oz + (pz - oz) * t, pin.x, pin.z, pin.radius + BALL_COLLIDE_R, vx, vz, TRUNK_RESTITUTION);
+        events.push({ kind: "tree", pos: v3(qx, y, qz) });
+        return [qx, y, qz, nvx, vy * 0.5, nvz];
+      }
+    }
+  }
+  // trunks: bounce back off the bark
+  const trunk = trunkHit(obstacles, ox, oz, px, pz, vx, vz, oy, py - oy, FLIGHT_TRUNK_KEEP);
+  if (trunk) {
+    const [qx, qz, nvx, nvz] = trunk;
+    const f = Math.hypot(qx - ox, qz - oz) / (Math.hypot(px - ox, pz - oz) || 1);
+    const y = oy + (py - oy) * Math.min(1, f);
+    events.push({ kind: "tree", pos: v3(qx, y, qz) });
+    return [qx, y, qz, nvx, Math.min(vy, 0) * 0.6, nvz];
+  }
+  // canopies: drag over the length travelled through the leaves, and a kick sideways on the way in
+  let inside = 0;
+  let entered: TreeObstacle | null = null;
+  for (const o of obstacles) {
+    let n = 0;
+    for (const u of [0.125, 0.375, 0.625, 0.875]) {
+      if (insideCanopy(o, ox + (px - ox) * u, oy + (py - oy) * u, oz + (pz - oz) * u)) n += 1;
+    }
+    if (n === 0) continue;
+    inside = Math.max(inside, n / 4);
+    if (!entered && !insideCanopy(o, ox, oy, oz)) entered = o;
+  }
+  if (inside === 0) return null;
+  const len = Math.hypot(px - ox, py - oy, pz - oz) * inside;
+  const k = Math.exp(-len / CANOPY_DRAG_LENGTH);
+  let nvx = vx * k, nvz = vz * k;
+  // leaves never lift the ball: anything still climbing loses it twice as fast
+  const nvy = vy > 0 ? vy * k * k : vy * k;
+  if (entered) {
+    const a = (hashPos(entered.x + ox, entered.z + oz) - 0.5) * 2 * CANOPY_DEFLECT;
+    const c = Math.cos(a), s = Math.sin(a);
+    [nvx, nvz] = [nvx * c + nvz * s, nvz * c - nvx * s];
+    events.push({ kind: "tree", pos: v3(px, py, pz) });
+  }
+  return [px, py, pz, nvx, nvy, nvz];
 }
 
 /** cup capture radius (m): ball centre inside this at low speed drops */
@@ -631,6 +814,22 @@ export function createScoreCard(course: CourseSpec): ScoreCard {
     return { hole: h.number, par: h.par, strokes: 0, putts: 0, label: "" };
   });
   return { courseId: course.id, holes, totalStrokes: 0, totalPar, toPar: 0, skins: 0 };
+}
+
+/** True once a hole has a recorded score (an unplayed seed row has strokes 0 and no label). */
+export function holePlayed(hs: HoleScore): boolean {
+  return hs.label !== "" && hs.strokes > 0;
+}
+
+/**
+ * Par of the holes actually played. The closing card's PAR total and the "vs par" line use this, so a round started
+ * mid-course (?hole=N, autoplay) or cut short reads e.g. "par 12" over 3 played holes, not the full course's par 36 next
+ * to 3 holes' strokes (the unplayed holes read "–").
+ */
+export function playedPar(card: ScoreCard): number {
+  let par = 0;
+  for (const hs of card.holes) if (holePlayed(hs)) par += hs.par;
+  return par;
 }
 
 export function recordHole(card: ScoreCard, hole: HoleSpec, strokes: number, putts: number): ScoreCard {

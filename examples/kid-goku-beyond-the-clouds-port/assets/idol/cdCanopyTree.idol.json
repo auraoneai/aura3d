@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cumulus-dash",
+  "key": "cdCanopyTree",
+  "generatedAt": "2026-11-18T22:49:40.601Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0d9-feca-78c0-869c-b54fb2bcc518",
+      "prompt": "A single small broadleaf mountain tree with a short gnarled grey-brown trunk splitting into two low branches and a full rounded layered crown of dense glossy green leaves, sunlit lighter green on top, freestanding with no ground or pot. Photoreal storm-washed mountain realism: real physical materials as if photographed on a high sandstone ridge just after a squall, crisp physically based surface detail and gentle wear, saturated rain-washed colours, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0e3-d89f-7e42-babf-b5b4b3126015",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1267662,
+        "num_faces": 2536392,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single small broadleaf mountain tree with a short gnarled grey-brown trunk splitting into two low branches and a full rounded layered crown of dense glossy green leaves, sunlit lighter green on top, freestanding with no ground or pot. Photoreal storm-washed mountain realism: real physical materials as if photographed on a high sandstone ridge just after a squall, crisp physically based surface detail and gentle wear, saturated rain-washed colours, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.085,
+    "size": [
+      1.071,
+      1,
+      1.02
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/kid-goku-beyond-the-clouds-port/assets/idol/cdCanopyTree.glb",
+  "sizeBytes": 2007452,
+  "preview": "artifacts/idol/cumulus-dash/cdCanopyTree/views.png",
+  "usd": 0.37
+}

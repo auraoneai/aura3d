@@ -44,6 +44,7 @@ import {
   miniatureDofNode,
   practicalNodes,
   skyNode,
+  courseBounds,
   slabTransforms,
   ssrNode,
   sunShaftsNode,
@@ -66,30 +67,31 @@ import type {
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 import {
   buildBossThornSpikeNode,
-  buildBounceSpringBaseNode,
   buildBounceSpringCapNode,
-  buildBramblebackBossLimbNodes,
-  buildBramblebackBossNode,
   buildCheckpointPennantNode,
-  buildCheckpointStandNode,
   buildDioramaStaticDecorNodes,
-  buildForestBeetleNode,
   buildGateLockStarNode,
-  buildGoldenAcornNode,
   buildHazardFeatureNode,
-  buildHeartBerryNode,
-  buildHedgehogVillagerNode,
-  buildPipHeroLimbNodes,
-  buildPipHeroNode,
   buildSingleDecorPropNode,
-  buildSunGateArchNode,
   buildSunGateRuneRingNode,
-  buildSunseedNode,
   buildUpdraftFanNode,
   buildWoodlandBannerNode,
   type StaticDecorKind,
   type StaticDecorPlacement
 } from "../art/proceduralModels.js";
+import {
+  buildIdolBramblebackNode,
+  buildIdolCheckpointStandNode,
+  buildIdolDecorNodes,
+  buildIdolGoldenAcornNode,
+  buildIdolHeartBerryNode,
+  buildIdolPipHeroNode,
+  buildIdolSpringBaseNode,
+  buildIdolSunGateArchNode,
+  buildIdolSunseedNode,
+  buildIdolVillagerNode,
+  idolDecorKinds
+} from "../art/idolModels.js";
 
 type SceneBuilder = ReturnType<typeof scene>;
 type SceneNodeArg = Parameters<SceneBuilder["add"]>[0];
@@ -140,6 +142,9 @@ const HAZARD_STYLE: Record<HazardSpec["type"], string> = {
 };
 
 // ---------------------------------------------------------------- names
+
+/** Capture tooling: `?qa-pose=1` publishes Pip's posed (skinned) bounds per frame for the motion audit (CPU cost, QA only). */
+const QA_POSE_EVIDENCE = typeof window !== "undefined" && new URLSearchParams(window.location?.search ?? "").get("qa-pose") === "1";
 
 export const nodeName = {
   platform: (id: string) => `plat:${id}`,
@@ -286,20 +291,165 @@ function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
  * register their left and right jamb pillars only so the central walkway and
  * adjacent checkpoints stay completely unobstructed.
  */
+/** Idol decor sinks this far into whatever it stands on, so turf discs and roots never show a gap. */
+export const IDOL_DECOR_SINK = 0.12;
+const FLYING_DECOR: ReadonlySet<string> = new Set(["cloud", "hawk", "star"]);
+
+/**
+ * Idol wow pass grounding (GPU QA): an Idol prop standing over a static platform sits on that platform's top, sampled
+ * under its footprint (centre + 4 points at 0.3 m x scale), sunk IDOL_DECOR_SINK. Only tops within 2.2 m below / 0.4 m
+ * above the authored y count, so flank props on their own turf islands keep their authored height. A lantern authored
+ * inside the Sun-Gate opening (it would hang through the rune ring) stands beside the right pillar instead.
+ * Render only: the placement feeds the model node, never a collider.
+ */
+export function groundIdolDecor(d: StaticDecorPlacement, solids: readonly SolidBox[], gate: { readonly x: number; readonly y: number; readonly z: number }): StaticDecorPlacement {
+  if (FLYING_DECOR.has(d.kind)) return d;
+  const s = d.s ?? 1;
+  let { x, y, z } = d;
+  if (d.kind === "lantern" && Math.abs(x - gate.x) < 1.6 && Math.abs(z - gate.z) < 1.2) {
+    x = gate.x + 2.75;
+    y = gate.y;
+  }
+  const r = 0.3 * s;
+  let top = -Infinity;
+  for (const [sx, sz] of [[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]] as const) {
+    for (const b of solids) {
+      if (b.plat?.mover || b.plat?.timed || b.decor) continue;
+      if (Math.abs(x + sx - b.x) > b.hx || Math.abs(z + sz - b.z) > b.hz) continue;
+      const t = b.y + b.hy;
+      if (t <= y + 0.4 && t >= y - 2.2 && t > top) top = t;
+    }
+  }
+  return Number.isFinite(top) ? { ...d, x, y: top - IDOL_DECOR_SINK, z } : { ...d, x, y, z };
+}
+
+/** One solid body of a decor prop, in the prop's local frame before yaw and scale (metres, base at the placement). */
+export interface DecorBody {
+  readonly cx: number;
+  readonly cz: number;
+  readonly hx: number;
+  readonly hz: number;
+  /** Height of the body above its base. */
+  readonly h: number;
+  /** Base offset (rocks and crystals sink like their Idol models). */
+  readonly dy?: number;
+}
+
+/**
+ * Pass-through pass (owner, 2026-11-18: "it just runs right through rather than stopping"): the solid body of every
+ * solid-looking decor kind, measured on the Idol GLB the default look draws (vertex extents in the 0.2-1.0 m band, the
+ * height Pip's 0.9 m box sweeps; round props trimmed ~10 % so the box sits inside the silhouette). Flowers, clouds,
+ * hawks and star relics stay walk-through (soft or flying). Arches collide on their two jambs only, so the opening stays
+ * open; banners and the Sun-Gate are handled as poles/jambs.
+ */
+export const DECOR_BODIES: Readonly<Partial<Record<DecorSpec["kind"], readonly DecorBody[]>>> = {
+  // pipOakTree: gnarled root-flared trunk ring x -1.38..1.33, z -0.73..1.92 (trunk sits 0.55 m behind the canopy centre).
+  tree: [{ cx: 0, cz: 0.55, hx: 1.2, hz: 1.2, h: 4.99 }],
+  // pipConifer: skirt of low boughs reaches +-1.1..1.4 m from 0.5 m up; trunk +-0.45 below that.
+  conifer: [{ cx: 0, cz: 0, hx: 1.0, hz: 1.0, h: 3.88 }],
+  // pipToadstool: cap +-0.58 m from 0.5 m up (stem +-0.3 under it).
+  mushroom: [{ cx: 0, cz: 0, hx: 0.5, hz: 0.5, h: 1.34 }],
+  // pipBoulder 1.43 x 1.14 x 1.45, drawn 0.1 m sunk.
+  rock: [{ cx: 0, cz: 0, hx: 0.62, hz: 0.64, h: 1.14, dy: -0.1 }],
+  // pipStonePillar 0.995 x 2.98 x 1.055.
+  pillar: [{ cx: 0, cz: -0.04, hx: 0.47, hz: 0.49, h: 2.98 }],
+  // pipStoneArch: jambs x +-(0.8..2.0), z +-0.73; the 1.6 m opening between them stays open.
+  arch: [
+    { cx: -1.4, cz: 0, hx: 0.6, hz: 0.72, h: 4.13 },
+    { cx: 1.4, cz: 0, hx: 0.6, hz: 0.72, h: 4.13 }
+  ],
+  // pipWatchtower: frame x -1.11..1.09, z -1.35..1.5.
+  sail: [{ cx: 0, cz: 0.07, hx: 1.05, hz: 1.4, h: 5.56 }],
+  // pipWindmillTower body (the sail disc hangs high in front; see cameraObstaclesFor).
+  windmill: [{ cx: 0, cz: 0, hx: 1.3, hz: 1.3, h: 4.7 }],
+  // pipCrate 0.96 x 0.88 x 1.14 (boxy: full size).
+  crate: [{ cx: 0, cz: 0, hx: 0.48, hz: 0.569, h: 0.88 }],
+  // pipBarrel 0.79 x 0.98 x 0.79.
+  barrel: [{ cx: 0, cz: 0, hx: 0.37, hz: 0.37, h: 0.98 }],
+  // pipLantern: plinth +-0.72 under 0.5 m, post above it.
+  lantern: [{ cx: -0.04, cz: 0, hx: 0.68, hz: 0.68, h: 2.41 }],
+  // pipCrystal 1.31 x 1.5 x 1.33, drawn 0.12 m sunk.
+  crystal: [{ cx: 0, cz: 0, hx: 0.6, hz: 0.62, h: 1.5, dy: -0.12 }],
+  // pipEmberVent 1.64 x 0.92 x 1.63.
+  vent: [{ cx: 0, cz: 0, hx: 0.78, hz: 0.78, h: 0.92 }],
+  // Woodland banner: 0.055 m timber pole, 2.15 m tall (the cloth hangs from 0.92 m, above Pip's head).
+  banner: [{ cx: 0, cz: 0, hx: 0.06, hz: 0.06, h: 2.15 }],
+  // Updraft fan: stone ring radius 1.1 m, 0.53 m tall.
+  fan: [{ cx: 0, cz: 0, hx: 0.95, hz: 0.95, h: 0.53 }]
+};
+
+/** Sun-Gate (pipSunGate, drawn 0.17 m behind the gate point): two jambs x +-(1.25..2.22), z +-0.55, 3.31 m tall. */
+export const SUN_GATE_JAMBS: readonly DecorBody[] = [
+  { cx: -1.74, cz: -0.17, hx: 0.48, hz: 0.5, h: 3.31 },
+  { cx: 1.74, cz: -0.17, hx: 0.48, hz: 0.5, h: 3.31 }
+];
+
+/** True when (x, y, z) stands on (within 0.25 m of) a static platform top. */
+function standsOnPlatform(d: { readonly x: number; readonly y: number; readonly z: number }, solids: readonly SolidBox[]): boolean {
+  return solids.some((b) => !b.decor && !b.plat?.mover && !b.plat?.timed && Math.abs(d.x - b.x) <= b.hx && Math.abs(d.z - b.z) <= b.hz && Math.abs(b.y + b.hy - d.y) <= 0.25);
+}
+
+/** World-space AABB of one body placed at (x, y, z) with yaw and uniform scale. */
+export function decorBodyBox(b: DecorBody, x: number, y: number, z: number, yaw: number, s: number): { x: number; y: number; z: number; hx: number; hy: number; hz: number } {
+  const c = Math.cos(yaw), sn = Math.sin(yaw);
+  const ox = (b.cx * c + b.cz * sn) * s, oz = (-b.cx * sn + b.cz * c) * s;
+  const hx = (Math.abs(c) * b.hx + Math.abs(sn) * b.hz) * s, hz = (Math.abs(sn) * b.hx + Math.abs(c) * b.hz) * s;
+  const base = y + (b.dy ?? 0) * s;
+  return { x: x + ox, y: base + (b.h * s) / 2, z: z + oz, hx, hy: (b.h * s) / 2, hz };
+}
+
+/**
+ * Collision bodies for the solid decor and the Sun-Gate jambs (pass-through pass). Props are placed exactly where the
+ * default look draws them: static props through `groundIdolDecor` (same platform solids, same lantern relocation),
+ * banners and fans at their authored spot. Identical in both looks (the collision world never depends on the look).
+ */
+export function decorColliders(spec: WorldSpec, platformSolids: readonly SolidBox[]): SolidBox[] {
+  const out: SolidBox[] = [];
+  const push = (id: string, box: ReturnType<typeof decorBodyBox>) => {
+    out.push({
+      id, x: box.x, y: box.y, z: box.z, hx: box.hx, hy: box.hy, hz: box.hz,
+      plat: { id, x: box.x, y: box.y + box.hy, z: box.z, w: box.hx * 2, d: box.hz * 2, h: box.hy * 2, kind: "stone" },
+      active: true, vx: 0, vy: 0, vz: 0, decor: true
+    });
+  };
+  for (const d of spec.decor) {
+    const bodies = DECOR_BODIES[d.kind];
+    if (!bodies) continue;
+    const placed = ANIMATED_DECOR_KINDS.has(d.kind)
+      ? d
+      : groundIdolDecor({ kind: d.kind as StaticDecorKind, x: d.x, y: d.y, z: d.z, yaw: d.yaw, s: d.s }, platformSolids, spec.gate);
+    // Banners hung over the Sun-Gate (pole foot >= 1 m above the floor, above Pip's head) are not on the run line.
+    if (d.kind === "banner" && !standsOnPlatform(placed, platformSolids)) continue;
+    bodies.forEach((b, i) => push(`decor:${d.id}${bodies.length > 1 ? `:${i}` : ""}`, decorBodyBox(b, placed.x, placed.y, placed.z, d.yaw ?? 0, d.s ?? 1)));
+  }
+  const g = spec.gate;
+  SUN_GATE_JAMBS.forEach((b, i) => push(`decor:sun-gate:${i}`, decorBodyBox(b, g.x, g.y, g.z, 0, 1)));
+  return out;
+}
+
 function cameraObstaclesFor(d: DecorSpec): readonly CameraObstacle[] {
   const s = d.s ?? 1;
   const yaw = d.yaw ?? 0;
   switch (d.kind) {
+    // Idol wow pass (GPU QA): radii/heights follow the Idol set pieces, which are chunkier than the old procedural ones.
     case "tree":
-      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.42 * s, height: 2.85 * s }];
+      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.55 * s, height: 3.0 * s }];
     case "conifer":
-      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.38 * s, height: 3.2 * s }];
+      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.45 * s, height: 3.2 * s }];
     case "rock":
       return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.52 * s, height: 1.05 * s }];
-    case "windmill":
-      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.95 * s, height: 3.6 * s }];
+    case "windmill": {
+      // Tower body (Idol pipWindmillTower: ~1.3 m radius x 4.7 m) plus the sail disc hung 1.62 m in front of it.
+      const fx = Math.sin(yaw), fz = Math.cos(yaw);
+      return [
+        { x: d.x, z: d.z, baseY: d.y, radius: 1.35 * s, height: 4.7 * s },
+        { x: d.x + fx * 1.62 * s, z: d.z + fz * 1.62 * s, baseY: d.y + 1.0 * s, radius: 1.0 * s, height: 3.9 * s }
+      ];
+    }
     case "sail":
-      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.42 * s, height: 2.6 * s }];
+      return [{ x: d.x, z: d.z, baseY: d.y, radius: 1.1 * s, height: 5.56 * s }];
+    case "lantern":
+      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.4 * s, height: 2.4 * s }];
     case "pillar":
       return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.52 * s, height: 3.4 * s }];
     case "arch": {
@@ -351,10 +501,14 @@ export interface WorldPresentation {
 /** PBL-AN1: one decor prop the presentation moves (visual only). */
 export interface AnimatedDecor {
   readonly name: string;
-  readonly kind: "banner" | "fan";
+  /** banner sways, fan spins (PBL-AN1); Idol windmill sails spin, hawks circle and clouds drift (moving-parts pass). */
+  readonly kind: "banner" | "fan" | "sails" | "hawk" | "cloud" | "villager";
   readonly yaw: number;
   /** Seeded from the decor id so neighbours do not move in lockstep. */
   readonly phase: number;
+  /** Rest position of the moving node (hawks and clouds move away from and back to it). */
+  readonly base?: readonly [number, number, number];
+  readonly scale?: number;
 }
 
 /** Decor kinds the diorama animates instead of instancing (PBL-AN1). */
@@ -431,7 +585,8 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
   for (const node of practicalNodes(look)) builder.add(node);
   const flare = lensFlareNode(look);
   if (flare) builder.add(flare);
-  const sky = skyNode(look);
+  const skyBounds = courseBounds(spec);
+  const sky = skyNode(look, [(skyBounds.minX + skyBounds.maxX) / 2, skyBounds.floorY, (skyBounds.minZ + skyBounds.maxZ) / 2]);
   if (sky) builder.add(sky);
   const aurora = auroraNode(spec, look, scale);
   if (aurora) builder.add(aurora);
@@ -644,17 +799,17 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   const spinNodes: string[] = [];
   for (const s of spec.seeds) {
     const rt = game.runtimeNode(nodeName.seed(s.id), { tags: ["pickup", "seed"] });
-    builder.add(buildSunseedNode(nodeName.seed(s.id), [s.x, s.y + 0.16, s.z], rt));
+    builder.add(buildIdolSunseedNode(nodeName.seed(s.id), [s.x, s.y + 0.16, s.z], rt));
     spinNodes.push(nodeName.seed(s.id));
   }
   for (const a of spec.acorns) {
     const rt = game.runtimeNode(nodeName.acorn(a.id), { tags: ["pickup", "acorn"] });
-    builder.add(buildGoldenAcornNode(nodeName.acorn(a.id), [a.x, a.y + 0.12, a.z], rt));
+    builder.add(buildIdolGoldenAcornNode(nodeName.acorn(a.id), [a.x, a.y + 0.12, a.z], rt));
     spinNodes.push(nodeName.acorn(a.id));
   }
   for (const hpt of spec.hearts) {
     const rt = game.runtimeNode(nodeName.heart(hpt.id), { tags: ["pickup", "heart"] });
-    builder.add(buildHeartBerryNode(nodeName.heart(hpt.id), [hpt.x, hpt.y + 0.1, hpt.z], rt));
+    builder.add(buildIdolHeartBerryNode(nodeName.heart(hpt.id), [hpt.x, hpt.y + 0.1, hpt.z], rt));
     spinNodes.push(nodeName.heart(hpt.id));
   }
 
@@ -662,14 +817,17 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   for (const spr of spec.springs) {
     const base = [spr.x, spr.y, spr.z] as const;
     const rt = game.runtimeNode(nodeName.spring(spr.id), { tags: ["spring"] });
-    builder.add(buildBounceSpringBaseNode(`${nodeName.spring(spr.id)}:base`, base));
+    builder.add(buildIdolSpringBaseNode(`${nodeName.spring(spr.id)}:base`, base));
     builder.add(buildBounceSpringCapNode(nodeName.spring(spr.id), base, rt));
   }
 
   // Checkpoints — carved timber post + stone pad + fluttering swallowtail pennant (zero GLBs).
+  const checkpointObstacles: CameraObstacle[] = [];
   for (const cp of spec.checkpoints) {
+    // GPU QA: the Idol checkpoint post (2 m, crossbar 0.84 m) used to fill the lens when the boom swung behind it.
+    checkpointObstacles.push({ x: cp.x, z: cp.z, baseY: cp.y, radius: 0.45, height: 2.0 });
     const rt = game.runtimeNode(nodeName.checkpointFlag(cp.id), { tags: ["checkpoint"] });
-    builder.add(buildCheckpointStandNode(`${nodeName.checkpoint(cp.id)}:pad`, [cp.x, cp.y, cp.z], cp.yaw ?? 0));
+    builder.add(buildIdolCheckpointStandNode(`${nodeName.checkpoint(cp.id)}:pad`, [cp.x, cp.y, cp.z], cp.yaw ?? 0));
     builder.add(buildCheckpointPennantNode(nodeName.checkpointFlag(cp.id), [cp.x, cp.y, cp.z], cp.yaw ?? 0, rt, !diorama));
   }
 
@@ -678,7 +836,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   const gateRt = game.runtimeNode(nodeName.gate, { tags: ["gate"] });
   const ringRt = game.runtimeNode(nodeName.gateRing, { tags: ["gate"] });
   const lockRt = game.runtimeNode(nodeName.gateLock, { tags: ["gate"] });
-  builder.add(buildSunGateArchNode(nodeName.gate, [g.x, g.y, g.z], 0, gateRt));
+  builder.add(buildIdolSunGateArchNode(nodeName.gate, [g.x, g.y, g.z], 0, gateRt));
   if (diorama) {
     builder.add(buildSunGateRuneRingNode(nodeName.gateRing, [g.x, g.y + 1.5, g.z], GATE_RING_MATERIAL, ringRt));
   } else {
@@ -689,8 +847,12 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   }
   builder.add(buildGateLockStarNode(nodeName.gateLock, [g.x, g.y + 1.5, g.z], lockRt));
 
+  // Pass-through pass: solid decor and the Sun-Gate jambs are bodies Pip stops against (platform solids only feed
+  // the placement, so grounding below is unchanged).
+  const decorSolids = decorColliders(spec, solids);
+
   // Decor + NPCs.
-  const cameraObstacles: CameraObstacle[] = [];
+  const cameraObstacles: CameraObstacle[] = [...checkpointObstacles];
   for (const d of spec.decor) {
     for (const obstacle of cameraObstaclesFor(d)) cameraObstacles.push(obstacle);
     if (diorama && ANIMATED_DECOR_KINDS.has(d.kind)) {
@@ -703,31 +865,43 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     }
   }
   if (diorama) {
-    for (const node of buildDioramaStaticDecorNodes(staticDecorPlacements)) builder.add(node);
+    // Idol wow pass: every static decor kind with an Idol model is one model node per placement; the rest stay merged.
+    const idolKinds = idolDecorKinds();
+    const proceduralDecor: StaticDecorPlacement[] = [];
+    staticDecorPlacements.forEach((d0, i) => {
+      const d = groundIdolDecor(d0, solids, spec.gate);
+      const idol = idolKinds.has(d.kind) ? buildIdolDecorNodes(`pbl-decor:${d.kind}:${i}`, d) : null;
+      if (!idol) {
+        proceduralDecor.push(d);
+        return;
+      }
+      for (const node of idol.nodes) builder.add(node);
+      // Moving parts (MOVING-PARTS pass): windmill sails spin, hawks circle, clouds drift — driven by presentation.ts.
+      if (idol.moving) {
+        animatedDecor.push({ name: idol.moving.name, kind: idol.moving.kind, yaw: idol.moving.yaw, phase: phaseOf(idol.moving.name), base: idol.moving.base, scale: idol.moving.scale });
+      }
+    });
+    for (const node of buildDioramaStaticDecorNodes(proceduralDecor)) builder.add(node);
   }
+  solids.push(...decorSolids);
   for (const n of spec.npcs) {
     cameraObstacles.push({ x: n.x, z: n.z, baseY: n.y, radius: 0.32, height: 1.15 });
     const npcName = diorama ? `pbl-villager:${n.id}` : nodeName.npc(n.id);
-    if (n.who === "sidekick") {
-      builder.add(buildForestBeetleNode(npcName, [n.x, n.y, n.z], -0.45));
-    } else {
-      builder.add(buildHedgehogVillagerNode(npcName, [n.x, n.y, n.z], -0.45));
-    }
+    builder.add(buildIdolVillagerNode(npcName, [n.x, n.y, n.z], -0.45, n.who));
+    // Creature motion pass: the rigged villager idles at its post and paces a short loop (presentation.ts).
+    if (diorama) animatedDecor.push({ name: npcName, kind: "villager", yaw: -0.45, phase: phaseOf(npcName), base: [n.x, n.y, n.z], scale: 1 });
   }
 
-  // Hero — articulated @aura3d/engine procedural Pip rig (zero GLBs); camera rigs onto it.
+  // Hero — rigged Idol felt-and-clay Pip (idol wow pass); camera rigs onto it, main.ts drives clips + body lean.
   const heroSpawnYaw = spec.spawnYaw ?? Math.PI;
   builder.add(
-    buildPipHeroNode(
+    buildIdolPipHeroNode(
       nodeName.hero,
       [spec.spawn[0], spec.spawn[1], spec.spawn[2]],
       heroSpawnYaw,
-      game.runtimeNode(nodeName.hero, { tags: ["player"] })
+      game.runtimeNode(nodeName.hero, { tags: QA_POSE_EVIDENCE ? ["player", "aura:evidence-deformed-bounds"] : ["player"] })
     )
   );
-  for (const limb of buildPipHeroLimbNodes(nodeName.hero, [spec.spawn[0], spec.spawn[1], spec.spawn[2]], heroSpawnYaw)) {
-    builder.add(limb);
-  }
   // Player Studio cape: hidden by default (`visible: false`); if enabled in Studio, drapes cleanly behind Pip's back (-Z).
   const capeBase = geometry
     .custom(geometry.define(heroCapeGeometry()), {
@@ -748,15 +922,12 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   // Boss (W5) — articulated @aura3d/engine procedural Brambleback rig + 6 orbiting thorny crystal spikes.
   if (spec.boss) {
     builder.add(
-      buildBramblebackBossNode(
+      buildIdolBramblebackNode(
         nodeName.boss,
         [0, 2.6, -69],
         game.runtimeNode(nodeName.boss, { tags: ["boss"] })
       )
     );
-    for (const limb of buildBramblebackBossLimbNodes(nodeName.boss, [0, 2.6, -69])) {
-      builder.add(limb);
-    }
     for (let i = 0; i < 6; i += 1) {
       const a = (i / 6) * Math.PI * 2;
       const spikeRt = game.runtimeNode(nodeName.bossSpike(i), { tags: ["boss"] });

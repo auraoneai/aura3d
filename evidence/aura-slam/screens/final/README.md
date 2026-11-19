@@ -1,27 +1,33 @@
-# Aura Slam: final screenshots (retaken 2026-10-29 after the audit fixes)
+# Aura Slam 3D: final screenshots (2026-11-19)
 
-Route: `apps/showcase-top-tennis`, branch `audit-fix/g01` (audit lane G01). Same file names and sizes as the earlier set, plus the results frame that set never reached.
+Route: `/apps/showcase-top-tennis/`
 
-**Runner:** remote Azure ACR Task, headless Chromium, **software WebGL2 (SwiftShader)**. This is not real-GPU evidence: it shows layout and content, not GPU look or frame rate. Tool: `tests/browser/audit-fix/top-tennis.spec.ts` (`tt-flow-1280`, `tt-flow-390`, `tt-misc-card`), served by `tests/browser/example-dev-server.ts` from the repository (no production fallback). Runs `g01-final2-131920` (1280), `g01-final2-131920-390` and `g01-final2-131920-misc` (card). Frames come from the page's own buttons and held keys; the results frame comes from QA-hook steps (`stepFrames`) with the Auto player on.
+Runner: headed Chrome on a real GPU (Apple Metal) via REA, production build (http://127.0.0.1:8790).
 
-## Frames
-
-| Viewport | State | Meaning | Status |
-|---|---|---|---|
-| 1280 | 01-title | first loaded frame (match already on court) | captured |
-| 1280 | 02-early | first serve, with the one-time HOW TO PLAY card | captured |
-| 1280 | 03-action | after D, Space, A | captured |
-| 1280 | 04-mid | Auto player rally | captured |
-| 1280 | 05-modes | modes panel (Quick Match and Smash Lab only) | captured |
-| 1280 | 06-results | results after a 3-0 Auto match | captured |
-| 390 | 01-title .. 06-results | same states on a 390 x 844 touch phone | captured |
-
-Card images: `card-2x.jpg` (1440x900, captured natively) and `card-1x.jpg` (720x450, downscaled from the 2x capture).
+| Viewport | State | Meaning |
+|---|---|---|
+| 1280 | `1280-01-title.jpg` | Modes menu (Choose your tennis match) over the live court (`?menu=1`) |
+| 1280 | `1280-02-early.jpg` | `?autoplay=1` first points on NY Hard, OUT call |
+| 1280 | `1280-03-action.jpg` | rival striking, ball in play |
+| 1280 | `1280-04-rally.jpg` | rally, ball over the net |
+| 1280 | `1280-05-grass.jpg` | London Grass: full stadium, rear wall with the AURA SLAM WORLD TOUR banner, the two corner A-frame panels |
+| 1280 | `1280-06-clay.jpg` | Paris Clay rally |
+| 1280 | `1280-07-results.jpg` | results card, VICTORY 3-0 with match stats (`?qaFinish=1`) |
+| 390x844 | `390-01-title.jpg` | Modes menu on a phone |
+| 390x844 | `390-02-early.jpg` | portrait court: rear wall, banner and corner panels at the far end, touch controls |
+| 390x844 | `390-03-action.jpg` | serve |
+| 390x844 | `390-04-mid.jpg` | rally |
+| 390x844 | `390-05-clay.jpg` | Paris Clay on a phone |
+| 390x844 | `390-06-results.jpg` | results card on a phone |
+| 1440x900 | `card-2x.jpg` | London Grass rally, full stadium (`card-1x.jpg` = 720x450 LANCZOS downscale) |
 
 ## Checked in the frames
 
-- The 24 spectators show their six colours (spectator patch saturation 0.62 against 0.01 before).
-- The net is see-through; the white tape stays opaque.
-- The hint bar names the bound keys: SHORT Q, DEEP E, LOB R, POWER SHIFT.
-- 390 portrait: the whole court and both athletes are on screen (aspect-aware FOV 29.3 degrees and a canvas that stays between the score band and the controls).
-- The results screen is reached at both sizes.
+- the sim's three ball deflectors are drawn where they deflect: the padded rear wall spans the collider (|x| <= 7.2 m, face z -10.8, 0.765 m; sponsor boards flush with it) and the two angled corner A-frame panels (x +-5.2, z -9.3, 1.5 x 0.96 m, turned 0.16 rad) stand in the far corners; the board lettering moved onto the wall's centre pad so the panels do not hide it, the venue/score line stays readable
+- umpire chair, benches, coolers, towel racks, stands and crowd: the live (in-play) ball never reaches them in the golden replays; a dead ball that the sim lets roll on is drawn stopping at the first solid it meets and dropping onto what is under it (tests/unit/aura-slam/court-solids.test.ts)
+- Idol athletes move with real motion (serve toss, split-step, lunges); ball scale ~2.3x real for broadcast readability
+- six venues run hands-free with `?autoplay=1`, no stalls; no page errors
+
+## Known issues
+
+- none found in these frames

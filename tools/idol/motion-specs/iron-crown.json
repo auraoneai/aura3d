@@ -1,0 +1,215 @@
+{
+  "game": "iron-crown",
+  "clips": [
+    {
+      "key": "Idle",
+      "prompt": "A martial artist in a fighting stance bounces lightly on the balls of the feet, fists raised in front of the face, weight shifting from foot to foot.",
+      "duration": 3,
+      "loop": true,
+      "seed": 900,
+      "guidance": 5
+    },
+    {
+      "key": "WalkForward",
+      "prompt": "A martial artist in a fighting stance with fists raised steps forward slowly in a straight line, keeping the guard up.",
+      "duration": 2.4,
+      "loop": true,
+      "seed": 901,
+      "guidance": 5
+    },
+    {
+      "key": "WalkBack",
+      "prompt": "A martial artist in a fighting stance with fists raised steps backward slowly in a straight line, keeping the guard up.",
+      "duration": 2.4,
+      "loop": true,
+      "seed": 902,
+      "guidance": 5
+    },
+    {
+      "key": "Jump",
+      "prompt": "A martial artist in a fighting stance crouches, jumps straight up high with the knees tucked, and lands back in the fighting stance.",
+      "duration": 2,
+      "loop": false,
+      "seed": 903,
+      "guidance": 5
+    },
+    {
+      "key": "Crouch",
+      "prompt": "A martial artist in a fighting stance drops into a low crouch with knees deeply bent and both fists raised to guard the face, and holds the crouch.",
+      "duration": 2,
+      "loop": false,
+      "seed": 904,
+      "guidance": 5
+    },
+    {
+      "key": "Guard",
+      "prompt": "A martial artist in a fighting stance blocks, raising both forearms in front of the face and bracing the body, and holds the block.",
+      "duration": 1.6,
+      "loop": false,
+      "seed": 905,
+      "guidance": 5
+    },
+    {
+      "key": "Jab",
+      "prompt": "A martial artist in a fighting stance throws a fast straight left jab at head height and pulls the fist back to guard.",
+      "duration": 1.2,
+      "loop": false,
+      "seed": 906,
+      "guidance": 5
+    },
+    {
+      "key": "Uppercut",
+      "prompt": "A boxer in a fighting stance with both feet planted on the ground throws a powerful rising right uppercut punch with the right fist, then returns to guard. Both feet stay on the ground.",
+      "duration": 1.5,
+      "loop": false,
+      "seed": 931,
+      "guidance": 5
+    },
+    {
+      "key": "Combo",
+      "prompt": "A martial artist in a fighting stance throws a fast combination of four punches, left jab, right cross, left hook, right uppercut, then returns to guard.",
+      "duration": 2.2,
+      "loop": false,
+      "seed": 908,
+      "guidance": 5
+    },
+    {
+      "key": "Throw",
+      "prompt": "A standing fighter grabs the shoulders of an opponent in front with both hands, pulls them close and swings them around to the side with a strong twist of the torso, staying upright on both feet the whole time.",
+      "duration": 2.2,
+      "loop": false,
+      "seed": 933,
+      "guidance": 5
+    },
+    {
+      "key": "Hit",
+      "prompt": "A martial artist in a fighting stance staggers back from a heavy hit to the face, head snapping back, then recovers the guard.",
+      "duration": 1.5,
+      "loop": false,
+      "seed": 910,
+      "guidance": 5
+    },
+    {
+      "key": "Knockdown",
+      "prompt": "A martial artist in a fighting stance is knocked down by a heavy blow and falls backward onto the back, then lies still on the ground.",
+      "duration": 3,
+      "loop": false,
+      "seed": 911,
+      "guidance": 5
+    },
+    {
+      "key": "Victory",
+      "prompt": "A fighter stands tall and raises both arms high above the head in victory, fists clenched.",
+      "duration": 3,
+      "loop": true,
+      "seed": 912,
+      "guidance": 5
+    },
+    {
+      "key": "RoundhouseKick",
+      "prompt": "A martial artist in a fighting stance throws a spinning roundhouse kick with the right leg at head height and lands back in the stance.",
+      "duration": 1.8,
+      "loop": false,
+      "seed": 913,
+      "guidance": 5,
+      "faceForward": true
+    },
+    {
+      "key": "LungePunch",
+      "prompt": "A martial artist in a fighting stance lunges forward with a long step and drives a straight right punch at chest height, then recovers the stance.",
+      "duration": 1.6,
+      "loop": false,
+      "seed": 914,
+      "guidance": 5
+    },
+    {
+      "key": "GroundSlam",
+      "prompt": "A large heavy fighter leaps up, raises both fists overhead, and slams them down onto the ground while landing in a deep squat.",
+      "duration": 2.2,
+      "loop": false,
+      "seed": 915,
+      "guidance": 5
+    },
+    {
+      "key": "HammerFist",
+      "prompt": "A large heavy fighter raises the right fist high overhead and swings it down hard in a hammer blow in front of the body.",
+      "duration": 1.6,
+      "loop": false,
+      "seed": 916,
+      "guidance": 5
+    },
+    {
+      "key": "SpearJab",
+      "prompt": "A warrior holding a long spear with both hands at the waist makes a quick short forward thrust with the spear and pulls it back.",
+      "duration": 1.2,
+      "loop": false,
+      "seed": 917,
+      "guidance": 5
+    },
+    {
+      "key": "SpearThrust",
+      "prompt": "A warrior holding a long spear with both hands makes a deep spear thrust lunge forward, extending both arms, then steps back.",
+      "duration": 1.6,
+      "loop": false,
+      "seed": 918,
+      "guidance": 5
+    },
+    {
+      "key": "SpearSpecial",
+      "prompt": "A warrior holding a long spear with both hands spins the spear around the body and finishes with a long lunging thrust forward.",
+      "duration": 2.4,
+      "loop": false,
+      "seed": 919,
+      "guidance": 5
+    },
+    {
+      "key": "KnifeSlash",
+      "prompt": "A nimble fighter holding a short knife in the right hand makes a quick forward slash across the body and returns to a crouched stance.",
+      "duration": 1.2,
+      "loop": false,
+      "seed": 920,
+      "guidance": 5
+    },
+    {
+      "key": "KnifeFlurry",
+      "prompt": "A nimble fighter darts forward and makes a rapid flurry of crisscross slashes with both hands, then hops back into a crouched stance.",
+      "duration": 2,
+      "loop": false,
+      "seed": 921,
+      "guidance": 5
+    },
+    {
+      "key": "SwordSlash",
+      "prompt": "A knight holding a sword in the right hand and a shield on the left arm makes a quick forward sword slash and returns to guard.",
+      "duration": 1.3,
+      "loop": false,
+      "seed": 922,
+      "guidance": 5
+    },
+    {
+      "key": "SwordOverhead",
+      "prompt": "A knight raises a sword high overhead with the right hand and brings it down in a powerful overhead slash, then returns to guard.",
+      "duration": 1.6,
+      "loop": false,
+      "seed": 923,
+      "guidance": 5
+    },
+    {
+      "key": "SwordSpin",
+      "prompt": "A knight holding a sword makes a full spinning sword slash, turning all the way around, and finishes with a forward cut.",
+      "duration": 2.2,
+      "loop": false,
+      "seed": 924,
+      "guidance": 5,
+      "faceForward": false
+    },
+    {
+      "key": "ShieldBlock",
+      "prompt": "A knight blocks by raising a shield on the left forearm in front of the body and bracing behind it, holding the block.",
+      "duration": 1.6,
+      "loop": false,
+      "seed": 925,
+      "guidance": 5
+    }
+  ]
+}

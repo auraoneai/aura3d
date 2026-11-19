@@ -1,0 +1,61 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cross-hop",
+  "key": "hopCritterMushroomKid",
+  "generatedAt": "2026-11-18T23:26:04.444Z",
+  "generator": "tools/idol/generate.mjs (request resumed after its 20-min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A cute little mushroom child toy figure, big glossy scarlet-red mushroom cap with round white spots, cream mushroom-stem body with a friendly smiling face, tiny arms, little brown leather boots, standing on its own feet on the ground facing forward toward the viewer. Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0e4-8088-79c1-b0e7-deded7e27d7a",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 927404,
+        "num_faces": 1854804,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A cute little mushroom child toy figure, big glossy scarlet-red mushroom cap with round white spots, cream mushroom-stem body with a friendly smiling face, tiny arms, little brown leather boots, standing on its own feet on the ground facing forward toward the viewer. Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.051,
+    "size": [
+      0.821,
+      1.05,
+      0.702
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-cross-hop/assets/idol/hopCritterMushroomKid.glb",
+  "sizeBytes": 677088,
+  "preview": "artifacts/idol/cross-hop/hopCritterMushroomKid/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "shrink",
+    "tool": "aura3d assets optimize + gltf-transform jpeg (normal map PNG->JPEG q90)",
+    "maxVerts": 7000,
+    "tex": 512,
+    "sizeBytesBefore": 2578388
+  },
+  "baked": {
+    "step": "node transforms baked into vertices (gltf-transform flatten + clearNodeTransform) so manifest bounds are exact"
+  }
+}

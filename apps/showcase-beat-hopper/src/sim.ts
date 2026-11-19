@@ -33,8 +33,14 @@ export const CONFIG = {
   BIG_JUMP_GRAVITY: 17.2,
   BIG_JUMP_HEIGHT: 2.35,
   BIG_AIR_DURATION: 1.05,
-  /** Minimum airborne clearance height (m) that safely clears a block or gap with GOOD instead of unfair damage. */
+  /** Minimum airborne clearance height (m) that safely clears a gap (a flat trench) with GOOD instead of unfair damage. */
   AIR_CLEARANCE_Y: 0.08,
+  /**
+   * Block hitbox top (m): the speaker crate drawn in the lane is 0.95 m tall (`BLOCK_SIZE.h` in meshes.ts, pinned equal
+   * by collision-footprints.test.ts), so an airborne hopper only clears a blocked lane with its feet at or above this
+   * height at the crossing. Lower feet would visibly run through the crate, so that is the normal MISS hit response.
+   */
+  BLOCK_CLEAR_Y: 0.95,
   DUCK_HOLD: 0.18,
   /** Duck should engage this long before the bar crossing. */
   DUCK_LEAD: 0.12,
@@ -414,9 +420,13 @@ export class BeatHopperSim {
       const delta = o.bigJump
         ? Math.min(Math.abs(o.airStart - ideal), Math.abs(o.airStart - bigIdeal))
         : Math.abs(o.airStart - ideal);
-      if (o.pose === "air" && delta <= CONFIG.PERFECT_WINDOW) {
+      // Airborne over the hazard's visual top: a gap is a flat trench (any real airtime clears it); a block is a
+      // 0.95 m crate, so feet below its top would pass through the drawn mesh and take the hit instead.
+      const clearY = slot.type === "block" ? CONFIG.BLOCK_CLEAR_Y : CONFIG.AIR_CLEARANCE_Y;
+      const over = o.pose === "air" && o.y >= clearY;
+      if (over && delta <= CONFIG.PERFECT_WINDOW) {
         kind = "perfect";
-      } else if (o.pose === "air" && (delta <= CONFIG.GOOD_WINDOW || o.y >= CONFIG.AIR_CLEARANCE_Y)) {
+      } else if (over) {
         kind = "good";
       } else if (!blocked) {
         kind = "clear";

@@ -68,8 +68,8 @@ describe("C3 chapters 1-6 floor follows the rendered terrain", () => {
     it(`chapter ${chapter}: a rider flying off the ring corridor stays 2.4 m above the hills, and the chase eye stays above them`, () => {
       const terrain = createTerrain(chapter);
       const start = CHAPTERS[chapter]!.objectives[0]!.points[0]!;
-      // fly west off the corridor, nose down, for 25 s
-      const sim = createSim(chapter, 0, undefined, { x: start.x, y: 6, z: start.z, yaw: Math.PI / 2 });
+      // fly west off the corridor, nose down, for 25 s (the soft play boundary, boundary.ts, is lifted so the rider reaches the hills)
+      const sim = createSim(chapter, 0, { leash: undefined }, { x: start.x, y: 6, z: start.z, yaw: Math.PI / 2 });
       const clearance = createChaseClearance();
       let worst = Infinity, maxGround = -Infinity, eyeWorst = Infinity;
       run(sim, { ...FLY, lift: -1 }, 1500, (s) => {

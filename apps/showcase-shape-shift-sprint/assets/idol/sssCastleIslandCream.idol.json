@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shape-shift-sprint",
+  "key": "sssCastleIslandCream",
+  "generatedAt": "2026-11-18T22:53:02.807Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0a0-ebeb-70e3-a8c5-ba9974a3d3de",
+      "prompt": "A floating toy island: an inverted cone of terracotta-brown rock with a green grassy top, a small cream-white toy castle with round towers and ruby-red conical roofs, two round lollipop trees and a small cluster of pastel crystals. Photograph of a real handmade toy miniature, glossy painted wood and smooth glazed ceramic, pastel candy colours, soft bright daylight, tactile surface detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a6-fc67-7362-908b-a98aba328772",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 795160,
+        "num_faces": 1590316,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A floating toy island: an inverted cone of terracotta-brown rock with a green grassy top, a small cream-white toy castle with round towers and ruby-red conical roofs, two round lollipop trees and a small cluster of pastel crystals. Photograph of a real handmade toy miniature, glossy painted wood and smooth glazed ceramic, pastel candy colours, soft bright daylight, tactile surface detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 9.988,
+    "size": [
+      9.278,
+      10,
+      8.087
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-shape-shift-sprint/assets/idol/sssCastleIslandCream.glb",
+  "sizeBytes": 2698752,
+  "preview": "artifacts/idol/shape-shift-sprint/sssCastleIslandCream/views.png",
+  "usd": 0.37
+}

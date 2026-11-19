@@ -46,3 +46,25 @@ export function policyActions(z: SimState, p: PolicyParams): Action[] {
 
 // `isEnemy` is re-exported so renderers can classify entities without importing sim internals twice.
 export { isEnemy };
+
+/**
+ * `?autoplay=1` (alias `?autopilot=1`): the computer plays hands-free. The run starts by itself once the scene is ready
+ * (no title card), the capture policy above drives the runner through the normal action path, and a finished run
+ * (won or lost) shows its results for `AUTOPLAY_RESULTS_SECONDS` and starts again, forever. `P` toggles it in play.
+ */
+export const AUTOPLAY_RESULTS_SECONDS = 3;
+export const autoplayRequested = (params: URLSearchParams): boolean => params.get("autoplay") === "1" || params.get("autopilot") === "1";
+
+/** Results-card timer: `tick` returns true once a finished run has shown its results long enough to restart. */
+export function createAutoplayLoop(resultsSeconds = AUTOPLAY_RESULTS_SECONDS): { tick(phase: SimState["phase"], dt: number): boolean } {
+  let shown = 0;
+  return {
+    tick(phase, dt) {
+      if (phase !== "won" && phase !== "lost") { shown = 0; return false; }
+      shown += dt;
+      if (shown < resultsSeconds) return false;
+      shown = 0;
+      return true;
+    }
+  };
+}

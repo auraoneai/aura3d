@@ -322,18 +322,29 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     // did (0.386, run g10p3-r4-2): the 1k file's median texel is 2e-4 and its 70th percentile 7e-3 linear, so the star
     // field only reaches the frame at about 4x; its IBL stays a faint fill (mean texel about 0.01 x 4)
     hdri: { id: "deep_space_starfield", intensity: 4, drawn: true, sunAzimuthInHdriDeg: null, want2k: true },
-    sun: { azimuthDeg: 40, elevationDeg: 25 },
-    key: { color: "#ffffff", intensity: 3.6, colorTemperatureK: 5900 },
+    // 2026-11-18 owner (real GPU): "is it supposed to be this dark?" The old sun (azimuth 40, ahead-right of every tee:
+    // all holes play toward +Z) backlit the tee 46 deg off the view axis, so with no sky fill the ball, the golfer and
+    // every crater wall facing the camera were lit only by the blue earthshine (tee frames: turf mean display luma 0.27,
+    // the ball a dark blue-grey disc). The harsh unfiltered sun now stands behind the camera's right shoulder (195 deg,
+    // still 25 deg high, so the shadows run long and black ahead-left of the golfer and the ball) and is stronger;
+    // `expectedDisplayLuminance` puts the regolith at 0.35 -> 0.52 and the ball's camera face at 0.26 -> 0.84
+    // (tests/unit/aura-links-3d/course-exposure.test.ts).
+    sun: { azimuthDeg: 195, elevationDeg: 25 },
+    key: { color: "#ffffff", intensity: 6.0, colorTemperatureK: 5900 },
     // earthshine: a faint blue fill from the Earth's side, no shadow (LINKS-16)
-    // GU47 phase 3: 0.25 left the golfer a black silhouette against the lit regolith; 0.75 models the figure from the
-    // Earth's side
-    rim: { color: "#7fa6ff", intensity: 0.75, azimuthDeg: 220 },
-    exposureEv: 0.15,
+    // GU47 phase 3: 0.25 left the golfer a black silhouette against the lit regolith; 0.75 modelled the figure from the
+    // Earth's side while the sun backlit it. With the sun behind the camera the earthshine is the edge light from the
+    // far side (azimuth 15, opposite the sun) and drops to 0.4 so the regolith reads neutral grey, not blue.
+    rim: { color: "#7fa6ff", intensity: 0.4, azimuthDeg: 15 },
+    // 0.15 -> 0.9 EV (with the 3.6 -> 6.0 key): the sunlit regolith at mid-high luminance; the starfield sky stays
+    // black (its median texel is 2e-4), only its stars gain
+    exposureEv: 0.9,
     background: "#000000",
     fog: null,
     godRays: null,
     grade: { contrast: 1.18, saturation: 0.9, temperature: 0, tint: 0 },
-    bloom: { intensity: 0.3, threshold: 0.82, scatter: 0.5 },
+    // threshold 0.82 -> 1.0: the brighter white ball and regolith highlights must not bloom (no air to scatter light)
+    bloom: { intensity: 0.3, threshold: 1.0, scatter: 0.5 },
     vignette: { intensity: 0.16, color: "#000000" },
     grain: null,
     accent: "#a98dff",
@@ -478,4 +489,92 @@ export function fairwayRadiance(
     for (let i = 0; i < 3; i++) out[i] += a[i]! * c[i]! * l.intensity;
   }
   return luminance(out);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Derived exposure metric of a GU47 look row (unit tested per course) *
+ * ------------------------------------------------------------------ */
+
+/**
+ * Upward diffuse irradiance / pi of each course HDRI at environment intensity 1 (linear RGB): the cosine-weighted
+ * integral of the upper hemisphere of the served `/hdri/<id>_1k.hdr` (packages/create-aura3d/hdri), divided by pi, so
+ * `albedo x this x intensity` is the outgoing radiance of flat ground under the IBL (the renderer's diffuse IBL is
+ * `irradiance x albedo / pi`). Measured offline on 2026-11-18 (RGBE decode, every texel, sun included).
+ */
+export const HDRI_UP_IRRADIANCE: Readonly<Record<LinksHdriId, V3>> = {
+  kloppenheim_06_puresky: [0.658, 0.827, 1.105],
+  autumn_field_puresky: [1.639, 1.606, 1.598],
+  industrial_sunset_puresky: [0.722, 0.878, 1.158],
+  "outdoor-midday": [0.658, 0.827, 1.105],
+  rooftop_night: [0.399, 0.321, 0.439],
+  deep_space_starfield: [0.004, 0.005, 0.006]
+};
+
+/** Elevation the engine gives a rim a look override adds (no look preset this game uses authors its own rim). */
+export const LOOK_RIM_ELEVATION_DEG = 35;
+
+/**
+ * Scene-linear factor from the Lambert estimate to what the real-GPU tee frames show (2026-11-18 sweep, mean display luma
+ * of the turf right of the golfer): AO, the grade, the vignette, the turf masks and normal relief and the AgX matrices
+ * take about 1.15 EV off the estimate on the four day courses (St Auroras -1.15, Maple -1.40, Cinder -1.16, Cloud -0.92).
+ */
+export const FRAME_CALIBRATION = 0.45;
+
+/**
+ * AgX (the app's `toneMapping: "agx"`) on a grey scene-linear value, as display (sRGB-encoded) 0..1: log2 encoding over
+ * [-12.47, +4.03] EV, the AgX default-contrast sigmoid polynomial (three.js / Blender AgX), whose output is already the
+ * display encoding (its 2.2 linearise and the sRGB encode cancel to within 1-2%).
+ */
+export function agxDisplay(x: number): number {
+  const n = Math.min(1, Math.max(0, (Math.log2(Math.max(x, 1e-10)) + 12.47393) / 16.5));
+  const n2 = n * n, n4 = n2 * n2;
+  return Math.min(1, Math.max(0, 15.5 * n4 * n2 - 40.14 * n4 * n + 31.96 * n4 - 6.868 * n2 * n + 0.4298 * n2 + 0.1191 * n - 0.00232));
+}
+
+/**
+ * Normal of the face the address camera sees (every hole plays toward +Z, `lineYaw` about 0; the address and aim cams
+ * sit behind the ball and about 25 deg above it): it faces back up the line, tilted 25 deg toward the sky.
+ */
+export const SUBJECT_FACE_NORMAL: V3 = [0, Math.sin((25 * Math.PI) / 180), -Math.cos((25 * Math.PI) / 180)];
+
+const dot3 = (a: readonly number[], b: readonly number[]) => a[0]! * b[0]! + a[1]! * b[1]! + a[2]! * b[2]!;
+
+/**
+ * Scene-linear luminance a surface of `albedo` with normal `normal` leaves under a look row, before exposure: Lambert of
+ * the key (`I x color x max(0, n.L) / pi`, the renderer's direct diffuse), the rim (at LOOK_RIM_ELEVATION_DEG) and the
+ * HDRI (HDRI_UP_IRRADIANCE x intensity, scaled by (1 + n.y) / 2 for a face that sees only part of the sky). Shadows,
+ * AO and practicals (Neon Bay's mast spots, Cinder's lava glow) are left out.
+ */
+export function rowSurfaceRadiance(row: CourseLookRow, albedo: string, normal: readonly number[] = [0, 1, 0]): number {
+  const a = linearRgb(albedo);
+  const out: V3 = [0, 0, 0];
+  const dirLight = (color: string, intensity: number, elevationDeg: number, azimuthDeg: number) => {
+    const nl = Math.max(0, dot3(normal, anglesToPosition(elevationDeg, azimuthDeg, 1)));
+    const c = linearRgb(color);
+    for (let i = 0; i < 3; i++) out[i] += (a[i]! * c[i]! * intensity * nl) / Math.PI;
+  };
+  dirLight(row.key.color, row.key.intensity, row.sun.elevationDeg, row.sun.azimuthDeg);
+  if (row.rim) dirLight(row.rim.color, row.rim.intensity, LOOK_RIM_ELEVATION_DEG, row.rim.azimuthDeg);
+  const env = HDRI_UP_IRRADIANCE[row.hdri.id];
+  const skyView = (1 + (normal[1] ?? 1)) / 2;
+  for (let i = 0; i < 3; i++) out[i] += a[i]! * env[i]! * row.hdri.intensity * skyView;
+  return luminance(out);
+}
+
+/**
+ * The derived exposure metric of a course look: the expected display luminance (sRGB 0..1) of a surface in the tee frame,
+ *
+ *   display = agxDisplay(FRAME_CALIBRATION x 2^exposureEv x rowSurfaceRadiance(row, albedo, normal))
+ *
+ * Ground: the course fairway colour with an upward normal. Subject: the golf ball (#fcfdfa) on SUBJECT_FACE_NORMAL, the
+ * face the camera sees, so a key that backlights the tee (Mare's old 40 deg sun, 46 deg off the view axis) shows up
+ * as a dark ball even when the turf itself is lit.
+ */
+export function expectedDisplayLuminance(row: CourseLookRow, albedo: string, normal: readonly number[] = [0, 1, 0]): number {
+  return agxDisplay(FRAME_CALIBRATION * 2 ** row.exposureEv * rowSurfaceRadiance(row, albedo, normal));
+}
+
+/** A course whose sky is black (Mare: airless, no fog, black clear colour): sky-only frames must be avoided. */
+export function hasBlackSky(row: CourseLookRow): boolean {
+  return row.fog === null && luminance(linearRgb(row.background)) < 0.002;
 }

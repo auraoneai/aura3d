@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-hoops-3d",
+  "key": "hoopsIdolBallCart",
+  "generatedAt": "2026-11-18T22:48:20.463Z",
+  "generator": "tools/idol/generate.mjs (resumed by the FC/Hoops agent after the 20-min client timeout; same request id, post-processing identical)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "(see generate.mjs buildPrompt)",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0d7-792e-75b3-a301-48cd78713d09",
+      "input": {
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 221,
+        "mesh_resolution": 1024,
+        "image_url": "(reference still)"
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1219938,
+        "num_faces": 2439944,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A chrome tubular basketball rack cart on four small black caster wheels, two tiers holding six orange pebbled basketballs with black seams in two rows of three",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.301,
+    "size": [
+      1.3,
+      1.301,
+      0.746
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-hoops-3d/assets/idol/hoopsIdolBallCart.glb",
+  "sizeBytes": 1281620,
+  "preview": "artifacts/idol/aura-hoops-3d/hoopsIdolBallCart/views.png",
+  "usd": 0.37,
+  "slimmed": "tools/idol/slim.mjs (normal maps PNG -> JPEG q92)"
+}

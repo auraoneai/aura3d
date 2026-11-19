@@ -1,0 +1,279 @@
+{
+  "game": "heatsink",
+  "outDir": "apps/showcase-heatsink/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "tdDroneOrion",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "maxDim": 3.8
+      },
+      "tex": 2048,
+      "seed": 11,
+      "subject": "A futuristic single-seat racing hover drone craft seen from the front-left: a sleek streamlined central fuselage pod with a pointed nose and a smooth clear amber-tinted glass bubble cockpit canopy with a helmeted pilot sitting inside, two swept twin strakes along the sides, four round ducted lift fans on short stub arms at the four corners (open circular ducts with fan blades visible inside, ducts level with the body), twin round thruster nozzles at the tail glowing hot orange, burnt-orange clearcoat paint on the body panels with brushed titanium and dark carbon composite parts, rows of copper radiator cooling fins behind the cockpit, panel lines and heat-scorched exhaust staining Viewed from a low three-quarter front angle close to eye level, the craft perfectly level and horizontal, the whole underside flat, no landing gear, no legs, no ladder",
+      "yawDeg": 45
+    },
+    {
+      "key": "tdDroneVolt",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "maxDim": 3.6
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A futuristic single-seat racing hover drone craft: a light split-prong catamaran fuselage with two slim forward prongs joined by a glowing arc bridge, small tinted bubble cockpit canopy with a helmeted pilot, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round cyan-glowing thruster nozzles at the tail, electric sky-blue clearcoat paint with white and brushed titanium parts and dark carbon composite, copper radiator fins, panel lines and light wear",
+      "maxVerts": 15000
+    },
+    {
+      "key": "tdDroneBastion",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "maxDim": 4.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A futuristic heavy armoured racing hover drone gunship: a wide bulky armour-plated central fuselage with thick bolted plates, a small armoured cockpit canopy with a helmeted pilot, two oversized round air intake shrouds on the sides, a dorsal cannon housing on top, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round thruster nozzles at the tail glowing orange, deep royal-blue clearcoat paint with gunmetal steel and dark composite, copper radiator fins, scratches and scorch marks",
+      "maxVerts": 15000
+    },
+    {
+      "key": "tdDroneSpectre",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "maxDim": 3.75
+      },
+      "tex": 1024,
+      "seed": 11,
+      "subject": "A futuristic stealth racing hover drone: a low forward-swept faceted delta-wing fuselage, tinted bubble cockpit canopy with a helmeted pilot, two long laser cannon barrels in finned cooling shrouds along the sides, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round thruster nozzles at the tail, dusty rose-pink clearcoat paint with brushed titanium and dark carbon composite parts, copper radiator fins, panel lines and light wear Viewed from a low three-quarter front angle close to eye level, the craft perfectly level and horizontal, the whole underside flat, no landing gear, no legs, no ladder",
+      "maxVerts": 15000
+    },
+    {
+      "key": "tdDroneRazor",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "maxDim": 3.85
+      },
+      "tex": 1024,
+      "seed": 11,
+      "subject": "A futuristic armoured racing hover drone brawler: a needle-nosed fuselage with small canard winglets, a dorsal ram-air scoop behind the tinted cockpit canopy with a helmeted pilot, curved scimitar-shaped side blades, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round thruster nozzles at the tail glowing orange, deep magenta-crimson clearcoat paint with gunmetal armour plates and dark carbon composite, copper radiator fins, scratches and scorch marks Viewed from a low three-quarter front angle close to eye level, the craft perfectly level and horizontal, the whole underside flat, no landing gear, no legs, no ladder",
+      "maxVerts": 15000
+    },
+    {
+      "key": "tdDroneNighthawk",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "maxDim": 3.85
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A futuristic twin-boom racing strike drone: a central cockpit pod with a tinted canopy and a helmeted pilot, two tail booms joined at the back by an inverted V-tail bridge, small missile pods hanging under stub pylons, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round thruster nozzles at the tail glowing orange, dark violet-purple clearcoat paint with gunmetal steel and dark carbon composite, copper radiator fins, panel lines and wear",
+      "maxVerts": 15000
+    },
+    {
+      "key": "tdDroneWraith",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "maxDim": 3.7
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A futuristic light racing interceptor hover drone: a slim fuselage surrounded by a continuous ring-shaped annular wing, a split X-shaped tail, tinted bubble cockpit canopy with a helmeted pilot, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round cyan-glowing thruster nozzles at the tail, deep teal clearcoat paint with brushed titanium and dark carbon composite, copper radiator fins, panel lines and light wear",
+      "maxVerts": 15000
+    },
+    {
+      "key": "tdCoolingTower",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 36
+      },
+      "tex": 1024,
+      "seed": 11,
+      "front": "+x",
+      "subject": "A massive weathered concrete natural-draft cooling tower of a power plant: a tall smooth curved hyperboloid hourglass-shaped shell, narrow waist two thirds up and flaring out again at the top rim, standing on a ring of slanted concrete colonnade legs at its base, smooth stained grey concrete with vertical rust and soot streaks, a thin maintenance catwalk ring near the top",
+      "maxVerts": 9000
+    },
+    {
+      "key": "tdSmokestacks",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 40
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A battery of three tall industrial smokestacks of different heights standing together on a shared concrete and steel plinth, soot-blackened riveted iron flues with red-and-white warning bands near the tops, steel lattice catwalk collars and ladders wrapped around them, pipes and ducts connecting them at the base, heavy rust and soot staining",
+      "maxVerts": 9000
+    },
+    {
+      "key": "tdWaterTower",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 30
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "An industrial cryogenic tank tower: three white-enamel domed cylindrical pressure vessels clustered together, raised high on a riveted steel lattice truss tower with cross bracing, insulated pipe manifolds and valves running between the tanks, a caged access ladder, frost and rust streaks on the enamel",
+      "maxVerts": 9000
+    },
+    {
+      "key": "tdLadleCrane",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 24
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A steel-mill ladle gantry crane: a heavy rusted steel portal crane frame on four legs with a hoist trolley on top, holding a huge tilted refractory steelmaking ladle bucket on chains that pours a glowing molten orange slag stream, soot-blackened iron, hazard-striped yellow and black edges, heavy wear and heat discoloration",
+      "maxVerts": 9000
+    },
+    {
+      "key": "tdTowerT",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 52
+      },
+      "tex": 1024,
+      "seed": 11,
+      "subject": "A tall industrial hammerhead crane tower beside a blast furnace: a tall solid square riveted steel lattice tower with a long horizontal crane jib across the top and a solid counterweight block attached at the short end of the jib, a tall round brick-lined blast furnace stack next to the tower joined to it by thick pipes and catwalks, every part physically connected, soot-blackened iron and rust"
+    },
+    {
+      "key": "tdTowerL",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 46
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A tall L-shaped cantilever blast-furnace crane tower: a tall riveted iron lattice tower with a long cantilever arm sticking out to one side at the top, three tall domed cylindrical hot-blast stove towers clustered at its base connected by big pipes, soot-blackened iron and oxidised steel, rust streaks"
+    },
+    {
+      "key": "tdReactorRing",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 24
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A giant upright toroidal magnetic reactor ring standing in a heavy steel cradle: a thick closed metal torus ring wrapped with eight large copper field coils evenly around it, cables and coolant pipes running down into the cradle base, brushed steel and oxidised copper, faint cyan glow inside the ring",
+      "maxVerts": 9000
+    },
+    {
+      "key": "tdArchIron",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 38
+      },
+      "tex": 1024,
+      "seed": 7,
+      "front": "+x",
+      "subject": "A very wide low industrial gateway arch spanning a wide racing road, front view: a broad semicircular arch of riveted soot-blackened iron voussoir segments resting on two heavy stepped stone buttress piers at its far left and right ends, the opening is wide and empty, the arch is much wider than it is tall (width about two and a half times its height), rust streaks and heat-discoloured iron"
+    },
+    {
+      "key": "tdTunnelPortal",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 36
+      },
+      "tex": 1024,
+      "seed": 7,
+      "front": "+x",
+      "subject": "A very wide octagonal ribbed industrial tunnel portal frame spanning a wide road, front view: a single thick octagon-shaped frame of riveted steel girders with heavy ribs, standing on two thick feet at the bottom left and right, the opening is wide and empty, the frame is about two and a half times wider than tall, soot-blackened iron with rust streaks and yellow-black hazard stripes on the lower legs"
+    },
+    {
+      "key": "tdGantryStart",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 38
+      },
+      "tex": 1024,
+      "seed": 7,
+      "front": "+x",
+      "subject": "A wide steel start-line gantry spanning a racing road, front view: two tall slender lattice steel towers at the far left and right ends joined high up by a horizontal box-truss bridge carrying a row of round start lights and floodlights, the space between the towers is wide and empty, the structure is about three times wider than tall, dark gunmetal steel with orange hazard stripes, cables and rust",
+      "yawDeg": -45,
+      "maxVerts": 9000
+    },
+    {
+      "key": "tdBarrier",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 3.8
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A heavy steel track crash barrier block: a long low armoured barrier with a sloped front face, bolted steel plates painted with diagonal yellow and black hazard stripes, rubber bumper strip along the top, scuffs, dents and scorch marks",
+      "yawDeg": 45
+    },
+    {
+      "key": "tdExplosiveBarrel",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 1.9
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A volatile industrial fuel drum: a red-painted steel barrel with two raised rolling rings, yellow and black hazard stripe bands, a sealed valve cap on top, dents, scratches and scorch marks, a faint orange glow leaking from a cracked seam"
+    },
+    {
+      "key": "tdCoolantCell",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 2.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A cryogenic coolant canister power-up: an upright capsule-shaped cylinder with a glass window showing glowing icy cyan liquid inside, held in a brushed titanium cage frame with chunky end caps, frost on the metal"
+    },
+    {
+      "key": "tdShieldPickup",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 2.0
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A floating energy shield power-up orb: a glowing faceted cyan crystal core inside a clear glass sphere, wrapped by two crossed polished titanium and copper gyroscope rings"
+    },
+    {
+      "key": "tdShockwavePylon",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 1.55
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A compact shockwave emitter pylon: a short sturdy metal pylon on a round base with stacked copper induction coils around a glowing cyan core, brushed steel housing with vents, cables at the base"
+    },
+    {
+      "key": "tdMine",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 1.45
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A low round industrial hazard beacon puck lying flat on the ground: a flat disc-shaped dark gunmetal steel casing with six small rugged armoured sensor studs around the rim and a red glowing domed lamp in the centre on top, scuffed paint, bolts and yellow hazard trim"
+    }
+  ]
+}

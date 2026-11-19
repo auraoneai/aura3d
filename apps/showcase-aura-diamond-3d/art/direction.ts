@@ -50,7 +50,19 @@ export default defineArtDirection({
     exposureEV: boot.exposureEv
   },
   framing: { rig: "static", subjectHeightFraction: [0.18, 0.45], fovDeg: [40, 48], mobile: "both" },
-  assets: [],
+  assets: [
+    // Idol wow pass (Nov 2026): image-to-3D GLBs (speridlabs/idol/max, tools/idol/specs/aura-diamond-3d.json). The athletes are
+    // rigged and driven from the game rig each frame (src/idol); field, turf, walls, stands, crowd, caps, gloves and bat stay procedural.
+    ...(["diaIdolFielderA", "diaIdolFielderB", "diaIdolBatterA", "diaIdolCatcher"] as const).map((assetKey) => (
+      { role: "character" as const, assetKey, kit: "K2" as const, maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM" as const, maxTextureSize: 2048 as const }
+    )),
+    ...(["diaIdolScoreboard", "diaIdolLightPole", "diaIdolLighthouse", "diaIdolWaterTower"] as const).map((assetKey) => (
+      { role: "world" as const, assetKey, kit: "K4" as const, maxTriangles: 60000, textureSet: "BC+N+ORM" as const, maxTextureSize: 2048 as const }
+    )),
+    ...(["diaIdolLunarRover", "diaIdolJuniper"] as const).map((assetKey) => (
+      { role: "prop" as const, assetKey, kit: "K2" as const, maxTriangles: 60000, textureSet: "BC+N+ORM" as const, maxTextureSize: 2048 as const }
+    ))
+  ],
   vfx: [
     { event: "bat-contact", kind: "diamond-bat-crack", flipbook: "debris-chips" },
     { event: "ball-landing", kind: "diamond-clay-puff", flipbook: "smoke-a" },

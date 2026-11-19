@@ -39,6 +39,9 @@ class Jitter {
  * Chase camera: lerps 0.1 per step towards half the player's lateral offset, look-ahead -10 z, a 2 s intro ease,
  * and damage shake from a private jitter stream. `steady` (reduced motion) drops the shake.
  */
+/** Steady-state chase-camera height (m); overhead gate geometry must clear it (see `CORRIDOR_HARDWARE.gate`). */
+export const CHASE_HEIGHT = 5.4;
+
 export class CameraRig {
   prev: Shown["camera"];
   cur: Shown["camera"];
@@ -59,7 +62,7 @@ export class CameraRig {
     const e = Math.max(0, 1 - intro), e2 = e * e;
     return {
       x: 0.5 * o.laneOffset,
-      y: 5.4 + 9 * e2,
+      y: CHASE_HEIGHT + 9 * e2,
       z: 9 + 8 * e2,
       lookX: o.laneOffset,
       lookY: 0.9,

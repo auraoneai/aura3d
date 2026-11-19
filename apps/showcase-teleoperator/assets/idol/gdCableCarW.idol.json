@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "teleoperator",
+  "key": "gdCableCarW",
+  "generatedAt": "2026-11-19T00:25:53.747Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-166d-7ea1-8a00-413aff0fa20c",
+      "prompt": "A historic wooden street cable car tram, open-sided front section with wooden bench seats facing outward and brass grab poles, enclosed rear saloon with many small cream-framed windows, deep red painted wooden lower body, cream upper panels, varnished teak trim, curved roof with clerestory, brass bells and lamps at both ends, shown as a display model WITHOUT ITS WHEELS OR WHEEL TRUCKS: the flat underside of the car body shows only dark recesses where the two wheel trucks would go. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f133-5921-7e40-810d-58a21fae4fa5",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 9,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1511454,
+        "num_faces": 3023288,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A historic wooden street cable car tram, open-sided front section with wooden bench seats facing outward and brass grab poles, enclosed rear saloon with many small cream-framed windows, deep red painted wooden lower body, cream upper panels, varnished teak trim, curved roof with clerestory, brass bells and lamps at both ends, shown as a display model WITHOUT ITS WHEELS OR WHEEL TRUCKS: the flat underside of the car body shows only dark recesses where the two wheel trucks would go. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 8.142,
+    "size": [
+      2.745,
+      3.373,
+      8.16
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-teleoperator/assets/idol/gdCableCarW.glb",
+  "sizeBytes": 2749392,
+  "preview": "artifacts/idol/teleoperator/gdCableCarW/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": 90,
+    "tex": null,
+    "maxVerts": null,
+    "baked": true,
+    "reason": "Idol rebuilt the three-quarter reference diagonally; yaw re-fitted to the minimum-area footprint"
+  }
+}

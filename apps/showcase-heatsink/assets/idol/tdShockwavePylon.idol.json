@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdShockwavePylon",
+  "generatedAt": "2026-11-18T23:17:09.426Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09c-6c32-7a53-b44b-b94fcab03e72",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1696470,
+        "num_faces": 3393884,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A compact shockwave emitter pylon: a short sturdy metal pylon on a round base with stacked copper induction coils around a glowing cyan core, brushed steel housing with vents, cables at the base",
+  "role": "prop",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.554,
+    "size": [
+      1.265,
+      1.55,
+      1.263
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdShockwavePylon.glb",
+  "sizeBytes": 4236212,
+  "preview": "artifacts/idol/heatsink/tdShockwavePylon/views.png",
+  "usd": 0.37
+}

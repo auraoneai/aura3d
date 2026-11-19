@@ -17,6 +17,7 @@ import { CHAPTERS, type Objective, type Point } from "./chapters-data";
 import { sweep, type Collider } from "./collide";
 import { chapterWorld } from "./world-ch0";
 import { terrainPhysics } from "./terrain";
+import { boundaryMove, boundarySteer, routeLeash, type RouteLeash } from "./boundary";
 
 export const STEP = 1 / 60;
 
@@ -75,6 +76,8 @@ export interface World {
   colliders?: readonly Collider[];
   /** chapter length: z is clamped to [-length - 50, 150] */
   length: number;
+  /** the soft play boundary around the chapter route (boundary.ts); absent = only the original's world-edge clamp */
+  leash?: RouteLeash;
 }
 
 export interface Sim {
@@ -154,7 +157,7 @@ export function createSim(chapter: number, objective: number, world?: Partial<Wo
   return {
     state,
     flight: createFlight(),
-    world: { floor: () => 0.6, ceiling: 205, length: ch.length, ...(chapter === 0 ? chapterWorld(0) : terrainPhysics(chapter)), ...world },
+    world: { floor: () => 0.6, ceiling: 205, length: ch.length, leash: routeLeash(chapter), ...(chapter === 0 ? chapterWorld(0) : terrainPhysics(chapter)), ...world },
     time: start?.time ?? 0,
     ...(start?.clockMs !== undefined ? { clockMs: start.clockMs } : {}),
     steps: 0,
@@ -166,7 +169,8 @@ export function createSim(chapter: number, objective: number, world?: Partial<Wo
 export function flightStep(state: PlayState, flight: FlightState, input: Input, dtIn: number, world: World): boolean {
   const n = Math.min(dtIn, 0.05);
   const s = clamp(input.throttle || 0, -1, 1);
-  const o = clamp(input.steer || 0, -1, 1);
+  // the soft play boundary adds a crosswind steer back toward the route once the rider is well off it (0 on the route)
+  const o = clamp((input.steer || 0) + (world.leash ? boundarySteer(world.leash, state.x, state.z, state.yaw, flight.speed) : 0), -1, 1);
   const a = input.lift || 0;
   if (!input.boost && flight.energy >= 0.18) flight.boostLocked = false;
   const wantsBoost = !!input.boost && !input.brake && s > 0;
@@ -186,6 +190,7 @@ export function flightStep(state: PlayState, flight: FlightState, input: Input, 
   const previousX = state.x, previousZ = state.z;
   state.x -= Math.sin(state.yaw) * flight.speed * n;
   state.z -= Math.cos(state.yaw) * flight.speed * n;
+  if (world.leash) [state.x, state.z] = boundaryMove(world.leash, previousX, previousZ, state.x, state.z);
   // the world-edge clamp comes before the floor test, so the floor is read where the rider ends up (the original clamps after)
   state.x = clamp(state.x, -640, 640);
   state.z = clamp(state.z, -world.length - 50, 150);

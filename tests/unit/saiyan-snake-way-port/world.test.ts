@@ -89,7 +89,7 @@ describe("saiyan-snake-way-port world", () => {
 
     for (const [speed, surge, dt] of [[36, "off", 1 / 60], [82, "on", 1 / 60], [82, "on", 1.0]] as const) {
       const S = createRun();
-      S.time = 8; // past 4 s intro
+      S.time = 8; // past the 1.5 s intro
       S.s = 120;
       S.speed = speed;
       S.surge = surge;

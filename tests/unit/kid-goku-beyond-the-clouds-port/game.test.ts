@@ -21,7 +21,8 @@ describe("cloud runner: encounter layer", () => {
     const clear = fresh(215 - 6);
     let jumped = false;
     const ev: string[] = [];
-    for (let i = 0; i < 120; i++) { const jump = !jumped && clear.state.s > 215 - 3.2; if (jump) jumped = true; ev.push(...clear.frame(DT, { ...IDLE, jump })); }
+    // the jump must carry the kid over the drawn ball (encounters.ts BOULDER_RADIUS): take off ~6 m before it, not 3 m
+    for (let i = 0; i < 120; i++) { const jump = !jumped && clear.state.s > 215 - 6; if (jump) jumped = true; ev.push(...clear.frame(DT, { ...IDLE, jump })); }
     expect(ev).not.toContain("boulder-hit");
     expect(ev.some((e) => e === "close-call")).toBe(true);
     expect(clear.state.hearts).toBe(3);

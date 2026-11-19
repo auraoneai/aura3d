@@ -13,6 +13,7 @@
 import { createAuraText3DGeometry, game, material, text3D, type AuraMaterialSpec, type AuraRuntimeNodeHandle } from "@aura3d/engine";
 import { memoizeGeometry } from "../../../apps/showcase-port-shared/proceduralKernel";
 import type { NodeInput } from "./rigPort";
+import { REAR_WALL_FACE_Z } from "./courtSolids";
 
 export const BOARD_IDS = { left: "board-aura-slam", right: "board-world-tour", stand: "board-venue-score" } as const;
 export const BOARD_TEXTS = { left: "AURA SLAM", right: "WORLD TOUR" } as const;
@@ -24,13 +25,28 @@ export const BOARD_TEXTS = { left: "AURA SLAM", right: "WORLD TOUR" } as const;
 export const BOARD_TEXT_SIZE = 0.325;
 /** Cap height of the stand line (metres): clear of the sponsor boards in the broadcast camera's line of sight. */
 export const STAND_TEXT_SIZE = 0.34;
-/** Sponsor boards (view/scene.ts statics): x +-4.3, front face z -10.68; the text sits on the face under the ribbon. */
-const BOARD_Z = -10.64;
+/**
+ * Sponsor boards (view/scene.ts statics): x +-4.3, front face on the sim's rear-wall collider (z -10.8, view/courtSolids.ts);
+ * the text (0.052 m deep) sits on the face under the ribbon, its back just inside the board.
+ */
+export const BOARD_Z = REAR_WALL_FACE_Z + 0.015;
 export const BOARD_Y = 0.003;
-const BOARD_X = 4.3;
-/** Rear stand tier 1 (view/spectators.ts): front face z -11.7. */
-const STAND_Z = -11.665;
-const STAND_Y = 0.5;
+/**
+ * The lettering runs as one banner across the padded centre segment of the rear wall (|x| < 2.68): the sponsor boards at
+ * x +-4.3 sit behind the angled corner panels (the sim's corner deflectors, view/courtSolids.ts), which hid half of each word.
+ */
+export const BOARD_TEXT_GAP = 0.2;
+export function boardTextCentres(): { left: number; right: number; span: number } {
+  const wl = textWidth(BOARD_TEXTS.left, BOARD_TEXT_SIZE), wr = textWidth(BOARD_TEXTS.right, BOARD_TEXT_SIZE);
+  const span = wl + BOARD_TEXT_GAP + wr;
+  return { left: -span / 2 + wl / 2, right: span / 2 - wr / 2, span };
+}
+/**
+ * Rear stand tier 1 (view/spectators.ts): front face z -11.68, top 0.9 m. The line's bottom (0.56 m) clears the rear wall's
+ * back top edges from the v2 eye (tests/unit/aura-slam/gu47-boards.test.ts).
+ */
+export const STAND_Z = -11.665;
+export const STAND_Y = 0.56;
 
 const LED_TEXT = "#fbfbf5";
 
@@ -73,8 +89,8 @@ function textNode(id: string, text: string, size: number, x: number, y: number, 
 /** The three text nodes (World Tour look only). */
 export function buildBoardNodes(standText: string): NodeInput[] {
   return [
-    textNode(BOARD_IDS.left, BOARD_TEXTS.left, BOARD_TEXT_SIZE, -BOARD_X, BOARD_Y, BOARD_Z),
-    textNode(BOARD_IDS.right, BOARD_TEXTS.right, BOARD_TEXT_SIZE, BOARD_X, BOARD_Y, BOARD_Z),
+    textNode(BOARD_IDS.left, BOARD_TEXTS.left, BOARD_TEXT_SIZE, boardTextCentres().left, BOARD_Y, BOARD_Z),
+    textNode(BOARD_IDS.right, BOARD_TEXTS.right, BOARD_TEXT_SIZE, boardTextCentres().right, BOARD_Y, BOARD_Z),
     textNode(BOARD_IDS.stand, standText, STAND_TEXT_SIZE, 0, STAND_Y, STAND_Z)
   ];
 }

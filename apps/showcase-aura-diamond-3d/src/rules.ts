@@ -98,6 +98,144 @@ export function polarOf(x: number, z: number): { theta: number; r: number } {
 }
 
 /* ------------------------------------------------------------------ *
+ *  Solid bodies on the field: nothing visibly passes through them.   *
+ * ------------------------------------------------------------------ */
+
+/** Baseball radius (the drawn sphere is 0.15 m across). */
+export const BALL_R = 0.075;
+/** Ball-centre height at which a batted ball counts as landed on flat ground (the same 4.5 cm the game always used). */
+export const BALL_FLOOR_Y = 0.045;
+/** Pitcher's mound: cosine-bell radius and the flat rubber plateau (scene.ts pitcherMoundGeometry draws the same profile). */
+export const MOUND_RADIUS = 2.85;
+export const MOUND_PLATEAU_R = 0.65;
+/** Drawn foul poles (art/proceduralModels.ts lattice pole and scene.ts glow tube): 11 m tall, ~0.2 m truss half-diagonal. */
+export const FOUL_POLE_H = 11;
+export const FOUL_POLE_R = 0.2;
+/** Ball-centre distance from a pole's axis at which the ball touches it (pole + ball + a little of the wing screen). */
+export const POLE_HIT_R = 0.35;
+/** How far inside the wall a chasing fielder stops (body radius plus the half-thickness of the wall). */
+export const FIELDER_FENCE_MARGIN = 1.2;
+/** Minimum ground distance between two players' centres. */
+export const PLAYER_MIN_SEP = 0.9;
+
+/** Dugout centres (scene.ts fieldInstanceTransforms) and their world half-extents: the 11.36 m roof runs along Z, 3.95 m deep in X. */
+export const DUGOUT_SPOTS: readonly (readonly [number, number])[] = [
+  [-28, -6],
+  [28, -6]
+];
+export const DUGOUT_HALF: readonly [number, number] = [3.95 / 2, 11.36 / 2];
+/** Base coaches' ground spots (main.ts updateActors). */
+export const COACH_SPOTS: Readonly<Record<"coach-1b" | "coach-3b", readonly [number, number]>> = {
+  "coach-1b": [21.5, -14.8],
+  "coach-3b": [-21.5, -14.8]
+};
+
+/** The two foul poles' ground positions (on the fence corner at ±FOUL_DEG). */
+export function foulPolePositions(park: ParkSpec): [number, number][] {
+  return [-1, 1].map((side) => {
+    const rad = (side * FOUL_DEG * Math.PI) / 180;
+    return [Math.sin(rad) * park.fenceCorner, -Math.cos(rad) * park.fenceCorner] as [number, number];
+  });
+}
+
+/** Height of the mound's surface above the flat infield at a ground point (0 off the mound). */
+export function moundRise(x: number, z: number): number {
+  const r = Math.hypot(x, z - MOUND_Z);
+  if (r >= MOUND_RADIUS) return 0;
+  const s = r <= MOUND_PLATEAU_R ? 0 : (r - MOUND_PLATEAU_R) / (MOUND_RADIUS - MOUND_PLATEAU_R);
+  return (MOUND_TOP + 0.004) * (0.5 + 0.5 * Math.cos(Math.PI * s));
+}
+
+/** Ball-centre height at which a batted ball lands at a ground point (raised on the mound). */
+export const ballFloorY = (x: number, z: number): number => BALL_FLOOR_Y + moundRise(x, z);
+
+/**
+ * Clamp a fielder's ground position into fair territory and at least `margin` metres inside the outfield wall. A point in
+ * foul territory moves to the nearest point of the foul line (so a fielder chasing a foul stops on the line instead of
+ * running into the dugout, the coach or the stands); a point past the wall moves in to the wall minus the margin.
+ */
+export function clampInsideFence(park: ParkSpec, x: number, z: number, margin: number = FIELDER_FENCE_MARGIN): [number, number] {
+  const { theta, r } = polarOf(x, z);
+  if (r < 1e-9) return [x, z];
+  let th = theta;
+  let rr = r;
+  if (Math.abs(theta) > FOUL_DEG) {
+    th = Math.sign(theta) * FOUL_DEG;
+    rr = Math.max(0, r * Math.cos(((Math.abs(theta) - FOUL_DEG) * Math.PI) / 180));
+  }
+  rr = Math.min(rr, Math.max(0, fenceRadius(park, th) - margin));
+  if (th === theta && rr === r) return [x, z];
+  const rad = (th * Math.PI) / 180;
+  return [Math.sin(rad) * rr, -Math.cos(rad) * rr];
+}
+
+/** Whether a ground disc of radius `radius` at (x, z) overlaps a dugout footprint. */
+export function inDugoutFootprint(x: number, z: number, radius = 0): boolean {
+  return DUGOUT_SPOTS.some(([dx, dz]) => {
+    const qx = Math.max(0, Math.abs(x - dx) - DUGOUT_HALF[0]);
+    const qz = Math.max(0, Math.abs(z - dz) - DUGOUT_HALF[1]);
+    return (qx === 0 && qz === 0) || Math.hypot(qx, qz) < radius;
+  });
+}
+
+/** A player's ground disc for {@link separateBodies}: `rank` decides who yields (lower yields; `Infinity` never moves). */
+export interface SepBody {
+  x: number;
+  z: number;
+  rank: number;
+}
+
+/**
+ * Push apart every pair of bodies closer than `minDist`, deterministically (fixed pair order, a fixed direction for exact
+ * overlaps). Of an overlapping pair the lower rank moves the whole overlap; equal finite ranks split it. `constrain` is
+ * applied to a body each time it moves (keeps a fielder inside the fence). Returns the number of sweeps used.
+ */
+export function separateBodies(bodies: SepBody[], minDist: number = PLAYER_MIN_SEP, constrain?: (index: number, x: number, z: number) => [number, number], maxSweeps = 64): number {
+  const move = (i: number, dx: number, dz: number): void => {
+    const b = bodies[i]!;
+    let nx = b.x + dx;
+    let nz = b.z + dz;
+    if (constrain) [nx, nz] = constrain(i, nx, nz);
+    b.x = nx;
+    b.z = nz;
+  };
+  for (let sweep = 0; sweep < maxSweeps; sweep++) {
+    let moved = false;
+    for (let i = 0; i < bodies.length; i++) {
+      for (let j = i + 1; j < bodies.length; j++) {
+        const a = bodies[i]!;
+        const b = bodies[j]!;
+        if (a.rank === Infinity && b.rank === Infinity) continue;
+        let dx = b.x - a.x;
+        let dz = b.z - a.z;
+        let d = Math.hypot(dx, dz);
+        if (d >= minDist - 1e-9) continue;
+        if (d < 1e-6) {
+          const ang = (i * 7 + j * 13) * 2.399963;
+          dx = Math.cos(ang);
+          dz = Math.sin(ang);
+          d = 0;
+        } else {
+          dx /= d;
+          dz /= d;
+        }
+        // 2% slack so a separated pair is not re-violated by the next push of a neighbour (finite convergence).
+        const push = minDist * 1.02 - d;
+        if (a.rank > b.rank) move(j, dx * push, dz * push);
+        else if (b.rank > a.rank) move(i, -dx * push, -dz * push);
+        else {
+          move(i, (-dx * push) / 2, (-dz * push) / 2);
+          move(j, (dx * push) / 2, (dz * push) / 2);
+        }
+        moved = true;
+      }
+    }
+    if (!moved) return sweep;
+  }
+  return maxSweeps;
+}
+
+/* ------------------------------------------------------------------ *
  *  Set dressing layout (C3): every outfield node is placed from the  *
  *  fence radius at its own angle plus a positive offset.             *
  * ------------------------------------------------------------------ */
@@ -340,9 +478,41 @@ export interface FlightState {
   crossedFence: boolean;
   hrCrossed: boolean;
   wallHit: boolean;
+  /** Set when the ball struck a foul pole (above the wall that is a fair ball and a home run). */
+  poleHit?: boolean;
 }
 
-/** One fixed integration step of a batted ball, including the wall rebound. Returns the radius and field angle after it. */
+/**
+ * Swept test of one step's ground track against the two foul poles. Returns the first pole touched (closest approach under
+ * {@link POLE_HIT_R} while the ball is below the pole top) and the step fraction of that approach, or null.
+ */
+function poleContact(park: ParkSpec, x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): { px: number; pz: number; u: number } | null {
+  const dx = x1 - x0;
+  const dz = z1 - z0;
+  const len2 = dx * dx + dz * dz;
+  for (const [px, pz] of foulPolePositions(park)) {
+    // Earliest fraction u where the ground track enters the pole's hit circle (or the closest approach if it starts inside).
+    const fx = x0 - px;
+    const fz = z0 - pz;
+    const c = fx * fx + fz * fz - POLE_HIT_R * POLE_HIT_R;
+    let u: number;
+    if (c <= 0) u = 0;
+    else {
+      if (len2 < 1e-12) continue;
+      const bq = fx * dx + fz * dz;
+      const disc = bq * bq - len2 * c;
+      if (disc < 0) continue;
+      u = (-bq - Math.sqrt(disc)) / len2;
+      if (u < 0 || u > 1) continue;
+    }
+    const y = y0 + (y1 - y0) * u;
+    if (y > FOUL_POLE_H + BALL_R) continue;
+    return { px, pz, u };
+  }
+  return null;
+}
+
+/** One fixed integration step of a batted ball, including the foul-pole and wall rebounds. Returns the radius and field angle after it. */
 export function stepFlight(s: FlightState, park: ParkSpec, dt: number): { r: number; theta: number; fenceR: number } {
   const g = park.gravity;
   const k = park.id === "lunar" ? 0.0022 : 0.0042;
@@ -350,15 +520,54 @@ export function stepFlight(s: FlightState, park: ParkSpec, dt: number): { r: num
   s.vel[0] -= k * sp * s.vel[0] * dt;
   s.vel[1] -= (g + k * sp * s.vel[1]) * dt;
   s.vel[2] -= k * sp * s.vel[2] * dt;
+  const x0 = s.pos[0];
+  const y0 = s.pos[1];
+  const z0 = s.pos[2];
   s.pos[0] += s.vel[0] * dt;
   s.pos[1] += s.vel[1] * dt;
   s.pos[2] += s.vel[2] * dt;
+  // Foul poles stand on the fence corners: a ball that reaches one rebounds off it. Above the wall it is fair (a home run).
+  if (!s.poleHit && (!s.crossedFence || s.hrCrossed)) {
+    const hit = poleContact(park, x0, y0, z0, s.pos[0], s.pos[1], s.pos[2]);
+    if (hit) {
+      const cx = x0 + (s.pos[0] - x0) * hit.u;
+      const cy = y0 + (s.pos[1] - y0) * hit.u;
+      const cz = z0 + (s.pos[2] - z0) * hit.u;
+      let nx = cx - hit.px;
+      let nz = cz - hit.pz;
+      let nl = Math.hypot(nx, nz);
+      if (nl < 1e-6) {
+        // Dead centre: bounce straight back toward home plate.
+        nx = -hit.px;
+        nz = -hit.pz;
+        nl = Math.hypot(nx, nz);
+      }
+      nx /= nl;
+      nz /= nl;
+      const dot = s.vel[0] * nx + s.vel[2] * nz;
+      if (dot < 0) {
+        s.vel[0] = (s.vel[0] - 2 * dot * nx) * 0.42;
+        s.vel[2] = (s.vel[2] - 2 * dot * nz) * 0.42;
+      }
+      s.vel[1] *= 0.6;
+      s.pos[0] = hit.px + nx * POLE_HIT_R;
+      s.pos[1] = cy;
+      s.pos[2] = hit.pz + nz * POLE_HIT_R;
+      s.poleHit = true;
+      if (!s.crossedFence) {
+        s.crossedFence = true;
+        if (cy > park.wallH) s.hrCrossed = true;
+        else s.wallHit = true;
+      }
+    }
+  }
   const r = Math.hypot(s.pos[0], s.pos[2]);
   const theta = (Math.atan2(s.pos[0], -s.pos[2]) * 180) / Math.PI;
-  const fenceR = Math.abs(theta) <= FOUL_DEG + 4 ? fenceRadius(park, theta) : Infinity;
+  // The wall's collider spans exactly the drawn wall, pole to pole (scene.ts draws it over ±FOUL_DEG).
+  const fenceR = Math.abs(theta) <= FOUL_DEG ? fenceRadius(park, theta) : Infinity;
   if (!s.crossedFence && r >= fenceR) {
     s.crossedFence = true;
-    if (s.pos[1] > park.wallH && Math.abs(theta) <= FOUL_DEG) {
+    if (s.pos[1] > park.wallH) {
       s.hrCrossed = true;
     } else {
       s.wallHit = true;
@@ -384,6 +593,7 @@ export interface LandingPrediction {
   crossedFence: boolean;
   hrCrossed: boolean;
   wallHit: boolean;
+  poleHit: boolean;
 }
 
 /** Integrate a batted ball to its landing with the fixed step. The caller's vectors are not modified. */
@@ -398,20 +608,21 @@ export function predictLanding(pos0: Vec3, vel0: Vec3, park: ParkSpec): LandingP
     const { r, theta } = stepFlight(s, park, SIM_STEP);
     t += SIM_STEP;
     if (s.pos[1] > maxY) maxY = s.pos[1];
+    const floor = ballFloorY(s.pos[0], s.pos[2]);
     if (s.pos[2] > 5 && s.pos[1] < 3) {
-      landPos = [s.pos[0], Math.max(0.045, s.pos[1]), s.pos[2]];
+      landPos = [s.pos[0], Math.max(floor, s.pos[1]), s.pos[2]];
       landTheta = theta;
       landDist = r;
       break;
     }
-    if (s.pos[1] <= 0.045) {
-      landPos = [s.pos[0], 0.045, s.pos[2]];
+    if (s.pos[1] <= floor) {
+      landPos = [s.pos[0], floor, s.pos[2]];
       landTheta = theta;
       landDist = r;
       break;
     }
   }
-  return { hangT: t, landPos, landDist, landTheta, maxY, crossedFence: s.crossedFence, hrCrossed: s.hrCrossed, wallHit: s.wallHit };
+  return { hangT: t, landPos, landDist, landTheta, maxY, crossedFence: s.crossedFence, hrCrossed: s.hrCrossed, wallHit: s.wallHit, poleHit: s.poleHit === true };
 }
 
 /* ------------------------------------------------------------------ *

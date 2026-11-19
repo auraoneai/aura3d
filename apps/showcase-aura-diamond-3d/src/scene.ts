@@ -3,7 +3,7 @@
  * Moved out of main.ts unchanged (GU47 WP-18) so unit tests can build and audit the real scene without booting the game.
  * Presentation only: the sim in main.ts reads the field constants exported here (BASES, FIELDER_SPOTS) unchanged.
  */
-import { camera, effects, game, geometry, instances, lights, looks, material, primitives, scene, sky, text3D, world, type AuraCustomGeometrySpec, type AuraLookOverrides } from "@aura3d/engine";
+import { camera, effects, game, geometry, groups, instances, lights, looks, material, primitives, scene, sky, text3D, world, type AuraCustomGeometrySpec, type AuraLookOverrides } from "@aura3d/engine";
 import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
 import { baseballSeamTextures, batWoodTexture, flipbookAtlasDataUrl, ivyBrickTexture, turfTextures } from "./turfTextures";
 import { dualAnimatedWaterSpec } from "../../showcase-port-shared/dual-shaders";
@@ -26,11 +26,16 @@ import {
   propSpot,
   clearOfFence,
   HARBOR_WATER,
+  DUGOUT_SPOTS,
+  MOUND_RADIUS,
+  MOUND_PLATEAU_R,
   type Vec3,
   type ParkId,
   type ParkSpec
 } from "./rules";
 import { BATTER_YAW } from "./batter-pose";
+import { IDOL_SET_FIT, buildIdolAthleteNode, idolSet, idolSetInstances, idolSetPiece } from "./idol/actors";
+import { headgearKind, idolAthletesEnabled, idolHeadgearFit, idolKeyForActor } from "./idol/drive";
 import { labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import {
   buildArticulatedBallparkWaverNode,
@@ -136,8 +141,8 @@ function pitcherMoundGeometry(): AuraCustomGeometrySpec {
   if (cachedMoundGeo) return cachedMoundGeo;
   const radial = 40;
   const rings = 14;
-  const outerR = 2.85;
-  const plateauR = 0.65;
+  const outerR = MOUND_RADIUS;
+  const plateauR = MOUND_PLATEAU_R;
   const topY = MOUND_TOP + 0.01;
   const skirtY = 0.006;
   const vCount = (rings + 1) * (radial + 1);
@@ -177,6 +182,9 @@ function pitcherMoundGeometry(): AuraCustomGeometrySpec {
   });
   return cachedMoundGeo;
 }
+
+/** Lens-flare strength of the flared practical banks (Midtown corners); 0.8 washed the walk-up shot white. */
+export const PRACTICAL_FLARE_INTENSITY = 0.25;
 
 export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT): any[] {
   const nodes: any[] = [];
@@ -276,20 +284,7 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   // Outfield wall — segmented arc from foul pole to foul pole
   // One instanced draw for the wall and one for its cap (C12); each segment is a unit-length box scaled to its chord.
   const segs = park.fenceSegments;
-  const wallT: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
-  const capT: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
-  for (let i = 0; i < segs; i++) {
-    const t0 = -FOUL_DEG + (2 * FOUL_DEG * i) / segs;
-    const t1 = -FOUL_DEG + (2 * FOUL_DEG * (i + 1)) / segs;
-    const tm = (t0 + t1) / 2;
-    const p0 = fencePoint(park, t0, 0);
-    const p1 = fencePoint(park, t1, 0);
-    const pm = fencePoint(park, tm, 0);
-    const segLen = Math.hypot(p1[0] - p0[0], p1[2] - p0[2]) + 0.35;
-    const yaw = Math.atan2(p1[0] - p0[0], p1[2] - p0[2]);
-    wallT.push({ position: [pm[0], park.wallH / 2, pm[2]], rotation: [0, yaw + Math.PI / 2, 0], scale: [segLen, 1, 1] });
-    capT.push({ position: [pm[0], park.wallH + 0.07, pm[2]], rotation: [0, yaw + Math.PI / 2, 0], scale: [segLen, 1, 1] });
-  }
+  const { wall: wallT, cap: capT } = outfieldWallTransforms(park);
   nodes.push(
     instances.box({ name: "outfield-wall", size: [1, park.wallH, 0.5], material: wallMat, transforms: wallT, ...flush }),
     instances.box({ name: "outfield-wall-cap", size: [1, 0.14, 0.56], material: wallTopMat, transforms: capT, ...flush })
@@ -337,6 +332,32 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
 }
 
 type FieldTransform = { readonly position: Vec3; readonly rotation?: Vec3; readonly scale?: Vec3 };
+
+/**
+ * The outfield wall's segments, pole to pole over ±FOUL_DEG (the same arc rules.ts stepFlight collides with). Each segment
+ * is a unit-length box scaled to its chord (plus 0.35 m of overlap).
+ */
+export function outfieldWallTransforms(park: ParkSpec): {
+  readonly wall: { position: Vec3; rotation: Vec3; scale: Vec3 }[];
+  readonly cap: { position: Vec3; rotation: Vec3; scale: Vec3 }[];
+} {
+  const segs = park.fenceSegments;
+  const wall: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
+  const cap: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
+  for (let i = 0; i < segs; i++) {
+    const t0 = -FOUL_DEG + (2 * FOUL_DEG * i) / segs;
+    const t1 = -FOUL_DEG + (2 * FOUL_DEG * (i + 1)) / segs;
+    const tm = (t0 + t1) / 2;
+    const p0 = fencePoint(park, t0, 0);
+    const p1 = fencePoint(park, t1, 0);
+    const pm = fencePoint(park, tm, 0);
+    const segLen = Math.hypot(p1[0] - p0[0], p1[2] - p0[2]) + 0.35;
+    const yaw = Math.atan2(p1[0] - p0[0], p1[2] - p0[2]);
+    wall.push({ position: [pm[0], park.wallH / 2, pm[2]], rotation: [0, yaw + Math.PI / 2, 0], scale: [segLen, 1, 1] });
+    cap.push({ position: [pm[0], park.wallH + 0.07, pm[2]], rotation: [0, yaw + Math.PI / 2, 0], scale: [segLen, 1, 1] });
+  }
+  return { wall, cap };
+}
 
 /**
  * Instance transforms of the field's repeated pieces (DIA-W2), each the transform of the 4.6.2 node it replaces with the
@@ -388,10 +409,7 @@ export function fieldInstanceTransforms(park: ParkSpec): {
       ...sides.map(({ rad, fx, fz }): FieldTransform => ({ position: [(fx * len) / 2, 0.05, (fz * len) / 2], rotation: [0, rad, 0], scale: [0.09, 1, len] }))
     ],
     poles: sides.map(({ fx, fz }): FieldTransform => ({ position: [fx * park.fenceCorner, 0, fz * park.fenceCorner] })),
-    dugouts: [
-      { position: [-28, 0, -6], rotation: [0, Math.PI / 2, 0] },
-      { position: [28, 0, -6], rotation: [0, -Math.PI / 2, 0] }
-    ]
+    dugouts: DUGOUT_SPOTS.map(([dx, dz]): FieldTransform => ({ position: [dx, 0, dz], rotation: [0, (dx < 0 ? 1 : -1) * (Math.PI / 2), 0] }))
   };
 }
 
@@ -485,19 +503,14 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
   // Behind the centre bleacher section, at the same rig-to-screen spacing the art was tuned with.
   const sb = scoreboardPlacement(park);
   nodes.push(
-    createScoreboardGantryNode(sb.rig),
+    idolSet("scoreboard") ? idolScoreboardNode(sb.screen) : createScoreboardGantryNode(sb.rig),
     primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: scoreboardScreenMaterial(ctx), castShadow: false }).position(sb.screen[0], sb.screen[1], sb.screen[2]).runtime(game.runtimeNode("scoreboard-screen"))
   );
 
   if (ctx.variant === "gu47") {
     nodes.push(...practicalNodes(park, ctx.tier));
   } else if (park.flood) {
-    const towers: Vec3[] = [
-      [-park.fenceCorner * 0.72, 0, -park.fenceCorner * 0.55 - 6],
-      [park.fenceCorner * 0.72, 0, -park.fenceCorner * 0.55 - 6],
-      [-park.fenceCorner * 0.5, 0, 14],
-      [park.fenceCorner * 0.5, 0, 14]
-    ];
+    const towers: Vec3[] = floodTowerBases(park).map(([x, z]): Vec3 => [x, 0, z]);
     towers.forEach(([tx, , tz], i) => {
       const litColor = park.id === "lunar" ? "#bfe0ff" : "#fff2d4";
       nodes.push(
@@ -509,6 +522,17 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
   }
 
   return nodes;
+}
+
+/** Ground spots of the four unlit floodlight towers (flood parks without a practical rig); all in foul ground or behind home. */
+export function floodTowerBases(park: ParkSpec): [number, number][] {
+  const c = park.fenceCorner;
+  return [
+    [-c * 0.72, -c * 0.55 - 6],
+    [c * 0.72, -c * 0.55 - 6],
+    [-c * 0.5, 14],
+    [c * 0.5, 14]
+  ];
 }
 
 const unitDir = (from: Vec3, to: Vec3): Vec3 => {
@@ -528,21 +552,22 @@ export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
   const rig = parkPracticals(park, tier);
   if (rig.length === 0) {
     if (park.flood) {
-      const towers: readonly [number, number][] = [
-        [-park.fenceCorner * 0.72, -park.fenceCorner * 0.55 - 6],
-        [park.fenceCorner * 0.72, -park.fenceCorner * 0.55 - 6],
-        [-park.fenceCorner * 0.5, 14],
-        [park.fenceCorner * 0.5, 14]
-      ];
+      const towers = floodTowerBases(park);
       // GU47 phase 6 (draw budget): the far pair of unlit towers is one instanced draw; near pair stays two individual nodes for frustum culling.
       const towerYaw = (tx: number, tz: number): Vec3 => [0, Math.atan2(-tx, 10 - tz) + Math.PI, 0];
       nodes.push(
-        createFloodTowersInstancedNode(
-          "flood-towers-far",
-          towers.slice(0, 2).map(([tx, tz]) => ({ position: [tx, 0, tz] as Vec3, rotation: towerYaw(tx, tz) })),
-          16
-        ),
-        ...towers.slice(2).map(([tx, tz], i) => createFloodTowerNode(`flood-${i + 2}`, [tx, 0, tz], towerYaw(tx, tz), 16))
+        idolSet("lightTower")
+          ? idolSetInstances(idolSet("lightTower")!, "flood-towers-far", towers.slice(0, 2).map(([tx, tz]) => idolFitTransform({ position: [tx, 0, tz], rotation: towerYaw(tx, tz) }, IDOL_SET_FIT.lightTower)))
+          : createFloodTowersInstancedNode(
+              "flood-towers-far",
+              towers.slice(0, 2).map(([tx, tz]) => ({ position: [tx, 0, tz] as Vec3, rotation: towerYaw(tx, tz) })),
+              16
+            ),
+        ...towers.slice(2).map(([tx, tz], i) =>
+          idolSet("lightTower")
+            ? groups.create(`flood-${i + 2}`, [idolSetPiece(idolSet("lightTower")!, `flood-${i + 2}-idol`, [0, IDOL_SET_FIT.lightTower.y, 0], IDOL_SET_FIT.lightTower.yaw, IDOL_SET_FIT.lightTower.scale)], { position: [tx, 0, tz], rotation: towerYaw(tx, tz) })
+            : createFloodTowerNode(`flood-${i + 2}`, [tx, 0, tz], towerYaw(tx, tz), 16)
+        )
       );
     }
     return nodes;
@@ -558,7 +583,8 @@ export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
       if (lamp.cone) {
         nodes.push(effects.lightCone({ name: `${lamp.name}-cone`, position: [x, y - 0.4, z], direction: unitDir(lamp.position, lamp.target), color: lamp.color, intensity: 0.2, length: 18, coneAngle: (lamp.angle ?? 0.5) * 0.8, softness: 0.6 } as any));
       }
-      if (lamp.flare) nodes.push(lights.lensFlare({ name: `${lamp.name}-flare`, light: lamp.name, intensity: 0.8, edgeFade: 0.2 }));
+      // Owner QA: at 0.8 the Midtown corner-bank flare washed the low walk-up shot white; a hint of streak is enough.
+      if (lamp.flare) nodes.push(lights.lensFlare({ name: `${lamp.name}-flare`, light: lamp.name, intensity: PRACTICAL_FLARE_INTENSITY, edgeFade: 0.2 }));
     } else {
       nodes.push(lights.rect({ name: lamp.name, position: lamp.position, target: lamp.target, color: lamp.color, intensity: lamp.intensity, width: lamp.width, height: lamp.height }));
     }
@@ -605,7 +631,7 @@ export function wave2SetPieces(park: ParkSpec, low = false): any[] {
   switch (park.id) {
     case "sandlot": {
       const [x, z] = [105, -212];
-      return [createHarborLighthouseNode([x, 0, z], farYaw(x, z))];
+      return [idolSet("lighthouse") ? idolLighthouseNode([x, 0, z], farYaw(x, z)) : createHarborLighthouseNode([x, 0, z], farYaw(x, z))];
     }
     case "canyon": {
       return ([[-48, 285, 30, 0.2], [-4, 320, 36, -0.3], [40, 290, 28, 0.1]] as const)
@@ -631,7 +657,7 @@ export function wave2SetPieces(park: ParkSpec, low = false): any[] {
           return createIvyRowhouseNode(`ivy-rowhouse-${i}`, [x, 0, z], farYaw(x, z) + jitter);
         });
       const [tx, tz] = ring(0, 175);
-      return [...houses, createIvyWaterTowerNode([tx, 0, tz], farYaw(tx, tz))];
+      return [...houses, idolSet("waterTower") ? idolFitPiece(idolSet("waterTower")!, "ivy-water-tower", [tx, 0, tz], farYaw(tx, tz), IDOL_SET_FIT.waterTower) : createIvyWaterTowerNode([tx, 0, tz], farYaw(tx, tz))];
     }
     case "lunar": {
       const [x, z] = clearOfFence(park, -62, -100, 16);
@@ -738,7 +764,11 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
         nodes.push(createCanyonRockNode(`canyon-rock-${i}`, [x, 0, z], r, h, i));
       });
       for (const [tx, tz] of [[-108, -40], [110, -44], [-88, -20], [88, -16]] as const) {
-        nodes.push(createDesertJuniperNode(`canyon-pine-${tx}`, [tx, 0, tz], 8.5, Math.abs(tx)));
+        nodes.push(
+          idolSet("juniper")
+            ? idolFitPiece(idolSet("juniper")!, `canyon-pine-${tx}`, [tx, 0, tz], Math.abs(tx) * 0.37, IDOL_SET_FIT.juniper)
+            : createDesertJuniperNode(`canyon-pine-${tx}`, [tx, 0, tz], 8.5, Math.abs(tx))
+        );
       }
       break;
     }
@@ -782,7 +812,7 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     case "lunar": {
       nodes.push(
         createLunarEarthNode([-30, 66, -260]),
-        createLunarRoverNode([-17, 0, 9], 0.8),
+        idolSet("lunarRover") ? idolFitPiece(idolSet("lunarRover")!, "lunar-rover", [-17, 0, 9], 0.8, IDOL_SET_FIT.lunarRover, true) : createLunarRoverNode([-17, 0, 9], 0.8),
         createLunarCommsDomeNode([at("lunar-comms")[0], 0, at("lunar-comms")[1]], -0.5)
       );
       if (gu47) {
@@ -903,6 +933,8 @@ export function horizonNode(band: HorizonBand): any {
 /** A 100% procedural multi-material articulated baseball athlete grounded cleanly in an immediate athletic ready crouch. */
 export function buildAthleteNodes(id: string, _asset?: unknown, _initialClip = "Crouch_Idle_Loop", _gu47 = true): any[] {
   const isRunner = id.startsWith("runner-");
+  // Idol pass: a rigged image-to-3D athlete driven from the same game rig (src/idol); `?idol=0` keeps the procedural one.
+  if (idolAthletesEnabled()) return [buildIdolAthleteNode(id, { visible: !isRunner })];
   return [buildArticulatedBaseballPlayerNode(id, { roadKit: id === "batter" || isRunner, visible: !isRunner })];
 }
 
@@ -941,8 +973,12 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
     ...buildAthleteNodes("batter", undefined, "Idle_Loop", gu47),
     ...FIELDER_IDS.flatMap((id) => buildAthleteNodes(id, undefined, "Crouch_Idle_Loop", gu47)),
     ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, undefined, "Crouch_Idle_Loop", gu47)).flat(),
-    buildArticulatedBaseballPlayerNode("coach-1b", { roadKit: true, position: [21.5, 0, -14.8], yaw: -Math.PI * 0.72 }),
-    buildArticulatedBaseballPlayerNode("coach-3b", { roadKit: true, position: [-21.5, 0, -14.8], yaw: Math.PI * 0.72 }),
+    idolAthletesEnabled()
+      ? buildIdolAthleteNode("coach-1b", { position: [21.5, 0, -14.8], yaw: -Math.PI * 0.72 })
+      : buildArticulatedBaseballPlayerNode("coach-1b", { roadKit: true, position: [21.5, 0, -14.8], yaw: -Math.PI * 0.72 }),
+    idolAthletesEnabled()
+      ? buildIdolAthleteNode("coach-3b", { position: [-21.5, 0, -14.8], yaw: Math.PI * 0.72 })
+      : buildArticulatedBaseballPlayerNode("coach-3b", { roadKit: true, position: [-21.5, 0, -14.8], yaw: Math.PI * 0.72 }),
     // Catcher's mitt — hidden below the field until socketed to the crouched catcher's left forearm at runtime
     createCatcherMittNode([0, -80, 0], false)
   ];
@@ -961,8 +997,10 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
         : material.fabric({ color: "#1b2a41", roughness: 0.60, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.36, sheenRoughness: 0.56 })
       : material.pbr({ color: "#1b2a41", roughness: isHardHelmet ? CAP_ROUGHNESS : 0.60 });
     const beltMat = material.physical({ color: "#23272f", roughness: 0.56, clearcoat: 0, envMapIntensity: 0.12 });
+    // Idol athletes: the team cap / helmet is sized to clear the generated head (src/idol/drive.ts idolHeadgearFit).
+    const capScale = idolAthletesEnabled() ? idolHeadgearFit(idolKeyForActor(id), headgearKind(id)).scale : 1;
     nodes.push(
-      createAthleteCapNode(id, capMat, false).position(0, -80, 0),
+      createAthleteCapNode(id, capMat, false).position(0, -80, 0).scale([capScale, capScale, capScale]),
       createAthleteBeltNode(id, beltMat, false, !gu47).position(0, -80, 0)
     );
   }
@@ -997,7 +1035,7 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
               metallic: 0.02,
               clearcoat: 0.22,
               clearcoatRoughness: 0.36,
-              ...(ballSeams ? { normal: ballSeams.normal as any, normalScale: 0.55, roughnessMap: ballSeams.roughness as any } : {})
+              ...(ballSeams ? { normal: ballSeams.normal as any, normalScale: 0.55, roughnessMap: ballSeams.roughness as any, ...(ballSeams.color ? { texture: ballSeams.color as any } : {}) } : {})
             })
           : material.pbr({ color: ballColor, roughness: 0.55 })
       } as any)
@@ -1103,6 +1141,61 @@ function lookGroupNode(plan: DiamondLookPlan): any {
   }
   return { ...group, children };
 }
+
+/* ------------------------------------------------------------------ */
+/* Idol pass set pieces (src/idol/actors.ts)                           */
+/* ------------------------------------------------------------------ */
+
+type IdolFit = { readonly yaw: number; readonly scale: number; readonly y: number };
+
+/** A procedural placement turned into the Idol piece's: extra yaw, uniform scale, height offset. */
+function idolFitTransform(t: { readonly position?: readonly number[]; readonly rotation?: readonly number[]; readonly scale?: readonly number[] }, fit: IdolFit): { position: Vec3; rotation: Vec3; scale: Vec3 } {
+  const p = t.position ?? [0, 0, 0];
+  const r = t.rotation ?? [0, 0, 0];
+  const k = (t.scale?.[0] ?? 1) * fit.scale;
+  return { position: [p[0]!, p[1]! + fit.y, p[2]!], rotation: [r[0]!, r[1]! + fit.yaw, r[2]!], scale: [k, k, k] };
+}
+
+function idolFitPiece(asset: NonNullable<ReturnType<typeof idolSet>>, name: string, pos: readonly number[], yaw: number, fit: IdolFit, castShadow = false): any {
+  return idolSetPiece(asset, name, [pos[0]!, pos[1]! + fit.y, pos[2]!], yaw + fit.yaw, fit.scale, castShadow);
+}
+
+/**
+ * Idol lighthouse with its lamp lit: the GLB bakes the lantern as opaque dark glass, so the procedural lighthouse's emissive
+ * fresnel beacon (DIAMOND_MATS.beaconFresnel) is kept as a glowing drum filling the lantern room (measured from the GLB:
+ * lantern centre x -3.15, y 20.1, z 1.2 in model metres).
+ */
+function idolLighthouseNode(pos: Vec3, yaw: number): any {
+  const f = IDOL_SET_FIT.lighthouse;
+  return groups.create("harbor-lighthouse", [
+    idolSetPiece(idolSet("lighthouse")!, "harbor-lighthouse-idol", [0, f.y, 0], 0, f.scale),
+    primitives
+      .cylinder({ name: "harbor-lighthouse-beacon", size: [2.3 * f.scale, 1.5 * f.scale, 2.3 * f.scale], castShadow: false, material: DIAMOND_MATS.beaconFresnel } as any)
+      .position(IDOL_LIGHTHOUSE_LANTERN[0] * f.scale, f.y + IDOL_LIGHTHOUSE_LANTERN[1] * f.scale, IDOL_LIGHTHOUSE_LANTERN[2] * f.scale)
+  ], { position: pos, rotation: [0, yaw + f.yaw, 0] });
+}
+export const IDOL_LIGHTHOUSE_LANTERN: Vec3 = [-3.15, 20.1, 1.2];
+
+/**
+ * The Idol scoreboard: grounded behind the centre bleachers and scaled so its blank black panel is centred on the live
+ * linescore screen (`scoreboard-screen`, 10.5 x 3.4 m, repainted by main.ts) a hand's width behind it, so the emissive board
+ * reads framed by the riveted green cabinet and its clock. Keeps the `scoreboard-rig` runtime id.
+ */
+function idolScoreboardNode(screen: Vec3): any {
+  const f = IDOL_SCOREBOARD_FIT;
+  const s = screen[1] / f.panelCentreY;
+  const toHome = Math.atan2(-screen[0], -screen[2]);
+  const back = f.panelFrontZ * s + f.panelBehindScreen;
+  return groups
+    .create("scoreboard-rig", [idolSetPiece(idolSet("scoreboard")!, "scoreboard-idol", [0, 0, 0], 0, s)], {
+      position: [screen[0] - Math.sin(toHome) * back, 0, screen[2] - Math.cos(toHome) * back],
+      rotation: [0, toHome, 0]
+    })
+    .runtime(game.runtimeNode("scoreboard-rig"));
+}
+
+/** Generated scoreboard at 15.4 m wide (4-view preview): black panel 14.5 x 5.3 m centred 9.9 m up, its face 2.6 m in front of the origin. */
+const IDOL_SCOREBOARD_FIT = { panelCentreY: 9.9, panelFrontZ: 2.6, panelBehindScreen: 0.25 } as const;
 
 /** DIA-E2: the park's analytic sky (the HDRI then lights only). It neither captures the IBL nor tints the fog. */
 function skyNode(plan: DiamondLookPlan): any | null {

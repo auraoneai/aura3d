@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "silt-and-signal-port",
+  "key": "duneBuggy",
+  "generatedAt": "2026-11-18T21:23:40.920Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-4403-70a2-b3f5-51acf1b579fa",
+      "prompt": "An expedition desert buggy sand-crawler vehicle: a rugged open-cab off-road buggy with four big lugged balloon tyres, a sturdy tubular steel roll cage, a flat solar panel array on the roof, a small parabolic relay dish antenna mounted on the roof, sand-coloured dented body panels with terracotta paint, jerry cans and canvas bags strapped to the back, dust and scratches. Hand-painted stylised look of a high-end animated feature film prop: simplified bold readable shapes and warm sunlit desert colours (terracotta, ochre, bone, indigo, turquoise, brass), but with real physical material detail: weathered sandstone grain, oiled leather, woven linen, hammered brass patina, glazed ceramic; soft painterly studio render. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f095-25c2-75e0-beb7-5d2e304839f5",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1764960,
+        "num_faces": 3530680,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "An expedition desert buggy sand-crawler vehicle: a rugged open-cab off-road buggy with four big lugged balloon tyres, a sturdy tubular steel roll cage, a flat solar panel array on the roof, a small parabolic relay dish antenna mounted on the roof, sand-coloured dented body panels with terracotta paint, jerry cans and canvas bags strapped to the back, dust and scratches. Hand-painted stylised look of a high-end animated feature film prop: simplified bold readable shapes and warm sunlit desert colours (terracotta, ochre, bone, indigo, turquoise, brass), but with real physical material detail: weathered sandstone grain, oiled leather, woven linen, hammered brass patina, glazed ceramic; soft painterly studio render. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 5.802,
+    "size": [
+      4.702,
+      5.764,
+      5.8
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/silt-and-signal-port/assets/idol/duneBuggy.glb",
+  "sizeBytes": 7578776,
+  "preview": "artifacts/idol/silt-and-signal-port/duneBuggy/views.png",
+  "usd": 0.37
+}

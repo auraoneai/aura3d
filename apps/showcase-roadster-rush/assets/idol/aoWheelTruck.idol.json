@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoWheelTruck",
+  "generatedAt": "2026-11-19T00:25:38.489Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f131-daed-77f0-b0de-78733071061e",
+      "prompt": "A single realistic truck wheel: tall black rubber truck tyre with deep tread, painted dark grey steel disc rim with ring of lug nuts and a chrome hub cap. Photoreal studio product render, physically based materials, high detail. Seen exactly side-on, the wheel face looking straight at the camera, long telephoto lens, generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f132-71fa-7020-90d1-499ea072f5ba",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1318808,
+        "num_faces": 2637940,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single realistic truck wheel: tall black rubber truck tyre with deep tread, painted dark grey steel disc rim with ring of lug nuts and a chrome hub cap. Photoreal studio product render, physically based materials, high detail. Seen exactly side-on, the wheel face looking straight at the camera, long telephoto lens, generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 1.013,
+    "size": [
+      0.453,
+      1,
+      0.954
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoWheelTruck.glb",
+  "sizeBytes": 744372,
+  "preview": "artifacts/idol/apex-overdrive/aoWheelTruck/views.png",
+  "usd": 0.37,
+  "renormalizedAt": "2026-11-19T00:35:28.970Z"
+}

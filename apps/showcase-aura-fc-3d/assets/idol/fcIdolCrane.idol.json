@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-fc-3d",
+  "key": "fcIdolCrane",
+  "generatedAt": "2026-11-18T22:10:50.059Z",
+  "generator": "tools/idol/generate.mjs (resumed by the FC/Hoops agent after the 20-min client timeout; same request id, post-processing identical)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "(see generate.mjs buildPrompt)",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b6-3ce9-7f12-9efd-ca3f5f0fc46f",
+      "input": {
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 134,
+        "mesh_resolution": 1024,
+        "image_url": "(reference still)"
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 390046,
+        "num_faces": 780228,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A professional television camera jib crane on a heavy black steel tripod base with wheels: a long black telescopic boom arm with counterweights at the back end and a remote camera head with a large broadcast lens at the front end",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -270,
+    "scale": 3.298,
+    "size": [
+      2.661,
+      3.3,
+      3.09
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-fc-3d/assets/idol/fcIdolCrane.glb",
+  "sizeBytes": 1142404,
+  "preview": "artifacts/idol/aura-fc-3d/fcIdolCrane/views.png",
+  "usd": 0.37,
+  "postProcess": "re-optimised to 512 px textures (assets optimize --role background --tex 512) for a background prop",
+  "slimmed": "tools/idol/slim.mjs (normal maps PNG -> JPEG q92)"
+}

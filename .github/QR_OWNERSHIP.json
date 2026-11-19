@@ -356,8 +356,6 @@
    "owner": "14",
    "paths": [
     "apps/showcase-",
-    "apps/aura-clash-showcase/",
-    "apps/world-war-x-showcase/",
     "packages/game/src/art/",
     "tools/quality-rebuild-capture/games.json",
     "tools/quality-gate/src/scorecard.ts",

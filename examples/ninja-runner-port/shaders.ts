@@ -183,9 +183,14 @@ in vec2 vUv;
 out vec4 outColor;
 ${NOISE}
 void main() {
-  vec2 q = vec2(vUv.x * 52.0, vUv.y * 7.0 + fallsTime * 2.7);
-  float n = vnoise(q) + vnoise(q * 2.13) * 0.35 + vnoise(q * 5.1) * 0.13;
-  float veins = pow(vnoise(vec2(vUv.x * 140.0, vUv.y * 3.0 + fallsTime * 1.5)), 2.0);
+  // Falling water: narrow vertical strands (high across, low along) racing down, fine fast streaks inside them and
+  // foam bursts, with translucent gaps between strands (the old 52 x 7 noise read as one blurry white sheet).
+  vec2 q = vec2(vUv.x * 96.0, vUv.y * 3.2 + fallsTime * 3.4);
+  float n = (vnoise(q) + vnoise(q * vec2(2.3, 1.6)) * 0.5 + vnoise(q * vec2(5.2, 2.9)) * 0.25) / 1.75;
+  float strand = smoothstep(0.32, 0.78, n);
+  float veins = pow(vnoise(vec2(vUv.x * 240.0, vUv.y * 1.4 + fallsTime * 4.6)), 3.0);
+  float foam = smoothstep(0.62, 0.92, vnoise(vec2(vUv.x * 34.0, vUv.y * 14.0 + fallsTime * 7.0)));
+  n = clamp(strand * 0.85 + foam * 0.35, 0.0, 1.0);
   // GU47 phase 6 (fallsSoft = 1, evening only): ragged side edges, a white lip at the crest and a mist foot instead of
   // the hard-edged 4.6.2 card; fallsSoft = 0 keeps the 4.6.2 sheet exactly.
   float rag = (vnoise(vec2(vUv.y * 9.0 + fallsTime * 1.2, 3.0)) - 0.5) * 0.08 * fallsSoft;
@@ -193,10 +198,10 @@ void main() {
   float edge = smoothstep(0.0, ew, vUv.x + rag) * smoothstep(0.0, ew, 1.0 - vUv.x + rag);
   float foot = mix(1.0, smoothstep(0.0, 0.22, vUv.y), fallsSoft);
   float lip = fallsSoft * smoothstep(0.93, 0.99, vUv.y);
-  vec3 c = mix(vec3(0.24, 0.48, 0.51), vec3(0.90, 0.97, 0.96), clamp(n * 0.64 + veins * 0.4, 0.0, 1.0));
+  vec3 c = mix(vec3(0.12, 0.32, 0.36), vec3(0.92, 0.97, 0.98), clamp(n * 0.8 + veins * 0.5, 0.0, 1.0));
   c = mix(c, vec3(0.96, 0.98, 0.97), lip * 0.7 + fallsSoft * (1.0 - foot) * 0.5);
   float top = mix(1.0, 1.0 - smoothstep(0.985, 1.0, vUv.y) * 0.6, fallsSoft);
-  outColor = vec4(c, edge * top * mix(1.0, 0.35 + 0.65 * foot, fallsSoft) * (0.88 + 0.1 * veins));
+  outColor = vec4(c, edge * top * mix(1.0, 0.35 + 0.65 * foot, fallsSoft) * (0.42 + 0.5 * n + 0.15 * veins));
 }`;
 
 /** Original Spiralorb ball: banded swirl + rim, additive. */

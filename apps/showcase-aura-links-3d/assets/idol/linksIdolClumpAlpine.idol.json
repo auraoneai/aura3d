@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-links-3d",
+  "key": "linksIdolClumpAlpine",
+  "generatedAt": "2026-11-19T02:56:15.340Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f1bb-bf72-7962-9b7f-db0a6220cd44",
+      "prompt": "Single small clump of short alpine grass: tufted blue-green grass blades with a few tiny white mountain flowers, a little dark soil at the root. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f1bc-52d0-7050-8ec5-74b61349d3ec",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1581688,
+        "num_faces": 3165544,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Single small clump of short alpine grass: tufted blue-green grass blades with a few tiny white mountain flowers, a little dark soil at the root. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.499,
+    "size": [
+      0.361,
+      0.4,
+      0.366
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-links-3d/assets/idol/linksIdolClumpAlpine.glb",
+  "sizeBytes": 1726220,
+  "preview": "artifacts/idol/aura-links-3d/linksIdolClumpAlpine/views.png",
+  "usd": 0.37
+}

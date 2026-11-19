@@ -8,16 +8,20 @@ import { COLORS } from "./sim";
 
 export interface FxEvent { sound: GameSound; level: number }
 
-/** Colour and strength of the flash for each event (strength is the overlay's peak opacity). */
+/**
+ * Colour and strength of the flash for each event (strength is the overlay's peak opacity). The events that fire every
+ * second or so in a streak (match, perfect, pickup, switch) stay at or below 0.18: at the old 0.22-0.42 a good run kept
+ * the whole frame washed in the ball's colour (real-GPU QA 2026-11-18).
+ */
 export function flashFor(event: FxEvent, playerColorIndex: number): { color: string; strength: number } | null {
   const own = COLORS[playerColorIndex] ?? "#ffffff";
   switch (event.sound) {
-    case "match": return { color: own, strength: 0.22 };
-    case "perfect": return { color: own, strength: 0.42 };
+    case "match": return { color: own, strength: 0.1 };
+    case "perfect": return { color: own, strength: 0.18 };
     case "hit": return { color: "#f0433a", strength: 0.4 };
     case "block": return { color: "#5ecaf0", strength: 0.35 };
-    case "pickup": return { color: own, strength: 0.38 };
-    case "switch": return { color: own, strength: 0.32 };
+    case "pickup": return { color: own, strength: 0.18 };
+    case "switch": return { color: own, strength: 0.16 };
     case "burst": return { color: own, strength: 0.7 };
     case "milestone": return { color: "#f9c647", strength: 0.5 };
     default: return null;

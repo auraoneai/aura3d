@@ -1,39 +1,18 @@
 {
   "meta": {
     "teleoperator": {
-      "capturedAt": "2026-10-31",
-      "build": "gu47/g04 phase 3 round 3 (cac123875, GU47 4.7.1 look pass), Aura3D 4.7.0 engine",
-      "runner": "remote Azure ACR Task, headless Chromium, software WebGL2 (SwiftShader); not real-GPU evidence",
-      "spec": "tests/browser/audit-fix/teleoperator.spec.ts",
-      "1280": {
-        "run": "g04p3-r3-3",
-        "notes": [
-          "ready lit (body data-aura3d-ready)",
-          "01-title first frame after ready",
-          "02-early after 60 s and 6 presented frames",
-          "03-action W and D held for 3 frames",
-          "04-mid after 45 s of manual driving through the QA simulate hook",
-          "05-modes AI rivals panel",
-          "06-results after an L5 shift through the QA check hook"
-        ],
-        "errors": []
-      },
-      "390": {
-        "run": "g04p3-r3-5",
-        "notes": [
-          "touch pads visible (coarse pointer)",
-          "03-action after touch Throttle and Right",
-          "04-mid after 45 s of L5 driving",
-          "06-results after an L5 shift"
-        ],
-        "errors": []
-      },
-      "card": {
-        "run": "g04p3-r3-4",
-        "notes": [
-          "card-2x captured at 1440x900 after 50 s; card-1x downscaled to 720x450"
-        ]
-      }
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "01-title",
+        "02-early",
+        "03-pickup",
+        "04-trip",
+        "05-fare-results",
+        "06-cable-car"
+      ],
+      "results": "fare results reached (RIDE COMPLETE card, $35.74); the 5-fare shift results were not reached in this pass (7-minute shift); autoplay restarts the shift 3.5 s after them",
+      "errors": "none (no page errors in any capture)",
+      "capturedAt": "2026-11-18"
     }
   }
 }

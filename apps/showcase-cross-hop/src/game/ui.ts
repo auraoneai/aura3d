@@ -65,7 +65,7 @@ export function mountUI(host: HTMLElement): void {
         <button type="button" data-m="school">Timing School</button>
         <button type="button" data-m="dex">Critterdex</button>
       </div>
-      <p class="ch-hint">WASD / arrows / tap or swipe to hop. Keep moving — the hawk watches idle critters.</p>
+      <p class="ch-hint">WASD / arrows / tap or swipe to hop · O autoplay. Keep moving — the hawk watches idle critters.</p>
     </div>
     <div id="ch-dead" class="ch-panel ch-modal hidden">
       <p id="ch-newbest" class="hidden">new best</p>
@@ -99,6 +99,12 @@ function onKey(e: KeyboardEvent): void {
   if (st.mode !== "title" && GAME_KEYS.has(e.key) && (e.target as HTMLElement | null)?.closest?.("button")) e.preventDefault();
   if (e.key === "Escape" && st.mode !== "title") { endToTitle(); return; }
   if ((e.key === "p" || e.key === "P") && st.mode === "run") { setPaused(!st.paused); return; }
+  // AUTOPLAY addendum: O toggles the autopilot (from the title it starts a Quick Play run that the computer plays).
+  if ((e.key === "o" || e.key === "O") && !e.repeat) {
+    st.autopilot = !st.autopilot;
+    if (st.autopilot && st.mode === "title") { startRun("quick", null); panel = null; }
+    return;
+  }
   if ((e.key === "r" || e.key === "R") && st.mode !== "title") { restartRun(); }
   if (e.key === "Enter" && st.mode === "title" && panel === null) startRun("quick", null);
 }
@@ -209,7 +215,7 @@ function tickIntro(): void {
     introUntil = now + INTRO_MS;
     (root!.querySelector("#ch-intro-keys") as HTMLElement).textContent = coarsePointer()
       ? "Tap, swipe, or use the corner hop pad to step in four directions."
-      : "W / Up to hop ahead. A, D, S or Arrows to step aside. P pauses.";
+      : "W / Up to hop ahead. A, D, S or Arrows to step aside. P pauses, O autoplay.";
     st.profile.seenIntro = true;
     saveProfile(st.profile);
   }

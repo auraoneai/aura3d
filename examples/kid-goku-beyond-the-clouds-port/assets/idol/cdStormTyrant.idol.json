@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cumulus-dash",
+  "key": "cdStormTyrant",
+  "generatedAt": "2026-11-18T23:11:03.945Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/cumulus-dash/cdStormTyrant/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 434498,
+        "num_faces": 868992,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A huge fearsome tyrant lizard dinosaur standing upright on two powerful legs with a long counterbalancing tail, deep emerald-green armoured scaled hide, ochre-yellow belly scales, a massive head with a gaping toothy jaw, two curved ivory horns above the eyes, a row of crimson dorsal spines along its back, small clawed forearms, glowing amber eyes. Photoreal creature-feature practical model: real wet armoured reptile scales, horn, bone and teeth, physically based materials, high detail. Single full-body creature, entire body in frame with margin, centered, standing still in a neutral pose on all its legs, legs straight and clearly separated, three-quarter side view, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -135,
+    "scale": 8.445,
+    "size": [
+      4.443,
+      8.42,
+      9.995
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/kid-goku-beyond-the-clouds-port/assets/idol/cdStormTyrant.glb",
+  "sizeBytes": 3402312,
+  "preview": "artifacts/idol/cumulus-dash/cdStormTyrant/views.png",
+  "usd": 0.2
+}

@@ -1,0 +1,39 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-diamond-3d",
+  "key": "diaIdolLunarRover",
+  "generatedAt": "2026-11-18T22:16:02.824Z",
+  "generator": "tools/idol/generate.mjs (finished by apps/showcase-aura-diamond-3d/scripts/idol-recover.mjs after the client poll timed out)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09d-390f-7cc1-8105-dbcf55c110f6",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1557576,
+        "num_faces": 3116808,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.602,
+    "size": [
+      3.533,
+      3.516,
+      3.6
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-diamond-3d/assets/idol/diaIdolLunarRover.glb",
+  "sizeBytes": 4650556,
+  "preview": "artifacts/idol/aura-diamond-3d/diaIdolLunarRover/views.png",
+  "usd": 0.37
+}

@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "teleoperator",
+  "key": "gdGtCrimsonW",
+  "generatedAt": "2026-11-19T00:25:53.745Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-166d-7df1-a792-119a52e82915",
+      "prompt": "A low sleek modern luxury grand-tourer sports coupe, deep crimson red metallic paint with clearcoat gloss, long hood, fastback roofline, tinted dark windows, slim LED headlights, wide rear haunches, thin red LED tail light bar, clean unbranded panels, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f133-78bd-7300-b623-2bcc92d601a9",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 9,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 811928,
+        "num_faces": 1623876,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A low sleek modern luxury grand-tourer sports coupe, deep crimson red metallic paint with clearcoat gloss, long hood, fastback roofline, tinted dark windows, slim LED headlights, wide rear haunches, thin red LED tail light bar, clean unbranded panels, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.668,
+    "size": [
+      2.086,
+      1.17,
+      4.66
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-teleoperator/assets/idol/gdGtCrimsonW.glb",
+  "sizeBytes": 1911180,
+  "preview": "artifacts/idol/teleoperator/gdGtCrimsonW/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": 0,
+    "tex": null,
+    "maxVerts": null,
+    "baked": true,
+    "reason": "Idol rebuilt the three-quarter reference diagonally; yaw re-fitted to the minimum-area footprint"
+  }
+}

@@ -28,7 +28,7 @@ import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direc
  */
 const ROOT = path.resolve(__dirname, "../../..");
 const APP_SRC = path.join(ROOT, "apps/showcase-aura-hoops-3d/src");
-const SCENE_SOURCES = ["main.ts", "courtRigs.ts", "fxPack.ts", "setPieces.ts", "crowd.ts", "art/proceduralModels.ts"];
+const SCENE_SOURCES = ["main.ts", "courtRigs.ts", "fxPack.ts", "setPieces.ts", "crowd.ts", "idolBodies.ts", "art/proceduralModels.ts"];
 const manifest = JSON.parse(readFileSync(path.join(ROOT, "aura.assets.json"), "utf8")) as unknown;
 
 const assetTable = assets as unknown as Readonly<Record<string, { readonly type?: string }>>;
@@ -77,11 +77,11 @@ describe("Aura Hoops 3D art direction (GU47 WP-17)", () => {
     expect(direction.lighting.environment).toEqual({ hdri: "belfast_sunset_puresky", background: "hdri" });
   });
 
-  it("mounts only contracted models (every scene model key is in the direction — 0 GLBs, 100% procedural)", () => {
+  it("mounts only contracted models (every scene model key is in the direction; the Idol pass athletes and props)", () => {
     const contracted = new Set(direction.assets.map((asset) => asset.assetKey));
     const keys = mountedModelKeys();
-    expect(keys).toHaveLength(0);
-    expect(contracted.size).toBe(0);
+    expect(keys.length).toBeGreaterThan(0);
+    for (const key of keys) expect(key).toMatch(/^hoopsIdol/);
     expect(keys.filter((key) => !contracted.has(key))).toEqual([]);
   });
 

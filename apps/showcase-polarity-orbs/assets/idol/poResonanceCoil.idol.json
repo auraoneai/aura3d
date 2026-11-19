@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "polarity-orbs",
+  "key": "poResonanceCoil",
+  "generatedAt": "2026-11-18T22:47:41.696Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0a0-eba4-70c3-8917-f5739aa6d7ec",
+      "prompt": "A large laboratory tesla coil: a tall cylinder wound with fine shiny copper wire, a polished aluminium toroid ring on top, white ceramic insulator stacks, a heavy octagonal machined steel base plinth with bolts, deep red painted accents on the base. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a6-2d94-7063-b7d8-ded14169b358",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1143616,
+        "num_faces": 2287380,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A large laboratory tesla coil: a tall cylinder wound with fine shiny copper wire, a polished aluminium toroid ring on top, white ceramic insulator stacks, a heavy octagonal machined steel base plinth with bolts, deep red painted accents on the base. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 5.796,
+    "size": [
+      3.785,
+      5.8,
+      3.791
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-polarity-orbs/assets/idol/poResonanceCoil.glb",
+  "sizeBytes": 3465676,
+  "preview": "artifacts/idol/polarity-orbs/poTeslaCoil/views.png",
+  "usd": 0.37,
+  "renamedFrom": "poTeslaCoil (game-checks likeness: key named a brand)"
+}

@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoVanT",
+  "generatedAt": "2026-11-18T22:14:53.168Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0ba-25c5-75b2-8056-9b2179420e21",
+      "prompt": "A single tall modern high-roof delivery panel van of a fictional unbranded design, pale silver-white paint, short sloped nose, windowless cargo sides with a sliding side door, black bumpers, dark tinted windscreen, black tyres on steel wheels, a plain smooth grille with no badge or emblem. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0bc-1969-7f93-9ab0-5d6ac583f822",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 11,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 703852,
+        "num_faces": 1407772,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single tall modern high-roof delivery panel van of a fictional unbranded design, pale silver-white paint, short sloped nose, windowless cargo sides with a sliding side door, black bumpers, dark tinted windscreen, black tyres on steel wheels, a plain smooth grille with no badge or emblem. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 5.198,
+    "size": [
+      1.46,
+      1.855,
+      5.2
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoVanT.glb",
+  "sizeBytes": 1238408,
+  "preview": "artifacts/idol/apex-overdrive/aoVanT/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "normal-jpeg",
+      "quality": 90,
+      "bytesBefore": 2275024,
+      "bytesAfter": 1238408
+    }
+  ]
+}

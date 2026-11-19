@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-links-3d/art/direction.ts",
-  "sourceSha256": "7cebb010665ea26d42ecc408d33fcb3b029d8b1c108ac4c07d5d84fdb9c00c5a",
+  "sourceSha256": "1391325cb7aa21e0c1bf70ac984f922c250434a6f3546c81713f947e4870f3b1",
   "id": "showcase-aura-links-3d",
   "genre": "golf-physics",
   "signatureEffect": "Golf-broadcast camera language: a three-shot hole flyover under letterbox bars, a live shot tracer on every drive and a low cup cam on short putts.",
@@ -38,7 +38,197 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "linksIdolGolferBlue",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolCaddie",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolTourBag",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolGolfCart",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolBallWasher",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolCaddie",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolClubhouseStone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolClubhouseTudor",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolClumpAlpine",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolClumpAsh",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolClumpDunes",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolClumpNight",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolClumpParkland",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolGolfCart",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolGolferBlue",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolGolferNavy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolGolferOrange",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolGolferRed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolGolferWhite",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolMapleOrange",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolMapleRed",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolOakGreen",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolSpectatorA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolSpectatorB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolSpectatorC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolSpectatorD",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksIdolTourBag",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "materials": [],
     "drawCalls": 0
   },
@@ -104,7 +294,206 @@
       ],
       "mobile": "both"
     },
-    "assets": [],
+    "assets": [
+      {
+        "role": "character",
+        "assetKey": "linksIdolGolferBlue",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "animated": {
+          "clips": [
+            "idle"
+          ]
+        },
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "character",
+        "assetKey": "linksIdolGolferRed",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "animated": {
+          "clips": [
+            "idle"
+          ]
+        },
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "character",
+        "assetKey": "linksIdolGolferWhite",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "animated": {
+          "clips": [
+            "idle"
+          ]
+        },
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "character",
+        "assetKey": "linksIdolGolferNavy",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "animated": {
+          "clips": [
+            "idle"
+          ]
+        },
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "character",
+        "assetKey": "linksIdolGolferOrange",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "animated": {
+          "clips": [
+            "idle"
+          ]
+        },
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "character",
+        "assetKey": "linksIdolCaddie",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "animated": {
+          "clips": [
+            "idle"
+          ]
+        },
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksIdolSpectatorA",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksIdolSpectatorB",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksIdolSpectatorC",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksIdolSpectatorD",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "linksIdolGolfCart",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "linksIdolTourBag",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "linksIdolBallWasher",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksIdolClubhouseStone",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksIdolClubhouseTudor",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "linksIdolOakGreen",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "linksIdolMapleRed",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "linksIdolMapleOrange",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksIdolClumpDunes",
+        "maxTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksIdolClumpParkland",
+        "maxTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksIdolClumpAlpine",
+        "maxTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksIdolClumpNight",
+        "maxTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksIdolClumpAsh",
+        "maxTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
     "vfx": [
       {
         "event": "tee-strike",

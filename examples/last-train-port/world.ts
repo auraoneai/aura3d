@@ -36,6 +36,34 @@ import {
   createStaticTownBatcher,
   upgradeVolumetricBeamWgsl
 } from "./art/proceduralModels";
+import { WALKER_POOL, intersectsWalkerZone, placeWalkers, townFrame, walkerNodes, walkersReady } from "./walkers";
+
+/** Lateral bands (m, station frame) where the standing townsfolk wait, and the platform folk's along half-range (m). */
+export const STANDING_FOLK = { platform: [2.95, 2.95], plaza: [-4.45, -3.55], platformAlong: 9.5 } as const;
+/** Largest footprint half-diagonal of a standing Idol townsperson (llFolk5, 0.83 x 0.56 m, at the 1.08 max scale; any yaw), m. */
+export const FOLK_HALF = 0.54;
+/** Clearance kept between a standing townsperson's footprint and a catenary mast or signal post (m). */
+export const POLE_CLEAR = 0.2;
+
+/**
+ * Moves a standing townsperson along the track (1 m, then 2 m, alternating sides) until no pole (catenary mast, signal
+ * post; `poles` are x/z centres with their radius) is within FOLK_HALF + POLE_CLEAR of them. Deterministic, render only.
+ */
+export function clearOfPoles(x: number, z: number, fx: number, fz: number, poles: readonly (readonly [number, number, number])[]): [number, number] {
+  for (let k = 0; k < 5; k++) {
+    const d = k === 0 ? 0 : Math.ceil(k / 2) * (k % 2 ? 1 : -1);
+    const px = x + fx * d, pz = z + fz * d;
+    if (poles.every(([qx, qz, r]) => Math.hypot(px - qx, pz - qz) >= r + FOLK_HALF + POLE_CLEAR)) return [px, pz];
+  }
+  return [x, z];
+}
+/** Crown radius of the coastal bush at scale 1 (layeredCanopyMesh radius), m. */
+export const BUSH_RADIUS = 1.28;
+/** Freight crates on the platform: lateral (m) and along (+-m); their turned footprint half-diagonal (m). */
+export const PLATFORM_CRATES = { lateral: 4.6, along: 12.5, half: Math.hypot(1.98, 1.811) / 2 } as const;
+import { GUARD_ID, RIDER_FIGURE, buildRiggedFigure, tramGuardPose, figureBodyId, figureDriver, figureReady, motormanPose, seatedRiderInput } from "./figures";
+import { IDOL_SINK, groundedBase } from "./grounding";
+import { FOLK_KEYS, HOUSE_KEYS, IDOL_ART, IDOL_TRAM, idolHalfFootprint, landmarkSlim, IDOL_TRAM_RIDER_DROP, RIDER_ORIGIN_ABOVE_FEET, RIDER_KEYS, TRAM_WHEEL_IDS, advanceWheelSpin, buildTramWheelNodes, idolReady, tramWheelTransforms, buildIdolClockTowerNode, buildIdolCratesNode, buildIdolLandmarkNode, buildIdolLighthouseNode, buildIdolMotormanNode, buildIdolPassengerNode, buildIdolTramNode, createFolkInstancer, createHouseInstancer } from "./idolModels";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { FLANGE_SPARKS_ATLAS, catenarySpec, cloudSpec, flangeSparkSpec, pointQuadSpec, pointsSpec, rainGraphSpec, rainSpec, signalLensSpec, skySpec } from "./materials";
 import { portableCloudMaterial } from "./portable";
@@ -558,6 +586,9 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null, in
   const lampAt: Inst[] = [], benchAt: Inst[] = [], signAt: Inst[] = [];
   const signalAt: Inst[] = [], signalHeadAt: Inst[] = [], signalColors: string[] = [], festoonAt: Inst[] = [];
   const townBatch = createStaticTownBatcher();
+  /* grounding sweep: every Idol set piece sits on the lowest ground under its footprint, sunk IDOL_SINK (grounding.ts) */
+  const ground = (x: number, z: number, hx: number, hz: number, yaw: number): number => groundedBase(data, x, z, hx, hz, yaw);
+  const houseIdol = createHouseInstancer(ground), folkIdol = createFolkInstancer();
   towns.forEach((town, i) => {
     const s0 = sampleRoute(data.route, i, 0);
     const s1 = sampleRoute(data.route, i, 6);
@@ -607,6 +638,10 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null, in
     }
 
     const at = (lateral: number, along: number): [number, number] => [s0.x + sx * lateral + fx * along, s0.z + sz * lateral + fz * along];
+    const townPoles: [number, number, number][] = [
+      ...routeTrack.mastAt.filter((m) => Math.hypot(m.position[0] - s0.x, m.position[2] - s0.z) < 80).map((m) => [m.position[0], m.position[2], 0.13] as [number, number, number]),
+      ...[-16, 20].map((al) => [s0.x - sx * 2.9 + fx * al, s0.z - sz * 2.9 + fz * al, 0.09] as [number, number, number])
+    ];
     groundDisc(cobbleMesh, s0.x, top + 0.04, s0.z, 62, 6);
     const buildRow = (side: 1 | -1, innerLat: number, alongMin: number, alongMax: number, minSt: number, maxSt: number, skip?: (along: number, w: number) => boolean): void => {
       let along = alongMin;
@@ -633,7 +668,8 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null, in
     {
       const house = (k: number, side: 1 | -1, along: number, depth: number): void => {
         const [hx, hz] = at(side * (side > 0 ? 21 : 17) + side * depth / 2, along);
-        b.add(buildCoastalHouseNode(k % 3, `house-${i}-${side > 0 ? "a" : "b"}-${k}`, [hx, top, hz], Math.atan2(-side * sx, -side * sz), winGlow, snowTown, cast, townBatch));
+        if (idolReady(...HOUSE_KEYS)) houseIdol.add(k % 3, snowTown, [hx, top, hz], Math.atan2(-side * sx, -side * sz));
+        else b.add(buildCoastalHouseNode(k % 3, `house-${i}-${side > 0 ? "a" : "b"}-${k}`, [hx, top, hz], Math.atan2(-side * sx, -side * sz), winGlow, snowTown, cast, townBatch));
       };
       house(2, 1, -30, 8.9); house(0, 1, -18, 7.1); house(1, 1, -8, 10.7);
       house((i + 0) % 3, -1, -44, 7.1); house((i + 1) % 3, -1, -32, 10.7); house((i + 2) % 3, -1, -20, 8.9);
@@ -642,7 +678,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null, in
     buildRow(-1, 46, -34, 34, 4, 6);
     {
       const [tx, tz] = at(-21, TOWER_ALONG);
-      b.add(buildClockTowerNode(`clock-tower-${i}`, [tx, top, tz], Math.atan2(sx, sz), winGlow, snowTown, true, townBatch));
+      b.add(idolReady("llClockTower") ? buildIdolClockTowerNode(`clock-tower-${i}`, [tx, ground(tx, tz, ...idolHalfFootprint(snowTown ? "llClockTowerSnow" : "llClockTower"), Math.atan2(sx, sz)), tz], Math.atan2(sx, sz), winGlow, snowTown, true) : buildClockTowerNode(`clock-tower-${i}`, [tx, top, tz], Math.atan2(sx, sz), winGlow, snowTown, true, townBatch));
     }
     {
       const trackY = sampleRoute(data.route, i, 52).y;
@@ -665,33 +701,42 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null, in
     let folkModels = 0;
     for (let k = 0; k < 14; k++) {
       const onPlatform = rand() < 0.7;
-      const [fxp, fzp] = onPlatform ? at(4.4 + (rand() - 0.5) * 2.4, (rand() - 0.5) * 24) : at(-4 - rand() * 8, (rand() - 0.5) * 60);
+      // pass-through QA: the standing crowd waits at the platform's track edge (lateral 2.85-3.05) and by the track on the
+      // plaza side (-3.4 to -4.4), outside the walkers' lanes (walkers.ts WALKER_ZONES), so no walker strolls through one
+      const [fxp0, fzp0] = onPlatform ? at(STANDING_FOLK.platform[0] + rand() * (STANDING_FOLK.platform[1] - STANDING_FOLK.platform[0]), (rand() - 0.5) * 2 * STANDING_FOLK.platformAlong) : at(STANDING_FOLK.plaza[0] + rand() * (STANDING_FOLK.plaza[1] - STANDING_FOLK.plaza[0]), (rand() - 0.5) * 60);
+      const [fxp, fzp] = clearOfPoles(fxp0, fzp0, fx, fz, townPoles);
       const base = rand() < 0.7 ? s0.y + 0.75 : top + 0.04;
       if (onPlatform && folkModels < 5) {
         const fs = 0.92 + rand() * 0.16;
-        b.add(buildStationFolkNode(folkModels + i, `folk-${i}-${folkModels}`, [fxp, s0.y + 0.75, fzp], rand() * Math.PI * 2, fs, false, townBatch));
+        const folkYaw0 = rand() * Math.PI * 2;
+        if (idolReady(FOLK_KEYS[1])) folkIdol.add(folkModels + i, [fxp, ground(fxp, fzp, 0.3, 0.3, folkYaw0) + IDOL_SINK - 0.03, fzp], folkYaw0, fs);
+        else b.add(buildStationFolkNode(folkModels + i, `folk-${i}-${folkModels}`, [fxp, s0.y + 0.75, fzp], folkYaw0, fs, false, townBatch));
         folkModels++;
         continue;
       }
       const r = rand();
       const fs = 0.92 + ((r * 7) % 1) * 0.16;
       const folkYaw = ((r * 13) % 1) * Math.PI * 2;
-      b.add(buildStationFolkNode(Math.floor(r * 6) + k + i, `folk-plaza-${i}-${k}`, [fxp, onPlatform ? s0.y + 0.75 : base, fzp], folkYaw, fs, false, townBatch));
+      // (the procedural plaza folk used `base`, which put 70% of them on the platform height 1 m above the plaza cobbles)
+      if (idolReady(FOLK_KEYS[1])) folkIdol.add(Math.floor(r * 6) + k + i, [fxp, ground(fxp, fzp, 0.3, 0.3, folkYaw) + IDOL_SINK - 0.03, fzp], folkYaw, fs);
+      else b.add(buildStationFolkNode(Math.floor(r * 6) + k + i, `folk-plaza-${i}-${k}`, [fxp, onPlatform ? s0.y + 0.75 : base, fzp], folkYaw, fs, false, townBatch));
     }
     const placed: [number, number][] = [];
     const free = (l: number, a: number, r: number): boolean => Math.hypot(l, a) < 74 && placed.every(([pl, pa]) => Math.hypot(pl - l, pa - a) > r);
     const landmarkVariant = (["keep", "keep", "tower", "tower", "tower", "keep"] as const)[i]!;
     const lx = 36 * (i % 2 ? 1 : -1), la = -26 + (i % 3) * 18;
     placed.push([lx, la]);
-    b.add(buildCoastalLandmarkNode(landmarkVariant, `landmark-${i}`, [s0.x + sx * lx + fx * la, top, s0.z + sz * lx + fz * la], yaw + i, winGlow, snowTown, false, townBatch));
-    for (const [k, al] of [[0, 12.5], [1, -12.5]] as const) {
-      const [cx, cz] = at(4.6, al);
-      b.add(buildFreightCratesNode(`crates-${i}-${k}`, [cx, s0.y + 0.75, cz], yaw + k * 1.9, false, townBatch));
+    b.add(idolReady(landmarkVariant === "keep" ? "llKeep" : "llWatchtower")
+      ? buildIdolLandmarkNode(landmarkVariant, `landmark-${i}`, [s0.x + sx * lx + fx * la, ground(s0.x + sx * lx + fx * la, s0.z + sz * lx + fz * la, ...idolHalfFootprint(landmarkVariant === "keep" ? "llKeep" : "llWatchtower", landmarkSlim(landmarkVariant)), yaw + i), s0.z + sz * lx + fz * la], yaw + i, false)
+      : buildCoastalLandmarkNode(landmarkVariant, `landmark-${i}`, [s0.x + sx * lx + fx * la, top, s0.z + sz * lx + fz * la], yaw + i, winGlow, snowTown, false, townBatch));
+    for (const [k, al] of [[0, PLATFORM_CRATES.along], [1, -PLATFORM_CRATES.along]] as const) {
+      const [cx, cz] = at(PLATFORM_CRATES.lateral, al);
+      b.add(idolReady("llCrates") ? buildIdolCratesNode(`crates-${i}-${k}`, [cx, ground(cx, cz, ...idolHalfFootprint("llCrates"), yaw + k * 1.9) + IDOL_SINK - 0.04, cz], yaw + k * 1.9, false) : buildFreightCratesNode(`crates-${i}-${k}`, [cx, s0.y + 0.75, cz], yaw + k * 1.9, false, townBatch));
     }
     if (i % 3 === 1) {
       const [lx2, lz2] = at(-40, 44);
       const beamGain = row ? (row.practicals.headlamp > 0 ? 0.44 : 0.14) : night ? 0.5 : 0.12;
-      b.add(buildLighthouseNode(`lighthouse-${i}`, [lx2, top, lz2], yaw + i, beamGain, true));
+      b.add(idolReady("llLighthouse") ? buildIdolLighthouseNode(`lighthouse-${i}`, [lx2, ground(lx2, lz2, ...idolHalfFootprint("llLighthouse"), yaw + i), lz2], yaw + i, beamGain, true) : buildLighthouseNode(`lighthouse-${i}`, [lx2, top, lz2], yaw + i, beamGain, true));
     }
     for (let k = 0; k < 22; k++) {
       for (let tries = 0; tries < 10; tries++) {
@@ -716,10 +761,20 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null, in
       if (Math.abs(lateral) < 9 || !free(lateral, along, 3.2)) continue;
       const wx = s0.x + sx * lateral + fx * along, wz = s0.z + sz * lateral + fz * along;
       if (rand() < 0.55) { flowerAt.push({ position: [wx, top + 0.45, wz], scale: 0.7 + rand() * 0.6 }); flowerColors.push(FLOWERS[Math.floor(rand() * FLOWERS.length)]!); }
-      else { bushAt.push({ position: [wx, top + 0.9, wz], scale: 1.1 + rand() * 1.2 }); bushColors.push(mixHex("#4f8a3c", town.color, 0.25)); }
+      else {
+        const bs = 1.1 + rand() * 1.2;
+        // pass-through QA: a bush whose crown reaches a walkers' lane is dropped (the random stream is unchanged)
+        if (!intersectsWalkerZone(lateral, along, BUSH_RADIUS * bs)) { bushAt.push({ position: [wx, top + 0.9, wz], scale: bs }); bushColors.push(mixHex("#4f8a3c", town.color, 0.25)); }
+      }
     }
   });
   for (const staticTownNode of townBatch.buildNodes("town-static")) b.add(staticTownNode);
+  {
+    for (const n of houseIdol.nodes(row ? row.practicals.windowEmissive : night ? 1.8 : 0, cast)) b.add(n);
+    for (const n of folkIdol.nodes()) b.add(n);
+    // Idol walkers: 16 pooled rigged townsfolk strolling the platform and plaza of the town nearest the tram (render only)
+    if (IDOL_ART && walkersReady()) for (const n of walkerNodes()) b.add(n);
+  }
   b.add(primitives.cylinder({ name: "islands", size: [150, 6, 150], instances: islandTop, instanceColors: islandColors, material: pbr("#ffffff", 0.95), castShadow: false }));
   b.add(primitives.cylinder({ name: "island-rims", size: [146, 3.2, 146], instances: islandRim, material: pbr("#b59a78", 1), castShadow: false }));
   b.add(buildIslandUndercroftNode(
@@ -764,15 +819,19 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null, in
   b.add(instances.custom(buildCoastalBoulderSpec(), { name: "stones", transforms: stoneAt, material: unnamed(material.pbr({ color: "#8a867f", roughness: 0.94, clearcoat: 0 })), castShadow: false }));
 
   /* ---- tram, motorman/conductor & passengers (sculpted multi-material nodes, moved from the runtime) ---- */
-  b.add(buildStreetcarBodyNode("tram-body", row ? row.practicals.tramBulbs : night ? 2.4 : 0.6, true));
-  b.add(buildMotormanConductorNode("a3g-fx-tram-conductor", false));
-  if (row) {
+  b.add(idolReady("llTram") ? buildIdolTramNode("tram-body", row ? row.practicals.tramBulbs : night ? 2.4 : 0.6, true) : buildStreetcarBodyNode("tram-body", row ? row.practicals.tramBulbs : night ? 2.4 : 0.6, true));
+  // Idol tram running gear: eight spoked wheels rolling by distance travelled (the Idol body's baked bogies are stripped)
+  if (idolReady("llTram")) for (const n of buildTramWheelNodes(row !== null)) b.add(n);
+  if (figureReady("llMotorman") && idolReady("llTram")) b.add(buildRiggedFigure(GUARD_ID, "llMotorman", false));
+  b.add(figureReady("llMotorman") ? buildRiggedFigure("a3g-fx-tram-conductor", "llMotorman", false) : idolReady("llMotorman") ? buildIdolMotormanNode("a3g-fx-tram-conductor", false) : buildMotormanConductorNode("a3g-fx-tram-conductor", false));
+  // The sculpted trim overlays fit the procedural streetcar's hull only; the Idol tram carries its own brass and lamps.
+  if (row && !idolReady("llTram")) {
     for (const part of tramCoachTrim(row.practicals.tramBulbs)) {
       b.add(geometry.custom(part.geom, { name: part.id, material: part.mat, castShadow: false, receiveShadow: false }).runtime({ id: part.id }));
     }
   }
   SEATS.forEach((_, i) => {
-    for (const t of TEMPERAMENTS) b.add(buildPassengerNode(t, `pax-${i}-${t}`, false));
+    for (const t of TEMPERAMENTS) b.add(figureReady(RIDER_FIGURE[t]) ? buildRiggedFigure(`pax-${i}-${t}`, RIDER_FIGURE[t], false) : idolReady(RIDER_KEYS[t]) ? buildIdolPassengerNode(t, `pax-${i}-${t}`, false) : buildPassengerNode(t, `pax-${i}-${t}`, false));
   });
 
   /* ---- GU47 LT-13 signature: earned sky lanterns + WP-24 warm brass headlamp volumetric cone & wheel-flange spark flipbooks ---- */
@@ -852,6 +911,9 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   const seenIds = new Set<string>();
   const node = (id: string): Handle => { seenIds.add(id); let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
   const towns = data.tables.towns;
+  /** Idol walkers: station frames per town and the clip each pooled slot plays (cleared when a band swap remounts). */
+  const walkerFrames = towns.map((_, i) => townFrame(data, i));
+  const walkerClips: (string | null)[] = Array.from({ length: WALKER_POOL }, () => null);
   const rand = lehmer(4242);
   const seeds = Array.from({ length: WEATHER_COUNT }, () => [rand(), rand(), rand(), rand()] as const);
   const moteSeeds = Array.from({ length: MOTE_COUNT }, () => [rand(), rand(), rand(), rand()] as const);
@@ -862,6 +924,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   let sky = node("sky"), clouds = node("cloud-sea"), weather = spriteHandle(node("weather")), motes = spriteHandle(node("motes")), rain = node("rain");
   const rebindSceneHandles = (): void => {
     handles.clear();
+    walkerClips.fill(null);
     sky = node("sky");
     clouds = node("cloud-sea");
     weather = spriteHandle(node("weather"));
@@ -879,6 +942,10 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   /* GU47 LT-01: the band on screen; swaps only while docked (or when forced by ?band= / the QA hook) */
   let shownBand: BandId | null = look === "bands" ? bandFor(0, startNight ? "night" : "day", PINNED_BAND) : null;
   let enrouteSwaps = 0;
+  /** Idol tram wheel rolling angle (rad): advanced by speed x frame time / wheel radius. */
+  let wheelSpin = 0;
+  /** Rigged figures: smoothed tram acceleration (m/s^2) driving the controller hand and the riders' sway. */
+  let lastSpeed = 0, accelSmooth = 0;
   let forceSwap = false;
   let lightTown = -1;
   const prefetched = new Set<BandId>();
@@ -942,6 +1009,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     if (Math.abs(nightLevel - night) < 0.01) nightLevel = night;
 
     const here = sampleRoute(data.route, sim.leg, sim.distance);
+    if (IDOL_ART && walkersReady()) placeWalkers(node, walkerFrames, here.x, here.z, seconds, walkerClips);
     /* GU47 LT-15: rider counter-lean with a 0.25 s lag and a 1.5 cm tram bob (band look only; reduced motion 30%) */
     const rm = options.reducedMotion === true;
     const riderLean = shownBand !== null ? riders.step(sim.roll, dt, rm) : 0;
@@ -952,12 +1020,36 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     const body = node("tram-body");
     body.setPosition(here.x, here.y + 0.2 + bob, here.z);
     body.setRotation(euler[0], euler[1], euler[2]);
+    if (idolReady("llTram")) {
+      wheelSpin = advanceWheelSpin(wheelSpin, sim.speed, dt);
+      const wheels = tramWheelTransforms(rot, [here.x, here.y + 0.2 + bob, here.z], wheelSpin);
+      for (const id of TRAM_WHEEL_IDS) node(id).setInstances(wheels);
+    }
     const conductor = node("a3g-fx-tram-conductor");
-    const cabPos = applyMat3(rot, [-0.08, STREETCAR_FLOOR_Y + 0.04, 4.33]);
+    /* Idol tram: its saloon floor sits lower than the procedural streetcar's, so the figures ride lower (render only) */
+    const floorDrop = idolReady("llTram") ? IDOL_TRAM_RIDER_DROP : 0;
+    const crewZ = idolReady("llTram") ? IDOL_TRAM.crewZ : 4.33;
+    const cabPos = applyMat3(rot, [-0.08, STREETCAR_FLOOR_Y - floorDrop + 0.04, crewZ]);
     const conductorEuler = matrixToEulerZYX(multiplyMat3(rot, axisRotation("z", riderLean * 0.45)));
     conductor.setPosition(here.x + cabPos[0], here.y + cabPos[1] + 0.2 + bob, here.z + cabPos[2]);
     conductor.setRotation(conductorEuler[0], conductorEuler[1], conductorEuler[2]);
-    if (shownBand !== null) {
+    if (dt > 0) accelSmooth += ((sim.speed - lastSpeed) / dt - accelSmooth) * Math.min(1, dt * 4);
+    lastSpeed = sim.speed;
+    if (figureReady("llMotorman")) {
+      const md = figureDriver("llMotorman");
+      conductor.setVisible(md !== undefined);
+      if (md) node(figureBodyId("a3g-fx-tram-conductor")).setAnimationPose(md.pose(motormanPose({ t: seconds, accel: accelSmooth, speed: sim.speed })) as never);
+      if (idolReady("llTram")) {
+        /* the guard at the rear controller of the double-ended car: the cab the chase camera looks into is never empty */
+        const guard = node(GUARD_ID);
+        const rearPos = applyMat3(rot, [0.1, STREETCAR_FLOOR_Y - floorDrop + 0.04, -IDOL_TRAM.crewZ]);
+        guard.setPosition(here.x + rearPos[0], here.y + rearPos[1] + 0.2 + bob, here.z + rearPos[2]);
+        guard.setRotation(conductorEuler[0], conductorEuler[1], conductorEuler[2]);
+        guard.setVisible(md !== undefined);
+        if (md) node(figureBodyId(GUARD_ID)).setAnimationPose(md.pose(tramGuardPose(seconds, sim.speed)) as never);
+      }
+    }
+    if (shownBand !== null && !idolReady("llTram")) {
       for (const id of TRAM_FX_IDS) {
         const h = node(id);
         h.setPosition(here.x, here.y + 0.2 + bob, here.z);
@@ -969,18 +1061,30 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
       const trip = sim.trips.find((t) => t.seat === i);
       for (const t of TEMPERAMENTS) {
         const h = node(`pax-${i}-${t}`);
-        const on = seated.has(i) && trip?.temperament === t;
+        const rigged = figureReady(RIDER_FIGURE[t]);
+        const driver = rigged ? figureDriver(RIDER_FIGURE[t]) : undefined;
+        const on = seated.has(i) && trip?.temperament === t && (!rigged || driver !== undefined);
         h.setVisible(on);
-        if (on) {
+        if (on && driver) {
+          /* rigged rider: seated by code; gaze, nod and the acceleration sway go to the bones, the node only carries the seat */
+          const sp = seatedRiderPose(i, seat[0], t, seconds, riderLean, rm);
+          // top-level rigged node: its origin is the feet, on the saloon floor (the seated pose lowers the hips onto the bench)
+          const seatedPos = applyMat3(rot, [seat[0] + sp.latShift, STREETCAR_FLOOR_Y - floorDrop + sp.breathY, seat[2]]);
+          const paxEuler = matrixToEulerZYX(multiplyMat3(multiplyMat3(rot, axisRotation("z", riderLean)), axisRotation("y", seat[0] < 0 ? Math.PI / 2 : -Math.PI / 2)));
+          h.setPosition(here.x + seatedPos[0], here.y + seatedPos[1] + 0.2 + bob, here.z + seatedPos[2]);
+          h.setRotation(paxEuler[0], paxEuler[1], paxEuler[2]);
+          const sway = Math.max(-0.22, Math.min(0.22, accelSmooth * 0.05)) * (seat[0] < 0 ? -1 : 1) * (rm ? 0.3 : 1);
+          node(figureBodyId(`pax-${i}-${t}`)).setAnimationPose(driver.pose(seatedRiderInput({ kind: t, seat: i, t: seconds, sway, pitch: sp.pitch, gaze: sp.yawOffset })) as never);
+        } else if (on) {
           if (shownBand !== null) {
             const sp = seatedRiderPose(i, seat[0], t, seconds, riderLean, rm);
-            const seatedPos = applyMat3(rot, [seat[0] + sp.latShift, STREETCAR_FLOOR_Y + sp.yOffset + sp.breathY, seat[2]]);
+            const seatedPos = applyMat3(rot, [seat[0] + sp.latShift, STREETCAR_FLOOR_Y - floorDrop + sp.yOffset + sp.breathY, seat[2]]);
             const paxRot = multiplyMat3(multiplyMat3(multiplyMat3(rot, axisRotation("z", riderLean)), axisRotation("y", (seat[0] < 0 ? Math.PI / 2 : -Math.PI / 2) + sp.yawOffset)), axisRotation("x", sp.pitch));
             const paxEuler = matrixToEulerZYX(paxRot);
             h.setPosition(here.x + seatedPos[0], here.y + seatedPos[1] + 0.2 + bob, here.z + seatedPos[2]);
             h.setRotation(paxEuler[0], paxEuler[1], paxEuler[2]);
           } else {
-            const seatedPos = applyMat3(rot, [seat[0], STREETCAR_FLOOR_Y + 1.24, seat[2]]);
+            const seatedPos = applyMat3(rot, [seat[0], STREETCAR_FLOOR_Y - floorDrop + 1.24, seat[2]]);
             const paxEuler = matrixToEulerZYX(multiplyMat3(multiplyMat3(rot, axisRotation("z", riderLean)), axisRotation("y", seat[0] < 0 ? Math.PI / 2 : -Math.PI / 2)));
             h.setPosition(here.x + seatedPos[0], here.y + seatedPos[1] + 0.2 + bob, here.z + seatedPos[2]);
             h.setRotation(paxEuler[0], paxEuler[1], paxEuler[2]);

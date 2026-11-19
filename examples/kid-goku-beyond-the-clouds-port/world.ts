@@ -38,8 +38,13 @@ import {
   buildStormTyrantNode,
   computeSkyKidHeroPose
 } from "./art/proceduralModels";
+import { idolBoulderNode, idolCloudBillow, idolCloudNode, idolCottageNode, idolEnabled, idolHeroNode, idolPterosaurFlap, idolPterosaurNode, idolRoadsideNodes, idolRoastNode, idolShrineGateNode, idolRideLogNode, idolTyrantNode, REX_MODEL_SCALE, RIDE_LOG_TOP, SHRINE_PILLAR_X } from "./idol";
+import { groundCottageY, groundPillarsY, groundRoadside } from "./art/idolGrounding";
+import { createRexDriver } from "./art/rexAnimation";
+import { createHeroMotion } from "./art/heroMotion";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
-import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
+import { chasePose, launchFovKick, titleFlyover, titleOrbit, traumaFor } from "./art/camera";
+import { IDOL_FLYER_SCALE, flyerPose } from "./art/flyerPath";
 import { CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, CUMULUS_MOTION_BLUR, applyCumulusPostPlan, cumulusPostPlan, type CumulusMoment } from "./art/post";
 import { CUMULUS_GLIDER_TRAIL, FALLS_SPRAY_PERIOD, FALLS_SPRAY_RANGE, createSkyFlipbookAtlas, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
 import { createImpactRig } from "../../apps/showcase-port-shared/feel";
@@ -49,6 +54,7 @@ import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
 import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gaitWeight } from "./gait";
 import { buildBridges, buildCloudBankPlacements, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, buildSanctuaryToriiPlacements, yawOf } from "./props";
 import { smooth } from "./sim";
+import { BOULDER_RADIUS } from "./encounters";
 import { buildPuddles } from "./puddles";
 import { buildWaterfall, waterfallLip, waterfallPath } from "./waterfall";
 import { spritePoolGeometry, spritePoolHandle, spriteQuads } from "./sprites";
@@ -278,6 +284,10 @@ export interface World { readonly scene: ReturnType<typeof scene>; bind(app: Aur
 
 /* dev toggle for A/B frames: ?heroset=0 drops the instanced hero trees, rocks and mesas */
 const HERO_SET = typeof location === "undefined" || !/[?&]heroset=0/.test(location.search);
+/* Idol pass: high-detail image-to-3D GLBs for the hero, steed, creatures, cottage, gate pillars, boulders and roasts (`?idol=0`: procedural) */
+const IDOL = idolEnabled();
+/* height of the Idol roast pickup (tools/idol/specs/cumulus-dash.json, measured from the admitted GLB) */
+const IDOL_ROAST_HEIGHT = 0.894;
 const ORB_CAP = 72;
 /* storm-row alpha scale of the runner contact quad (phase 4) */
 const HERO_CONTACT_STORM = 0.85;
@@ -287,10 +297,11 @@ const GROUND_SHADOW_ALPHA = 0.42;
 const GROUND_SHADOW_LIFT = 0.06;
 /* procedural creature local +Z faces toward the runner; the port's creature rig faced -Z, so the yaw is offset by this many half turns */
 const REX_FACING = 1;
+/** The Idol tyrant's turn off the course heading toward the road (the procedural tyrant's resting yaw, 0.72 pi + pi). */
+const REX_ROAD_TURN = Math.PI * 1.72 - Math.PI * 2;
 /** The one sun (CD-01): the look key, its cascaded shadow, the scenery shader light and the sky disc all point along this. */
 export const SUN_POS: V3 = (ACTIVE_LOOK.authoredSunPos ?? sunPosition(ACTIVE_LOOK.scenery.sunDir, 100)) as V3;
 const lerp3 = (a: V3, b: V3, k: number): V3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
-const mix = (a: number, b: number, k: number): number => a + (b - a) * k;
 
 /** CD-06 storm towers: course distance, lateral offset, height (m) and yaw. A 300 m offset keeps each 240 m tower's
  *  near edge well off the road; A sits in the sky gap left of the title view. */
@@ -338,6 +349,8 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.58, mapScale: 0.5, rim: 0.26 }), undefined, true, 620));
   const scatter = buildScatter(ch);
   scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.36 }), undefined, false, CULL.trees));
+  // low-poly trees near the road only in the procedural kit: with the Idol models they read as placeholder blob crowns
+  if (!IDOL) scatter.nearTrees.forEach((m, i) => addMesh(m, `near-trees-${i}`, scenerySpec({ rim: 0.36 }), undefined, false, CULL.trees));
   scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.32 }), undefined, false, CULL.bushes));
   scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.52, mapScale: 1.2, rim: 0.2 }), undefined, false, CULL.rocks));
   scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.5, rim: 0.14 }), undefined, false, CULL.flowers));
@@ -350,9 +363,13 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   const place = (list: readonly { pos: V3; scale: number; yaw: number; pitch?: number; roll?: number }[]) => list.map((p) => ({ position: p.pos, rotation: [p.pitch ?? 0, p.yaw, p.roll ?? 0] as V3, scale: p.scale }));
   /* CD-17: the storm row sways the instanced hero trees in the post-squall breeze (E-G instance wind) */
   const windSpec = ACTIVE_LOOK.wind ? { strength: ACTIVE_LOOK.wind.strength, gustStrength: ACTIVE_LOOK.wind.gustStrength, directionDeg: ACTIVE_LOOK.wind.directionDeg } : undefined;
-  if (HERO_SET && scatter.roundTrees.length) for (const n of buildInstancedCanopyTrees(place(scatter.roundTrees), windSpec)) { b.add(n); drawNodes++; }
-  if (HERO_SET && scatter.pineTrees.length) for (const n of buildInstancedBonsaiPines(place(scatter.pineTrees), windSpec)) { b.add(n); drawNodes++; }
-  if (HERO_SET && scatter.boulders.length) for (const n of buildInstancedShoulderRocks(place(scatter.boulders))) { b.add(n); drawNodes++; }
+  // Idol roadside models stand on the lowest ground under their footprint (nudged off wall edges): art/idolGrounding.ts
+  const heroRound = IDOL ? groundRoadside(ch, scatter.roundTrees, "round") : scatter.roundTrees;
+  const heroPine = IDOL ? groundRoadside(ch, scatter.pineTrees, "pine") : scatter.pineTrees;
+  const heroRocks = IDOL ? groundRoadside(ch, scatter.boulders, "rock") : scatter.boulders;
+  if (HERO_SET && scatter.roundTrees.length) for (const n of IDOL ? idolRoadsideNodes("round", place(heroRound), windSpec) : buildInstancedCanopyTrees(place(scatter.roundTrees), windSpec)) { b.add(n); drawNodes++; }
+  if (HERO_SET && scatter.pineTrees.length) for (const n of IDOL ? idolRoadsideNodes("pine", place(heroPine), windSpec) : buildInstancedBonsaiPines(place(scatter.pineTrees), windSpec)) { b.add(n); drawNodes++; }
+  if (HERO_SET && scatter.boulders.length) for (const n of IDOL ? idolRoadsideNodes("rock", place(heroRocks)) : buildInstancedShoulderRocks(place(scatter.boulders))) { b.add(n); drawNodes++; }
   if (HERO_SET && mesas.placements.length) {
     const mesaTransforms = mesas.placements.map((m) => ({ position: m.pos, rotation: [0, m.yaw, 0] as V3, scale: [m.width / 0.55, m.height, m.width / 0.55] as V3 }));
     for (const n of buildInstancedKarstMesas(mesaTransforms)) { b.add(n); drawNodes++; }
@@ -365,8 +382,8 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   if (ACTIVE_LOOK.scenery.receiveShadow && HERO_SET) {
     const shades = new Mesh();
     const gf = { forwardXZ: (s: number): [number, number] => { const f = frameAt(s).forward; const l = Math.hypot(f[0], f[2]) || 1; return [f[0] / l, f[2] / l]; }, groundAt: (s: number, lat: number): V3 => at(s, lat, groundHeight(ch, s, lat) + GROUND_SHADOW_LIFT) };
-    appendGroundShadows(shades, [...scatter.roundTrees, ...scatter.pineTrees], ACTIVE_LOOK.scenery.sunDir, TREE_SHADOW, gf);
-    appendGroundShadows(shades, scatter.boulders, ACTIVE_LOOK.scenery.sunDir, BOULDER_SHADOW, gf);
+    appendGroundShadows(shades, [...heroRound, ...heroPine], ACTIVE_LOOK.scenery.sunDir, TREE_SHADOW, gf);
+    appendGroundShadows(shades, heroRocks, ACTIVE_LOOK.scenery.sunDir, BOULDER_SHADOW, gf);
     if (shades.vertexCount) {
       b.add(geometry.custom(plainGeometry(shades), { name: "ground-shadows", castShadow: false, material: material.custom({ ...shadowSpec(), uniforms: { shadowAlpha: { type: "f32", value: GROUND_SHADOW_ALPHA } } }) }).runtime({ id: "ground-shadows" }));
       triangles += shades.indices.length / 3; chunks++; drawNodes++;
@@ -401,16 +418,15 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   if (ch.home) {
     const hf = frameAt(ch.home.s, 9.5);
     const hutPos: V3 = [hf.point[0], hf.point[1], hf.point[2]];
-    b.add(buildSkyHermitCottageNode(
-      hutPos,
-      yawOf([-hf.right[0], -hf.right[1], -hf.right[2]])
-    ));
+    const hutYaw = yawOf([-hf.right[0], -hf.right[1], -hf.right[2]]);
+    // the Idol cottage sits on the lowest ground under its 3.3 m footprint (the procedural hut stays at the road point)
+    b.add(IDOL ? idolCottageNode([hutPos[0], groundCottageY(ch, ch.home.s, 9.5), hutPos[2]], hutYaw) : buildSkyHermitCottageNode(hutPos, hutYaw));
     cullables.push({ id: "home-hut", centre: hutPos, radius: 8, range: 480 });
     drawNodes++;
   }
   /* WP-29: crimson sanctuary torii gates framing checkpoints and the home threshold outside the road shoulders */
   for (const torii of buildSanctuaryToriiPlacements(ch)) {
-    b.add(buildSanctuaryToriiNode(torii.name, torii.pos, torii.yaw));
+    b.add(IDOL ? idolShrineGateNode(torii.name, torii.pos, torii.yaw, groundPillarsY(ch, torii.s, SHRINE_PILLAR_X)) : buildSanctuaryToriiNode(torii.name, torii.pos, torii.yaw));
     cullables.push({ id: torii.name, centre: torii.pos, radius: 12, range: 380 });
     drawNodes++;
   }
@@ -447,27 +463,27 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
 
   /* characters and set pieces */
   /* CD-03: articulated multi-material Sky Kid Cloud-Surfer Hero with cool PBR rim sheen on rows that set one */
-  b.add(buildSkyKidHeroNode(ACTIVE_LOOK.heroRim));
-  drawNodes += 13;
+  b.add(IDOL ? idolHeroNode(ACTIVE_LOOK.heroRim) : buildSkyKidHeroNode(ACTIVE_LOOK.heroRim));
+  drawNodes += IDOL ? 1 : 13;
   // storm-washed has no ambient fill and a low side sun, so the ride log's camera-facing side crushed to near black in the
   // title orbit (p5 17); a 2.4x hemisphere fill on the log alone brings back the bark (GU47 phase 2)
-  if (ch.log) b.add(geometry.custom(meshGeometry(buildLog()), { name: "ride-log", material: material.custom(scenerySpec({ rim: 0.3, fill: ACTIVE_LOOK.id === "storm-washed" ? 2.4 : 1 })) }).runtime({ id: "ride-log" }));
+  if (ch.log) b.add(IDOL ? idolRideLogNode() : geometry.custom(meshGeometry(buildLog()), { name: "ride-log", material: material.custom(scenerySpec({ rim: 0.3, fill: ACTIVE_LOOK.id === "storm-washed" ? 2.4 : 1 })) }).runtime({ id: "ride-log" }));
   const shadowQuad = new Mesh();
   shadowQuad.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); shadowQuad.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); shadowQuad.quad(0, 1, 2, 3);
   /* CD-02 / GU47 phase 4: the soft contact quad under the runner on both rows (the low storm sun throws the cast shadow
      metres to the side, so the feet need their own contact; slightly lighter where the sun shadow is received) */
   b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", castShadow: false, material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
-  b.add(buildGoldenSkyCloudNode());
+  b.add(IDOL ? idolCloudNode() : buildGoldenSkyCloudNode());
   b.add(buildSkyStaffNode());
   for (const ball of ch.balls) b.add(buildStarSphereNode(ball.star));
   if (ch.home) b.add(buildStarSphereNode(ch.home.star));
-  ch.meat.forEach((_, i) => b.add(buildHoneyRoastPickupNode(i)));
+  ch.meat.forEach((_, i) => b.add(IDOL ? idolRoastNode(i, IDOL_ROAST_HEIGHT) : buildHoneyRoastPickupNode(i)));
   for (let i = 0; i < COIN_POOL_CAP; i++) b.add(buildSkyCoinNode(i));
-  ch.boulders.forEach((_, i) => b.add(buildCarvedBoulderNode(i)));
+  ch.boulders.forEach((_, i) => b.add(IDOL ? idolBoulderNode(i) : buildCarvedBoulderNode(i)));
   const dives = ch.creatures.filter((c) => c.type === "pteranodon");
-  dives.forEach((_, i) => b.add(buildSkyPterosaurNode(i)));
+  dives.forEach((_, i) => b.add(IDOL ? idolPterosaurNode(i) : buildSkyPterosaurNode(i)));
   const hasRex = ch.creatures.some((c) => c.type === "trex");
-  if (hasRex) b.add(buildStormTyrantNode());
+  if (hasRex) b.add(IDOL ? idolTyrantNode() : buildStormTyrantNode());
 
   const quad = (() => { const m = new Mesh(); m.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); m.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); m.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); m.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); m.quad(0, 1, 2, 3); return m; })();
   const warnIds: string[] = [];
@@ -512,6 +528,12 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   let eye: V3 | null = null, look: V3 | null = null;
   let animClip = "", animT = 0, wispT = 0, clock = 0;
   let rexS = 0, rexInit = false;
+  let camPhase = "";
+  // Idol hero motion (captured clips + gait foot IK); `?idol=0` keeps the procedural hero
+  const heroMotion = IDOL ? createHeroMotion() : null;
+  // Idol tyrant: code-driven skeleton (art/rexAnimation.ts), its last world position, a smoothed facing turn and the roar clock
+  const rexDriver = IDOL && ch.creatures.some((c) => c.type === "trex") ? createRexDriver() : null;
+  let rexPrev: V3 | null = null, rexTurn = REX_ROAD_TURN, rexSeen = 0;
   const camPos: { eye: V3; target: V3 } = { eye: [0, 0, 0], target: [0, 0, 0] };
   const view: WorldView = { eye: [0, 0, 0], target: [0, 0, 0], fov: 55, aspect: 1, hero: [0, 0, 0], log: null, hut: null, culled: 0, bars: 0, titleT: 0 };
   /* CD-18 (storm-washed row): title flyover clock, trauma from impact rises, launch FOV kick */
@@ -688,11 +710,14 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         const m22 = cz * cx;
         return [0, ey, Math.atan2(-m12, m22)];
       };
-      const logLift = ch.log ? 1.9 * (1 - smooth(ch.log - 0.3, ch.log, s.s)) : 0;
+      // the kid's feet ride on the log's top (the Idol log is 2.04 m across: at the procedural 1.9 m lift his feet sank into it)
+      const onLog = ch.log ? 1 - smooth(ch.log - 0.3, ch.log, s.s) : 0;
+      const logLift = (IDOL ? RIDE_LOG_TOP : 1.9) * onLog;
       let h = s.jump + logLift;
       let pos: V3 = at(s.s, s.lane, h);
       let yaw = yawOf(f.forward) - s.laneVelocity * 0.035;
-      let roll = Math.max(-0.32, Math.min(0.32, -s.laneVelocity * 0.012));
+      // log-rolling balance: a slow side-to-side sway over the turning trunk while he runs on it
+      let roll = Math.max(-0.32, Math.min(0.32, -s.laneVelocity * 0.012)) + (g.reducedMotion ? 0 : Math.sin(clock * 2.6) * 0.07 * onLog * (s.jump < 0.1 ? 1 : 0));
       let pitch = 0;
       if (phase === "falling" && g.falling) {
         const fl = g.falling, ff = frameAt(fl.s, fl.lane);
@@ -722,7 +747,9 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       else if (s.jump > 0.12) { clip = "jump"; rate = 1.9; }
       else if (phase === "paused") { clip = animClip || "run"; rate = 0; }
       // the 7 Hz hit blink is skipped under reduced motion (the hearts row still shows the hit)
-      if (phase === "playing" && s.invincible > 0 && !g.reducedMotion && Math.floor(clock * 14) % 2 === 0 && !riding) hero.setVisible(false); else hero.setVisible(true);
+      // the 1 s of start-of-run invincibility (sim createState) is not a hit: no blink then, so the kid reads from the first frame
+      const hurtBlink = s.invincible > 0 && s.time > 1.05;
+      if (phase === "playing" && hurtBlink && !g.reducedMotion && Math.floor(clock * 14) % 2 === 0 && !riding) hero.setVisible(false); else hero.setVisible(true);
       const heroEuler = composeHeadingEulerZYX(yaw, pitch, roll);
       hero.setPosition(pos[0], pos[1], pos[2]);
       hero.setRotation(heroEuler[0], heroEuler[1], heroEuler[2]);
@@ -734,7 +761,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         fx.dust(base, f.up, 1, "#e5cf9f", 0.55, 0.7);
       };
       play(clip, rate, phase === "paused" ? 0 : dt, groundSpeed, stepDust);
-      applySkyKidHeroPose(node, computeSkyKidHeroPose({
+      const heroPose = computeSkyKidHeroPose({
         clip,
         clock,
         animT,
@@ -745,7 +772,12 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         jumpVelocity: s.jumpVelocity,
         laneVelocity: s.laneVelocity,
         onPole: !!s.pole
-      }));
+      });
+      if (heroMotion) {
+        // Idol hero: captured clips (fal text-to-motion) with the planted-foot gait legs on the run (art/heroMotion.ts)
+        const m = heroMotion.frame({ clip, dt: phase === "paused" ? 0 : dt, groundSpeed, gaitPhase: gait.phase, jump: s.jump, jumpVelocity: s.jumpVelocity, falling: phase === "falling", codePose: heroPose, laneVelocity: s.laneVelocity });
+        hero.setAnimationPose?.(m.pose);
+      } else applySkyKidHeroPose(node, heroPose);
 
       if (ch.log) {
         const lg = node("ride-log");
@@ -777,6 +809,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         cloud.setPosition(base[0] + f.forward[0] * 1.1, base[1] + 0.12, base[2] + f.forward[2] * 1.1); /* the generated cloud's mass sits behind its origin */
         cloud.setRotation(cloudEuler[0], cloudEuler[1], cloudEuler[2]);
         cloud.setScale(n.call > 0 ? 0.6 + (1 - n.call / 0.26) * 1.0 : 1.7);
+        if (IDOL) idolCloudBillow(node, clock);
         wispT += dt;
         if (wispT > 0.07) { wispT = 0; fx.wisp([base[0] - f.forward[0] * 1.3, base[1] + 0.2, base[2] - f.forward[2] * 1.3], "#fff3c0", 0.8); }
       }
@@ -865,13 +898,14 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
           const fr = frameAt(bd.s, lane), bounce = Math.abs(Math.sin((lane + 16) * Math.PI / 4.4)) * 0.55 * (1 - smooth(10, 16, lane + 16));
           const gh = groundHeight(ch, bd.s, lane);
           // Fitted model: its origin is the lowest point and the roll pivots there, so place the node at (centre - rotated radius) to roll about the centre.
-          const roll = -(lane + 16) / 2.0;
+          const roll = -(lane + 16) / BOULDER_RADIUS; // rolls without skidding: angle = distance / radius
           nd.setPosition(
-            fr.point[0] + fr.up[0] * (bounce + 1.9 + gh) + Math.sin(roll) * 1.9,
-            fr.point[1] + fr.up[1] * (bounce + 1.9 + gh) - Math.cos(roll) * 1.9,
-            fr.point[2] + fr.up[2] * (bounce + 1.9 + gh)
+            fr.point[0] + fr.up[0] * (bounce + BOULDER_RADIUS + gh) + Math.sin(roll) * BOULDER_RADIUS,
+            fr.point[1] + fr.up[1] * (bounce + BOULDER_RADIUS + gh) - Math.cos(roll) * BOULDER_RADIUS,
+            fr.point[2] + fr.up[2] * (bounce + BOULDER_RADIUS + gh)
           );
-          nd.setScale(1.9);
+          // drawn the size the encounter layer hits (encounters.ts BOULDER_RADIUS; both boulder models are 1 m radius balls)
+          nd.setScale(BOULDER_RADIUS);
           nd.setRotation(0, yawOf(fr.forward), roll);
           if (d > -50 && Math.random() < 0.0) fx.dust(at(bd.s, lane, 0.2), fr.up, 1);
         }
@@ -891,16 +925,13 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         const show = !!alive || !!gone;
         body.setVisible(show);
         if (show && dv) {
-          const target = dv.target ?? s.lane;
-          const k2 = smooth(-40, 0, d);
-          let sp = c.s + 18 * (1 - k2) - Math.max(0, d) * 1.2, lat = mix(target > 0 ? -9 : 9, target, k2), hgt = 1.6 + 17 * (1 - smooth(-40, -2, d)) + (d > 0 ? d * 0.7 : 0);
-          let bank = (lat - target) * 0.03, flap = Math.sin(clock * 11 + i) * 0.55;
-          if (dv.hit && dv.ko) { const t = Math.max(0, clock % 100); void t; sp = c.s + (d * 0.4); hgt = 3 + Math.max(0, d) * 0.2; flap = 0.9; bank = clock * 6; lat = target + d * 0.5; }
-          const bp = at(sp, lat, hgt);
-          const bf = frameAt(sp);
-          const by = yawOf(bf.forward) + Math.PI + (dv.hit ? 0 : 0);
-          body.setPosition(bp[0], bp[1] + Math.sin(clock * 11 + i) * 0.12, bp[2]); body.setRotation(0.2 * (1 - k2), yawOf(bf.forward) + Math.PI, bank + flap * 0.22); body.setScale([2.6, 2.6 - Math.abs(flap) * 0.25, 2.6]);
-          void by;
+          // the flight path keeps the flyer's whole drawn extent ahead of the kid, out of the camera's sight line (art/flyerPath.ts)
+          const fsc = IDOL ? IDOL_FLYER_SCALE : 2.6;
+          const fp = flyerPose({ kidS: s.s, diveS: c.s, target: dv.target, lane: s.lane, ko: dv.hit && dv.ko ? dv.ko : null, clock, index: i, scale: fsc });
+          const bp = at(fp.sp, fp.lat, fp.hgt);
+          const bf = frameAt(fp.sp);
+          body.setPosition(bp[0], bp[1] + Math.sin(clock * 11 + i) * 0.12, bp[2]); body.setRotation(fp.pitch, yawOf(bf.forward) + Math.PI, fp.bank + fp.flap * 0.22); body.setScale([fsc, fsc * (1 - Math.abs(fp.flap) * 0.1), fsc]);
+          if (IDOL) idolPterosaurFlap(node, i, fp.flap);
         }
         const wvis = !!dv && !dv.passed && !dv.hit && dv.target !== null && d > -40 && d < 0;
         wz.setVisible(wvis);
@@ -918,6 +949,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         const tc = trexState.creature;
         const present = s.s > tc.s - 30 && s.s < (tc.until ?? 0) + 14 && !trexState.beaten;
         body.setVisible(present);
+        if (!present) { rexPrev = null; rexSeen = 0; }
         if (present) {
           const next = trexState.attacks.find((a) => !a.done);
           const targetS = next ? next.s - 2 : s.s + 6;
@@ -925,7 +957,8 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
           rexS += Math.max(-26 * dt, Math.min(26 * dt, targetS - rexS));
           const stunned = s.s < trexState.stunnedUntil;
           const lat = -10.2, bp = at(rexS, lat, groundHeight(ch, rexS, lat)), fwd = frameAt(rexS).forward;
-          const stomp = Math.abs(Math.sin(clock * 6)) * 0.22 * (stunned ? 0.2 : 1);
+          // the procedural tyrant bobs on a timer; the rigged Idol tyrant's hips rise and fall with its own steps
+          const stomp = rexDriver ? 0 : Math.abs(Math.sin(clock * 6)) * 0.22 * (stunned ? 0.2 : 1);
           const nextAttack = next && !stunned ? next : null;
           const dd = nextAttack ? s.s - nextAttack.s : -50;
           const lunge = nextAttack ? smooth(-9, -1.5, dd) * (1 - smooth(0.5, 5, dd)) : 0;
@@ -934,8 +967,28 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
           const sc = 1.15;
           const rot = (x: number, y: number, z: number, yawAngle: number): V3 => [x * Math.cos(yawAngle) + z * Math.sin(yawAngle), y, -x * Math.sin(yawAngle) + z * Math.cos(yawAngle)];
           const reachF = rot(0, 0, lunge * 3.2, yaw0 - Math.PI * 0.72 + Math.PI * 0.72);
-          body.setPosition(bp[0] + reachF[0], bp[1] + stomp - (stunned ? 0.6 : 0), bp[2] + reachF[2]);
-          body.setRotation(stunned ? 0.18 : lunge * 0.28, yaw0 + Math.PI * REX_FACING, stunned ? 0.08 : swipe * 0.18);
+          if (rexDriver) {
+            // Idol tyrant: walks along the course facing where it goes and turns to the road when it waits or strikes, so
+            // its planted feet never skate; the skeleton (stride, roar, bite, hurt) is posed from the distance it covers
+            // F3 GPU QA: sliding the whole body 3.2 m into the bite read as a stride burst (amplified legs tore, both feet
+            // left the ground); the rigged tyrant stays planted and lunges with its spine, neck, head and jaw instead.
+            const wp: V3 = [bp[0], bp[1], bp[2]];
+            const jump = rexPrev ? Math.hypot(wp[0] - rexPrev[0], wp[2] - rexPrev[2]) : 0;
+            const step: V3 = rexPrev && jump < 4 ? [wp[0] - rexPrev[0], 0, wp[2] - rexPrev[2]] : [0, 0, 0]; // a cut or reset is not a stride
+            const v = dt > 0 ? Math.hypot(step[0], step[2]) / dt : 0;
+            const wantTurn = REX_ROAD_TURN * (1 - smooth(3, 10, v) * (1 - Math.max(lunge, swipe)));
+            rexTurn += (wantTurn - rexTurn) * Math.min(1, dt * 3);
+            const yaw = Math.atan2(fwd[0], fwd[2]) + rexTurn - swipe * 0.5;
+            rexSeen += dt;
+            const pose = rexDriver.step({ moved: step[0] * Math.sin(yaw) + step[2] * Math.cos(yaw), dt, metresPerUnit: REX_MODEL_SCALE * sc, stunned, lunge, swipe, sinceAppear: rexSeen });
+            node("rex-model").setAnimationPose?.(pose);
+            rexPrev = wp;
+            body.setPosition(wp[0], wp[1], wp[2]);
+            body.setRotation(0, yaw, 0);
+          } else {
+            body.setPosition(bp[0] + reachF[0], bp[1] + stomp - (stunned ? 0.6 : 0), bp[2] + reachF[2]);
+            body.setRotation(stunned ? 0.18 : lunge * 0.28, yaw0 + Math.PI * REX_FACING, stunned ? 0.08 : swipe * 0.18);
+          }
           body.setScale(sc);
         }
         rexAttacks.forEach((a, i) => {
@@ -970,17 +1023,18 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       let wantEye: V3, wantLook: V3, fov = aspect < 1 ? 62 : 55 + s.speed * 0.2;
       let cut = false;
       const hp = pos;
-      const fly = phase === "menu" && cinematic ? titleFlyover(titleT, pos, ACTIVE_LOOK.sky.sunDir, g.reducedMotion) : null;
+      const fly = phase === "menu" && cinematic ? titleFlyover(titleT, pos, ACTIVE_LOOK.sky.sunDir, g.reducedMotion, aspect) : null;
       view.bars = fly ? fly.bars : phase === "finale" ? 1 : 0;
       view.titleT = titleT;
       if (fly) {
         wantEye = [fly.eye[0], fly.eye[1], fly.eye[2]]; wantLook = [fly.look[0], fly.look[1], fly.look[2]];
         fov = fly.fov; cut = !eye || titleT === 0;
       } else if (phase === "menu") {
-        const a = clock * 0.18 + 0.2;
-        wantEye = at(s.s + 7.2 * Math.cos(a) + 2.5, 5.0 * Math.sin(a) - 3.6, s.jump + logLift + 2.4);
-        wantLook = at(s.s + 0.2, s.lane, s.jump + logLift + 1.2);
-        fov = 40; cut = !eye;
+        // centred on the kid, never closer than TITLE_ORBIT_MIN_DISTANCE; portrait widens the lens (art/camera.ts)
+        const o = titleOrbit(clock, s.s, s.lane, s.jump + logLift, aspect);
+        wantEye = at(o.eye[0], o.eye[1], o.eye[2]);
+        wantLook = at(o.look[0], o.look[1], o.look[2]);
+        fov = o.fov; cut = !eye;
       } else if (phase === "finale" && ch.home && hutCentre) {
         // frame the runner and the hut together: aim midway between them and stand back far enough for both to fit the width
         const t = g.finale?.t ?? 0;
@@ -1005,15 +1059,15 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         wantLook = [hp[0], hp[1] + 0.5, hp[2]];
         void fl;
       } else {
-        // portrait start: the ride log fills the lower frame at fov 62, so the eye rises and pulls back until the log is left
-        const portraitLog = aspect < 1 && ch.log ? 1 - smooth(ch.log - 12, ch.log + 4, s.s) : 0;
-        const back = frameAt(s.s - 7.4 - 4 * portraitLog, s.lane * 0.65), ahead = frameAt(Math.min(ch.length + 20, s.s + 7), s.lane * 0.65);
-        const lift = 3.3 + s.jump * 0.35 + (riding ? 0.6 : 0) + logLift * 0.5 + 2.5 * portraitLog;
-        wantEye = [back.point[0] + back.up[0] * lift, back.point[1] + back.up[1] * lift, back.point[2] + back.up[2] * lift];
-        wantLook = [ahead.point[0] + ahead.up[0] * 1.5, ahead.point[1] + ahead.up[1] * 1.5, ahead.point[2] + ahead.up[2] * 1.5];
-        if (g.chase) fov += 3;
-        fov += g.danger * 3;
+        // aspect-aware chase (art/camera.ts): portrait keeps the eye right behind the kid and lifts it over the ride log
+        const cp = chasePose({ s: s.s, lane: s.lane, jump: s.jump, riding, logLift, aspect, speed: s.speed, chase: !!g.chase, danger: g.danger, log: ch.log ?? 0, length: ch.length }, frameAt);
+        wantEye = [cp.eye[0], cp.eye[1], cp.eye[2]]; wantLook = [cp.look[0], cp.look[1], cp.look[2]];
+        fov = cp.fov;
+        // entering play from the title flyover or the result orbit is a cut: easing from there showed the canyon wall
+        // instead of the kid for the first frames of the run (portrait GPU QA, score 0)
+        if (camPhase === "menu" || camPhase === "result") cut = true;
       }
+      camPhase = phase;
       // CD-18: the storm row feeds impacts to the controller's trauma layer and kicks the FOV on a launch; the original keeps its sine shake
       const shake = g.reducedMotion || cinematic ? 0 : g.impact * 0.28;
       if (cinematic) {

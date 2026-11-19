@@ -29,7 +29,6 @@ const SCRATCH_PROBE = Object.freeze({
 });
 const NODE_TESTS = Object.freeze({
   'app-animation-studio-node': Object.freeze(['apps/animation-studio-web/verify/wiring.test.cjs']),
-  'app-clash-node': Object.freeze(['apps/aura-clash-showcase/tests/copy-boundary.test.mjs']),
   'cli-config-node': Object.freeze([
     'tests/cli-configs/install-meshy-mcp.test.mjs',
     'tests/cli-configs/meshy-docs-skill.test.mjs',
@@ -94,14 +93,6 @@ const FILE_PREREQUISITES = Object.freeze({
     'apps/animation-studio-web/src/state/backend.ts',
     'apps/animation-studio-web/src/state/mapDocument.ts'
   ]),
-  'apps/aura-clash-showcase/tests/copy-boundary.test.mjs': Object.freeze([
-    'apps/aura-clash-showcase/index.html',
-    'apps/aura-clash-showcase/src/main.ts',
-    'apps/aura-clash-showcase/src/legacy/main.ts',
-    'apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts',
-    'apps/aura-clash-showcase/src/legacy/ui/TitleScreen.ts',
-    'apps/aura-clash-showcase/src/v2/boot.ts'
-  ]),
   'docs/prds/game-upgrades-47/lanes/wp36-decisions.test.mjs': Object.freeze([
     'docs/prds/game-upgrades-47/lanes/wp36-decisions.mjs'
   ]),
@@ -129,7 +120,6 @@ const FILE_PREREQUISITES = Object.freeze({
 });
 const REASON_BY_GROUP = Object.freeze({
   'app-animation-studio-node': 'Reviewed CommonJS Node source-wiring test; no browser is launched.',
-  'app-clash-node': 'Reviewed standalone Node source and copy-boundary assertions; no browser is launched.',
   'app-cross-hop-vitest': 'App-owned Vitest configuration selects pure game-math source tests.',
   'app-wonder-world-vitest': 'Node-environment app unit tests use the canonical source aliases instead of stale workspace dist.',
   'asset-optimize-vitest': 'Tool-owned Vitest configuration selects optimizer source and fixture tests; admitted tool dependencies are required.',
@@ -185,10 +175,6 @@ function acceptanceReason(path) {
   if (/^tests\/qr\/[^/]+\/(?:browser|perf|games)\//.test(path)) return 'Browser, game-rendering, or rendered-performance suite; execute only in remote acceptance.';
   if (path === 'tests/qr/prd09/capture-divergence.spec.ts' || path === 'tests/qr/prd09/look-perf.spec.ts')
     return 'Browser capture or rendered-performance test; execute only in remote acceptance.';
-  if (/^apps\/aura-clash-showcase\/tests\/(?:[\w.-]+\/)*[\w.-]+\.spec\.[cm]?[jt]sx?$/.test(path))
-    return /(?:deployed|deploy-check)/.test(path)
-      ? 'Browser test for a deployed or live route; acceptance requires the global gate and applicable authorization.'
-      : 'App-owned browser test; execute only in remote acceptance after the global gate.';
   if (/^(?:templates\/[^/]+|packages\/create-aura3d\/templates\/[^/]+)\/tests\/(?:[\w.-]+\/)*[\w.-]+\.spec\.[cm]?[jt]sx?$/.test(path))
     return 'Template browser specification; installed-template behavior belongs to remote acceptance.';
   if (path === 'tests/game-runtime/keyboard-operation-browser.spec.ts')

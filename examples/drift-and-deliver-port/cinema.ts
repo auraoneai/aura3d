@@ -77,14 +77,38 @@ export function headlightFlare(car: CarPose, eye: V3, beams: number): { position
  * GC-C1: the first-delivery side shot, 1.2 s beside the courier tracking forward with it (camera only; the sim keeps
  * stepping). Tries the right side, then the left; returns null when both eyes are blocked (the chase pose stays).
  */
-export const SIDE_SHOT = { seconds: 1.2, side: 7, height: 1.6, lead: 3, fov: 52 } as const;
-export function sideShotPose(t: number, car: CarPose, blocked: (x: number, y: number, z: number) => boolean = () => false): CamPose | null {
+export const SIDE_SHOT = { seconds: 1.2, side: 7, height: 1.6, lead: 3, fov: 52, portraitFov: 62, carHalfLength: 2.15, maxWidthShare: 0.62, portraitHeight: 2.6 } as const;
+
+/**
+ * Owner QA (Nov 18, 390 x 844): the side shot framed the courier far too close on a portrait phone (the vertical FOV is
+ * fixed, so the horizontal view is about a quarter as wide as on 16:9 and the 4.3 m car overflowed it). Aspect-aware: a
+ * wider FOV on portrait and the eye backs off until the car spans at most `maxWidthShare` of the frame width.
+ */
+export function sideShotFraming(aspect: number): { distance: number; fov: number; height: number } {
+  const a = aspect > 0 && Number.isFinite(aspect) ? aspect : 16 / 9;
+  const fov = a < 1 ? SIDE_SHOT.portraitFov : SIDE_SHOT.fov;
+  const halfWidthPerMetre = Math.tan(((fov * Math.PI) / 180) / 2) * a;
+  const distance = Math.max(SIDE_SHOT.side, SIDE_SHOT.carHalfLength / (SIDE_SHOT.maxWidthShare * halfWidthPerMetre));
+  return { distance, fov, height: a < 1 ? SIDE_SHOT.portraitHeight : SIDE_SHOT.height };
+}
+
+/** Share of the frame width the courier spans in the side shot (car length over the visible width at the eye distance). */
+export function sideShotWidthShare(aspect: number, distance: number, fov: number): number {
+  return SIDE_SHOT.carHalfLength / (distance * Math.tan(((fov * Math.PI) / 180) / 2) * aspect);
+}
+
+export function sideShotPose(t: number, car: CarPose, blocked: (x: number, y: number, z: number) => boolean = () => false, aspect = 16 / 9): CamPose | null {
   const s = Math.sin(car.heading), c = Math.cos(car.heading);
   const k = Math.max(0, Math.min(1, t / SIDE_SHOT.seconds));
   const along = SIDE_SHOT.lead * (1 - 2 * k);
-  for (const side of [1, -1]) {
-    const position: V3 = [car.x + s * along + c * SIDE_SHOT.side * side, SIDE_SHOT.height, car.z + c * along - s * SIDE_SHOT.side * side];
-    if (!blocked(...position)) return { position, target: [car.x, 1, car.z], fov: SIDE_SHOT.fov };
+  const f = sideShotFraming(aspect);
+  // a narrow street can put the far eye inside a facade: step in (and up a little, so the car still fits) before giving up
+  for (const [scale, rise] of [[1, 0], [0.8, 1.5], [0.65, 3]] as const) {
+    const distance = Math.max(SIDE_SHOT.side, f.distance * scale);
+    for (const side of [1, -1]) {
+      const position: V3 = [car.x + s * along + c * distance * side, f.height + rise, car.z + c * along - s * distance * side];
+      if (!blocked(...position)) return { position, target: [car.x, 1, car.z], fov: f.fov };
+    }
   }
   return null;
 }

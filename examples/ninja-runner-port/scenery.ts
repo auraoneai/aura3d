@@ -111,6 +111,22 @@ export function cameraGap(p: ModelPlacement, size: readonly [number, number, num
 }
 
 /** Push every model placement that comes closer than `CAMERA_CLEARANCE` to the camera path straight away from it. */
+/** Route centre-line samples every 8 m (distance checks for backdrop landforms). */
+let COURSE_POINTS: { x: number; z: number }[] | null = null;
+/** True when the point is more than `r` metres (plan) from every point of the course centre line. */
+export function clearOfCourse(x: number, z: number, r: number): boolean {
+  COURSE_POINTS ??= Array.from({ length: Math.ceil(COURSE_LENGTH / 8) + 1 }, (_, i) => { const f = groundFrame(Math.min(COURSE_LENGTH, i * 8), 0); return { x: f.x, z: f.z }; });
+  for (const p of COURSE_POINTS) if (Math.hypot(p.x - x, p.z - z) < r) return false;
+  return true;
+}
+
+/** Lowest route-surface height under a footprint of radius `r` at a course point (centre + 8 rim points). */
+export function footprintGround(d: number, lat: number, r: number): number {
+  let y = surfaceY(Math.max(0, d), lat);
+  for (const [u, v] of [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7, 0.7], [0.7, -0.7], [-0.7, 0.7], [-0.7, -0.7]] as const) y = Math.min(y, surfaceY(Math.max(0, d + u * r), lat + v * r));
+  return y;
+}
+
 function clearCameraPath(models: ModelSink): void {
   const grid = cameraEyeGrid();
   for (const [id, list] of Object.entries(models)) {
@@ -125,7 +141,19 @@ function clearCameraPath(models: ModelSink): void {
         const len = Math.hypot(ux, uz) || 1;
         ux /= len; uz /= len;
         const push = CAMERA_CLEARANCE - gap + 0.25;
-        p = { ...p, position: [p.position[0] + ux * push, p.position[1], p.position[2] + uz * push] };
+        // The pushed prop follows the ground to its new spot (a fixed height would leave it floating over a verge
+        // that falls away, or buried in one that rises): shift its base by the terrain change at the course point.
+        const course = PLACEMENT_COURSE.get(p);
+        let y = p.position[1];
+        let moved: { d: number; lat: number } | undefined;
+        if (course) {
+          const f = groundFrame(course.d, 0);
+          const wx = ux * push, wz = uz * push;
+          moved = { d: Math.max(0, course.d + wx * f.dx + wz * f.dz), lat: course.lat + wx * -f.dz + wz * f.dx };
+          y += footprintGround(moved.d, moved.lat, 1) - footprintGround(course.d, course.lat, 1);
+        }
+        p = { ...p, position: [p.position[0] + ux * push, y, p.position[2] + uz * push] };
+        if (moved) PLACEMENT_COURSE.set(p, moved);
       }
       list[i] = p;
     }
@@ -137,12 +165,22 @@ function clearCameraPath(models: ModelSink): void {
  *  sibling tell against Cloud Runner ("identical faceted low-poly tree foliage and twisted trunks", judge g20p4 vs final471). */
 export interface SceneryOptions { readonly paintedTrees?: boolean }
 
+/** Course point (distance, lateral) each generated-model placement was put at, for grounding checks. */
+export const PLACEMENT_COURSE = new WeakMap<ModelPlacement, { readonly d: number; readonly lat: number }>();
+
 export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): SceneryLayer[] {
   const layers = new Map<string, SceneryLayer>(LAYERS.map((l) => [l.id, { ...l, placements: [] }]));
   const put = (id: string, x: number, y: number, z: number, yaw: number, sx: number, sy: number, sz: number, color: string): void => {
     layers.get(id)!.placements.push({ matrix: trs(x, y, z, yaw, sx, sy, sz), color });
   };
-  const at = (d: number, lat: number) => { const f = groundFrame(d, lat); return { x: f.x, y: surfaceY(d, lat), z: f.z, yaw: Math.atan2(f.dx, f.dz) }; };
+  let lastAt: { d: number; lat: number; x: number; z: number } | null = null;
+  const at = (d: number, lat: number) => { const f = groundFrame(d, lat); lastAt = { d, lat, x: f.x, z: f.z }; return { x: f.x, y: surfaceY(d, lat), z: f.z, yaw: Math.atan2(f.dx, f.dz) }; };
+  /** Records the course point a model instance was placed at (grounding checks), when it sits on the last `at()` point. */
+  const note = (p: ModelPlacement): void => {
+    if (lastAt && Math.hypot(p.position[0] - lastAt.x, p.position[2] - lastAt.z) < 0.5) PLACEMENT_COURSE.set(p, { d: lastAt.d, lat: lastAt.lat });
+  };
+  /** Lowest ground under a footprint of radius `r` (centre + 8 rim points): props on slopes and verges never float. */
+  const footY = footprintGround;
   const pick = <T,>(r: () => number, list: readonly T[]): T => list[Math.floor(r() * list.length) % list.length]!;
   /** Add one generated-model instance whose base sits at world (x, y, z); `height`/`width`/`depth` are the wanted world sizes. */
   const mput = (id: string, x: number, y: number, z: number, yaw: number, width: number, height: number, depth: number, tint?: string): void => {
@@ -151,12 +189,16 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
     /* Meshy models keep their own proportions: a request that would stretch one axis more than ~1.6x against another (a 6 x 10 m footprint on a nearly square house) smears the texture and tears the facets, so the per-axis scale stays within +-28% of the uniform scale. */
     const g = Math.cbrt(sx * sy * sz), lo = g * 0.78, hi = g * 1.28;
     sx = Math.min(hi, Math.max(lo, sx)); sy = Math.min(hi, Math.max(lo, sy)); sz = Math.min(hi, Math.max(lo, sz));
-    (models![id] ??= []).push({ position: [x, y, z], yaw: yaw + (MODEL_FRONT_YAW[id] ?? 0), scale: [sx, sy, sz], ...(tint ? { tint } : {}) });
+    const p: ModelPlacement = { position: [x, y, z], yaw: yaw + (MODEL_FRONT_YAW[id] ?? 0), scale: [sx, sy, sz], ...(tint ? { tint } : {}) };
+    (models![id] ??= []).push(p);
+    note(p);
   };
   /** Uniform-by-height placement (`wk` widens or narrows the plan) for props that keep their authored proportions. */
   const mputH = (id: string, x: number, y: number, z: number, yaw: number, height: number, wk = 1, tint?: string): void => {
     const k = height / MESHY_MANIFEST[id]!.size[1];
-    (models![id] ??= []).push({ position: [x, y, z], yaw: yaw + (MODEL_FRONT_YAW[id] ?? 0), scale: [k * wk, k, k * wk], ...(tint ? { tint } : {}) });
+    const p: ModelPlacement = { position: [x, y, z], yaw: yaw + (MODEL_FRONT_YAW[id] ?? 0), scale: [k * wk, k, k * wk], ...(tint ? { tint } : {}) };
+    (models![id] ??= []).push(p);
+    note(p);
   };
   /** Free per-axis placement for landforms that may be stretched (distant ridges). */
   const mputFree = (id: string, x: number, y: number, z: number, yaw: number, width: number, height: number, depth: number, tint?: string): void => {
@@ -174,11 +216,20 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
     const w = pathWidth(d);
     const lat = side * (w / 2 + o.gap + o.bw / 2);
     const c = at(d, lat);
-    const y0 = o.baseY ?? Math.min(surfaceY(d, lat - o.bw / 2), surfaceY(d, lat + o.bw / 2), c.y) - 0.15;
+    // lowest ground under the whole plan (across AND along the course: the stairs climb under a house's depth)
+    let yMin = c.y, yMax = c.y;
+    for (const u of [-0.4, 0, 0.4]) for (const v of [-0.45, 0, 0.45]) {
+      const g = surfaceY(Math.max(0, d + u * o.bd), lat + v * o.bw);
+      yMin = Math.min(yMin, g); yMax = Math.max(yMax, g);
+    }
+    const y0 = o.baseY ?? yMin - 0.15;
     const face = side;
     if (models) {
-      /* the model's width runs along the route, its depth across it; the façade (+z) faces the path; the base sinks 0.3 below the lowest ground */
-      mput(HOUSES[Math.floor(r() * HOUSES.length) % HOUSES.length]!, c.x, y0 - 0.2, c.z, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), o.bd, o.bh + 2.6, o.bw);
+      /* the model's width runs along the route, its depth across it; the façade (+z) faces the path; the base sinks ~0.25 below the lowest ground (0.15 here + the Idol 0.06) */
+      const kind = HOUSES[Math.floor(r() * HOUSES.length) % HOUSES.length]!;
+      // a plan straddling a cliff (the rooftop-district exit drops ~7 m under one house) cannot sit on the ground: skip it
+      if (o.baseY === undefined && yMax - yMin > 2) return;
+      mput(kind, c.x, y0 - 0.05, c.z, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), o.bd, o.bh + 2.6, o.bw);
       return;
     }
     put("walls", c.x, y0, c.z, c.yaw, o.bw, o.bh, o.bd, pick(r, WALLS));
@@ -221,7 +272,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
     const w = pathWidth(d);
     const lat = side * (w / 2 + o.gap + o.r);
     const c = at(d, lat);
-    const y0 = o.baseY ?? Math.min(surfaceY(d, lat - o.r), surfaceY(d, lat + o.r), c.y) - 0.2;
+    const y0 = o.baseY ?? footY(d, lat, o.r) - 0.15;
     if (models) { mput("tower", c.x, y0 - 0.2, c.z, r() * 6, (o.r + 0.3) * 2, o.h + 3.4, (o.r + 0.3) * 2); return; }
     put("towers", c.x, y0 - 1.3, c.z, 0, o.r + 0.2, 2, o.r + 0.2, shade(pick(r, STONE), 0.92));
     put("towers", c.x, y0, c.z, 0, o.r, o.h, o.r, pick(r, WALLS));
@@ -243,7 +294,8 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
 
   const lanternPost = (d: number, side: -1 | 1): void => {
     const c = at(d, side * (pathWidth(d) / 2 + 0.55));
-    if (models) { const k = 3.9 / MESHY_MANIFEST.lantern!.size[1]; mput("lantern", c.x, c.y, c.z, c.yaw, MESHY_MANIFEST.lantern!.size[0] * k, 3.9, MESHY_MANIFEST.lantern!.size[2] * k); return; }
+    const ly = footY(d, side * (pathWidth(d) / 2 + 0.55), 0.45) - 0.05;
+    if (models) { const k = 3.9 / MESHY_MANIFEST.lantern!.size[1]; mput("lantern", c.x, ly, c.z, c.yaw, MESHY_MANIFEST.lantern!.size[0] * k, 3.9, MESHY_MANIFEST.lantern!.size[2] * k); return; }
     put("posts", c.x, c.y, c.z, 0, 0.07, 3, 0.07, "#3a3028");
     put("lanterns", c.x, c.y + 3.15, c.z, 0, 0.3, 0.4, 0.3, "#ffb25a");
     put("cones", c.x, c.y + 3.45, c.z, 0, 0.45, 0.32, 0.45, "#2b2420");
@@ -273,7 +325,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   };
 
   const pine = (x: number, y: number, z: number, h: number, r: () => number): void => {
-    if (models) { const wk = 0.85 + r() * 0.35, m = MESHY_MANIFEST.pine!; mput("pine", x, y - 0.4, z, r() * 6, m.size[0] * (h / m.size[1]) * wk, h, m.size[2] * (h / m.size[1]) * wk); return; }
+    if (models) { const wk = 0.85 + r() * 0.35, m = MESHY_MANIFEST.pine!; mput("pine", x, y - 0.15, z, r() * 6, m.size[0] * (h / m.size[1]) * wk, h, m.size[2] * (h / m.size[1]) * wk); return; }
     const tw = 0.45 + h * 0.04;
     put("trunks", x, y - 0.6, z, 0, tw, h * 0.7, tw, "#4a3a2a");
     const tone = pick(r, PINES);
@@ -323,7 +375,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
         : options.paintedTrees && tone !== undefined && (LEAVES as readonly string[]).includes(tone)
           ? MAPLE[LEAVES.indexOf(tone as typeof LEAVES[number])]!
           : tone;
-      tree(c.x, c.y, c.z, h, canopyTint, trees);
+      tree(c.x, footY(d, lat, 0.7), c.z, h, canopyTint, trees);
     }
   }
   const stalls = seededRandom(31);
@@ -331,7 +383,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
     if (d > 150 && d < 190) continue;
     const side = stalls() < 0.5 ? -1 : 1;
     const c = at(d, side * (pathWidth(d) / 2 + 2.6));
-    if (models) { mputH("marketStall", c.x, c.y - 0.05, c.z, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), 3.4, 1.15); continue; }
+    if (models) { mputH("marketStall", c.x, footY(d, side * (pathWidth(d) / 2 + 2.6), 1.9) - 0.12, c.z, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), 3.4, 1.15); continue; }
     put("trim", c.x, c.y, c.z, c.yaw, 3.2, 0.95, 1.5, "#8a5a35");
     for (const [sx, sz] of [[-1.5, -0.7], [1.5, -0.7], [-1.5, 0.7], [1.5, 0.7]] as const) { const [px, pz] = local(c, sx, sz); put("posts", px, c.y, pz, 0, 0.06, 2.4, 0.06, "#3a3028"); }
     put("hips", c.x, c.y + 2.35, c.z, c.yaw, 3.9, 0.9, 2.3, pick(stalls, CLOTH));
@@ -340,7 +392,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   if (models) {
     for (const [d, side] of [[172, 1], [1436, 1]] as const) {
       const c = at(d, side * (pathWidth(d) / 2 + 9));
-      mputH("teahouse", c.x, c.y - 0.2, c.z, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), 10.5);
+      mputH("teahouse", c.x, footY(d, side * (pathWidth(d) / 2 + 9), 4.5) - 0.2, c.z, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), 10.5);
     }
   }
   const fences = seededRandom(77);
@@ -363,7 +415,9 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   for (let d = 552; d < 998; d += 3.2) {
     if (gapAt(d) || gapAt(d + 1.6)) continue;
     const c = at(d, 0);
-    put("slabs", c.x, c.y, c.z, c.yaw, pathWidth(d) + 0.1, 0.07, 0.14, roofsRand() < 0.5 ? "#4a5f55" : "#5f7a6e");
+    // A ridge cap (rounded noshi-gawara course) along the roof crest the runner runs on. These were full-width battens
+    // at the crest's height: over the falling roof slope they hung in the air as thin grey bars across the path.
+    put("trim", c.x, c.y - 0.06, c.z, c.yaw, 0.34, 0.16, 3.26, roofsRand() < 0.5 ? "#3c4a5c" : "#4a586a");
   }
   for (let d = 552; d < 998; d += 4) {
     for (const side of [-1, 1] as const) {
@@ -375,9 +429,17 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   for (const [g0, g1] of GAPS) {
     if (g0 < 550 || g0 > 1000) continue;
     for (const dd of [g0 - 0.3, g1 + 0.3]) {
-      const c = at(dd, 0);
-      put("walls", c.x, c.y - 3.1, c.z, c.yaw, pathWidth(dd) + 0.9, 3.1, 0.55, "#c8a57b");
-      put("trim", c.x, c.y - 0.08, c.z, c.yaw, pathWidth(dd) + 1.1, 0.3, 0.9, "#6b3f33");
+      // The gap's fascia wall and ridge lip follow the roof's cross-slope in strips: one flat box at the ridge height
+      // stood up to 0.7 m proud of the sloping roof under the outer lanes, a bar the runner ran straight through.
+      const hw = pathWidth(dd) / 2, n = 12, seg = (2 * hw + 1.1) / n;
+      for (let k = 0; k < n; k++) {
+        const lat = -hw - 0.55 + (k + 0.5) * seg;
+        const c = at(dd, lat), y = surfaceY(dd, Math.max(-hw, Math.min(hw, lat)));
+        // past the eave the bank falls away: the end strips reach down to it instead of hanging in the air
+        const h = Math.max(3.1, y - surfaceY(dd, lat) + 0.1);
+        put("walls", c.x, y - h, c.z, c.yaw, seg + 0.02, h, 0.55, "#c8a57b");
+        put("trim", c.x, y - 0.08, c.z, c.yaw, seg + 0.02, 0.3, 0.9, "#6b3f33");
+      }
     }
   }
   const FLOOR_Y = 3.2;
@@ -396,7 +458,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   for (let d = 580; d < 990; d += 70 + Math.floor(roofsRand() * 30)) {
     const side = roofsRand() < 0.5 ? -1 : 1;
     const c = at(d, side * (pathWidth(d) / 2 + 20 + roofsRand() * 6));
-    if (models) { mputH("teahouse", c.x, FLOOR_Y - 0.4, c.z, c.yaw, 15, 1.1); continue; }
+    if (models) { mputH("teahouse", c.x, FLOOR_Y - 0.15, c.z, c.yaw, 15, 1.1); continue; }
     for (let t = 0; t < 3; t++) {
       const sz = 7.5 - t * 1.6;
       put("walls", c.x, FLOOR_Y + t * 4.6, c.z, c.yaw, sz, 4.2, sz, shade("#d9c9a8", 1 - t * 0.04));
@@ -427,7 +489,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
     for (const side of [-1, 1] as const) {
       const lat = side * (pathWidth(d) / 2 + 1.8 + Math.pow(forest(), 1.6) * 62);
       const c = at(d, lat);
-      pine(c.x, c.y, c.z, 12 + forest() * 20, forest);
+      pine(c.x, footY(d, lat, 0.9), c.z, 12 + forest() * 20, forest);
     }
   }
   for (let d = 1500; d < 2270; d += 2.2) for (const side of [-1, 1] as const) {
@@ -501,7 +563,13 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
       const s = 45 + hills() * 90;
       const biome = biomeAt(Math.max(0, d));
       const tone = biome.startsWith("forest") ? "#4d7658" : biome === "water" ? "#8d9a9c" : "#7e9a6a";
-      if (models) { mputFree("ridge", c.x, c.y - 10, c.z, hills() * 6, s * 2.6, 22 + hills() * 40, s * 2.2, biome.startsWith("forest") ? "#629c74" : biome === "water" ? "#7b9da8" : "#78ad7c"); continue; }
+      if (models) {
+        const yaw = hills() * 6, h = 22 + hills() * 40;
+        // F3 GPU QA: a hill dropped beside one stretch of the winding course can land on another stretch and hang
+        // over the camera as a huge dark-green triangle (river crossing); keep every hill clear of the whole course.
+        if (clearOfCourse(c.x, c.z, s * 1.4 + 30)) mputFree("ridge", c.x, c.y - 10, c.z, yaw, s * 2.6, h, s * 2.2, biome.startsWith("forest") ? "#629c74" : biome === "water" ? "#7b9da8" : "#78ad7c");
+        continue;
+      }
       put("hills", c.x, c.y - 24, c.z, 0, s, 18 + hills() * 42, s * (0.8 + hills() * 0.6), shade(tone, 0.85 + hills() * 0.25));
     }
   }
@@ -513,7 +581,11 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
       const c = at(Math.min(Math.max(d, 0), COURSE_LENGTH), lat);
       const s = 130 + peaks() * 140;
       const tone = d > 1500 && d < 2300 ? "#5f8a86" : "#7a97a4";
-      if (models) { mputFree("ridge", c.x, c.y - 30, c.z, peaks() * 6, s * 2.6, 60 + peaks() * 80, s * 2.2, d > 1500 && d < 2300 ? "#5a8c94" : "#6485ad"); continue; }
+      if (models) {
+        const yaw = peaks() * 6, h = 60 + peaks() * 80;
+        if (clearOfCourse(c.x, c.z, s * 1.4 + 30)) mputFree("ridge", c.x, c.y - 30, c.z, yaw, s * 2.6, h, s * 2.2, d > 1500 && d < 2300 ? "#5a8c94" : "#6485ad");
+        continue;
+      }
       put("hills", c.x, c.y - 40, c.z, 0, s, 80 + peaks() * 110, s * (0.7 + peaks() * 0.6), shade(tone, 0.9 + peaks() * 0.2));
     }
   }
@@ -653,12 +725,17 @@ export function buildProceduralCourseAccents(clearing?: { readonly x: number; re
       const m = MESHY_MANIFEST.oak!;
       const k = h / m.size[1];
       const wk = 0.94 + roofSakuraRng() * 0.22;
+      // Courtyard trees stand on the town floor (y 3.2) between the rooftop rows, not hanging at roof level: the tree
+      // keeps its crown height (path - 4.4 + h) and grows from the floor, so it is taller and a little broader.
+      const crownTop = surfaceY(d, 0) - 4.4 + h, floor = 3.2 - 0.15;
+      const grow = Math.min(1.8, Math.max(1, (crownTop - floor) / h));
       const p: ModelPlacement = {
-        position: [c.x, surfaceY(d, 0) - 4.4, c.z],
+        position: [c.x, Math.min(floor, surfaceY(d, 0) - 4.4), c.z],
         yaw: roofSakuraRng() * Math.PI * 2,
-        scale: [k * wk, k, k * wk],
+        scale: [k * wk * grow, k * grow, k * wk * grow],
         tint: courtyardTints[Math.floor(roofSakuraRng() * courtyardTints.length) % courtyardTints.length]!
       };
+      PLACEMENT_COURSE.set(p, { d, lat });
       if (cameraGap(p, m.size, grid).gap >= CAMERA_CLEARANCE) sakuraMapleTrees.push(p);
     }
   }

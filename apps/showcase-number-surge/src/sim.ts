@@ -309,6 +309,11 @@ export class NumberSurgeSim {
     };
   }
 
+  /** Current drag steering target (read-only; lets an autopilot taking over mid-run start from the real target). */
+  get steerTarget(): number {
+    return this.ye;
+  }
+
   /** Number of counted gameplay RNG draws (presentation must never touch this stream). */
   get rngCount(): number {
     return this.rng.count;

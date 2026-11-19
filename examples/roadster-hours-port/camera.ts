@@ -62,6 +62,11 @@ export function eventKick(e: SimEvent): { trauma: number; fov: number } {
   }
 }
 
+/** Most the chase eye may sit above an airborne car (grounded framing is 3.1; the in-air lift allows a little more). */
+export const AIR_EYE_ABOVE_MAX = 3.5;
+/** Most the look-at point may sit above an airborne car (grounded framing is 1.1). */
+export const AIR_LOOK_ABOVE_MAX = 1.25;
+
 export function createCameraDirector(options: CameraDirectorOptions = {}): CameraDirector {
   const eyeRate = options.eyeRate ?? 9, lookRate = options.lookRate ?? 12, fovRate = options.fovRate ?? 4;
   let reduced = !!options.reducedMotion;
@@ -99,6 +104,12 @@ export function createCameraDirector(options: CameraDirectorOptions = {}): Camer
         frame.lookL = approach(frame.lookL, wantLookL, lookRate, dt);
         frame.lookH = approach(frame.lookH, wantLookH, lookRate, dt);
         frame.fovKick = approach(frame.fovKick, speedFov + kick, fovRate, dt);
+      }
+      if (run.phase === "running") {
+        // HUD-safe framing (GPU QA F2): while airborne the smoothed eye and look-at trail a descent from above, which tilts
+        // the camera up and drops the car behind the bottom dash band; cap how far above the car they may trail
+        frame.eyeH = Math.min(frame.eyeH, run.h + AIR_EYE_ABOVE_MAX);
+        frame.lookH = Math.min(frame.lookH, run.h + AIR_LOOK_ABOVE_MAX);
       }
       time += dt;
       const amp = reduced ? 0 : trauma * trauma * 0.62 + (run.grounded ? clamp((run.v - 28) / 46, 0, 1) ** 2 * 0.05 : 0);

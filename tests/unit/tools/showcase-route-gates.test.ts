@@ -4,7 +4,7 @@ import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, 
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, onTestFinished } from "vitest";
 
 interface ShowcaseRouteGate {
   readonly id: string;
@@ -409,7 +409,8 @@ describe("retired showcase route claims", () => {
       const configDir = join(root, "tools/showcase-library");
       mkdirSync(configDir, { recursive: true });
       copyFileSync(routeGateConfigPath, join(configDir, "route-gates.json"));
-      const route = publishedTypedRoute("showcase-blockfall-reactor");
+      // Blockfall's app was deleted; its gate stays as a typed multi-primary fixture, republished here.
+      const route = retiredTypedRouteFixture("showcase-blockfall-reactor");
       const appDir = join(root, "apps", route.id);
       mkdirSync(appDir, { recursive: true });
       const module = await loadRoutePrimaryProbeModule();
@@ -447,10 +448,18 @@ describe("retired showcase route claims", () => {
 describe("route-primary evidence", () => {
   it("accepts a retained multi-primary route and rejects incorrect asset roles", async () => {
     const module = await loadRoutePrimaryProbeModule();
-    const route = publishedTypedRoute("showcase-blockfall-reactor");
-    const context = module.createRoutePrimaryProbeContext(route);
+    // Blockfall's app was deleted; its gate stays as a typed multi-primary fixture over a stub source tree.
+    const route = retiredTypedRouteFixture("showcase-blockfall-reactor");
+    const root = mkdtempSync(join(tmpdir(), "aura3d-multi-primary-"));
+    onTestFinished(() => rmSync(root, { recursive: true, force: true }));
+    mkdirSync(join(root, "tools/showcase-library"), { recursive: true });
+    copyFileSync(routeGateConfigPath, join(root, "tools/showcase-library/route-gates.json"));
+    mkdirSync(join(root, "apps", route.id), { recursive: true });
+    writeFileSync(join(root, "apps", route.id, "index.html"), "<html></html>\n");
+    writeFileSync(join(root, "apps", route.id, "route-health.json"), JSON.stringify({ appId: route.id }));
+    const context = module.createRoutePrimaryProbeContext(route, root);
     const evidence = createValidProbeEvidence(route, context);
-    const options = { root: process.cwd(), requireScreenshot: false };
+    const options = { root, requireScreenshot: false };
 
     expect(context.routePrimaryHeroAsset).toBe("blockfallReactorArenaBackdrop");
     expect(context.secondaryPrimaryAssets).toEqual(["showcaseBlockfallCabinet"]);
@@ -1573,6 +1582,12 @@ async function loadRouteGateModule(): Promise<RouteGateModule> {
 
 async function loadGameReleaseGateModule(): Promise<GameReleaseGateModule> {
   return await import(pathToFileURL(resolve("tools/showcase-library/showcase-game-release-gates.mjs")).href) as GameReleaseGateModule;
+}
+
+function retiredTypedRouteFixture(id: string): ShowcaseRouteGate {
+  const route = typedRoute(id);
+  expect(route.published, `${id} published`).toBe(false);
+  return { ...route, published: true };
 }
 
 function publishedTypedRoute(id: string): ShowcaseRouteGate {

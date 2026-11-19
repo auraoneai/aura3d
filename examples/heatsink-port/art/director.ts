@@ -10,6 +10,14 @@ export type Vec3Out = [number, number, number];
 
 /** the countdown sweep: arc angle (radians, from behind the drone), start radius and height, matching the race's 3.2 s count */
 export const SWEEP = { startAngle: (150 * Math.PI) / 180, startRadius: 13, startHeight: 4.2, seconds: 3.2 } as const;
+
+/**
+ * Countdown values whose sweep poses main.ts renders and settles before the menu goes live (the sweep draws views the
+ * menu never does). Evenly spaced along the countdown from just under the sweep start to just before GO, nine poses, so
+ * consecutive poses are at most ~28 degrees apart on the arc (smoothstep's steepest stretch), well inside the view.
+ */
+export const WARM_SWEEP_COUNTDOWNS: readonly number[] = Array.from({ length: 9 }, (_, i) => +(SWEEP.seconds - 0.05 - (i * (SWEEP.seconds - 0.1)) / 8).toFixed(3));
+
 /** the finish orbit: radius, height, angular speed and blend-in time */
 export const ORBIT = { radius: 11, height: 3.4, speed: 0.32, blendSeconds: 1.4 } as const;
 /**

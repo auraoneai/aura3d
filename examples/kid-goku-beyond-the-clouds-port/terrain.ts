@@ -11,6 +11,31 @@ import { seeded, smooth } from "./sim";
 export const ROAD_HALF = 6.2;
 export const CHUNK = 160;
 
+/**
+ * The volume the kid can occupy (pass-through audit): |lateral| up to the sim's lane clamp (5.1) plus his half-width, from
+ * the road surface up to the highest he reaches (jump apex 3.6 m / pole vault 5 m / Glider 3.2 m + hop, plus his height).
+ * Scenery has no collider, so nothing solid-looking may be drawn inside it.
+ */
+export const CORRIDOR_HALF = 5.1 + 0.3;
+export const REACH_HEIGHT = 7.2;
+/** Course frame of a world point: the course runs along -z, refined once along the tangent. */
+function frameOf(x: number, y: number, z: number) {
+  let f = frameAt(-z);
+  f = frameAt(-z + (x - f.point[0]) * f.forward[0] + (y - f.point[1]) * f.forward[1] + (z - f.point[2]) * f.forward[2]);
+  return f;
+}
+/** Whether any vertex of `m` (world space) lies inside the runner corridor. */
+export function intrudesCorridor(m: Mesh): boolean {
+  for (let i = 0; i < m.vertexCount; i++) {
+    const x = m.positions[i * 3]!, y = m.positions[i * 3 + 1]!, z = m.positions[i * 3 + 2]!;
+    const f = frameOf(x, y, z);
+    const d: V3 = [x - f.point[0], y - f.point[1], z - f.point[2]];
+    const lat = d[0] * f.right[0] + d[1] * f.right[1] + d[2] * f.right[2], h = d[0] * f.up[0] + d[1] * f.up[1] + d[2] * f.up[2];
+    if (Math.abs(lat) < CORRIDOR_HALF && h > 0.08 && h < REACH_HEIGHT) return true;
+  }
+  return false;
+}
+
 /* ---------------------------------------------------------------- smooth 1-D noise */
 const hash = (n: number): number => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 export function noise1(x: number, seed = 0): number {
@@ -163,8 +188,17 @@ export function buildGround(ch: Chapter, from = -40, to = ch.length + 80): Groun
 
 /* ---------------------------------------------------------------- foliage, rocks, flowers */
 export interface Placement { pos: V3; scale: number; yaw: number; /** Optional slope pitch/roll for grounded bank boulders. */ pitch?: number; roll?: number; /** Track distance and lateral offset of the foot (GU47 phase 4 ground shadows drape on these). */ s?: number; lat?: number }
-export interface Scatter { trees: Mesh[]; bushes: Mesh[]; rocks: Mesh[]; flowers: Mesh[]; roundTrees: Placement[]; pineTrees: Placement[]; boulders: Placement[] }
+/**
+ * `trees`: merged low-poly scenery trees drawn in every mode; `nearTrees`: the ones standing within BLOB_TREE_CLEAR of the
+ * road edge, drawn only by the procedural kit (`?idol=0`). With the Idol models the chase camera saw them as huge dark
+ * low-poly blob crowns over the wall tops (GPU QA 2026-11-18), so the Idol look keeps only the far ones as filler.
+ */
+export interface Scatter { trees: Mesh[]; nearTrees: Mesh[]; bushes: Mesh[]; rocks: Mesh[]; flowers: Mesh[]; roundTrees: Placement[]; pineTrees: Placement[]; boulders: Placement[] }
 const HERO_TREE_CAP = 150, HERO_ROCK_CAP = 90, HERO_NEAR = 24;
+/** Course distance between hero (Idol) trees on one side, so the 150-tree budget lines the whole ridge (it used to run out at s 494). */
+export const HERO_TREE_SPACING = 18;
+/** Low-poly scenery trees closer than this to the road edge (m) are the near set (see `Scatter`). */
+export const BLOB_TREE_CLEAR = 40;
 
 let treeParts: { trunk: Mesh; crowns: Mesh[] } | null = null;
 function treeKit(): { trunk: Mesh; crowns: Mesh[] } {
@@ -183,6 +217,13 @@ function treeAt(trees: Mesh, kit: { trunk: Mesh; crowns: Mesh[] }, rnd: () => nu
   trees.append(c0, [base[0], base[1] + size * 0.62, base[2]], [size * 0.68, size * 0.42, size * 0.68], rnd() * 6.28);
   trees.append(c1, [base[0] + (rnd() - 0.5) * size * 0.28, base[1] + size * 0.88, base[2] + (rnd() - 0.5) * size * 0.28], [size * 0.54, size * 0.4, size * 0.54], rnd() * 6.28);
   trees.append(c2, [base[0] + (rnd() - 0.5) * size * 0.2, base[1] + size * 1.12, base[2] + (rnd() - 0.5) * size * 0.2], [size * 0.38, size * 0.34, size * 0.38], rnd() * 6.28);
+}
+
+/** A merged scenery tree, left out when its crown would hang into the runner corridor (the RNG stream is unchanged). */
+function clearTree(trees: Mesh, kit: { trunk: Mesh; crowns: Mesh[] }, rnd: () => number, base: V3, size: number): void {
+  const t = new Mesh();
+  treeAt(t, kit, rnd, base, size);
+  if (!intrudesCorridor(t)) trees.append(t, [0, 0, 0]);
 }
 
 /** Bushy forest masses on the valley floor beside the ridge (the dark green clumps the track looks out over). */
@@ -209,9 +250,13 @@ export function buildValleyForest(ch: Chapter): Mesh[] {
 }
 
 export function buildScatter(ch: Chapter): Scatter {
-  const out: Scatter = { trees: [], bushes: [], rocks: [], flowers: [], roundTrees: [], pineTrees: [], boulders: [] };
+  const out: Scatter = { trees: [], nearTrees: [], bushes: [], rocks: [], flowers: [], roundTrees: [], pineTrees: [], boulders: [] };
+  const lastHero = new Map<number, number>([[-1, -Infinity], [1, -Infinity]]);
   const heroTree = (base: V3, height: number, lat: number, r: number, s: number): boolean => {
     if (Math.abs(lat) - ROAD_HALF > HERO_NEAR || out.roundTrees.length + out.pineTrees.length >= HERO_TREE_CAP) return false;
+    const side = lat >= 0 ? 1 : -1;
+    if (s - lastHero.get(side)! < HERO_TREE_SPACING) return false;
+    lastHero.set(side, s);
     (r < 0.45 ? out.pineTrees : out.roundTrees).push({ pos: base, scale: height, yaw: r * 40, s, lat });
     return true;
   };
@@ -264,7 +309,7 @@ export function buildScatter(ch: Chapter): Scatter {
     return m;
   })();
   for (let c0 = -40; c0 < ch.length + 80; c0 += CHUNK) {
-    const trees = new Mesh(), bushes = new Mesh(), rocks = new Mesh(), flowers = new Mesh();
+    const trees = new Mesh(), nearTrees = new Mesh(), bushes = new Mesh(), rocks = new Mesh(), flowers = new Mesh();
     for (let s = c0; s < c0 + CHUNK; s += 1) {
       const cm = canyonMode(ch, s);
       const roadSolid = !isVoid(ch, s);
@@ -285,11 +330,11 @@ export function buildScatter(ch: Chapter): Scatter {
           const lat = side * (ROAD_HALF + (op > 0.5 ? shoulder + 1 + rnd() * 46 : wallTop - 1 + rnd() * 30));
           const base = at(s + (rnd() - 0.5) * 0.9, lat, groundHeight(ch, s, lat) - 0.15);
           const size = 4.4 + rnd() * 6;
-          if (!heroTree(base, size * 1.4, lat, rnd(), s)) treeAt(trees, kit, rnd, base, size);
+          if (!heroTree(base, size * 1.4, lat, rnd(), s)) clearTree(Math.abs(lat) - ROAD_HALF < BLOB_TREE_CLEAR ? nearTrees : trees, kit, rnd, base, size);
         } else if (mode >= 0.55 && rnd() < 0.1) {
           const lat = side * (ROAD_HALF + 2.2 + rnd() * Math.max(1, shoulder - 3));
           const base2 = at(s, lat, groundHeight(ch, s, lat) - 0.15), size2 = 3.6 + rnd() * 3;
-          if (!heroTree(base2, size2 * 1.4, lat, rnd(), s)) treeAt(trees, kit, rnd, base2, size2);
+          if (!heroTree(base2, size2 * 1.4, lat, rnd(), s)) clearTree(Math.abs(lat) - ROAD_HALF < BLOB_TREE_CLEAR ? nearTrees : trees, kit, rnd, base2, size2);
         }
         if (rnd() < 0.22) {
           const gl = side * (ROAD_HALF + 1.3 + rnd() * Math.min(5, Math.max(1.5, shoulder - 0.5)));
@@ -311,7 +356,9 @@ export function buildScatter(ch: Chapter): Scatter {
             const slopeRoll = Math.max(-0.45, Math.min(0.45, -side * Math.atan(bankSlope) * 0.65));
             out.boulders.push({ pos: base, scale: bScale, yaw: ry, pitch: rt * 0.5, roll: slopeRoll, s, lat: gl });
           } else {
-            rocks.append(rockMesh[rk]!, base, rs, ry, rt);
+            const rock = new Mesh();
+            rock.append(rockMesh[rk]!, base, rs, ry, rt);
+            if (!intrudesCorridor(rock)) rocks.append(rock, [0, 0, 0]); // pass-through audit: no rock pokes into the lanes
           }
         }
         for (let k = 0; k < 2; k++) {
@@ -324,6 +371,7 @@ export function buildScatter(ch: Chapter): Scatter {
       }
     }
     if (trees.indices.length) out.trees.push(trees);
+    if (nearTrees.indices.length) out.nearTrees.push(nearTrees);
     if (bushes.indices.length) out.bushes.push(bushes);
     if (rocks.indices.length) out.rocks.push(rocks);
     if (flowers.indices.length) out.flowers.push(flowers);

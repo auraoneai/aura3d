@@ -259,8 +259,11 @@ function advanceHop(h: WindState["hop"], dt: number): void {
   }
 }
 
-/** Advance one frame. `keys` holds the held movement keys (letters W/A/S/D). */
-export function stepFrame(s: WindState, input: FrameInput, dtMs = VIRTUAL_STEP_MS): WindState {
+/**
+ * Advance one frame. `keys` holds the held movement keys (letters W/A/S/D). `rails` defaults to the original's RAILS; the
+ * page passes `buildSceneColliders(...).rails` (colliders.ts), which adds the port's extra solid scenery to them.
+ */
+export function stepFrame(s: WindState, input: FrameInput, dtMs = VIRTUAL_STEP_MS, rails: readonly (readonly Vec2[])[] = RAILS): WindState {
   s.messages = [];
   if (input.act === "E") interact(s);
   if (input.act === "Space" && s.hop.phase === "idle") {
@@ -279,7 +282,7 @@ export function stepFrame(s: WindState, input: FrameInput, dtMs = VIRTUAL_STEP_M
     s.facing = nextFacing(gx, gz, s.facing);
     const stepLen = WALK_SPEED * dt;
     const wanted = { x: s.pos.x + nx * stepLen, z: s.pos.z + nz * stepLen };
-    const resolved = slideAlongRails(s.pos, clampWalkable(wanted), RAILS);
+    const resolved = slideAlongRails(s.pos, clampWalkable(wanted), rails);
     const travelled = Math.hypot(resolved.x - s.pos.x, resolved.z - s.pos.z);
     moved = travelled >= 1e-4;
     s.pos = resolved;
@@ -307,13 +310,13 @@ export function expandScript(segments: readonly ScriptSegment[]): FrameInput[] {
 }
 
 /** The harness records an action as its own one-step segment; this keeps the mapping explicit. */
-export function runScript(segments: readonly ScriptSegment[], dtMs = VIRTUAL_STEP_MS): { xs: number[]; zs: number[]; state: WindState; messages: { step: number; text: string }[] } {
+export function runScript(segments: readonly ScriptSegment[], dtMs = VIRTUAL_STEP_MS, rails: readonly (readonly Vec2[])[] = RAILS): { xs: number[]; zs: number[]; state: WindState; messages: { step: number; text: string }[] } {
   const s = createState();
   const xs: number[] = [];
   const zs: number[] = [];
   const messages: { step: number; text: string }[] = [];
   for (const frame of expandScript(segments)) {
-    stepFrame(s, frame, dtMs);
+    stepFrame(s, frame, dtMs, rails);
     xs.push(s.pos.x);
     zs.push(s.pos.z);
     for (const m of s.messages) messages.push({ step: s.step, text: m });

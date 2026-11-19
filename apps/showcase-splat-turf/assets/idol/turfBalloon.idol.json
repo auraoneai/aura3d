@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-turf",
+  "key": "turfBalloon",
+  "generatedAt": "2026-11-18T23:37:38.144Z",
+  "generator": "tools/idol/generate.mjs (client-timeout resume)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A hot-air balloon with a round puffy envelope made of sixteen vertical gores in alternating red, cream, cobalt blue, golden yellow, magenta and mint, a brass burner ring, ropes down to a small woven wicker basket. Photograph of a real glossy designer vinyl art-toy collectible, smooth sculpted soft-vinyl and lacquered resin surfaces, saturated candy paint colours with real paint drips, crisp studio product lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17,
+      "note": "billed in the timed-out generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a3-8c12-7b23-b20e-df7d06041d00",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 856118,
+        "num_faces": 1712328,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A hot-air balloon with a round puffy envelope made of sixteen vertical gores in alternating red, cream, cobalt blue, golden yellow, magenta and mint, a brass burner ring, ropes down to a small woven wicker basket. Photograph of a real glossy designer vinyl art-toy collectible, smooth sculpted soft-vinyl and lacquered resin surfaces, saturated candy paint colours with real paint drips, crisp studio product lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 7.504,
+    "size": [
+      4.709,
+      7.5,
+      4.699
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-turf/assets/idol/turfBalloon..glb",
+  "sizeBytes": 1188816,
+  "preview": "artifacts/idol/splat-rush-port/splatBalloon/views.png",
+  "usd": 0,
+  "postProcess": "PNG textures re-encoded as JPEG q90 (normal map) by the splat Idol pass to fit the per-game byte budget",
+  "sharedFrom": "splatBalloon (same Idol output, owned copy for splat-turf; no extra generation cost)"
+}

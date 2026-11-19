@@ -110,6 +110,10 @@ describe("LINKS-14 lower third text", () => {
     const base = { look: "gu47" as const, lab: false, hasRound: true };
     expect(holeCardVisible({ ...base, phase: "address" })).toBe(true);
     expect(holeCardVisible({ ...base, phase: "between" })).toBe(true);
+    // owner report: from the second shot on the card would cover the ball at the aim camera's lower-left
+    expect(holeCardVisible({ ...base, phase: "address", strokes: 0 })).toBe(true);
+    expect(holeCardVisible({ ...base, phase: "address", strokes: 1 })).toBe(false);
+    expect(holeCardVisible({ ...base, phase: "between", strokes: 1 })).toBe(true);
     for (const phase of ["swing", "flight", "menu", "card", "roundover"]) expect(holeCardVisible({ ...base, phase }), phase).toBe(false);
     expect(holeCardVisible({ ...base, phase: "address", lab: true })).toBe(false);
     expect(holeCardVisible({ ...base, phase: "address", hasRound: false })).toBe(false);

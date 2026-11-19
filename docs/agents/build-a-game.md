@@ -1,6 +1,6 @@
 # Build a game with Aura3D
 
-Version: 5.5.6 (kits: 4.1.0 and later). One page, one path: a complete, mobile-friendly, testable browser game from the library kits, with nothing for you to invent. Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first.
+Version: 5.6.0 (kits: 4.1.0 and later). One page, one path: a complete, mobile-friendly, testable browser game from the library kits, with nothing for you to invent. Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first.
 
 Every snippet below is a file in `docs/agents/samples/coin-dash/`, type-checked against the repository source (`tsc -p docs/agents/samples/coin-dash/tsconfig.json`, strict, `@aura3d/engine`, `@aura3d/engine/game`, `@aura3d/debug`). It has not been run in a browser from this page: run the verification steps in section 8 before you claim anything about it.
 
@@ -249,6 +249,9 @@ What each piece does, so you can change it safely:
 - Fonts: only the licensed font library and dense UI preset that the machine policy in `AGENTS.md` points to. Never Inter, Roboto, Geist, Google Fonts or system stacks.
 - First frame: `await app.ready()` settles the mount, not the shader programs. Programs compile asynchronously and a draw whose program is still compiling is skipped, so a game that renders straight after `ready()` shows part of the scene (a missing road, missing buildings) for seconds on a slow or busy GPU. Call `await warmPrograms(app)` (from `@aura3d/engine/game`) before showing the first frame or marking the game ready: it settles the programs, steps one frame so the renderer kicks the exact feature records, then settles again. If the scene requested an environment HDRI that is still loading, it waits for it (up to `environmentTimeoutMs`, default 20 s; `waitForEnvironment: false` turns that off) and settles again, because the HDRI landing switches every material to its image-based-lighting program and would otherwise recompile the scene after the game believed it was ready. It also waits for pending texture upgrades (`renderer.runtime.texturedMaterials` with status `pending`; up to `textureTimeoutMs`, default 20 s; `waitForTextures: false` turns that off) for the same reason: a material that gains its texture switches to a textured program variant that compiles asynchronously. The result reports `environmentReady` and `texturesReady`.
 - Reuse library effects instead of porting shaders: `effects.toon` (`docs/api/toon.md`) for cel looks. The chase camera rig and objective marker pages are linked from `docs/api/game-kit.md` as they land.
+- Procedural characters, creatures and hulls: build smooth one-piece meshes with `@aura3d/engine/sculpt` (5.5.6; `sculptOrganicSdfMesh`, `sculptSdfLimbChainMesh`, `assembleMultiMaterialNode`) once at load, then mount them through `geometry.define` / `geometry.multiMaterial` (`docs/api/sculpt.md`).
+- Quality steps itself: `createAuraApp` runs `RuntimeQualityGovernor` by default (5.5.3, 5 rungs, no remount). Do not pin a fixed `renderer.quality` tier to hide a slow frame; profile it instead (`docs/api/quality-governor.md`).
+- Feel tuning: in dev builds, `createAuraTuneOverlay` from `@aura3d/engine/devtools` puts the game's tuning constants on live sliders (`?tune`), and `diffBlock()` prints the changes to paste back into source (`docs/api/qa-kit.md`). Keep it out of the production critical path.
 
 ## 6. Racket and ball sports
 
@@ -267,6 +270,8 @@ SPECS="tests/browser/coin-dash.spec.ts" RUN_ID=coindash-1 tools/remote-acr/run.s
 ```
 
 Software GL proves correctness, replay and draw-call counts. It is not GPU performance evidence; say so in any report.
+
+For deeper runs, the 5.5.5 QA kit adds `installQaTelemetryHooks` (step and frame timing, `NaN` state paths, pixel-hash stuck detection), `installVirtualGamepads` (scripted pads for gamepad specs) and `createQaOfflineAudio` + `analyzeQaAudioSamples` (silence, clipping and onset counts without speakers). Signatures: `docs/api/qa-kit.md`.
 
 A minimal determinism spec (type-checked):
 
@@ -327,5 +332,7 @@ Use the motion kit from `@aura3d/engine/game` instead of hand-rolling per game:
 | a ball dribbled by hand (hand and floor contact, handoffs, proof) | `createHandBounce`, `measureHandBall` | [motion-hand-bounce](../api/motion-hand-bounce.md) |
 | a bat, club, racket or staff held in both hands (grip, hand-off, proof) | `createTwoHandGrip`, `measureGrip` | [motion-two-hand-grip](../api/motion-two-hand-grip.md) |
 | enemies, NPCs and opponents that face their target (per-model forward axis, turn rate, proof) | `faceTowards`, `yawToFace`, `facingError` | [motion-facing](../api/motion-facing.md) |
+| a follow camera that clips into walls, trunks or roofs | `computeCameraClearance` (root `@aura3d/engine`, 5.5.6) | [motion-camera-clear](../api/motion-camera-clear.md) |
+| a rig with no clips, or mocap / text-to-motion clips | `aura3d animation import` / `animation generate` (`@aura3d/animation` humanoid module, 5.6.0) | [humanoid-motion](../api/humanoid-motion.md) |
 
 A game with a fixed-step simulation must draw between the last two steps, or it stands still on every second frame on a 120 Hz display. Put `presenter.afterStep()` in the step callback, draw `presenter.present(loop, live)`, and add a unit test that drives the real simulation through `runMotionGate` at 60, 120 and 144 Hz.

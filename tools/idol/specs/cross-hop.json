@@ -1,0 +1,480 @@
+{
+  "game": "cross-hop",
+  "outDir": "apps/showcase-cross-hop/assets/idol",
+  "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+  "items": [
+    {
+      "key": "hopCritterHop",
+      "subject": "A cute chubby emerald-green tree frog toy sitting upright on its bent hind legs, big glossy golden-amber eyes on top of its head, cream yellow belly, darker leaf-green spots on its back, bright tangerine-orange webbed feet, a coral-orange neckerchief bandana tied around its neck, wide friendly smile, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopCritterChick",
+      "subject": "A cute round fluffy baby chick toy, sunny lemon-yellow downy body, tiny orange beak, little orange feet, small stubby wings, big shiny black eyes, rosy pink cheeks, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail",
+      "image": "artifacts/idol/cross-hop/hopCritterChick/ref-src.png"
+    },
+    {
+      "key": "hopCritterTurtle",
+      "subject": "A cute baby turtle toy standing on four stubby legs with its head raised, glossy jade-green domed shell with amber-coloured hexagonal scute plates, sage-green head and legs, big friendly black eyes, smiling, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail",
+      "image": "artifacts/idol/cross-hop/hopCritterTurtle/ref-src.png",
+      "yawDeg": -30
+    },
+    {
+      "key": "hopCritterBun",
+      "subject": "A cute round bunny rabbit toy sitting upright, cloud-white plush fur, two long upright ears with pink insides, small pink nose, rosy cheeks, big glossy black eyes, white fluffy tail, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopCritterAxolotl",
+      "subject": "A cute axolotl toy standing upright on short legs, soft sakura-pink skin, three frilly coral-red feathery gills on each side of its head, wide happy smile, small black eyes, short tail, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopCritterDucky",
+      "subject": "A cute duckling toy standing upright, sunny golden-yellow plumage, bright orange flat bill, orange webbed feet, small folded wings, big glossy black eyes, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopCritterRoboFrog",
+      "subject": "A cute robot frog toy sitting upright like a frog on bent legs, slate-blue painted metal hull panels with rivets, dark gunmetal joints, a glowing cyan visor across its eyes, small antenna, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopCritterToastCat",
+      "subject": "A cute cat toy whose body is a thick slice of golden-brown toasted bread with a soft warm crumb face, small ginger cat ears on top, little ginger paws and a ginger tail, a glossy yellow butter pat on its head, cheerful cat face with whiskers, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopCritterMushroomKid",
+      "subject": "A cute little mushroom child toy figure, big glossy scarlet-red mushroom cap with round white spots, cream mushroom-stem body with a friendly smiling face, tiny arms, little brown leather boots, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail",
+      "image": "artifacts/idol/cross-hop/hopCritterMushroomKid/ref-src.png"
+    },
+    {
+      "key": "hopCritterKnightToad",
+      "subject": "A cute chubby green toad knight toy sitting upright, wearing a polished silver steel helmet and breastplate, a crimson red plume on the helmet, holding a small plain royal-blue round shield, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopCritterAstroFrog",
+      "subject": "A cute emerald-green frog astronaut toy standing upright, white padded spacesuit with an orange collar ring and orange cuffs, small white backpack, NO helmet so its smiling green frog head and big eyes are fully visible, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 11,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopCritterGoldenHop",
+      "subject": "A cute chubby tree frog toy sitting upright on bent hind legs, made entirely of polished shiny gold metal with champagne-gold belly, big round eyes, a tiny gold crown with a single red ruby gem on its head, standing on its own feet on the ground facing forward toward the viewer",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "style": "Photograph of a real handmade painted clay and wooden toy figurine for a tabletop diorama, chunky rounded cute proportions, glossy enamel paint with subtle brush strokes and tiny sculpting marks, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopCarSedan",
+      "subject": "A toy sedan car carved from wood and painted glossy cherry-red, round headlights, long and low realistic car proportions: the body is about two and a half times longer than it is wide and about three times longer than it is tall, a low flat roofline, vehicle body only with NO wheels and NO tyres: four empty dark round wheel arches cut into the lower sides, the body held slightly above the ground, telephoto side-three-quarter view, opaque dark tinted glass",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 2.05
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 41,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": -19,
+      "front": "+x"
+    },
+    {
+      "key": "hopCarHatch",
+      "subject": "A toy hatchback car carved from wood and painted glossy sky-blue with a dark charcoal roof, round headlights, long and low realistic car proportions: the body is about two and a half times longer than it is wide and about three times longer than it is tall, a low flat roofline, vehicle body only with NO wheels and NO tyres: four empty dark round wheel arches cut into the lower sides, the body held slightly above the ground, telephoto side-three-quarter view, opaque dark tinted glass",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 1.95
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 41,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": -42.5,
+      "front": "+x"
+    },
+    {
+      "key": "hopCarSuv",
+      "subject": "A toy SUV car carved from wood and painted glossy leaf-green, roof rails, round headlights, long and low realistic car proportions: the body is about two and a half times longer than it is wide and about three times longer than it is tall, a low flat roofline, vehicle body only with NO wheels and NO tyres: four empty dark round wheel arches cut into the lower sides, the body held slightly above the ground, telephoto side-three-quarter view, opaque dark tinted glass",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 2.15
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 41,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": -40,
+      "front": "+x"
+    },
+    {
+      "key": "hopCarTaxi",
+      "subject": "A toy taxi sedan car carved from wood and painted glossy sunflower-yellow, a small plain white roof light box, round headlights, long and low realistic car proportions: the body is about two and a half times longer than it is wide and about three times longer than it is tall, a low flat roofline, vehicle body only with NO wheels and NO tyres: four empty dark round wheel arches cut into the lower sides, the body held slightly above the ground, telephoto side-three-quarter view, opaque dark tinted glass",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 2
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 41,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": -30,
+      "front": "+x"
+    },
+    {
+      "key": "hopCarVan",
+      "subject": "A toy minivan carved from wood and painted glossy teal with a white roof, sliding side door, long and low realistic car proportions: the body is about two and a half times longer than it is wide and about three times longer than it is tall, a low flat roofline, vehicle body only with NO wheels and NO tyres: four empty dark round wheel arches cut into the lower sides, the body held slightly above the ground, telephoto side-three-quarter view, opaque dark tinted glass",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 2.15
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 41,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": -90,
+      "front": "+x"
+    },
+    {
+      "key": "hopCarPickup",
+      "subject": "A toy pickup truck carved from wood and painted glossy royal-blue, open cargo bed at the back, round headlights, long and low realistic car proportions: the body is about two and a half times longer than it is wide and about three times longer than it is tall, a low flat roofline, vehicle body only with NO wheels and NO tyres: four empty dark round wheel arches cut into the lower sides, the body held slightly above the ground, telephoto side-three-quarter view, opaque dark tinted glass",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 2.2
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 41,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": -15.5,
+      "front": "+x"
+    },
+    {
+      "key": "hopBoxTruck",
+      "subject": "A toy box delivery truck carved from smooth sanded wood: a rounded cab painted glossy sky-blue with dark tinted windows and round headlights, and a long smooth cargo box painted cream-white with a thin blue stripe, light grey bumpers, clean simple shapes, long realistic truck proportions about three times longer than it is wide, vehicle body only with NO wheels and NO tyres: six empty dark round wheel arches cut into the lower sides, the body held slightly above the ground, telephoto side-three-quarter view, opaque dark tinted glass",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 2.75
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 51,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": 46.5,
+      "front": "+x"
+    },
+    {
+      "key": "hopTram",
+      "subject": "A cute toy city streetcar tram, coral-red lower body and cream upper body with a thin plain gold stripe, a white roof with a small folded pantograph, many dark windows along both sides, identical rounded ends each with one round headlight, long tram proportions about three times longer than it is tall, body only with NO wheels and NO bogies: a flat plain underside, telephoto side-three-quarter view, opaque dark tinted glass, completely plain painted sides with no writing, no emblems",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.1
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 41,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": 0,
+      "front": "+x"
+    },
+    {
+      "key": "hopTrainLoco",
+      "subject": "A cute toy high-speed bullet train locomotive car, pearl-white body with a cobalt-blue and cyan stripe, long rounded aerodynamic nose at the front, flat back end, dark window band, body only with NO wheels and NO bogies: a flat plain underside, telephoto side-three-quarter view, opaque dark tinted glass, completely plain painted sides with no writing, no emblems",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.2
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 41,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": 45,
+      "front": "+x"
+    },
+    {
+      "key": "hopTrainCoach",
+      "subject": "A cute toy passenger train coach car, pearl-white body with a cobalt-blue and cyan stripe, flat ends at front and back, a row of dark windows along each side, body only with NO wheels and NO bogies: a flat plain underside, telephoto side-three-quarter view, opaque dark tinted glass, completely plain painted sides with no writing, no emblems",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.2
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 41,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": 0.5,
+      "front": "+x"
+    },
+    {
+      "key": "hopHoverCar",
+      "subject": "A cute futuristic toy hover car with no wheels, glossy cyan-teal painted rounded hull, magenta-pink tail fins, glowing cyan hover pads underneath, dark bubble canopy",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 2.1
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 7,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": 77.5
+    },
+    {
+      "key": "hopLogRaft",
+      "subject": "A long narrow flat toy river raft made of three very long thin round bark-covered logs lying side by side in a single flat layer, lashed together near each end with tan hemp rope, cut log ends showing pale tree rings, very long and low: about five times longer than it is wide and ten times longer than it is tall",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "length": 3.8
+      },
+      "tex": 1024,
+      "maxVerts": 9000,
+      "seed": 21,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "front": "+x",
+      "yawDeg": 89
+    },
+    {
+      "key": "hopCandyRaft",
+      "subject": "A long narrow flat toy raft: one long flat glossy candy-pink painted plank deck lying on two long cream-coloured cylindrical pontoon floats, completely empty flat deck with nothing on top, no canopy, no posts, no railings, very low and long, about five times longer than it is wide",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "length": 3.8
+      },
+      "tex": 1024,
+      "maxVerts": 9000,
+      "seed": 21,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": -90
+    },
+    {
+      "key": "hopRiverLog",
+      "subject": "A single long round fallen tree log toy, rough brown bark with moss patches, cut ends showing pale tree rings, lying horizontally",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "length": 3.8
+      },
+      "tex": 1024,
+      "maxVerts": 9000,
+      "seed": 7,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": -88.5
+    },
+    {
+      "key": "hopLilyPad",
+      "subject": "A single flat round green lily pad toy with a notch cut into one side and radiating veins, lying flat, very thin, no flower",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 0.94
+      },
+      "tex": 1024,
+      "maxVerts": 9000,
+      "seed": 7,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopLavaStone",
+      "subject": "A flat-topped dark grey basalt stepping stone toy, rough volcanic rock sides with faint glowing orange cracks near the bottom, wide flat walkable top surface, low and wide",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 1.05
+      },
+      "tex": 1024,
+      "maxVerts": 9000,
+      "seed": 7,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopTree",
+      "subject": "A cute toy tree: a straight brown wooden trunk topped with a big round fluffy lumpy leaf-green canopy made of clustered rounded foliage blobs",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.345
+      },
+      "tex": 1024,
+      "maxVerts": 9000,
+      "seed": 7,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopTreeBlossom",
+      "subject": "A cute toy candy blossom tree: a straight brown wooden trunk topped with a big round fluffy canopy of pastel pink and lilac blossom clusters",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 1.345
+      },
+      "tex": 1024,
+      "maxVerts": 9000,
+      "seed": 7,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopBush",
+      "subject": "A cute low round toy bush made of clustered rounded leaf-green foliage blobs, wider than tall",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 0.472
+      },
+      "tex": 1024,
+      "maxVerts": 9000,
+      "seed": 7,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail"
+    },
+    {
+      "key": "hopHawk",
+      "subject": "A toy peregrine hawk gliding, perfectly symmetrical, body pointing straight at the viewer, both wings spread fully flat and horizontal to the left and right like a letter T, dark brown feathered wings and back, cream speckled breast, yellow hooked beak, yellow talons tucked under the body, fanned tail behind",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 1.42
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 21,
+      "style": "Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail",
+      "yawDeg": 0,
+      "front": "+z"
+    },
+    {
+      "key": "hopWheel",
+      "subject": "A single toy car wheel carved from wood and painted: a chunky black rubber tyre with deep tread and a bright silver hubcap rim with five spokes and a centre cap, seen straight from the side",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 1
+      },
+      "tex": 512,
+      "maxVerts": 2500,
+      "seed": 7,
+      "yawDeg": 90
+    },
+    {
+      "key": "hopRailWheel",
+      "subject": "A single toy train wheel carved from wood and painted: a dark steel wheel with a raised flange rim, six spokes and a round centre hub, seen straight from the side",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 1
+      },
+      "tex": 512,
+      "maxVerts": 2500,
+      "seed": 7,
+      "yawDeg": 90
+    }
+  ]
+}

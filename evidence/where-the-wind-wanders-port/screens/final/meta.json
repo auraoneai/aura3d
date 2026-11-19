@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "where-the-wind-wanders-port": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "route": "/apps/the-bellkeepers-walk/",
+      "states": [
+        "1280x720 title: title card with controls incl. O autopilot",
+        "1280x720 early play: keeper walking (legs mid-stride) with crook and kite",
+        "1280x720 discovery: first letter beneath the old oak",
+        "1280x720 second venue: the windmill letter; sails turning, mill on the ground",
+        "1280x720 third venue: Glasswater shore letter by the jetty",
+        "1280x720 peak: the bell rings, hanging from its yoke",
+        "1280x720 results: Stillwater Isle card, keeper in the boat",
+        "390x844 title: title card",
+        "390x844 early play: keeper walking, framed in portrait",
+        "390x844 discovery: oak letter",
+        "390x844 second venue: windmill letter",
+        "390x844 results: results card, keeper in the boat"
+      ],
+      "frames": [
+        "1280-01-title.jpg",
+        "1280-02-walk.jpg",
+        "1280-03-oak-letter.jpg",
+        "1280-04-windmill.jpg",
+        "1280-05-shore.jpg",
+        "1280-06-bell.jpg",
+        "1280-07-results.jpg",
+        "390-01-title.jpg",
+        "390-02-walk.jpg",
+        "390-03-oak-letter.jpg",
+        "390-04-windmill.jpg",
+        "390-05-results.jpg",
+        "card-1x.jpg",
+        "card-2x.jpg"
+      ],
+      "results": "autoplay finds 3/3 letters (oak ~8 s, windmill ~24 s, shore ~28 s), rings the bell ~40 s, Stillwater Isle results card with the keeper in the boat ~44 s, new walk by ~50 s",
+      "autoplay": "?autoplay=1 (alias ?autopilot=1, O toggles): skips the title, walks to the three letters and the bell, presses E, hops; results ~3 s, epilogue, then restarts forever",
+      "errors": "none",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "last-train-port",
+  "key": "llHouseSnow0",
+  "generatedAt": "2026-11-18T23:16:01.807Z",
+  "generator": "tools/idol/generate.mjs (resumed after its 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A single narrow three-storey Mediterranean seaside townhouse in winter, warm white stucco walls, gable roof completely covered with a thick smooth layer of fresh white snow, one chimney with snow on top, deep green wooden window shutters on every window, rows of tall windows with dark glass, an arched wooden front door, small wrought-iron balcony with a little snow, rectangular footprint slightly deeper than wide. Photograph of a real museum-quality hand-built scale model with model-railway diorama craftsmanship: real enamel paint, polished brass, varnished wood, plaster stucco, slate and terracotta materials, crisp clean edges, very light weathering, warm saturated colours, soft macro studio lighting, no base, no plinth, no display stand. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17,
+      "note": "reference completed in generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a8-0aab-7c71-8b79-40c8dded8ea9",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1232612,
+        "num_faces": 2465272,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single narrow three-storey Mediterranean seaside townhouse in winter, warm white stucco walls, gable roof completely covered with a thick smooth layer of fresh white snow, one chimney with snow on top, deep green wooden window shutters on every window, rows of tall windows with dark glass, an arched wooden front door, small wrought-iron balcony with a little snow, rectangular footprint slightly deeper than wide. Photograph of a real museum-quality hand-built scale model with model-railway diorama craftsmanship: real enamel paint, polished brass, varnished wood, plaster stucco, slate and terracotta materials, crisp clean edges, very light weathering, warm saturated colours, soft macro studio lighting, no base, no plinth, no display stand. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 13.586,
+    "size": [
+      7.445,
+      13.6,
+      12.473
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-last-train-port/assets/idol/llHouseSnow0.glb",
+  "sizeBytes": 3024020,
+  "preview": "artifacts/idol/last-train-port/llHouseSnow0/views.png",
+  "usd": 0.37
+}

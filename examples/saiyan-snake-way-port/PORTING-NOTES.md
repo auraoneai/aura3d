@@ -1,5 +1,11 @@
 # Serpentine Sky Run on Aura3D: porting notes
 
+> **Idol wow pass (2026-11-18):** the runner (three colourways, each its own rigged image-to-3D model posed every frame from
+> `poseHero` through `art/idolRunner.ts`), the oni, barrier, slide arch, feast table, roadside lanterns, sky islands, torii,
+> serpent head, gatehouse, tail monument and sanctuary planetlet now draw Idol GLBs (`art/idolModels.ts`, spec
+> `tools/idol/specs/serpentine-sky-run.json`, files in `apps/showcase-serpentine-sky-run-port/assets/idol/`). Render layer only:
+> same ids, sizes, pivots and pools, so the simulation and the replay are untouched. `?idol=0` restores the procedural kit below.
+
 > **5.5.6 Update (2026-11-12):** All external and Meshy `.glb` models (`runner.glb`, `runner-script.glb`, and Meshy props) documented below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files) and crisp sky/horizon fog.
 
 Aura3D port of the Crayon game "Serpentine Sky Run" (PRD Phase C / R-25 capture work), shown publicly as

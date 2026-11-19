@@ -67,7 +67,8 @@ import {
   GOAL_H,
   GOAL_HALF_W,
   PITCH_HX,
-  PITCH_HZ
+  PITCH_HZ,
+  POST_R
 } from "../game/dims";
 import type { VenueId } from "../game/types";
 
@@ -511,7 +512,7 @@ function accentCarPaint(name: string, hex: string): AuraMaterialSpec {
  */
 export function buildFifaGoalFrameNode(sx: -1 | 1, accentHex: string): AuraNodeBuilder<AuraGroupNode> {
   const hx = GOAL_DEPTH * 0.5;
-  const postR = 0.064;
+  const postR = POST_R;
   const stanchionR = 0.036;
   const baseR = 0.056;
   const xFront = -sx * (hx - postR);

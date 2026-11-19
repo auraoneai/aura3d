@@ -1,41 +1,28 @@
-# Grid Dispatch (`teleoperator`): final screenshots
+# Grid Dispatch: final screenshots (2026-11-18)
 
-**Retaken 2026-11-01 on the GU47 phase-4 build** (lane g04, branch `gu47/g04`, round p4-r5, Aura3D 4.7.1 engine; boot sky Marine dusk; WP-36 Meshy pod livery). Same file names and sizes as the 2026-10-29 set. Spec: `tests/browser/audit-fix/teleoperator.spec.ts`; runs `g04p4-r5-3` (desktop, 1280x720), `g04p4-r5-5` (phone, 390x844, touch), `g04p4-r5-4` (card, 1440x900; `card-1x.jpg` is the 720x450 downscale). Frames are decoded from the run log (`decode-luma.mjs` / `tools/teleoperator/decode-gl-log.mjs`). Earlier set: 2026-10-29 audit-fix build (git history).
+Route: `/apps/showcase-teleoperator/` (app `apps/showcase-teleoperator`).
 
-**Runner:** remote Azure ACR Task, headless Chromium, software WebGL2 (SwiftShader). This shows layout and content, not GPU look or frame rate. The app is paused for each capture (the canvas keeps its last presented frame), because software GL presents about one frame every 10 to 15 s.
+**Runner:** headed Chrome on a real GPU (Apple Metal) via REA, production build served from the QA snapshot. First frame from the plain URL (the game opens straight into a manual shift, no title card); play frames from `?autoplay=1` (L5 self-driving).
 
-## Frames
+| Viewport | State | Meaning |
+|---|---|---|
+| 1280 | 01-title | opening frame: manual shift on California Street, fare offer |
+| 1280 | 02-early | L5 self-driving pulls up to the kerb beacon |
+| 1280 | 03-pickup | picking up Maya Lin; two sidewalk walkers mid-stride (retaken 2026-11-19: gdWalkerA-D and gdCommuter textures cleaned, zero-length tangents repaired) |
+| 1280 | 04-trip | active trip to the Financial District |
+| 1280 | 05-fare-results | RIDE COMPLETE fare card (5 stars, $35.74), taxi alongside |
+| 1280 | 06-cable-car | Line 59 cable car beside the car |
+| 390 | 01-05 | opening, early, trip, drop-off, Sodium Night on a 390 x 844 phone |
 
-| Viewport | State | Meaning | Status |
-|---|---|---|---|
-| 1280 | 01-title | first frame after ready | captured |
-| 1280 | 02-early | after 60 s and 6 frames (steady state) | captured |
-| 1280 | 03-action | after holding W and D | captured |
-| 1280 | 04-mid | after 45 s of manual driving | captured |
-| 1280 | 05-modes | AI rivals panel | captured |
-| 1280 | 06-results | shift results after five fares | captured |
-| 390 | 01-title | first frame, touch pads shown | captured |
-| 390 | 02-early | steady state | captured |
-| 390 | 03-action | after touch Throttle and Right | captured |
-| 390 | 04-mid | after 45 s of self-driving | captured |
-| 390 | 05-modes | AI rivals panel | captured |
-| 390 | 06-results | shift results | captured |
-
-Card images: `card-2x.jpg` (1440x900, captured) and `card-1x.jpg` (720x450, downscaled from it).
-
-## Capture health
-
-- 1280 and 390: 0 page errors and 0 console errors in the run logs.
-- `app.diagnostics()`: `renderPath.path` is `hdr-msaa`, `bloomFusion` is `separable`; GL draw calls 411 in the chase view at steady state (610 on the base build, run `g04b-desktop`).
+Card: `card-2x.jpg` (1440x900 native capture, autoplay at 12 s: pickup beacon, sidewalk walkers; retaken 2026-11-19 with the cleaned walker textures) and `card-1x.jpg` (720x450 LANCZOS).
 
 ## Checked in the frames
 
-- The car sits in its lane: in the chase view the car's view-space x is 3.58 m right of the inner yellow line (base build: 1.13 m, the car drawn on the centre line).
-- 390: the fare card sits under the earnings row, the dial is centred between the touch pads, and nothing overlaps the speedometer.
-- Two nearest AI rivals get a full tag; the others a small chip.
-- Results: Fares 5/5, earned $193.12, average 5.0 stars, 0 collisions and 0 red lights, score 218, Retry button.
+- Sidewalk walkers (gdWalker set) change leg pose between frames 0.7 s apart (stride vs. passing pose); no torn skin visible at the closest crop available (about 160 px tall).
+- Traffic wheels sit in their arches (taxi, coupe), the cable car rides its rails.
+- Autoplay: L5 self-driving starts by itself, pulls up to the kerb, boards, drives the trip and completes the fare.
+- No blank/frozen frames after load; no page errors.
 
-## Still open
+## Known issues
 
-- The hero pod and some traffic models still read as generic shapes with soft, generated textures (art, not code).
-- On 390 the rival chips can still touch each other near the horizon.
+- Wheel spin and gdWalkerA close-up stretch could not be judged from these stills (no 50 ms burst in this pass).

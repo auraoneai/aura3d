@@ -97,8 +97,9 @@ describe("number surge art direction", () => {
 
     const sim = new NumberSurgeSim(9);
     const names = (buildWorld({ sim, aspect: 16 / 9 }).scene.toJSON().nodes as readonly { readonly name?: string }[]).map((n) => n.name);
-    for (const id of ["crowd-lacquer", "crowd-lacquer-glow", "crowd-ceramic", "crowd-ceramic-glow", "boss-guards", "boss-guards-glow"]) {
-      expect(names).toContain(id);
-    }
+    // Idol wow pass: the riot guards are rigged Idol GLBs, one slot group each (skinned GLBs do not instance); the
+    // value-evolution escort squad beside the ball was removed after owner review.
+    for (const id of ["boss-guards-0", "boss-guards-11"]) expect(names).toContain(id);
+    expect(names.some((n) => n?.startsWith("crowd-"))).toBe(false);
   });
 });

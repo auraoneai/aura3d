@@ -61,6 +61,29 @@ npx @aura3d/cli@latest assets typegen
 `resolve` brings the chosen catalog result into the same typed local pipeline,
 so the rest of the app still uses `model(assets.helmet)`.
 
+## Convert, Generate And Retarget
+
+**Capability label:** CLI asset pipeline
+
+```bash
+npx @aura3d/cli@latest assets convert ./chair.fbx --out chair.glb          # FBX/OBJ/DAE/USD/PLY/STL/3MF/VOX/BVH -> verified GLB
+npx @aura3d/cli@latest assets generate "lean desert runner" --name runner --kind character --rig --dry-run
+npx @aura3d/cli@latest assets normalize raw.glb --out hero.glb --front +x --height 1.8
+npx @aura3d/cli@latest assets preview hero.glb --out hero.views.png      # CPU base-colour preview, not a render
+npx @aura3d/cli@latest animation import mocap/jab.bvh --onto hero.glb --out hero.anim.glb --name Jab
+npx @aura3d/cli@latest animation generate "relaxed jog cycle" --onto hero.glb --out hero.anim.glb --name Jog --loop --dry-run
+```
+
+`assets generate` and `animation generate` are paid fal.ai calls (Idol meshes,
+HY-Motion clips). The key comes from `FAL_KEY`, `--key-file`,
+`~/.config/aura3d/fal.env` or `~/.config/auraone/fal.env`, in that order, and is
+never printed. `--dry-run` prints the cost and makes no paid call; every submit
+is ledgered in `.aura3d/fal/ledger.jsonl` in your project, and a rerun resumes
+pending requests instead of paying twice. `animation import` retargets BVH, FBX,
+GLB clips or HY-Motion `motion.json` onto a rigged GLB as real glTF clips and
+fails on limb flips, a frozen T-pose or skin damage (known defects go in
+`aura.skin-allow.json`; `--strict` fails on any unlisted skin error).
+
 ## Import A Meshy Candidate
 
 **Capability label:** CLI asset pipeline
@@ -98,7 +121,14 @@ npx @aura3d/cli@latest migrate three ./src
 npx @aura3d/cli@latest check-deploy --dist dist
 npx @aura3d/cli@latest check-deploy --dist dist --browser --route / --route /play/
 npx @aura3d/cli@latest init --agent all
+npx @aura3d/cli@latest help assets generate
+npx @aura3d/cli@latest help --json
 ```
+
+Every command, flag and exit code:
+[CLI reference](https://github.com/auraoneai/aura3d/blob/main/docs/api/cli-reference.md).
+Exit codes: 0 ok, 1 the command ran and failed, 2 usage error (or a
+monorepo-only command run outside the Aura3D repository).
 
 ## What It Writes
 

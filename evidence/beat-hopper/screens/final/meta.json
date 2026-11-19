@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "showcase-beat-hopper": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "1280-01-title",
+        "1280-02-early",
+        "1280-03-duck",
+        "1280-04-action",
+        "1280-05-jump",
+        "1280-06-results",
+        "390-01-title",
+        "390-02-early",
+        "390-03-action",
+        "390-04-duck",
+        "390-05-late",
+        "390-06-results",
+        "card-1x",
+        "card-2x"
+      ],
+      "results": "Results card reached (no-input run: SET COMPLETE 50, 3 misses). ?autoplay=1 played 4 min (140k, x5) without losing a life.",
+      "errors": "none (page-errors captured on every run: 0)",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

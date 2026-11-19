@@ -420,7 +420,8 @@ export function decompileCompiledClip(name: string, compiled: CompiledClip): Ani
  */
 export function detectLimbFlips(clip: CompiledClip, thresholdDeg = 120): readonly LimbFlip[] {
   const flips: LimbFlip[] = [];
-  const cosThreshold = Math.cos((thresholdDeg * Math.PI) / 180);
+  // |dot(qa, qb)| = cos(theta / 2), so compare against the half-angle cosine (a full-angle cosine never fires below 240 deg).
+  const cosThreshold = Math.cos((thresholdDeg * Math.PI) / 360);
   const qa = [0, 0, 0, 1];
   const qb = [0, 0, 0, 1];
   for (const track of clip.tracks) {

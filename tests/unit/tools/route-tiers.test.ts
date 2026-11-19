@@ -118,15 +118,14 @@ describe("every public route has a release tier", () => {
     }
   });
 
-  it("keeps retained Blockfall at Tier 3 and retired prototypes out of the inventory (R5)", () => {
-    const blockfall = report.routes.find((candidate) => candidate.id === "showcase-blockfall-reactor");
-    expect(blockfall, "retained Blockfall is missing from the inventory").toBeDefined();
-    expect(blockfall!.tier, "Blockfall must not be promoted to Tier 1 or 2").toBe(3);
-
+  it("keeps retired prototypes out of the inventory (R5)", () => {
     const gates = JSON.parse(readFileSync("tools/showcase-library/route-gates.json", "utf8")) as {
       readonly routes: readonly { readonly id: string; readonly published: boolean; readonly releaseClass: string }[];
     };
-    for (const id of ["showcase-skyline-runner", "showcase-turbo-drift-circuit"]) {
+    for (const id of [
+      "showcase-skyline-runner", "showcase-turbo-drift-circuit",
+      "showcase-blockfall-reactor", "showcase-aurora-lander", "showcase-vault-breakers", "showcase-bank-shot"
+    ]) {
       expect(existsSync(`apps/${id}`), `${id} source is retired`).toBe(false);
       expect(report.routes.find((candidate) => candidate.id === id), `${id} has no current route to tier`).toBeUndefined();
       expect(gates.routes.find((candidate) => candidate.id === id)).toMatchObject({

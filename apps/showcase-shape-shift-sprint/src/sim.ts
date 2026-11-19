@@ -5,10 +5,12 @@
  * - Every gameplay draw comes from the counted RNG stream; presentation jitter must use its own stream.
  * - Wall rows carry all three shaped holes in a Fisher-Yates-shuffled lane order, so exactly one hole
  *   always matches the player's current shape, even after a morph token (existing walls keep their holes).
- * - Rows resolve exactly once against the nearest hole (audit fix C16); begin() re-centres steering
+ * - Rows resolve exactly once against the nearest hole (audit fix C16), and only count as a fit when the runner's
+ *   centre is inside that hole's visible opening (`gateHalfWidth`); mullions and flanks are solid. begin() re-centres steering
  *   target AND drag state (audit fix C4); popups keep the last 64 with a monotonic seq.
  */
 import { GameRng, POPUP_LIMIT, type Popup } from "../../../examples/shared/runner-kit/index";
+import { wallHoleExtents } from "./meshes";
 
 export const CONFIG = {
   SHAPES: ["sphere", "cube", "cone"],
@@ -24,8 +26,10 @@ export const CONFIG = {
   ROW_SPACING_DECAY: 7e-3,
   SPAWN_AHEAD: 110,
   FIRST_ROW_Z: -48,
+  /** Token pickup reach (tokens are pickups, not solids). Wall rows judge against the visible opening, see `gateHalfWidth`. */
   HIT_WINDOW: 1.2,
-  PERFECT_WINDOW: 0.55,
+  /** A fit is perfect when the runner's centre is inside this fraction of the opening's half-width. */
+  PERFECT_FRACTION: 0.5,
   POINTS_GATE: 40,
   POINTS_PERFECT: 60,
   MAX_MULT: 5,
@@ -48,6 +52,38 @@ export const CONFIG = {
   ROAD_AHEAD: 220,
   SHAPE_COLORS: ["#e8453c", "#f7c531", "#2f6fe4"]
 } as const;
+
+/**
+ * Half-width of the see-through opening of a wall cell with hole `shapeIndex` (the `wallCellMesh` cutout outline).
+ * The rest of the wall row (sill, mullions between lanes, outer flanks) is solid: a runner whose centre is outside
+ * every opening hits the wall, so it never visibly passes through solid wall and still scores.
+ */
+export function gateHalfWidth(shapeIndex: number): number {
+  return wallHoleExtents(shapeIndex).halfWidth;
+}
+
+export interface RowJudgement {
+  /** Index (into `row.holes` / `CONFIG.LANES`) of the hole nearest the runner's centre. */
+  readonly laneIndex: number;
+  readonly hole: Hole;
+  readonly offset: number;
+  /** That hole's visible half-width (`gateHalfWidth`). */
+  readonly opening: number;
+  /** Shape matches (or wildcard) AND the centre is inside the opening. */
+  readonly fits: boolean;
+}
+
+/** Nearest-hole judgement shared by the sim's row resolution and the world's presentation (gate dive, wall break). */
+export function judgeRow(holes: readonly Hole[], laneOffset: number, shapeIndex: number, wildcard: boolean): RowJudgement {
+  let laneIndex = 0;
+  for (let i = 1; i < holes.length; i++) {
+    if (Math.abs(laneOffset - holes[i]!.laneX) < Math.abs(laneOffset - holes[laneIndex]!.laneX)) laneIndex = i;
+  }
+  const hole = holes[laneIndex] as Hole;
+  const offset = Math.abs(laneOffset - hole.laneX);
+  const opening = gateHalfWidth(hole.shapeIndex);
+  return { laneIndex, hole, offset, opening, fits: offset < opening && (hole.shapeIndex === shapeIndex || wildcard) };
+}
 
 export const POOL = { segments: 220, rows: 10, tokens: 10, particles: 90 } as const;
 export const DT = 1 / 60;
@@ -334,14 +370,9 @@ export class ShapeShiftSim {
     for (const row of this.rows) {
       if (row.resolved || row.z < 0) continue;
       row.resolved = true;
-      let nearest = row.holes[0] as Hole;
-      for (const h of row.holes) {
-        if (Math.abs(o.laneOffset - h.laneX) < Math.abs(o.laneOffset - nearest.laneX)) nearest = h;
-      }
-      const offset = Math.abs(o.laneOffset - nearest.laneX);
-      const fits = nearest.shapeIndex === o.shapeIndex || o.wildcardTimer > 0;
-      if (offset < CONFIG.HIT_WINDOW && fits) {
-        const perfect = offset < CONFIG.PERFECT_WINDOW;
+      const { hole: nearest, offset, opening, fits } = judgeRow(row.holes, o.laneOffset, o.shapeIndex, o.wildcardTimer > 0);
+      if (fits) {
+        const perfect = offset < opening * CONFIG.PERFECT_FRACTION;
         const x2 = o.scoreX2Timer > 0 ? 2 : 1;
         const points = (perfect ? CONFIG.POINTS_PERFECT : CONFIG.POINTS_GATE) * o.multiplier * x2;
         o.score += points;

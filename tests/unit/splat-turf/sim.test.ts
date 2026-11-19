@@ -92,15 +92,37 @@ describe("splat turf mechanics", () => {
     b.active = true; b.row = 20; b.x = 0; b.dir = 0; b.hit = false;
     sim.o.bots[1]!.active = false;
     sim.o.bots[2]!.active = false;
-    runUntilRow(sim, 19);
+    // Contact registers when the footprints touch: rover ball front meets the scrub-brush front (not at bot centre).
+    const contactAt = b.row - CONFIG.ERASER_REACH_FRONT - CONFIG.ROVER_REACH_FRONT;
+    runUntilRow(sim, contactAt - 0.5);
+    expect(sim.o.eraserHits).toBe(0);
     expect(sim.o.paintedCells).toBeGreaterThan(10);
-    runUntilRow(sim, 21);
+    let n = 0;
+    while (sim.o.eraserHits === 0 && n++ < 600) sim.advance(IDLE);
     expect(sim.o.eraserHits).toBe(1);
+    expect(sim.o.distance).toBeGreaterThanOrEqual(contactAt);
+    expect(sim.o.distance).toBeLessThan(contactAt + 0.5);
     expect(sim.o.combo).toBe(0);
     expect(sim.o.paintedCells).toBeLessThanOrEqual(sim.o.passedCells - 14);
+    const end = Math.floor(sim.o.distance);
     let painted = 0;
-    for (let r = 6; r < 20; r++) painted += sim.grid[r * CONFIG.GRID_COLS + 3]!;
+    for (let r = end - CONFIG.ERASER_WIPE_METERS + 1; r < end; r++) painted += sim.grid[r * CONFIG.GRID_COLS + 3]!;
     expect(painted).toBe(0);
+    runUntilRow(sim, 24);
+    expect(sim.o.eraserHits).toBe(1); // once per bot while crossing the rest of its footprint
+  });
+
+  it("eraser bot: no contact once the rover's footprint clears it laterally; contact just inside", () => {
+    const reach = CONFIG.ROVER_HALF_WIDTH + CONFIG.ERASER_HALF_WIDTH;
+    for (const [offset, hits] of [[reach + 0.05, 0], [reach - 0.05, 1]] as const) {
+      const sim = running(11);
+      const b = sim.o.bots[0]!;
+      b.active = true; b.row = 20; b.x = offset; b.dir = 0; b.hit = false;
+      sim.o.bots[1]!.active = false;
+      sim.o.bots[2]!.active = false;
+      runUntilRow(sim, 26);
+      expect(sim.o.eraserHits, `lateral gap ${offset}`).toBe(hits);
+    }
   });
 
   it("paint can: +35 tank capped at 100, counted once", () => {

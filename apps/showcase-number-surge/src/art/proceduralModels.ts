@@ -1507,12 +1507,17 @@ export function powerupMedallionMeshData(): MutableRawMesh {
 // 2. Sculpted Holographic Math-Multiplier Gates & Saw/Roller Hazards
 // ---------------------------------------------------------------------------
 
+/** Local x of a gate gantry stanchion (pedestal + column + collars) about the gate centre. */
+export const GATE_STANCHION_X = 1.38;
+
 /**
- * Upgraded `gate-frames` `Batch` mesh (`x in [-1.52, 1.52]`, `y in [0, 3.58]`):
- * stepped octagonal pedestals + contoured twin stanchions with lathed capacitor collars +
+ * Upgraded `gate-frames` `Batch` mesh (`x in [-1.6, 1.6]`, `y in [0, 3.68]`):
+ * stepped octagonal pedestals + contoured stanchions with lathed capacitor collars +
  * open 4-chord `latticeTrussMesh` lintel + swept `tubeSweepMesh` holo-projector arch & crest.
+ * `stanchionSides` picks which stanchions are built (default both); Number Surge builds only the outer one
+ * (`[-1]`, yawed by pi for the +x gate) so no solid column stands where the ball can roll.
  */
-export function highwayGateGantryFrameMeshData(): MutableRawMesh {
+export function highwayGateGantryFrameMeshData(stanchionSides: readonly (-1 | 1)[] = [-1, 1]): MutableRawMesh {
   const parts: RawMesh[] = [];
   const basePedestal: V2[] = [
     [0, 0],
@@ -1530,8 +1535,8 @@ export function highwayGateGantryFrameMeshData(): MutableRawMesh {
     [0.09, 0.04]
   ];
 
-  for (const side of [-1, 1] as const) {
-    const sx = side * 1.38;
+  for (const side of stanchionSides) {
+    const sx = side * GATE_STANCHION_X;
     parts.push(transformMesh(latheMesh(basePedestal, 8, true), { pos: [sx, 0, 0] }));
     parts.push(transformMesh(bevelBoxMesh(0.16, 3.24, 0.22, 0.034), { pos: [sx, 1.68, 0] }));
     for (const cy of [0.85, 1.72, 2.58]) {

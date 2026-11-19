@@ -6,8 +6,16 @@
 import { CELL } from "./maps";
 import { cellCenter, type Sim, type SimInput } from "./sim";
 
-export interface Autopilot { t: number; }
-export const createAutopilot = (): Autopilot => ({ t: 0 });
+/**
+ * `stillT`/`dodgeT`: the unstick reflex. Props block only their footprint, so a route through the centre of a prop's cell
+ * (or a live enemy body, sim player-vs-enemy blocking) can pin the pilot against it while it pushes forward (GPU QA:
+ * 51 s pressed against an F6 crate). After 0.4 s of pushing without moving it backs off and strafes for 0.7 s,
+ * alternating sides, then routes again.
+ */
+export interface Autopilot { t: number; lx: number; lz: number; stillT: number; dodgeT: number; dodgeDir: number; }
+export const createAutopilot = (): Autopilot => ({ t: 0, lx: NaN, lz: NaN, stillT: 0, dodgeT: 0, dodgeDir: 1 });
+export const PILOT_STUCK_SECONDS = 0.4;
+export const PILOT_DODGE_SECONDS = 0.7;
 
 const NO_INPUT: SimInput = { moveX: 0, moveZ: 0, turn: 0, pitchDelta: 0, fire: false, firePressed: false, reload: false, use: false };
 
@@ -97,5 +105,25 @@ export function autopilotInput(pilot: Autopilot, sim: Sim, dt: number): SimInput
     inp.moveZ = aligned ? 1 : 0.25;
   }
   if (p.mag === 0 && p.reloading <= 0) inp.reload = true;
+  unstick(pilot, p, inp, dt);
   return inp;
+}
+
+function unstick(pilot: Autopilot, p: { x: number; z: number }, inp: SimInput, dt: number) {
+  const moved = Number.isNaN(pilot.lx) ? Infinity : Math.hypot(p.x - pilot.lx, p.z - pilot.lz);
+  pilot.lx = p.x; pilot.lz = p.z;
+  if (pilot.dodgeT > 0) {
+    pilot.dodgeT -= dt;
+    inp.moveX = pilot.dodgeDir;
+    inp.moveZ = -0.35;
+    return;
+  }
+  // pushing (forward at least half speed) but covering under a tenth of the expected distance
+  if (inp.moveZ >= 0.5 && moved < 5.2 * dt * inp.moveZ * 0.1) pilot.stillT += dt;
+  else pilot.stillT = 0;
+  if (pilot.stillT > PILOT_STUCK_SECONDS) {
+    pilot.stillT = 0;
+    pilot.dodgeT = PILOT_DODGE_SECONDS;
+    pilot.dodgeDir = -pilot.dodgeDir;
+  }
 }

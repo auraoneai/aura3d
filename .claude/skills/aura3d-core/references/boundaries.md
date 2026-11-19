@@ -13,7 +13,7 @@ Label every capability with exactly one of these:
 | `createAuraApp` root safe API | A browser route imports only `@aura3d/engine` and mounts through `createAuraApp(...)`. | Build, route-health or equivalent diagnostics, typed asset manifest, browser screenshot, claim-specific pixel or runtime assertion. |
 | `production-runtime` | Exists in production-runtime packages or adapters, not necessarily root APIs. | Package or browser tests for that package, worded without implying root support. |
 | `rendering` package | Exists in the lower-level `@aura3d/rendering` package. | Package exports plus renderer unit or browser evidence, worded at package level. |
-| CLI asset pipeline | Asset search, add, resolve, validation, provenance, typegen, thumbnails, deploy checks. | CLI output, `aura.assets.json`, `src/aura-assets.ts`, license metadata, validation reports. |
+| CLI asset pipeline | Asset search, add, resolve, convert, generate (paid fal.ai), normalise, validation, provenance, typegen, CPU base-colour previews and thumbnails (not renders), deploy checks. | CLI output, `aura.assets.json`, `src/aura-assets.ts`, license metadata, validation reports. |
 | Template-only scaffold | A template starts a project; it does not prove production capability. | Template generation smoke test and honest scaffold wording. |
 | `prototype` | Illustrates direction without release-quality evidence. | Prototype label and no flagship or production wording. |
 | `roadmap` | Planned, not implemented or not public. | Future tense and a linked issue or PRD item. |

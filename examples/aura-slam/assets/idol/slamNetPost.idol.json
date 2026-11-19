@@ -1,0 +1,61 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-slam",
+  "key": "slamNetPost",
+  "generatedAt": "2026-11-18T21:20:54.329Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f088-b92f-7311-abc2-3ea56f5926e1",
+      "prompt": "A single tennis net post: a round dark green powder-coated steel pole about one metre tall with a domed top cap, a small brass net-tensioning winder crank with a handle mounted on one side, a wide round base flange, no net attached. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f089-dc08-7c62-afcf-28de7e24f1cc",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 435168,
+        "num_faces": 870372,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single tennis net post: a round dark green powder-coated steel pole about one metre tall with a domed top cap, a small brass net-tensioning winder crank with a handle mounted on one side, a wide round base flange, no net attached. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.016,
+    "size": [
+      0.308,
+      1.08,
+      0.525
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/aura-slam/assets/idol/slamNetPost.glb",
+  "sizeBytes": 951308,
+  "preview": "artifacts/idol/aura-slam/slamNetPost/views.png",
+  "usd": 0.37,
+  "postOptimize": {
+    "tool": "aura3d assets optimize",
+    "role": "prop",
+    "tex": 512,
+    "maxVerts": 8000,
+    "reason": "~20-40 px under the broadcast camera; per-game byte budget"
+  }
+}

@@ -4,8 +4,10 @@
  * on keydown, a still hold or held ArrowDown/S ducks (the sim tells a drag from a tap by travel; input.ts maps keys).
  * Music is scheduled from sim beat diffs (audio.ts), never a wall clock.
  *
- * Query parameters: `seed=N`, `manual=1` (sim advances only through QA stepFrames), `autostart=1`, `autopilot=1`,
- * `warmup=N` (idle splash frames before autostart, default 30), `dpr=N`, `motion=reduced|full`.
+ * Query parameters: `seed=N`, `manual=1` (sim advances only through QA stepFrames), `autoplay=1` (aliases
+ * `autopilot=1`, `autostart=1`: skips the title and How to play, the computer plays through ordinary Inputs and, after
+ * ~3 s of results, restarts forever; KeyO toggles the autopilot in play), `warmup=N` (idle splash frames before
+ * autoplay starts, default 30), `dpr=N`, `motion=reduced|full`.
  * Settings persist under `splatSiblings.beat-hopper.best/.mute/.motion/.howtoSeen` (guarded localStorage). The How to
  * play dialog opens on the first Play press; while it is open the loop is held, so the run neither starts nor advances.
  */
@@ -18,7 +20,7 @@ import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 import { createImpactRig } from "../../showcase-port-shared/feel";
 import { CONFIG, IDLE, BeatHopperSim, TRACE_COLUMNS, replay, type Input } from "./sim";
 import { InputQueue, isGameKey } from "./input";
-import { Autopilot } from "./autopilot";
+import { AUTOPLAY_PARAMS, Autopilot, autoplayRequested } from "./autopilot";
 import { BeatHopperSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { ChaseCamera, cardPose, createBeatPresenter, shownOf } from "./presentation";
@@ -29,6 +31,7 @@ import { QA_CROPS, beatPulse } from "./look";
 const config = readQaParams({
   seed: { type: "number", default: 20261101 },
   manual: { type: "flag" },
+  autoplay: { type: "flag" },
   autostart: { type: "flag" },
   autopilot: { type: "flag" },
   warmup: { type: "number", default: 30 },
@@ -50,7 +53,11 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let steps = 0;
-let pilot: Autopilot | null = config.autopilot ? new Autopilot() : null;
+/** `?autoplay=1` (or its aliases `?autopilot=1` / `?autostart=1`): hands-free play that loops through game over. */
+const autoplay = autoplayRequested(config);
+let pilot: Autopilot | null = autoplay ? new Autopilot(AUTOPLAY_PARAMS) : null;
+/** KeyO turned the pilot off while it may have been holding a duck: release it on the next step. */
+let pilotReleasePending = false;
 let renderFailed = false;
 const queue = new InputQueue();
 /** Drop focus from any button so Space/Enter during play never activate it (keyboard input is window-level). */
@@ -164,6 +171,8 @@ function reactToFrame(): void {
 
 /* ------------------------------------------------------------------ frame */
 
+let lastRenderMs = -1;
+
 function render(live = false): void {
   if (!app || !runtime || renderFailed) return;
   try {
@@ -186,7 +195,12 @@ function render(live = false): void {
       shakeOffset: impactState.shakeOffset,
       shakeRoll: impactState.shakeRoll
     });
-    app.step(0);
+    // Idol wow pass: advance the engine clock by the real frame time. The skater-bot's GLB clips play on the engine's
+    // pose mixer, which advances by engine dt; `step(0)` froze it at the crossfade start (weight 0: bind T-pose).
+    const nowMs = typeof performance !== "undefined" ? performance.now() : 0;
+    const frameDt = lastRenderMs < 0 ? 0 : Math.min(0.1, Math.max(0, (nowMs - lastRenderMs) / 1000));
+    lastRenderMs = nowMs;
+    app.step(frameDt);
   } catch (error) {
     renderFailed = true;
     qa.reportError(error);
@@ -214,7 +228,16 @@ const loop = createFixedStepLoop({
       queue.duckEnd("hud");
     }
     const typed = queue.take();
-    const input: Input = pilot ? pilot.next(sim, steps) : typed;
+    let input: Input = pilot ? pilot.next(sim, steps) : typed;
+    if (pilotReleasePending) {
+      pilotReleasePending = false;
+      input = { ...input, up: true };
+    }
+    // Autoplay loop: the pilot's start press on the results card restarts through the same path as PLAY AGAIN.
+    if (pilot && input.start && sim.o.phase === "gameOver") {
+      restart();
+      return;
+    }
     advance(input);
     presenter.afterStep();
   },
@@ -303,10 +326,10 @@ async function boot(): Promise<void> {
   ready = true;
   loading.done();
   startButton.removeAttribute("aria-busy");
-  if (config.autostart) {
+  if (autoplay) {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);
     steps = 0;
-    if (!pilot) pilot = new Autopilot();
+    if (!pilot) pilot = new Autopilot(AUTOPLAY_PARAMS);
   }
   render();
   hud.update(sim, best, config.manual);
@@ -466,6 +489,7 @@ addEventListener("keydown", (e) => {
   }
   if (e.code === "KeyM") { toggleMute(); return; }
   if (e.code === "KeyP" || e.code === "Escape") { setPaused(!paused); return; }
+  if (e.code === "KeyO" && !paused && !config.manual) { toggleAutopilot(); return; }
   if (paused) return;
   if (e.code === "Enter" || (e.code === "Space" && !playing)) {
     e.preventDefault();
@@ -482,6 +506,19 @@ addEventListener("keyup", (e) => {
 });
 
 /* ------------------------------------------------------------------ pause, settings, restart */
+
+/** KeyO: hand the run to the autopilot (autoplay rules: big jumps, loops through game over) or take it back. */
+function toggleAutopilot(): void {
+  dropInput();
+  if (pilot) {
+    pilot = null;
+    pilotReleasePending = true;
+  } else {
+    pilot = new Autopilot(AUTOPLAY_PARAMS);
+    pilot.observe(sim);
+    pilotReleasePending = false;
+  }
+}
 
 function setPaused(on: boolean): void {
   if (on && sim.o.phase !== "playing") on = false;
@@ -546,7 +583,7 @@ function closeHowto(): void {
 }
 /** Every Play press goes through here: the first one ever shows How to play and starts the run when it closes. */
 function requestStart(): void {
-  if (store.get(HOWTO_KEY) !== "1" && !config.autostart) openHowto(true);
+  if (store.get(HOWTO_KEY) !== "1" && !autoplay) openHowto(true);
   else queue.start();
 }
 $("btn-howto-close").addEventListener("click", closeHowto);
@@ -650,7 +687,7 @@ const qa = installQaHooks("beat-hopper", {
     prevFrame = null;
     lastPhase = "splash";
     phaseStart = 0;
-    pilot = config.autopilot ? new Autopilot() : null;
+    pilot = autoplay ? new Autopilot(AUTOPLAY_PARAMS) : null;
     hud?.reset();
     render();
     hud?.update(sim, best, config.manual);

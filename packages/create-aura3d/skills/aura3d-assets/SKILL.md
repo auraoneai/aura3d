@@ -1,17 +1,14 @@
 ---
 name: aura3d-assets
-description: Finds, admits, inspects, validates, and types GLB/glTF, texture, environment, and audio assets through the Aura3D CLI so scenes use `model(assets.x)`. Use when a prompt names a real object, the user brings a GLB, or the task touches `assets search`, `assets resolve`, `assets add`, `assets inspect`, `assets validate`, `assets typegen`, `aura.assets.json`, or `src/aura-assets.ts`.
+description: Finds, admits, inspects, validates, and types GLB/glTF, texture, environment, and audio assets through the Aura3D CLI so scenes use `model(assets.x)`. Use when a prompt names a real object, the user brings a GLB, or the task touches `assets search`, `assets resolve`, `assets add`, `assets convert`, `assets generate`, `assets normalize`, `assets preview`, `assets inspect`, `assets validate`, `assets typegen`, `aura.assets.json`, or `src/aura-assets.ts`.
 ---
 
 # Aura3D assets
 
 The CLI is the only path from a file or search hit to a typed `assets.<key>`.
 Shared rules (resolve-first, typed assets, paid generation) are in
-[boundaries](../aura3d-core/references/boundaries.md). The canonical end-to-end
-page (catalog, Meshy, optimise, isolated admission, rig and clips, production
-rules, budgets) is
-[asset workflow](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md);
-this skill is the short procedure.
+[boundaries](../aura3d-core/references/boundaries.md); the end-to-end page is
+[asset workflow](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md).
 
 ## Look target
 
@@ -43,11 +40,14 @@ lighting you evaluate materials and silhouettes against.
    ```
 
    Use `--type texture|environment|audio|navigation` for non-model files, and
-   `--public-path /cdn/aura-assets/` when assets are served from a CDN.
+   `--public-path /cdn/aura-assets/` when assets are served from a CDN. FBX,
+   OBJ, DAE, USD, PLY, STL, 3MF, VOX or BVH: run
+   `assets convert in.fbx --out out.glb` first ([generate, convert, post-process](references/generate-convert-post.md)).
 2. Prompt names a real object: check `assets resolve` or `assets search` for a
-   clean project or open CC0/CC-BY GLB first; if none is clean, sculpt a
-   multi-part procedural `@aura3d/engine` model rather than Meshy clay (use
-   `--allow meshy --budget N` only when explicitly requested).
+   clean project or open CC0/CC-BY GLB first. If none is clean and the route
+   needs a lifelike character, creature or vehicle, `assets generate` (paid
+   fal.ai; `--dry-run` prints the cost) makes, normalises and admits a
+   candidate; otherwise sculpt a multi-part procedural `@aura3d/engine` model.
 
    ```bash
    npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --dry-run
@@ -87,12 +87,10 @@ lighting you evaluate materials and silhouettes against.
    `--source` scans `src` for raw ids, URLs, and loader code, and lists
    `typedAssetUsages`. Add `--no-placeholders --require-license` for anything
    public. Refresh stale manifest bounds by re-adding the file. Every admitted
-   entry in `aura.assets.json` and `src/aura-assets.ts` needs a valid 64-character
-   `sha256-...` `hash` and a `public/aura-assets/...` path: the production glTF
-   bridge only accepts `createAssetProvenance(node.asset).source ===
-   "typed-aura-assets-manifest"`. Never omit `hash` in `defineAuraAssets(...)`
-   and never place unhashed duplicate GLBs in route-local
-   `apps/<route>/public/aura-assets/` that collide with root `public/aura-assets/`.
+   entry needs a 64-character `sha256-...` `hash` and a `public/aura-assets/...`
+   path: the production glTF bridge only accepts `createAssetProvenance(node.asset).source
+   === "typed-aura-assets-manifest"`. Never omit `hash` in `defineAuraAssets(...)`
+   or put unhashed duplicate GLBs in route-local `apps/<route>/public/aura-assets/`.
 7. Mount typed keys via `model(assets.<name>, { targetMaxDimension, role })`
    (`targetHeight` only for upright humanoids; `handle.setAnimation({ clip, loop:
    true, speed })` on `skins > 0`). With no clean GLB, sculpt multi-part
@@ -105,8 +103,8 @@ lighting you evaluate materials and silhouettes against.
    `defineModelAssets` (same-origin URL, `sha256`, license; `?models=0` falls
    back to a procedural stand-in) and never use an http(s) URL: the production
    bridge refuses it and the scene draws nothing. Admit generated models in an
-   isolated project: `assets import-meshy <dir> --into <assets-dir> --prefix
-   <game> --name <role>`. Never run `import-meshy`, `validate` or `typegen` from
+   isolated project (`assets import-meshy <dir> --into <assets-dir> --prefix
+   <game> --name <role>`). Never run `import-meshy`, `validate` or `typegen` from
    the repo root while other work is open: they rewrite `aura.assets.json`,
    `src/aura-assets.ts` (a 100k-line diff) and `public/aura-assets/*`.
 9. Hand off: fighters and games to `aura3d-browser-game`
@@ -149,3 +147,5 @@ lighting you evaluate materials and silhouettes against.
 - [Asset selection](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-selection.md)
 - [Assets docs](https://aura3d.auraone.ai/docs/assets)
 - [Previewing assets under a look](references/preview-under-look.md)
+- [Generate, convert and post-process](references/generate-convert-post.md)
+- [CLI reference](https://github.com/auraoneai/aura3d/blob/main/docs/api/cli-reference.md)

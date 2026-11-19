@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "pips-big-leap",
+  "key": "pipConifer",
+  "generatedAt": "2026-11-18T22:57:11.588Z",
+  "generator": "tools/idol/generate.mjs (request resumed after its 20-min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A storybook fir tree, a short brown trunk and layered tiers of dark green pine boughs forming a plump cone. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a3-fe3a-7d42-a434-9543e291a620",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1254484,
+        "num_faces": 2509180,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A storybook fir tree, a short brown trunk and layered tiers of dark green pine boughs forming a plump cone. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.885,
+    "size": [
+      2.849,
+      3.88,
+      2.536
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-pips-big-leap/assets/idol/pipConifer.glb",
+  "sizeBytes": 879508,
+  "preview": "artifacts/idol/pips-big-leap/pipConifer/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    "PNG textures (normal map) re-encoded as JPEG q90, 4:4:4; geometry and UVs untouched"
+  ],
+  "admitRole": "set-dressing",
+  "renormalizedAt": "2026-11-18T23:40:04.969Z"
+}

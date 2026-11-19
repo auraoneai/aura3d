@@ -8,12 +8,12 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 
 - Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits
 - Website: https://aura3d.auraone.ai
-- Current release: Aura3D 5.5.6 (per the repo manifest — the same source the build's version guard uses)
+- Current release: Aura3D 5.6.0 (per the repo manifest — the same source the build's version guard uses)
 - Docs: https://aura3d.auraone.ai/docs/api
 - Showcase gallery: https://aura3d.auraone.ai/apps/showcase-index/ (30 playable games)
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
 - Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
-- Last updated: 2026-11-12
+- Last updated: 2026-11-14
 
 ## Pages
 
@@ -31,7 +31,7 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 - [Aura3D Guide for Claude-Assisted 3D Apps](https://aura3d.auraone.ai/docs/claude): Use Claude with Aura3D to generate TypeScript browser 3D scenes from scene kits, primitives, typed GLB/glTF assets, and Vite templates.
 - [Aura3D Guide for Cursor AI 3D Development](https://aura3d.auraone.ai/docs/cursor): Use Cursor with Aura3D projects to edit TypeScript browser 3D scenes, Vite templates, typed GLB/glTF assets, scene kits, and prompt-to-3D workflows.
 - [Aura3D Evidence and Release Gates](https://aura3d.auraone.ai/docs/evidence): How Aura3D binds public package, asset, browser, game, visual, and deployment claims to retained evidence.
-- [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims): Current Aura3D 5.5.0 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
+- [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims): Current Aura3D 5.6.0 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
 - [Why Aura3D over three.js: everything three.js leaves to you, built in](https://aura3d.auraone.ai/docs/aura3d-vs-threejs): Aura3D builds in what three.js leaves to you: studio lighting, typed and licensed assets, a game kit and deploy checks. A lit 3D product in 10 lines.
 - [Migrate from Aura3D 4.x to 5.0.1](https://aura3d.auraone.ai/docs/migration/4-to-5): Upgrade guide from Aura3D 4.x to 5.0.1: who is affected, upgrade steps, breaking changes, behavior changes, new opt-in features and removed deprecated APIs.
 
@@ -208,6 +208,31 @@ URLs or ids — every model comes from a generated `assets.<key>`:
   the generated `src/aura-assets.ts`.
 - Playable characters: `assets resolve "animated humanoid fighting character"
   --profile fighting-character` keeps provenance in `aura.assets.json`.
+- Other model formats: `assets convert in.fbx --out out.glb` turns FBX, OBJ,
+  DAE, USD, PLY, STL, 3MF, VOX or BVH into a verified GLB (partial parity;
+  every loss is reported as a diagnostic).
+- Lifelike custom models: `assets generate "<subject>" --name <key> --kind
+  character|creature|vehicle|object [--rig --animations idle,walk,run]
+  --dry-run` prints the fal.ai cost (reference still $0.17, skipped with
+  `--image`; Idol mesh $0.20, $0.25 rigged); the paid run refits the skin,
+  optimises, faces +Z, grounds, scales, slims normal maps and admits a
+  `candidate` with `<key>.idol.json` provenance. `assets normalize` (facing,
+  size, grounding), `assets slim` (JPEG normal maps) and `assets preview`
+  (CPU base-colour preview sheet, not a render) work on any GLB;
+  `assets thumbnail` writes manifest PNG thumbnails the same way.
+- Motion: `animation import <file.bvh|.fbx|.glb|motion.json> --onto rig.glb
+  --out hero.glb` retargets clips onto a humanoid rig as real glTF clips and
+  fails on limb flips, a frozen T-pose or skin damage (known defects go in
+  `aura.skin-allow.json`; `--strict` fails on any unlisted skin error).
+  `animation generate "<motion>" --onto rig.glb --out hero.glb` makes clips
+  from text with fal.ai HY-Motion ($0.08 per clip) and imports them.
+- fal.ai key lookup: `FAL_KEY`, then `--key-file`, then
+  `~/.config/aura3d/fal.env`, then `~/.config/auraone/fal.env`; never printed.
+  `--dry-run` makes no paid call; every submit is ledgered in
+  `.aura3d/fal/ledger.jsonl` and a rerun resumes pending requests instead of
+  paying twice.
+- Every command, flag and exit code: `aura3d help --json`, or
+  `docs/api/cli-reference.md` (generated from it).
 
 Scaffold:
 
@@ -248,11 +273,17 @@ Mandatory 3D game & scene anti-failure guardrails:
 Kits (build the shell from these, do not hand-roll it):
 
 - `@aura3d/engine/game`: `createGame` (lifecycle, pause, results, DOM HUD, touch, juice, game sound); the root `createGame` throws a `CREATE_GAME_ROOT_UNAVAILABLE_V1` migration error.
-- `@aura3d/engine`: `createFixedStepLoop`, `installQaHooks` (`window.__AURA_<NAME>__`), `readQaParams`, `createCountedRng` for deterministic replay and automated checks; `defineModelAssets` for hashed same-origin models with a `?models=0` procedural fallback; `scatterAlongPath`, `scatterInArea`, `splitScatterByDistance`, `mergeStatic` for draw-call budgets; `game.racketSports()` with `ballFlight`, `scoring`, `athleteRig`.
+- `@aura3d/engine`: `createFixedStepLoop`, `installQaHooks` (`window.__AURA_<NAME>__`), `readQaParams`, `createCountedRng` for deterministic replay and automated checks; 5.5.5 QA telemetry: `installQaTelemetryHooks` (adds `checkState`, `measureFrame`, `telemetry`, `resetTelemetry` hooks), `createQaRunMonitor` (step vs frame timing, input-aware stuck detection), `findNonFinitePaths(state)` (`NaN`/`Infinity` paths), `hashQaPixels(pixels)`, `installVirtualGamepads()` (4 scripted `"standard"` pads, replay tokens such as `"Pad1A"`), `createQaOfflineAudio()` + `analyzeQaAudioSamples(channels, sampleRate)` (clock-locked offline audio: peak/RMS dBFS, clipping, silence, onsets); `defineModelAssets` for hashed same-origin models with a `?models=0` procedural fallback; `scatterAlongPath`, `scatterInArea`, `splitScatterByDistance`, `mergeStatic` for draw-call budgets; `game.racketSports()` with `ballFlight`, `scoring`, `athleteRig`.
 - `@aura3d/engine/audio`: `createCueBank`, `createStepSequencer`, `createToneLoop`, `createSampleSlices` on the single `AudioContextManager` (never `new AudioContext(`).
-- `@aura3d/debug`: `installSafetyNet` (`?diag=1`, quality switches `?post=0 ?shadow=0 ?env=0 ?sky=0 ?quality=low`, black-frame self-heal).
+- `@aura3d/engine/devtools`: `createAuraTuneOverlay({ id, schema })` mounts a dev-only slider/enum panel (`Backquote` toggles it, `?tune` opens it); overrides persist with their authored baseline and drop when the source value changes; `diffBlock()` / `save()` export the changed constants to paste back into source.
+- `@aura3d/debug`: `installSafetyNet` (`?diag=1`, quality switches `?post=0 ?shadow=0 ?env=0 ?sky=0 ?quality=low`, black-frame self-heal). `createBlackFrameWatch` is the watch it uses, exported for custom wiring; since 5.5.4 an all-`alpha === 0` probe (a WebGPU swapchain read outside its frame) counts as no sample, not a black frame.
+- Runtime quality: `createAuraApp` runs `RuntimeQualityGovernor` (`@aura3d/rendering`, default on since 5.5.3), stepping across 5 rungs (render scale down to 0.67×) at a 16.67 ms budget without remounting. A fixed `renderer.quality` tier, `renderer.adaptive: false` or `?aura3d-adaptive=0` turns it off; `renderer.targetFrameRate` sets the budget. Details: `docs/api/quality-governor.md`.
+- Wide gamut: `outputColorSpace: "display-p3"` in the renderer `output` options is a request; on the v2 post chain WebGPU negotiates Display-P3 or falls back to sRGB without throwing (5.5.4), and the renderer diagnostic report gives the active `outputColorSpace`. Claim P3 only from a real-device capture.
+- Procedural sculpting: `@aura3d/engine/sculpt` (5.5.6) builds smooth organic meshes (`sculptOrganicSdfMesh`, `sculptStylizedHeadMesh`, `sculptSdfLimbChainMesh`, `sculptCurvedHairLockMesh`, `taubinSmoothMesh`, `assembleMultiMaterialNode`) for `geometry.define` / `geometry.multiMaterial`; bake once at load. New in 5.6.0: `sculptHairMassMesh`, `sminCubic`, `smaxCubic`. Details: `docs/api/sculpt.md`.
+- Follow cameras: `computeCameraClearance(target, desired, obstacles, options?, out?)` from `@aura3d/engine` (5.5.6) pulls the camera in or lifts it over circle/box obstacles each frame. Details: `docs/api/motion-camera-clear.md`.
+- Humanoid motion (5.6.0): `@aura3d/animation` exports `smplMotionToClip`, `skeletalMotionToFrames`, `mapHumanoid`, `createHumanoidDriver`, `detectHumanoidFacing` and `bakeHumanoidFramesToGltf`, the engine behind `aura3d animation import`. Details: `docs/api/humanoid-motion.md`.
 - `material.custom` shaders: `#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<a3d_shadow>` (sun shadows: `receiveShadow: true` on the spec, then multiply the lit term by `a3dSunShadowAuto(worldPos, normal)`), `<colorspace_decode>`; custom shaders write linear light, so use `a3dSrgbToLinear` with `toneMapping: "none"` for authored colours, and keep `pow`, `normalize`, `sqrt` and divides NaN-safe (Apple GPUs return NaN where software renderers do not).
-- Production checks that CI missed: the bridge refuses http(s) or unhashed model URLs and then draws nothing; instanced and batched meshes honour texture maps; empty instance arrays are no-ops; software-GL passes are not real-GPU proof. Docs: `docs/api/game-kit.md`, `qa-kit.md`, `safety-net.md`, `audio-synth.md`, `model-loader.md`, `glsl-chunks.md`, `scatter-merge.md`, `cli-asset-tools.md`; pitfalls: `aura3d-core/references/pitfalls.md`.
+- Production checks that CI missed: the bridge refuses http(s) or unhashed model URLs and then draws nothing; instanced and batched meshes honour texture maps; empty instance arrays are no-ops; software-GL passes are not real-GPU proof. Docs: `docs/api/game-kit.md`, `qa-kit.md`, `quality-governor.md`, `safety-net.md`, `sculpt.md`, `humanoid-motion.md`, `audio-synth.md`, `model-loader.md`, `glsl-chunks.md`, `scatter-merge.md`, `cli-asset-tools.md`; pitfalls: `aura3d-core/references/pitfalls.md`.
 
 Claims: use every feature freely. Claim only what a judged capture shows.
 

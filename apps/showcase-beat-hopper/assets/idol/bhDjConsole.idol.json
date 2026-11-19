@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "beat-hopper",
+  "key": "bhDjConsole",
+  "generatedAt": "2026-11-18T22:10:53.115Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-a62e-71b1-932e-8dcabadad855",
+      "prompt": "A professional DJ booth console: a wide black brushed-metal desk with two vinyl record turntables on either side, a mixer with faders and knobs in the middle, a clear acrylic front panel, chrome legs, small cyan and gold LED accent strips along the edges. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f097-4537-76c0-b23b-2e219be59d02",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1963982,
+        "num_faces": 3928488,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A professional DJ booth console: a wide black brushed-metal desk with two vinyl record turntables on either side, a mixer with faders and knobs in the middle, a clear acrylic front panel, chrome legs, small cyan and gold LED accent strips along the edges. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.364,
+    "size": [
+      4.975,
+      2.435,
+      5.2
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-beat-hopper/assets/idol/bhDjConsole.glb",
+  "sizeBytes": 3472364,
+  "preview": "artifacts/idol/beat-hopper/bhDjConsole/views.png",
+  "usd": 0.57,
+  "rejectedRerolls": [
+    {
+      "requestId": "01a1f0b8-1847-7fb1-b330-4db7247f94c6",
+      "seed": 13,
+      "usd": 0.2,
+      "reason": "large invented orange pseudo-lettering on the front and a mangled deck top; v1 kept"
+    }
+  ]
+}

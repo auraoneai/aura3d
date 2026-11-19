@@ -9,6 +9,7 @@ One page. Entry ids (R1, M2, ...) point into [`lessons-learned.md`](lessons-lear
 - [ ] State the objective, the score and the end screen in one paragraph (G1). Player must see the objective from second one.
 - [ ] Start from the kits, not from scratch (P8): `installQaHooks`, `createFixedStepLoop` + `createFixedStepPresenter`, `installGameBeacon`, `installSafetyNet`, `createCueBank`, the impact kit, `attachToBone`, `createLocomotion`, the shared quick bar `apps/showcase-port-shared/quickbar.css`. See `docs/agents/build-a-game.md`.
 - [ ] Assets: catalog or Meshy with a text prompt only, every paid call reserved in the ledger for the game tag (uncapped; credits tracked for visibility), isolated admission, sha256 + same-origin + provenance (A5, A6). Never name a brand or model in a prompt. Check licences (A9).
+- [ ] Lifelike custom models and motion: `aura3d assets generate "<subject>" --name <key> --kind character --rig --dry-run` (prints the fal.ai cost), then the paid run, `aura3d assets normalize` if facing or size is off, `aura3d assets validate --skin <file.glb>`, and `aura3d animation generate "<motion>" --onto <rig.glb> --out <hero.glb>` for clips (`aura3d animation import` for BVH/FBX/GLB motion). Spend is ledgered in `.aura3d/fal/ledger.jsonl`; reruns resume and never pay twice. Look at the `assets preview` sheet (a CPU base-colour preview, not a render) and then real frames.
 - [ ] Fonts from the licensed set only (U3).
 
 ## 2. While building

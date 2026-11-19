@@ -27,3 +27,26 @@ export const SLIDE_SPEED = 8.2;
 export const KEEPER_REACH = 1.15;
 /** Half-width of the gap left open in each Favela cage end wall for the goal mouth (m). */
 export const CAGE_GOAL_GAP = GOAL_HALF_W + 0.2;
+
+/* ---- solid colliders, sized from what is drawn (nothing may visibly pass through anything) ---- */
+/** Goal-frame tube radius (m): the procedural posts and crossbar (proceduralModels buildFifaGoalFrameNode). */
+export const POST_R = 0.064;
+/** Post axis |x|: the post's front face is flush with the goal line. */
+export const POST_X = PITCH_HX + POST_R;
+/** Post axis |z|: the post's outer face is flush with the mouth edge. */
+export const POST_Z = GOAL_HALF_W - POST_R;
+/** Crossbar axis height: the bar's top is at GOAL_H. */
+export const BAR_Y = GOAL_H - POST_R;
+/** Ball-centre contact distance from a post or bar axis: drawn post radius + drawn ball radius. */
+export const FRAME_HIT_R = POST_R + BALL_VIS_R;
+/** Player body radius for player↔player and player↔structure contact (m). */
+export const PLAYER_R = 0.3;
+/** Minimum centre distance between two players (m). */
+export const PLAYER_MIN_SEP = PLAYER_R * 2;
+/** Favela cage: inner faces of the end and side walls, wall thickness and the top of the rail (scene.ts draws these). */
+export const CAGE_INNER_X = PITCH_HX + 0.2;
+export const CAGE_INNER_Z = PITCH_HZ + 0.2;
+export const CAGE_WALL_T = 0.3;
+export const CAGE_WALL_H = 1.5;
+export const CAGE_RAIL_H = 0.08;
+export const CAGE_TOP = CAGE_WALL_H + CAGE_RAIL_H + 0.01;

@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bellkeepers-walk",
+  "key": "bkBridge",
+  "generatedAt": "2026-11-18T22:08:46.137Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b4-8b99-7ad2-a745-01d92740c914",
+      "prompt": "A small old humpbacked packhorse bridge: a single round stone arch of rough grey fieldstone with lichen and moss, low stone parapet walls along both sides, a cobbled walkway over the top, the arch opening facing the camera. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b7-4e40-7e32-85f5-dd0eb7c90e5f",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 38,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1773140,
+        "num_faces": 3546548,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A small old humpbacked packhorse bridge: a single round stone arch of rough grey fieldstone with lichen and moss, low stone parapet walls along both sides, a cobbled walkway over the top, the arch opening facing the camera. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 6.41,
+    "size": [
+      6.4,
+      2.938,
+      5.43
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/where-the-wind-wanders-port/assets/idol/bkBridge.glb",
+  "sizeBytes": 6463344,
+  "preview": "artifacts/idol/bellkeepers-walk/bkBridge/views.png",
+  "usd": 0.37
+}

@@ -1,0 +1,903 @@
+{
+  "game": "teleoperator",
+  "outDir": "apps/showcase-teleoperator/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "gdCruiserPod",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.97
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A compact futuristic driverless robotaxi passenger pod car, rounded boxy bidirectional body with short sloping hood, two-tone glossy pearl white lower body and black glass upper cabin canopy that wraps all around, slim full-width white LED light strip across the front and a red LED light bar across the rear, a low black aerodynamic roof sensor mast with a small cylindrical lidar on the roof centre, four small black lidar pucks at the corners, dark aero wheels with low-profile tyres, clean unbranded panels"
+    },
+    {
+      "key": "gdCrossoverAv",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.99
+      },
+      "tex": 2048,
+      "seed": 107,
+      "subject": "A modern compact electric crossover car converted to a self-driving vehicle, satin silver metallic paint, smooth rounded body, tinted dark windows, slim LED headlights, a black lidar dome on the roof front, small black radar pods on the front fenders, black wheel arch trim, five-spoke silver alloy wheels, clean unbranded panels",
+      "image": "artifacts/idol/teleoperator/gdCrossoverAv/ref-keep.png"
+    },
+    {
+      "key": "gdHeavySemi",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.63
+      },
+      "tex": 2048,
+      "seed": 107,
+      "subject": "A futuristic autonomous heavy semi-truck tractor unit without trailer, aerodynamic bullet-nose cab with a sloped windshield, brushed stainless steel body panels, black roof sensor array, slim LED light bar, tandem rear axles with dual wheels and an exposed fifth-wheel coupling deck behind the cab, chrome alloy wheels, clean unbranded panels",
+      "image": "artifacts/idol/teleoperator/gdHeavySemi/ref-keep.png"
+    },
+    {
+      "key": "gdGtCrimson",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.66
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A low sleek modern luxury grand-tourer sports coupe, deep crimson red metallic paint with clearcoat gloss, long hood, fastback roofline, tinted dark windows, slim LED headlights, wide rear haunches, thin red LED tail light bar, black multi-spoke alloy wheels with low-profile tyres, clean unbranded panels"
+    },
+    {
+      "key": "gdInterceptorCobalt",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.56
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A low aggressive futuristic electric rapid-response interceptor car, deep cobalt blue metallic paint, wedge-shaped body, sloping canopy with dark tinted glass, sharp slim LED headlights, a small teal roof sensor light, black side skirts and diffuser, black aero wheels, clean unbranded panels"
+    },
+    {
+      "key": "gdShuttle",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.9
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A boxy driverless autonomous passenger shuttle van, tall flat-floor body with near-vertical front and rear faces, light titanium silver paint, large dark tinted glass panels on all sides, rounded corners, two black lidar sensors on the roof, small wheels pushed to the corners, slim LED light strips front and rear, clean unbranded panels"
+    },
+    {
+      "key": "gdGtChampagne",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.02
+      },
+      "tex": 1024,
+      "seed": 11,
+      "subject": "A low sleek modern luxury sports coupe, champagne gold metallic paint with clearcoat gloss, long hood, fastback roofline, tinted dark windows, slim LED headlights, thin LED tail light bar, dark alloy wheels with low-profile tyres, clean unbranded panels"
+    },
+    {
+      "key": "gdGtAmber",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.66
+      },
+      "tex": 1024,
+      "seed": 113,
+      "subject": "A low sleek modern luxury grand-tourer sports coupe, burnt volcanic orange metallic paint with clearcoat gloss, long hood, fastback roofline, tinted dark windows, slim LED headlights, wide rear haunches, thin LED tail light bar, black multi-spoke alloy wheels with low-profile tyres, clean unbranded panels",
+      "image": "artifacts/idol/teleoperator/gdGtAmber/ref-keep.png"
+    },
+    {
+      "key": "gdResponseSuv",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.56
+      },
+      "tex": 1024,
+      "seed": 21,
+      "subject": "A futuristic electric emergency rapid-response SUV, glossy white paint with plain violet and amber reflective side stripes, dark tinted windows, a low slim roof light bar with violet and amber lenses, black push bar, black wheel arch trim, black alloy wheels, plain unmarked panels",
+      "prompt": "A futuristic electric emergency rapid-response SUV, glossy white paint with plain violet and amber reflective side stripes, dark tinted windows, a low slim roof light bar with violet and amber lenses, black push bar, black wheel arch trim, black alloy wheels, plain unmarked panels. Photoreal studio render, physically based materials, clean factory-new condition, high detail. Single isolated vehicle, the entire vehicle in frame with margin, centered, seen from a low side three-quarter angle about 60 degrees off the front so the full length of the body and both axles are clearly visible, camera slightly above bumper height, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object."
+    },
+    {
+      "key": "gdCableCar",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 8.16
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A historic wooden street cable car tram, open-sided front section with wooden bench seats facing outward and brass grab poles, enclosed rear saloon with many small cream-framed windows, deep red painted wooden lower body, cream upper panels, varnished teak trim, curved roof with clerestory, brass bells and lamps at both ends, steel wheels and running boards"
+    },
+    {
+      "key": "gdSedanSlate",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.69
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "An ordinary modern four-door family sedan car, slate grey metallic paint, tinted windows, chrome window trim, five-spoke silver alloy wheels, clean unbranded panels"
+    },
+    {
+      "key": "gdSedanPearl",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.69
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "An ordinary modern four-door family sedan car, pearl white paint, tinted windows, black window trim, silver alloy wheels, clean unbranded panels"
+    },
+    {
+      "key": "gdCoupeNavy",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.53
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A modern fastback four-door coupe car, dark navy blue metallic paint, tinted windows, sleek sloping roof, silver alloy wheels, clean unbranded panels"
+    },
+    {
+      "key": "gdTaxiCab",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.53
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A city taxi cab, modern four-door fastback sedan painted bright saffron yellow, a small plain blank amber roof sign box with no writing, black checker-free plain doors, tinted windows, silver wheels, clean unmarked panels"
+    },
+    {
+      "key": "gdHatchCoral",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.85
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A small modern five-door city hatchback car, coral red-orange paint, tinted windows, black roof rails, compact silver alloy wheels, clean unbranded panels"
+    },
+    {
+      "key": "gdHatchMint",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.85
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A small modern five-door city hatchback car, deep mint teal-green metallic paint, tinted windows, compact silver alloy wheels, clean unbranded panels"
+    },
+    {
+      "key": "gdTransitBus",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.69
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A short compact city transit minibus, tall boxy body, silver upper body with a bright vermilion red lower belt band, large tinted side windows, a blank glowing amber destination sign above the windshield with no text, folding passenger door, small wheels, clean unmarked panels"
+    },
+    {
+      "key": "gdPickupGraphite",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.19
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A modern full-size crew-cab pickup truck, dark graphite grey metallic paint, open empty cargo bed with a black tubular utility rack, black grille without badge, tinted windows, black wheel arch trim, chunky all-terrain tyres on silver wheels, clean unbranded panels"
+    },
+    {
+      "key": "gdPickupBronze",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.19
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A modern full-size crew-cab pickup truck, bronze brown metallic paint, open empty cargo bed with a black tubular utility rack, dark grille without badge, tinted windows, all-terrain tyres on dark wheels, clean unbranded panels"
+    },
+    {
+      "key": "gdBoxTruck",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 7.53
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A medium-duty city box delivery truck, red cab-over tilt cab with an aero roof fairing, plain clean white ribbed cargo box body with a roll-up rear shutter door, black bumpers, dual rear wheels, plain unmarked box with no graphics"
+    },
+    {
+      "key": "gdCommuter",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "size": {
+        "height": 1.71
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A young adult city commuter, short dark hair, wearing a fitted olive green bomber jacket over a plain grey t-shirt, dark slim jeans and white sneakers, no bag, no hat, friendly neutral face"
+    },
+    {
+      "key": "gdParkedHatchWhite",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.86
+      },
+      "tex": 1024,
+      "seed": 107,
+      "subject": "A small modern five-door city hatchback car, plain gloss white paint, tinted dark windows, black side mirrors, compact silver alloy wheels, clean unbranded panels",
+      "image": "artifacts/idol/teleoperator/gdParkedHatchWhite/ref-keep.png"
+    },
+    {
+      "key": "gdStreetTree",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 5.6
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A young urban street tree, plane tree with a single straight mottled grey-green and cream bark trunk, branching at two metres into a full rounded dense canopy of broad green leaves, trunk base ending flat at ground level"
+    },
+    {
+      "key": "gdPyramidTower",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 150
+      },
+      "tex": 2048,
+      "seed": 7,
+      "maxVerts": 30000,
+      "subject": "A very tall slender white four-sided pyramid skyscraper tapering to a sharp spire, rows of many small windows in a white precast facade, two vertical wings rising on the sides, a wide stepped base with a colonnaded entrance, architectural scale model of a fictional city tower"
+    },
+    {
+      "key": "gdFerryTerminal",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 94
+      },
+      "tex": 2048,
+      "seed": 7,
+      "maxVerts": 30000,
+      "subject": "A long two-storey sandstone waterfront ferry terminal building with a row of tall arched windows along the facade and a tall square clock tower rising from its centre with a clock face on each side and a slim pointed dark roof, architectural scale model of a fictional historic building"
+    },
+    {
+      "key": "gdHillTower",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 79
+      },
+      "tex": 2048,
+      "seed": 7,
+      "maxVerts": 30000,
+      "subject": "A slender fluted white concrete cylindrical observation tower with arched openings at the top, standing on a rocky hilltop covered with dark green pine and cypress trees, architectural scale model of a fictional city landmark on its hill"
+    },
+    {
+      "key": "gdCruiserPodT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.97
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A compact futuristic driverless robotaxi passenger pod car, rounded boxy bidirectional body with short sloping hood, two-tone glossy pearl white lower body and black glass upper cabin canopy that wraps all around, slim full-width white LED light strip across the front and a red LED light bar across the rear, a low black aerodynamic roof sensor mast with a small cylindrical lidar on the roof centre, four small black lidar pucks at the corners, dark aero wheels with low-profile tyres, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdCrossoverAvT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.99
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A modern compact electric crossover car converted to a self-driving vehicle, satin silver metallic paint, smooth rounded body, tinted dark windows, slim LED headlights, a black lidar dome on the roof front, small black radar pods on the front fenders, black wheel arch trim, five-spoke silver alloy wheels, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdHeavySemiT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.63
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A futuristic autonomous heavy semi-truck tractor unit without trailer, aerodynamic bullet-nose cab with a sloped windshield, brushed stainless steel body panels, black roof sensor array, slim LED light bar, tandem rear axles with dual wheels and an exposed fifth-wheel coupling deck behind the cab, chrome alloy wheels, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdInterceptorCobaltT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.56
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A low aggressive futuristic electric rapid-response interceptor car, deep cobalt blue metallic paint, wedge-shaped body, sloping canopy with dark tinted glass, sharp slim LED headlights, a small teal roof sensor light, black side skirts and diffuser, black aero wheels, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdShuttleT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.9
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A boxy driverless autonomous passenger shuttle van, tall flat-floor body with near-vertical front and rear faces, light titanium silver paint, large dark tinted glass panels on all sides, rounded corners, two black lidar sensors on the roof, small wheels pushed to the corners, slim LED light strips front and rear, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdGtAmberT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.66
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A low sleek modern luxury grand-tourer sports coupe, burnt volcanic orange metallic paint with clearcoat gloss, long hood, fastback roofline, tinted dark windows, slim LED headlights, wide rear haunches, thin LED tail light bar, black multi-spoke alloy wheels with low-profile tyres, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdResponseSuvT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.56
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A futuristic electric emergency rapid-response SUV, glossy white paint with plain violet and amber reflective side stripes, dark tinted windows, a low slim roof light bar with violet and amber lenses, black push bar, black wheel arch trim, black alloy wheels, plain unmarked panels",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdCableCarT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 8.16
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A historic wooden street cable car tram, open-sided front section with wooden bench seats facing outward and brass grab poles, enclosed rear saloon with many small cream-framed windows, deep red painted wooden lower body, cream upper panels, varnished teak trim, curved roof with clerestory, brass bells and lamps at both ends, steel wheels and running boards",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdSedanSlateT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.69
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "An ordinary modern four-door family sedan car, slate grey metallic paint, tinted windows, chrome window trim, five-spoke silver alloy wheels, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdSedanPearlT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.69
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "An ordinary modern four-door family sedan car, pearl white paint, tinted windows, black window trim, silver alloy wheels, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdCoupeNavyT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.53
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A modern fastback four-door coupe car, dark navy blue metallic paint, tinted windows, sleek sloping roof, silver alloy wheels, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdTaxiCabT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.53
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A city taxi cab, modern four-door fastback sedan painted bright saffron yellow, a small plain blank amber roof sign box with no writing, black checker-free plain doors, tinted windows, silver wheels, clean unmarked panels",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdHatchCoralT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.85
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A small modern five-door city hatchback car, coral red-orange paint, tinted windows, black roof rails, compact silver alloy wheels, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdHatchMintT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.85
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A small modern five-door city hatchback car, deep mint teal-green metallic paint, tinted windows, compact silver alloy wheels, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdTransitBusT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.69
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A short compact city transit minibus, tall boxy body, silver upper body with a bright vermilion red lower belt band, large tinted side windows, a blank glowing amber destination sign above the windshield with no text, folding passenger door, small wheels, clean unmarked panels",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdPickupGraphiteT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.19
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A modern full-size crew-cab pickup truck, dark graphite grey metallic paint, open empty cargo bed with a black tubular utility rack, black grille without badge, tinted windows, black wheel arch trim, chunky all-terrain tyres on silver wheels, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdPickupBronzeT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.19
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A modern full-size crew-cab pickup truck, bronze brown metallic paint, open empty cargo bed with a black tubular utility rack, dark grille without badge, tinted windows, all-terrain tyres on dark wheels, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdBoxTruckT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 7.53
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A medium-duty city box delivery truck, red cab-over tilt cab with an aero roof fairing, plain clean white ribbed cargo box body with a roll-up rear shutter door, black bumpers, dual rear wheels, plain unmarked box with no graphics",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdParkedHatchWhiteT",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.86
+      },
+      "tex": 1024,
+      "seed": 5,
+      "subject": "A small modern five-door city hatchback car, plain gloss white paint, tinted dark windows, black side mirrors, compact silver alloy wheels, clean body panels of a fictional unbranded design",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 16000
+    },
+    {
+      "key": "gdCruiserPodW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.97
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A compact futuristic driverless robotaxi passenger pod car, rounded boxy bidirectional body with short sloping hood, two-tone glossy pearl white lower body and black glass upper cabin canopy that wraps all around, slim full-width white LED light strip across the front and a red LED light bar across the rear, a low black aerodynamic roof sensor mast with a small cylindrical lidar on the roof centre, four small black lidar pucks at the corners, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdCrossoverAvW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.99
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A modern compact electric crossover car converted to a self-driving vehicle, satin silver metallic paint, smooth rounded body, tinted dark windows, slim LED headlights, a black lidar dome on the roof front, small black radar pods on the front fenders, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdHeavySemiW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.63
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A futuristic autonomous heavy semi-truck tractor unit without trailer, aerodynamic bullet-nose cab with a sloped windshield, brushed stainless steel body panels, black roof sensor array, slim LED light bar, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted: the front and the two rear axle positions show only empty dark wheel wells under the fenders",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdGtCrimsonW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.66
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A low sleek modern luxury grand-tourer sports coupe, deep crimson red metallic paint with clearcoat gloss, long hood, fastback roofline, tinted dark windows, slim LED headlights, wide rear haunches, thin red LED tail light bar, clean unbranded panels, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdInterceptorCobaltW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.56
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A low aggressive futuristic electric rapid-response interceptor car, deep cobalt blue metallic paint, wedge-shaped body, sloping canopy with dark tinted glass, sharp slim LED headlights, a small teal roof sensor light, black side skirts and diffuser, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdShuttleW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.9
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A boxy driverless autonomous passenger shuttle van, tall flat-floor body with near-vertical front and rear faces, light titanium silver paint, large dark tinted glass panels on all sides, rounded corners, two black lidar sensors on the roof, slim LED light strips front and rear, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 20000
+    },
+    {
+      "key": "gdGtChampagneW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.02
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A low sleek modern luxury sports coupe, champagne gold metallic paint with clearcoat gloss, long hood, fastback roofline, tinted dark windows, slim LED headlights, thin LED tail light bar, clean unbranded panels, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 20000
+    },
+    {
+      "key": "gdResponseSuvW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.56
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A futuristic electric emergency rapid-response SUV, glossy white paint with plain violet and amber reflective side stripes, dark tinted windows, a low slim roof light bar with violet and amber lenses, black push bar, plain unmarked panels, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 20000
+    },
+    {
+      "key": "gdGtAmberW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.66
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A low sleek modern luxury grand-tourer sports coupe, burnt volcanic orange metallic paint with clearcoat gloss, long hood, fastback roofline, tinted dark windows, slim LED headlights, wide rear haunches, thin LED tail light bar, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 20000
+    },
+    {
+      "key": "gdCableCarW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 8.16
+      },
+      "tex": 1024,
+      "seed": 9,
+      "subject": "A historic wooden street cable car tram, open-sided front section with wooden bench seats facing outward and brass grab poles, enclosed rear saloon with many small cream-framed windows, deep red painted wooden lower body, cream upper panels, varnished teak trim, curved roof with clerestory, brass bells and lamps at both ends, shown as a display model WITHOUT ITS WHEELS OR WHEEL TRUCKS: the flat underside of the car body shows only dark recesses where the two wheel trucks would go",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdSedanSlateW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.69
+      },
+      "tex": 768,
+      "seed": 9,
+      "subject": "An ordinary modern four-door family sedan car, slate grey metallic paint, tinted windows, chrome window trim, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 12000
+    },
+    {
+      "key": "gdSedanPearlW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.69
+      },
+      "tex": 768,
+      "seed": 9,
+      "subject": "An ordinary modern four-door family sedan car, pearl white paint, tinted windows, black window trim, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 12000
+    },
+    {
+      "key": "gdCoupeNavyW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.53
+      },
+      "tex": 768,
+      "seed": 9,
+      "subject": "A modern fastback four-door coupe car, dark navy blue metallic paint, tinted windows, sleek sloping roof, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 12000
+    },
+    {
+      "key": "gdTaxiCabW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.53
+      },
+      "tex": 768,
+      "seed": 9,
+      "subject": "A city taxi cab, modern four-door fastback sedan painted bright saffron yellow, a small plain blank amber roof sign box with no writing, black checker-free plain doors, tinted windows, clean unmarked panels, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 12000
+    },
+    {
+      "key": "gdHatchCoralW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.85
+      },
+      "tex": 768,
+      "seed": 9,
+      "subject": "A small modern five-door city hatchback car, coral red-orange paint, tinted windows, black roof rails, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 12000
+    },
+    {
+      "key": "gdHatchMintW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.85
+      },
+      "tex": 768,
+      "seed": 9,
+      "subject": "A small modern five-door city hatchback car, deep mint teal-green metallic paint, tinted windows, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 12000
+    },
+    {
+      "key": "gdTransitBusW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.69
+      },
+      "tex": 768,
+      "seed": 9,
+      "subject": "A short compact city transit minibus, tall boxy body, silver upper body with a bright vermilion red lower belt band, large tinted side windows, a blank glowing amber destination sign above the windshield with no text, folding passenger door, clean unmarked panels, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 12000
+    },
+    {
+      "key": "gdPickupGraphiteW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.19
+      },
+      "tex": 768,
+      "seed": 9,
+      "subject": "A modern full-size crew-cab pickup truck, dark graphite grey metallic paint, open empty cargo bed with a black tubular utility rack, black grille without badge, tinted windows, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 12000
+    },
+    {
+      "key": "gdPickupBronzeW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.19
+      },
+      "tex": 768,
+      "seed": 9,
+      "subject": "A modern full-size crew-cab pickup truck, bronze brown metallic paint, open empty cargo bed with a black tubular utility rack, dark grille without badge, tinted windows, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 12000
+    },
+    {
+      "key": "gdBoxTruckW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 7.53
+      },
+      "tex": 768,
+      "seed": 9,
+      "subject": "A medium-duty city box delivery truck, red cab-over tilt cab with an aero roof fairing, plain clean white ribbed cargo box body with a roll-up rear shutter door, black bumpers, plain unmarked box with no graphics, shown WITHOUT ANY WHEELS OR TYRES fitted: the empty front and rear wheel wells are dark hollows under the cab and the cargo box",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 12000
+    },
+    {
+      "key": "gdCruiserPodW2",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.97
+      },
+      "tex": 1024,
+      "seed": 21,
+      "subject": "A compact futuristic driverless robotaxi passenger pod car, rounded boxy bidirectional body, glossy pearl white lower body, the whole upper cabin is ONE smooth seamless glossy opaque black glass canopy with a perfectly smooth reflective surface and no visible interior, slim full-width white LED light strip across the front and a red LED light bar across the rear, a low smooth black roof sensor mast with one small cylindrical lidar, clean unbranded panels, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "key": "gdCruiserPodW3",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 3.97
+      },
+      "tex": 1024,
+      "seed": 33,
+      "subject": "A compact futuristic driverless robotaxi passenger pod car, rounded boxy bidirectional body, glossy pearl white lower body, the whole upper cabin is ONE smooth seamless glossy opaque black glass canopy with a perfectly smooth reflective surface and no visible interior, slim full-width white LED light strip across the front and a red LED light bar across the rear, a low smooth black roof sensor mast with one small cylindrical lidar, clean unbranded panels, shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells",
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "maxVerts": 30000
+    },
+    {
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "tex": 1024,
+      "seed": 7,
+      "key": "gdWalkerA",
+      "size": {
+        "height": 1.78
+      },
+      "subject": "An adult man in his thirties, short black hair, charcoal wool overcoat over a grey hoodie, dark jeans, white sneakers, friendly neutral face, no bag, no hat"
+    },
+    {
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "tex": 1024,
+      "seed": 7,
+      "key": "gdWalkerB",
+      "size": {
+        "height": 1.65
+      },
+      "subject": "An adult woman in her twenties, short curly dark hair, camel-brown suede jacket, cream knit top, olive cargo trousers, black ankle boots, friendly neutral face, no bag, no hat"
+    },
+    {
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "tex": 1024,
+      "seed": 7,
+      "key": "gdWalkerC",
+      "size": {
+        "height": 1.7
+      },
+      "subject": "An older adult woman in her sixties, short silver hair, navy rain jacket, beige trousers, comfortable grey walking shoes, friendly neutral face, no bag, no hat"
+    },
+    {
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "tex": 1024,
+      "seed": 7,
+      "key": "gdWalkerD",
+      "size": {
+        "height": 1.74
+      },
+      "subject": "An adult man in his twenties, medium brown skin, navy windbreaker over a white t-shirt, grey joggers, orange running shoes, friendly neutral face, no bag, no hat"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cross-hop",
+  "key": "hopCandyRaft",
+  "generatedAt": "2026-11-18T23:11:10.897Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0ed-afb1-7670-91e8-bb0b6154f332",
+      "prompt": "A long narrow flat toy raft: one long flat glossy candy-pink painted plank deck lying on two long cream-coloured cylindrical pontoon floats, completely empty flat deck with nothing on top, no canopy, no posts, no railings, very low and long, about five times longer than it is wide. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0fc-0247-7ca1-98aa-2fcf72b5026c",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 21,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 458100,
+        "num_faces": 916228,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A long narrow flat toy raft: one long flat glossy candy-pink painted plank deck lying on two long cream-coloured cylindrical pontoon floats, completely empty flat deck with nothing on top, no canopy, no posts, no railings, very low and long, about five times longer than it is wide. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -180,
+    "scale": 3.144,
+    "size": [
+      1.06,
+      0.204,
+      3.8
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-cross-hop/assets/idol/hopCandyRaft.glb",
+  "sizeBytes": 397300,
+  "preview": "artifacts/idol/cross-hop/hopCandyRaft/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": -90,
+    "note": "facing re-fixed from opt.glb with tools/idol/normalize.mjs after inspecting views.png"
+  },
+  "postprocess": {
+    "step": "shrink",
+    "tool": "aura3d assets optimize + gltf-transform jpeg (normal map PNG->JPEG q90)",
+    "maxVerts": 4000,
+    "tex": 512,
+    "sizeBytesBefore": 1803868
+  },
+  "baked": {
+    "step": "node transforms baked into vertices (gltf-transform flatten + clearNodeTransform) so manifest bounds are exact"
+  }
+}

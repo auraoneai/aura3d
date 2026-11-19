@@ -33,7 +33,7 @@ jobs:
     name: Capture benchmark, none (macos-15)
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "aura-clash-showcase"
+      games: "showcase-aura-links-3d"
       bench: true
       qr_flags: "none"
       artifact_suffix: "-gate-none-bench"
@@ -43,7 +43,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-aurora-lander"
+      games: "showcase-iron-crown"
       bench: false
       qr_flags: "none"
       artifact_suffix: "-gate-none-g1"
@@ -53,7 +53,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "showcase-vault-breakers,showcase-bank-shot"
+      games: "showcase-pips-big-leap"
       bench: false
       qr_flags: "none"
       artifact_suffix: "-gate-none-g2"
@@ -72,7 +72,7 @@ jobs:
     name: Capture benchmark, flags=all, report-only (macos-15)
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "aura-clash-showcase"
+      games: "showcase-aura-links-3d"
       bench: true
       qr_flags: "all"
       artifact_suffix: "-gate-flags-bench"
@@ -82,7 +82,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-aurora-lander"
+      games: "showcase-iron-crown"
       bench: false
       qr_flags: "all"
       artifact_suffix: "-gate-flags-g1"
@@ -92,7 +92,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/quality-rebuild-capture.yml
     with:
-      games: "showcase-vault-breakers,showcase-bank-shot"
+      games: "showcase-pips-big-leap"
       bench: false
       qr_flags: "all"
       artifact_suffix: "-gate-flags-g2"

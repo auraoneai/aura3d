@@ -273,7 +273,9 @@ export const WORLDS: readonly WorldSpec[] = [
     ],
     gate: { id: "w2-gate", x: 0, y: 2.5, z: -68.5 },
     decor: [
-      { id: "w2-mill-1", kind: "windmill", x: -6.5, y: 0.4, z: -28, s: 1.6 },
+      // Pass-through pass: was x -6.5, where the blade-high ledge (and Pip on it) sat inside the tower and the spinning
+      // sails swept the blade-lane lift; the tower now stands clear of both.
+      { id: "w2-mill-1", kind: "windmill", x: -9.6, y: 0.4, z: -28, s: 1.6 },
       { id: "w2-mill-2", kind: "windmill", x: 7, y: 0.4, z: -48, s: 1.3 },
       { id: "w2-sail", kind: "sail", x: 3.4, y: 1.45, z: -19.8, s: 1 },
       { id: "w2-crate-1", kind: "crate", x: 2.6, y: 0.68, z: -1, s: 0.9 },

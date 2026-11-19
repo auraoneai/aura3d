@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink-port",
+  "key": "ioncPickupShield",
+  "generatedAt": "2026-11-18T22:08:43.311Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08c-7a83-7510-9eac-26af50242c29",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1792472,
+        "num_faces": 3586952,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "An upright ion-shield power-up capsule: a glowing faceted cyan crystal orb held between two brushed titanium end caps, wrapped by four twisted copper heat-pipe ribs, inside a clear glass sleeve",
+  "role": "prop",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.973,
+    "size": [
+      1.431,
+      2.36,
+      1.454
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/heatsink-port/assets/idol/ioncPickupShield.glb",
+  "sizeBytes": 4362604,
+  "preview": "artifacts/idol/heatsink-port/ioncPickupShield/views.png",
+  "usd": 0.37
+}

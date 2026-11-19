@@ -42,7 +42,22 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [55, 83], mobile: "both" },
-  assets: [],
+  // Idol pass (2026-11): image-to-3D GLBs from speridlabs/idol/max (tools/idol/specs), admitted typed assets.
+  assets: [
+    { role: "hero", assetKey: "splatRunnerRig", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["driven-pose"] } },
+    { role: "set-dressing", assetKey: "splatFinishArch", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "splatSweeperBot", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "splatPickupRainbow", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "splatPickupShield", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "splatPickupDouble", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "prop", assetKey: "splatPickupSwitch", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "splatIslandTree", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "splatIslandTower", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "splatBalloon", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "splatIslandPaintPot", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "splatIslandPalette", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "splatIslandEasel", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+  ],
   vfx: [
     { event: "gate-match", kind: "burst" },
     { event: "perfect", kind: "burst" },

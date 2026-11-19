@@ -5,8 +5,7 @@
   "name": "Space kit",
   "consumers": [
     "showcase-orbital-defense",
-    "showcase-gravity-post",
-    "showcase-aurora-lander"
+    "showcase-gravity-post"
   ],
   "budget": {
     "summary": "<= 24 MB -> <= 8 MB",

@@ -73,13 +73,14 @@ describe("shape shift sprint procedural multi-material backdrop & corridor dress
     }
   });
 
-  it("mounts 100% procedural multi-material landmarks, portals, and instanced clusters with zero static GLB model nodes or DOF blur", () => {
+  it("mounts Idol landmark and rival GLBs, procedural portals and instanced clusters, and no DOF blur", () => {
     const sim = new ShapeShiftSim(7);
     const world = buildWorld({ sim, aspect: 16 / 9 });
     const topNodes = world.scene.toJSON().nodes as unknown as SceneJsonNode[];
     const allNodes = walkSceneNodes(topNodes);
 
-    expect(allNodes.filter((n) => n.kind === "model")).toHaveLength(0);
+    // Idol wow pass: 6 landmark pieces (castle islands + block towers) and 2 rival pacers are Idol GLB model nodes.
+    expect(allNodes.filter((n) => n.kind === "model")).toHaveLength(8);
     expect(allNodes.filter((n) => n.kind === "effect" && (n.effect === "depthOfField" || n.effect === "motionBlur"))).toHaveLength(0);
 
     // Grounded castle islands & block spire towers match targetMaxDim
@@ -102,7 +103,7 @@ describe("shape shift sprint procedural multi-material backdrop & corridor dress
       const bounds = collectNodeBounds(morphJson);
       expect(bounds.max[0] - bounds.min[0]).toBeLessThanOrEqual(coreBounds.max[0] - coreBounds.min[0] + 0.02);
       expect(bounds.max[1] - bounds.min[1]).toBeLessThanOrEqual(coreBounds.max[1] - coreBounds.min[1] + 0.02);
-      expect(bounds.max[2] - bounds.min[2]).toBeLessThanOrEqual(1.1);
+      expect(bounds.max[2] - bounds.min[2]).toBeLessThanOrEqual(Math.max(1.1, coreBounds.max[2] - coreBounds.min[2]) + 0.02);
       expect((morphJson.children?.length ?? 0)).toBeGreaterThanOrEqual(3);
 
       let totalVerts = 0;
@@ -118,7 +119,8 @@ describe("shape shift sprint procedural multi-material backdrop & corridor dress
           expect(len).toBeLessThan(1.05);
         }
       }
-      expect(totalVerts).toBeGreaterThan(1500);
+      // morph mascot: gel shell + glowing core of the gameplay mesh (the old sculpted robot needed more)
+      expect(totalVerts).toBeGreaterThan(800);
     }
     for (const rIdx of [0, 1] as const) {
       const rivalBounds = collectNodeBounds(buildRivalMorphPacerNode(`test-rival-${rIdx}`, rIdx).toJSON() as unknown as SceneJsonNode);

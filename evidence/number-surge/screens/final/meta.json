@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "showcase-number-surge": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "1280-01-title",
+        "1280-02-early",
+        "1280-03-action",
+        "1280-04-gates",
+        "1280-05-results",
+        "390-01-title",
+        "390-02-early",
+        "390-03-action",
+        "390-04-gates",
+        "390-05-late",
+        "390-06-results",
+        "card-1x",
+        "card-2x"
+      ],
+      "results": "Results card reached (no-input run: RUN OVER, 300 m). ?autoplay=1 ran 2,700 m, lost at a 10,320 wall, showed results ~3 s and restarted.",
+      "errors": "none (page-errors captured on every run: 0)",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

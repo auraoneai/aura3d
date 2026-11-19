@@ -3059,9 +3059,25 @@ export class ForwardPass extends BaseRenderPass {
         // The fallback draw is a legacy draw: bind it as one.
         this.lastProgramFeatures = undefined;
       } else {
-        // async-skip: a not-yet-ready program skips the draw this frame
+        if (handle.status === "ready") {
+          if (handle.program) rememberReadyLightVariant(this.programCache(device), material, this.lastProgramFeatures, handle.program);
+          return handle.program;
+        }
+        // A pending variant whose only difference from a ready one is the direct-light bucket (a transient VFX
+        // point light entering/leaving changes `lights.point`) keeps drawing with the ready program until the new
+        // one compiles: the light loop still breaks at the live `u_lightCount`, so at worst a just-added light is
+        // unshaded for a few frames instead of the mesh vanishing (Duneglide "empty world", Diamond black outfield).
+        if (!photometric?.active && !projected?.active && !this.options.weightedTransparency && !this.options.nativeDepthCoverage
+          && this.lastProgramFeatures.features[SELECTIVE_BLOOM_FEATURE] !== true) {
+          const fallback = readyLightVariantFallback(this.programCache(device), material, this.lastProgramFeatures);
+          if (fallback) {
+            this.lastProgramFeatures = fallback.features;
+            return fallback.program;
+          }
+        }
+        // async-skip: a not-yet-ready program with no ready light-bucket sibling skips the draw this frame
         // (C-02 §A.2 semantics; warm-then-block warmup renders them ready up front).
-        return handle.status === "ready" ? handle.program : undefined;
+        return undefined;
       }
     }
     if (staticCapture?.generatedRequested) return undefined;
@@ -3421,6 +3437,65 @@ export function instanceCullExcluded(
   if (item.frustumCulled === false || item.skinning || item.morphTargets || item.morphWeights || item.instanceAttributes || item.drawRange) return true;
   if (customShaderMaterial) return true;
   return item.label?.startsWith("prd10.wind:") === true;
+}
+
+/**
+ * Last ready generated programs per (program cache, material), so a draw whose new light-bucket variant is still
+ * compiling (async `KHR_parallel_shader_compile` / WebGPU pipeline, or the T0-06 per-frame sync bound) can keep
+ * drawing with a ready sibling instead of being skipped.
+ */
+interface ReadyLightVariant {
+  readonly features: ProgramFeatures;
+  readonly program: RenderShaderProgram;
+  family?: string;
+}
+const READY_LIGHT_VARIANTS_PER_MATERIAL = 8;
+const readyLightVariants = new WeakMap<ProgramCacheLike, WeakMap<Material, ReadyLightVariant[]>>();
+
+/** Program key with the per-kind direct-light buckets erased (keeps clustered/hemisphere, rect presence, any-light). */
+function directLightTotal(features: ProgramFeatures): number {
+  const lights = features.lights;
+  return lights.dir + lights.point + lights.spot + lights.rect;
+}
+
+function lightFamilyKey(features: ProgramFeatures): string {
+  const lights = features.lights;
+  const total = lights.dir + lights.point + lights.spot + lights.rect;
+  return programKey({ ...features, lights: { ...lights, dir: total > 0 ? 1 : 0, point: 0, spot: 0, rect: lights.rect > 0 ? 1 : 0 } });
+}
+
+function rememberReadyLightVariant(cache: ProgramCacheLike, material: Material, features: ProgramFeatures, program: RenderShaderProgram): void {
+  let byMaterial = readyLightVariants.get(cache);
+  if (!byMaterial) readyLightVariants.set(cache, byMaterial = new WeakMap());
+  let list = byMaterial.get(material);
+  if (!list) byMaterial.set(material, list = []);
+  for (let i = 0; i < list.length; i += 1) {
+    if (list[i]!.program === program) {
+      if (i !== list.length - 1) list.push(list.splice(i, 1)[0]!);
+      return;
+    }
+  }
+  list.push({ features, program });
+  if (list.length > READY_LIGHT_VARIANTS_PER_MATERIAL) list.shift();
+}
+
+function readyLightVariantFallback(cache: ProgramCacheLike, material: Material, features: ProgramFeatures): ReadyLightVariant | undefined {
+  const list = readyLightVariants.get(cache)?.get(material);
+  if (!list || list.length === 0) return undefined;
+  let family: string;
+  try { family = lightFamilyKey(features); } catch { return undefined; }
+  // A ready sibling may only stand in when it was built for AT LEAST as many direct lights as are packed now: a
+  // program with a smaller light bound rejects the packet on WebGPU (WEBGPU_PBR_LIGHT_LAYOUT_MISMATCH broke Ion
+  // Circuit's load) and would read past its light array on WebGL. A light leaving is covered; a light arriving skips
+  // the draw until its variant compiles (games warm transient-light variants up front).
+  const needed = directLightTotal(features);
+  for (let i = list.length - 1; i >= 0; i -= 1) {
+    const candidate = list[i]!;
+    if (candidate.program.disposed) { list.splice(i, 1); continue; }
+    try { candidate.family ??= lightFamilyKey(candidate.features); } catch { continue; }
+    if (candidate.family === family && directLightTotal(candidate.features) >= needed) return candidate;
+  }
+  return undefined;
 }
 
 function lightBucket(count: number, max: 4 | 8 = 8): 0 | 1 | 2 | 4 | 8 {

@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink-port",
+  "key": "ioncCoolantTower",
+  "generatedAt": "2026-11-18T22:04:34.888Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08c-2b3e-7623-a300-95cd36ad137d",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2679920,
+        "num_faces": 5363408,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A futuristic lunar-base cryo coolant tower: a curved hyperboloid hourglass tower shell of white-grey ceramic panels with an open top rim, a low faceted geodesic reactor dome attached at its base, pipes and access hatches, cyan glowing vents, panel seams and moon-dust weathering",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 13.038,
+    "size": [
+      15.316,
+      14,
+      14.857
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/heatsink-port/assets/idol/ioncCoolantTower.glb",
+  "sizeBytes": 4512192,
+  "preview": "artifacts/idol/heatsink-port/ioncCoolantTower/views.png",
+  "usd": 0.37
+}

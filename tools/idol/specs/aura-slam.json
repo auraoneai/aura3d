@@ -1,0 +1,188 @@
+{
+  "game": "aura-slam",
+  "outDir": "examples/aura-slam/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "slamAthletePlayer",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.8
+      },
+      "seed": 7,
+      "subject": "A fit adult male professional tennis player with medium tan skin and short dark brown hair, wearing a plain ivory-white short-sleeve athletic polo shirt, plain dark forest-green athletic shorts, white crew socks, white tennis shoes and a white wristband, bare head"
+    },
+    {
+      "key": "slamAthleteRival",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.8
+      },
+      "seed": 11,
+      "subject": "A fit adult male professional tennis player with deep brown skin and a very short closely cropped black buzz cut (no ponytail, no braids, nothing hanging behind the head), wearing a plain burnt-orange clay-coloured short-sleeve athletic crew-neck shirt, plain dark navy-blue athletic shorts, white crew socks, white tennis shoes and a white wristband"
+    },
+    {
+      "key": "slamAthleteMatchPlayer",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.8
+      },
+      "seed": 7,
+      "subject": "A fit adult male professional tennis player with medium tan skin and short dark brown hair, wearing a plain sky-blue short-sleeve athletic crew-neck shirt, plain dark navy-blue athletic shorts, white crew socks, white tennis shoes and a white wristband, bare head"
+    },
+    {
+      "key": "slamAthleteMatchRival",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.8
+      },
+      "seed": 7,
+      "subject": "A fit adult male professional tennis player with light fair skin and short light brown hair, wearing a plain burnt-orange clay-coloured short-sleeve athletic crew-neck shirt, plain ivory-white athletic shorts, white crew socks, white tennis shoes and a white wristband, bare head"
+    },
+    {
+      "key": "slamUmpireOfficial",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.76
+      },
+      "seed": 7,
+      "subject": "A middle-aged adult male tennis chair umpire official with light skin and short grey hair, wearing a plain dark green tailored blazer over a white collared shirt, plain grey dress trousers and black leather shoes"
+    },
+    {
+      "key": "slamUmpireChair",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 3.1
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A tall empty tennis umpire high chair: dark green powder-coated tubular steel frame with a built-in step ladder at the front, a varnished teak wooden seat with a curved backrest and armrests at about two metres height, a small cream canvas sun canopy on a pole above the seat, empty seat"
+    },
+    {
+      "key": "slamNetPost",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 1.08
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A single tennis net post: a round dark green powder-coated steel pole about one metre tall with a domed top cap, a small brass net-tensioning winder crank with a handle mounted on one side, a wide round base flange, no net attached"
+    },
+    {
+      "key": "slamFloodlightTower",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 9.5
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A tall stadium floodlight tower: a slender square galvanised grey steel lattice truss mast on a concrete footing, topped by a rectangular steel frame holding two rows of four large round floodlight lamps all aimed forward, a small maintenance catwalk with handrail below the lamps",
+      "image": "artifacts/idol/aura-slam/slamFloodlightTower/ref.png"
+    },
+    {
+      "key": "slamScoreboard",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 6.4
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A wide freestanding outdoor stadium scoreboard: a long rectangular dark charcoal metal housing with a blank switched-off black screen face and thin trim, raised on two grey steel lattice truss legs standing on the ground, with a round clock housing on top centre, blank screen"
+    },
+    {
+      "key": "slamPlayerBench",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 1.94
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A courtside tennis player bench: a contoured slatted varnished teak wooden seat and backrest on a dark green tubular steel frame with armrests, a folded white cotton towel lying on the seat"
+    },
+    {
+      "key": "slamDrinksCooler",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.58
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A rectangular insulated drinks cooler box for a tennis courtside: dark green plastic body with a cream white lid, a few plastic water bottles standing on top of the lid"
+    },
+    {
+      "key": "slamTowelRack",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.88
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A small A-frame courtside towel rack made of dark green steel tube with two folded fluffy cream white towels hanging over the top bar"
+    },
+    {
+      "key": "slamBoxwoodPlanter",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 1.3
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A round clipped boxwood topiary shrub ball growing in a classic pale travertine stone urn planter"
+    },
+    {
+      "key": "slamTvCamera",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 1.9
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A professional television broadcast camera with a long telephoto lens and side viewfinder, mounted on a fluid head on a tall black three-legged tripod with spreader, unbranded"
+    },
+    {
+      "key": "slamArcadeFacade",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 24.4
+      },
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A long straight stadium outer facade wall section in warm pale travertine stone: a classical arcade of five tall round arches in a row separated by six fluted round columns, a flat stone cornice along the top, seen from the front"
+    }
+  ]
+}

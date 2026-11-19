@@ -1,49 +1,18 @@
 {
   "meta": {
     "pips-big-leap": {
-      "source": "tests/browser/audit-fix/pips-big-leap.spec.ts",
-      "runs": [
-        "g06-after2-A-20261029T124048Z",
-        "g06-after2-B-20261029T124048Z"
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "title",
+        "early",
+        "action",
+        "boss",
+        "starfall",
+        "results"
       ],
-      "commit": "ed0eea745",
-      "engine": "4.5.0",
-      "results": "reached (32.7 s sim) at 1280 and 390",
-      "frames": [
-        "1280-01-title.jpg",
-        "1280-02-early.jpg",
-        "1280-03-action.jpg",
-        "1280-04-mid.jpg",
-        "1280-05-modes.jpg",
-        "1280-06-results.jpg",
-        "390-01-title.jpg",
-        "390-02-early.jpg",
-        "390-03-action.jpg",
-        "390-04-mid.jpg",
-        "390-05-modes.jpg",
-        "390-06-results.jpg",
-        "card-1x.jpg",
-        "card-2x.jpg"
-      ],
-      "phase6": {
-        "runs": [
-          "g06p6-r1-1",
-          "g06p6-r1-2",
-          "g06p6-r1-3"
-        ],
-        "commit": "1e3e2489f",
-        "engine": "4.7.3",
-        "look": "4.7.2 (22ae79e75)",
-        "retaken": [
-          "1280-06-results.jpg",
-          "390-06-results.jpg",
-          "card-2x.jpg",
-          "card-1x.jpg"
-        ],
-        "results": "reached via qa.stepFrames autoplay (32.7 s sim, 4/6 seeds, 5 acorns) at 1280 and 390",
-        "panel": "g06p6res 3/0/0 both results views vs the 2026-10-29 frames"
-      }
+      "results": "results card reached at 1280 and 390 (?world=w3&autoplay=1); autoplay advances to the next world after 3 s",
+      "errors": "none",
+      "capturedAt": "2026-11-18"
     }
-  },
-  "incomplete": []
+  }
 }

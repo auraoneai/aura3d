@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/cli",
-  "version": "5.5.6",
+  "version": "5.6.0",
   "type": "module",
   "bin": {
     "aura3d": "dist/cli.js",
@@ -27,12 +27,18 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
+    "@aura3d/animation": "workspace:*",
     "@aura3d/asset-index": "workspace:*",
     "@aura3d/audio": "workspace:*",
     "@aura3d/rendering": "workspace:*",
     "create-aura3d": "workspace:*",
     "typescript": "^5.8.3",
-    "@aura3d/assets": "workspace:*"
+    "@aura3d/assets": "workspace:*",
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "@gltf-transform/functions": "4.5.1",
+    "meshoptimizer": "1.2.0",
+    "sharp": "0.33.5"
   },
   "description": "Bring real GLB/glTF assets into Aura3D browser apps with typed references, provenance, catalog search, validation, screenshots, and deploy checks.",
   "keywords": [

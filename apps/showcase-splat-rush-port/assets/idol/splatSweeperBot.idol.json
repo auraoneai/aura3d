@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-rush-port",
+  "key": "splatSweeperBot",
+  "generatedAt": "2026-11-18T22:14:05.595Z",
+  "generator": "tools/idol/generate.mjs (client-timeout resume)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A cute rounded egg-shaped mascot robot with a glossy ivory and plum body, a wraparound cyan visor with two big glossy cartoon eyes, a crest of four curly paint-splash locks on top in mint, red, yellow and blue, two arms stretched straight out sideways each holding a fluffy cylindrical paint roller, the left roller rose pink and the right roller mint green, standing on a short round brass base. Photograph of a real glossy designer vinyl art-toy collectible, smooth sculpted soft-vinyl and lacquered resin surfaces, saturated candy paint colours with real paint drips, crisp studio product lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17,
+      "note": "billed in the timed-out generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f098-d07e-7d80-87ab-525f3317067e",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 700300,
+        "num_faces": 1400592,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A cute rounded egg-shaped mascot robot with a glossy ivory and plum body, a wraparound cyan visor with two big glossy cartoon eyes, a crest of four curly paint-splash locks on top in mint, red, yellow and blue, two arms stretched straight out sideways each holding a fluffy cylindrical paint roller, the left roller rose pink and the right roller mint green, standing on a short round brass base. Photograph of a real glossy designer vinyl art-toy collectible, smooth sculpted soft-vinyl and lacquered resin surfaces, saturated candy paint colours with real paint drips, crisp studio product lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.83,
+    "size": [
+      1.83,
+      1.729,
+      1.016
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-rush-port/assets/idol/splatSweeperBot.glb",
+  "sizeBytes": 983412,
+  "preview": "artifacts/idol/splat-rush-port/splatSweeperBot/views.png",
+  "usd": 0.37,
+  "postProcess": "PNG textures re-encoded as JPEG q90 (normal map) by the splat Idol pass to fit the per-game byte budget"
+}

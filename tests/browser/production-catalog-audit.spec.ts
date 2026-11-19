@@ -15,7 +15,6 @@ const ROUTES = [
   { id: "02-smart-city-control-room", path: "/apps/showcase-smart-city-control/" },
   { id: "03-cinematic-architecture-tour", path: "/apps/showcase-cinematic-architecture/" },
   { id: "04-digital-twin-operations-center", path: "/apps/showcase-digital-twin-ops/" },
-  { id: "05-blockfall-reactor", path: "/apps/showcase-blockfall-reactor/" },
   { id: "06-turbo-drift-circuit", path: "/apps/showcase-turbo-drift-circuit/" },
   { id: "07-skyline-runner", path: "/apps/showcase-skyline-runner/" },
   { id: "08-aura-clash-arena", path: "/showcase/aura-clash/playable/" },

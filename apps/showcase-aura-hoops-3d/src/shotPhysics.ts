@@ -1,6 +1,9 @@
 import { createImpactWorld, type Impact, type ImpactWorld } from "@aura3d/engine/game";
 
-/** Rim ring centreline radius and tube radius (m). Clearance for a ball centre = RING_R - TUBE_R - ball radius. */
+/**
+ * Rim ring centreline radius and tube radius (m). Clearance for a ball centre = RING_R - TUBE_R - ball radius. The drawn
+ * rim (art/proceduralModels.ts buildBreakawayRimNode, fed these from main.ts) uses the same two numbers.
+ */
 export const RING_R = 0.27;
 export const TUBE_R = 0.022;
 const RING_SPHERES = 28;
@@ -14,8 +17,11 @@ export interface HoopGeometry {
   readonly boardY1: number;
 }
 
-/** Rim as a ring of small spheres and the glass as a thin box: a swept ball cannot tunnel through either, and every contact emits one impact. */
-export function createHoopWorld(hoop: HoopGeometry, onImpact?: (impact: Impact) => void): ImpactWorld {
+/**
+ * Rim as a ring of small spheres and the glass as a thin box: a swept ball cannot tunnel through either, and every contact
+ * emits one impact. `extra` adds more static solids (the stanchion, courtside furniture: courtObstacles.ts).
+ */
+export function createHoopWorld(hoop: HoopGeometry, onImpact?: (impact: Impact) => void, extra: readonly Parameters<typeof createImpactWorld>[0]["colliders"][number][] = []): ImpactWorld {
   const colliders: Parameters<typeof createImpactWorld>[0]["colliders"][number][] = [];
   for (let i = 0; i < RING_SPHERES; i += 1) {
     const a = (i / RING_SPHERES) * Math.PI * 2;
@@ -30,6 +36,7 @@ export function createHoopWorld(hoop: HoopGeometry, onImpact?: (impact: Impact) 
     center: [hoop.rim[0], (hoop.boardY0 + hoop.boardY1) / 2, hoop.boardFaceZ - half],
     half: [hoop.boardHalfW, (hoop.boardY1 - hoop.boardY0) / 2, half]
   });
+  colliders.push(...extra);
   return createImpactWorld({ colliders, eventMinSpeed: 0.6, ...(onImpact ? { onImpact } : {}) });
 }
 

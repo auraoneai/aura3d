@@ -284,8 +284,10 @@ export function stepPlayer(
       p.vy = Math.min(p.vy, 0);
     } else {
       // Side overlap inside Y band — push out horizontally.
-      const pushX = (box.x < s.x) ? box.x + box.hx - s.x + s.hx : -(s.x + s.hx - box.x + box.hx);
-      const pushZ = (box.z < s.z) ? box.z + box.hz - s.z + s.hz : -(s.z + s.hz - box.z + box.hz);
+      // Pass-through pass: push AWAY from the solid's centre (the old signs pushed Pip further in, so a thin decor
+      // body such as a banner pole or crate was walked straight through).
+      const pushX = (box.x < s.x) ? -(box.x + box.hx - s.x + s.hx) : (s.x + s.hx - box.x + box.hx);
+      const pushZ = (box.z < s.z) ? -(box.z + box.hz - s.z + s.hz) : (s.z + s.hz - box.z + box.hz);
       if (Math.abs(pushX) < Math.abs(pushZ)) { p.x += pushX; box.x += pushX; if (p.state !== "dive") p.vx = 0; }
       else { p.z += pushZ; box.z += pushZ; if (p.state !== "dive") p.vz = 0; }
     }

@@ -46,7 +46,18 @@ export const STRIKE = {
    * the race finished within `goldTime` seconds, so it rewards fast and accurate driving rather than crawling (HP-14).
    */
   medals: { bronze: 16, silver: 30, gold: 36 },
-  goldTime: 300
+  goldTime: 300,
+  /**
+   * the craft-vs-target collider (owner QA, Nov 2026: the craft flew straight through live targets on the road). Half
+   * extents of each target's visible body in the track frame: `across` is half the model's wingspan (art/idolModels.ts
+   * SENTRY_FIT / HEAVY_FIT span), `along` half its depth, `up` the vertical reach from its centre. The craft's own body
+   * (CFG.vehicle.halfWidth / halfLength) is added at the check, trimmed by `craftInset` to the solid hull. A craft that
+   * touches a live target shatters it: the target dies (a kill, half its score, chain broken) and the movement is left
+   * untouched, so the recorded movement replay stays bit-identical.
+   */
+  ram: { sentry: { across: 5.1, along: 2.9, up: 3.9 }, heavy: { across: 6.95, along: 3.6, up: 3.6 } },
+  craftInset: 0.8,
+  ramScoreFactor: 0.5
 } as const;
 
 export type TargetKind = "sentry" | "heavy";
@@ -76,7 +87,7 @@ export interface Bolt {
 
 export interface StrikeEvent {
   step: number;
-  type: "fire" | "hit" | "kill" | "barrel" | "chain" | "lap" | "medal";
+  type: "fire" | "hit" | "kill" | "ram" | "barrel" | "chain" | "lap" | "medal";
   detail?: number | string;
   world?: { x: number; y: number; z: number };
 }
@@ -102,6 +113,18 @@ export function segmentVerticalCapsule(ax: number, ay: number, az: number, bx: n
   const y = ay + (by - ay) * t;
   const dy = y < y0 ? y0 - y : y > y1 ? y - y1 : 0;
   return px * px + pz * pz + dy * dy <= r * r ? t : -1;
+}
+
+/**
+ * true when the craft's body (centre at track station `s`, lateral `x`, height `y`) overlaps target `t`'s visible
+ * body: an oriented box test in the track frame (the target model faces back down the track)
+ */
+export function craftTouchesTarget(track: Track, s: number, x: number, y: number, t: StrikeTarget): boolean {
+  const r = STRIKE.ram[t.kind];
+  const V = CFG.vehicle;
+  if (Math.abs(track.wrapDelta(s, t.s)) >= r.along + V.halfLength * STRIKE.craftInset) return false;
+  if (Math.abs(x - t.x) >= r.across + V.halfWidth * STRIKE.craftInset) return false;
+  return Math.abs(y - t.world.y) < r.up;
 }
 
 export class Operation {
@@ -217,6 +240,10 @@ export class Operation {
     this.chainT -= e;
     if (this.chainT <= 0) this.chain = 0;
 
+    if (race.state === "race" && !p.crashed && !p.finished) {
+      for (const t of this.targets) if (t.alive && craftTouchesTarget(this.track, p.s, p.x, p.yW, t)) this.ram(t);
+    }
+
     if (input.fire && race.state === "race" && !p.crashed && !p.finished && p.gunCd <= 0 && !p.gunLocked) this.fire(p, race);
 
     for (const b of this.bolts) if (b.alive) this.moveBolt(b, e, race);
@@ -318,6 +345,18 @@ export class Operation {
     this.score += STRIKE.score[t.kind] * this.multiplier;
     this.events.push({ step: this.step, type: "kill", detail: t.id, world: t.world });
     if (this.chain >= 2) this.events.push({ step: this.step, type: "chain", detail: this.multiplier });
+  }
+
+  /** the craft flew into a live target: it shatters (a kill at half value; ramming breaks the chain) */
+  private ram(t: StrikeTarget): void {
+    t.alive = false;
+    t.hp = 0;
+    this.kills++;
+    if (this.player) this.player.takedowns++;
+    this.chain = 0;
+    this.chainT = 0;
+    this.score += Math.round(STRIKE.score[t.kind] * STRIKE.ramScoreFactor);
+    this.events.push({ step: this.step, type: "ram", detail: t.id, world: t.world });
   }
 
   private shootBarrel(index: number, race: Race): void {

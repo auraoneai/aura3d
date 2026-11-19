@@ -4,7 +4,8 @@ import { icosphereSmoothMesh } from "../../apps/showcase-port-shared/proceduralK
 import type { Chapter } from "./chapter";
 import { at, frameAt, type V3 } from "./course";
 import { Mesh, box, cylinder, hex, icosphere, mix3, mul3 } from "./mesh";
-import { seeded, smooth, layoutObstacles } from "./sim";
+import { OBSTACLE_JUMP_CLEAR, OBSTACLE_REACH, seeded, smooth, layoutObstacles } from "./sim";
+import { RUNNER_HALF_WIDTH } from "./encounters";
 import { CHUNK, ROAD_HALF, groundHeight, noise1 } from "./terrain";
 import { buildSanctuaryToriiNode, buildSkyHermitCottageNode } from "./art/proceduralModels";
 
@@ -258,6 +259,20 @@ export function buildObstacles(ch: Chapter): Mesh[] {
   const rnd = seeded(808);
   const rockProto = [0, 1, 2].map((i) => icosphere(1, mix3(hex("#b8a07a"), hex("#8a7658"), i / 2), 0.2, seeded(60 + i), true));
   const logProto = sculptedLogUnit();
+  // Pass-through audit: each rock / log is drawn the size of its sim hitbox (sim.ts OBSTACLE_REACH / OBSTACLE_JUMP_CLEAR),
+  // so a hit visibly touches and a jump that clears it visibly clears it (the old 1.3-2.0 m rocks and 5 m logs were wider
+  // and taller than what the sim hits, and the kid ran or jumped straight through their edges and tops).
+  const rockHalf = OBSTACLE_REACH.rock - RUNNER_HALF_WIDTH, logHalf = OBSTACLE_REACH.log - RUNNER_HALF_WIDTH;
+  const rockFit = rockProto.map((m) => {
+    let r = 0, y0 = Infinity, y1 = -Infinity;
+    for (let i = 0; i < m.vertexCount; i++) {
+      r = Math.max(r, Math.hypot(m.positions[i * 3]!, m.positions[i * 3 + 2]!));
+      y0 = Math.min(y0, m.positions[i * 3 + 1]!); y1 = Math.max(y1, m.positions[i * 3 + 1]!);
+    }
+    const sink = 0.1, sy = (OBSTACLE_JUMP_CLEAR + sink) / (y1 - y0);
+    return { sxz: rockHalf / r, sy, lift: -sink - y0 * sy };
+  });
+  const LOG_R = OBSTACLE_JUMP_CLEAR / 1.95; // the unit log's radius is 0.5 (+ bark ridges); its axis sits 0.9 r up
   const obstacles = layoutObstacles(ch, 0);
   const byChunk = new Map<number, Mesh>();
   for (const o of obstacles) {
@@ -267,10 +282,12 @@ export function buildObstacles(ch: Chapter): Mesh[] {
     const f = frameAt(o.s, o.lane);
     const base: V3 = [f.point[0], f.point[1], f.point[2]];
     if (o.type === "log") {
-      const len = 4.4 + rnd() * 0.8, r = 0.62 * o.size;
+      rnd();
+      const len = logHalf * 2, r = LOG_R;
       mesh.append(logProto, [base[0] - f.right[0] * len / 2, base[1] + r * 0.9, base[2] - f.right[2] * len / 2], [r * 2, len, r * 2], yawOf(f.right), Math.PI / 2);
     } else {
-      mesh.append(rockProto[o.id % 3]!, [base[0], base[1] + 0.35 * o.size, base[2]], [1.15 * o.size, 0.95 * o.size, 1.1 * o.size], rnd() * 6.28);
+      const fit = rockFit[o.id % 3]!;
+      mesh.append(rockProto[o.id % 3]!, [base[0], base[1] + fit.lift, base[2]], [fit.sxz, fit.sy, fit.sxz], rnd() * 6.28);
     }
   }
   for (const m of byChunk.values()) out.push(m);
@@ -279,23 +296,27 @@ export function buildObstacles(ch: Chapter): Mesh[] {
 
 /* ---------------------------------------------------------------- bridges, gorge posts, hut */
 export function buildBridges(ch: Chapter): Mesh {
+  // Pass-through audit: the sim has no bridge (a grounded kid falls into every gap, sim.ts `step`), so a plank deck and
+  // its lane posts drawn across the gap let him fall through a solid-looking bridge and run through the posts. Only the
+  // snapped bridge's anchor posts remain, on each lip outside the corridor, with the frayed rope ends hanging into the gorge.
   const m = new Mesh();
-  const plank = box(2.6, 0.12, 0.42, hex("#8b5a33"));
-  const rope = box(0.06, 0.06, 1, hex("#d8c8a0"));
   const post = cylinder(6, 0.16, 0.16, 1.5, hex("#6a4528"), hex("#6a4528"));
+  const rope = box(0.06, 1, 0.06, hex("#d8c8a0"));
+  const plank = box(0.42, 0.12, 2.6, hex("#8b5a33"));
   for (const g of ch.gaps) {
     if (!g.bridge) continue;
-    for (let s = g.start - 0.4; s <= g.end + 0.4; s += 0.46) {
-      const f = frameAt(s);
-      const sag = Math.sin(((s - g.start) / (g.end - g.start)) * Math.PI) * -0.18;
-      m.append(plank, [f.point[0], f.point[1] - 0.06 + sag, f.point[2]], 1, yawOf(f.forward), 0);
-    }
-    for (const side of [-1, 1] as const) {
-      const a = at(g.start - 0.4, side * 1.4, 0), b = at(g.end + 0.4, side * 1.4, 0);
-      m.append(post, [a[0], a[1] - 0.05, a[2]], 1, 0, 0);
-      m.append(post, [b[0], b[1] - 0.05, b[2]], 1, 0, 0);
-      const len = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
-      m.append(rope, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + 1.35, (a[2] + b[2]) / 2], [1, 1, len], yawOf(frameAt((g.start + g.end) / 2).forward), 0);
+    for (const [edge, lip] of [[g.start - 0.4, g.start + 0.2], [g.end + 0.4, g.end - 0.2]] as const) {
+      for (const side of [-1, 1] as const) {
+        const lat = side * (ROAD_HALF + 0.5);
+        const a = at(edge, lat, groundHeight(ch, edge, lat));
+        m.append(post, [a[0], a[1] - 0.05, a[2]], 1, 0, 0);
+        // a frayed rope end dropping off the lip below the road surface (never above it)
+        const r = at(lip, side * 1.4, -1.2);
+        m.append(rope, r, [1, 2.2, 1], 0, 0);
+      }
+      // one broken plank dangling on its ropes below the lip
+      const d = at(lip, 0, -2.6);
+      m.append(plank, d, 1, yawOf(frameAt(lip).forward) + Math.PI / 2, 0.5);
     }
   }
   m.computeNormals();
@@ -323,7 +344,7 @@ export function buildGorgePosts(ch: Chapter): Mesh {
   return m;
 }
 
-export interface SanctuaryToriiPlacement { readonly name: string; readonly pos: V3; readonly yaw: number }
+export interface SanctuaryToriiPlacement { readonly name: string; readonly pos: V3; readonly yaw: number; /** course distance of the gate */ readonly s: number }
 
 export function buildSanctuaryToriiPlacements(ch: Chapter): SanctuaryToriiPlacement[] {
   const out: SanctuaryToriiPlacement[] = [];
@@ -334,7 +355,8 @@ export function buildSanctuaryToriiPlacements(ch: Chapter): SanctuaryToriiPlacem
     out.push({
       name: `sanctuary-torii-${idx}`,
       pos: [f.point[0], f.point[1] + Math.max(-0.3, gy), f.point[2]],
-      yaw: yawOf(f.forward)
+      yaw: yawOf(f.forward),
+      s
     });
   });
   return out;

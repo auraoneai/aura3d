@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "strange-orbit-port": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "01-title",
+        "02-early",
+        "03-amethyst",
+        "04-gravity-fold",
+        "05-homeward",
+        "06-lap2"
+      ],
+      "results": "not captured as a still; the full-run audit (headed Chrome, real GPU) reached the Gold medal results card (P1, 4:03.32) after 7 laps and autoplay restarted the cup",
+      "errors": "none (no page errors in any capture)",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

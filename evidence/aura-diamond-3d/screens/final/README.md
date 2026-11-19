@@ -1,19 +1,46 @@
-# Aura Diamond 3D: final screenshots (retaken 2026-10-31 for 4.7.1, GU47 phase 3)
+# Aura Diamond 3D: final screenshots (2026-11-18)
 
-- **4.7.1 retake:** branch `gu47/g08`, runs `g08p3-screens2` (viewports, image `g08p3r2`) and `g08p3-card2` (card, `tests/browser/shotsa-aura-diamond-3d-card.spec.ts`, shot after the park intro). Software WebGL2 (SwiftShader). The notes below are from the 2026-10-29 set.
+Route: `/apps/showcase-aura-diamond-3d/`
 
+Runner: headed Chrome on a real GPU (Apple Metal) via REA, production build (http://127.0.0.1:8790).
 
-- **Build:** branch `audit-fix/g08` at `454f97c46` (the lane's audit fixes on top of `audit-fix/integration`, engine 4.5.0 from the workspace). Same file names and sizes as the 2026-10-25 set (RH-05).
-- **Runner:** remote ACR task (`tools/remote-acr/run.sh`), RUN_ID `g08-w2-after-shotsa`. Headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**. A frame costs several seconds there, so game time runs slow.
-- **Spec:** `tests/browser/shotsa-aura-diamond-3d.spec.ts` (title, `?mode=quick`, three practice swings at 250/450/700 ms, cards). Decoder `tools/shots/decode-frames.mjs`. `status.txt` holds the capture log lines: 10 frames per viewport, 0 console errors, both cards captured.
-- **Layout:** `1280x720/`, `390x844/`, `card/` (720x450 at 1x and 2x).
+| Viewport | State | Meaning |
+|---|---|---|
+| 1280 | `1280-01-title.jpg` | modes menu: ballparks, clubs, difficulty |
+| 1280 | `1280-02-early.jpg` | ?autoplay=1 Harbor Sandlot, pitch on the way, fielders set |
+| 1280 | `1280-03-batter.jpg` | batter cam at Ivy Classic, stance and timing rings |
+| 1280 | `1280-04-contact.jpg` | contact read-out (exit velo / launch), batter after the swing |
+| 1280 | `1280-05-ivy.jpg` | Ivy Classic, runner on first |
+| 1280 | `1280-06-canyon.jpg` | Canyon Rim, walk, runner jogging to first |
+| 1280 | `1280-07-midtown.jpg` | Midtown Skyline under the floodlights after the look fix: green grass, red-brown clay, lit players |
+| 1280 | `1280-08-results.jpg` | results: DERBY COMPLETE card (Midtown, 3 HR, longest 365 ft) |
+| 390x844 | `390-01-title.jpg` | modes menu on a phone |
+| 390x844 | `390-02-early.jpg` | portrait pitch, touch zone and swing button |
+| 390x844 | `390-03-play.jpg` | later pitch, runner on second |
+| 390x844 | `390-04-ivy.jpg` | Ivy Classic, walk, runner to first |
+| 390x844 | `390-05-midtown.jpg` | Midtown Skyline, ball in play to the outfield |
+| 390x844 | `390-06-results.jpg` | results: DERBY COMPLETE card on a phone |
+| 1440x900 | `card-2x.jpg` | Ivy Classic: batter, catcher, runner jogging to first, all fielders (`card-1x.jpg` = 720x450 LANCZOS downscale) |
 
-## Seen
+## Checked in the frames
 
-- `1280x720/03-action-04-swing-0-700.jpg`: Harbor Sandlot, both teams with navy caps and green belts on the athletes (C5), the controls hint reads "SWING: SPACE, TIMED TO THE BALL" (C11), the 12 px HUD text (C19), the crowd and bleachers behind the fence (C3).
-- `390x844/03-action-01-stance.jpg`: phone layout, batter in stance with the bat at the shoulder, linescore and count panels readable.
+- batter, pitcher, catcher and fielders animate (stance shifts, swing, runner jog); 33 ms screencast: smooth
+- ball scale realistic (~1/3 of a head)
+- pass-through: fielders stop at the warning track / foul line (never through the wall, dugouts or coaches), foul poles are solid, wall collider matches the drawn +-45 deg wall, fielders and runners keep 0.9 m apart, landing ball sits on the mound
+- all six parks run hands-free with ?autoplay=1
 
-## Not in this set
+## Midtown Skyline look fix (2026-11-19)
 
-- This spec does not play to a results screen. Results screens at 1280x720 and 390x844 come from the gameplay QA probe (`evidence/aura-diamond-3d/audit-fix/after/dia-results/`, run `g08-w2-after-grp6`).
-- Per-park steady-state frames for all six parks are in `evidence/aura-diamond-3d/audit-fix/{before,after}/`.
+Field region (x 20-80 %, y 45-88 % of a 1280x720 autoplay frame), mean HSV saturation / Lab C*: Midtown before 0.10 / 9.2
+(lavender clay, pale teal grass), after 0.40 / 22.8; day parks 0.44-0.49 / 30, Dome 0.06 / 3.8, Lunar 0.18-0.21 / 8.9.
+Cause: 4.8x combined exposure, a bright blue IBL fill and a blue 9000 K backlit key. Now 2.5x exposure, IBL 0.35, a
+near-white 6500 K floodlight key from the camera side, and a blue-hour gradient sky (the drawn HDRI's street lamps,
+luminance up to 27 000, bloomed the low walk-up shot white).
+
+## Known issues
+
+- Black foreground grass for a frame right after a 117.9 mph contact at Harbor (one earlier 1280 frame,
+  /tmp/gpu-shots/Q6-dia-1-06-a5.png): not reproduced in about 10 more contacts (derby bursts at 120-300 ms, high and
+  medium tier, Harbor and Midtown). The frame looks like the `field-grass` plane was not drawn (the preetham sky's
+  dark lower hemisphere shows through; clay and players drawn), which points at an engine draw/program transient, not game code.
+- Harbor Sandlot batter cam occasionally catches strong low-sun glare

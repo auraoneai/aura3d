@@ -1,24 +1,35 @@
-# Cumulus Dash: final screenshots (retaken 2026-10-29 on the 4.5.0 build with the audit fixes)
+# Cumulus Dash: final real-GPU frames
 
-- **Build:** branch `audit-fix/g25` (4.5.0 engine, audit lane g25 fixes), examples dev server, QA hook `window.__AURA_CUMULUS_DASH__`. Same file names and sizes as the 2026-10-25 set, plus `results-lost.640x360`.
-- **Capture:** `tests/browser/audit-fix/cloud-runner-port-screens.spec.ts` (built on `tests/browser/finc-lib.ts`), decoded with `tools/shots/decode-finc.mjs`; numbers in `metrics.jsonl`. Remote runs: `g25-scr-desk-194727` (desktop states), `g25-scr-mob-194750` (phone), `g25-scr-card-194811` (card and 2x), `g25-scr-res-202810` (result cards after the panel fix), `g25-scr-title-203412` (title after the credit fix).
-- **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. These frames are not real-GPU evidence.
-- **Method:** desktop frames are 640x360 because the route is slow on software GL; the phone is 390x844 and now emulates a touch device (`hasTouch`, `isMobile`), so the on-screen buttons and touch hints show ("TAP ◀ ▶ TO STEER"). 0 console errors and 0 failed responses in every run. Every frame was opened and looked at.
+Route: `/apps/cumulus-dash/`
 
-## States
+Runner: headed Chrome on a real GPU (Apple Metal) via REA, production build (http://127.0.0.1:8790).
 
-| File | State |
-|---|---|
-| `title.640x360`, `title.390x844` | title card (difficulty and motion toggles, credit top right on keyboard screens) |
-| `gameplay-early.*` | run begins (`begin` + 20 settle frames), on the rolling log |
-| `key-run.*` | 120 game frames running |
-| `key-jump.640x360` | runner airborne on the open track (placed at 600 m, jump input) |
-| `mid-track.640x360` | placed at 600 m, checkpoint flag in view |
-| `results.640x360` | **real won result card**: placed at 1950 m and run through the finale to the card. The time reads 0:00 because `place()` teleports past the run clock |
-| `results-lost.640x360` | real lost result card: last heart lost on the first rock ("Out of hearts", "Continue from checkpoint") |
-| `dsf2-key.640x360@2x`, `card.2x.1440x900`, `card.1x` | 2x checks and the card (from `key-run`; 1x is the 2x frame downscaled in the page). 2x top-right region mean luma 132.2, dark fraction 0 |
+| frame | viewport | state | meaning |
+|---|---|---|---|
+| `1280-01-title.jpg` | 1280x720 | title | title card |
+| `1280-02-rolling-log.jpg` | 1280x720 | first seconds | the run begins: kid visible ahead of the textured rolling log |
+| `1280-03-canyon.jpg` | 1280x720 | early play | sandstone canyon, pearls and coins |
+| `1280-04-tyrant.jpg` | 1280x720 | peak action | the tyrant walking beside the road ('get right or bonk him') |
+| `1280-05-vault-the-water.jpg` | 1280x720 | second venue | vaulting the river between shrine bells |
+| `1280-06-final-gap.jpg` | 1280x720 | late course | final canyon gap at 96% |
+| `1280-07-finish-home.jpg` | 1280x720 | finish | home at last: the kid reaches the shrine house (finish cinematic) |
+| `390-01-title.jpg` | 390x844 | title | title orbit, kid readable in portrait |
+| `390-02-run-begins.jpg` | 390x844 | first seconds | the run begins, kid framed in portrait |
+| `390-03-rolling-log.jpg` | 390x844 | early play | kid running past the textured log |
+| `390-04-boulder.jpg` | 390x844 | early play | boulder incoming |
+| `390-05-run.jpg` | 390x844 | peak | mid-course run, Idol trees |
+| `390-06-steed.jpg` | 390x844 | second venue | riding the steed at 91% |
+| `card-2x.jpg` / `card-1x.jpg` | 1440x900 (1x: 720x450) | card | the kid running the ridge road between shrine bell gates, Idol trees and cloud sky |
 
-## Problems still visible
+## Checked in the frames
 
-1. **Low:** the 1.5x pixel-ratio cap makes the 2x frames soft.
-2. **Low:** the keyboard hint under the prompt ("← → OR A D TO STEER") has low contrast over the sky.
+- tyrant legs differ between frames (walks), hawk/flyers flap, kid run cycle
+- rolling log is a textured bark log; rocks/logs drawn at hitbox size; rope bridges replaced (no fall-through planks)
+- no black see-through shadow sheet, no dark blob canopy near the road (fixed); Idol trees along the whole course
+- shrine pillars clear the lanes
+- steed ride seen at 91% (390-05); portrait camera now snaps behind the kid at run start (fixed)
+
+## Known issues
+
+- flyer path and title orbit were rebuilt (flyer stays ahead of the kid, never between camera and kid); the specific 50% dive was not re-caught in a capture window, the 52-55% portrait window shows the kid unobstructed
+- the portrait frame at ~80% looks down into a real gap (far wall), not camera-in-geometry

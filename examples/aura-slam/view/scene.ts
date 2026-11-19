@@ -25,6 +25,8 @@ import { createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
 import { LINE_COLOR, buildGrassStripesNodes, feltBallMaterial, surfaceMaterial } from "./surfaces";
 import { buildBoardNodes, standLineText } from "./boards";
 import { buildNetMeshNode, netTapeParts, NET_TAPE_ID } from "./net";
+import { buildCornerPanelNodes, deflectorVisuals, SPONSOR_BOARD, SPONSOR_BOARD_Z } from "./courtSolids";
+import { idolBowlNodes, idolEnabled, idolFloodlightNodes, idolNetPostNodes, idolScoreboardNode, idolSidelineNodes, idolUmpireNodes } from "./idolVenue";
 
 export interface TennisSceneOptions {
   /** Boot venue: the authored environment, fog, key and grade are this venue's, so the first frame needs no swap. */
@@ -35,6 +37,8 @@ export interface TennisSceneOptions {
   readonly crowd?: WorldTourCrowd;
   /** TT-C1: the broadcast camera (default: v2 in the World Tour look, classic with `?look=original` or `?cam=classic`). */
   readonly camera?: BroadcastCameraRig;
+  /** Idol wow pass: World Tour set pieces from the Idol GLBs (view/idolVenue.ts); default on unless `?idol=0`. */
+  readonly idol?: boolean;
 }
 
 /** GU47 TT-E1: the venue environment node (its HDRI is swapped at runtime with `app.lighting.setEnvironment`). */
@@ -59,6 +63,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   const original = options.look === "original";
   const boot = venueKey(options.venue);
   const look = venueLook(boot);
+  const idol = !original && (options.idol ?? idolEnabled());
   // TT-M1: World Tour line paint #fbfbf5 and per-surface court materials; `?look=original` keeps the 4.6.1 flat colours.
   const lineMat = material.pbr({ color: original ? "#f5f4e6" : LINE_COLOR, roughness: original ? 0.58 : 0.5 });
   const courtMat = (part: "court" | "alley" | "apron" | "ground", flat: () => ReturnType<typeof material.pbr>) => (original ? flat() : surfaceMaterial(boot, part));
@@ -206,6 +211,9 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
         })
         .position(NET_POST_X, NET_POST_H * 0.5, 0)
     ]);
+  } else if (idol) {
+    s.addMany(idolNetPostNodes());
+    s.add(buildCenterStrapAnchorNode());
   } else {
     s.add(buildTournamentNetPostNode(-1));
     s.add(buildTournamentNetPostNode(1));
@@ -283,26 +291,42 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     statics.box("wood", chairWood, [0.68, 0.022, 2.04], [-7.35, 0.011, 3.4], false);
     statics.box("canopy", canopyMat, [0.54, 0.024, 0.7], [-7.35, 0.012, -1.85], false);
     statics.box("canopy", canopyMat, [0.54, 0.024, 0.7], [-7.35, 0.012, 1.85], false);
-    s.addMany(buildUmpireHighChairNodes());
-    s.addMany(buildUmpireOfficialNodes(false));
+    if (idol) {
+      s.addMany(idolUmpireNodes());
+      // the renderer still turns `umpire-head` every frame: the procedural head stays, hidden, so the handle resolves
+      s.add(primitives.sphere({ name: "umpire-head", size: [0.27, 0.27, 0.27], castShadow: false, material: material.pbr({ color: "#c58e69", roughness: 0.6 }) })
+        .position(-6.68, 2.62, 0).scale(HIDDEN_SCALE).runtime(game.runtimeNode("umpire-head")));
+    } else {
+      s.addMany(buildUmpireHighChairNodes());
+      s.addMany(buildUmpireOfficialNodes(false));
+    }
   }
 
   // Sponsor A-frame perimeter boards at z = -10.85, x = ±4.3 + LED ribbon trim + sculpted sideline player zones
   const sponsorBoardMat = original ? material.pbr({ color: "#1d3d33", roughness: 0.68 }) : material.clearcoatPaint({ color: "#17372e", roughness: 0.3, clearcoat: 0.78 });
   const sponsorTrimMat = material.pbr({ color: VENUE_PALETTES.hard.trim, roughness: 0.48 });
-  for (const bx of [-4.3, 4.3]) {
-    statics.box("sponsorBoard", sponsorBoardMat, [3.24, 0.78, 0.34], [bx, 0.39, -10.85]);
-    statics.box("sponsorTrim", sponsorTrimMat, [2.88, 0.18, 0.36], [bx, 0.42, -10.85], false);
+  // Owner pass-through audit: the boards' faces sit on the sim's rear-wall collider (z -10.8, physics.ts REAR_BOARDS), padded
+  // wall segments fill the rest of the collider's span, and the two angled corner panels the sim bounces balls off are drawn.
+  const B = SPONSOR_BOARD;
+  for (const bx of [-B.x, B.x]) {
+    statics.box("sponsorBoard", sponsorBoardMat, [B.width, B.height, B.depth], [bx, B.height / 2, SPONSOR_BOARD_Z]);
+    statics.box("sponsorTrim", sponsorTrimMat, [B.width - 0.36, 0.18, B.depth + 0.02], [bx, 0.42, SPONSOR_BOARD_Z], false);
     if (!original) {
-      statics.box("chairFrame", chairFrame, [3.3, 0.055, 0.42], [bx, 0.028, -10.85], false);
+      statics.box("chairFrame", chairFrame, [B.width + 0.06, 0.055, B.depth], [bx, 0.028, SPONSOR_BOARD_Z], false);
     }
   }
+  for (const pad of deflectorVisuals().filter((d) => d.id.startsWith("rear-wall-pad"))) {
+    statics.box("sponsorBoard", sponsorBoardMat, [pad.hx * 2, pad.y1, pad.hz * 2], [pad.cx, pad.y1 / 2, pad.cz]);
+    statics.box("sponsorTrim", sponsorTrimMat, [Math.max(0.2, pad.hx * 2 - 0.36), 0.18, pad.hz * 2 + 0.02], [pad.cx, 0.42, pad.cz], false);
+  }
+  s.addMany(buildCornerPanelNodes(sponsorBoardMat, sponsorTrimMat));
   if (original) {
     for (const bz of [-3.4, 3.4]) statics.box("wood", chairWood, [0.58, 0.46, 1.95], [-7.35, 0.23, bz]);
   } else {
-    s.addMany(buildPlayerSidelineNodes());
+    s.addMany(idol ? idolSidelineNodes() : buildPlayerSidelineNodes());
     if (boot !== "moon") {
-      s.addMany(buildStadiumBowlNodes());
+      s.addMany(buildStadiumBowlNodes({ idolSetPieces: idol }));
+      if (idol) s.addMany(idolBowlNodes());
     }
   }
   // TT-H2 / TT-A2: "AURA SLAM" / "WORLD TOUR" on the sponsor boards and the live venue + score line on the stand (3 draws).
@@ -310,7 +334,10 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
 
   // WP-01: Procedural multi-material Grand Slam lattice floodlight towers, grandstand & trussed LED scoreboard gantry (0 static GLBs).
   const mastMat = original ? material.pbr({ color: "#2b3a40", metalness: 0.55, roughness: 0.42 }) : material.brushedMetal({ color: "#5d6a70", roughness: 0.22 });
-  if (!original) {
+  const idolTowers = idol ? idolFloodlightNodes() : null;
+  if (idolTowers) {
+    s.addMany(idolTowers);
+  } else if (!original) {
     s.add(buildFloodlightTowerNode(-1));
     s.add(buildFloodlightTowerNode(1));
   }
@@ -359,6 +386,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
         })
         .position(12.5, FLOODLIGHT_MAST_H, -13.2)
     ]);
+  } else if (idol) {
+    s.add(idolScoreboardNode(gantryPos));
   } else {
     s.add(buildScoreboardGantryNode(gantryPos));
   }

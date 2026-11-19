@@ -11,7 +11,8 @@
  * the capture is pending, not done).
  *
  * `--runner local` (explicit opt-in, prints a warning): runs the project's
- * Playwright screenshot spec directly on this machine.
+ * Playwright screenshot spec directly on this machine, through the project's
+ * own package manager (pnpm/yarn/bun/npm, detected from its lockfile).
  *
  * `--runner gh-actions` (legacy, prints a warning): dispatches the project's own
  * `.github/workflows/aura3d-lookdev.yml` through the user's `gh` CLI auth —
@@ -26,6 +27,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { spawnSync } from "node:child_process";
 import { join, resolve } from "node:path";
 import type { AuraCliCommand } from "../contracts/commands.js";
+import { detectPackageManager, execBinaryCommand } from "../package-manager.js";
 
 export interface LookCaptureDeps {
   /** Injected process runner (tests mock it); default spawns real commands. */
@@ -230,15 +232,19 @@ export async function runLookCapture(argv: readonly string[], io: { readonly cwd
   }
 
   if (runner === "local") {
+    // The project's own package manager runs its Playwright (lockfile decides; npx when there is none).
+    const { manager } = detectPackageManager(io.cwd);
+    const probe = execBinaryCommand(manager, "playwright", ["--version"]);
     const playwrightBin = join(io.cwd, "node_modules", ".bin", process.platform === "win32" ? "playwright.cmd" : "playwright");
-    if (!existsSync(playwrightBin) && exec("pnpm", ["exec", "playwright", "--version"], io.cwd).status !== 0) {
+    if (!existsSync(playwrightBin) && exec(probe.command, probe.args, io.cwd).status !== 0) {
       return finish({ ok: false, runner, outDir, pngs: [], lintErrors: 0, error: "local runner unavailable: playwright is not installed in this project (use --runner remote)" });
     }
     // shots/viewports reach the spec through the same env vars the
     // aura3d-lookdev.yml workflow sets (A3D_LOOKDEV_SHOTS/VIEWPORTS); exec()
     // spawns with inherited env, so callers/tests set them on the process.
     void shots; void viewports;
-    const result = exec("pnpm", ["exec", "playwright", "test", "tests/screenshot.spec.ts", "--reporter=line", "--workers=1"], io.cwd);
+    const run = execBinaryCommand(manager, "playwright", ["test", "tests/screenshot.spec.ts", "--reporter=line", "--workers=1"]);
+    const result = exec(run.command, run.args, io.cwd);
     if (result.status !== 0) {
       return finish({ ok: false, runner, outDir, pngs: [], lintErrors: 0, error: `local playwright run failed: ${result.stderr || result.stdout}` });
     }

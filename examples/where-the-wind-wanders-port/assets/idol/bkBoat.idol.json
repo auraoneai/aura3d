@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bellkeepers-walk",
+  "key": "bkBoat",
+  "generatedAt": "2026-11-18T22:08:46.138Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b4-8b99-7d40-867a-6752f4bf93d4",
+      "prompt": "A small clinker-built wooden sailing skiff: overlapping warm varnished wooden hull planks, a cream painted top strake, wooden thwart seats, a single wooden mast with a furled cream linen sail on a boom, a pair of oars resting inside, pointed bow. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b7-4d61-79d2-bffe-ff8cdb668732",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 40,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 822556,
+        "num_faces": 1645152,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A small clinker-built wooden sailing skiff: overlapping warm varnished wooden hull planks, a cream painted top strake, wooden thwart seats, a single wooden mast with a furled cream linen sail on a boom, a pair of oars resting inside, pointed bow. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 5.68,
+    "size": [
+      3.719,
+      5.688,
+      5.67
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/where-the-wind-wanders-port/assets/idol/bkBoat.glb",
+  "sizeBytes": 5009576,
+  "preview": "artifacts/idol/bellkeepers-walk/bkBoat/views.png",
+  "usd": 0.37
+}

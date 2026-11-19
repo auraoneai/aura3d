@@ -18,6 +18,7 @@ import { createSwipeOverlay, type SwipeOverlay, type SwipePort } from "../ui/swi
 import { createTouchControls, type TouchControls } from "../ui/touch";
 import { SHOT_DEFAULTS, type CreateSlamEngine, type HudState, type ServeFeedback, type SlamEngine } from "../ui/types";
 import { themeFor } from "../ui/venues";
+import { AUTOPLAY_TOGGLE_KEY, autoplayRequested, createAutoplayLoop } from "./autoplay";
 import { createAdapterController, type AdapterController } from "./controller";
 import { createController } from "./gamepad";
 import { playerFrame, type PlayerFrameContext } from "./inputFrame";
@@ -105,7 +106,8 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   const keys: Record<string, boolean> = Object.create(null);
   const autopilot = createAdapterController({
     engine: () => engine, state: () => getState() as never,
-    autoplay: deps.autoplay ?? (params.get("autoplay") === "1" || params.get("demo") === "1"),
+    // `?autoplay=1`, its `?autopilot=1` alias and the original `?demo=1` (shell/autoplay.ts).
+    autoplay: deps.autoplay ?? autoplayRequested(params),
     // C6: serve-setup movement follows the binding store, so rebinds apply (the shell's `keys` also honours blocked keys).
     moveAxes: () => ({
       mx: (controls.isDown("right", keys) ? 1 : 0) - (controls.isDown("left", keys) ? 1 : 0),
@@ -175,13 +177,32 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   const loop = createMatchLoop({
     // C4: the adapter controller (serve-setup movement, the Auto player, the toss-apex assist) runs once per fixed 1/60 s step,
     // not once per rendered frame, so it no longer speeds up on 120 Hz displays or on resize/settings re-renders.
-    step: (dt) => { update(dt); autopilot.step(getState() as never, dt); presenter.afterStep(); },
+    step: (dt) => { update(dt); autopilot.step(getState() as never, dt); presenter.afterStep(); stepAutoplayLoop(dt); },
     render: (frameSeconds) => render(frameSeconds, !loop.manual && getState().mode === "playing" && !getState().paused),
     beforeFrame: () => { if (!loop.manual) pad.poll(); },
     isActive: () => !isPageHidden(),
     manual: false,
     now: deps.now, schedule: deps.schedule, cancel: deps.cancel
   });
+
+  // Autoplay leaves the results card after AUTOPLAY_RESULT_SECONDS and starts the next venue through Quick Match.
+  const autoplayLoop = createAutoplayLoop();
+  function stepAutoplayLoop(dt: number): void {
+    const next = autoplayLoop.step(getState(), dt, autopilot.enabled);
+    if (!next) return;
+    menu.quickStart(menu.practice() ? "practice" : "single", { venue: next.venue });
+    quickBar.setActiveMode(menu.practice() ? "practice" : "play");
+  }
+  /** The in-match O key: the same switch as the quick bar's Auto button, kept in sync with it. */
+  function toggleAutoplayKey(): void {
+    const on = !autopilot.enabled;
+    autopilot.enabled = on;
+    if (on) coach.dispose();
+    quickBar.setAutoplay(on);
+    const s = getState() as { message: string; messageTimer: number };
+    s.message = on ? "Autoplay on · O to take over" : "Autoplay off · you have the racket";
+    s.messageTimer = 1.6;
+  }
 
   function update(dt: number): void {
     menu.tick(dt);
@@ -479,6 +500,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
     keys[event.code] = true;
     if (event.code === "KeyP" || (event.code === "Escape" && !document.fullscreenElement)) { togglePause(); return; }
     if (event.code === "KeyF") { toggleFullscreen(); return; }
+    if (event.code === AUTOPLAY_TOGGLE_KEY && !action) { toggleAutoplayKey(); return; }
     const s = getState();
     // Replay and menu activation is a fixed UI context, separate from gameplay R.
     if (s.mode === "gameover" || s.mode === "menu") {
@@ -511,7 +533,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
 
   /* ---- controls hint (C3): built from the live bindings, refreshed on every rebind ---- */
   const hintEl = maybeById("aura-controls-hint");
-  const refreshHint = (): void => { if (hintEl) hintEl.textContent = controlsHintText(controls, { lobAllLevels: intentionalLobAllLevels() }); };
+  const refreshHint = (): void => { if (hintEl) hintEl.textContent = controlsHintText(controls, { lobAllLevels: intentionalLobAllLevels(), autoplayKey: AUTOPLAY_TOGGLE_KEY }); };
   refreshHint();
 
   /* ---- graphics reset (C8): the engine keeps the context (preventDefault) and rebuilds GPU objects on restore ---- */
@@ -556,14 +578,20 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   window.addEventListener("resize", onResize);
   window.addEventListener("blur", clearInputs);
   document.addEventListener("pointerdown", initAudio, { passive: true });
+  // Autoplay must never sit on a prompt: a pause the shell made for a hidden tab is lifted again when the tab returns.
+  let pausedForHidden = false;
   const onVisibility = (): void => {
     if (isPageHidden()) {
       loop.stop();
       clearInputs();
-      if (getState().mode === "playing" && !getState().paused) togglePause();
-    } else if (deps.startLoop !== false && !loop.manual) {
-      loop.loop.resetAccumulator();
-      loop.start();
+      if (getState().mode === "playing" && !getState().paused) { togglePause(); pausedForHidden = true; }
+    } else {
+      if (pausedForHidden && autopilot.enabled && getState().mode === "playing" && getState().paused) togglePause();
+      pausedForHidden = false;
+      if (deps.startLoop !== false && !loop.manual) {
+        loop.loop.resetAccumulator();
+        loop.start();
+      }
     }
   };
   document.addEventListener("visibilitychange", onVisibility);
@@ -610,14 +638,25 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   });
 
   // Unless ?menu=1 or ?mode= is requested the live page starts on court so keys work immediately; the native page does the same.
+  // Autoplay skips the menu even with ?menu=1, so the computer is playing within the first second.
   const requestedVenue = params.get("venue");
   const venueOk = Boolean(requestedVenue && themeFor(requestedVenue).id === requestedVenue);
   if (venueOk) menu.selectVenue(requestedVenue!);
   // quickStart reads the per-mode remembered settings, so the requested venue is passed through (it was dropped before).
   const startSettings = venueOk ? { venue: requestedVenue! } : {};
-  if (params.get("menu") !== "1" && !params.get("mode")) { menu.quickStart("single", startSettings); quickBar.setActiveMode("play"); coach.maybeShow(); }
-  else if (params.get("mode") === "practice") { menu.quickStart("practice", startSettings); quickBar.setActiveMode("practice"); }
+  const linkedMode = params.get("mode");
+  const startOnCourt = autopilot.enabled ? linkedMode !== "practice" : params.get("menu") !== "1" && !linkedMode;
+  if (startOnCourt) { menu.quickStart("single", startSettings); quickBar.setActiveMode("play"); coach.maybeShow(); }
+  else if (linkedMode === "practice") { menu.quickStart("practice", startSettings); quickBar.setActiveMode("practice"); }
   else quickBar.setActiveMode("menu");
+  // QA capture hook (`?qaFinish=1`): the computer plays the opening match through the normal fixed-step loop (autopilot inputs,
+  // unchanged sim) in one burst at boot and stops on the results card, which then stays up (autoplay is restored afterwards).
+  if (params.get("qaFinish") === "1" && startOnCourt) {
+    const wasAuto = autopilot.enabled;
+    autopilot.enabled = true;
+    for (let s = 0; s < 3600 && getState().mode !== "gameover"; s++) loop.loop.advance(60);
+    autopilot.enabled = wasAuto;
+  }
 
   render();
   if (deps.startLoop !== false && !isPageHidden()) loop.start();

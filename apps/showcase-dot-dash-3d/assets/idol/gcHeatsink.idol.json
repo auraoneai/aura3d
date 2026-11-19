@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "dot-dash-3d",
+  "key": "gcHeatsink",
+  "generatedAt": "2026-11-18T22:52:46.884Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0a0-ebe5-7cf1-9fed-e1c20e144a9d",
+      "prompt": "A single square extruded aluminium heatsink block from a circuit board, many thin tall parallel cooling fins rising from a thick flat base plate, dark grey anodised finish with bright machined edges on the fin tips, a small black processor chip clamped underneath, roughly as tall as it is wide. Macro photograph of a real miniature precision-machined electronic device, physically based polished metal, anodised aluminium, glossy plastic and glass, fine machining marks and tiny screws, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a6-cbb0-7cb0-bbba-844039933746",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 3752436,
+        "num_faces": 7506264,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single square extruded aluminium heatsink block from a circuit board, many thin tall parallel cooling fins rising from a thick flat base plate, dark grey anodised finish with bright machined edges on the fin tips, a small black processor chip clamped underneath, roughly as tall as it is wide. Macro photograph of a real miniature precision-machined electronic device, physically based polished metal, anodised aluminium, glossy plastic and glass, fine machining marks and tiny screws, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 1.005,
+    "size": [
+      0.811,
+      1,
+      0.995
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-dot-dash-3d/assets/idol/gcHeatsink.glb",
+  "sizeBytes": 3938608,
+  "preview": "artifacts/idol/dot-dash-3d/gcHeatsink/views.png",
+  "usd": 0.37
+}

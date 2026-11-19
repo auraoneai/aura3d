@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-links-3d",
+  "key": "linksIdolMapleRed",
+  "generatedAt": "2026-11-18T22:36:19.165Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/aura-links-3d/_refs/linksIdolMapleRed.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0cd-d08e-7c92-8a03-67b6c8bd9b8a",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1255162,
+        "num_faces": 2511388,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Single mature maple tree in autumn with a straight grey-brown trunk and a full rounded dense canopy of vivid crimson red leaves. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 8.029,
+    "size": [
+      7.79,
+      8,
+      7.019
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-links-3d/assets/idol/linksIdolMapleRed.glb",
+  "sizeBytes": 4689964,
+  "preview": "artifacts/idol/aura-links-3d/linksIdolMapleRed/views.png",
+  "usd": 0.2
+}

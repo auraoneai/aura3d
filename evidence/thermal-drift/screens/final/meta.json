@@ -1,70 +1,18 @@
 {
   "meta": {
-    "heatsink": {
-      "390": {
-        "notes": [
-          "ready 41s",
-          "shot 01-title",
-          "shot 02-early",
-          "shot 03-action",
-          "shot 04-mid",
-          "modes:volt: dom-clicked [data-drone=\"volt\"]",
-          "shot 05-modes",
-          "results: not reached"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-heatsink/"
-        ],
-        "beacon": {
-          "route": "showcase-heatsink",
-          "state": "playing",
-          "rung": 0
-        },
-        "proxied": 1
-      },
-      "1280": {
-        "notes": [
-          "ready 83s",
-          "shot 01-title",
-          "shot 02-early",
-          "shot 03-action",
-          "shot 04-mid",
-          "modes:volt: dom-clicked [data-drone=\"volt\"]",
-          "shot 05-modes",
-          "results: not reached"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-heatsink/"
-        ],
-        "beacon": {
-          "route": "showcase-heatsink",
-          "state": "playing",
-          "rung": 0
-        },
-        "proxied": 1
-      },
-      "card": {
-        "notes": [
-          "ready 99s",
-          "shot 04-mid"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-heatsink/"
-        ],
-        "beacon": {
-          "route": "showcase-heatsink",
-          "state": "playing",
-          "rung": 0
-        },
-        "proxied": 1
-      }
+    "thermal-drift": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "01-title",
+        "02-early",
+        "03-action",
+        "04-mid",
+        "05-dustfall",
+        "06-vesper"
+      ],
+      "results": "not reached (a 3-lap autoplay race runs over 2 minutes; the autoplay loop restarts the race 3.5 s after the results)",
+      "errors": "none (no page errors in any capture)",
+      "capturedAt": "2026-11-18"
     }
-  },
-  "incomplete": []
+  }
 }

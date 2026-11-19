@@ -5,6 +5,7 @@ import {
   POOL,
   ShapeShiftSim,
   TRACE_COLUMNS,
+  gateHalfWidth,
   replay,
   type Input
 } from "../../../apps/showcase-shape-shift-sprint/src/sim";
@@ -96,7 +97,7 @@ describe("shape shift sprint mechanics", () => {
     expect(sim.o.score).toBe(CONFIG.POINTS_PERFECT);
     expect(sim.o.ballScale).toBeCloseTo(CONFIG.PERFECT_GROW, 9);
 
-    // Non-perfect match (offset 0.8 within HIT_WINDOW 1.2 but outside PERFECT_WINDOW 0.55) with x2 active.
+    // Non-perfect match (centre inside the visible opening but outside its perfect centre band) with x2 active.
     sim.o.combo = 2; // next match reaches combo 3 -> multiplier 2
     sim.o.scoreX2Timer = 3;
     const row1 = sim.rows[1]!;
@@ -106,8 +107,9 @@ describe("shape shift sprint mechanics", () => {
       { laneX: 0, shapeIndex: sim.o.shapeIndex },
       { laneX: 2.3, shapeIndex: (sim.o.shapeIndex + 2) % 3 }
     ];
-    sim.o.laneOffset = 0.8;
-    sim.ye = 0.8;
+    const offCentre = gateHalfWidth(sim.o.shapeIndex) * (CONFIG.PERFECT_FRACTION + 1) / 2;
+    sim.o.laneOffset = offCentre;
+    sim.ye = offCentre;
     const prevScore = sim.o.score;
     sim.advance(IDLE);
     expect(sim.o.combo).toBe(3);

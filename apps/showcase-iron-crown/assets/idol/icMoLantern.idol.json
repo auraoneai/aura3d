@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icMoLantern",
+  "generatedAt": "2026-11-18T23:16:32.258Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0ca-c243-72e3-ac79-7b405254c845",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0de-f073-7a63-b73f-f06db6885f5f",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 853814,
+        "num_faces": 1707656,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Tall traditional granite stone lantern with a pagoda-style cap, moss and a dusting of snow",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.811,
+    "size": [
+      0.662,
+      1.81,
+      0.592
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icMoLantern.glb",
+  "sizeBytes": 2992372,
+  "preview": "artifacts/idol/iron-crown/icMoLantern/views.png",
+  "usd": 0.37
+}

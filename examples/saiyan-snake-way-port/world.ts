@@ -8,7 +8,17 @@ import { attachRootRenderSource, camera, cloneSkinned, effects, environments, ge
 import { createCameraClearance } from "@aura3d/engine/game";
 import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { gapAhead } from "./hud";
-import { HERO_PARTS, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
+import { HERO_PARTS, IDENTITY, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartPose, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
+import { IDOL_RIGS } from "./art/idolRig.data";
+import { createIdolRetarget, type IdolRig } from "./art/idolRunner";
+import { createRunnerMotion, type RunnerMotion, type RunnerMotionState } from "./art/idolMotion";
+import { IDOL_RUNNER_SKELETONS } from "./art/idolSkeletons.data";
+import { createHumanoidDriver, type HumanoidDriver } from "../../apps/showcase-port-shared/idol/humanoid";
+import {
+  CHARIOT_WHEELS, buildIdolEntityNode, buildIdolGatehouseNode, chariotWheelAngle, buildIdolIslandNode, buildIdolLanternNode, buildIdolPlanetletNode, buildIdolSerpentHeadNode,
+  GATEHOUSE_SCALE, IDOL_TORII_SCALE, buildIdolTailMonumentNode, buildIdolToriiNode, idolAsset, idolEnabled
+} from "./art/idolModels";
+import { BODY_HALF_WIDTH, ENTITY_HALF_WIDTH, GATEHOUSE_FEET, LANTERN_FOOT, LANTERN_LATERAL, TORII_FEET, TORII_FOOT_FIT, groundedBase, toriiClearsLanes } from "./art/grounding";
 import {
   PALETTE, auraSpec, blobSpec, boostGateSpec, cloudBillowInstancedSpec, flagInstancedSpec, flatSpec, flipbookSpec, glowInstancedSpec, glowSpec, hexLinear, islandInstancedSpec, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
 } from "./materials";
@@ -58,6 +68,15 @@ type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 
 /** Entities kept alive per type (the road keeps roughly 900 m of entities alive). */
+/** Verge lanterns: pleated washi paper, lit, with a warm inner glow that never clips to white. */
+const VERGE_LANTERN_MAT = material.pbr({ color: "#f3d3a0", emissive: "#ff9f3a", emissiveIntensity: 0.45, roughness: 0.85, metallic: 0, practical: true });
+/** Spark orbs (gameplay pickups, teal keeps their meaning): lit jade glass with a restrained teal core glow. */
+const SPARK_ORB_MAT = material.pbr({ color: "#a9eedc", emissive: "#3fcfa8", emissiveIntensity: 0.7, roughness: 0.18, metallic: 0, practical: true });
+
+/** Metres behind the runner at which a passed road entity stops being drawn (the chase eye sits ~5.75 m back). */
+export const ENTITY_BEHIND_CUTOFF = 4.2;
+/** Road hazards that break (stop being drawn) once the runner has crashed into them. */
+export const HIT_BREAKS: ReadonlySet<string> = new Set(["barrier", "arch"]);
 export const POOLS: Readonly<Record<string, number>> = { orb: 150, soul: 40, barrier: ENTITY_MODELS.barrier!.pool, arch: ENTITY_MODELS.arch!.pool, oni: ENTITY_MODELS.oni!.pool, sweeper: ENTITY_MODELS.sweeper!.pool, power: 10, feast: ENTITY_MODELS.feast!.pool };
 
 const POWER_STYLE: Readonly<Record<string, { core: Rgb; shell: Rgb }>> = {
@@ -236,15 +255,85 @@ const RIG_SCALE = 1.8;
 const CLIP = { run: "Run_Loop", air: "Jump_Loop", fly: "Flight_Loop", dive: "Dive_Loop", slide: "Slide_Loop", idle: "Idle_Loop", hit: "Hit_React" } as const;
 
 export interface RunnerActor {
+  /** The actor drawn now (the selected colourway once its model has loaded). */
   readonly actor: TypedGLBActor;
   readonly clips: readonly string[];
   readonly durations: Readonly<Record<string, number>>;
+  /**
+   * Idol runner: writes poseHero's segment frames onto the rig (art/idolRunner.ts) instead of playing clips. The model is
+   * 1.95 m tall at scale 1 and stands on the runner origin, so the world draws it without `RIG_SCALE` or the body tilt.
+   */
+  readonly pose?: (parts: Readonly<Record<string, HeroPartPose>>) => void;
+  /**
+   * Idol motion pass: plays the generated text-to-motion clips (art/idolMotion.ts) for the sim state, with the code pose
+   * for flight / dive / fall. Replaces `pose` when the runner's skeleton is baked.
+   */
+  readonly animate?: (state: RunnerMotionState) => void;
+  /** Idol runner: show a colourway's own model (each colourway is its own generated model; loads on first use). */
+  readonly select?: (styleId: string) => void;
   dispose(): void;
 }
 
-/** Resolves to null so the sculpted procedural martial-arts sky-runner renders with zero GLB fetches. */
-export async function loadRunner(_canvas: HTMLCanvasElement, _mode: LookMode = "script"): Promise<RunnerActor | null> {
-  return null;
+/** One rigged Idol model per runner colourway (styles.ts ids). */
+export const IDOL_RUNNER_ASSETS = { tide: "ssrHeroTide", violet: "ssrHeroViolet", verdant: "ssrHeroVerdant" } as const;
+type IdolRunnerStyle = keyof typeof IDOL_RUNNER_ASSETS;
+
+interface LoadedIdolRunner { readonly actor: TypedGLBActor; readonly retarget: ReturnType<typeof createIdolRetarget>; readonly driver: HumanoidDriver | null; dispose(): void }
+
+async function loadIdolRunnerVariant(canvas: HTMLCanvasElement, style: IdolRunnerStyle): Promise<LoadedIdolRunner> {
+  const key = IDOL_RUNNER_ASSETS[style];
+  const rig = IDOL_RIGS[key] as IdolRig | undefined;
+  if (!rig) throw new Error(`serpentine-sky-run: no baked rig for ${key}`);
+  const batch = await cloneSkinned(idolAsset(key), 1, { width: canvas.width, height: canvas.height, idPrefix: `runner-${style}` });
+  const skeleton = IDOL_RUNNER_SKELETONS[key];
+  return { actor: batch.actors[0] as TypedGLBActor, retarget: createIdolRetarget(rig), driver: skeleton ? createHumanoidDriver(skeleton) : null, dispose: () => batch.dispose() };
+}
+
+/**
+ * Idol wow pass: the rigged Idol runner for the requested colourway, posed every frame from poseHero (`?idol=0` keeps the
+ * sculpted procedural figure). Resolves to null (procedural figure) when the model cannot load.
+ */
+export async function loadRunner(canvas: HTMLCanvasElement, _mode: LookMode = "script", styleId: string = "violet"): Promise<RunnerActor | null> {
+  if (!idolEnabled()) return null;
+  const first: IdolRunnerStyle = styleId in IDOL_RUNNER_ASSETS ? (styleId as IdolRunnerStyle) : "violet";
+  try {
+    const loaded = new Map<IdolRunnerStyle, LoadedIdolRunner>([[first, await loadIdolRunnerVariant(canvas, first)]]);
+    const pending = new Set<IdolRunnerStyle>();
+    let current = loaded.get(first)!;
+    let wanted: IdolRunnerStyle = first;
+    // one animator for the runner (clip state survives a colourway swap); each colourway's own driver draws it
+    const firstSkeleton = IDOL_RUNNER_SKELETONS[IDOL_RUNNER_ASSETS[first]];
+    const motion: RunnerMotion | null = firstSkeleton ? createRunnerMotion(firstSkeleton) : null;
+    return {
+      get actor() { return current.actor; },
+      clips: [],
+      durations: {},
+      pose(parts) { current.actor.applyRetargetedPose(current.retarget(parts)); },
+      ...(motion ? {
+        animate(state: RunnerMotionState) {
+          if (current.driver) current.actor.applyRetargetedPose(motion.pose(state, current.driver) as never);
+          else current.actor.applyRetargetedPose(current.retarget(state.parts));
+        }
+      } : {}),
+      select(id: string) {
+        if (!(id in IDOL_RUNNER_ASSETS)) return;
+        wanted = id as IdolRunnerStyle;
+        const ready = loaded.get(wanted);
+        if (ready) { current = ready; return; }
+        if (pending.has(wanted)) return;
+        pending.add(wanted);
+        const style = wanted;
+        loadIdolRunnerVariant(canvas, style).then((v) => {
+          loaded.set(style, v);
+          if (wanted === style) current = v;
+        }).catch((error) => console.warn(`serpentine-sky-run: ${style} runner unavailable`, error)).finally(() => pending.delete(style));
+      },
+      dispose() { for (const v of loaded.values()) v.dispose(); loaded.clear(); }
+    };
+  } catch (error) {
+    console.warn("serpentine-sky-run: Idol runner unavailable, using the procedural figure", error);
+    return null;
+  }
 }
 
 export interface WorldOptions {
@@ -335,6 +424,9 @@ const shadowOff = (): boolean => typeof location !== "undefined" && new URLSearc
 /** True when `?env=<n>` overrides the environment intensity (calibration captures). */
 const envOverride = (): boolean => typeof location !== "undefined" && new URLSearchParams(location.search).has("env");
 
+/** `p + u * k` (a point moved along a frame's up). */
+const addUp = (p: V3, u: V3, k: number): V3 => [p[0] + u[0] * k, p[1] + u[1] * k, p[2] + u[2] * k];
+
 /** Rotates `v` about the unit axis `k` by `a` radians (Rodrigues). */
 function rotateAbout(v: V3, k: V3, a: number): V3 {
   const c = Math.cos(a), s = Math.sin(a), d = (v[0] * k[0] + v[1] * k[1] + v[2] * k[2]) * (1 - c);
@@ -355,8 +447,20 @@ export function applyShot(shot: Shot, eye: V3, look: V3, runner: V3, forward: V3
     const w = shot.intro;
     const introEye: V3 = [runner[0] + forward[0] * 40 + up[0] * 14, runner[1] + forward[1] * 40 + up[1] * 14, runner[2] + forward[2] * 40 + up[2] * 14];
     const introLook: V3 = [runner[0] + up[0] * 1.5, runner[1] + up[1] * 1.5, runner[2] + up[2] * 1.5];
-    e = [e[0] + (introEye[0] - e[0]) * w, e[1] + (introEye[1] - e[1]) * w, e[2] + (introEye[2] - e[2]) * w];
-    l = [l[0] + (introLook[0] - l[0]) * w, l[1] + (introLook[1] - l[1]) * w, l[2] + (introLook[2] - l[2]) * w];
+    // F3 GPU QA: a straight eye blend from 40 m ahead to the chase seat passed over the runner's head while the look was
+    // already down the road (runner off-screen). The eye now swings round the runner on an arc (direction slerped,
+    // distance blended) and the look stays on the runner until the eye is nearly home.
+    const a: V3 = [e[0] - runner[0], e[1] - runner[1], e[2] - runner[2]], b: V3 = [introEye[0] - runner[0], introEye[1] - runner[1], introEye[2] - runner[2]];
+    const la = Math.hypot(a[0], a[1], a[2]) || 1, lb = Math.hypot(b[0], b[1], b[2]) || 1;
+    const ua: V3 = [a[0] / la, a[1] / la, a[2] / la], ub: V3 = [b[0] / lb, b[1] / lb, b[2] / lb];
+    const cos = Math.max(-1, Math.min(1, ua[0] * ub[0] + ua[1] * ub[1] + ua[2] * ub[2]));
+    const om = Math.acos(cos), so = Math.sin(om);
+    const ka = so > 1e-4 ? Math.sin((1 - w) * om) / so : 1 - w, kb = so > 1e-4 ? Math.sin(w * om) / so : w;
+    const dir: V3 = [ua[0] * ka + ub[0] * kb, ua[1] * ka + ub[1] * kb, ua[2] * ka + ub[2] * kb];
+    const len = la + (lb - la) * w;
+    e = [runner[0] + dir[0] * len, runner[1] + dir[1] * len, runner[2] + dir[2] * len];
+    const lw = Math.min(1, w * 2.5);
+    l = [l[0] + (introLook[0] - l[0]) * lw, l[1] + (introLook[1] - l[1]) * lw, l[2] + (introLook[2] - l[2]) * lw];
   }
   let u = up;
   if (shot.roll) {
@@ -462,16 +566,20 @@ export function buildWorld(options: WorldOptions = {}): World {
    * monument, and distant sanctuary planetlet (`art/proceduralModels.ts`). Under the colour script neither the lanterns nor
    * the sky islands cast sun shadows so cascade depth draws stay lean while retaining contact depth.
    */
-  for (let i = 0; i < LANTERN_COUNT; i++) builder.add(buildPalaceLanternNode(`lantern-${i}`, `lantern-${i}`, !script));
+  // Idol wow pass (art/idolModels.ts): image-to-3D models at the procedural sizes and ids; `?idol=0` keeps the sculpted kit.
+  const idol = idolEnabled();
+  for (let i = 0; i < LANTERN_COUNT; i++) builder.add(idol ? buildIdolLanternNode(`lantern-${i}`, !script) : buildPalaceLanternNode(`lantern-${i}`, `lantern-${i}`, !script));
   for (let i = 0; i < ISLAND_COUNT; i++) {
     const variant = script ? ISLAND_VARIANTS[i % ISLAND_VARIANTS.length]! : { key: "island" as const, targetHeight: 15 };
-    builder.add(buildSkyIslandVariantNode(variant.key as SkyIslandVariantKey, variant.targetHeight, `island-${i}`, `island-${i}`, !script));
+    builder.add(idol
+      ? buildIdolIslandNode(variant.key as SkyIslandVariantKey, variant.targetHeight, `island-${i}`, !script)
+      : buildSkyIslandVariantNode(variant.key as SkyIslandVariantKey, variant.targetHeight, `island-${i}`, `island-${i}`, !script));
   }
   if (script) {
-    builder.add(buildColossalSerpentHeadNode("serpent-head", "serpent-head"));
-    builder.add(buildSerpentGatehouseNode("serpent-gatehouse", "serpent-gatehouse"));
-    builder.add(buildCoiledTailMonumentNode("serpent-tail-monument", "serpent-tail-monument"));
-    builder.add(buildSanctuaryPlanetletNode("sanctuary-planetlet", "sanctuary-planetlet"));
+    builder.add(idol ? buildIdolSerpentHeadNode("serpent-head") : buildColossalSerpentHeadNode("serpent-head", "serpent-head"));
+    builder.add(idol ? buildIdolGatehouseNode("serpent-gatehouse") : buildSerpentGatehouseNode("serpent-gatehouse", "serpent-gatehouse"));
+    builder.add(idol ? buildIdolTailMonumentNode("serpent-tail-monument") : buildCoiledTailMonumentNode("serpent-tail-monument", "serpent-tail-monument"));
+    builder.add(idol ? buildIdolPlanetletNode("sanctuary-planetlet") : buildSanctuaryPlanetletNode("sanctuary-planetlet", "sanctuary-planetlet"));
   }
 
   /* the sculpted martial-arts sky runner and the aura shell */
@@ -521,7 +629,7 @@ export function buildWorld(options: WorldOptions = {}): World {
   const instancedMaterials: Readonly<Record<string, CustomSpec>> = {
     orb: glowInstancedSpec(hexLinear(0xf2fff8), hexLinear(0x7fe0c4)),
     soul: glowInstancedSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.95, 1, 0, 1.4),
-    power: glowInstancedSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.aura), 1, 0, 1, 2.4),
+    power: glowInstancedSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.aura), 1, 0, 1, 1.5),
     powerHalo: glowInstancedSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.aura), 0.8, 1, 1, 1.6)
   };
   if (script) {
@@ -535,7 +643,8 @@ export function buildWorld(options: WorldOptions = {}): World {
         const id = `inst-${type}-${j}`;
         const transforms = Array.from({ length: count }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
         const colors = Array.from({ length: count }, () => "#ffffff");
-        const mat = material.custom((type === "power" ? instancedMaterials[part.mat] : instancedMaterials[type]) as CustomSpec);
+        // spark orbs: a lit jade-glass sphere with a teal inner glow (depth and falloff) instead of an additive white disc
+        const mat = type === "orb" ? SPARK_ORB_MAT : material.custom((type === "power" ? instancedMaterials[part.mat] : instancedMaterials[type]) as CustomSpec);
         builder.add(instances.custom(pickupSpec(type, j), { name: id, transforms, colors, material: mat }).runtime({ id }));
       });
     }
@@ -545,9 +654,14 @@ export function buildWorld(options: WorldOptions = {}): World {
   if (script) {
     const hidden = (n: number) => Array.from({ length: n }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
     builder.add(instances.box({ name: "verge-flags", size: [1, 1, 1], transforms: hidden(FLAG_DRAW_SLOTS), colors: Array.from({ length: FLAG_DRAW_SLOTS }, () => "#ffffff"), material: material.custom(flagInstancedSpec()) }).runtime({ id: "verge-flags" }));
-    builder.add(instances.custom(toriiVermilionGateSpec(GATE_HALF_SPAN), { name: "torii-vermilion", transforms: hidden(GATE_SLOTS), material: MAT_INSTANCED_TORII_VERMILION, castShadow: false, receiveShadow: true }).runtime({ id: "torii-vermilion" }));
-    builder.add(instances.custom(toriiEbonyTrimSpec(GATE_HALF_SPAN), { name: "torii-ebony", transforms: hidden(GATE_SLOTS), material: MAT_INSTANCED_TORII_EBONY, castShadow: false, receiveShadow: true }).runtime({ id: "torii-ebony" }));
-    builder.add(instances.custom(toriiChochinLanternSpec(GATE_HALF_SPAN), { name: "torii-chochin", transforms: hidden(GATE_SLOTS), material: MAT_CHOCHIN_PAPER, castShadow: false, receiveShadow: false }).runtime({ id: "torii-chochin" }));
+    if (idol) {
+      // Idol torii: one model node per gate slot (posts at about +-GATE_HALF_SPAN, 20.5 m wide like the batched kit)
+      for (let i = 0; i < GATE_SLOTS; i++) builder.add(buildIdolToriiNode(`torii-${i}`));
+    } else {
+      builder.add(instances.custom(toriiVermilionGateSpec(GATE_HALF_SPAN), { name: "torii-vermilion", transforms: hidden(GATE_SLOTS), material: MAT_INSTANCED_TORII_VERMILION, castShadow: false, receiveShadow: true }).runtime({ id: "torii-vermilion" }));
+      builder.add(instances.custom(toriiEbonyTrimSpec(GATE_HALF_SPAN), { name: "torii-ebony", transforms: hidden(GATE_SLOTS), material: MAT_INSTANCED_TORII_EBONY, castShadow: false, receiveShadow: true }).runtime({ id: "torii-ebony" }));
+      builder.add(instances.custom(toriiChochinLanternSpec(GATE_HALF_SPAN), { name: "torii-chochin", transforms: hidden(GATE_SLOTS), material: MAT_CHOCHIN_PAPER, castShadow: false, receiveShadow: false }).runtime({ id: "torii-chochin" }));
+    }
     builder.add(instances.custom(dorsalSpineFinSpec(), { name: "viaduct-dorsal-spines", transforms: hidden(DORSAL_SPINE_SLOTS), material: MAT_INSTANCED_DORSAL_SPINE, castShadow: false, receiveShadow: true }).runtime({ id: "viaduct-dorsal-spines" }));
     // SDF stage boards: an indigo lacquer board with gold-rimmed gold lettering, facing the oncoming runner
     for (const board of STAGE_BOARDS) {
@@ -564,7 +678,9 @@ export function buildWorld(options: WorldOptions = {}): World {
     for (const band of SPIRE_BANDS_SHOWN ? ISLAND_BANDS : []) {
       builder.add(instances.cone({ name: band.id, params: { radius: 1, height: 1, radialSegments: 7 }, transforms: hidden(band.count), colors: Array.from({ length: band.count }, () => "#ffffff"), material: material.custom(islandInstancedSpec()) }).runtime({ id: band.id }));
     }
-    builder.add(instances.custom(hangingVergeLanternSpec(), { name: "verge-lanterns", transforms: hidden(VERGE_POSTS), colors: Array.from({ length: VERGE_POSTS }, () => "#ffffff"), material: material.custom(glowInstancedSpec(hexLinear(0xfff0c8), hexLinear(0xf2b33d), 0.9, 0, 0, 1.8)) }).runtime({ id: "verge-lanterns" }));
+    // Owner GPU review: the additive glow made these read as flat blown-white discs next to the Idol set; they are now lit,
+    // pleated washi-paper chochin lanterns (form from the sun and IBL) with a restrained warm inner glow (practical).
+    builder.add(instances.custom(hangingVergeLanternSpec(), { name: "verge-lanterns", transforms: hidden(VERGE_POSTS), colors: Array.from({ length: VERGE_POSTS }, () => "#ffffff"), material: VERGE_LANTERN_MAT }).runtime({ id: "verge-lanterns" }));
     builder.add(instances.custom(cumulusBillowSculptedSpec(), { name: "cloud-billows", transforms: hidden(CLOUD_BILLOW_COUNT), colors: Array.from({ length: CLOUD_BILLOW_COUNT }, () => "#ffffff"), material: material.custom(cloudBillowInstancedSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "cloud-billows" }));
     for (let i = 0; i < GATE_RING_SLOTS; i++) {
       builder.add(primitives.torus({ name: `gate-ring-${i}`, size: 9.6, params: { tube: 0.032, radialSegments: 12, tubularSegments: 36 }, material: material.custom(boostGateSpec()), castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: `gate-ring-${i}` }));
@@ -585,7 +701,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       for (let i = 0; i < count; i++) {
         if (part.shape === "model") {
           const id = `ent-${type}-${i}-${j}`;
-          builder.add(buildEntityModelNode(type as PooledEntityModelType, id, id));
+          builder.add((idol ? buildIdolEntityNode(type as PooledEntityModelType, id) : null) ?? buildEntityModelNode(type as PooledEntityModelType, id, id));
         } else addPart(`ent-${type}-${i}-${j}`, part, propMaterials[part.mat] as CustomSpec, true);
       }
     });
@@ -637,6 +753,8 @@ export function buildWorld(options: WorldOptions = {}): World {
       let burstT = 1;
       let reducedMotion = false;
       let title = false;
+      /** Render seconds since the run was started (counts through the countdown, when the sim's `S.time` is still 0). */
+      let introClock = 0;
       /* GU47 SSR-01: the colour-script driver (script mode only; `?look=original` writes nothing) */
       const lookDriver = script ? createLookDriver(app, (id) => node(id) as unknown as LookNodeHandle) : null;
       let lookShown: ResolvedLook | null = null;
@@ -666,6 +784,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       const flagBuf = script ? { data: new Float32Array(FLAG_DRAW_SLOTS * 16), rgba: new Float32Array(FLAG_DRAW_SLOTS * 4) } : null;
       const lampBuf = script ? new Float32Array(VERGE_POSTS * 16) : null;
       const toriiBuf = script ? new Float32Array(GATE_SLOTS * 16) : null;
+      const toriiGirth = new Float32Array(GATE_SLOTS).fill(1);
       const spineBuf = script ? new Float32Array(DORSAL_SPINE_SLOTS * 16) : null;
       const soulBuf = script ? new Float32Array(SOUL_COLUMN.count * 16) : null;
       const cloudBuf = script ? { data: new Float32Array(CLOUD_BILLOW_COUNT * 16), rgba: new Float32Array(CLOUD_BILLOW_COUNT * 4) } : null;
@@ -777,7 +896,23 @@ export function buildWorld(options: WorldOptions = {}): World {
           const e = matrixEuler(worldRot(part.m));
           show(`r-${id}`, !runner).setPosition(p[0], p[1], p[2]).setRotation(e[0], e[1], e[2]);
         }
-        if (runner) {
+        if (runner?.pose) {
+          /* Idol runner: the rig takes poseHero's frames (pitch, lean, stumble shake included); the model only follows the road basis and the fall tumble */
+          if (runner.animate) {
+            runner.animate({
+              dt, phase: phaseAcc, moving: ds > 1e-5, grounded: S.grounded && !leaping, y: S.y, vy: S.vy, sliding: S.sliding,
+              stumble: S.stumble, laneVel: S.laneVel, flying: flying || leaping, diving: S.dive || falling,
+              lean: (script ? scriptLean : Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012))) + (falling ? 0.5 * Math.sin(time * 5) : 0),
+              surge, parts
+            });
+          } else runner.pose(parts);
+          const T = tumbleM ?? IDENTITY;
+          const rc = apply(T, TUMBLE_CENTRE);
+          const w = apply(B, [TUMBLE_CENTRE[0] - rc[0], TUMBLE_CENTRE[1] - rc[1], TUMBLE_CENTRE[2] - rc[2]]);
+          const R = mul(B, mul(T, ry(Math.PI)));
+          actorMatrix = [R[0], R[1], R[2], 0, R[3], R[4], R[5], 0, R[6], R[7], R[8], 0, pose[0] + w[0], pose[1] + w[1], pose[2] + w[2], 1];
+          actorVisible = true;
+        } else if (runner) {
           /* rigged runner: pick a clip from the sim state, then orient the model on the road frame */
           const moving = ds > 1e-5;
           const rate = Math.max(0.6, S.speed / 32);
@@ -918,7 +1053,8 @@ export function buildWorld(options: WorldOptions = {}): World {
           const side = i % 2 ? 1 : -1;
           const rel = mod(Math.floor(i / 2) * 58 - S.s, (LANTERN_COUNT / 2) * 58) - 26;
           const lf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
-          const lp = onRoad(lf, side * 10.4, 0.4);
+          // Idol lanterns stand on the serpent's flank outside the parapet (10.4 m out they hung in open air)
+          const lp = idol ? groundedBase(lf, side * LANTERN_LATERAL * lf.girth, LANTERN_FOOT) : onRoad(lf, side * 10.4, 0.4);
           const le = matrixEuler(frameBasis(lf, side > 0 ? -Math.PI / 2 : Math.PI / 2));
           h.setPosition(lp[0], lp[1], lp[2]).setRotation(le[0], le[1], le[2]);
         }
@@ -948,7 +1084,10 @@ export function buildWorld(options: WorldOptions = {}): World {
           const ghHandle = show("serpent-gatehouse", showGatehouse);
           if (showGatehouse) {
             const gf0 = frameAt(samples, 28);
-            const gp0 = onRoad(gf0, 0, -0.35);
+            // Idol gatehouse: its feet over the serpent's back stand on the flank (the base drops to the lowest surface under
+            // them); the outer wing towers reach past the body over the cloud sea by design (owner: columns kept wide)
+            const gx0 = GATEHOUSE_FEET[0] * GATEHOUSE_SCALE[0], gx1 = Math.min(BODY_HALF_WIDTH * gf0.girth, GATEHOUSE_FEET[1] * GATEHOUSE_SCALE[0]);
+            const gp0 = idol ? groundedBase(gf0, (gx0 + gx1) / 2, (gx1 - gx0) / 2, 0, 0) : onRoad(gf0, 0, -0.35);
             const ge0 = matrixEuler(frameBasis(gf0));
             ghHandle.setPosition(gp0[0], gp0[1], gp0[2]).setRotation(ge0[0], ge0[1], ge0[2]);
           }
@@ -1045,9 +1184,14 @@ export function buildWorld(options: WorldOptions = {}): World {
             const s0 = (first + k) * VERGE_SPACING;
             if (s0 < 54 || s0 > ROAD_LENGTH || STAGE_BOARDS.some((b) => Math.abs(b.s - s0) < GATE_BOARD_CLEAR)) continue;
             const gf = frameAt(samples, s0);
+            // Idol torii feet scale with the body's girth: where the body is too slim (the tail) the inner posts would
+            // stand in the outer lane, so no gate is raised there (pass-through QA)
+            if (idol && !toriiClearsLanes(gf.girth)) continue;
             const gb = frameBasis(gf);
             if (toriiBuf && gi < GATE_SLOTS) {
-              writeMatrix(toriiBuf, gi++ * 16, gb, onRoad(gf, 0, -0.15), 1);
+              // Idol torii: feet on the parapet and flank (girth-fitted), base under the lowest surface beneath them
+              if (idol) toriiGirth[gi] = gf.girth;
+              writeMatrix(toriiBuf, gi++ * 16, gb, idol ? groundedBase(gf, (TORII_FEET[0] + TORII_FEET[1]) / 2 * TORII_FOOT_FIT * gf.girth, (TORII_FEET[1] - TORII_FEET[0]) / 2 * TORII_FOOT_FIT * gf.girth, 0, 0) : onRoad(gf, 0, -0.15), 1);
             }
             const B = frameBasis(gf, Math.PI / 2);
             const sm: M3 = [B[0] * 0.48, B[1] * 0.48, B[2] * 0.48, B[3] * 2.9, B[4] * 2.9, B[5] * 2.9, B[6] * 0.02, B[7] * 0.02, B[8] * 0.02];
@@ -1067,7 +1211,14 @@ export function buildWorld(options: WorldOptions = {}): World {
               ringUsed++;
             }
           }
-          if (toriiBuf) {
+          if (toriiBuf && idol) {
+            for (let i = 0; i < GATE_SLOTS; i++) {
+              if (i >= gi) { hide(`torii-${i}`); continue; }
+              const o = i * 16;
+              const e = matrixEuler([toriiBuf[o]!, toriiBuf[o + 1]!, toriiBuf[o + 2]!, toriiBuf[o + 4]!, toriiBuf[o + 5]!, toriiBuf[o + 6]!, toriiBuf[o + 8]!, toriiBuf[o + 9]!, toriiBuf[o + 10]!]);
+              show(`torii-${i}`, true).setPosition(toriiBuf[o + 12]!, toriiBuf[o + 13]!, toriiBuf[o + 14]!).setRotation(e[0], e[1], e[2]).setScale([(TORII_FOOT_FIT * toriiGirth[i]!) / IDOL_TORII_SCALE, 1, 1]);
+            }
+          } else if (toriiBuf) {
             (node("torii-vermilion") as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(toriiBuf, gi);
             (node("torii-ebony") as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(toriiBuf, gi);
             (node("torii-chochin") as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(toriiBuf, gi);
@@ -1185,8 +1336,13 @@ export function buildWorld(options: WorldOptions = {}): World {
         for (const buf of instBuffers.values()) buf.count = 0;
         for (const ent of S.ents as readonly Entity[]) {
           if (ent.dead) continue;
+          // a plate or rib the runner crashed into breaks on impact (the stumble dust burst marks it) instead of staying
+          // drawn while the runner passes through it (owner pass-through QA 2026-11-18); the sim is unchanged
+          if (ent.hit && HIT_BREAKS.has(ent.type)) continue;
           const s = ent.type === "sweeper" || ent.type === "soul" || ent.type === "oni" ? ent.s + ent.rel : ent.s;
-          if (s < S.s - 12 || s > S.s + 420) continue;
+          // past the runner every road entity drifts back through the chase camera (5.75 m back): stop drawing it before it
+          // reaches the lens (GPU QA: a soul filled the whole frame as a dark blur); a punted oni tumbles off to the side
+          if (s < S.s - (ent.punt ? 12 : ENTITY_BEHIND_CUTOFF) || s > S.s + 420) continue;
           const pool = POOLS[ent.type];
           const parts3 = ENTITY_PARTS[ent.type];
           if (!pool || !parts3) continue;
@@ -1197,7 +1353,10 @@ export function buildWorld(options: WorldOptions = {}): World {
           const f = frameAt(samples, Math.min(s, ROAD_LENGTH));
           const lateral = entityLateral(ent);
           const h = ent.type === "arch" ? 2.2 : ent.type === "oni" ? 1.5 : ent.type === "barrier" ? 1.1 : ent.type === "sweeper" ? 0.9 : entityHeight(ent);
-          const base = onRoad(f, lateral, h);
+          // Idol road entities stand on the serpent's back under their whole footprint (art/grounding.ts); a punted oni
+          // tumbles through the air as before, and the feast table sits on the road instead of bobbing above it
+          const groundW = idol && !ent.punt ? ENTITY_HALF_WIDTH[ent.type] : undefined;
+          const base = groundW !== undefined ? addUp(groundedBase(f, lateral, groundW), f.U, ENTITY_MODELS[ent.type]!.baseY) : onRoad(f, lateral, h);
           const EB = frameBasis(f);
           const pulse = ent.type === "orb" ? 1 + 0.08 * Math.sin(time * 6 + ent.spin) : 1;
           const tumble = ent.punt ? eulerMatrix([ent.punt.t * 9, ent.punt.t * 5, 0]) : null;
@@ -1229,6 +1388,11 @@ export function buildWorld(options: WorldOptions = {}): World {
               handle.setUniform?.("glowShell", [...style.shell]);
             }
           });
+          // the Idol chariot's wheels roll with the road distance it has covered (spin = distance / radius)
+          if (idol && ent.type === "sweeper") {
+            const spin = chariotWheelAngle(s);
+            for (let k = 0; k < CHARIOT_WHEELS.length; k++) node(`ent-sweeper-${idx}-0-wheel-${k}`).setRotation(spin, 0, 0);
+          }
         }
         for (const [id, buf] of instBuffers) (node(id) as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(buf.data, buf.count, buf.rgba);
         for (const [type, count] of Object.entries(POOLS)) {
@@ -1303,7 +1467,11 @@ export function buildWorld(options: WorldOptions = {}): World {
         /* chase camera: elevated & pulled back so the ~1.95 m sky-runner occupies ~22-28% in the lower third with open forward sightlines */
         rig = stepChaseRig(rig, frame.F, frame.U, dt, S.speed);
         const shotLean = surging ? scriptLean * 0.35 : scriptLean;
-        const shot = shots?.step({ S, dt, lean: shotLean, outro: tf, reducedMotion, title }) ?? null;
+        // the intro swing plays during the 3 s countdown too (GPU QA: it was held at its first pose for the whole
+        // countdown, the runner off-screen until ~4 s after Start); manual QA renders pass dt = 0 and keep `S.time`
+        if (!title) introClock += dt;
+        const shotS = introClock > S.time ? { time: introClock, s: S.s, leg: S.leg, speed: S.speed, surge: S.surge, phase: S.phase } : S;
+        const shot = shots?.step({ S: shotS, dt, lean: shotLean, outro: tf, reducedMotion, title }) ?? null;
         const back = (flying ? CHASE_CAMERA.backFly : CHASE_CAMERA.backBase + Math.min(CHASE_CAMERA.backSpeedMax, S.speed * CHASE_CAMERA.backSpeedFactor)) * (shot?.back ?? 1);
         const rise = flying ? CHASE_CAMERA.riseFly : CHASE_CAMERA.rise;
         const shake = reducedMotion || surging || S.stumble <= 0 ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * Math.min(1, S.stumble * 1.4) * 0.08;
@@ -1360,7 +1528,7 @@ export function buildWorld(options: WorldOptions = {}): World {
 
       return {
         update,
-        resetCamera() { rig = null; prevS = null; smoothedLean = 0; camClearance?.reset(); impactRig?.reset(); prevImpact.init = false; },
+        resetCamera() { rig = null; prevS = null; introClock = 0; smoothedLean = 0; camClearance?.reset(); impactRig?.reset(); prevImpact.init = false; },
         setTitle(on: boolean) { title = on; },
         setReducedMotion(on: boolean) { const changed = reducedMotion !== on; reducedMotion = on; if (changed && fx) { registerVfx(); rainKey = ""; } },
         get visibilityWrites() { return visibilityWrites; },
@@ -1393,7 +1561,10 @@ export function buildWorld(options: WorldOptions = {}): World {
             h.setUniform?.("auraEdge", [...hexLinear(style.aura)]);
           }
           if (!script) for (let i = 0; i < SPARKS; i++) node(`spark-${i}`).setUniform?.("flatColor", [...hexLinear(style.auraLit)]);
-          if (script && typeof runner?.actor.setMaterialOverrides === "function") {
+          if (runner?.select) {
+            // Idol runner: each colourway is its own generated model with its own cloth colours (no tint or wash)
+            runner.select(style.id);
+          } else if (script && typeof runner?.actor.setMaterialOverrides === "function") {
             const sheen = hexLinear(style.gi);
             runner.actor.setMaterialOverrides([
               {

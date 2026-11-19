@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzVmMachete",
+  "generatedAt": "2026-11-18T22:16:56.848Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/bunker-zero/_refs/bzVmMachete.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0bc-0eee-7800-bf0c-5d6b00a14026",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 368246,
+        "num_faces": 736492,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Heavy tactical combat machete knife, side view with the blade pointing right: dark brushed steel full-tang bolo blade with a satin polished cutting edge and small sawback teeth on the spine, brass S-shaped crossguard, contoured black textured grip with three brass rivets and a lanyard loop. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "hero",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.607,
+    "size": [
+      0.66,
+      0.608,
+      0.042
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzVmMachete.glb",
+  "sizeBytes": 4134424,
+  "preview": "artifacts/idol/bunker-zero/bzVmMachete/views.png",
+  "usd": 0.2
+}

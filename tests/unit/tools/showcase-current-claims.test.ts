@@ -22,30 +22,13 @@ function routeList(source: string, name: string): string[] {
 }
 
 describe("current showcase claims", () => {
-  it("keeps the retained Blockfall prototype blocked with real route health", () => {
+  it("keeps the deleted Blockfall prototype unpublished and source-missing", () => {
     const route = listShowcaseRouteGates(process.cwd(), { publishedOnly: false })
       .find((candidate) => candidate.id === retainedPrototype);
-    // `published` selects legacy showcase-library build targets; it does not mean publicShowcase.
-    expect(route).toMatchObject({ published: true, releaseClass: "prototype-blocked" });
-    expect(existsSync(`apps/${retainedPrototype}/index.html`), "Blockfall app source is missing").toBe(true);
-    const healthPath = `apps/${retainedPrototype}/route-health.json`;
-    expect(existsSync(healthPath), "a retained prototype must not silently lose route health").toBe(true);
-    const health = JSON.parse(readFileSync(healthPath, "utf8")) as {
-      schema?: string;
-      appId?: string;
-      route?: string;
-      classification?: string;
-      publicShowcase?: boolean;
-      blockers?: string[];
-    };
-    expect(health).toMatchObject({
-      schema: "aura3d-route-health/1.0",
-      appId: retainedPrototype,
-      route: `/apps/${retainedPrototype}/`,
-      classification: "prototype-blocked",
-      publicShowcase: false
-    });
-    expect(health.blockers?.some((blocker) => blocker.trim().length > 0)).toBe(true);
+    // The app was deleted after 4.0.1; its historical gate stays, but never as a build target.
+    expect(route).toMatchObject({ published: false, releaseClass: "prototype-blocked" });
+    expect(listShowcaseRouteGates(process.cwd()).some((candidate) => candidate.id === retainedPrototype)).toBe(false);
+    expect(existsSync(`apps/${retainedPrototype}`), "Blockfall app directory").toBe(false);
   });
 
   it.each(retiredPrototypes)("retains %s as an explicitly unpublished, source-missing prototype", (routeId) => {
@@ -122,18 +105,6 @@ describe("current showcase claims", () => {
     const row = readFileSync("docs/project/showcase/apps-classification.md", "utf8")
       .split("\n").find((line) => line.startsWith(`| \`${routeId}\``));
     expect(row).toMatch(/\| prototype \|.*retired.*source and route health are absent.*historical/i);
-  });
-
-  it("labels Aura Clash as a development showcase rather than a flagship or approved launch", () => {
-    const sources = [
-      readFileSync("README.md", "utf8"),
-      readFileSync("apps/aura-clash-showcase/README.md", "utf8"),
-      readFileSync("docs/project/showcase/apps-classification.md", "utf8"),
-      readFileSync("docs/examples/aura-clash.md", "utf8")
-    ].join("\n");
-    // Aura Clash's development label must not become a flagship or launch claim.
-    expect(sources).toContain("development showcase");
-    expect(sources).not.toMatch(/Aura Clash (?:is|as) (?:a )?(?:flagship|launch-ready|visually approved)/i);
   });
 
   it("does not treat the retired July 19 review as current approval", () => {

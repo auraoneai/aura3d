@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
-  buildScorecard, isGPanelRound, verdict,
+  buildScorecard, integratedCriticalFor, isGPanelRound, verdict,
   type GameScorecard, type HumanReviewDoc
 } from "../../../../tools/quality-gate/src/scorecard";
 import { GAME_VISUAL_CATEGORIES } from "../../../../tools/quality-gate/src/contracts";
@@ -115,16 +117,24 @@ describe("buildScorecard + verdict (T1.6)", () => {
     expect(card.findings.some((f) => f.includes("p50 20 < 27"))).toBe(true);
   });
 
-  it("defaults integrated-critical ids from games.json when the flag is omitted", () => {
+  it("reads integrated-critical ids from a games.json entry (the default when the flag is omitted)", () => {
+    // No shipped games.json route declares integratedCritical since the PRD-14 rebuild apps were
+    // deleted, so the lookup is exercised against a fixture games.json.
+    const dir = mkdtempSync(join(tmpdir(), "qr14-scorecard-"));
+    try {
+      const file = join(dir, "games.json");
+      writeFileSync(file, JSON.stringify({ games: [{ id: "showcase-bank-shot", integratedCritical: ["C-24"] }] }));
+      expect(integratedCriticalFor("showcase-bank-shot", file)).toEqual(["C-24"]);
+      expect(integratedCriticalFor("showcase-unknown", file)).toEqual([]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
     const rep = runReport("showcase-bank-shot");
     const withDegradation = {
       ...rep,
       games: [{ id: "showcase-bank-shot", runs: [{ run: "1920x1080", shots: [{ name: "a", file: "x.png" }], diagnostics: { qrFlags: [], degradations: ["C-24"] } }] }]
     };
-    const card = buildScorecard(opts("showcase-bank-shot", {
-      runReport: withDegradation,
-      integratedCritical: undefined
-    }));
+    const card = buildScorecard(opts("showcase-bank-shot", { runReport: withDegradation, integratedCritical: ["C-24"] }));
     expect(card.enginePending).toContain("C-24");
     expect(card.countedRound).toBe(0);
   });

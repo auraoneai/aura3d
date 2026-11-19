@@ -8,7 +8,8 @@
 import type { AuraMaterialSpec, AuraModelNode } from "../nodes/types.js";
 import type { AuraModelMaterialOverride } from "../../contracts/materials.js";
 import { PortableShaderMaterial, type Material } from "@aura3d/rendering";
-import { lowerModelMaterialOverrides } from "../../production-runtime/ModelMaterialOverrides.js";
+import { lowerModelMaterialOverrides, modelOpacityIsTranslucent } from "../../production-runtime/ModelMaterialOverrides.js";
+import type { GLTFMaterialRenderStateOverride } from "@aura3d/assets/browser";
 import { assertAuraCustomMaterialSpec, createCustomShaderMaterial } from "./customMaterial.js";
 import { createModelCustomMaterialTextureWork, hasCustomMaterialTextureAssets, type ModelCustomMaterialTextureOptions, type ModelCustomMaterialTextureWork } from "./customTextures.js";
 
@@ -131,7 +132,37 @@ function lowerImportedModelMaterials(node: AuraModelNode, overrides: readonly Au
         : override.colorMode === "replace" ? { baseColorMultiply: undefined } : { baseColorReplace: undefined })
     };
   }
-  return lowered;
+  return [...lowered, ...modelOpacityRenderStateOverrides(material, overrides)];
+}
+
+/** The alpha-blended state a see-through override needs: blend on, no depth write (sorted back to front). */
+const TRANSLUCENT_MODEL_RENDER_STATE = { blend: true, depthWrite: false } as const;
+const EVERY_MATERIAL = /^/;
+
+/**
+ * `opacity < 1` on `model(..., { material })` or a `materialOverrides` entry scaled the alpha but kept the glTF
+ * material's opaque render state, so the copy drew solid. Render state is fixed when the loader creates the materials:
+ * emit load-time overrides that switch the matching materials to alpha blending. The loader takes the first match, so
+ * later entries (which win for the scalar fields too) come first and the whole-model spec comes last.
+ */
+function modelOpacityRenderStateOverrides(
+  material: AuraMaterialSpec | undefined,
+  overrides: readonly AuraModelMaterialOverride[] | undefined
+): GLTFMaterialRenderStateOverride[] {
+  const states: GLTFMaterialRenderStateOverride[] = [];
+  const reason = "model opacity < 1";
+  for (const override of [...(overrides ?? [])].reverse()) {
+    if (!modelOpacityIsTranslucent(override.opacity)) continue;
+    const targets: readonly unknown[] = override.target === undefined ? [EVERY_MATERIAL]
+      : Array.isArray(override.target) ? override.target : [override.target];
+    for (const target of targets) {
+      const materialName = target === "*" ? EVERY_MATERIAL : typeof target === "string" ? target
+        : target instanceof RegExp ? new RegExp(target.source, target.flags.replace(/[gy]/g, "")) : undefined;
+      if (materialName !== undefined) states.push({ materialName, renderState: TRANSLUCENT_MODEL_RENDER_STATE, reason });
+    }
+  }
+  if (modelOpacityIsTranslucent(material?.opacity)) states.push({ materialName: EVERY_MATERIAL, renderState: TRANSLUCENT_MODEL_RENDER_STATE, reason });
+  return states;
 }
 
 function customModelMaterialFactory(materialSpec: AuraMaterialSpec, name: string, slot: boolean) {

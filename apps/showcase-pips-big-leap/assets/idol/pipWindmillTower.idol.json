@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "pips-big-leap",
+  "key": "pipWindmillTower",
+  "generatedAt": "2026-11-19T00:24:56.121Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f131-3701-7f01-ad6e-c7563d5eea2e",
+      "prompt": "A storybook windmill tower WITHOUT sails seen from the front: a round tapering stone and timber tower with a small wooden door and windows, a pointed golden thatched roof, and one short round wooden axle hub sticking out of the front just below the roof where the sails would attach; no sails, no blades, no arms. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f131-cc1e-77b0-b904-93df2771317d",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 809014,
+        "num_faces": 1618028,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A storybook windmill tower WITHOUT sails seen from the front: a round tapering stone and timber tower with a small wooden door and windows, a pointed golden thatched roof, and one short round wooden axle hub sticking out of the front just below the roof where the sails would attach; no sails, no blades, no arms. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "admitRole": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.738,
+    "size": [
+      3.338,
+      4.7,
+      4.725
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-pips-big-leap/assets/idol/pipWindmillTower.glb",
+  "sizeBytes": 772704,
+  "preview": "artifacts/idol/pips-big-leap/pipWindmillTower/views.png",
+  "usd": 0.37
+}

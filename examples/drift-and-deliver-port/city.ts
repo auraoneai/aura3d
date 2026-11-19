@@ -46,7 +46,21 @@ export interface CityStats {
 export interface CityGeometry {
   readonly chunks: CityChunk[];
   readonly stats: CityStats;
+  /** Roof of every building, by building index (rooftop props stand on `y`). */
+  readonly roofs: readonly RoofInfo[];
 }
+
+/** The walkable roof of a dressed building: the top of the flat roof cap, or the eaves of a gable. */
+export interface RoofInfo {
+  readonly y: number;
+  readonly flat: boolean;
+  /** Half extents of the top tier (setbacks shrink it). */
+  readonly hw: number;
+  readonly hd: number;
+}
+
+/** Height of the flat roof cap laid on the top tier (`roofCap`). */
+export const ROOF_CAP_H = 0.34;
 
 export function facadeKindFor(district: District, r: number): FacadeKind {
   switch (district) {
@@ -107,7 +121,7 @@ function walls(m: MeshData, cx: number, cz: number, hw: number, hd: number, y0: 
 }
 
 function roofCap(trim: MeshData, cx: number, cz: number, hw: number, hd: number, y: number, rof: Rgb, lip: Rgb): void {
-  box(trim, cx, y, cz, hw + 0.18, 0.34, hd + 0.18, { side: lip, top: rof });
+  box(trim, cx, y, cz, hw + 0.18, ROOF_CAP_H, hd + 0.18, { side: lip, top: rof });
 }
 
 function gable(trim: MeshData, cx: number, cz: number, hw: number, hd: number, y: number, roof: Rgb, wallTint: Rgb): void {
@@ -151,6 +165,7 @@ interface BuildingOut {
   triangles: number;
   awnings: number;
   height: number;
+  roof: RoofInfo;
 }
 
 function dressBuilding(chunk: CityChunk, b: Building, district: District, index: number): BuildingOut {
@@ -208,11 +223,13 @@ function dressBuilding(chunk: CityChunk, b: Building, district: District, index:
   const thw = b.hw * topTier.scale;
   const thd = b.hd * topTier.scale;
   const gabled = district === "residential" || district === "outskirts";
+  let roof: RoofInfo = { y: y + ROOF_CAP_H, flat: true, hw: thw, hd: thd };
   if (gabled && r() > 0.35) {
+    roof = { y: y + 0.3, flat: false, hw: thw, hd: thd };
     gable(trim, b.x, b.z, thw, thd, y + 0.3, hexRgb(["#c96044", "#b55239", "#d87856"][Math.floor(r() * 3)] as string), hexRgb(WALLS[kind][variant] as string));
   } else {
     roofCap(trim, b.x, b.z, thw, thd, y, rof, lip);
-    const roofY = y + 0.34;
+    const roofY = y + ROOF_CAP_H;
     const clutter = Math.floor(r() * 3) + (district === "core" ? 1 : 0);
     for (let k = 0; k < clutter; k++) {
       const cw = 0.8 + r() * 0.9;
@@ -231,7 +248,7 @@ function dressBuilding(chunk: CityChunk, b: Building, district: District, index:
     if (b.height > 55 && r() > 0.35) box(trim, b.x + (r() - 0.5) * thw, roofY, b.z + (r() - 0.5) * thd, 0.22, 7 + r() * 9, 0.22, { side: hexRgb("#5b5b60"), top: hexRgb("#5b5b60") });
   }
   const after = triangleCount(shaft) + triangleCount(shop) + triangleCount(trim);
-  return { triangles: after - before, awnings, height: b.height };
+  return { triangles: after - before, awnings, height: b.height, roof };
 }
 
 export function chunkKey(i: number, j: number): string {
@@ -243,6 +260,7 @@ export function buildCity(blocks: readonly Block[], buildings: readonly Building
   for (const b of blocks) districtOfBlock.set(`${b.i},${b.j}`, b.district);
   const chunks = new Map<string, CityChunk>();
   const stats: CityStats = { buildings: 0, triangles: 0, byKind: { tower: 0, apartment: 0, brick: 0 }, tallest: 0, awnings: 0, chunks: 0 };
+  const roofs: RoofInfo[] = [];
   buildings.forEach((b, index) => {
     const { i, j } = blockOf(b);
     const key = chunkKey(i, j);
@@ -257,6 +275,7 @@ export function buildCity(blocks: readonly Block[], buildings: readonly Building
     stats.triangles += out.triangles;
     stats.awnings += out.awnings;
     stats.tallest = Math.max(stats.tallest, out.height);
+    roofs[index] = out.roof;
   });
   for (const c of chunks.values()) {
     for (const [key, m] of Object.entries(c.meshes)) {
@@ -265,7 +284,7 @@ export function buildCity(blocks: readonly Block[], buildings: readonly Building
     }
   }
   stats.chunks = chunks.size;
-  return { chunks: [...chunks.values()], stats };
+  return { chunks: [...chunks.values()], stats, roofs };
 }
 
 /* ------------------------------------------------------------------ ground */
@@ -467,6 +486,8 @@ export interface PropSkip {
   readonly lamp?: (x: number, z: number) => boolean;
   readonly signal?: (x: number, z: number) => boolean;
   readonly tree?: (x: number, z: number) => boolean;
+  /** leave the people out (drawn as instanced models instead) */
+  readonly pedestrians?: boolean;
 }
 
 export function buildProps(f: Furniture, skip: PropSkip = {}): MeshData {
@@ -526,7 +547,7 @@ export function buildProps(f: Furniture, skip: PropSkip = {}): MeshData {
     if (t.palm) pushPalm(t.x, t.z, 5.5 + t.h * 0.5, t.seed);
     else pushRound(t.x, t.z, t.h, t.seed);
   }
-  for (const p of f.pedestrians) {
+  for (const p of skip.pedestrians ? [] : f.pedestrians) {
     const k = p.scale;
     const pants = hexRgb(p.pants);
     const shirt = hexRgb(p.shirt);

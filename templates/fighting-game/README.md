@@ -85,5 +85,3 @@ crossfaded animation once typed GLB fighters are supplied:
   `restartFromFrameZero`) — so locomotion state changes can crossfade instead of snapping. With
   real assets the controller drives those clips; with no asset it falls back to labeled capsule
   placeholders and the route proof reports `proofMode: "source-placeholders"` (vs `"typed-assets"`).
-- For the deployed reference of crossfade-on-state-change driven from the engine combat world, see
-  `apps/aura-clash-showcase` (`AuraClashArenaApp` `applyFighterAnimation`).

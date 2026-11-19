@@ -8,7 +8,7 @@ test.describe("I04 actual architectural night spotlight adoption", () => {
   let server: ExampleDevServer;
   test.beforeAll(async () => { server = await startExampleDevServer(); });
   test.afterAll(async () => { await server?.close(); });
-  for (const route of [{ path: "showcase-cinematic-architecture", probe: "__AURA3D_ARCHITECTURE_SPOTLIGHT_PROBE__" }, { path: "aura-clash-showcase", probe: "__AURA3D_CLASH_SPOTLIGHT_PROBE__" }]) {
+  for (const route of [{ path: "showcase-cinematic-architecture", probe: "__AURA3D_ARCHITECTURE_SPOTLIGHT_PROBE__" }]) {
   for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
     test(`${route.path} light and shadow negative controls ${viewport.width}`, async ({ page }, testInfo) => {
       // A single readback can take over 90 seconds on the disclosed remote
@@ -103,7 +103,7 @@ test.describe("I04 actual architectural night spotlight adoption", () => {
         expect(sequence.shadowedDiagnostics.renderer.runtime.backend).toBe("production-runtime");
         expect(sequence.shadowedDiagnostics.renderer.shadows.spot).toMatchObject({
           requested: true, casterIsSpot: true, spotPixelBacked: true,
-          casterName: route.path === "aura-clash-showcase" ? "Aura Clash overhead stage spotlight" : "architectural night facade spotlight"
+          casterName: "architectural night facade spotlight"
         });
         // This scene may retain a different shadow-casting light in the
         // global caster slot. The negative control applies to the authored

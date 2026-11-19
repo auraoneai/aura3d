@@ -477,7 +477,7 @@ export function lensFlareNode(look: WorldLook): DioramaNode | null {
 // ---------------------------------------------------------------- PBL-E2 sky
 
 /** Real sky behind the diorama in w2 / w3 / w6; the catalogue HDRI stays the environment source. */
-export function skyNode(look: WorldLook): DioramaNode | null {
+export function skyNode(look: WorldLook, center?: readonly [number, number, number]): DioramaNode | null {
   const s = look.sky;
   if (!s) return null;
   if (s.model === "preetham") {
@@ -491,15 +491,53 @@ export function skyNode(look: WorldLook): DioramaNode | null {
       captureEnvironment: false
     });
   }
-  return sky.gradient({
+  // Full-run GPU audit (2026-11-19): an engine `sky.gradient` node makes the renderer's sky-capture contributor run a
+  // float-target environment capture whenever a world SWAP mounts it (it ignores `captureEnvironment: false`); on the
+  // production renderer that throws RENDERER_MOUNT_FAILED and nothing draws for the rest of the session (autoplay
+  // reached Starfall and every frame after was blank). The night garden keeps its colour backdrop and draws its
+  // stars as one instanced dome instead, so no engine sky node is ever mounted.
+  return starDomeNode(s, center);
+}
+
+/** Star dome radius (m): inside the default far plane, short of the w6 fog's 140 m near distance. */
+export const STAR_DOME_RADIUS = 120;
+/** Upper bound on drawn stars (one instanced draw). */
+export const STAR_DOME_MAX = 420;
+
+/** Deterministic star placements on the upper sky (elevation 6..84 deg) around the course centre. */
+export function starDomeTransforms(count: number, center: readonly [number, number, number] = [0, 0, -35]): AuraTransformSpec[] {
+  const n = Math.max(0, Math.min(STAR_DOME_MAX, Math.round(count)));
+  const out: AuraTransformSpec[] = [];
+  let seed = 0x5eed5;
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  for (let i = 0; i < n; i += 1) {
+    const az = rand() * Math.PI * 2;
+    // Uniform on the spherical cap: sin(elevation) uniform in [sin 6deg, sin 84deg].
+    const lo = Math.sin((6 * Math.PI) / 180), hi = Math.sin((84 * Math.PI) / 180);
+    const el = Math.asin(lo + rand() * (hi - lo));
+    const r = STAR_DOME_RADIUS;
+    const size = 0.16 + rand() * rand() * 0.34;
+    out.push({
+      position: [center[0] + Math.cos(el) * Math.sin(az) * r, center[1] + Math.sin(el) * r, center[2] + Math.cos(el) * Math.cos(az) * r],
+      scale: size
+    });
+  }
+  return out;
+}
+
+function starDomeNode(s: Extract<NonNullable<WorldLook["sky"]>, { readonly model: "gradient" }>, center?: readonly [number, number, number]): DioramaNode | null {
+  if (!s.stars || s.stars.count <= 0) return null;
+  const transforms = starDomeTransforms(Math.round(s.stars.count * 0.45), center);
+  return instances.sphere({
     name: dioramaName.sky,
-    zenith: s.zenith,
-    horizon: s.horizon,
-    ground: s.ground,
-    exponent: s.exponent,
-    horizonGlow: s.horizonGlow,
-    ...(s.stars ? { stars: { count: s.stars.count, brightness: s.stars.brightness } } : {}),
-    captureEnvironment: false
+    transforms,
+    params: { widthSegments: 6, heightSegments: 4 },
+    material: material.emissive({ color: "#dfe8ff", emissive: "#dfe8ff", emissiveIntensity: 1.6 * s.stars.brightness, roughness: 1 }),
+    castShadow: false,
+    receiveShadow: false
   });
 }
 

@@ -164,6 +164,7 @@ export function createHeatsinkAudio(): HeatsinkAudio {
         if (ev.type === "fire") bank.play("fire");
         else if (ev.type === "hit") bank.play("hit");
         else if (ev.type === "kill") { bank.play("kill", { level: race.ops.chain }); bank.duck(0.3, 180); }
+        else if (ev.type === "ram") { bank.play("barrel"); bank.duck(0.5, 260); }
         else if (ev.type === "barrel") { bank.play("barrel"); bank.duck(0.5, 320); }
         else if (ev.type === "medal" && ev.detail !== "none") bank.play("medal");
       }

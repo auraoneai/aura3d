@@ -1,0 +1,52 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-diamond-3d",
+  "key": "diaIdolFielderA",
+  "generatedAt": "2026-11-18T22:10:04.537Z",
+  "generator": "tools/idol/generate.mjs (finished by apps/showcase-aura-diamond-3d/scripts/idol-recover.mjs after the client poll timed out)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08c-7d85-7393-b14f-47bc3f5a2c35",
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 472274,
+        "num_faces": 944544,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 34,
+        "animations": [
+          "idle",
+          "walk",
+          "run"
+        ]
+      }
+    }
+  ],
+  "role": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 0.998 m, 3 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000        5.37x         546      0\n  bind-pose mismatch (SKIN_BIND_MISMATCH): bone_3 40% off-axis, bone_28 45% off-axis\n  ERROR material0 (mesh 0 prim 0): 546 of 30000 triangles stretch past 1.6x their rest edges (worst 5.37x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n  warn  2 bone(s) are not inside the mesh they move: bone_3 (vertices 0.033 m off a 0.082 m bone), bone_28 (vertices 0.036 m off a 0.082 m bone) (SKIN_BIND_MISMATCH). The mesh was modelled in a different pose than the skeleton assumes (typically mid-stride), so every clip rotates the limbs about joints off the limb. Rebuild the limbs in the skeleton's pose (assets repair-skin --rebuild-limbs) or re-rig.",
+    "repairLog": "skin check still fails after repair: SKIN_STRETCH, SKIN_BIND_MISMATCH\nBind-pose mismatch on bone_3, bone_28: the mesh was modelled in a different pose than the skeleton assumes. Weight smoothing and triangle cuts only mask it. For a recognised humanoid run repair-skin --rebuild-limbs (rebuilds the legs in the skeleton's pose); otherwise rebuild the limbs in your DCC tool or regenerate and re-rig the model in the pose the skeleton assumes.\nStill failing after smooth-bridges: SKIN_STRETCH, SKIN_BIND_MISMATCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand."
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.884,
+    "size": [
+      1.825,
+      1.88,
+      0.306
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-diamond-3d/assets/idol/diaIdolFielderA.glb",
+  "sizeBytes": 3263416,
+  "preview": "artifacts/idol/aura-diamond-3d/diaIdolFielderA/views.png",
+  "usd": 0.42
+}

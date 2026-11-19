@@ -835,6 +835,25 @@ export function buildDroneRotorNode(index: number, lite = false): ProceduralNode
   );
 }
 
+/**
+ * Duct fan for the Idol strike targets (audit 2026-11-19): the sentry and gunship GLBs bake their wingtip rotors into
+ * one static mesh, so world.ts spins this fan over each duct. One draw per fan (hub and blades merged in brushed
+ * titanium, 1.12 m across like the craft rotor) because up to 96 of them exist.
+ */
+export const TARGET_FAN_BLADES = 4;
+export function buildTargetFanNode(name: string): ProceduralNodeBuilder {
+  const spec = memoizeGeometry("heatsink-port:target-fan", () => {
+    const hub: V2[] = [[0, -0.035], ...bezierCurve2([0.115, -0.03], [0.135, 0.008], [0.092, 0.042], [0.025, 0.054], 7), [0, 0.056]];
+    const blade: V2[] = [[0.08, -0.07], [0.55, -0.05], [0.57, 0.04], [0.10, 0.075]];
+    const parts: RawMesh[] = [latheMesh(hub, 20)];
+    for (let b = 0; b < TARGET_FAN_BLADES; b += 1) {
+      parts.push(transformMesh(extrudePolygonMesh(blade, 0.022, 0.004, true), { rot: [Math.PI * 0.5 + 0.22, (b / TARGET_FAN_BLADES) * Math.PI * 2, 0] }));
+    }
+    return mergeRawMeshes(parts);
+  });
+  return geometry.custom(spec, { name, material: MAT_TITANIUM_BRUSHED, castShadow: false, receiveShadow: false });
+}
+
 // ---------------------------------------------------------------------------
 // 2. Rival Combat Craft / Strike Targets (Sentry Interceptor & Heavy Gunship)
 // ---------------------------------------------------------------------------

@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swSuvSlate",
+  "generatedAt": "2026-11-18T22:27:37.805Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the client's 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f089-f061-7391-8b6c-803e75537151",
+      "prompt": "A single tall five-door sport utility vehicle of a fictional unbranded design, slate-blue metallic paint, black roof rails with a surfboard strapped on the roof, dark tinted windows, black wheel-arch cladding, chunky black tyres on dark alloy wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08f-7134-7972-8923-be3526563b46",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1621072,
+        "num_faces": 3242788,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single tall five-door sport utility vehicle of a fictional unbranded design, slate-blue metallic paint, black roof rails with a surfboard strapped on the roof, dark tinted windows, black wheel-arch cladding, chunky black tyres on dark alloy wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.251,
+    "size": [
+      4.518,
+      3.315,
+      4.82
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swSuvSlate.glb",
+  "sizeBytes": 3770284,
+  "preview": "artifacts/idol/saltwind-highway/swSuvSlate/views.png",
+  "usd": 0.37
+}

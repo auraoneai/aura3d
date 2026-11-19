@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdSmokestacks",
+  "generatedAt": "2026-11-18T21:20:50.297Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f088-a9ef-7ce3-8461-fc639375644c",
+      "prompt": "A battery of three tall industrial smokestacks of different heights standing together on a shared concrete and steel plinth, soot-blackened riveted iron flues with red-and-white warning bands near the tops, steel lattice catwalk collars and ladders wrapped around them, pipes and ducts connecting them at the base, heavy rust and soot staining. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f089-5336-74e0-8343-d0b76bb1a965",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 857772,
+        "num_faces": 1715772,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A battery of three tall industrial smokestacks of different heights standing together on a shared concrete and steel plinth, soot-blackened riveted iron flues with red-and-white warning bands near the tops, steel lattice catwalk collars and ladders wrapped around them, pipes and ducts connecting them at the base, heavy rust and soot staining. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 39.853,
+    "size": [
+      31.089,
+      40,
+      32.954
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdSmokestacks.glb",
+  "sizeBytes": 1747368,
+  "preview": "artifacts/idol/heatsink/tdSmokestacks/views.png",
+  "usd": 0.37,
+  "admitRole": "set-dressing",
+  "renormalizedAt": "2026-11-18T23:37:03.035Z"
+}

@@ -106,12 +106,52 @@ export function wantsCupCam(o: { readonly putter: boolean; readonly distanceToCu
  * The tracer cam: locked off behind and above the striking position, looking down the shot line toward the ball, the
  * lens tightening as the ball flies out (broadcast "tracer" framing).
  */
-export function tracerCamPose(terrain: HoleTerrain, launch: Vec3, shotYaw: number, ball: Vec3): { readonly position: Vec3; readonly target: Vec3; readonly fov: number } {
+export function tracerCamPose(
+  terrain: HoleTerrain,
+  launch: Vec3,
+  shotYaw: number,
+  ball: Vec3,
+  options: { readonly keepHorizon?: boolean } = {}
+): { readonly position: Vec3; readonly target: Vec3; readonly fov: number } {
   const back: Vec3 = [-Math.sin(shotYaw) * 7, 0, -Math.cos(shotYaw) * 7];
   const position = aboveTurf(terrain, [launch[0] + back[0], launch[1] + 2.4, launch[2] + back[2]], 1.6);
   const range = Math.hypot(ball[0] - launch[0], ball[2] - launch[2]);
   const fov = Math.max(18, 38 - range * 0.09);
-  return { position, target: ball, fov };
+  return options.keepHorizon ? horizonHoldingPose(position, ball, fov) : { position, target: ball, fov };
+}
+
+/** Black-sky tracer cam: the lowest share of the frame height the ground (below the horizon) keeps. */
+export const TRACER_GROUND_SHARE = 0.25;
+/** ... and the margin (share of the frame height) the ball keeps from the top edge while the lens can still widen. */
+export const TRACER_BALL_TOP_MARGIN = 0.08;
+/** Widest lens the black-sky tracer cam opens to (degrees, vertical). */
+export const TRACER_MAX_FOV_DEG = 64;
+
+/**
+ * 2026-11-18 owner (real GPU, Mare): the tracer cam pitched up after the low-gravity ball and framed only the airless
+ * black sky, a black screen for seconds. On a black-sky course the cam keeps the horizon at least TRACER_GROUND_SHARE of
+ * the frame height above the bottom edge: the pitch is capped at (0.5 - share) x fov, the lens widens (up to
+ * TRACER_MAX_FOV_DEG) to keep the ball under the top edge, and above that the ball may leave the top of the frame
+ * before the ground does. Pitch/fov are vertical angles (pinhole, the tangent-space frame position of the horizon).
+ */
+export function horizonHoldingPose(position: Vec3, ball: Vec3, fov: number): { readonly position: Vec3; readonly target: Vec3; readonly fov: number } {
+  const dx = ball[0] - position[0], dz = ball[2] - position[2];
+  const flat = Math.max(1e-3, Math.hypot(dx, dz));
+  const ballPitch = Math.atan2(ball[1] - position[1], flat);
+  const rad = Math.PI / 180;
+  // horizon at frame fraction f above the bottom: tan(pitch) = (1 - 2f) tan(fov / 2); ball at top margin m: tan(ballPitch - pitch) <= (1 - 2m) tan(fov / 2) (centre column)
+  const maxPitch = (half: number) => Math.atan((1 - 2 * TRACER_GROUND_SHARE) * Math.tan(half));
+  let lens = fov;
+  if (ballPitch > maxPitch((lens * rad) / 2)) {
+    for (; lens < TRACER_MAX_FOV_DEG; lens += 1) {
+      const half = (lens * rad) / 2;
+      if (Math.tan(ballPitch - maxPitch(half)) <= (1 - 2 * TRACER_BALL_TOP_MARGIN) * Math.tan(half)) break;
+    }
+    lens = Math.min(lens, TRACER_MAX_FOV_DEG);
+  }
+  const pitch = Math.min(ballPitch, maxPitch((lens * rad) / 2));
+  const target: Vec3 = [position[0] + dx, position[1] + Math.tan(pitch) * flat, position[2] + dz];
+  return { position, target, fov: lens };
 }
 
 /** The cup cam: low behind the cup on the ball-to-cup line, looking back at the rolling ball. */

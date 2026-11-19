@@ -1,0 +1,179 @@
+{
+  "game": "aura-hoops-3d",
+  "outDir": "apps/showcase-aura-hoops-3d/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "hoopsIdolOrange",
+      "subject": "Realistic adult male streetball basketball player, lean athletic build, deep brown skin, short black hair in tight twists, thin moustache, wearing a plain bright safety-orange sleeveless basketball tank jersey with thin white piping at the neck and armholes, plain black knee-length basketball shorts, short white crew socks, white high-top basketball sneakers, bare arms and bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.92
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 201
+    },
+    {
+      "key": "hoopsIdolGold",
+      "subject": "Realistic adult male streetball basketball player, lean athletic build, light tan skin, short wavy black hair, clean-shaven, wearing a plain warm golden-yellow sleeveless basketball tank jersey with thin white piping at the neck and armholes, plain black knee-length basketball shorts, short white crew socks, white high-top basketball sneakers, bare arms and bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.92
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 302
+    },
+    {
+      "key": "hoopsIdolCyan",
+      "subject": "Realistic adult male streetball basketball player, lean athletic build, fair skin with light freckles, short cropped red-brown hair, clean-shaven, wearing a plain bright cyan sky-blue sleeveless basketball tank jersey with thin white piping at the neck and armholes, plain black knee-length basketball shorts, short white crew socks, white high-top basketball sneakers, bare arms and bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.92
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 203
+    },
+    {
+      "key": "hoopsIdolGreen",
+      "subject": "Realistic adult male streetball basketball player, lean athletic build, medium brown skin, black hair in a short high-top fade, clean-shaven, wearing a plain bright mint-green sleeveless basketball tank jersey with thin white piping at the neck and armholes, plain black knee-length basketball shorts, short white crew socks, white high-top basketball sneakers, bare arms and bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.92
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 204
+    },
+    {
+      "key": "hoopsIdolViolet",
+      "subject": "Realistic adult male streetball basketball player, lean athletic build, olive skin, short black undercut hair, short trimmed black beard, wearing a plain bright magenta-violet sleeveless basketball tank jersey with thin white piping at the neck and armholes, plain black knee-length basketball shorts, short white crew socks, white high-top basketball sneakers, bare arms and bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.92
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 205
+    },
+    {
+      "key": "hoopsIdolRed",
+      "subject": "Realistic adult male streetball basketball player, lean athletic build, dark brown skin, shaved head, short trimmed beard, wearing a plain bright crimson-red sleeveless basketball tank jersey with thin white piping at the neck and armholes, plain black knee-length basketball shorts, short white crew socks, white high-top basketball sneakers, bare arms and bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.92
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 206
+    },
+    {
+      "key": "hoopsIdolCream",
+      "subject": "Realistic adult male streetball basketball player, lean athletic build, East Asian features, light skin, short straight black hair, clean-shaven, wearing a plain plain off-white cream sleeveless basketball tank jersey with thin white piping at the neck and armholes, plain black knee-length basketball shorts, short white crew socks, white high-top basketball sneakers, bare arms and bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.92
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 207
+    },
+    {
+      "key": "hoopsIdolOrangeBig",
+      "subject": "Realistic tall adult male streetball basketball player, light brown skin, muscular heavy-set power forward build, short black cornrow braids, wearing a plain bright safety-orange sleeveless basketball tank jersey with thin white piping at the neck and armholes, plain black knee-length basketball shorts, short white crew socks, white high-top basketball sneakers, bare arms and bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.99
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 311
+    },
+    {
+      "key": "hoopsIdolVioletBig",
+      "subject": "Realistic tall adult male streetball basketball player, dark brown skin, muscular heavy-set center build, very short black hair, short beard, wearing a plain bright magenta-violet sleeveless basketball tank jersey with thin white piping at the neck and armholes, plain black knee-length basketball shorts, short white crew socks, white high-top basketball sneakers, bare arms and bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.99
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 212
+    },
+    {
+      "key": "hoopsIdolCharcoal",
+      "subject": "Realistic adult male streetball basketball player, lean athletic build, light brown skin, short curly dark brown hair, clean-shaven, wearing a plain dark charcoal-grey sleeveless basketball tank jersey with thin white piping at the neck and armholes, plain black knee-length basketball shorts, short white crew socks, white high-top basketball sneakers, bare arms and bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.92
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 208
+    },
+    {
+      "key": "hoopsIdolBallCart",
+      "subject": "A chrome tubular basketball rack cart on four small black caster wheels, two tiers holding six orange pebbled basketballs with black seams in two rows of three",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 1.3
+      },
+      "tex": 1024,
+      "seed": 221
+    },
+    {
+      "key": "hoopsIdolTrophy",
+      "subject": "A polished silver streetball championship chalice trophy with two curved side handles, a small silver basketball finial on the lid and a stepped black square base",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 1.15
+      },
+      "tex": 1024,
+      "seed": 222
+    }
+  ]
+}

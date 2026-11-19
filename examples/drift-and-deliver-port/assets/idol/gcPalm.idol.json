@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "drift-and-deliver-port",
+  "key": "gcPalm",
+  "generatedAt": "2026-11-18T22:17:05.492Z",
+  "generator": "tools/idol/generate.mjs (optimise/normalise finished by hand: generator passed role set-dressing to assets optimize)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b7-e305-7b71-a23d-4a4246cf937f",
+      "prompt": "A single tall coastal date palm tree, a slightly curved textured diamond-patterned trunk, a full crown of long arching green pinnate fronds with a few dry brown fronds below. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b9-65dc-7a93-b408-c34cb072c1d1",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 561928,
+        "num_faces": 1123896,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A single tall coastal date palm tree, a slightly curved textured diamond-patterned trunk, a full crown of long arching green pinnate fronds with a few dry brown fronds below. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 7.422,
+    "size": [
+      6.782,
+      7.5,
+      6.644
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/drift-and-deliver-port/assets/idol/gcPalm.glb",
+  "sizeBytes": 712712,
+  "preview": "artifacts/idol/drift-and-deliver-port/gcPalm/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "decimate",
+      "targetTriangles": 4000,
+      "tool": "meshoptimizer simplify (Permissive, error 0.02)",
+      "reason": "~380 instances each across the city"
+    },
+    {
+      "step": "texture-jpeg",
+      "maxTexPx": 512,
+      "before": 3370724,
+      "after": 712712
+    }
+  ]
+}

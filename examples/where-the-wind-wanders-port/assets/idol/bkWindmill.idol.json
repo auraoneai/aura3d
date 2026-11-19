@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bellkeepers-walk",
+  "key": "bkWindmill",
+  "generatedAt": "2026-11-18T22:23:58.302Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/bellkeepers-walk/bkWindmill/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 33,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1382342,
+        "num_faces": 2765592,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A tall tapered timber smock windmill tower without any sails: a battered round fieldstone base with an arched wooden door, a wooden wrap-around gallery with railing at the top of the stone base, an octagonal tapering body clad in warm weathered vertical wooden boards with a few small windows, a rounded dark wooden boat-shaped cap on top with a short horizontal wooden windshaft hub sticking out of the front, a small brass finial. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 17.81,
+    "size": [
+      14.454,
+      18.78,
+      15.042
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/where-the-wind-wanders-port/assets/idol/bkWindmill.glb",
+  "sizeBytes": 7614520,
+  "preview": "artifacts/idol/bellkeepers-walk/bkWindmill/views.png",
+  "usd": 0.2
+}

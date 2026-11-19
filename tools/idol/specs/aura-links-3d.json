@@ -1,0 +1,417 @@
+{
+  "game": "aura-links-3d",
+  "outDir": "apps/showcase-aura-links-3d/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "linksIdolGolferBlue",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.84
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "Athletic adult male professional golfer, short dark hair, clean-shaven, wearing a plain solid medium-blue short-sleeve golf polo shirt with collar tucked in, plain dark green baseball cap, light stone-beige tailored golf trousers, brown leather belt, white golf shoes, a plain white golf glove on the left hand only"
+    },
+    {
+      "key": "linksIdolGolferRed",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.84
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "Athletic adult male professional golfer, short dark hair, clean-shaven, wearing a plain solid deep claret red short-sleeve golf polo shirt with collar tucked in, plain dark green baseball cap, light stone-beige tailored golf trousers, brown leather belt, white golf shoes, a plain white golf glove on the left hand only"
+    },
+    {
+      "key": "linksIdolGolferWhite",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.84
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "Athletic adult male professional golfer, short dark hair, clean-shaven, wearing a plain solid off-white ivory short-sleeve golf polo shirt with collar tucked in, plain dark green baseball cap, light stone-beige tailored golf trousers, brown leather belt, white golf shoes, a plain white golf glove on the left hand only"
+    },
+    {
+      "key": "linksIdolGolferNavy",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.84
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "Athletic adult male professional golfer, short dark hair, clean-shaven, wearing a plain solid dark navy short-sleeve golf polo shirt with collar tucked in, plain dark green baseball cap, light stone-beige tailored golf trousers, brown leather belt, white golf shoes, a plain white golf glove on the left hand only"
+    },
+    {
+      "key": "linksIdolGolferLime",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.84
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "Athletic adult male professional golfer, short dark hair, clean-shaven, wearing a plain solid bright lime green short-sleeve golf polo shirt with collar tucked in, plain dark green baseball cap, light stone-beige tailored golf trousers, brown leather belt, white golf shoes, a plain white golf glove on the left hand only"
+    },
+    {
+      "key": "linksIdolGolferOrange",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.84
+      },
+      "tex": 2048,
+      "seed": 11,
+      "subject": "Athletic adult male professional golfer, short dark hair, clean-shaven, wearing a plain solid bright orange short-sleeve golf polo shirt with collar tucked in, plain dark green baseball cap, light stone-beige tailored golf trousers, brown leather belt, white golf shoes, a plain white golf glove on the left hand only",
+      "image": "artifacts/idol/aura-links-3d/_refs/linksIdolGolferOrange.png"
+    },
+    {
+      "key": "linksIdolCaddie",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.78
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "Adult male golf tournament caddie, short grey-brown hair, wearing a plain white sleeveless caddie bib vest with no writing over a forest green short-sleeve polo shirt, plain beige bucket hat, khaki trousers, brown walking shoes, a white towel tucked at the waist",
+      "image": "artifacts/idol/aura-links-3d/_refs/linksIdolCaddie.png"
+    },
+    {
+      "key": "linksIdolSpectatorA",
+      "role": "background",
+      "size": {
+        "height": 1.74
+      },
+      "tex": 1024,
+      "seed": 7,
+      "prompt": "Single full-body adult man golf tournament spectator standing relaxed, arms hanging naturally at his sides, feet together on the ground, wearing a plain navy blue polo shirt, stone chino trousers, plain white cap, brown shoes. Front view facing the camera, head to feet in frame with margin, centered. Photoreal studio render, physically based materials, real-world fabric detail, high detail. Even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere."
+    },
+    {
+      "key": "linksIdolSpectatorB",
+      "role": "background",
+      "size": {
+        "height": 1.68
+      },
+      "tex": 1024,
+      "seed": 7,
+      "prompt": "Single full-body adult woman golf tournament spectator standing relaxed, arms hanging naturally at her sides, wearing a plain claret red quarter-zip pullover, white sun visor, navy trousers, white sneakers, short brown hair. Front view facing the camera, head to feet in frame with margin, centered. Photoreal studio render, physically based materials, real-world fabric detail, high detail. Even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere.",
+      "image": "artifacts/idol/aura-links-3d/_refs/linksIdolSpectatorB.png"
+    },
+    {
+      "key": "linksIdolSpectatorC",
+      "role": "background",
+      "size": {
+        "height": 1.78
+      },
+      "tex": 1024,
+      "seed": 7,
+      "prompt": "Single full-body older adult man golf tournament spectator standing relaxed with his hands clasped in front of him, grey hair, wearing a plain emerald green v-neck sweater over a white collared shirt, charcoal trousers, flat tweed cap, brown leather shoes. Front view facing the camera, head to feet in frame with margin, centered. Photoreal studio render, physically based materials, real-world fabric detail, high detail. Even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere."
+    },
+    {
+      "key": "linksIdolSpectatorD",
+      "role": "background",
+      "size": {
+        "height": 1.72
+      },
+      "tex": 1024,
+      "seed": 7,
+      "prompt": "Single full-body young adult man golf tournament spectator standing relaxed, arms hanging naturally at his sides, darker skin, wearing a plain white polo shirt, khaki shorts, plain navy cap, white sneakers. Front view facing the camera, head to feet in frame with margin, centered. Photoreal studio render, physically based materials, real-world fabric detail, high detail. Even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere.",
+      "image": "artifacts/idol/aura-links-3d/_refs/linksIdolSpectatorD.png"
+    },
+    {
+      "key": "linksIdolGolfCart",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "height": 1.85
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "Two-seat electric golf cart with a deep racing-green glossy body, cream-white flat roof canopy on four slim metal struts, clear raked windshield, tan leather bench seat, rear golf bag rack, small chrome hubcaps and black turf tyres",
+      "image": "artifacts/idol/aura-links-3d/_refs/linksIdolGolfCart.png",
+      "yawDeg": 90
+    },
+    {
+      "key": "linksIdolTourBag",
+      "role": "prop",
+      "size": {
+        "height": 1.12
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Professional golf tour stand bag standing upright on the ground, navy blue and white synthetic leather barrel, padded shoulder straps, white towel hanging from the side, several golf club heads with grey head covers and steel iron heads sticking out of the top"
+    },
+    {
+      "key": "linksIdolBallWasher",
+      "role": "prop",
+      "size": {
+        "height": 1.28
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Golf course tee box ball washer: dark green painted cast metal paddle-style ball washer housing on a black steel post with a small steel plunger handle on top, a white towel hanging from it, black base plate"
+    },
+    {
+      "key": "linksIdolGrandstand",
+      "role": "background",
+      "size": {
+        "width": 6.5
+      },
+      "tex": 2048,
+      "seed": 7,
+      "maxVerts": 30000,
+      "subject": "Small temporary golf tournament grandstand: three tiers of wooden bench seating on a grey steel scaffold frame, front safety rail, side stairs, a curved dark green fabric shade awning on top, empty with no people"
+    },
+    {
+      "key": "linksIdolClubhouseStone",
+      "role": "background",
+      "size": {
+        "width": 12
+      },
+      "tex": 2048,
+      "seed": 7,
+      "maxVerts": 40000,
+      "subject": "Traditional coastal links golf clubhouse: two-storey grey granite stone building with a steep dark slate gable roof, two roof dormers, a stone chimney, white-framed bay windows, a covered timber veranda across the front with white posts, low dry-stone garden wall"
+    },
+    {
+      "key": "linksIdolClubhouseTudor",
+      "role": "background",
+      "size": {
+        "width": 12
+      },
+      "tex": 2048,
+      "seed": 7,
+      "maxVerts": 40000,
+      "subject": "Tudor-style country golf clubhouse: cream plaster walls with dark oak half-timber framing, steep red-brown clay tile gable roof with two gabled dormers, tall brick chimney, mullioned leaded bay windows, covered front veranda with turned white columns, stone foundation and front steps",
+      "image": "artifacts/idol/aura-links-3d/_refs/linksIdolClubhouseTudor.png"
+    },
+    {
+      "key": "linksIdolOakGreen",
+      "role": "background",
+      "size": {
+        "height": 8
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Single mature broadleaf oak tree with a thick gnarled brown trunk, spreading branches and a full rounded dense canopy of deep green leaves, a little grass at the base"
+    },
+    {
+      "key": "linksIdolMapleRed",
+      "role": "background",
+      "size": {
+        "height": 8
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Single mature maple tree in autumn with a straight grey-brown trunk and a full rounded dense canopy of vivid crimson red leaves",
+      "image": "artifacts/idol/aura-links-3d/_refs/linksIdolMapleRed.png"
+    },
+    {
+      "key": "linksIdolMapleOrange",
+      "role": "background",
+      "size": {
+        "height": 8
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Single mature maple tree in autumn with a straight grey-brown trunk and a full rounded dense canopy of burnt orange leaves"
+    },
+    {
+      "key": "linksIdolMapleGold",
+      "role": "background",
+      "size": {
+        "height": 8
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Single mature deciduous tree in autumn with a straight grey-brown trunk and a full rounded dense canopy of golden yellow leaves"
+    },
+    {
+      "key": "linksIdolPine",
+      "role": "background",
+      "size": {
+        "height": 9
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Single tall Scots pine conifer tree with a straight reddish-brown bark trunk and layered dense dark green needle foliage tiers in a conical shape"
+    },
+    {
+      "key": "linksIdolPineSnow",
+      "role": "background",
+      "size": {
+        "height": 9
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Single tall alpine spruce conifer tree with dense blue-green needle foliage in a narrow conical shape, branches lightly dusted with fresh white snow, brown trunk visible at the base"
+    },
+    {
+      "key": "linksIdolFlagMint",
+      "role": "prop",
+      "size": {
+        "height": 3.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Golf green pin flagstick: a thin straight white fiberglass pole with a small brass ferrule at the base and a plain solid mint green rectangular cloth flag attached at the very top of the pole, the flag hanging slightly rippled, seen side-on"
+    },
+    {
+      "key": "linksIdolFlagPink",
+      "role": "prop",
+      "size": {
+        "height": 3.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Golf green pin flagstick: a thin straight white fiberglass pole with a small brass ferrule at the base and a plain solid rose pink rectangular cloth flag attached at the very top of the pole, the flag hanging slightly rippled, seen side-on"
+    },
+    {
+      "key": "linksIdolFlagOrange",
+      "role": "prop",
+      "size": {
+        "height": 3.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Golf green pin flagstick: a thin straight white fiberglass pole with a small brass ferrule at the base and a plain solid amber orange rectangular cloth flag attached at the very top of the pole, the flag hanging slightly rippled, seen side-on"
+    },
+    {
+      "key": "linksIdolFlagBlue",
+      "role": "prop",
+      "size": {
+        "height": 3.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Golf green pin flagstick: a thin straight white fiberglass pole with a small brass ferrule at the base and a plain solid cornflower blue rectangular cloth flag attached at the very top of the pole, the flag hanging slightly rippled, seen side-on"
+    },
+    {
+      "key": "linksIdolFlagCyan",
+      "role": "prop",
+      "size": {
+        "height": 3.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Golf green pin flagstick: a thin straight white fiberglass pole with a small brass ferrule at the base and a plain solid bright cyan rectangular cloth flag attached at the very top of the pole, the flag hanging slightly rippled, seen side-on"
+    },
+    {
+      "key": "linksIdolFlagViolet",
+      "role": "prop",
+      "size": {
+        "height": 3.1
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "Golf green pin flagstick: a thin straight white fiberglass pole with a small brass ferrule at the base and a plain solid lavender violet rectangular cloth flag attached at the very top of the pole, the flag hanging slightly rippled, seen side-on"
+    },
+    {
+      "key": "linksIdolClumpDunes",
+      "subject": "Single small compact clump of wild coastal dune grass: short dense golden-green and straw-coloured grass blades all growing up from one tight base, no loose or detached blades, a little sandy soil at the root",
+      "size": {
+        "height": 0.55
+      },
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 1500,
+      "seed": 11
+    },
+    {
+      "key": "linksIdolClumpParkland",
+      "subject": "Single small clump of lush green meadow grass: dense fine green fescue blades fanning out from a tight base, a few slightly longer seed stalks",
+      "size": {
+        "height": 0.45
+      },
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 1500,
+      "seed": 7
+    },
+    {
+      "key": "linksIdolClumpAlpine",
+      "subject": "Single small clump of short alpine grass: tufted blue-green grass blades with a few tiny white mountain flowers, a little dark soil at the root",
+      "size": {
+        "height": 0.4
+      },
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 1500,
+      "seed": 7
+    },
+    {
+      "key": "linksIdolClumpNight",
+      "subject": "Single small clump of dark green ornamental grass: fine arching deep green blades fanning out from a tight base",
+      "size": {
+        "height": 0.45
+      },
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 1500,
+      "seed": 7
+    },
+    {
+      "key": "linksIdolClumpAsh",
+      "subject": "Single small clump of dry dead grass on volcanic ground: brittle ash-grey and dark brown spiky grass blades fanning out from a tight base, a few black cinders at the root",
+      "size": {
+        "height": 0.4
+      },
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 1500,
+      "seed": 7
+    }
+  ]
+}

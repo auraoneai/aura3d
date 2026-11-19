@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "craterline-gp",
+  "key": "cgBikeWheel",
+  "generatedAt": "2026-11-19T00:42:21.051Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f141-2858-7483-918c-545a4c6a92a9",
+      "prompt": "A single lunar racing motorcycle wheel seen exactly side-on, the wheel face looking straight at the camera: a chunky dark grey rubber tyre with deep blocky tread and a raised sidewall, a bright gold six-spoke rim with clearly separated wide spokes and a brushed steel centre hub with bolts, no brake disc. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f145-5a81-7b30-92ba-c20ac25a5217",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1442174,
+        "num_faces": 2884372,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single lunar racing motorcycle wheel seen exactly side-on, the wheel face looking straight at the camera: a chunky dark grey rubber tyre with deep blocky tread and a raised sidewall, a bright gold six-spoke rim with clearly separated wide spokes and a brushed steel centre hub with bolts, no brake disc. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 0.631,
+    "size": [
+      0.109,
+      0.63,
+      0.63
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-strange-orbit-port/assets/idol/cgBikeWheel.glb",
+  "sizeBytes": 478592,
+  "preview": "artifacts/idol/craterline-gp/cgBikeWheel/views.png",
+  "usd": 0.37
+}

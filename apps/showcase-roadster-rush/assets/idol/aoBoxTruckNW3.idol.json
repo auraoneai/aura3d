@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "apex-overdrive",
+  "key": "aoBoxTruckNW3",
+  "generatedAt": "2026-11-19T01:22:44.331Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f166-2100-70a3-9f44-9d1613078d38",
+      "prompt": "A single medium cab-over box truck of a fictional unbranded design, flat-fronted white cab with large windscreen and mirrors, tall plain white rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, a plain smooth grille with no badge or emblem. Vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, solid closed body with no holes, no license plates. Photoreal studio product render of a clean, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All glass is fully opaque glossy dark tinted glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f166-93ba-7f00-af41-7705d37022ab",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 17,
+        "mesh_resolution": 1536
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1307864,
+        "num_faces": 2615792,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single medium cab-over box truck of a fictional unbranded design, flat-fronted white cab with large windscreen and mirrors, tall plain white rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, a plain smooth grille with no badge or emblem. Vehicle body only with NO wheels and NO tyres: four completely empty round wheel arches with nothing inside them, the bare body shell resting low on the ground, solid closed body with no holes, no license plates. Photoreal studio product render of a clean, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All glass is fully opaque glossy dark tinted glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 7.988,
+    "size": [
+      2.948,
+      3.157,
+      8
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-rush/assets/idol/aoBoxTruckNW3.glb",
+  "sizeBytes": 1406016,
+  "preview": "artifacts/idol/apex-overdrive/aoBoxTruckNW3/views.png",
+  "usd": 0.37
+}

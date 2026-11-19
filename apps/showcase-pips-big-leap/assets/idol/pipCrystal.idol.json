@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "pips-big-leap",
+  "key": "pipCrystal",
+  "generatedAt": "2026-11-18T23:28:45.331Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/pips-big-leap/pipCrystal/ref-fetched.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0fd-d3be-7102-832f-95ae92b9a130",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1455452,
+        "num_faces": 2911060,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A cluster of five pale lavender and clear quartz crystal points growing from a small grey rock base. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.502,
+    "size": [
+      1.306,
+      1.5,
+      1.334
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-pips-big-leap/assets/idol/pipCrystal.glb",
+  "sizeBytes": 802932,
+  "preview": "artifacts/idol/pips-big-leap/pipCrystal/views.png",
+  "usd": 0.2,
+  "renormalizedAt": "2026-11-18T23:38:26.381Z"
+}

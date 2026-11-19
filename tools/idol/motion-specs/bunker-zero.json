@@ -1,0 +1,85 @@
+{
+  "game": "bunker-zero",
+  "clips": [
+    {
+      "key": "RifleIdle",
+      "prompt": "A soldier holding an assault rifle with both hands stands guard at the ready, rifle held low across the body, shifting weight slightly and looking around.",
+      "duration": 3,
+      "loop": true,
+      "seed": 960,
+      "guidance": 5
+    },
+    {
+      "key": "RifleAlert",
+      "prompt": "A soldier holding an assault rifle with both hands raises the rifle to the shoulder and scans left and right, ready to fire.",
+      "duration": 3,
+      "loop": true,
+      "seed": 961,
+      "guidance": 5
+    },
+    {
+      "key": "RifleWalk",
+      "prompt": "A soldier holding an assault rifle with both hands walks forward in a straight line at a steady patrol pace, rifle held across the chest.",
+      "duration": 2.4,
+      "loop": true,
+      "seed": 962,
+      "guidance": 5
+    },
+    {
+      "key": "RifleRun",
+      "prompt": "A soldier holding an assault rifle with both hands runs forward in a straight line at a steady pace, rifle held across the chest.",
+      "duration": 1.8,
+      "loop": true,
+      "seed": 963,
+      "guidance": 5
+    },
+    {
+      "key": "RifleFire",
+      "prompt": "A soldier holding an assault rifle with both hands aims the rifle at the shoulder and fires a burst, the shoulders and arms jolting back with the recoil of each shot.",
+      "duration": 2,
+      "loop": true,
+      "seed": 964,
+      "guidance": 5
+    },
+    {
+      "key": "ShotHit",
+      "prompt": "A soldier is shot in the chest, flinches and staggers back a step, then steadies.",
+      "duration": 1.4,
+      "loop": false,
+      "seed": 965,
+      "guidance": 5
+    },
+    {
+      "key": "ShotDeath",
+      "prompt": "A soldier is shot, staggers, drops to the knees and collapses forward onto the ground, lying still.",
+      "duration": 3,
+      "loop": false,
+      "seed": 966,
+      "guidance": 5
+    },
+    {
+      "key": "BruteWalk",
+      "prompt": "A huge heavily armored brute stomps forward slowly in a straight line, shoulders swaying, arms held wide and heavy.",
+      "duration": 2.8,
+      "loop": true,
+      "seed": 967,
+      "guidance": 5
+    },
+    {
+      "key": "BruteSlam",
+      "prompt": "A huge heavily armored brute raises both fists overhead and smashes them down in front of the body.",
+      "duration": 2,
+      "loop": false,
+      "seed": 968,
+      "guidance": 5
+    },
+    {
+      "key": "BruteIdle",
+      "prompt": "A huge heavily armored brute stands in place breathing heavily, shoulders rising and falling, arms hanging wide and heavy at the sides, shifting weight slowly.",
+      "duration": 3,
+      "loop": true,
+      "seed": 970,
+      "guidance": 5
+    }
+  ]
+}

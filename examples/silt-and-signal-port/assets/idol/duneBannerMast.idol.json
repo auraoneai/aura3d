@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "silt-and-signal-port",
+  "key": "duneBannerMast",
+  "generatedAt": "2026-11-18T22:57:24.908Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f094-f5ba-7353-be7a-37794d8bec9d",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 724210,
+        "num_faces": 1448472,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A tall wooden desert wind banner mast: a tall weathered wooden pole on a stone base with a long tattered terracotta and indigo cloth banner hanging from a crossbar at the top, frayed edges, brass fittings",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 20.76,
+    "size": [
+      12.895,
+      21.95,
+      6.365
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/silt-and-signal-port/assets/idol/duneBannerMast.glb",
+  "sizeBytes": 3123484,
+  "preview": "artifacts/idol/silt-and-signal-port/duneBannerMast/views.png",
+  "usd": 0.37
+}

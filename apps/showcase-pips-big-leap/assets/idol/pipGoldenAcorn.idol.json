@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "pips-big-leap",
+  "key": "pipGoldenAcorn",
+  "generatedAt": "2026-11-18T23:26:40.837Z",
+  "generator": "tools/idol/generate.mjs (request resumed after its 20-min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A single whole shiny golden acorn, a smooth plump rounded golden nut that is complete and rounded on every side, with a textured scaly bronze cupule cap and a short stem on top. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0e4-cfb4-7bd0-80ee-0e9979e875a0",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 21
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 856574,
+        "num_faces": 1713144,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single whole shiny golden acorn, a smooth plump rounded golden nut that is complete and rounded on every side, with a textured scaly bronze cupule cap and a short stem on top. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.621,
+    "size": [
+      0.425,
+      0.62,
+      0.419
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-pips-big-leap/assets/idol/pipGoldenAcorn.glb",
+  "sizeBytes": 688640,
+  "preview": "artifacts/idol/pips-big-leap/pipGoldenAcorn/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    "PNG textures (normal map) re-encoded as JPEG q90, 4:4:4; geometry and UVs untouched"
+  ],
+  "admitRole": "prop",
+  "renormalizedAt": "2026-11-18T23:39:47.817Z"
+}

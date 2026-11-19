@@ -15,7 +15,11 @@ are in [boundaries](../aura3d-core/references/boundaries.md).
 Measure with the final look active: the look sets the DPR cap, the post grade
 (bloom, AO, vignette) and shadow map size — most of the frame cost you are
 optimizing. `looks.appOptions(<id>)` already applies `quality: "auto"`; a
-manual quality override invalidates every measurement that follows.
+manual quality override invalidates every measurement that follows. Under
+`auto`, `RuntimeQualityGovernor` (5.5.3) steps 5 rungs (render scale down to
+0.67×) without a remount, so a slow scene looks faster and softer; for an A/B
+frame-time measurement pin a tier or `?aura3d-adaptive=0` on both sides
+([quality governor](https://github.com/auraoneai/aura3d/blob/main/docs/api/quality-governor.md)).
 
 ## Establish the contract
 
@@ -103,6 +107,13 @@ manual quality override invalidates every measurement that follows.
     screenshot runs (`npm run test`, Playwright) go to a remote runner, never
     local Playwright or GitHub Actions (`tools/remote-acr/run.sh` in the Aura3D
     repository).
+11. Saved telemetry and diagnostics:
+    `npx @aura3d/cli@latest perf-report --route <id> --telemetry telemetry.json`
+    turns recorded rAF intervals into a route performance report, and
+    `npx @aura3d/cli@latest core inspect-programs --diagnostics diag.json`
+    lists the compiled shader-program cache from a saved diagnostics JSON.
+    `aura3d perf gate` checks a capture report against repository budgets
+    (monorepo only).
 
 ## Stop and report
 

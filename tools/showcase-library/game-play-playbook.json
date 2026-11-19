@@ -1,26 +1,6 @@
 {
   "$comment": "Real-input play scripts for tools/showcase-library/game-play-probe.mjs. Keys use DOM KeyboardEvent codes. Each entry is one labelled screenshot step.",
 
-  "aura-clash-showcase": { "genre": "fighting / melee arena", "steps": [
-    { "label": "00-start", "keys": [{ "press": "Space" }, { "wait": 1500 }] },
-    { "label": "02-gameplay", "keys": [{ "press": "KeyA" }, { "hold": "KeyD", "duration": 900 }, { "wait": 400 }] },
-    { "label": "03-action", "keys": [{ "press": "KeyJ" }, { "wait": 250 }, { "press": "KeyJ" }, { "wait": 250 }, { "press": "KeyK" }, { "wait": 700 }] },
-    { "label": "04-mid-progression", "keys": [{ "hold": "KeyD", "duration": 700 }, { "press": "KeyJ" }, { "press": "Space" }, { "wait": 500 }, { "press": "KeyL" }, { "wait": 900 }] },
-    { "label": "05-impact-or-collision", "keys": [{ "hold": "KeyA", "duration": 500 }, { "press": "KeyJ" }, { "press": "KeyJ" }, { "wait": 800 }] },
-    { "label": "06-fail-or-ko", "keys": [{ "press": "KeyQ" }, { "wait": 500 }, { "press": "KeyK" }, { "press": "KeyK" }, { "press": "KeyJ" }, { "wait": 1500 }] },
-    { "label": "08-pause-resume", "keys": [{ "press": "KeyP" }, { "wait": 700 }, { "press": "KeyP" }, { "wait": 700 }] }
-  ] },
-
-  "showcase-blockfall-reactor": { "genre": "falling-block / puzzle", "steps": [
-    { "label": "00-start", "keys": [{ "press": "Enter" }, { "wait": 1400 }] },
-    { "label": "02-gameplay", "keys": [{ "press": "Space" }, { "wait": 900 }, { "press": "KeyA" }, { "wait": 300 }, { "press": "KeyD" }, { "wait": 900 }] },
-    { "label": "03-action", "keys": [{ "press": "KeyW" }, { "wait": 250 }, { "press": "KeyW" }, { "wait": 250 }, { "press": "Space" }, { "wait": 700 }] },
-    { "label": "04-mid-progression", "keys": [{ "press": "KeyA" }, { "press": "KeyA" }, { "wait": 250 }, { "press": "KeyS" }, { "wait": 400 }, { "press": "Space" }, { "wait": 900 }, { "press": "KeyD" }, { "wait": 300 }, { "press": "Space" }, { "wait": 900 }] },
-    { "label": "05-impact-or-collision", "keys": [{ "press": "KeyZ" }, { "wait": 300 }, { "press": "Space" }, { "wait": 500 }, { "press": "KeyX" }, { "wait": 300 }, { "press": "Space" }, { "wait": 900 }] },
-    { "label": "06-fail-or-ko", "keys": [{ "hold": "KeyS", "duration": 2500 }, { "wait": 600 }] },
-    { "label": "08-pause-resume", "keys": [{ "press": "KeyP" }, { "wait": 700 }, { "press": "KeyP" }, { "wait": 700 }] }
-  ] },
-
   "showcase-skyline-runner": { "genre": "platformer / runner", "steps": [
     { "label": "00-start", "keys": [{ "press": "Space" }, { "wait": 1500 }] },
     { "label": "02-gameplay", "keys": [{ "hold": "KeyD", "duration": 1600 }, { "wait": 300 }] },
@@ -48,16 +28,6 @@
     { "label": "04-mid-progression", "keys": [{ "press": "ArrowRight" }, { "press": "ArrowRight" }, { "hold": "Space", "duration": 900 }, { "wait": 3000 }] },
     { "label": "05-impact-or-collision", "keys": [{ "hold": "Space", "duration": 1200 }, { "wait": 3000 }] },
     { "label": "06-fail-or-ko", "keys": [{ "press": "KeyT" }, { "wait": 500 }, { "hold": "Space", "duration": 400 }, { "wait": 2500 }] },
-    { "label": "08-pause-resume", "keys": [{ "press": "KeyP" }, { "wait": 700 }, { "press": "KeyP" }, { "wait": 700 }] }
-  ] },
-
-  "showcase-aurora-lander": { "genre": "flight / landing", "steps": [
-    { "label": "00-start", "keys": [{ "press": "Space" }, { "wait": 1500 }] },
-    { "label": "02-gameplay", "keys": [{ "hold": "KeyW", "duration": 1500 }, { "wait": 400 }] },
-    { "label": "03-action", "keys": [{ "hold": "KeyD", "duration": 1200 }, { "hold": "KeyW", "duration": 700 }, { "wait": 600 }] },
-    { "label": "04-mid-progression", "keys": [{ "hold": "KeyA", "duration": 1400 }, { "hold": "KeyS", "duration": 900 }, { "wait": 700 }] },
-    { "label": "05-impact-or-collision", "keys": [{ "hold": "KeyS", "duration": 2000 }, { "wait": 1200 }] },
-    { "label": "06-fail-or-ko", "keys": [{ "hold": "KeyS", "duration": 2200 }, { "wait": 1400 }] },
     { "label": "08-pause-resume", "keys": [{ "press": "KeyP" }, { "wait": 700 }, { "press": "KeyP" }, { "wait": 700 }] }
   ] },
 
@@ -108,16 +78,6 @@
     { "label": "08-pause-resume", "keys": [{ "press": "KeyP" }, { "wait": 700 }, { "press": "KeyP" }, { "wait": 700 }] }
   ] },
 
-  "showcase-vault-breakers": { "genre": "pinball", "steps": [
-    { "label": "00-start", "keys": [{ "press": "Space" }, { "wait": 1800 }] },
-    { "label": "02-gameplay", "keys": [{ "hold": "KeyA", "duration": 400 }, { "wait": 300 }, { "hold": "KeyD", "duration": 400 }, { "wait": 700 }] },
-    { "label": "03-action", "keys": [{ "hold": "KeyA", "duration": 300 }, { "hold": "KeyD", "duration": 300 }, { "wait": 900 }, { "press": "Space" }, { "wait": 1200 }] },
-    { "label": "04-mid-progression", "keys": [{ "wait": 2200 }, { "hold": "KeyA", "duration": 350 }, { "hold": "KeyD", "duration": 350 }, { "wait": 1400 }] },
-    { "label": "05-impact-or-collision", "keys": [{ "wait": 2400 }, { "hold": "KeyD", "duration": 500 }, { "wait": 1200 }] },
-    { "label": "06-fail-or-ko", "keys": [{ "wait": 4000 }] },
-    { "label": "08-pause-resume", "keys": [{ "press": "KeyP" }, { "wait": 700 }, { "press": "KeyP" }, { "wait": 700 }] }
-  ] },
-
   "showcase-rooftop-buckets": { "genre": "basketball shooting", "steps": [
     { "label": "00-start", "keys": [{ "press": "Space" }, { "wait": 1600 }] },
     { "label": "02-gameplay", "keys": [{ "hold": "Space", "duration": 600 }, { "wait": 2200 }] },
@@ -153,16 +113,6 @@
     { "label": "03-action", "keys": [{ "hold": "KeyA", "duration": 1300 }, { "press": "Space" }, { "wait": 1000 }] },
     { "label": "04-mid-progression", "keys": [{ "hold": "KeyD", "duration": 1500 }, { "press": "KeyE" }, { "wait": 1200 }] },
     { "label": "05-impact-or-collision", "keys": [{ "hold": "KeyW", "duration": 1800 }, { "press": "KeyQ" }, { "wait": 1400 }] },
-    { "label": "08-pause-resume", "keys": [{ "press": "KeyP" }, { "wait": 700 }, { "press": "KeyP" }, { "wait": 700 }] }
-  ] },
-
-  "showcase-bank-shot": { "genre": "billiards", "steps": [
-    { "label": "00-start", "keys": [{ "press": "Space" }, { "wait": 1600 }] },
-    { "label": "02-gameplay", "keys": [{ "hold": "KeyA", "duration": 700 }, { "wait": 500 }] },
-    { "label": "03-action", "keys": [{ "hold": "Space", "duration": 700 }, { "wait": 3000 }] },
-    { "label": "04-mid-progression", "keys": [{ "hold": "KeyD", "duration": 700 }, { "wait": 400 }, { "hold": "Space", "duration": 900 }, { "wait": 3200 }] },
-    { "label": "05-impact-or-collision", "keys": [{ "hold": "KeyW", "duration": 500 }, { "hold": "Space", "duration": 1100 }, { "wait": 3400 }] },
-    { "label": "06-fail-or-ko", "keys": [{ "press": "KeyP" }, { "wait": 600 }] },
     { "label": "08-pause-resume", "keys": [{ "press": "KeyP" }, { "wait": 700 }, { "press": "KeyP" }, { "wait": 700 }] }
   ] }
 }

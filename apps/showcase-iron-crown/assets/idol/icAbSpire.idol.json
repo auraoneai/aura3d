@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icAbSpire",
+  "generatedAt": "2026-11-18T23:35:17.655Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0c6-a9af-7491-ba85-9890f029c645",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0de-68f2-7a40-b36c-598b058baeae",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1065442,
+        "num_faces": 2130964,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Tall jagged black obsidian monolith spire with carved geometric grooves glowing faint amber, rough volcanic base",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.557,
+    "size": [
+      1.97,
+      3.7,
+      2.439
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icAbSpire.glb",
+  "sizeBytes": 3608304,
+  "preview": "artifacts/idol/iron-crown/icAbSpire/views.png",
+  "usd": 0.37
+}

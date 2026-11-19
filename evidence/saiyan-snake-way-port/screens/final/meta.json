@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "saiyan-snake-way-port": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "route": "/apps/serpentine-sky-run/",
+      "states": [
+        "1280x720 title: title card with runner choice and the controls (incl. O autoplay)",
+        "1280x720 intro: 1.3 s after Start: intro swing has framed the runner during the countdown",
+        "1280x720 early play: Check-In stage, torii centred over the road, orbs in lane",
+        "1280x720 second stage: THE LONG ROAD banner, runner mid-stride (autoplay)",
+        "1280x720 peak action: autoplay at speed under the torii, full spark bar",
+        "1280x720 fall: idle runner fell through a plate gap",
+        "1280x720 results: YOU FELL results card",
+        "390x844 title: title card",
+        "390x844 intro: countdown 2 with the runner framed",
+        "390x844 early play: torii and orbs",
+        "390x844 second stage: long road at speed",
+        "390x844 peak action: runner mid-stride under a torii, orb ahead",
+        "390x844 results: results card"
+      ],
+      "frames": [
+        "1280-01-title.jpg",
+        "1280-02-intro.jpg",
+        "1280-03-early.jpg",
+        "1280-04-long-road.jpg",
+        "1280-05-autoplay-run.jpg",
+        "1280-06-fall.jpg",
+        "1280-07-results.jpg",
+        "390-01-title.jpg",
+        "390-02-intro.jpg",
+        "390-03-early.jpg",
+        "390-04-long-road.jpg",
+        "390-05-run.jpg",
+        "390-06-results.jpg",
+        "card-1x.jpg",
+        "card-2x.jpg"
+      ],
+      "results": "idle run falls at the first plate gap (YOU FELL, 818 pts); ?autoplay=1 runs on hands-free (unit sim: reaches the tail in ~141 s)",
+      "autoplay": "?autoplay=1 (alias ?autopilot=1, O toggles): starts at once, changes lanes, jumps gaps, slides, collects spark, surges through the Drowse, results 3 s then a new run",
+      "errors": "none (page-errors captured on every run)",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 ---
 name: aura3d-evidence-review
-description: Reviews Aura3D work before it is called done, public, or shippable by collecting route-health, screenshots, visual QA, asset release checks, and `check-deploy` output, then choosing a claim label through a capped critique loop. Use when finishing a route or template, writing README or showcase claims, comparing catalog versus Meshy candidates, capturing thumbnails or posters with `assets thumbnail`, or running `assets validate --release` and `check-deploy`.
+description: Reviews Aura3D work before it is called done, public, or shippable by collecting route-health, screenshots, visual QA, asset release checks, and `check-deploy` output, then choosing a claim label through a capped critique loop. Use when finishing a route or template, writing README or showcase claims, comparing catalog versus Meshy candidates, writing manifest thumbnails (CPU base-colour previews) with `assets thumbnail` or `assets preview`, or running `assets validate --release` and `check-deploy`.
 ---
 
 # Aura3D evidence review
@@ -87,10 +87,14 @@ benchmark exception are in [boundaries](../aura3d-core/references/boundaries.md)
    from histograms and a judge. Bake-offs: when comparing a catalog candidate against a Meshy candidate,
    use one brief, one rubric, one camera and lighting setup, and the same
    gates for both. Report both verdict sets and pick on evidence, not source.
-9. Thumbnails and posters: run `npx @aura3d/cli@latest assets thumbnail` for
-   manifest thumbnails, and use the screenshot spec output as the poster.
-   Marketing previews use a static approved poster unless the live embed
-   passes the same gates as the route.
+9. Thumbnails and posters: `npx @aura3d/cli@latest assets thumbnail` writes
+   manifest thumbnails as CPU base-colour previews (bind pose, base colour,
+   flat lambert in Node; no lighting, PBR or GPU), and `assets preview` draws
+   front, side, back and three-quarter sheets the same way. Label both "CPU
+   base-colour preview"; they catch wrong facing, scale or missing textures but
+   never prove the look. The poster is the screenshot spec output from the
+   browser gate. Marketing previews use a static approved poster unless the
+   live embed passes the same gates as the route.
 10. Choose the label and write the claim at exactly that strength. Record
     the prompt, typed asset keys, screenshot paths, route-health report,
     verdicts, label, and next action.
@@ -107,6 +111,8 @@ benchmark exception are in [boundaries](../aura3d-core/references/boundaries.md)
   model reviewer);
 - a report generated with missing evidence inputs, even when it exits 0;
 - software-GL frames offered as proof of real-GPU behaviour;
+- a CPU base-colour preview or thumbnail (`assets preview`, `assets thumbnail`)
+  offered as a render, a poster, or lighting and material evidence;
 - a live smoke that only checks the simulation state advanced.
 
 ## Stop and report

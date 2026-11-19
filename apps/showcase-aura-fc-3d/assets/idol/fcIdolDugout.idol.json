@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-fc-3d",
+  "key": "fcIdolDugout",
+  "generatedAt": "2026-11-18T22:29:14.985Z",
+  "generator": "tools/idol/generate.mjs (resumed by the FC/Hoops agent after the 20-min client timeout; same request id, post-processing identical)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "(see generate.mjs buildPrompt)",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0c7-39a9-7f43-9b3d-f2d224f2dde2",
+      "input": {
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 141,
+        "mesh_resolution": 1024,
+        "image_url": "(reference still)"
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1885252,
+        "num_faces": 3770576,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A modern soccer stadium team dugout shelter: a long low shelter with a solid opaque dark grey painted steel back wall and solid opaque side walls, a solid curved dark grey steel roof canopy, one row of six padded black bucket seats on a black rubber floor deck, fully open front with no glass and no transparent panels",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.635,
+    "size": [
+      4.66,
+      3.087,
+      2.433
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-fc-3d/assets/idol/fcIdolDugout.glb",
+  "sizeBytes": 1101784,
+  "preview": "artifacts/idol/aura-fc-3d/fcIdolDugout/views.png",
+  "usd": 0.37,
+  "postProcess": "re-optimised to 512 px textures (assets optimize --role background --tex 512)",
+  "note": "second roll (seed 141, opaque steel shelter); the first roll (seed 131, polycarbonate canopy) baked the glass into grey shards and was rejected",
+  "slimmed": "tools/idol/slim.mjs (normal maps PNG -> JPEG q92)"
+}

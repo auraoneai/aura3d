@@ -1,60 +1,47 @@
-# Bunker Zero: final screenshots (retaken on the GU47 phase-4 build)
+# Bunker Zero: final screenshots
 
-**Retaken 2026-11-01** by lane G11 on `gu47/g11` (phase 4, 4.7.2 target) on the remote runner, software WebGL2 (SwiftShader), with `tests/browser/audit-fix/bunker-zero.spec.ts` (runs `g11p4-r5b-s1280` and `g11p4-r5b-s390`). Same file names and sizes; `card-1x.jpg` is `card-2x.jpg` halved. The index posters were rebuilt from `card-2x.jpg`. Not real-GPU evidence.
+Route: `/apps/showcase-bunker-zero/`
 
-The text below describes earlier sets and is kept for its history.
+Runner: headed Chrome on a real GPU (Apple Metal) via REA `capture_browser_scenario`, production build served from http://127.0.0.1:8790 (2026-11-18).
 
-# Bunker Zero: final screenshots (retaken on 4.5.0 after the 2026-10-29 audit fixes)
-
-**Retaken 2026-10-29** by lane G11 from branch `audit-fix/g11` (4.5.0 engine plus the audit fixes) on the remote runner, software WebGL2 (SwiftShader), with `tests/browser/audit-fix/bunker-zero.spec.ts` (remote runs `g11-final2-1280` and `g11-final2-390`). Same file names and sizes as before. The 390 shots run in a touch context (`hasTouch`, `isMobile`), so the touch layer shows. The title shots show the onboarding card a first visit gets. 02 to 04 are steady-state shots after the game's autoplay ran for 6, 20 and 40 s of simulated time (the 04 shots are on floor 2 at 1280 and floor 1 at 390). The results panel, which the earlier set never reached, is in `../../audit-2026-10-29/after-states/states-desktop__results.jpg`. This is not real-GPU evidence.
-
-The text below describes the earlier set (2026-10-25) and is kept for its history.
-
-# Bunker Zero: final screenshots after the UI and content fixes
-
-Route: `apps/showcase-bunker-zero`. Built from `origin/game-rework` at `0d965903c` (includes the shared quick bar, the content fixes and the new Teleoperator vehicles).
-
-**Runner:** remote Azure ACR Task, headless Chromium, **software WebGL2 (SwiftShader)**. This is not real-GPU evidence: it shows layout and content, not GPU look or frame rate. Tool: `tests/browser/shotsd-bunker-zero.spec.ts` with `tests/browser/shotsd-lib.ts`, decoded with `tools/shots/decode-shotsd.mjs`. Frames come from clicking the game's own buttons and holding keys, not from the QA hooks.
-
-Staging: the dist was built with `tools/shots/vite.shotsd.config.ts`; every asset the route references was copied from this repo into the dist (so new and changed files are the repository's, not production's). Files the repository does not carry (shared decoders, HDRI, previews) fall back to production.
-
-## Frames
-
-| Viewport | State | Meaning | Status |
+| Viewport | File | State | Meaning |
 |---|---|---|---|
-| 1280 | 01-title | first loaded frame | captured |
-| 1280 | 02-early | early gameplay | captured |
-| 1280 | 03-action | after key input | captured |
-| 1280 | 04-mid | mid-play (autoplay or driving) | captured |
-| 1280 | 05-modes | modes / menu panel | captured |
-| 1280 | 06-results | results | not reached |
-| 390 | 01-title | first loaded frame | captured |
-| 390 | 02-early | early gameplay | captured |
-| 390 | 03-action | after key input | captured |
-| 390 | 04-mid | mid-play (autoplay or driving) | captured |
-| 390 | 05-modes | modes / menu panel | captured |
-| 390 | 06-results | results | not reached |
-
-Card images: `card-2x.jpg` (1440x900, captured natively) and `card-1x.jpg` (720x450, downscaled from the 2x capture). Card aspect from `apps/showcase-index/index.html`.
-
-## Capture health
-
-- 1280: console errors 0, bad responses 0, ready 4s, proxied from production 33
-- 390: console errors 0, bad responses 0, ready 41s, proxied from production 33
-- card: console errors 0, bad responses 0, ready 4s, proxied from production 33
+| 1280x720 | 1280-01-title.jpg | title | intro card (controls, Deploy) over the floor 1 opening |
+| 1280x720 | 1280-02-early.jpg | early | ?autoplay=1: floor 1 Stone Gatehouse banner, first pistol shot down the corridor |
+| 1280x720 | 1280-03-firing.jpg | firing | autopilot firing at a patrol guard (muzzle flash, no shell beside the pistol), 2/7 kills |
+| 1280x720 | 1280-04-action.jpg | action | two soldiers aiming back at 4 s, hit direction ring |
+| 1280x720 | 1280-05-killhouse.jpg | killhouse | Kill House mode from the top bar: patrol drone with spinning rotors over the lane |
+| 1280x720 | 1280-06-floor6.jpg | floor6 | floor 6 Bunker Zero in autoplay: a guard down the silo corridor under the moon key, pistol firing (2026-11-19) |
+| 1280x720 | 1280-07-results.jpg | results | campaign results card: six floors, medals, Restart Descent (2026-11-19) |
+| 390x844 | 390-01-title.jpg | title | intro card, portrait |
+| 390x844 | 390-02-early.jpg | early | ?autoplay=1 floor 1 start, banner |
+| 390x844 | 390-03-action.jpg | action | guard aiming at close range, 3/7 kills |
+| 390x844 | 390-04-killhouse.jpg | killhouse | Kill House: drone with rotors in its ducts, guard advancing |
+| 390x844 | 390-05-floor6.jpg | floor6 | floor 6 autoplay, guard in the corridor, portrait |
+| 390x844 | 390-06-results.jpg | results | results card, portrait |
+| 1440x900 | card-2x.jpg | card | autoplay firing on floor 1: guard falling in the foreground, soldiers and crates down the hall |
+| 720x450 | card-1x.jpg | card | card-2x.jpg downscaled (LANCZOS, q88) |
 
 ## Checked in the frames
 
-- The held weapon is a pistol model and the HUD reads PISTOL (it was a pulse rifle before).
-- The modes panel has no '4.0.2' text (it reads 'Aura3D . night-city look').
-- Shared quick bar is a single row with a 'Built with Aura3D' link; no engine chip.
+- Patrol drone rotors sit in the ducts and change angle between frames (they were hidden after every floor start before this pass; fixed)
+- No upright shell or tracer spike beside the pistol in 12 firing frames 100 ms apart (player bullet tracer held until 2-3 m out; enemy tracer kept 1.8 m clear of the camera)
+- Soldiers animate (walk, aim, crouch, fall differ frame to frame); standing soldiers between bursts now play the alert stance instead of running in place
+- ?autoplay=1 played floors 1-6 to results and looped back to floor 1 hands-free
 
-## Problems still visible (not fixed in this lane)
+Floor 6 and results frames (2026-11-19) were taken in headed Chrome on the same GPU through raw CDP (the QA hook needs page
+evaluation: `?floor=6` then `unfreeze()` + `autopilot(true)`, and `campaignComplete()` for the results card).
 
-- [low] 390 portrait: the 'kill confirmed' message overlaps the HEALTH and PISTOL numbers in the HUD.
-- [low] The pickups (gold treasure, blue armour vest) and the dark enemy silhouettes are still plain; the vest and treasure read as small blobs.
-- [low] Results were not reached in 40 s.
+## F6 perf pass (2026-11-19)
 
-## Review coverage
+- Floor 6 after the 5 -> 6 elevator: 7-10 fps with a 5-10 s freeze before; 27-53 fps after (frame CPU 9-18 ms, draw calls
+  35-134). Causes: the shadowed directional moon (a shadow pass and ~130 new programs on F6 only), floor surfaces added at
+  runtime (every node write then rebuilt the scene list), the wet-floor program variants compiled mid-play, and model
+  textures built on first draw. The moon is now the key spot over the hatch (`?godrays=1` restores the directional).
+- Player-vs-enemy blocking (live enemies are solid); the autopilot backs off and strafes when pinned against a prop;
+  a click or scroll under `?autoplay=1` no longer turns the pilot off. 5/5 headed autoplay boots left spawn and fought.
 
-Frames opened and checked by eye: 1280 action, mid and modes; 390 mid (4 of 11). The remaining frames were captured but not individually inspected; the problems above come from the frames listed here.
+## Known issues
+
+- Entering a new floor shows a black "DESCENDING · FLOOR N" card for ~2-8 s while that floor's textures are built
+  (engine: mip chains are generated on the CPU through a 2D canvas; the time depends on machine load).

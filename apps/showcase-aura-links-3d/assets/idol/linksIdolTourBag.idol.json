@@ -1,0 +1,45 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-links-3d",
+  "key": "linksIdolTourBag",
+  "generatedAt": "2026-11-18T22:19:45.405Z",
+  "generator": "tools/idol/generate.mjs (post-processing re-run on a request that completed after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09d-d373-78c1-8f7c-9e22ccaae62b",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 962336,
+        "num_faces": 1924888,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Professional golf tour stand bag standing upright on the ground, navy blue and white synthetic leather barrel, padded shoulder straps, white towel hanging from the side, several golf club heads with grey head covers and steel iron heads sticking out of the top. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.117,
+    "size": [
+      1.048,
+      1.12,
+      1.092
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-links-3d/assets/idol/linksIdolTourBag.glb",
+  "sizeBytes": 2908628,
+  "preview": "artifacts/idol/aura-links-3d/linksIdolTourBag/views.png",
+  "usd": 0.37
+}

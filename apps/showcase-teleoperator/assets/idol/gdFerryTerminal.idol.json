@@ -1,0 +1,61 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "teleoperator",
+  "key": "gdFerryTerminal",
+  "generatedAt": "2026-11-18T22:07:43.969Z",
+  "generator": "tools/idol/generate.mjs (resumed after its 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A long two-storey sandstone waterfront ferry terminal building with a row of tall arched windows along the facade and a tall square clock tower rising from its centre with a clock face on each side and a slim pointed dark roof, architectural scale model of a fictional historic building. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17,
+      "note": "reference completed in generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09a-112e-7010-84fa-102901d6e6a9",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 788726,
+        "num_faces": 1577996,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A long two-storey sandstone waterfront ferry terminal building with a row of tall arched windows along the facade and a tall square clock tower rising from its centre with a clock face on each side and a slim pointed dark roof, architectural scale model of a fictional historic building. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 93.978,
+    "size": [
+      94,
+      85.159,
+      82.817
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-teleoperator/assets/idol/gdFerryTerminal.glb",
+  "sizeBytes": 2099140,
+  "preview": "artifacts/idol/teleoperator/gdFerryTerminal/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": 0,
+    "tex": "1024",
+    "maxVerts": "20000",
+    "baked": true,
+    "reason": "Idol rebuilt the three-quarter reference diagonally; yaw re-fitted to the minimum-area footprint"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeWindmillBody",
+  "generatedAt": "2026-11-19T00:26:03.187Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-3b28-7570-bc55-40ee87658c91",
+      "prompt": "A seaside tower windmill without any sails: a round grey stone base, a white plastered tapered tower with dark timber ribs and a small amber window, a terracotta red cap roof, a short round wooden axle hub sticking straight out of the front of the cap, no sails, no blades, no arms, nothing attached to the hub. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f134-7eca-7471-a479-885c226d9210",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 861252,
+        "num_faces": 1722500,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A seaside tower windmill without any sails: a round grey stone base, a white plastered tapered tower with dark timber ribs and a small amber window, a terracotta red cap roof, a short round wooden axle hub sticking straight out of the front of the cap, no sails, no blades, no arms, nothing attached to the hub. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "admitRole": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.703,
+    "size": [
+      2.688,
+      4.7,
+      3.503
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeWindmillBody.glb",
+  "sizeBytes": 1553776,
+  "preview": "artifacts/idol/slingshot-siege/siegeWindmillBody/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90",
+    "bytesBefore": 1873072,
+    "bytesAfter": 1553776
+  }
+}

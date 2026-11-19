@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { buildFcScene, pitchFanClip, tickWorld, PITCH_FANS } from "../../../apps/showcase-aura-fc-3d/src/game/scene";
 import type { VenueId } from "../../../apps/showcase-aura-fc-3d/src/game/types";
 
-function fans(venue: VenueId, lookMode?: "original" | "hybrid" | "gu47") {
-  const j = buildFcScene(venue, lookMode ? { lookMode } : {}).toJSON();
+function fans(venue: VenueId, lookMode?: "original" | "hybrid" | "gu47", idol = false) {
+  const j = buildFcScene(venue, { idol, ...(lookMode ? { lookMode } : {}) }).toJSON();
   const out: any[] = [];
   const walk = (n: any) => { out.push(n); for (const c of n.children ?? []) walk(c); };
   (j.nodes as any[]).forEach(walk);
@@ -23,6 +23,13 @@ describe("aura-fc-3d front-row articulated procedural fans", () => {
       }
     }
   }, 15_000);
+
+  it("with Idol bodies on, the six fans are rigged Idol models (three palettes)", () => {
+    const f = fans("munich", undefined, true);
+    expect(f.length).toBe(PITCH_FANS.length);
+    for (const n of f) expect(n.kind).toBe("model");
+    expect(new Set(f.map((n) => n.asset?.url)).size).toBe(3);
+  });
 
   it("the original look and the venues without a bowl mount none", () => {
     expect(fans("munich", "original")).toEqual([]);

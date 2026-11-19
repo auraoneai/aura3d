@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "drift-and-deliver-port",
+  "key": "gcPedE",
+  "generatedAt": "2026-11-18T23:19:05.670Z",
+  "generator": "tools/idol/generate.mjs (resumed after its 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "Single full-body adult man pedestrian standing relaxed, front view facing the camera, wearing a navy-blue rain jacket, olive cargo trousers and dark boots, short black hair, holding a paper coffee cup in one hand, other arm relaxed at his side. Photoreal studio photograph, real fabric folds and stitching, high detail. Head to feet in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere.",
+      "usd": 0.17,
+      "note": "reference completed in generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a5-e9e6-75c2-a808-96afc799743d",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 558816,
+        "num_faces": 1117656,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Single full-body adult man pedestrian standing relaxed, front view facing the camera, wearing a navy-blue rain jacket, olive cargo trousers and dark boots, short black hair, holding a paper coffee cup in one hand, other arm relaxed at his side. Photoreal studio photograph, real fabric folds and stitching, high detail. Head to feet in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.804,
+    "size": [
+      0.618,
+      1.8,
+      0.503
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/drift-and-deliver-port/assets/idol/gcPedE.glb",
+  "sizeBytes": 498808,
+  "preview": "artifacts/idol/drift-and-deliver-port/gcPedE/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "texture-jpeg",
+      "maxTexPx": 512,
+      "before": 2055504,
+      "after": 498808
+    }
+  ]
+}

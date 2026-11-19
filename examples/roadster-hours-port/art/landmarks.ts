@@ -19,6 +19,9 @@ export interface LandmarkPlacement {
   readonly yaw: number;
 }
 
+/** Last arc position (m) of a Halo maglev-tube ring: the flat tube road before the 1303 m ramp. */
+export const TUBE_RING_END = 1300;
+
 export type LandmarkKind =
   | "turbine"
   | "sea-stack"
@@ -102,8 +105,9 @@ export function landmarkPlacements(kind: LandmarkKind, length: number, halfWidth
       }
       break;
     case "tube-ring":
-      // the maglev tube act (Halo s 880-1540): a ring over the road every 36 m
-      for (let s = 900; s < Math.min(length, 1520); s += 36) out.push({ s, l: 0, y: 0, size: [2 * halfWidth + 6, 2 * halfWidth + 6, 1.2], yaw: 0 });
+      // the maglev tube act (Halo s 880-1540): a ring over the road every 36 m, up to the ramp at 1303 (GPU QA Nov 18: past
+      // it the car flies the 1330-1404 gap 15-34 m up, through the ring tops, and the chase eye with it)
+      for (let s = 900; s < Math.min(length, TUBE_RING_END); s += 36) out.push({ s, l: 0, y: 0, size: [2 * halfWidth + 6, 2 * halfWidth + 6, 1.2], yaw: 0 });
       break;
     case "coastal-viaduct":
       // Multi-span Romanesque stone viaduct arcades perched along the cliffside ravines

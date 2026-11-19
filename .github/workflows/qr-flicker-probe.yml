@@ -30,22 +30,22 @@ jobs:
         include:
           - shard: a
             labels: '["self-hosted","track0","gpu-l4"]'
-            games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-skyline-runner"
+            games: "showcase-skyline-runner"
           - shard: b
             labels: '["self-hosted","azure-gpu","gpu-l4"]'
-            games: "showcase-turbo-drift-circuit,showcase-siege-golf,showcase-aurora-lander"
+            games: "showcase-turbo-drift-circuit,showcase-siege-golf"
           - shard: c
             labels: '["self-hosted","track0","gpu-l4"]'
             games: "showcase-neon-swarm,showcase-gravity-post,showcase-courier-rush"
           - shard: d
             labels: '["self-hosted","azure-gpu","gpu-l4"]'
-            games: "showcase-pulse-tunnel,showcase-mech-hangar,showcase-vault-breakers"
+            games: "showcase-pulse-tunnel,showcase-mech-hangar"
           - shard: e
             labels: '["self-hosted","track0","gpu-l4"]'
             games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery"
           - shard: f
             labels: '["self-hosted","azure-gpu","gpu-l4"]'
-            games: "showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense"
+            games: "showcase-patrol-wing,showcase-orbital-defense"
     env:
       QRC_GAMES: ${{ inputs.games || matrix.games }}
       FLK_GAMES: ${{ inputs.games || matrix.games }}

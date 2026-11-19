@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cumulus-dash",
+  "key": "cdHoneyRoast",
+  "generatedAt": "2026-11-18T23:11:05.159Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/cumulus-dash/cdHoneyRoast/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 803058,
+        "num_faces": 1606120,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A big glazed honey-roasted meat haunch on a large white bone, the bone sticking out of both ends with rounded knobs, glistening caramel-brown crackling glaze, appetising, cartoon-feast proportions. Photoreal storm-washed mountain realism: real physical materials as if photographed on a high sandstone ridge just after a squall, crisp physically based surface detail and gentle wear, saturated rain-washed colours, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 1.803,
+    "size": [
+      1.105,
+      0.892,
+      1.8
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/kid-goku-beyond-the-clouds-port/assets/idol/cdHoneyRoast.glb",
+  "sizeBytes": 944104,
+  "preview": "artifacts/idol/cumulus-dash/cdHoneyRoast/views.png",
+  "usd": 0.2
+}

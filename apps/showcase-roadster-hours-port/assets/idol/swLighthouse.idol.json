@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swLighthouse",
+  "generatedAt": "2026-11-18T22:41:53.164Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the client's 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0c0-d352-7e42-b51c-50d40c7c62ca",
+      "prompt": "A single very tall and slender classic headland lighthouse tower, about seven times taller than its base is wide: a gently tapering round whitewashed stone masonry tower with two broad crimson-red daymark bands, a few small arched windows up the tower, a corbelled stone gallery deck with a solid bronze parapet near the top, a compact solid-looking lantern room with a thick bronze frame and opaque glowing amber glass panes, a ribbed verdigris green copper dome with a ball finial on top, standing on a low round stone plinth, no other buildings. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0cc-3399-7062-8866-372f1c08b145",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 21,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1044950,
+        "num_faces": 2090640,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single very tall and slender classic headland lighthouse tower, about seven times taller than its base is wide: a gently tapering round whitewashed stone masonry tower with two broad crimson-red daymark bands, a few small arched windows up the tower, a corbelled stone gallery deck with a solid bronze parapet near the top, a compact solid-looking lantern room with a thick bronze frame and opaque glowing amber glass panes, a ribbed verdigris green copper dome with a ball finial on top, standing on a low round stone plinth, no other buildings. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "world",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 63.195,
+    "size": [
+      17.008,
+      74,
+      23.698
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swLighthouse.glb",
+  "sizeBytes": 4198596,
+  "preview": "artifacts/idol/saltwind-highway/swLighthouse/views.png",
+  "usd": 0.37,
+  "postProcess": "PNG textures re-encoded as JPEG q90 (4:4:4) to fit the per-game byte budget"
+}

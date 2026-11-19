@@ -1,0 +1,9 @@
+{
+  "game": "silt-and-signal-port",
+  "out": "examples/silt-and-signal-port/art/motion.generated.ts",
+  "clips": [
+    { "key": "Balance", "prompt": "A surfer stands on a sailboard with knees bent and feet planted apart, left foot forward, balancing while gliding: small weight shifts from foot to foot, hips swaying slightly, arms held out to the sides for balance, looking straight ahead.", "duration": 4, "loop": true, "seed": 700, "guidance": 5 },
+    { "key": "LeanLeft", "prompt": "A surfer stands on a sailboard with knees bent and feet planted apart, left foot forward, leaning the whole body into a turn to the left: hips and shoulders tilted to the left, left arm lowered and right arm raised for balance, looking into the turn.", "duration": 3, "loop": true, "seed": 701, "guidance": 5 },
+    { "key": "Crouch", "prompt": "A surfer on a sailboard crouches low into a fast run, knees deeply bent and feet planted apart, left foot forward, torso leaning forward, arms tucked in and slightly out for balance, bracing against speed.", "duration": 3, "loop": true, "seed": 702, "guidance": 5 }
+  ]
+}

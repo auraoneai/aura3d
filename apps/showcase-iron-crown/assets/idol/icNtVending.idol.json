@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icNtVending",
+  "generatedAt": "2026-11-18T23:38:09.445Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0a6-30e4-7a51-8f59-139ddd29300b",
+      "usd": 0.17,
+      "note": "reused"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f102-0374-7a42-bc9e-2fc86c7f9cda",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2835280,
+        "num_faces": 5671924,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "subject": "Pair of tall city street vending machines side by side, glossy white and red enclosures, lit display windows with rows of colourful plain cans and bottles, coin and button panels, scuffed urban wear",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.481,
+    "size": [
+      1.68,
+      1.92,
+      0.751
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icNtVending.glb",
+  "sizeBytes": 4257832,
+  "preview": "artifacts/idol/iron-crown/icNtVending/views.png",
+  "usd": 0.37
+}

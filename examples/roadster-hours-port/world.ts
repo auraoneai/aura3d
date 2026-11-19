@@ -5,8 +5,8 @@
  * vehicle in `batched.mesh`es (`art/proceduralModels.ts`, `PORTING-NOTES.md`).
  */
 import {
-  batched, camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, lookHdriUrl, material, primitives, scene, text3D,
-  type AuraApp, type AuraMaterialSpec, type AuraTrailOptions
+  batched, camera, cameras, defineAuraAssets, effects, environments, geometry, group, instances, lights, lookHdriUrl, material, model, primitives, scene, text3D,
+  type AuraApp, type AuraMaterialSpec, type AuraTrailOptions, type AuraTransformSpec
 } from "@aura3d/engine";
 import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
@@ -27,22 +27,51 @@ import {
   type ProceduralTrafficKey
 } from "./art/proceduralModels";
 import { createBodyLean } from "./art/lean";
+import {
+  HERO_IDOL_TRACK_X, HERO_RIM_PITCH, IDOL_TRAFFIC_HUBS, TRAFFIC_SPOKES, TREAD_PITCH, blurAmount, buildAlloyRimMesh, buildBlurDiscMesh,
+  buildTreadTyreMesh, drawnStep, overlayWheelTransforms, rollStep, steerStep, type WheelHub, type WheelInstance
+} from "./art/wheels";
+import {
+  IDOL_DINER, IDOL_HERO_BODY, IDOL_HERO_BODY_SCALE, IDOL_HERO_BODY_Y, IDOL_HERO_BODY_Z, IDOL_HERO_WHEEL_SCALE, IDOL_LIGHTHOUSE, IDOL_LIGHTHOUSE_LANTERN, IDOL_TOWNHOUSES, IDOL_VIADUCT, IDOL_VILLAS, idolAsset, idolBounds, idolEnabled, idolVehicleKey, type IdolModelRef
+} from "./art/idol";
+import { DRIVER_HEIGHT, IDOL_DRIVER, STEERING_WHEEL_RADIUS, STEERING_WHEEL_TILT, driverPose, driverSeatFrame, driverWorldTransform, steeringWheelAngle } from "./art/driver";
+import { loadIdolHumanoid, type HumanoidDriver } from "../../apps/showcase-port-shared/idol/humanoid";
+import { quatMul as rigQuatMul, quatRotateVec, quaternionFromEulerZYX, quaternionToEulerZYX } from "./roadsterRig";
 import { SIGN_DEPTH, SIGN_DROP, SIGN_LETTER_SPACING, SIGN_SIZE, signOrigin, signSpan, signText } from "./art/signs";
 import { SALTWIND_LUT_INTENSITY } from "./art/lut";
 import { createShotDirector, orbitEye, type ShotFrame } from "./art/shots";
 import { NITRO_TRAIL, SKID_INTERVAL, fxForEvents, registerSaltwindFx, type SaltwindFxKind } from "./art/fx";
-import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from "./course";
+import { levelLayout, roadProfile as courseProfile, trafficPiece, pieceSpec, type Level, type RoadSample } from "./course";
+
+/**
+ * Drawn bank (rad): the course bank up to ~63 deg, then eased toward VIEW_BANK_MAX (80 deg). The Redline inversion banks
+ * the sim's road to 135 deg; drawn that way the road folds over its own edges, so the canyon walls (and the chase eye riding
+ * the road normal) ended up inside each other (GPU QA, Nov 18: camera in the cliff for ~1 s). Render only: the sim keeps its
+ * bank (suction scoring), and Sunbreak (1.2) and Halo (1.38) draw within 0.07 rad of theirs.
+ */
+export const VIEW_BANK_MAX = 1.4;
+const VIEW_BANK_KNEE = 1.1;
+export function viewBank(bank: number): number {
+  const b = Math.abs(bank);
+  if (b <= VIEW_BANK_KNEE) return bank;
+  return Math.sign(bank) * (VIEW_BANK_KNEE + (VIEW_BANK_MAX - VIEW_BANK_KNEE) * Math.tanh((b - VIEW_BANK_KNEE) / (VIEW_BANK_MAX - VIEW_BANK_KNEE)));
+}
+/** The course profile as drawn (bank through `viewBank`); every render-side road frame in this module reads this one. */
+export function roadProfile(level: Level, s: number): RoadSample {
+  const p = courseProfile(level, s);
+  return p.bank === 0 ? p : { ...p, bank: viewBank(p.bank) };
+}
 import { CAR_GROUPS, CAR_FOR_PIECE, carGroup, carNativeSize, type CarGroup, type CarKey } from "./cars";
 import { LEVELS } from "./data";
 import { hexLinear, lookFor, type Look } from "./look";
 import { beamSpec, blobFadeFor, blobSpec, citySpec, coveWaterSpec, plumeSpec, spraySpec, rampSpec, roadSpec, skySpec, solidSpec, strataSpec, surfAmount, surfSpeedFor, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
 import {
-  ROADSTER_FRONT_Z, ROADSTER_HALF_H, ROADSTER_HEIGHT, ROADSTER_HALF_L, ROADSTER_HALF_W, ROADSTER_REAR_Z, ROADSTER_TRACK_X, ROADSTER_WHEEL_RADIUS,
+  ROADSTER_FRONT_Z, ROADSTER_HALF_H, ROADSTER_HEIGHT, ROADSTER_HALF_L, ROADSTER_HALF_W, ROADSTER_REAR_Z, ROADSTER_TRACK_X, ROADSTER_WHEEL_RADIUS, ROADSTER_WHEEL_WIDTH,
   composeChassisEuler, computeWheelWorldPose, getRoadsterRigGeometries, type RoadsterMesh
 } from "./roadsterRig";
-import type { Run, RunEvent as SimEvent } from "./sim";
+import type { Run, RunEvent as SimEvent, TrafficCar } from "./sim";
 
-import { createCameraDirector } from "./camera";
+import { createCameraDirector, type CameraFrame } from "./camera";
 
 export { hexLinear };
 
@@ -51,9 +80,167 @@ type Vec3 = [number, number, number];
 type LocalBox = { min: readonly number[]; max: readonly number[] };
 
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
+/** Spoke-blur disc opacities, picked by `blurAmount` (rolling-wheels pass, art/wheels.ts). */
+const HERO_BLUR_MATERIALS = [0.22, 0.4, 0.58].map((opacity) => material.pbr({ color: "#8f949c", roughness: 0.55, metallic: 0.4, clearcoat: 0, sheen: 0, opacity }));
 const hexString = (hex: number): string => `#${hex.toString(16).padStart(6, "0")}`;
 
 /** World position of road point (s, lateral l) at height `h` above the surface (the game's `dd`). */
+/**
+ * The chase camera's wanted eye and look-at points for a frame (the engine chase rig follows them exactly; only the fov
+ * lags): the eye trails the car along the road by a speed-scaled distance, the look-at point leads it. Shared by the
+ * runtime and tests/unit/roadster-hours-port/camera-hud.test.ts, which projects the car through it.
+ *
+ * HUD-safe framing (GPU QA F2): with `hudSafe`, if the car's rear-bottom corner would project inside the bottom dash band
+ * (an airborne descent, or a landing on a steep upslope, tilts the camera up), the look-at point is pitched down about
+ * the eye just enough to keep it above the band. Render only: the sim and replays never read the camera.
+ */
+export function chaseWant(
+  level: Level,
+  run: Pick<Run, "s" | "v" | "l" | "h">,
+  cam: Pick<CameraFrame, "eyeL" | "eyeH" | "lookL" | "lookH">,
+  rowLook: boolean,
+  o: { readonly offCentre: number; readonly eyeDrop: number; readonly lookLift: number; readonly chaseBack: number },
+  hudSafe?: { readonly fovDeg: number; readonly bottomFrac: number },
+  traffic: readonly Pick<TrafficCar, "s" | "l" | "boxes" | "active">[] = []
+): { readonly eye: Vec3; readonly look: Vec3; readonly eyeS: number; readonly up: Vec3 } {
+  const back = o.chaseBack + (run.v / 74) * (rowLook ? 0.7 : 1.6);
+  const eyeS = run.s - back;
+  const eyeL = cam.eyeL + o.offCentre;
+  // camera heights are above the ramp-free road base (`cameraRun`) and lifted along the banked road normal (the original's
+  // camera frame): over a ramp lip the eye no longer drops by the ramp height in one frame, and on the suction banks
+  // (Redline inverts to 135 deg) it stays on the driving side of the road instead of under it. The floor keeps it clear of
+  // decks, kickers, lineup vehicles and traffic (Saltwind camera QA, Nov 18).
+  const eyeBaseH = Math.max(cam.eyeH - o.eyeDrop, eyeFloor(level, eyeS, eyeL, traffic));
+  const eye = roadPointUp(level, eyeS, eyeL, eyeBaseH - roadProfile(level, eyeS).ramp);
+  const lookS = run.s + (rowLook ? 9 + (run.v / 74) * 2.5 : 12 + (run.v / 74) * 5);
+  let look = roadPointUp(level, lookS, cam.lookL, cam.lookH + o.lookLift - roadProfile(level, lookS).ramp);
+  // HUD-safe pitch works in world vertical: off the banks only (on a bank the car is on the road and the frame rolls)
+  if (hudSafe && Math.abs(roadProfile(level, run.s).bank) < 0.35) look = hudSafeLook(eye, look, roadPoint(level, run.s - HUD_SAFE_CAR_REAR, run.l, run.h), hudSafe.fovDeg, hudSafe.bottomFrac);
+  return { eyeS, eye, look, up: roadNormal(level, run.s) };
+}
+
+/** The run as the chase director sees it: height above the ramp-free road base, which stays continuous over a ramp lip
+ * (the sim's `h` is above the ramped surface and jumps by the ramp height where the ramp ends). */
+export function cameraRun<R extends Pick<Run, "s" | "l" | "h" | "v" | "grounded" | "phase" | "boosting" | "nitro">>(level: Level, run: R): Pick<Run, "l" | "h" | "v" | "grounded" | "phase" | "boosting" | "nitro"> {
+  return { l: run.l, h: run.h + roadProfile(level, run.s).ramp, v: run.v, grounded: run.grounded, phase: run.phase, boosting: run.boosting, nitro: run.nitro };
+}
+
+/** Clearance (m) the chase eye keeps above any drivable top it passes over. */
+export const EYE_CLEARANCE = 0.9;
+
+/**
+ * Lowest chase-eye height (m above the ramp-free road base) at road position (s, l): above the ramp ribbon, kicker wedges,
+ * roofline-shortcut decks, lineup vehicles and live traffic by `EYE_CLEARANCE`. Each floor falls off 1:1 with the distance
+ * outside its footprint, so the floor (and an eye resting on it) moves continuously; it never acts at the normal chase height
+ * on the open road.
+ */
+export function eyeFloor(level: Level, s: number, l: number, traffic: readonly Pick<TrafficCar, "s" | "l" | "boxes" | "active">[] = []): number {
+  let floor = -Infinity;
+  const top = (s0: number, s1: number, l0: number, l1: number, h: number): void => {
+    const d = Math.hypot(Math.max(s0 - s, s - s1, 0), Math.max(l0 - l, l - l1, 0));
+    if (h + EYE_CLEARANCE - d > floor) floor = h + EYE_CLEARANCE - d;
+  };
+  const w = level.width;
+  for (const [a, b, h] of level.ramps) {
+    if (s < a - 2 || s > b + h + 2) continue;
+    if (s <= b) top(s, s, -w, w, roadProfile(level, s).ramp);
+    else top(b, b, -w, w, h);
+  }
+  for (const lineup of level.lineups) {
+    const k = lineup.kicker;
+    if (s < k.s - 2 || s > k.s + k.len + k.h + 2) continue;
+    const ss = Math.min(Math.max(s, k.s), k.s + k.len), t = (ss - k.s) / k.len;
+    top(ss, ss, -k.w, k.w, k.h * t * t);
+  }
+  for (const sc of level.shortcuts) top(sc.start, sc.end, sc.l - 5.5, sc.l + 5.5, sc.height);
+  for (const v of levelLayout(level).vehicles) {
+    if (s < v.s0 - 8 || s > v.s1 + 8) continue;
+    for (const b of v.boxes) top(b.s0, b.s1, b.l0, b.l1, b.y1);
+  }
+  for (const car of traffic) {
+    if (!car.active || Math.abs(car.s - s) > 20) continue;
+    for (const b of car.boxes) top(b.s0 + car.s, b.s1 + car.s, b.l0 + car.l, b.l1 + car.l, b.y1);
+  }
+  return floor;
+}
+
+/** Height (m) of a hazard column as drawn: vents are 5 m pulsing cylinders, barrier pylons 1.6 m. */
+export const hazardTop = (h: { readonly type: string }): number => (h.type === "vent" ? 5 : 1.6);
+/**
+ * A vent blows (and its 5 m column shows) exactly while the sim's vent hitbox is live (sim.ts hazard loop:
+ * `sin(time * 1.6 + s) > -0.35`). GPU QA (Nov 18): the column was always drawn, so in its off phase the car drove through it.
+ */
+export const ventActive = (time: number, hazardS: number): boolean => Math.sin(time * 1.6 + hazardS) > -0.35;
+
+/** Unit road normal at `s`: world up rolled by the bank (the original's camera and car "up", fixture game-qAzJLoNH.js:597). */
+export function roadNormal(level: Level, s: number): Vec3 {
+  const p = roadProfile(level, s);
+  return [-Math.sin(p.bank) * Math.cos(p.heading), Math.cos(p.bank), -Math.sin(p.bank) * Math.sin(p.heading)];
+}
+
+/** Road point (s, l) lifted `h` along the banked road normal; equals `roadPoint` wherever the road is not banked. */
+export function roadPointUp(level: Level, s: number, l: number, h: number): Vec3 {
+  const p = roadPoint(level, s, l, 0), n = roadNormal(level, s);
+  return [p[0] + n[0] * h, p[1] + n[1] * h, p[2] + n[2] * h];
+}
+
+/** Relay-gate bar height (m): 12 m, raised where the route's flight line crosses the gate near that height. */
+export const GATE_BAR_RAISED: Readonly<Record<string, readonly number[]>> = { redline: [1], halo: [3] };
+export function gateBarHeight(level: Level, gateIndex: number): number {
+  return GATE_BAR_RAISED[level.id]?.includes(gateIndex) ? 20 : 12;
+}
+
+/** World centre of the player car: `lift` m along the banked road normal above its contact point at height `run.h`. */
+export function carCentre(level: Level, run: Pick<Run, "s" | "l" | "h">, lift: number): Vec3 {
+  const p = roadPoint(level, run.s, run.l, run.h), n = roadNormal(level, run.s);
+  return [p[0] + n[0] * lift, p[1] + n[1] * lift, p[2] + n[2] * lift];
+}
+
+/** Camera up eased toward `target` at 7/s (the original's `M.up.lerp(h2, 1 - exp(-7 dt))`), renormalised. */
+export function easeUp(up: Vec3, target: Vec3, dt: number): Vec3 {
+  const k = 1 - Math.exp(-7 * Math.max(0, dt));
+  const v: Vec3 = [up[0] + (target[0] - up[0]) * k, up[1] + (target[1] - up[1]) * k, up[2] + (target[2] - up[2]) * k];
+  const len = Math.hypot(v[0], v[1], v[2]) || 1;
+  return [v[0] / len, v[1] / len, v[2] / len];
+}
+
+/** Distance (m) behind the car's centre to its rear bottom corner, the point kept above the dash band. */
+export const HUD_SAFE_CAR_REAR = 2.2;
+/** Fraction of the viewport height the bottom dash band covers at 720p (index.html `#dash`: 16 px + ~101 px) plus a margin. */
+export const HUD_SAFE_BOTTOM_FRAC = (16 + 101 + 8) / 720;
+/** Portrait chase fov (deg, vertical): the narrow frame widens so the road ahead still reads. */
+export const PORTRAIT_FOV = 70;
+/**
+ * Height (px at 390x844) of the portrait bottom stack in index.html: dash, docked route bar, and the shared toast / coach
+ * line (two lines high, touch buttons included) plus a margin; the car's rear stays above it (portrait HUD QA, Nov 19).
+ */
+export const HUD_SAFE_PORTRAIT_PX = 186;
+/** The HUD-safe framing for a viewport aspect (width / height): fov and the bottom band the car stays above. */
+export function hudSafeFor(aspect: number, fovKick: number): { readonly fovDeg: number; readonly bottomFrac: number } {
+  return aspect < 1 ? { fovDeg: PORTRAIT_FOV + fovKick, bottomFrac: HUD_SAFE_PORTRAIT_PX / 844 } : { fovDeg: 58 + fovKick, bottomFrac: HUD_SAFE_BOTTOM_FRAC };
+}
+
+/** Pitch `look` down about `eye` (keeping its distance) until `p` projects above the bottom `bottomFrac` of the screen. */
+export function hudSafeLook(eye: Vec3, look: Vec3, p: Vec3, fovDeg: number, bottomFrac: number): Vec3 {
+  const f0: Vec3 = [look[0] - eye[0], look[1] - eye[1], look[2] - eye[2]];
+  const dist = Math.hypot(f0[0], f0[1], f0[2]);
+  if (dist < 1e-6) return look;
+  const d: Vec3 = [p[0] - eye[0], p[1] - eye[1], p[2] - eye[2]];
+  // vertical angles (elevation) of the forward vector and of the car point, measured in the camera's vertical plane
+  const horiz = (v: Vec3) => Math.hypot(v[0], v[2]);
+  const fwdEl = Math.atan2(f0[1], horiz(f0));
+  const carEl = Math.atan2(d[1], horiz(d));
+  const tanHalf = Math.tan((fovDeg * Math.PI) / 360);
+  // lowest allowed elevation below the forward axis for a point near the screen centre column
+  const allowed = Math.atan((1 - 2 * bottomFrac) * tanHalf);
+  const below = fwdEl - carEl;
+  if (below <= allowed) return look;
+  const el = fwdEl - (below - allowed);
+  const h = horiz(f0);
+  const k = h > 1e-9 ? (dist * Math.cos(el)) / h : 0;
+  return [eye[0] + f0[0] * k, eye[1] + dist * Math.sin(el), eye[2] + f0[2] * k];
+}
+
 export function roadPoint(level: Level, s: number, l: number, h = 0): Vec3 {
   const p = roadProfile(level, s);
   const a = Math.sqrt(1 + p.dx * p.dx);
@@ -152,13 +339,22 @@ function gridIndices(rows: number, cols: number, solid: (rowMid: number) => bool
 const OFFSETS = [0.35, 1.0, 2.2, 3.8, 6, 9, 13, 18, 25, 34, 46, 62, 84, 112];
 
 /** Absolute terrain height at arc position `s`, distance `d` from the road edge on side `sign`, for a sea embankment or a rock cliff. */
-function flankY(level: Level, look: Look, sign: -1 | 1, kind: "sea" | "cliff" | "hills", seed: number, s: number, d: number): number {
+export function flankY(level: Level, look: Look, sign: -1 | 1, kind: "sea" | "cliff" | "hills", seed: number, s: number, d: number, ignoreBank = false): number {
   const prof = roadProfile(level, s);
   const edgeY = prof.y + sign * level.width * Math.sin(prof.bank);
   const cliffH = 30 + 26 * fbm2(s * 0.006, 3.1, seed) + 8 * Math.sin(s * 0.0031 + seed);
   const edgeBlend = 1 - sstep(0, 10, d);
   let y = prof.y + (edgeY - prof.y) * edgeBlend;
   const n = fbm2(s * 0.05 + d * 0.11, d * 0.07, seed + 11);
+  // On a steep bank the driving side faces the low edge: a cliff rising there walls in the road and the chase eye that rides
+  // the road normal (GPU QA, Nov 18: camera inside the Redline canyon wall through the inversion). The low side's ground
+  // falls away instead, blending in from a 30 deg bank to a 57 deg one.
+  const lowSide = !ignoreBank && sign * Math.sin(prof.bank) < 0 ? sstep(0.5, 1.0, Math.abs(prof.bank)) : 0;
+  if (lowSide > 0 && kind !== "sea") {
+    const drop = -0.3 - 40 * Math.pow(sstep(0.5, 15, d), 0.75) + (n - 0.5) * 3.2 * sstep(1, 9, d);
+    const keep = flankY(level, look, sign, kind, seed, s, d, true);
+    return keep + (y + drop - keep) * lowSide;
+  }
   if (kind === "sea") {
     const fall = sstep(0.5, look.style === "skyway" ? 5 : 15, d);
     y += -0.3 - (prof.y + 10) * Math.pow(fall, 0.75) + (n - 0.5) * 3.2 * sstep(1, 9, d);
@@ -258,7 +454,7 @@ function towers(level: Level, seed: number, avoid: readonly (readonly [number, n
   return m;
 }
 
-interface TownLot { readonly x: number; readonly y: number; readonly z: number; readonly w: number; readonly dep: number; readonly h: number; readonly s: number; readonly id: number; readonly sign: -1 | 1 }
+interface TownLot { readonly x: number; readonly y: number; readonly z: number; readonly w: number; readonly dep: number; readonly h: number; readonly s: number; readonly id: number; readonly sign: -1 | 1; /** Distance from the road edge (m). */ readonly d: number }
 /** Lots of the cliff-top town (shared by the plaster-cube fallback and the generated villa/townhouse models). */
 function townLots(level: Level, look: Look, seed: number): TownLot[] {
   const lots: TownLot[] = [];
@@ -277,7 +473,7 @@ function townLots(level: Level, look: Look, seed: number): TownLot[] {
       const ss = s + r3 * 8;
       const [x, , z] = roadPoint(level, ss, sign * (level.width + d), 0);
       const y = flankY(level, look, sign, "hills", seed + 101, ss, d) - 1.5;
-      lots.push({ x, y, z, w, dep, h, s: ss, id, sign });
+      lots.push({ x, y, z, w, dep, h, s: ss, id, sign, d });
       id++;
     }
   }
@@ -310,6 +506,20 @@ function townBuildings(level: Level, look: Look, seed: number): MeshData {
   return m;
 }
 
+/** Lateral offset of a street lamp pole from the road centre line. */
+export const LAMP_POLE_OFFSET = 1.7;
+/** True when a lamp pole at arc `s` on side `sign` would stand inside (or within 8 m of) a roofline shortcut deck. */
+export function lampBlocksShortcut(level: Level, s: number, sign: 1 | -1): boolean {
+  const l = sign * (level.width + LAMP_POLE_OFFSET);
+  return level.shortcuts.some((sc) => s > sc.start - 8 && s < sc.end + 8 && Math.abs(l - sc.l) < 5.5 + 1.2);
+}
+
+/** True on a suction bank: a world-vertical pole there leans 20-45 deg off the tilted road and reads as a fallen mast
+ * across the rolled chase frame (GPU QA, Nov 18), so the banks carry no street lamps. */
+export function lampOnBank(level: Level, s: number): boolean {
+  return Math.abs(roadProfile(level, s).bank) > 0.25;
+}
+
 /** Street lamps along both sides: poles with an arm toward the road (grey) and emissive heads (warm). */
 function streetLamps(level: Level): { poles: MeshData; heads: MeshData } {
   const poles = emptyMesh(), heads = emptyMesh();
@@ -317,6 +527,9 @@ function streetLamps(level: Level): { poles: MeshData; heads: MeshData } {
   for (let s = 90; s < level.length + 40; s += 64, i++) {
     if (inGap(level, s)) continue;
     const sign = i % 2 === 0 ? 1 : -1;
+    // Pass-through QA (Nov 18): a pole at |l| = width + 1.7 stood inside the roofline shortcut deck (l = sc.l +- 5.5, 3-4.5 m up),
+    // so the car drove through a 9 m lamp pole on the cut. No lamp on the shortcut's side along its deck (+- 8 m).
+    if (lampBlocksShortcut(level, s, sign) || lampOnBank(level, s)) continue;
     const base = roadPoint(level, s, sign * (level.width + 1.7), 0);
     appendBox(poles, [base[0], base[1] + 4.6, base[2]], [0.11, 4.6, 0.11]);
     const arm = roadPoint(level, s, sign * (level.width + 1.7 - 1.1), 9.2);
@@ -452,7 +665,7 @@ function rigParts(piece: string, boxes: readonly LocalBox[], cargoColour: string
   return { parts, tails, heads };
 }
 
-interface VehicleDef { readonly piece: string; readonly variant: number; readonly car: CarKey | null; readonly trafficClass: ProceduralTrafficKey | null; readonly colour: string }
+interface VehicleDef { readonly piece: string; readonly variant: number; readonly car: CarKey | null; readonly trafficClass: ProceduralTrafficKey | null; readonly colour: string; readonly idol: string | null }
 
 export interface WorldRuntime {
   /** `events` are the sim events of every step since the last frame (camera shake, FOV kicks, cut on recover). */
@@ -488,8 +701,26 @@ export interface World {
   readonly vehicleMeshes: number;
   /** Nodes whose texture the engine uploads after mount (generated models): the page waits for them before it hides the loading screen. */
   readonly texturedNodes: number;
+  /**
+   * Idol set-piece grounding audit (GPU QA F2): each Idol landmark's base height against the terrain under its footprint
+   * (centre + 4 corners, road frame). `baseY` <= `groundMin` (no floating corner) and only a small skirt below it.
+   */
+  readonly idolGrounding: readonly IdolGrounding[];
   bind(app: AuraApp): WorldRuntime;
 }
+
+export interface IdolGrounding {
+  readonly name: string;
+  readonly baseY: number;
+  readonly groundMin: number;
+  readonly groundMax: number;
+}
+
+/** Depth an Idol set piece's base sits below the lowest terrain point under its footprint (hides the seam on slopes). */
+export const IDOL_GROUND_SKIRT = 0.25;
+/** Lighthouse headland rock: scale (x, z widened under an Idol lighthouse so its keeper's cottage sits on the flat top) and top. */
+export const LIGHTHOUSE_ROCK_SCALE_IDOL = 54;
+export const LIGHTHOUSE_ROCK_TOP = -3 + 14;
 
 /** Writes the instance matrix into `out` (one scratch buffer per world: `setMatrixAt` copies, so nothing is allocated per frame). */
 export function matrixFor(psi: number, centre: Vec3, size: Vec3, out: Float32Array = new Float32Array(16)): Float32Array {
@@ -552,7 +783,7 @@ export const gantryColours = (look: Look): { frame: Vec3; glow: Vec3; glowAmount
 export function buildWorld(
   levelIndex: number,
   mode: "gu47" | "original" = typeof location !== "undefined" ? lookModeFrom(location.search) : "gu47",
-  options: { readonly richScenery?: boolean } = {}
+  options: { readonly richScenery?: boolean; readonly idol?: boolean } = {}
 ): World {
   const level = LEVELS[levelIndex]!;
   const look = lookFor(level.id, mode);
@@ -636,6 +867,28 @@ export function buildWorld(
   builder.add(geometry.custom(dyn(guardrails(level)), { name: "guardrails", material: material.custom(solidSpec(look, [0.72, 0.74, 0.77], [0, 0, 0], 0, 0.32, 0.9, look.row ? 1 : 0)), castShadow: false }));
   const richSceneryOn = options.richScenery ?? (row !== null);
   const richModelReady = (_key: string): boolean => richSceneryOn;
+  // Idol wow pass (art/idol.ts): generated GLBs on the GU47 looks; `?idol=0` or a missing key keeps the procedural model.
+  const idolOn = row !== null && richSceneryOn && (options.idol ?? idolEnabled(query));
+  const idol = (key: string): IdolModelRef | null => (idolOn ? idolAsset(key) : null);
+  let idolModelNodes = 0;
+  const idolGrounding: IdolGrounding[] = [];
+  const seaKindAll = look.style === "canyon" ? "cliff" : "sea";
+  /**
+   * Terrain under a footprint centred at road position (s, l), `halfAlong` metres along the road and `halfAcross` across it:
+   * the flank height (same side/kind/seed rule as the landmark placements) at the centre and the four corners.
+   */
+  const groundUnder = (s: number, l: number, halfAlong: number, halfAcross: number, kindOverride?: "sea" | "cliff" | "hills"): { min: number; max: number } => {
+    const side = (Math.sign(l) || 1) as -1 | 1;
+    const kind = kindOverride ?? (side === look.seaSide ? seaKindAll : look.style === "coast" ? "hills" : "cliff");
+    const sd = side === look.seaSide ? seed : seed + 101;
+    const d0 = Math.abs(l) - level.width;
+    let min = Infinity, max = -Infinity;
+    for (const [ds, dd] of [[0, 0], [-1, -1], [-1, 1], [1, -1], [1, 1]] as const) {
+      const y = flankY(level, look, side, kind, sd, s + ds * halfAlong, Math.max(0, d0 + dd * halfAcross));
+      min = Math.min(min, y); max = Math.max(max, y);
+    }
+    return { min, max };
+  };
   const palette = createSaltwindMaterialPalette();
   const scenery = getProceduralSceneryLibrary();
 
@@ -658,13 +911,15 @@ export function buildWorld(
   if (look.style === "coast") {
     const lightS = Math.min(level.length - 260, 2520);
     const base = roadPoint(level, lightS, look.seaSide * (level.width + 95), 0);
+    // the Idol lighthouse (tower + keeper's cottage) needs a wider flat rock top than the procedural tower
+    const lighthouseIdolRock = richModelReady("lighthouse") && idol(IDOL_LIGHTHOUSE) !== null;
     const white = (): ReturnType<typeof material.custom> => material.custom(solidSpec(look, [0.82, 0.8, 0.76], [0, 0, 0], 0, 0.6));
     const red = (): ReturnType<typeof material.custom> => material.custom(solidSpec(look, [0.62, 0.08, 0.06], [0, 0, 0], 0, 0.55));
     // Stratified headland rock island under the lighthouse (`strataSpec` carries both GLSL and WGSL twins).
     builder.add(geometry.custom(dynProc(scenery.seaStack), {
       name: "lighthouse-rock",
       position: [base[0], -3, base[2]],
-      scale: [36, 14, 36],
+      scale: lighthouseIdolRock ? [LIGHTHOUSE_ROCK_SCALE_IDOL, 14, LIGHTHOUSE_ROCK_SCALE_IDOL] : [36, 14, 36],
       material: material.custom(row ? strataSpec(look) : terrainSpec(look))
     }));
     const proceduralTower = !richModelReady("lighthouse");
@@ -687,32 +942,59 @@ export function buildWorld(
   const heroSculpted = row !== null;
   const legacyRichPlayer = !heroSculpted && richModelReady("roadster");
   const playerIds: string[] = [];
-  const wheelSpecs: { readonly id: string; readonly rimId: string; readonly rotorId: string; readonly offset: Vec3; readonly front: boolean }[] = [];
+  const wheelSpecs: { readonly id: string; readonly rimId: string; readonly rotorId: string; readonly blurId: string; readonly offset: Vec3; readonly front: boolean }[] = [];
+  const heroIdol = heroSculpted ? idol(IDOL_HERO_BODY) : null;
+  const heroWheelScale = heroIdol ? IDOL_HERO_WHEEL_SCALE : 1;
+  /** Rigged Idol driver under the Idol body (GLB url for the skeleton, node scale), or null. */
+  let heroDriver: { readonly url: string; readonly scale: number } | null = null;
   if (heroSculpted) {
     const rig = getRoadsterRigGeometries();
     const addChassisPart = (id: string, mesh: RoadsterMesh, mat: AuraMaterialSpec, castShadow: boolean): void => {
       builder.add(geometry.custom(dynRig(mesh), { name: id, castShadow, material: mat }).runtime({ id }));
       playerIds.push(id);
     };
-    addChassisPart("car-body", rig.body, palette.roadsterTeal, true);
-    addChassisPart("car-stripes", rig.stripes, palette.ivoryLacquer, false);
-    addChassisPart("car-chrome", rig.chrome, palette.anisotropicChrome, false);
-    addChassisPart("car-seats", rig.seats, palette.tanQuiltedLeather, false);
-    addChassisPart("car-wood", rig.wood, palette.mahoganyWood, false);
-    addChassisPart("car-cockpit", rig.cockpit, palette.charcoalCabinFabric, false);
-    addChassisPart("car-driver-skin", rig.driverSkin, palette.driverSkin, false);
-    addChassisPart("car-driver-hair", rig.driverHair, palette.driverHair, false);
-    addChassisPart("car-glass", rig.glass, palette.windshieldGlass, false);
-    addChassisPart("car-headlamps", rig.headlamps, palette.headlampGlow, false);
-    addChassisPart("car-taillamps", rig.taillamps, palette.taillampRuby, false);
-    const wheelY = ROADSTER_WHEEL_RADIUS - ROADSTER_HALF_H;
+    if (heroIdol) {
+      // Idol body (empty wheel arches) in a runtime group posed like the chassis parts: the GLB is grounded at y = 0 and faces
+      // +Z, the chassis origin sits ROADSTER_HALF_H above the road and faces -Z.
+      builder.add(group("car-body", [
+        model(heroIdol, { scaleMode: "world", name: "car-body-idol", position: [0, IDOL_HERO_BODY_Y, IDOL_HERO_BODY_Z], rotation: [0, Math.PI, 0], scale: IDOL_HERO_BODY_SCALE, castShadow: true, receiveShadow: true })
+      ]).runtime({ id: "car-body" }));
+      playerIds.push("car-body");
+      idolModelNodes++;
+      // GPU QA F2: the Idol body has no driver; a rigged Idol racer sits in the left seat, hands on a turning steering wheel
+      const driverRef = idol(IDOL_DRIVER);
+      if (driverRef) {
+        heroDriver = { url: driverRef.url, scale: DRIVER_HEIGHT / (idolBounds(driverRef)[1] || 1) };
+        builder.add(model(driverRef, { scaleMode: "world", name: "car-driver-idol", castShadow: true, receiveShadow: true }).runtime({ id: "car-driver-idol" }));
+        builder.add(primitives.torus({ name: "car-steering-rim", size: [STEERING_WHEEL_RADIUS * 2, STEERING_WHEEL_RADIUS * 2, 0.03], material: palette.mahoganyWood, castShadow: false }).runtime({ id: "car-steering-rim" }));
+        builder.add(primitives.box({ name: "car-steering-spoke", size: [STEERING_WHEEL_RADIUS * 1.9, 0.035, 0.02], material: palette.anisotropicChrome, castShadow: false }).runtime({ id: "car-steering-spoke" }));
+        idolModelNodes++;
+      }
+    } else {
+      addChassisPart("car-body", rig.body, palette.roadsterTeal, true);
+      addChassisPart("car-stripes", rig.stripes, palette.ivoryLacquer, false);
+      addChassisPart("car-chrome", rig.chrome, palette.anisotropicChrome, false);
+      addChassisPart("car-seats", rig.seats, palette.tanQuiltedLeather, false);
+      addChassisPart("car-wood", rig.wood, palette.mahoganyWood, false);
+      addChassisPart("car-cockpit", rig.cockpit, palette.charcoalCabinFabric, false);
+      addChassisPart("car-driver-skin", rig.driverSkin, palette.driverSkin, false);
+      addChassisPart("car-driver-hair", rig.driverHair, palette.driverHair, false);
+      addChassisPart("car-glass", rig.glass, palette.windshieldGlass, false);
+      addChassisPart("car-headlamps", rig.headlamps, palette.headlampGlow, false);
+      addChassisPart("car-taillamps", rig.taillamps, palette.taillampRuby, false);
+    }
+    const wheelY = ROADSTER_WHEEL_RADIUS * heroWheelScale - ROADSTER_HALF_H;
     const wheelCorners = [
       { tag: "fl", sx: -1, z: ROADSTER_FRONT_Z, front: true },
       { tag: "fr", sx: 1, z: ROADSTER_FRONT_Z, front: true },
       { tag: "rl", sx: -1, z: ROADSTER_REAR_Z, front: false },
       { tag: "rr", sx: 1, z: ROADSTER_REAR_Z, front: false }
     ] as const;
-    const sharedTireGeo = dynRig(rig.wheelTire);
+    // Rolling-wheels pass: under the Idol body the tyres get bold tread lugs (a smooth torus hides its rotation) and a wider
+    // track so the tread stands flush with the body's flared fenders, visible from the chase camera (art/wheels.ts)
+    const sharedTireGeo = heroIdol ? dynRig(buildTreadTyreMesh(ROADSTER_WHEEL_RADIUS, ROADSTER_WHEEL_WIDTH)) : dynRig(rig.wheelTire);
+    const heroTrackX = heroIdol ? HERO_IDOL_TRACK_X : ROADSTER_TRACK_X;
+    const blurGeo = (sx: number) => dynRig(buildBlurDiscMesh(ROADSTER_WHEEL_RADIUS * 0.66, 28, sx * ROADSTER_WHEEL_WIDTH * 0.56));
     const sharedRimLeftGeo = dynRig(rig.wheelRimLeft);
     const sharedRimRightGeo = dynRig(rig.wheelRimRight);
     const sharedRotorGeo = dynRig(rig.wheelRotor);
@@ -723,7 +1005,9 @@ export function buildWorld(
       builder.add(geometry.custom(sharedTireGeo, { name: id, castShadow: true, material: palette.tireRubber }).runtime({ id }));
       builder.add(geometry.custom(w.sx < 0 ? sharedRimLeftGeo : sharedRimRightGeo, { name: rimId, castShadow: false, material: palette.anisotropicChrome }).runtime({ id: rimId }));
       builder.add(geometry.custom(sharedRotorGeo, { name: rotorId, castShadow: false, material: palette.machinedAlloy }).runtime({ id: rotorId }));
-      wheelSpecs.push({ id, rimId, rotorId, offset: [w.sx * ROADSTER_TRACK_X, wheelY, w.z], front: w.front });
+      const blurId = `car-blur-${w.tag}`;
+      builder.add(geometry.custom(blurGeo(w.sx), { name: blurId, castShadow: false, receiveShadow: false, material: HERO_BLUR_MATERIALS[0]! }).runtime({ id: blurId }));
+      wheelSpecs.push({ id, rimId, rotorId, blurId, offset: [w.sx * heroTrackX, wheelY, w.z], front: w.front });
     }
   } else if (legacyRichPlayer) {
     const sportBody = carGroup("sportsCar", "paint")!;
@@ -774,14 +1058,27 @@ export function buildWorld(
     const lightS = Math.min(level.length - 260, 2520);
     const lb = roadPoint(level, lightS, look.seaSide * (level.width + 95), 0);
     const towerH = 72;
-    scatterProcedural("lighthouse-model", scenery.lighthouseTower, palette.instancedStucco, [{ p: [lb[0], 6, lb[2]], yaw: 0, size: [towerH, towerH, towerH] }]);
-    const lh = createHeadlandLighthouseNodes([lb[0], 6, lb[2]], towerH, palette);
-    builder.add(lh.crown);
-    builder.add(lh.glass);
+    const lighthouseIdol = idol(IDOL_LIGHTHOUSE);
+    let lanternY = 6 + towerH * 0.89;
+    if (lighthouseIdol) {
+      // Idol lighthouse (tower, gallery, lantern, dome and keeper's cottage in one GLB), its front (+Z) turned to the road
+      const toRoad = roadPoint(level, lightS, 0, 0);
+      // grounded on the flat top of the (widened) headland rock, a skirt below it (was y 6: 5 m of tower and cottage buried)
+      const lighthouseY = LIGHTHOUSE_ROCK_TOP - IDOL_GROUND_SKIRT;
+      builder.add(model(lighthouseIdol, { scaleMode: "world", name: "lighthouse-model", position: [lb[0], lighthouseY, lb[2]], rotation: [0, Math.atan2(toRoad[0] - lb[0], toRoad[2] - lb[2]), 0], castShadow: false, receiveShadow: true }));
+      idolGrounding.push({ name: "lighthouse-model", baseY: lighthouseY, groundMin: LIGHTHOUSE_ROCK_TOP, groundMax: LIGHTHOUSE_ROCK_TOP });
+      idolModelNodes++;
+      lanternY = lighthouseY + idolBounds(lighthouseIdol)[1] * IDOL_LIGHTHOUSE_LANTERN;
+    } else {
+      scatterProcedural("lighthouse-model", scenery.lighthouseTower, palette.instancedStucco, [{ p: [lb[0], 6, lb[2]], yaw: 0, size: [towerH, towerH, towerH] }]);
+      const lh = createHeadlandLighthouseNodes([lb[0], 6, lb[2]], towerH, palette);
+      builder.add(lh.crown);
+      builder.add(lh.glass);
+    }
     if (row) {
       builder.add(geometry.custom(dyn(beamCone([0, 0, 0], [0, -0.04, -1], 92, 10.5)), {
         name: "headland-beacon-beam",
-        position: [lb[0], 6 + towerH * 0.89, lb[2]],
+        position: [lb[0], lanternY, lb[2]],
         material: material.custom(beamSpec(1.35, [1.0, 0.92, 0.72])),
         castShadow: false
       }).runtime({ id: "headland-beacon-beam" }));
@@ -797,13 +1094,36 @@ export function buildWorld(
       yaw: -roadProfile(level, lot.s).heading + (lot.sign > 0 ? Math.PI : 0),
       size: [lot.h * 1.3, lot.h * 1.3, lot.h * 1.3] as Vec3
     });
-    if (richModelReady("villa")) {
+    // Idol town: one instanced GLB per house variant (alternating lots), grounded unit-height models scaled like the procedural set
+    const townIdol = (names: readonly string[], prefix: string, lotsOf: readonly TownLot[]): boolean => {
+      const refs = names.map((key) => idol(key)).filter((ref): ref is IdolModelRef => ref !== null);
+      if (!lotsOf.length || !refs.length) return false;
+      refs.forEach((ref, v) => {
+        const [bx, , bz] = idolBounds(ref);
+        // grounded per lot: the lowest hill point under the house footprint, a skirt below it (lot.y sampled only the centre)
+        const items = lotsOf.filter((_lot, i) => i % refs.length === v).map((lot) => {
+          const item = placeLot(lot);
+          const k = item.size[0];
+          const g = groundUnder(lot.s, lot.sign * (level.width + lot.d), (bx * k) / 2, (bz * k) / 2, "hills");
+          const baseY = g.min - IDOL_GROUND_SKIRT;
+          idolGrounding.push({ name: `${prefix}-${lot.id}`, baseY, groundMin: g.min, groundMax: g.max });
+          return { ...item, p: [item.p[0], baseY, item.p[2]] as Vec3 };
+        });
+        if (!items.length) return;
+        builder.add(instances.model(ref, { scaleMode: "world", name: v === 0 ? prefix : `${prefix}-${v}`, transforms: items.map(scatterTransform), castShadow: true, receiveShadow: true }).runtime({ id: v === 0 ? prefix : `${prefix}-${v}` }));
+        idolModelNodes++;
+      });
+      return true;
+    };
+    const villasIdol = townIdol(IDOL_VILLAS, "town-villas", villas);
+    const townsIdol = townIdol(IDOL_TOWNHOUSES, "town-townhouses", towns);
+    if (richModelReady("villa") && !villasIdol) {
       const villaItems = villas.map(placeLot);
       scatterProcedural("town-villas", scenery.villa.stucco, palette.instancedStucco, villaItems, { farGeo: scenery.villa.lod, farKey: "villa" });
       scatterProcedural("coastal-villa-roofs", scenery.villa.roofAndArch, palette.instancedTerracotta, villaItems, { castShadow: false });
       scatterProcedural("coastal-villa-shutters", scenery.villa.shutters, palette.instancedShutters, villaItems, { castShadow: false });
     }
-    if (richModelReady("townhouse")) {
+    if (richModelReady("townhouse") && !townsIdol) {
       const townItems = towns.map(placeLot);
       scatterProcedural("town-townhouses", scenery.townhouse.stucco, palette.instancedTownStucco, townItems, { farGeo: scenery.townhouse.lod, farKey: "townhouse" });
       scatterProcedural("coastal-townhouse-roofs", scenery.townhouse.roofAndArch, palette.instancedTerracotta, townItems, { castShadow: false });
@@ -899,6 +1219,25 @@ export function buildWorld(
         size: sizeOf(p)
       }));
 
+    const dinerIdol = idol(IDOL_DINER);
+    const addDiners = (prefix: string): void => {
+      landmarkPlacements("roadside-diner", level.length, width, look.seaSide, seed).forEach((p, idx) => {
+        if (dinerIdol) {
+          // Idol diner, its front (+Z) turned to the road it serves
+          const [dbx, , dbz] = idolBounds(dinerIdol);
+          // grounded: the diner faces the road (its width runs along it); lowest flank point under the footprint, minus a skirt
+          const g = groundUnder(p.s, p.l, (dbx * p.size[0]) / 2, (dbz * p.size[0]) / 2);
+          const at: Vec3 = [landBase(p)[0], g.min - IDOL_GROUND_SKIRT, landBase(p)[2]], road = roadPoint(level, p.s, 0, 0);
+          idolGrounding.push({ name: `${prefix}-diner-${idx}`, baseY: at[1], groundMin: g.min, groundMax: g.max });
+          builder.add(model(dinerIdol, { scaleMode: "world", name: `${prefix}-diner-${idx}`, position: at, rotation: [0, Math.atan2(road[0] - at[0], road[2] - at[2]), 0], scale: p.size[0], castShadow: true, receiveShadow: true }));
+          idolModelNodes++;
+          return;
+        }
+        const dNodes = createRoadsideDinerNodes(`${prefix}-diner-${idx}`, landBase(p), p.yaw - roadProfile(level, p.s).heading, p.size[0], palette);
+        builder.add(dNodes.diner);
+        builder.add(dNodes.glass);
+      });
+    };
     if (look.style === "coast") {
       const towers = place("turbine");
       builder.add(instances.custom(dynProc(scenery.turbineTower) as never, { name: "turbine-towers", transforms: towers, material: palette.instancedTurbineSteel, castShadow: false } as never));
@@ -911,14 +1250,22 @@ export function buildWorld(
       for (const t of towers) turbineHubs.push([t.position[0] - 3, t.position[1] + t.scale[1] / 2 + 1, t.position[2]]);
       scatterProcedural("sea-stacks", scenery.seaStack, material.custom(strataSpec(look)), placeGrounded("sea-stack", (p) => [p.size[0], p.size[1], p.size[2]]), { castShadow: false });
       // Multi-material arched stone coastal viaducts, Art-Deco roadside diners & suspension bridge towers
+      const viaductIdol = idol(IDOL_VIADUCT);
       landmarkPlacements("coastal-viaduct", level.length, width, look.seaSide, seed).forEach((p, idx) => {
+        if (viaductIdol) {
+          // Idol arcade: spans along local x like the procedural viaduct (metres, same placement scale)
+          // grounded: the arcade spans across the road side (yaw +pi/2), its piers on the lowest flank point under it
+          const [vbx, , vbz] = idolBounds(viaductIdol);
+          const g = groundUnder(p.s, p.l, (vbz * p.size[2]) / 2, (vbx * p.size[0]) / 2);
+          const vAt: Vec3 = [landBase(p)[0], g.min - IDOL_GROUND_SKIRT, landBase(p)[2]];
+          idolGrounding.push({ name: `coastal-viaduct-${idx}`, baseY: vAt[1], groundMin: g.min, groundMax: g.max });
+          builder.add(model(viaductIdol, { scaleMode: "world", name: `coastal-viaduct-${idx}`, position: vAt, rotation: [0, p.yaw - roadProfile(level, p.s).heading, 0], scale: [p.size[0], p.size[1], p.size[2]], castShadow: false, receiveShadow: true }));
+          idolModelNodes++;
+          return;
+        }
         builder.add(createCoastalViaductNode(`coastal-viaduct-${idx}`, landBase(p), p.yaw - roadProfile(level, p.s).heading, [p.size[0], p.size[1], p.size[2]], palette));
       });
-      landmarkPlacements("roadside-diner", level.length, width, look.seaSide, seed).forEach((p, idx) => {
-        const dNodes = createRoadsideDinerNodes(`coastal-diner-${idx}`, landBase(p), p.yaw - roadProfile(level, p.s).heading, p.size[0], palette);
-        builder.add(dNodes.diner);
-        builder.add(dNodes.glass);
-      });
+      addDiners("coastal");
       landmarkPlacements("suspension-tower", level.length, width, look.seaSide, seed).forEach((p, idx) => {
         builder.add(createSuspensionBridgeTowerNode(`coastal-suspension-tower-${idx}`, landBase(p), p.yaw - roadProfile(level, p.s).heading, [p.size[0], p.size[1], p.size[2]], palette));
       });
@@ -927,11 +1274,7 @@ export function buildWorld(
       scatterProcedural("hoodoos", scenery.hoodoo, material.custom(strataSpec(look, 3.8, 0.58)), placeGrounded("hoodoo", (p) => [p.size[0] * 1.25, p.size[1], p.size[2] * 1.25]), { castShadow: false });
       scatterProcedural("arch", scenery.sandstoneArch, material.custom(strataSpec(look, 3.0, 0.54)), placeGrounded("arch", (p) => [p.size[0] / 1.8, p.size[1] * 0.72, p.size[0] / 1.8]), { castShadow: false });
       builder.add(instances.custom(dynProc(scenery.latticeMast) as never, { name: "uplink-masts", transforms: place("uplink-mast"), material: palette.instancedGalvanizedTruss, castShadow: false } as never));
-      landmarkPlacements("roadside-diner", level.length, width, look.seaSide, seed).forEach((p, idx) => {
-        const dNodes = createRoadsideDinerNodes(`canyon-diner-${idx}`, landBase(p), p.yaw - roadProfile(level, p.s).heading, p.size[0], palette);
-        builder.add(dNodes.diner);
-        builder.add(dNodes.glass);
-      });
+      addDiners("canyon");
     } else {
       if (arcologyOn) {
         const arcoItems = arcologySpots.map((p): ScatterItem => ({ p: landBase(p), yaw: p.yaw - roadProfile(level, p.s).heading, size: [p.size[1], p.size[1], p.size[1]] as Vec3 }));
@@ -981,12 +1324,13 @@ export function buildWorld(
   level.gates.forEach((g, i) => {
     const psi = -roadProfile(level, g.s).heading;
     const base = roadPoint(level, g.s, 0, 0);
+    const barH = gateBarHeight(level, i);
     for (const side of [-1, 1]) {
-      const p = roadPoint(level, g.s, side * (width - 0.4), 6);
-      const post = primitives.box({ name: `gate-post-${i}-${side}`, position: p, rotation: [0, psi, 0], size: [0.7, 12, 0.7], material: gateMat(), castShadow: row !== null });
+      const p = roadPoint(level, g.s, side * (width - 0.4), barH / 2);
+      const post = primitives.box({ name: `gate-post-${i}-${side}`, position: p, rotation: [0, psi, 0], size: [0.7, barH, 0.7], material: gateMat(), castShadow: row !== null });
       builder.add(row ? post.runtime({ id: `gate-post-${i}-${side}` }) : post);
     }
-    const bar = primitives.box({ name: `gate-bar-${i}`, position: [base[0], base[1] + 12, base[2]], rotation: [0, psi, 0], size: [width * 2, 0.6, 0.6], material: gateMat(), castShadow: row !== null });
+    const bar = primitives.box({ name: `gate-bar-${i}`, position: [base[0], base[1] + barH, base[2]], rotation: [0, psi, 0], size: [width * 2, 0.6, 0.6], material: gateMat(), castShadow: row !== null });
     builder.add(row ? bar.runtime({ id: `gate-bar-${i}` }) : bar);
     // phase 4: on the GU47 looks the relay gate throws its frame across the asphalt as the car drives under it (rubric shadows)
     // RH47-17: the relay's name in SDF text under the bar (salt white, signal-red glow), only the next gate's sign shows.
@@ -994,7 +1338,7 @@ export function buildWorld(
       const text = signText(g.name);
       builder.add(text3D(text, {
         name: `gate-sign-${i}`, size: SIGN_SIZE, depth: SIGN_DEPTH, letterSpacing: SIGN_LETTER_SPACING, backend: "sdf",
-        sdfStyle: { glowRadiusEm: 0.12 }, position: signOrigin([base[0], base[1] + 12 - SIGN_DROP, base[2]], psi, signSpan(text)), rotation: [0, psi, 0],
+        sdfStyle: { glowRadiusEm: 0.12 }, position: signOrigin([base[0], base[1] + barH - SIGN_DROP, base[2]], psi, signSpan(text)), rotation: [0, psi, 0],
         material: material.emissive({ color: SALTWIND_PALETTE.saltWhite, emissive: SALTWIND_PALETTE.saltWhite, emissiveIntensity: 0.8 }),
         castShadow: false
       }).runtime({ id: `gate-sign-${i}` }));
@@ -1003,8 +1347,8 @@ export function buildWorld(
   // RH47-02 (Halo): cool gantry points ride with the next relay gate (two lights, unshadowed; moved in the runtime).
   const gantryPoints = row?.gantryPoints ?? null;
   const gantryLightAt = (gateIndex: number, k: number): Vec3 => {
-    const g = level.gates[Math.min(level.gates.length - 1, Math.max(0, gateIndex))]!;
-    return roadPoint(level, g.s, (k === 0 ? -1 : 1) * (width - 1.2), 10.5);
+    const gi = Math.min(level.gates.length - 1, Math.max(0, gateIndex));
+    return roadPoint(level, level.gates[gi]!.s, (k === 0 ? -1 : 1) * (width - 1.2), gateBarHeight(level, gi) - 1.5);
   };
   if (gantryPoints) {
     for (let k = 0; k < gantryPoints.count; k++) {
@@ -1037,34 +1381,26 @@ export function buildWorld(
   const ventHazards = level.hazards.filter((h) => h.type === "vent");
   const pylonHazards = level.hazards.filter((h) => h.type !== "vent");
   if (ventHazards.length > 0) {
-    builder.add(
-      instances.cylinder({
-        name: "hazards-vent",
-        transforms: ventHazards.map((h) => ({
-          position: roadPoint(level, h.s, h.l, 2.5),
-          rotation: [0, 0, 0] as Vec3,
-          scale: [h.r * 2, 5, h.r * 2] as Vec3
-        })),
-        material: material.pbr({
-          color: "#6fe4e6",
-          roughness: 0.42,
-          emissive: "#6fe4e6",
-          emissiveIntensity: 1.0,
-          clearcoat: 0,
-          sheen: 0
-        }),
-        castShadow: false
-      })
-    );
+    // the vent jet: one runtime column per vent, shown while it blows (ventActive), over an always-drawn grate on the road
+    const ventMat = material.pbr({ color: "#6fe4e6", roughness: 0.42, emissive: "#6fe4e6", emissiveIntensity: 1.0, clearcoat: 0, sheen: 0 });
+    ventHazards.forEach((h, i) => {
+      builder.add(primitives.cylinder({ name: `hazard-vent-${i}`, position: roadPoint(level, h.s, h.l, hazardTop(h) / 2), rotation: [0, 0, 0], size: [h.r * 2, hazardTop(h), h.r * 2], material: ventMat, castShadow: false }).runtime({ id: `hazard-vent-${i}` }));
+    });
+    builder.add(instances.cylinder({
+      name: "hazards-vent-grate",
+      transforms: ventHazards.map((h) => ({ position: roadPoint(level, h.s, h.l, 0.03), rotation: [0, 0, 0] as Vec3, scale: [h.r * 2, 0.06, h.r * 2] as Vec3 })),
+      material: material.pbr({ color: "#2f6f72", roughness: 0.6, emissive: "#6fe4e6", emissiveIntensity: 0.35, clearcoat: 0, sheen: 0 }),
+      castShadow: false
+    }));
   }
   if (pylonHazards.length > 0) {
     builder.add(
       instances.cylinder({
         name: "hazards-pylon",
         transforms: pylonHazards.map((h) => ({
-          position: roadPoint(level, h.s, h.l, 0.8),
+          position: roadPoint(level, h.s, h.l, hazardTop(h) / 2),
           rotation: [0, 0, 0] as Vec3,
-          scale: [h.r * 2, 1.6, h.r * 2] as Vec3
+          scale: [h.r * 2, hazardTop(h), h.r * 2] as Vec3
         })),
         material: material.pbr({
           color: "#e34a3a",
@@ -1084,14 +1420,16 @@ export function buildWorld(
   const defs: VehicleDef[] = [];
   const addDef = (piece: string, variant: number): number => {
     const idx = defs.length;
-    const trafficClass = trafficClassFor(piece, idx, richModelReady);
-    const car = trafficClass ? null : carFor(piece, idx);
+    const idolKey = idolOn ? idolVehicleKey(piece, idx) : null;
+    const trafficClass = idolKey ? null : trafficClassFor(piece, idx, richModelReady);
+    const car = idolKey || trafficClass ? null : carFor(piece, idx);
     const paint = row ? SALT_FADED_PAINT : CAR_COLOURS;
     defs.push({
       piece,
       variant,
       car,
       trafficClass,
+      idol: idolKey,
       colour: (car || trafficClass)
         ? paint[(idx * 7 + piece.length) % paint.length]!
         : (RIG_COLOURS[piece] ?? "#cccccc")
@@ -1197,7 +1535,45 @@ export function buildWorld(
       trafficDetailBatches.set(spec.group, { mesh: detailMesh, geo: geoMap });
     }
   }
-  const rigDefs = defs.filter((d) => !d.car && !d.trafficClass);
+  /* Idol vehicles: one `instances.model` per generated body (colour variants are separate GLBs), every slot placed each frame
+   * from the sim's collision box: the grounded GLB is scaled per axis onto the box and turned by pi (GLB +Z front, game -Z). */
+  interface IdolPool { readonly id: string; readonly ref: IdolModelRef; readonly size: readonly [number, number, number]; readonly specs: { position: Vec3; rotation: Vec3; scale: Vec3 }[]; dirty: boolean }
+  /** Spinning overlay wheels of one Idol vehicle (rolling-wheels pass): its hubs, first overlay slot, drawn angle, last s. */
+  interface IdolWheels { readonly hubs: readonly WheelHub[]; readonly start: number; angle: number; lastS: number }
+  interface IdolSlot { readonly pool: IdolPool; readonly index: number; readonly box: LocalBox; readonly wheels: IdolWheels | null }
+  const wheelSpecs2: WheelInstance[] = [];
+  const parkWheel = (): WheelInstance => ({ position: [0, -80, 0], rotation: [0, 0, 0], scale: [1e-4, 1e-4, 1e-4] });
+  const idolPools = new Map<string, IdolPool>();
+  for (const d of defs) {
+    if (!d.idol) continue;
+    let pool = idolPools.get(d.idol);
+    if (!pool) {
+      const ref = idolAsset(d.idol)!;
+      pool = { id: `vehicles-idol-${d.idol}`, ref, size: idolBounds(ref), specs: [], dirty: true };
+      idolPools.set(d.idol, pool);
+    }
+    pool.specs.push({ position: [0, -80, 0], rotation: [0, 0, 0], scale: [1e-4, 1e-4, 1e-4] });
+  }
+  const idolCursor = new Map<string, number>();
+  const idolSlotFor = (def: VehicleDef): IdolSlot | null => {
+    if (!def.idol) return null;
+    const pool = idolPools.get(def.idol)!;
+    const index = idolCursor.get(def.idol) ?? 0;
+    idolCursor.set(def.idol, index + 1);
+    const hubs = IDOL_TRAFFIC_HUBS[def.idol];
+    let wheels: IdolWheels | null = null;
+    if (hubs) {
+      wheels = { hubs, start: wheelSpecs2.length, angle: 0, lastS: Number.NaN };
+      for (let k = 0; k < hubs.length * 2; k++) wheelSpecs2.push(parkWheel());
+    }
+    return { pool, index, box: unionBox(pieceSpec(def.piece, def.variant)!.boxes), wheels };
+  };
+  for (const pool of idolPools.values()) {
+    builder.add(instances.model(pool.ref, { scaleMode: "world", name: pool.id, transforms: pool.specs as AuraTransformSpec[], castShadow: true, receiveShadow: true }).runtime({ id: pool.id }));
+    geometryTotal++;
+    idolModelNodes++;
+  }
+  const rigDefs = defs.filter((d) => !d.car && !d.trafficClass && !d.idol);
   const rigDetail = new Map<VehicleDef, ReturnType<typeof rigParts>>();
   rigDefs.forEach((d, i) => rigDetail.set(d, rigParts(d.piece, pieceSpec(d.piece, d.variant)!.boxes, d.colour, CAB_COLOURS[i % CAB_COLOURS.length]!)));
   const rigPartTotal = [...rigDetail.values()].reduce((n, r) => n + r.parts.length, 0);
@@ -1205,7 +1581,10 @@ export function buildWorld(
   const rigGeo = rigs.addGeometry("box");
   geometryTotal++;
   builder.add(rigs);
-  const rigLights = batched.mesh({ name: "vehicles-rig-lights", maxInstances: rigDefs.length * 2 + 8, maxVertices: 64, maxIndices: 64, material: groupMaterial("tail") });
+  // Night looks: the Idol bodies' baked tail lamps do not glow, so each gets a pair of emissive lamp bars on its rear face
+  const idolTailsOn = look.night > 0;
+  const idolTailCount = idolTailsOn ? defs.filter((d) => d.idol).length * 2 : 0;
+  const rigLights = batched.mesh({ name: "vehicles-rig-lights", maxInstances: rigDefs.length * 2 + idolTailCount + 8, maxVertices: 64, maxIndices: 64, material: groupMaterial("tail") });
   const rigLightGeo = rigLights.addGeometry("box");
   geometryTotal++;
   builder.add(rigLights);
@@ -1245,6 +1624,17 @@ export function buildWorld(
         if (g === "paint") handle.mesh.setColorAt(slot, def.colour);
         slots.push({ mesh: handle.mesh, slot, box, size: [0, 0, 0], at: [0, 0, 0], near: null });
       }
+    } else if (def.idol) {
+      if (idolTailsOn) {
+        const u = unionBox(pieceSpec(def.piece, def.variant)!.boxes);
+        const halfW = (u.max[0]! - u.min[0]!) / 2, h = u.max[1]!, rear = u.max[2]!;
+        const y = Math.min(0.62 * h, 1.05);
+        for (const sx of [-1, 1]) {
+          const x0 = sx * (halfW - 0.36), x1 = sx * (halfW - 0.08);
+          const tail: LocalBox = { min: [Math.min(x0, x1), y - 0.07, rear - 0.02], max: [Math.max(x0, x1), y + 0.07, rear + 0.03] };
+          slots.push({ mesh: rigLights, slot: rigLights.addInstance(rigLightGeo), box: tail, size: [0, 0, 0], at: [0, 0, 0], near: null });
+        }
+      }
     } else {
       const detail = rigDetail.get(def) ?? rigParts(def.piece, pieceSpec(def.piece, def.variant)!.boxes, def.colour, CAB_COLOURS[0]!);
       for (const part of detail.parts) {
@@ -1259,7 +1649,21 @@ export function buildWorld(
   };
   const lineupSlots = lineupDefs.map((di) => slotsFor(defs[di]!));
   const trafficSlots = trafficDefs.map((di) => slotsFor(defs[di]!));
-  const slotTotal = [...lineupSlots, ...trafficSlots].reduce((n, s) => n + s.length, 0);
+  const lineupIdol = lineupDefs.map((di) => idolSlotFor(defs[di]!));
+  const trafficIdol = trafficDefs.map((di) => idolSlotFor(defs[di]!));
+  /* Rolling-wheels pass: the Idol bodies' baked wheels are one rigid mesh, so every Idol car, pickup, bus and tractor gets
+   * instanced overlay wheels (treaded tyre + five-spoke alloy rim, unit radius and width, axle X) laid over its baked
+   * wheels at hubs measured on the GLB, plus a spoke-blur disc while the wheel turns faster than BLUR_RAD_S. */
+  const wheelBlurSpecs: WheelInstance[] = wheelSpecs2.map(parkWheel);
+  const wheelOverlayIds = wheelSpecs2.length ? ["vehicles-idol-tyres", "vehicles-idol-rims", "vehicles-idol-wheel-blur"] as const : null;
+  if (wheelOverlayIds) {
+    builder.add(instances.custom(dynRig(buildTreadTyreMesh(1, 1)) as never, { name: wheelOverlayIds[0], transforms: wheelSpecs2 as AuraTransformSpec[], material: material.pbr({ color: "#141518", roughness: 0.9, metallic: 0, clearcoat: 0, sheen: 0 }), castShadow: false } as never).runtime({ id: wheelOverlayIds[0] }));
+    builder.add(instances.custom(dynRig(buildAlloyRimMesh(1, 1, TRAFFIC_SPOKES)) as never, { name: wheelOverlayIds[1], transforms: wheelSpecs2 as AuraTransformSpec[], material: material.pbr({ color: "#c7cbd2", roughness: 0.32, metallic: 0.85, clearcoat: 0, sheen: 0 }), castShadow: false } as never).runtime({ id: wheelOverlayIds[1] }));
+    builder.add(instances.custom(dynRig(buildBlurDiscMesh(0.6, 24, 0.53)) as never, { name: wheelOverlayIds[2], transforms: wheelBlurSpecs as AuraTransformSpec[], material: material.pbr({ color: "#9a9ea6", roughness: 0.5, metallic: 0.5, clearcoat: 0, sheen: 0, opacity: 0.5 }), castShadow: false, receiveShadow: false } as never).runtime({ id: wheelOverlayIds[2] }));
+    geometryTotal += 3;
+  }
+  const idolSlotCount = [...lineupIdol, ...trafficIdol].filter(Boolean).length;
+  const slotTotal = [...lineupSlots, ...trafficSlots].reduce((n, s) => n + s.length, 0) + idolSlotCount;
 
   /* ---- Legacy fallback sports car (`?look=original` without rich player) ---- */
   const nativeSize: readonly [number, number, number] = heroSculpted
@@ -1349,20 +1753,35 @@ export function buildWorld(
     vehicleCount: defs.length,
     vehicleSlots: slotTotal,
     vehicleGeometries: geometryTotal,
-    vehicleMeshes: groupHandles.size + trafficBatches.size + trafficDetailBatches.size + 3,
-    texturedNodes: 0,
+    vehicleMeshes: groupHandles.size + trafficBatches.size + trafficDetailBatches.size + 3 + idolPools.size,
+    texturedNodes: idolModelNodes,
+    idolGrounding,
     bind(app: AuraApp): WorldRuntime {
       const camCtl = app.camera;
       // Framed mode: the director smooths the road-frame offsets and supplies shake and kicks; the rig only applies fov
       // smoothing and the cut flag (audit C7).
       const chase = cameras.chase({ lag: { fov: 4 } });
       const director = createCameraDirector({ eyeRate: 9, lookRate: 12, fovRate: 4 });
+      let camUp: Vec3 = [0, 1, 0];
       const scratch = new Float32Array(16);
       if (!camCtl) throw new Error("saltwind-highway: the app exposes no camera controller");
       const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
       const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
+      const ventNodes = level.hazards.filter((h) => h.type === "vent").map((h, i) => ({ s: h.s, node: node(`hazard-vent-${i}`), on: true }));
       const parts = playerIds.map((id) => node(id));
-      const wheels = wheelSpecs.map((w) => ({ tire: node(w.id), rim: node(w.rimId), rotor: node(w.rotorId), offset: w.offset, front: w.front }));
+      const wheels = wheelSpecs.map((w) => ({ tire: node(w.id), rim: node(w.rimId), rotor: node(w.rotorId), blur: node(w.blurId), offset: w.offset, front: w.front }));
+      /* Idol driver: posed every frame from the seated-driving pose (art/driver.ts); hidden until its skeleton is read. */
+      const driverNode = heroDriver ? node("car-driver-idol") : null;
+      const steeringRim = heroDriver ? node("car-steering-rim") : null;
+      const steeringSpoke = heroDriver ? node("car-steering-spoke") : null;
+      const seat = driverSeatFrame();
+      let driverRig: HumanoidDriver | null = null;
+      if (heroDriver && driverNode) {
+        driverNode.setVisible(false);
+        void loadIdolHumanoid(heroDriver.url).then((d) => { driverRig = d; }, (e: unknown) => console.warn("[saltwind] driver skeleton", e));
+      }
+      let driverSteer = 0;
+      let heroBlurLevel = 0;
       const beaconBeam = hasBeaconBeam ? node("headland-beacon-beam") : null;
       const sky = node("sky");
       const roadNode = node("road");
@@ -1392,6 +1811,8 @@ export function buildWorld(
       const impactRig = row ? createImpactRig() : null;
       let hitStopTimeScale = 1;
       let wheelSpin = 0;
+      let tyreAngle = 0;
+      let rimAngle = 0;
       let steerSmooth = 0;
       let jounceY = 0;
       let jounceVel = 0;
@@ -1404,7 +1825,8 @@ export function buildWorld(
       gateSigns.forEach((sign, k) => sign.setVisible(k === 0));
       let dustAmount = 0, sparkAmount = 0;
       for (const part of parts) part.setScale(scaleVec);
-      for (const w of wheels) { w.tire.setScale([1, 1, 1]); w.rim.setScale([1, 1, 1]); w.rotor.setScale([1, 1, 1]); }
+      const ws: Vec3 = [heroWheelScale, heroWheelScale, heroWheelScale];
+      for (const w of wheels) { w.tire.setScale(ws); w.rim.setScale(ws); w.rotor.setScale(ws); w.blur.setScale(ws); w.blur.setVisible(false); }
       for (const boost of boostBeams) boost.setVisible(false);
       // phase 6 LOD: the near/far split of the scatter and the traffic, rebuilt from the camera position
       const lodNodes = lodScatter.map((set) => ({ set, near: node(set.near), far: node(set.far), mask: new Uint8Array(set.items.length).fill(2) }));
@@ -1448,8 +1870,61 @@ export function buildWorld(
         if (slot.far) slot.far.mesh.setMatrixAt(slot.far.slot, scratch);
         if (slot.far || slot.nearOnly) { slot.at[0] = centre[0]; slot.at[1] = centre[1]; slot.at[2] = centre[2]; }
       };
+      const idolHandles = [...idolPools.values()].map((pool) => ({ pool, handle: node(pool.id) }));
+      const wheelHandles = wheelOverlayIds ? wheelOverlayIds.map((id) => node(id)) : null;
+      let wheelsDirty = false;
+      const wheelScratch: WheelInstance[] = [];
+      const writeIdol = (slot: IdolSlot, s: number, l: number, yaw: number, dt = 0): void => {
+        const b = slot.box;
+        const cx = (b.min[0]! + b.max[0]!) / 2, cz = (b.min[2]! + b.max[2]!) / 2;
+        const c = Math.cos(yaw), sn = Math.sin(yaw);
+        const lat = cx * c + cz * sn;
+        const lon = (cx * sn - cz * c) / slope(s);
+        const heading = roadProfile(level, s + lon).heading;
+        const base = roadPoint(level, s + lon, l + lat, 0);
+        const spec = slot.pool.specs[slot.index]!, size = slot.pool.size;
+        spec.position[0] = base[0]; spec.position[1] = base[1] + b.min[1]!; spec.position[2] = base[2];
+        spec.rotation[1] = yaw - heading + Math.PI;
+        spec.scale[0] = (b.max[0]! - b.min[0]!) / size[0]; spec.scale[1] = (b.max[1]! - b.min[1]!) / size[1]; spec.scale[2] = (b.max[2]! - b.min[2]!) / size[2];
+        slot.pool.dirty = true;
+        const wheels = slot.wheels;
+        if (!wheels) return;
+        // roll by the distance driven since the last frame (a reset or teleport of more than 5 m does not spin)
+        const ds = Number.isFinite(wheels.lastS) && Math.abs(s - wheels.lastS) < 5 ? s - wheels.lastS : 0;
+        wheels.lastS = s;
+        const r = wheels.hubs[0]!.r * (spec.scale[1] + spec.scale[2]) / 2;
+        const step = reducedMotionOn ? 0 : rollStep(ds, r);
+        // tyre and rim share this angle: the tread lugs (finer than the five spokes) set the alias cap
+        wheels.angle = (wheels.angle + drawnStep(step, TREAD_PITCH)) % (Math.PI * 200);
+        const blurred = dt > 0 && blurAmount(step / dt) > 0.5;
+        overlayWheelTransforms(wheels.hubs, spec.position, spec.rotation[1], spec.scale, wheels.angle, wheelScratch);
+        for (let k = 0; k < wheelScratch.length; k++) {
+          const src = wheelScratch[k]!, dst = wheelSpecs2[wheels.start + k]!, blur = wheelBlurSpecs[wheels.start + k]!;
+          dst.position = src.position; dst.rotation = src.rotation; dst.scale = src.scale;
+          blur.position = src.position; blur.rotation = src.rotation; blur.scale = blurred ? src.scale : [1e-4, 1e-4, 1e-4];
+        }
+        wheelsDirty = true;
+      };
+      const commitIdol = (): void => {
+        for (const { pool, handle } of idolHandles) {
+          if (!pool.dirty) continue;
+          pool.dirty = false;
+          handle.setInstances(pool.specs);
+        }
+        if (wheelHandles && wheelsDirty) {
+          wheelsDirty = false;
+          wheelHandles[0]!.setInstances(wheelSpecs2 as AuraTransformSpec[]);
+          wheelHandles[1]!.setInstances(wheelSpecs2 as AuraTransformSpec[]);
+          wheelHandles[2]!.setInstances(wheelBlurSpecs as AuraTransformSpec[]);
+        }
+      };
       const placeLineup = (): void => {
-        layout.vehicles.forEach((v, vi) => { for (const slot of lineupSlots[vi]!) writeVehicle(slot, v.s, v.l, v.yaw); });
+        layout.vehicles.forEach((v, vi) => {
+          for (const slot of lineupSlots[vi]!) writeVehicle(slot, v.s, v.l, v.yaw);
+          const idolSlot = lineupIdol[vi];
+          if (idolSlot) writeIdol(idolSlot, v.s, v.l, v.yaw);
+        });
+        commitIdol();
       };
       placeLineup();
 
@@ -1531,7 +2006,9 @@ export function buildWorld(
           const prof = roadProfile(level, run.s);
           const psi = -(prof.heading + run.theta) + run.spin;
           const pitch = run.flip;
-          const carBaseP = roadPoint(level, run.s, run.l, run.h + playerHeight / 2 + (heroSculpted ? 0.01 : 0.03));
+          // the car's centre sits half its height along the banked road normal above its contact point (the original rests the
+          // car's bottom on the road and rolls it about that point); a world-up lift sank it into the suction banks
+          const carBaseP = carCentre(level, run, playerHeight / 2 + (heroSculpted ? 0.01 : 0.03));
           const carP: Vec3 = [carBaseP[0], carBaseP[1] + jounceY, carBaseP[2]];
           const rollAngle = run.roll + prof.bank;
           const body = lean ? lean.step(run, dt) : { roll: 0, pitch: 0 };
@@ -1540,20 +2017,66 @@ export function buildWorld(
           const chassisRot = composeChassisEuler(chassisPitch, psi, chassisRoll);
           for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(chassisRot[0], chassisRot[1], chassisRot[2]); }
           if (wheels.length) {
-            if (!reducedMotionOn) wheelSpin = (wheelSpin + (run.v * realDt) / ROADSTER_WHEEL_RADIUS) % (Math.PI * 200);
-            const targetSteer = Math.max(-1, Math.min(1, run.wheel));
-            steerSmooth += (targetSteer - steerSmooth) * (1 - Math.exp(-16 * realDt));
-            const frontSteerYaw = Math.max(-0.42, Math.min(0.42, -steerSmooth * 0.42));
+            // True roll = distance / radius; the drawn tyre and rim advance by the true step until it would alias, then by a
+            // fixed forward fraction of their feature pitch; the spoke-blur disc fades in above BLUR_RAD_S (art/wheels.ts)
+            const heroR = ROADSTER_WHEEL_RADIUS * heroWheelScale;
+            const step = reducedMotionOn ? 0 : rollStep(run.v * realDt, heroR);
+            wheelSpin = (wheelSpin + step) % (Math.PI * 200);
+            tyreAngle = (tyreAngle + drawnStep(step, TREAD_PITCH)) % (Math.PI * 200);
+            rimAngle = (rimAngle + drawnStep(step, HERO_RIM_PITCH)) % (Math.PI * 200);
+            const steer = steerStep(steerSmooth, run.wheel, realDt);
+            steerSmooth = steer.smooth;
+            const frontSteerYaw = steer.yaw;
+            driverSteer = frontSteerYaw;
+            const blurLevel = Math.round(blurAmount(reducedMotionOn ? 0 : run.v / heroR) * (HERO_BLUR_MATERIALS.length));
             // Wheels stay planted on the road (`carBaseP`, without chassis jounce dip) while spinning & steering cleanly via ZYX
             const wheelFrameEuler: Vec3 = [pitch, psi, rollAngle];
             for (const w of wheels) {
-              const wPose = computeWheelWorldPose(carBaseP, wheelFrameEuler, w.offset, w.front ? frontSteerYaw : 0, wheelSpin);
+              const wPose = computeWheelWorldPose(carBaseP, wheelFrameEuler, w.offset, w.front ? frontSteerYaw : 0, tyreAngle);
+              const rPose = computeWheelWorldPose(carBaseP, wheelFrameEuler, w.offset, w.front ? frontSteerYaw : 0, rimAngle);
               w.tire.setPosition(wPose.position[0], wPose.position[1], wPose.position[2]);
               w.tire.setRotation(wPose.rotation[0], wPose.rotation[1], wPose.rotation[2]);
-              w.rim.setPosition(wPose.position[0], wPose.position[1], wPose.position[2]);
-              w.rim.setRotation(wPose.rotation[0], wPose.rotation[1], wPose.rotation[2]);
+              w.rim.setPosition(rPose.position[0], rPose.position[1], rPose.position[2]);
+              w.rim.setRotation(rPose.rotation[0], rPose.rotation[1], rPose.rotation[2]);
               w.rotor.setPosition(wPose.position[0], wPose.position[1], wPose.position[2]);
               w.rotor.setRotation(wPose.knuckleRotation[0], wPose.knuckleRotation[1], wPose.knuckleRotation[2]);
+              w.blur.setPosition(wPose.position[0], wPose.position[1], wPose.position[2]);
+              w.blur.setRotation(wPose.knuckleRotation[0], wPose.knuckleRotation[1], wPose.knuckleRotation[2]);
+              if (blurLevel !== heroBlurLevel) {
+                w.blur.setVisible(blurLevel > 0);
+                if (blurLevel > 0) w.blur.setMaterial(HERO_BLUR_MATERIALS[blurLevel - 1]!);
+              }
+            }
+            heroBlurLevel = blurLevel;
+          }
+          if (heroDriver && driverNode && steeringRim && steeringSpoke) {
+            // chassis attitude (Ry(yaw) Rz(roll) Rx(pitch), as composeChassisEuler) carries the driver and the steering wheel
+            const qChassis = rigQuatMul(quaternionFromEulerZYX(0, psi, 0), rigQuatMul(quaternionFromEulerZYX(0, 0, chassisRoll), quaternionFromEulerZYX(chassisPitch, 0, 0)));
+            const place = (local: readonly [number, number, number]): Vec3 => { const o = quatRotateVec(qChassis, local); return [carP[0] + o[0], carP[1] + o[1], carP[2] + o[2]]; };
+            const turn = steeringWheelAngle(driverSteer);
+            // rim: torus axis local Z, tilted so its face looks back-up at the driver, then turned about its own axis
+            const qWheel = rigQuatMul(qChassis, rigQuatMul(quaternionFromEulerZYX(-STEERING_WHEEL_TILT, 0, 0), quaternionFromEulerZYX(0, 0, turn)));
+            const wheelAt = place(seat.wheelCentre);
+            const wheelRot = quaternionToEulerZYX(qWheel);
+            steeringRim.setPosition(wheelAt[0], wheelAt[1], wheelAt[2]).setRotation(wheelRot[0], wheelRot[1], wheelRot[2]);
+            steeringSpoke.setPosition(wheelAt[0], wheelAt[1], wheelAt[2]).setRotation(wheelRot[0], wheelRot[1], wheelRot[2]);
+            if (driverRig) {
+              const hip = driverRig.map.hipHeight;
+              // top-level node: world = vehicle pose x seat offset x Ry(pi), at the rig's sceneScale (never parented to car-body)
+              const dw = driverWorldTransform(carP, { yaw: psi, pitch: chassisPitch, roll: chassisRoll }, hip, heroDriver.scale, seat);
+              driverNode.setPosition(dw.position[0], dw.position[1], dw.position[2]).setRotation(dw.rotation[0], dw.rotation[1], dw.rotation[2]).setScale(dw.scale).setVisible(true);
+              const racingNow = run.phase === "running";
+              // GPU QA (Nov 18): the role-keyed pose input went to the node as-is (the engine keys pose bones by GLB node
+              // name), so the driver sat in its rest pose, legs hanging through the floor and hands off the wheel; the
+              // humanoid driver resolves it to bone rotations (with the hand IK) first
+              driverNode.setAnimationPose?.(driverRig.pose(driverPose({
+                steerYaw: driverSteer,
+                speed: run.v,
+                load: Math.max(-1, Math.min(1, -run.wheel * Math.min(1, run.v / 40))),
+                boosting: racingNow && (run.boosting || run.nitro > 0),
+                time,
+                idle: !racingNow
+              }, hip, heroDriver.scale, seat)) as never);
             }
           }
           if (beaconBeam) beaconBeam.setRotation(0, time * (reducedMotionOn ? 0.12 : 0.42), 0);
@@ -1639,16 +2162,20 @@ export function buildWorld(
           for (let ci = 0; ci < trafficSlots.length; ci++) {
             const car = run.traffic[ci]!;
             for (const slot of trafficSlots[ci]!) writeVehicle(slot, car.s, car.l, 0);
+            const idolSlot = trafficIdol[ci];
+            if (idolSlot) writeIdol(idolSlot, car.s, car.l, 0, realDt);
           }
+          commitIdol();
           // headlight pool on the road follows the car
           roadNode.setUniform?.("carPos", [carP[0], carP[1], carP[2]]);
           roadNode.setUniform?.("carDir", [-Math.sin(psi), -Math.cos(psi)]);
           // chase camera: the arc position follows exactly; lateral offset, height and fov are smoothed on the road frame
-          const cam = director.step(run, events, dt);
-          const back = chaseBack + (run.v / 74) * (row ? 0.7 : 1.6);
-          const eyeS = run.s - back;
-          const eye = roadPoint(level, eyeS, cam.eyeL + offCentre, cam.eyeH - eyeDrop);
-          const look2 = roadPoint(level, run.s + (row ? 9 + (run.v / 74) * 2.5 : 12 + (run.v / 74) * 5), cam.lookL, cam.lookH + lookLift);
+          for (const v of ventNodes) { const on = ventActive(run.time, v.s); if (on !== v.on) { v.on = on; v.node.setVisible(on); } }
+          const cam = director.step(cameraRun(level, run), events, dt);
+          const { eye, look: look2, eyeS, up: roadUp } = chaseWant(level, run, cam, row !== null, { offCentre, eyeDrop, lookLift, chaseBack }, hudSafeFor(aspect, cam.fovKick), run.traffic);
+          // the frame rolls with the banked road like the original (camera up eases to the road normal, rate 7/s)
+          if (cam.cut) camUp = [roadUp[0], roadUp[1], roadUp[2]];
+          else camUp = easeUp(camUp, roadUp, realDt);
           void time;
           // shake offset along the road's lateral axis at the eye (the same axis `roadPoint` uses) and world up
           const dx = roadProfile(level, eyeS).dx, inv = 1 / Math.sqrt(1 + dx * dx);
@@ -1664,13 +2191,14 @@ export function buildWorld(
             const at = shot.orbit ? orbitEye(carP, shot.orbit) : roadPoint(level, shot.eye!.s, shot.eye!.l, shot.eye!.h);
             sky.setPosition(at[0], at[1], at[2]);
             lodStep(at); lodVehicles(at);
+            camUp = [0, 1, 0];
             camCtl.setPose({ position: at, target, up: [0, 1, 0], fov: shot.fov ?? 58 }, { cut: true });
             return;
           }
-          const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? 70 : 58) + cam.fovKick + rigFov + (shot?.fovPush ?? 0), cut: cam.cut || (shot?.cut ?? false), shakeOffset: shake }, dt);
+          const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? PORTRAIT_FOV : 58) + cam.fovKick + rigFov + (shot?.fovPush ?? 0), cut: cam.cut || (shot?.cut ?? false), shakeOffset: shake }, dt);
           sky.setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
           lodStep(pose.eye); lodVehicles(pose.eye);
-          camCtl.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: pose.cut });
+          camCtl.setPose({ position: pose.eye, target: pose.look, up: camUp, fov: pose.fov }, { cut: pose.cut });
         }
       };
     }

@@ -78,14 +78,22 @@ import {
 } from "./scene";
 import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, TRAFFIC_SPECS, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
 import { BOOT_SKY, SKY_LOOKS, nextSky, skyFromParam } from "./look";
-import { PASSENGER_RIG_IDS, computeUrbanCommuterPose } from "./art/proceduralModels";
+import { computeUrbanCommuterPose } from "./art/proceduralModels";
+import { COMMUTER_CLIPS, COMMUTER_SCENE_SCALE, PLAYER_BODY, RIVAL_BODY, TREE_BASE_Y, commuterHailOverlay, idolBodyTopY, idolWheelLayout, parkedInstanceTransform, streetTreeInstanceTransform, trafficBody } from "./art/idolModels";
+import { MAX_WHEEL_STEER, WHEELS_NODE, WHEEL_CAPACITY, shownWheelDistance, vehicleWheels } from "./wheels";
+import { SIDEWALK_Y, WALKERS, walkerNodeId, walkerPose } from "./walkers";
+
+/** Wheel layout of each road user in `S.users` order (traffic slots, then rivals). */
+/** Rival tag anchor height: the rival's procedural box height (the Idol body is fitted to it) + its wheel lift + 0.45 m. */
+const RIVAL_TAG_ANCHOR_Y = RIVAL_BODY.map((key) => idolBodyTopY(key) + 0.45);
+const USER_WHEEL_LAYOUTS = [...TRAFFIC_SPECS.map((t, i) => idolWheelLayout(trafficBody(i, t.asset))), ...RIVALS.map((_, k) => idolWheelLayout(RIVAL_BODY[k]!))];
 import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { createGridVfxQueue, headlightMotesSpec, installGridVfx, manholeLayout, motesAnchor, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
 import { bezelState } from "./bezel";
 import { HULL_TAIL_MOUNT, SIGNAL_COLORS, SIGNAL_FADE_S, carBodyEulerZYX, conformalRearLampTransforms, createPitchSpring, roofSensorCrownPose, signalFadeColor } from "./carMotion";
 import { INTRO_SHOT_S, introEnabled, introShots, resultsDof } from "./intro";
-import { CATENARY, CURB_BOLLARD_OFFSETS, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, TREE_CROWN_LOBES, districtAt, parkedLayout, signAssignments, signNodeId } from "./dressing";
+import { CATENARY, CURB_BOLLARD_OFFSETS, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, districtAt, parkedLayout, signAssignments, signNodeId } from "./dressing";
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
 import { FOV_KICK_HALFLIFE_S, FOV_KICK_MAX_DEG, ROLL_HALFLIFE_S, cameraFeel, nearTrafficClearance } from "./cameraFeel";
 import { createTailTrails, TAIL_TRAIL_ID } from "./tailTrails";
@@ -207,20 +215,9 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     beaconBeam: req("taxi-beacon-beam"),
     beaconCore: req("taxi-beacon-core"),
     passenger: req(PASSENGER_NODE),
-    passengerJoints: {
-      pelvis: req(PASSENGER_RIG_IDS.pelvis),
-      torso: req(PASSENGER_RIG_IDS.torso),
-      head: req(PASSENGER_RIG_IDS.head),
-      bag: req(PASSENGER_RIG_IDS.bag),
-      armL: req(PASSENGER_RIG_IDS.armL),
-      armR: req(PASSENGER_RIG_IDS.armR),
-      forearmR: req(PASSENGER_RIG_IDS.forearmR),
-      legL: req(PASSENGER_RIG_IDS.legL),
-      shinL: req(PASSENGER_RIG_IDS.shinL),
-      legR: req(PASSENGER_RIG_IDS.legR),
-      shinR: req(PASSENGER_RIG_IDS.shinR)
-    },
-    users: [...Array.from({ length: TRAFFIC_COUNT }, (_, i) => req(`traffic-${i}`)), ...RIVALS.map((_, k) => req(`rival-car-${k}`))]
+    users: [...Array.from({ length: TRAFFIC_COUNT }, (_, i) => req(`traffic-${i}`)), ...RIVALS.map((_, k) => req(`rival-car-${k}`))],
+    wheels: req(WHEELS_NODE),
+    walkers: WALKERS.map((_, k) => req(walkerNodeId(k)))
   };
   return nodes;
 }
@@ -266,6 +263,13 @@ async function bootGridDispatch(): Promise<void> {
   bootProgress(38);
   installSafetyNet({ safety: { selfHeal: false, panel: "query" }, app: auraApp });
   let N = bindNodes(auraApp, weather);
+  /** Idol road wheels: distance rolled by the player and by each road user (presentation clock only). */
+  let playerWheelDistance = 0;
+  const userWheelDistance: number[] = [];
+  /** Clip each sidewalk walker is playing (cleared on remount so it is re-sent). */
+  const walkerClips: (string | null)[] = WALKERS.map(() => null);
+  /** Clip the Idol commuter is playing (reset when it hides or the scene remounts, so the clip is re-sent). */
+  let passengerClip: string | null = null;
   // GD-05/GD-09: the sensor pass (marine deck aloft + LiDAR scan pulse); registered once, it survives sky remounts.
   const sensor = installSensorPass(auraApp, SKY_LOOKS[weather]);
   /** Low post tier (phones, E-G post-only tier): the scan ring runs at half strength. Read once the renderer is up. */
@@ -318,7 +322,8 @@ async function bootGridDispatch(): Promise<void> {
     { footprints: roadUserFootprints() }
   );
   const storage = (() => { try { return window.localStorage; } catch { return null; } })();
-  const autoplay = params.get("autoplay") === "1" || params.get("demo") === "1";
+  const autoplay = ["autoplay", "autopilot", "demo"].some((k) => params.get(k) === "1");
+  let autoplayResults = 0;
   const sim = createSim(contacts, { level: autoplay ? "L5" : "MAN", career: loadCareer(storage) });
   sim.onCareer = (c) => saveCareer(storage, c);
   const S = sim.state;
@@ -558,6 +563,8 @@ async function bootGridDispatch(): Promise<void> {
     auraApp.setScene(buildGridDispatchScene(next, { motionOk: motionOk() }));
     applySkyOutput();
     N = bindNodes(auraApp, next);
+    passengerClip = null;
+    walkerClips.fill(null);
     appliedCar = null;
     lastSignalPhase = -1;
     signalShown = "";
@@ -802,6 +809,9 @@ async function bootGridDispatch(): Promise<void> {
     }
     // Sensor pass: the deck follows the eye height (roof and bumper cameras), the ring leaves the car (presentation clock).
     presentClock += frameSeconds;
+    // Autoplay (owner standard, Nov 18): hold the shift results ~3.5 s, then start the next shift hands-free, forever
+    autoplayResults = autoplay && S.phase === "results" && isAutonomous(S.level) ? autoplayResults + frameSeconds : 0;
+    if (autoplayResults > 3.5) { autoplayResults = 0; retry(); }
     const skyLook = SKY_LOOKS[weather];
     sensor.update({
       look: skyLook,
@@ -851,7 +861,7 @@ async function bootGridDispatch(): Promise<void> {
     N.manholes.setInstances(manholes.map(([x, z]) => pos(rx(x), ry(0.012), rz(z))));
     // GD-19: parked cars on the cross streets and the street-name blade hung beneath the curbside signal mast arm.
     const interZs = Array.from({ length: INTERSECTION_COUNT }, (_, i) => interBaseZ - i * INTERSECTION_STRIDE_Z);
-    N.parked.forEach((h, k) => h.setInstances(parkedLayout(k, interZs).map((c) => ({ position: [rx(c.x), ry(0), rz(c.z)], rotation: [0, c.yaw, 0] }) as AuraTransformSpec)));
+    N.parked.forEach((h, k) => h.setInstances(parkedLayout(k, interZs).map((c) => parkedInstanceTransform(k, [rx(c.x), ry(0), rz(c.z)], c.yaw))));
     const signs = signAssignments(interZs);
     N.signPlates.setInstances(signs.map(([, z]) => pos(rx(SIGN.x), ry(SIGN.y), rz(z + SIGN.dz) - 0.03)));
     N.signBrackets.setInstances(signs.map(([, z]) => pos(rx(SIGN.x), ry(SIGN.y + 0.34), rz(z + SIGN.dz) - 0.05)));
@@ -882,20 +892,20 @@ async function bootGridDispatch(): Promise<void> {
     // GD-19: trolley catenary: wires along the avenue (like the road strips) and a span at every lamp pair.
     N.wires.setInstances(CATENARY.wiresX.map((x) => pos(rx(x), ry(CATENARY.wireY), -160 + camOff.z)));
     N.spans.setInstances(lz.map((z) => pos(rx(0), ry(CATENARY.spanY), z)));
-    N.trunks.setInstances(lz.flatMap((z) => [pos(rx(12.2), ry(1.65), z - 14), pos(rx(-12.2), ry(1.65), z - 19)]));
-    N.crowns.setInstances(
-      lz.flatMap((z, idx) =>
-        [
-          [12.2, z - 14, 1],
-          [-12.2, z - 19, -1]
-        ].flatMap(([tx, tz, side]) =>
-          TREE_CROWN_LOBES.map(([dx, dy, dz, sx, sy, sz], lobe) => ({
-            position: [rx(tx! + dx * side!), ry(dy + ((idx + lobe) % 2) * 0.08), tz! + dz],
-            scale: [sx, sy, sz]
-          }) as AuraTransformSpec)
-        )
-      )
-    );
+    N.trunks.setInstances(lz.flatMap((z, idx) => [streetTreeInstanceTransform([rx(12.2), ry(TREE_BASE_Y), z - 14], idx * 2), streetTreeInstanceTransform([rx(-12.2), ry(TREE_BASE_Y), z - 19], idx * 2 + 1)]));
+    // Idol wow pass: the Idol tree carries its own canopy; the procedural crown pool is kept mounted but never shown.
+    N.crowns.setVisible(false);
+
+    // Idol sidewalk walkers: deterministic strolls recycled around the car (presentation clock; clip re-sent on change)
+    WALKERS.forEach((w, k) => {
+      const p = walkerPose(w, presentClock, pose.pz);
+      const h = N.walkers[k]!;
+      h.setPosition(rx(p.x), ry(SIDEWALK_Y), rz(p.z)).setRotation(0, p.yaw, 0).setVisible(true);
+      if (walkerClips[k] !== p.clip) {
+        walkerClips[k] = p.clip;
+        h.setAnimation({ clip: p.clip, loop: true, speed: motionOk() ? 1 : 0 });
+      }
+    });
 
     // Beacon, passenger and route ribbon
     const r = S.ride;
@@ -923,22 +933,19 @@ async function bootGridDispatch(): Promise<void> {
       N.passenger
         .setPosition(rx(worldX), ry(groundY), bz)
         .setRotation(0, PASSENGER_YAW + rigPose.yawOffset, 0)
-        .setScale([s, s, s])
+        .setScale([s * COMMUTER_SCENE_SCALE, s * COMMUTER_SCENE_SCALE, s * COMMUTER_SCENE_SCALE])
         .setVisible(true);
-      const j = N.passengerJoints;
-      j.pelvis.setPosition(rigPose.pelvisPos[0], rigPose.pelvisPos[1], rigPose.pelvisPos[2]).setRotation(rigPose.pelvisRot[0], rigPose.pelvisRot[1], rigPose.pelvisRot[2]);
-      j.torso.setRotation(rigPose.torsoRot[0], rigPose.torsoRot[1], rigPose.torsoRot[2]);
-      j.head.setRotation(rigPose.headRot[0], rigPose.headRot[1], rigPose.headRot[2]);
-      j.bag.setRotation(rigPose.bagRot[0], rigPose.bagRot[1], rigPose.bagRot[2]);
-      j.armL.setRotation(rigPose.armLRot[0], rigPose.armLRot[1], rigPose.armLRot[2]);
-      j.armR.setRotation(rigPose.armRRot[0], rigPose.armRRot[1], rigPose.armRRot[2]);
-      j.forearmR.setRotation(rigPose.forearmRRot[0], rigPose.forearmRRot[1], rigPose.forearmRRot[2]);
-      j.legL.setRotation(rigPose.legLRot[0], rigPose.legLRot[1], rigPose.legLRot[2]);
-      j.shinL.setRotation(rigPose.shinLRot[0], rigPose.shinLRot[1], rigPose.shinLRot[2]);
-      j.legR.setRotation(rigPose.legRRot[0], rigPose.legRRot[1], rigPose.legRRot[2]);
-      j.shinR.setRotation(rigPose.shinRRot[0], rigPose.shinRRot[1], rigPose.shinRRot[2]);
+      // Idol rigged commuter: idle clip with the hail wave layered on the right arm; walk clip while boarding/alighting.
+      const clip = mode === "hail" ? COMMUTER_CLIPS.idle : COMMUTER_CLIPS.walk;
+      if (clip !== passengerClip) {
+        passengerClip = clip;
+        N.passenger.setAnimation({ clip, loop: true, speed: motionOk() ? 1 : 0 });
+        if (clip === COMMUTER_CLIPS.walk) N.passenger.setAnimationPose(undefined);
+      }
+      if (mode === "hail") N.passenger.setAnimationPose(commuterHailOverlay(presentClock, motionOk()));
     } else {
       N.passenger.setScale(HIDDEN_SCALE).setVisible(false);
+      passengerClip = null;
     }
     const dzBeacon = pose.pz - r.beaconZ;
     const targetX = r.state === "ride" || r.state === "offer" ? (dzBeacon < 58 ? KERB_STOP_X : S.player.holdLane) : S.player.holdLane;
@@ -955,6 +962,7 @@ async function bootGridDispatch(): Promise<void> {
     );
 
     // Traffic and rivals (with near-camera lens clearance on chase views so adjacent cars never slice the foreground)
+    const wheelInstances: AuraTransformSpec[] = [];
     S.users.forEach((u, i) => {
       const vz = rz(pose.uz[i] ?? u.z);
       const baseX = rx(u.laneX);
@@ -962,6 +970,12 @@ async function bootGridDispatch(): Promise<void> {
       const clear = camMode < 2 ? nearTrafficClearance([baseX, baseY, vz], SCENE_CAM_POS) : { x: baseX, visible: true };
       const visible = vz < 18 && vz > -220 && clear.visible;
       N.users[i]!.setPosition(clear.x, baseY, vz).setRotation(0, (u.direction === 1 ? 0 : Math.PI) + qaYawAdd, 0).setScale(visible ? [1, 1, 1] : HIDDEN_SCALE).setVisible(visible);
+      // Idol wow pass: road wheels roll with the distance each road user covers (presentation only)
+      userWheelDistance[i] = shownWheelDistance(userWheelDistance[i] ?? 0, u.speed, frameSeconds, USER_WHEEL_LAYOUTS[i]!.radius);
+      if (visible) {
+        const layout = USER_WHEEL_LAYOUTS[i]!;
+        wheelInstances.push(...vehicleWheels(layout, { x: clear.x, y: baseY, z: vz, pitch: 0, yaw: (u.direction === 1 ? 0 : Math.PI) + qaYawAdd, roll: 0 }, userWheelDistance[i]!, 0));
+      }
     });
 
     // GD-03 / WP-08: conformal 3D rear LED brake/tail lightbars + 10 Hz spinning roof LiDAR crown + dynamic headlights.
@@ -970,6 +984,11 @@ async function bootGridDispatch(): Promise<void> {
     const carY = ry(0);
     carView = { x: carX, y: carY, z: carZ, width: size.width, height: size.height, length: size.length };
     const bodyPose = { x: carX, y: carY, z: carZ, pitch: pitched, yaw: bodyYaw, roll: pose.roll };
+    // Player road wheels: roll by distance driven, the front axle steers with the steering input; then the whole pool.
+    const playerWheels = idolWheelLayout(PLAYER_BODY[S.car]);
+    playerWheelDistance = shownWheelDistance(playerWheelDistance, S.player.speed, frameSeconds, playerWheels.radius);
+    wheelInstances.push(...vehicleWheels(playerWheels, bodyPose, playerWheelDistance, -S.player.steer * MAX_WHEEL_STEER));
+    N.wheels.setInstances(wheelInstances.slice(0, WHEEL_CAPACITY));
     N.tailLamps.setInstances(conformalRearLampTransforms(bodyPose, size, S.car)).setVisible(camMode < 2);
     const crown = camMode < 2 ? roofSensorCrownPose(bodyPose, size, S.car, presentClock, motionOk()) : null;
     if (crown) {
@@ -1039,7 +1058,8 @@ async function bootGridDispatch(): Promise<void> {
     rivalUsers.forEach((u, k) => {
       const tag = tagEls[k]!;
       const vz = rz(pose.uz[TRAFFIC_COUNT + k] ?? u.z);
-      const proj = projectViewPointToScreen([rx(u.laneX), ry(RIVALS[k]!.isCableCar ? 3.9 : 2.3), vz], vw, vh, presentedFov);
+      // anchor just above the rival's roof (Idol body height incl. its wheel lift), so the tag never sits on the body
+      const proj = projectViewPointToScreen([rx(u.laneX), ry(RIVAL_TAG_ANCHOR_Y[k]!), vz], vw, vh, presentedFov);
       if (!proj.visible || S.phase !== "driving" || introPlaying || (mobileCompact && !nearest.has(k))) {
         if (tag.shown) { tag.el.style.display = "none"; tag.shown = false; }
         return;
@@ -1052,16 +1072,23 @@ async function bootGridDispatch(): Promise<void> {
       const x = clamp(proj.x, w / 2 + 6, vw - w / 2 - 6);
       let y = clamp(proj.y, h + 6, vh - 6);
       let leader = 0;
-      for (let pass = 0; pass < 3; pass++) {
-        const hit = [...avoidRects, ...placed].find((q) => x + w / 2 > q.l - 4 && x - w / 2 < q.r + 4 && y > q.t - 4 && y - h < q.b + 4);
+      // Declutter by stacking UPWARD (away from the road) so a tag never covers the vehicles below it; if the stack
+      // reaches the top of the screen, slide sideways instead.
+      let xs = x;
+      for (let pass = 0; pass < 6; pass++) {
+        const hit = [...avoidRects, ...placed].find((q) => xs + w / 2 > q.l - 4 && xs - w / 2 < q.r + 4 && y > q.t - 4 && y - h < q.b + 4);
         if (!hit) break;
-        const ny = Math.min(hit.b + 8 + h, vh - 6);
-        if (ny === y) break;
-        leader += Math.abs(ny - y);
-        y = ny;
+        const up = hit.t - 8;
+        if (up - h >= 6) {
+          leader += Math.abs(y - up);
+          y = up;
+        } else {
+          xs = clamp(hit.r + 8 + w / 2 <= vw - 6 ? hit.r + 8 + w / 2 : hit.l - 8 - w / 2, w / 2 + 6, vw - w / 2 - 6);
+        }
       }
-      placed.push({ l: x - w / 2, r: x + w / 2, t: y - h, b: y });
-      tag.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -100%)`;
+      const tx = xs;
+      placed.push({ l: tx - w / 2, r: tx + w / 2, t: y - h, b: y });
+      tag.el.style.transform = `translate3d(${tx.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -100%)`;
       if (leader > 2) {
         tag.el.dataset.leader = y > proj.y ? "up" : "down";
         tag.el.style.setProperty("--leader-h", `${Math.min(leader, 160).toFixed(0)}px`);

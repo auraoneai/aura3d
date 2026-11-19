@@ -1,0 +1,363 @@
+{
+  "game": "pips-big-leap",
+  "outDir": "apps/showcase-pips-big-leap/assets/idol",
+  "style": "Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy",
+  "items": [
+    {
+      "key": "pipHero",
+      "subject": "A cute small woodland sprout sprite mascot with chibi proportions: a big round golden-amber head with chubby rosy cheeks, large glossy dark oval eyes with white catchlights and a tiny button nose and a small smile, wearing a glossy chestnut-brown textured acorn cap like a helmet with a short woody stem and one bright green sprout leaf curling out of its top, small cupped golden ears under the cap brim; a small pear-shaped golden-amber body with a skirt of bright green leaf petals around the waist; slender golden arms with small rounded four-fingered hands; slender short legs with rounded golden teardrop feet; a small curled green leaf tail at the back",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 1.25
+      },
+      "tex": 2048,
+      "seed": 11
+    },
+    {
+      "key": "pipBrambleback",
+      "subject": "A big hulking storybook beetle king boss monster standing upright on two short stout legs: a huge rounded glossy deep emerald-teal beetle shell covering its back and shoulders with patches of green moss and rows of crimson thorn spikes along the shell ridge, a broad dark brown segmented chitin belly with one glowing amber gem in the chest, two thick heavy arms ending in ivory claws, a broad head with two curved ivory tusks, small fierce amber eyes, and a small spiky golden crown on top of the head",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run",
+        "jump"
+      ],
+      "size": {
+        "height": 2.25
+      },
+      "tex": 1024,
+      "seed": 13
+    },
+    {
+      "key": "pipSunseed",
+      "subject": "A single plump ribbed golden sun seed, teardrop shaped with shallow vertical ribs and a tiny green sprout leaf at its top, glowing warm gold",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.62
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipGoldenAcorn",
+      "subject": "A single whole shiny golden acorn, a smooth plump rounded golden nut that is complete and rounded on every side, with a textured scaly bronze cupule cap and a short stem on top",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.62
+      },
+      "tex": 512,
+      "seed": 21
+    },
+    {
+      "key": "pipHeartBerry",
+      "subject": "A single glossy crimson red berry shaped like a plump rounded heart, the same deep red felt colour all the way around including the back, with two small green leaves and a short brown stem on top",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.52
+      },
+      "tex": 512,
+      "seed": 21
+    },
+    {
+      "key": "pipCheckpointStand",
+      "subject": "A storybook checkpoint post seen from the front: one carved wooden upright post standing on a small round flat grey stone base, with a short horizontal wooden crossbar arm at the top of the post sticking out to the right side only, like a small gallows for hanging a flag, the arm is empty with nothing hanging from it",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 2.0
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipOakTree",
+      "subject": "A storybook round oak tree with a short thick gnarled brown trunk and a big round puffy canopy of bright green leaf clusters",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 4.99
+      },
+      "tex": 512,
+      "seed": 7,
+      "maxVerts": 8000
+    },
+    {
+      "key": "pipConifer",
+      "subject": "A storybook fir tree, a short brown trunk and layered tiers of dark green pine boughs forming a plump cone",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 3.88
+      },
+      "tex": 512,
+      "seed": 7,
+      "maxVerts": 8000
+    },
+    {
+      "key": "pipToadstool",
+      "subject": "A single cute toadstool mushroom with a thick cream stem and a big domed glossy red cap covered in white spots",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 1.34
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipFlower",
+      "subject": "A small clump of woodland flowers: three daisy-like flowers with white and yellow petals on green stems with a few leaves",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.76
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipBoulder",
+      "subject": "A single rounded grey boulder with patches of bright green moss on top",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 1.43
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipStonePillar",
+      "subject": "A single tall round carved grey stone column with a square plinth base and a carved capital, patches of green moss and ivy",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 2.98
+      },
+      "tex": 512,
+      "seed": 7,
+      "image": "artifacts/idol/pips-big-leap/pipStonePillar/ref-fetched.png",
+      "maxVerts": 8000
+    },
+    {
+      "key": "pipStoneArch",
+      "subject": "A freestanding rounded stone archway seen from the front, two short stone pillars joined by a curved arch of stone blocks, covered with green moss and small flowers, the opening empty",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 4.09
+      },
+      "tex": 512,
+      "seed": 7,
+      "maxVerts": 8000
+    },
+    {
+      "key": "pipWatchtower",
+      "subject": "A storybook wooden watchtower: four timber legs with cross bracing, a small lookout hut on top with a pointed red shingle roof and a small cloth pennant on a pole",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 5.56
+      },
+      "tex": 512,
+      "seed": 7,
+      "maxVerts": 8000
+    },
+    {
+      "key": "pipCrate",
+      "subject": "A single small wooden crate made of planks with darker corner battens and iron nails",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.88
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipBarrel",
+      "subject": "A single small wooden barrel with dark iron hoops, standing upright",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.98
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipLantern",
+      "subject": "A storybook garden lantern post: a curved wooden post with a hooked arm at the top from which hangs a small brass lantern with warm glowing glass panes",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 2.41
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipCrystal",
+      "subject": "A cluster of five pale lavender and clear quartz crystal points growing from a small grey rock base",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 1.5
+      },
+      "tex": 512,
+      "seed": 7,
+      "image": "artifacts/idol/pips-big-leap/pipCrystal/ref-fetched.png"
+    },
+    {
+      "key": "pipEmberVent",
+      "subject": "A low round volcanic basalt vent mound made of dark stones with glowing orange ember cracks and a hollow glowing crater on top",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 1.64
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipCloud",
+      "subject": "A single fluffy white puffy cumulus cloud made of round soft lumps with a flat underside, plain white wool all around, no face, no eyes, no mouth, no cheeks, no decoration",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 2.09
+      },
+      "tex": 512,
+      "seed": 23
+    },
+    {
+      "key": "pipStarRelic",
+      "subject": "A single chunky five-pointed golden star ornament with a glowing warm amber centre, standing upright",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 0.58
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipSpringBase",
+      "subject": "A short squat round wooden drum pedestal with a copper band around it and a flat top, like the base of a bounce pad",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 1.08
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipSunGate",
+      "subject": "A wide storybook portal gateway seen straight from the front: two short stocky carved mossy grey stone pillars standing far apart on square stone plinths, joined by a wide flat semicircular arch of stone blocks on top with a golden sun-ray ornament at the keystone and a little green ivy, the arch opening is very wide and tall, about twice as wide as both pillars together, completely empty so you can see straight through it",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "width": 4.46
+      },
+      "tex": 1024,
+      "seed": 7,
+      "maxVerts": 8000
+    },
+    {
+      "key": "pipWindmillTower",
+      "subject": "A storybook windmill tower WITHOUT sails seen from the front: a round tapering stone and timber tower with a small wooden door and windows, a pointed golden thatched roof, and one short round wooden axle hub sticking out of the front just below the roof where the sails would attach; no sails, no blades, no arms",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 4.7
+      },
+      "tex": 512,
+      "maxVerts": 8000,
+      "seed": 7
+    },
+    {
+      "key": "pipWindmillSails",
+      "subject": "A single windmill sail cross seen straight from the front, lying flat: four long wooden lattice sail arms with cream cloth panels arranged in an X, joined at one round wooden hub in the centre, nothing else",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 3.8
+      },
+      "tex": 512,
+      "seed": 7
+    },
+    {
+      "key": "pipHawkBody",
+      "subject": "The body of a brown hawk bird WITHOUT any wings, the wings are completely removed, only the head with a hooked yellow beak, the streamlined brown feathered body and a fanned tail, seen from the side, flying pose with no wings",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "length": 0.8
+      },
+      "tex": 512,
+      "seed": 7,
+      "yawDeg": 90
+    },
+    {
+      "key": "pipHawkWing",
+      "subject": "A single detached brown hawk wing lying flat and fully spread, seen from directly above, long primary feathers at the tip, rounded shoulder end, one wing only, no body",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "width": 0.6
+      },
+      "tex": 512,
+      "seed": 7,
+      "yawDeg": 41
+    },
+    {
+      "key": "pipHedgehogRigged",
+      "subject": "A friendly round hedgehog villager standing on four short legs, a soft cream-coloured face and belly with a pointed snout, a shiny black button nose, small dark eyes, small rounded ears, a back covered in many soft brown felted spines, and a small knitted green scarf around its neck",
+      "kind": "creature",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "size": {
+        "length": 1.15
+      },
+      "tex": 1024,
+      "seed": 7,
+      "yawDeg": -45
+    },
+    {
+      "key": "pipBeetleRigged",
+      "subject": "A charismatic glossy iridescent emerald-teal and sapphire forest rhinoceros beetle with one proud curved bronze-tipped horn on its head, a domed shell with a central seam, six short chunky segmented legs clearly separated, low to the ground",
+      "kind": "creature",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "size": {
+        "length": 1.25
+      },
+      "tex": 1024,
+      "seed": 7,
+      "yawDeg": 90
+    }
+  ]
+}

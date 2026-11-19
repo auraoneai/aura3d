@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeBirdSquidBody",
+  "generatedAt": "2026-11-19T01:04:08.119Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f155-18d4-7bb1-b526-c32301ccc4aa",
+      "prompt": "A round purple cartoon bird toy figure standing on two small orange feet, plump body with a pale lavender belly patch, short orange beak, big round white eyes with mint-green irises and determined eyebrows, a crest of three curled mint-green feathers on the head shaped like little curling tentacles, short dark purple tail feathers, smooth rounded sides with NO wings at all, no arms, nothing on the sides of the body. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f155-9a8d-7a52-b03c-55b8ab77d794",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 848992,
+        "num_faces": 1697980,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A round purple cartoon bird toy figure standing on two small orange feet, plump body with a pale lavender belly patch, short orange beak, big round white eyes with mint-green irises and determined eyebrows, a crest of three curled mint-green feathers on the head shaped like little curling tentacles, short dark purple tail feathers, smooth rounded sides with NO wings at all, no arms, nothing on the sides of the body. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "hero",
+  "admitRole": "hero",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.34,
+    "size": [
+      0.981,
+      1.34,
+      0.869
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeBirdSquidBody.glb",
+  "sizeBytes": 1144392,
+  "preview": "artifacts/idol/slingshot-siege/siegeBirdSquidBody/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90",
+    "bytesBefore": 1361988,
+    "bytesAfter": 1144392
+  }
+}

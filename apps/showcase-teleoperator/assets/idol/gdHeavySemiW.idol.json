@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "teleoperator",
+  "key": "gdHeavySemiW",
+  "generatedAt": "2026-11-19T00:25:53.744Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f132-166d-72c0-8611-743f97ed98c3",
+      "prompt": "A futuristic autonomous heavy semi-truck tractor unit without trailer, aerodynamic bullet-nose cab with a sloped windshield, brushed stainless steel body panels, black roof sensor array, slim LED light bar, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted: the front and the two rear axle positions show only empty dark wheel wells under the fenders. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f133-287c-76b2-8d43-1939cc8f2317",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 9,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 777232,
+        "num_faces": 1554464,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A futuristic autonomous heavy semi-truck tractor unit without trailer, aerodynamic bullet-nose cab with a sloped windshield, brushed stainless steel body panels, black roof sensor array, slim LED light bar, clean body panels of a fictional unbranded design, shown WITHOUT ANY WHEELS OR TYRES fitted: the front and the two rear axle positions show only empty dark wheel wells under the fenders. Photoreal studio product render of a clean, freshly washed, undamaged vehicle, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "admitRole": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 5.622,
+    "size": [
+      1.659,
+      2.452,
+      5.63
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-teleoperator/assets/idol/gdHeavySemiW.glb",
+  "sizeBytes": 1877892,
+  "preview": "artifacts/idol/teleoperator/gdHeavySemiW/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": 0,
+    "tex": null,
+    "maxVerts": null,
+    "baked": true,
+    "reason": "Idol rebuilt the three-quarter reference diagonally; yaw re-fitted to the minimum-area footprint"
+  }
+}

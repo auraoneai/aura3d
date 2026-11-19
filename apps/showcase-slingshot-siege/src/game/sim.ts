@@ -23,6 +23,10 @@ import { physics } from "@aura3d/engine";
 import { AMMO, type AmmoId } from "./ammo";
 import { MATERIALS, type SiegeMaterial } from "./materials";
 import type { LevelSpec, PieceSpec } from "./levels";
+import type { DecorCollider } from "./decorLayout";
+import { GROUND_BOXES, onLand } from "./ground";
+
+export { GROUND_BOXES, groundTopAt, onLand, type GroundBox } from "./ground";
 
 export type Vec3 = readonly [number, number, number];
 export type SimWorld = ReturnType<typeof physics.world>;
@@ -40,6 +44,8 @@ export type SimEvent =
   | { readonly kind: "ability"; readonly ammo: AmmoId; readonly at: Vec3 }
   | { readonly kind: "windmill-smashed"; readonly at: Vec3; readonly points: number }
   | { readonly kind: "shot-settled"; readonly settledMs: number }
+  /** A shot, block or gull went into the sea past the shoreline and sank (the route splashes the water there). */
+  | { readonly kind: "sea-splash"; readonly at: Vec3; readonly what: "projectile" | "piece" | "gull" }
   | { readonly kind: "slowmo"; readonly at: Vec3 };
 
 // ----------------------------------------------------------------- records --
@@ -78,6 +84,12 @@ export interface ProjectileRec {
   splashOnContact: boolean;
   /** Marks the egg-bomb payload (radial-pop on contact) vs the shell. */
   isBomb: boolean;
+  /** Sim time of the first contact with anything (-1 = still in clean flight). A downed bird stops flapping. */
+  impactAt: number;
+  /** In contact with something this step (rolling or resting on the ground, a block or decor). */
+  touching: boolean;
+  /** Seconds this spent bird has been slower than `SPENT_REST_SPEED`. */
+  restT: number;
 }
 
 export interface DebrisRec {
@@ -112,6 +124,12 @@ export interface WindmillRec {
 export interface SimOptions {
   readonly level: LevelSpec;
   readonly seed?: number;
+  /**
+   * Static colliders for the stage's solid-looking decor (pines, cliffs, gatehouse, windmill, bastion and mast,
+   * crates, kegs: `DECOR_COLLIDERS` in ./decorLayout.ts), rebuilt with every level. Static bodies never move, so the
+   * decor can not be knocked about; shots, blocks and debris stop on it instead of passing through. Omitted = none.
+   */
+  readonly decor?: readonly DecorCollider[];
 }
 
 const GRAVITY_DEFAULT: Vec3 = [0, -9.81, 0];
@@ -123,6 +141,26 @@ const PUFF_SLOTS = 14;
 const SETTLE_SPEED_SQ = 0.09;
 const SETTLE_FRAMES = 46;
 const SHOT_MAX_SECONDS = 6.5;
+/** Fixed steps the world is warm-started for at load before the first frame (see `settleAtSpawn`). */
+const SPAWN_SETTLE_STEPS = 30;
+/** The sea surface (stage.ts `SEA_LEVEL`; tests pin the two together). */
+export const SEA_Y = -0.26;
+/**
+ * Squared linear speed of a body. `SimBody.speedSquared()` adds the angular speed too, so a rolling ball (spin = v / r)
+ * read about 12x its real speed and never counted as slow.
+ */
+export function linearSpeed2(body: { readonly velocity: readonly number[] }): number {
+  const v = body.velocity;
+  return v[0]! * v[0]! + v[1]! * v[1]! + v[2]! * v[2]!;
+}
+
+/** Rolling resistance (1/s) on a bird in contact with something: a ball rolling on a box never slows down by itself. */
+const ROLL_DRAG = 3.2;
+/** A spent bird slower than this (m/s) for `SPENT_REST_S` is done and poofs away. */
+const SPENT_REST_SPEED = 0.6;
+const SPENT_REST_S = 0.35;
+/** A bird is retired at the latest this long after its first impact. */
+const SPENT_MAX_S = 3.2;
 const IDENT: readonly [number, number, number, number] = [0, 0, 0, 1];
 const HIDDEN: Vec3 = [0, -120, 0];
 
@@ -135,6 +173,13 @@ export interface VisualUpdate {
 
 function midpoint(a: Vec3, b: Vec3): Vec3 {
   return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+}
+
+/** World half extents of a piece at spawn (yaw about +Y included). */
+export function pieceExtents(spec: PieceSpec): Vec3 {
+  const c = Math.abs(Math.cos(spec.yaw ?? 0));
+  const sn = Math.abs(Math.sin(spec.yaw ?? 0));
+  return [c * spec.hx + sn * spec.hz, spec.hy, sn * spec.hx + c * spec.hz];
 }
 
 function yawToQuat(yaw: number): readonly [number, number, number, number] {
@@ -160,7 +205,9 @@ export class SiegeSim {
   private bodyToWindmill = new Map<number, number>();
   private bodyToProjectile = new Map<number, number>();
   private allGameBodies: SimBody[] = [];
-  private groundId = -1;
+  private groundIds = new Set<number>();
+  private decor: readonly DecorCollider[] = [];
+  private decorIds = new Set<number>();
   private time = 0;
   private settleFrames = 0;
   private shotInFlight = false;
@@ -170,6 +217,7 @@ export class SiegeSim {
   private gullScore = 0;
   private slowmoFired = false;
   private retired = 0;
+  private spawnDriftM = 0;
   /** Ambient time-scale (Moon Roost slow-mo chapter). */
   timeScaleAmbient = 1;
   /** Last-gull slow-mo finish; off for reduced-motion players. */
@@ -184,6 +232,7 @@ export class SiegeSim {
   constructor(options: SimOptions) {
     this.seed = (options.seed ?? 0x9e3779b9) >>> 0;
     this.rngState = this.seed;
+    this.decor = options.decor ?? [];
     this.loadLevel(options.level);
   }
 
@@ -228,8 +277,28 @@ export class SiegeSim {
     this.retired = 0;
     this.timeScaleAmbient = level.timeScale ?? 1;
 
-    // Static stage: ground slab + four boundary walls + the launch knoll.
-    this.groundId = this.staticBox("__ground", [60, 0.5, 44], [0, -0.5, 0], { friction: 0.95, restitution: 0.1 }).id;
+    // Static stage: the island ground (sea beyond it) + four boundary walls + the launch knoll.
+    this.groundIds.clear();
+    for (const box of GROUND_BOXES) {
+      const [x0, x1, z0, z1] = box;
+      const half: [number, number, number] = [(x1 - x0) / 2, 0.5, (z1 - z0) / 2];
+      if (box.length < 7) {
+        this.groundIds.add(this.staticBox("__ground", half, [(x0 + x1) / 2, -0.5, (z0 + z1) / 2], { friction: 0.95, restitution: 0.1 }).id);
+        continue;
+      }
+      // Sloped slab: tilt the box so its top face is the fitted plane through (cx, a, cz).
+      const a = box[4]!, b = box[5]!, c = box[6]!;
+      const len = Math.hypot(b, 1, c);
+      const n: Vec3 = [-b / len, 1 / len, -c / len];
+      const angle = Math.acos(n[1]);
+      const axisLen = Math.hypot(n[2], n[0]) || 1;
+      const sh = Math.sin(angle / 2);
+      const rotation: [number, number, number, number] = [(n[2] / axisLen) * sh, 0, (-n[0] / axisLen) * sh, Math.cos(angle / 2)];
+      half[0] /= Math.abs(n[1] / Math.hypot(n[0], n[1])) || 1;
+      half[2] /= Math.abs(n[1] / Math.hypot(n[2], n[1])) || 1;
+      const at: Vec3 = [(x0 + x1) / 2 - 0.5 * n[0], a - 0.5 * n[1], (z0 + z1) / 2 - 0.5 * n[2]];
+      this.groundIds.add(this.staticBox("__ground", half, at, { friction: 0.95, restitution: 0.1 }, rotation).id);
+    }
     this.staticBox("__wall-back", [60, 7, 0.5], [0, 6.5, -10], { friction: 0.6, restitution: 0.2 });
     this.staticBox("__wall-front", [60, 7, 0.5], [0, 6.5, 10], { friction: 0.6, restitution: 0.2 });
     this.staticBox("__wall-left", [0.5, 7, 44], [-18, 6.5, 0], { friction: 0.6, restitution: 0.2 });
@@ -260,27 +329,23 @@ export class SiegeSim {
     // like bonded masonry until a hit exceeding jointStrength snaps the bond.
     for (let i = 0; i < this.pieces.length; i += 1) {
       const a = this.pieces[i]!;
+      const ea = pieceExtents(a.spec);
       for (let j = i + 1; j < this.pieces.length; j += 1) {
         const b = this.pieces[j]!;
-        // Touching iff the AABBs overlap on every axis (small epsilon) —
+        const eb = pieceExtents(b.spec);
+        // Touching iff the world AABBs (yaw included) overlap on every axis (small epsilon) —
         // a radial test over-bonds distant blocks into one rigid blob.
-        const dx = Math.abs(a.spec.x - b.spec.x);
-        const dy = Math.abs(a.spec.y - b.spec.y);
-        const dz = Math.abs(a.spec.z - b.spec.z);
         const touch =
-          dx < a.spec.hx + b.spec.hx + 0.05 &&
-          dy < a.spec.hy + b.spec.hy + 0.05 &&
-          dz < a.spec.hz + b.spec.hz + 0.05;
+          Math.abs(a.spec.x - b.spec.x) < ea[0] + eb[0] + 0.05 &&
+          Math.abs(a.spec.y - b.spec.y) < ea[1] + eb[1] + 0.05 &&
+          Math.abs(a.spec.z - b.spec.z) < ea[2] + eb[2] + 0.05;
         if (!touch) continue;
         const strength = Math.min(a.material.jointStrength, b.material.jointStrength) * 1.4;
         try {
-          const handle = this.world.createConstraint({
-            type: "fixed",
-            bodyA: a.body,
-            bodyB: b.body,
-            localAnchorA: [(b.spec.x - a.spec.x) / 2, (b.spec.y - a.spec.y) / 2, (b.spec.z - a.spec.z) / 2],
-            localAnchorB: [(a.spec.x - b.spec.x) / 2, (a.spec.y - b.spec.y) / 2, (a.spec.z - b.spec.z) / 2]
-          });
+          // No local anchors: the joint keeps the spawn offset and relative yaw exactly. Anchors given as half the
+          // world offset were wrong for yawed pieces (they are body-local), so every bond on an angled or
+          // quarter-turned wall started violated and the solver flung the wall apart on load.
+          const handle = this.world.createConstraint({ type: "fixed", bodyA: a.body, bodyB: b.body });
           this.joints.push({ handle, a: i, b: j, strength, at: [(a.spec.x + b.spec.x) / 2, (a.spec.y + b.spec.y) / 2, (a.spec.z + b.spec.z) / 2] });
           a.joints.push(handle);
           b.joints.push(handle);
@@ -364,12 +429,60 @@ export class SiegeSim {
     for (let slot = 0; slot < PUFF_SLOTS; slot += 1) {
       this.puffs.push({ slot, t: 0, dur: 0.5, at: [0, -120, 0], scale: 1, kind: "dust", active: false });
     }
+
+    // Static decor colliders, created last so every level body keeps its id. Not game bodies: no impulses, no
+    // sleep bookkeeping, not counted in `totalBodyCount`.
+    this.decorIds.clear();
+    for (const d of this.decor) {
+      const body = this.world.createBody({
+        type: "static",
+        position: [...d.center] as [number, number, number],
+        ...(d.yaw ? { rotation: yawToQuat(d.yaw) as [number, number, number, number] } : {}),
+        friction: 0.7,
+        restitution: 0.25,
+        shape: physics.box(d.half[0], d.half[1], d.half[2]),
+        material: { friction: 0.7, restitution: 0.25 }
+      });
+      this.decorIds.add(body.id);
+    }
+
+    this.settleAtSpawn();
   }
 
-  private staticBox(name: string, half: Vec3, at: Vec3, opts: { friction: number; restitution: number }): SimBody {
+  /**
+   * Stability pass (real-GPU audit 2026-11-19: forts collapsed on their own on load). The layouts are resolved to
+   * rest without overlaps (`settleLayout` in ./levels.ts) and the masonry bonds keep their spawn offsets; on top of
+   * that the world is warm-started before the first frame: `SPAWN_SETTLE_STEPS` fixed steps with no damage, scoring
+   * or events, so the stacks have dropped through their 2 mm clearances and the solver's contact cache is warm when
+   * play starts. Bodies are left to Rapier's own sleeping: forcing `sleep()` on a bonded stack threw away the joint
+   * warm-start and the stack crept on wake (a jointed tower slid 0.26 m in 3 s).
+   */
+  private settleAtSpawn(): void {
+    const start = this.pieces.map((p) => [...p.body.position] as Vec3);
+    for (let i = 0; i < SPAWN_SETTLE_STEPS; i += 1) this.world.step(1 / 60);
+    let drift = 0;
+    this.pieces.forEach((p, i) => {
+      const a = start[i]!, b = p.body.position;
+      drift = Math.max(drift, Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]));
+    });
+    this.spawnDriftM = drift;
+    this.events = [];
+  }
+
+  /** Largest distance any piece moved while the world was warm-started at load (tests: a stable layout barely moves). */
+  spawnDrift(): number { return this.spawnDriftM; }
+
+  /** The static decor colliders this sim was built with (the autopilot's aim search treats them as solid). */
+  decorColliders(): readonly DecorCollider[] { return this.decor; }
+
+  /** Static decor collider body ids of the current level world (tests). */
+  decorBodyIds(): ReadonlySet<number> { return this.decorIds; }
+
+  private staticBox(name: string, half: Vec3, at: Vec3, opts: { friction: number; restitution: number }, rotation?: [number, number, number, number]): SimBody {
     const body = this.world.createBody({
       type: "static",
       position: [...at] as [number, number, number],
+      ...(rotation ? { rotation } : {}),
       friction: opts.friction,
       restitution: opts.restitution,
       shape: physics.box(half[0], half[1], half[2]),
@@ -402,6 +515,8 @@ export class SiegeSim {
   // ----------------------------------------------------------------- state --
 
   activeProjectile(): ProjectileRec | undefined { return this.projectiles.find((p) => !p.dead); }
+  /** A bird that has hit something is down: it tumbles with its wings folded instead of flapping. */
+  projectileDowned(p: ProjectileRec): boolean { return p.impactAt >= 0; }
   gullsAlive(): number { return this.gulls.filter((g) => g.alive).length; }
   piecesAlive(): number { return this.pieces.filter((p) => p.alive).length; }
   scoreParts(): { destruction: number; gulls: number; breaks: number; gullCount: number } {
@@ -450,7 +565,8 @@ export class SiegeSim {
       body, ammo,
       abilityUsed: false, launchedAt: this.time,
       armed: false, anchorUntil: -1, yankDone: false, dead: false,
-      splashOnContact: ammo === "ember", isBomb: false
+      splashOnContact: ammo === "ember", isBomb: false,
+      impactAt: -1, touching: false, restT: 0
     };
     const index = this.projectiles.length;
     this.projectiles.push(rec);
@@ -485,7 +601,7 @@ export class SiegeSim {
           material: { friction: 0.4, restitution: 0.05 }
         });
         bomb.setVelocity([p.body.velocity[0] * 0.3, Math.min(-7, p.body.velocity[1] - 6), p.body.velocity[2] * 0.3]);
-        const rec: ProjectileRec = { body: bomb, ammo: "pebble", abilityUsed: true, launchedAt: this.time, armed: false, anchorUntil: -1, yankDone: false, dead: false, splashOnContact: false, isBomb: true };
+        const rec: ProjectileRec = { body: bomb, ammo: "pebble", abilityUsed: true, launchedAt: this.time, armed: false, anchorUntil: -1, yankDone: false, dead: false, splashOnContact: false, isBomb: true, impactAt: -1, touching: false, restT: 0 };
         this.projectiles.push(rec);
         this.bodyToProjectile.set(bomb.id, this.projectiles.length - 1);
         this.allGameBodies.push(bomb);
@@ -516,7 +632,7 @@ export class SiegeSim {
             material: { friction: 0.5, restitution: 0.42 }
           });
           nb.setVelocity([v[0] * ca - v[1] * sa, v[0] * sa + v[1] * ca, v[2]]);
-          const rec: ProjectileRec = { body: nb, ammo: "triple", abilityUsed: true, launchedAt: this.time, armed: false, anchorUntil: -1, yankDone: false, dead: false, splashOnContact: false, isBomb: false };
+          const rec: ProjectileRec = { body: nb, ammo: "triple", abilityUsed: true, launchedAt: this.time, armed: false, anchorUntil: -1, yankDone: false, dead: false, splashOnContact: false, isBomb: false, impactAt: -1, touching: false, restT: 0 };
           this.projectiles.push(rec);
           this.bodyToProjectile.set(nb.id, this.projectiles.length - 1);
           this.allGameBodies.push(nb);
@@ -693,7 +809,15 @@ export class SiegeSim {
 
     const contacts = this.world.step(dt);
     const bodyById = this.allGameBodies;
+    for (const p of this.projectiles) p.touching = false;
     for (const ev of contacts) {
+      if (ev.type === "end" || ev.contact.sensor) continue;
+      // Any ongoing contact (ground, block, decor, wall) marks a shot as touching: rolling resistance and the
+      // spent-bird rest timer below read it.
+      const pa = this.bodyToProjectile.get(ev.contact.bodyA);
+      const pb = this.bodyToProjectile.get(ev.contact.bodyB);
+      if (pa !== undefined && pb === undefined) this.projectiles[pa]!.touching = true;
+      if (pb !== undefined && pa === undefined) this.projectiles[pb]!.touching = true;
       if (ev.type !== "begin") continue;
       const a = bodyById.find((b) => b.id === ev.contact.bodyA);
       const b = bodyById.find((b) => b.id === ev.contact.bodyB);
@@ -723,12 +847,53 @@ export class SiegeSim {
       if (p.dead) continue;
       if (p.armed && this.time > p.anchorUntil && !p.yankDone) this.yankPile(p);
       const pos = p.body.position;
+      // Spent birds come to rest (audit: a bird rolled back ~7 m at a steady 0.7 m/s with the camera on it). A ball
+      // rolling on a box has no rolling resistance in the solver, so a touching bird gets it here, and a bird that has
+      // been slow for a moment, or down for `SPENT_MAX_S`, poofs away.
+      if (p.touching && p.impactAt < 0) p.impactAt = this.time;
+      if (p.touching && linearSpeed2(p.body) < 16) {
+        const k = Math.exp(-ROLL_DRAG * dt);
+        const v = p.body.velocity;
+        const w = p.body.angularVelocity;
+        p.body.setVelocity([v[0] * k, v[1], v[2] * k]);
+        p.body.setAngularVelocity([w[0] * k, w[1] * k, w[2] * k]);
+      }
       const speed2 = p.body.speedSquared();
+      p.restT = p.impactAt >= 0 && linearSpeed2(p.body) < SPENT_REST_SPEED * SPENT_REST_SPEED ? p.restT + dt : 0;
+      const holding = p.armed && !p.yankDone;
+      const spent = !holding && p.impactAt >= 0 && (p.restT > SPENT_REST_S || this.time - p.impactAt > SPENT_MAX_S);
       const tooSlow = this.time - p.launchedAt > 1.4 && speed2 < 0.14 && (p.body.sleeping || pos[1] < 0.7);
+      const sank = pos[1] < SEA_Y && !onLand(pos[0], pos[2]);
       const oob = pos[1] < -4 || pos[0] < -20 || pos[0] > 24 || Math.abs(pos[2]) > 14;
-      if (oob || tooSlow) {
+      if (sank) this.push({ kind: "sea-splash", at: [pos[0], SEA_Y, pos[2]], what: "projectile" });
+      else if (spent || tooSlow) this.spawnPuff([...pos] as Vec3, "poof", 0.7);
+      if (oob || tooSlow || spent || sank) {
         p.dead = true;
         this.retire(p.body);
+      }
+    }
+
+    // Blocks and gulls knocked off the island sink once they drop under the water line: a block counts as broken,
+    // a gull as squashed.
+    for (const piece of this.pieces) {
+      if (!piece.alive) continue;
+      const pos = piece.body.position;
+      if (pos[1] < SEA_Y - 0.05 && !onLand(pos[0], pos[2])) {
+        const at: Vec3 = [pos[0], SEA_Y, pos[2]];
+        piece.alive = false;
+        for (const joint of piece.joints) { try { joint.setEnabled(false); } catch { /* already off */ } }
+        this.retire(piece.body);
+        this.destructionScore += piece.material.scoreValue;
+        this.push({ kind: "piece-broke", piece: piece.index, material: piece.material.id, at, points: piece.material.scoreValue });
+        this.push({ kind: "sea-splash", at, what: "piece" });
+      }
+    }
+    for (const g of this.gulls) {
+      if (!g.alive) continue;
+      const pos = g.body.position;
+      if (pos[1] < SEA_Y && !onLand(pos[0], pos[2])) {
+        this.push({ kind: "sea-splash", at: [pos[0], SEA_Y, pos[2]], what: "gull" });
+        this.squashGull(g, [pos[0], SEA_Y, pos[2]]);
       }
     }
 
@@ -737,7 +902,8 @@ export class SiegeSim {
       d.life += dt;
       const pos = d.body.position;
       const still = d.body.sleeping || d.body.speedSquared() < 0.05;
-      if (d.life > 3.4 || (d.life > 1.3 && still) || pos[1] < -3) {
+      const sank = pos[1] < SEA_Y - 0.1 && !onLand(pos[0], pos[2]);
+      if (d.life > 3.4 || (d.life > 1.3 && still) || pos[1] < -3 || sank) {
         d.active = false;
         d.body.setPosition([d.slot * 0.5 - 7, -60 - d.slot * 1.4, -24]);
         d.body.sleep();
@@ -809,7 +975,7 @@ export class SiegeSim {
       const isProjectile = this.bodyToProjectile.has(other.id);
       const crushFromAbove = normal[1] < -0.5 && other.mass > 0.7 && relativeSpeed > 1.3;
       const slam = impact > GULL_CRUSH_IMPULSE;
-      const groundSlam = other.id === this.groundId && relativeSpeed > 6.2;
+      const groundSlam = this.groundIds.has(other.id) && relativeSpeed > 6.2;
       if (isProjectile || slam || crushFromAbove || groundSlam) {
         this.squashGull(gull, [...gull.body.position] as Vec3);
       } else if (impact > 2.2) {
@@ -850,14 +1016,14 @@ export class SiegeSim {
         continue;
       }
       // Egg-bomb payload pops on contact.
-      if (proj.isBomb && (this.bodyToPiece.has(other.id) || this.bodyToGull.has(other.id) || other.id === this.groundId)) {
+      if (proj.isBomb && (this.bodyToPiece.has(other.id) || this.bodyToGull.has(other.id) || this.groundIds.has(other.id))) {
         this.flareBurst(at, 2.5, 20);
         proj.dead = true;
         this.retire(proj.body);
         continue;
       }
       // Fire-egg auto-splash on contact if never tapped.
-      if (proj.splashOnContact && !proj.abilityUsed && (this.bodyToPiece.has(other.id) || other.id === this.groundId)) {
+      if (proj.splashOnContact && !proj.abilityUsed && (this.bodyToPiece.has(other.id) || this.groundIds.has(other.id))) {
         proj.abilityUsed = true;
         this.flareBurst(at, 3.1, 26);
         proj.dead = true;

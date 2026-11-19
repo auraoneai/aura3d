@@ -21,7 +21,7 @@ describe("Saltwind Highway hero-first scene order", () => {
     const names = nodeNames(buildWorld(0, "gu47").scene);
     const car = names.indexOf("car-body");
     expect(car).toBeGreaterThanOrEqual(0);
-    const downstream = names.filter((n) => /^vehicles-(hatch|sedan|pickup|suv|bus|semi|tanker|boxtruck)$/.test(n) || ["lighthouse-model", "town-villas", "town-townhouses", "palms", "pines", "boulders"].includes(n));
+    const downstream = names.filter((n) => /^vehicles-(hatch|sedan|pickup|suv|bus|semi|tanker|boxtruck|idol-sw[A-Za-z]+)$/.test(n) || ["lighthouse-model", "town-villas", "town-townhouses", "palms", "pines", "boulders"].includes(n));
     expect(downstream.length).toBeGreaterThanOrEqual(10);
     for (const name of downstream) expect(names.indexOf(name)).toBeGreaterThan(car);
   });

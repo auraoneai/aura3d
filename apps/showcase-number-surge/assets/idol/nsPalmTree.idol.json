@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "number-surge",
+  "key": "nsPalmTree",
+  "generatedAt": "2026-11-18T21:59:48.800Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-a602-7301-b757-5b04510b0928",
+      "prompt": "A single tall slender coconut palm tree with a gently S-curved ringed grey trunk and a full crown of long arching glossy fronds, standing upright alone with no ground or pot. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f096-f4ac-71d3-86f2-bfb9e2fa002a",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 560388,
+        "num_faces": 1120760,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single tall slender coconut palm tree with a gently S-curved ringed grey trunk and a full crown of long arching glossy fronds, standing upright alone with no ground or pot. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 14.073,
+    "size": [
+      12.868,
+      14.6,
+      12.44
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-number-surge/assets/idol/nsPalmTree.glb",
+  "sizeBytes": 3648088,
+  "preview": "artifacts/idol/number-surge/nsPalmTree/views.png",
+  "usd": 0.37
+}

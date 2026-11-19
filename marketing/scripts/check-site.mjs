@@ -38,21 +38,6 @@ function routeCandidates(pathname) {
     const appPath = pathname.slice(1);
     candidates.push(resolve(repoRoot, appPath, "index.html"), resolve(repoRoot, appPath));
   }
-  // vercel.json rewrites this legacy showcase prefix onto the app route.
-  if (pathname === "/showcase/aura-clash" || pathname.startsWith("/showcase/aura-clash/")) {
-    const rest = pathname.slice("/showcase/aura-clash".length).replace(/^\/+/, "");
-    candidates.push(
-      resolve(repoRoot, "apps/aura-clash-showcase", rest, "index.html"),
-      resolve(repoRoot, "apps/aura-clash-showcase", "index.html")
-    );
-  }
-  if (pathname === "/playable" || pathname.startsWith("/playable/")) {
-    const rest = pathname.slice("/playable".length).replace(/^\/+/, "");
-    candidates.push(
-      resolve(repoRoot, "apps/aura-clash-showcase/playable", rest, "index.html"),
-      resolve(repoRoot, "apps/aura-clash-showcase/playable/index.html")
-    );
-  }
   if (pathname === "/") candidates.push(resolve(marketingDir, "index.html"));
   candidates.push(
     resolve(marketingDir, "public", pathname.slice(1)),

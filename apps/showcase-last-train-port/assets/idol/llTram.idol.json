@@ -1,0 +1,70 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "last-train-port",
+  "key": "llTram",
+  "generatedAt": "2026-11-18T23:19:17.492Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0f5-1c6b-77f0-b3c3-59f830f9afe0",
+      "prompt": "A vintage early-1900s enclosed double-ended electric streetcar (heritage tram): a long, narrow single-deck car, about four times longer than it is wide, on two dark iron four-wheel bogies with spoked steel wheels; deep cherry-red lacquered lower body panels with thin brass pinstripes, cream upper body, a row of six large rectangular saloon windows along the side separated by slim cream pillars, a folding wooden door near each end, a curved three-window driver cab at each end, one round brass headlamp centred on the front dash, a thin teal band under the eaves, a dark grey cambered roof with a long low raised clerestory, a low iron cowcatcher at the front, nothing on top of the roof (no pantograph, no pole). Photograph of a real museum-quality hand-built scale model: real enamel paint, polished brass, varnished wood, crisp clean edges, undamaged, very light weathering, warm saturated colours. All windows are fully opaque glossy black glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole tram small in the frame with generous empty margin, even soft studio lighting, no cast shadow, plain light-grey seamless background, no base, no rails, no track. No text, no logos, no lettering, no numbers, no route signs, no emblems anywhere on the tram.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0fe-1f3e-70f2-b802-486651df8fef",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 47,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1257912,
+        "num_faces": 2516084,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A vintage early-1900s enclosed double-ended electric streetcar (heritage tram): a long, narrow single-deck car, about four times longer than it is wide, on two dark iron four-wheel bogies with spoked steel wheels; deep cherry-red lacquered lower body panels with thin brass pinstripes, cream upper body, a row of six large rectangular saloon windows along the side separated by slim cream pillars, a folding wooden door near each end, a curved three-window driver cab at each end, one round brass headlamp centred on the front dash, a thin teal band under the eaves, a dark grey cambered roof with a long low raised clerestory, a low iron cowcatcher at the front, nothing on top of the roof (no pantograph, no pole). Photograph of a real museum-quality hand-built scale model: real enamel paint, polished brass, varnished wood, crisp clean edges, undamaged, very light weathering, warm saturated colours. All windows are fully opaque glossy black glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole tram small in the frame with generous empty margin, even soft studio lighting, no cast shadow, plain light-grey seamless background, no base, no rails, no track. No text, no logos, no lettering, no numbers, no route signs, no emblems anywhere on the tram.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -24,
+    "scale": 9.954,
+    "size": [
+      2.98,
+      3.723,
+      10.6
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-last-train-port/assets/idol/llTram.glb",
+  "sizeBytes": 5008200,
+  "preview": "artifacts/idol/last-train-port/llTramE/views.png",
+  "usd": 0.37,
+  "renormalized": {
+    "yawDeg": 66,
+    "tex": null,
+    "maxVerts": null,
+    "baked": true,
+    "reason": "Idol rebuilt the three-quarter reference diagonally; yaw re-fitted to the minimum-area footprint"
+  },
+  "postprocess": [
+    "renorm yaw 66 (minimum-area footprint)",
+    "examples/last-train-port/scripts/idol-windows.mjs --mode cut --region {\"y\":[1.2,2.8]}",
+    "examples/last-train-port/scripts/idol-shrink.mjs (normal/ORM PNG -> JPEG)",
+    "scripts/idol-strip-running-gear.mjs --below 0.6 --outer 1.15 --outerBelow 0.9 (baked bogies removed; procedural bogies + spinning wheels mounted in idolModels.ts)",
+    "idol-windows.mjs --mode cut --region {\"y\":[1.2,2.8]} --minArea 12 --dilate 3 (GPU QA: cleaner glass cut-outs)",
+    "idol-strip-running-gear.mjs --below 0.62 --z 4.15,6 (baked cowcatcher removed; procedural cowcatcher at rail height in idolModels.ts)"
+  ],
+  "generatedAs": "llTramE (re-roll 4 of 4; llTram, llTramB, llTramC, llTramD discarded: fat or crumpled reconstructions)"
+}

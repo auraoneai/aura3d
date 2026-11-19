@@ -12,14 +12,15 @@
  *   - Paired GLSL+WGSL `ringShockwaveSpec` + `createFlipbookAtlas("ripple")` & `createFlipbookAtlas("sparks")` VFX
  *   - Tight `CORRIDOR_BOUNDS` on all dynamic corridor batches.
  */
-import { camera, effects, environments, geometry, group, lights, material, scene, type AuraApp, type AuraMaterialSpec } from "@aura3d/engine";
+import { camera, effects, environments, geometry, group, instances, lights, material, model, primitives, scene, type AuraApp, type AuraMaterialSpec, type AuraNodeBuilder, type AuraSceneNode } from "@aura3d/engine";
+import { assets } from "./aura-assets.route";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch, CORRIDOR_BOUNDS, flatSpec, shadowSpec, toonSpec,
   type CustomSpec, type MeshData
 } from "../../../examples/shared/runner-kit/index";
 import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
-import { CONFIG, LANES, laneBit, laneX, obstacleZ, type BeatHopperSim, type ObstacleType } from "./sim";
+import { CONFIG, LANES, laneBit, laneX, obstacleZ, type BeatHopperSim, type ObstacleType, type Pose } from "./sim";
 import { LOOK, beatPulse, linear } from "./look";
 import {
   DASH_SIZE, ORB_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH,
@@ -57,6 +58,96 @@ const ORB_Y = 0.96;
 const SKY_RADIUS = 360;
 const POOL_RIPPLES = 10;
 const POOL_SPARK_CARDS = 16;
+
+/** Idol wow pass: the hero renders as the rigged Idol skater-bot (`assets.bhSkaterBot`) instead of the procedural parts. */
+const IDOL_BOT = true;
+const IDOL_BOT_ID = "bot-idol";
+/**
+ * Skater-bot height: 1.72 m (the procedural bot was 1.55 m; readability review asked for a little more presence; the
+ * arms-down Idol bot is ~0.5 m wide, well inside the 2 m lane). The raw Idol GLB is 1 m tall.
+ */
+export const IDOL_BOT_HEIGHT = 1.72;
+/**
+ * Readability on the dark violet runway: a violet emissive lift on the grey suit plus a strong cyan Fresnel rim, so
+ * the bot reads as a bright neon silhouette (material overrides on every slot of the GLB).
+ */
+export const IDOL_BOT_LOOK = {
+  color: "#ffffff", emissive: "#b45cff", emissiveIntensity: 1.1, rim: { color: "#3ef2ff", power: 1.6, intensity: 3.2 }, envMapIntensity: 1.6
+} as const;
+/**
+ * Spinning inline-skate wheels: four glowing wheels per boot, pinned to the ankle bones (bone_22 right, bone_26 left)
+ * through `animation.attach` and spun about their axle every frame. Positions are in the raw GLB frame (1 m tall,
+ * +X forward): the soles span x -0.038..0.111 at y -0.5, feet at z +-0.111 (measured from the mesh).
+ */
+export const IDOL_SKATE = {
+  radius: 0.024,
+  width: 0.022,
+  row: [-0.018, 0.018, 0.055, 0.091] as const,
+  sole: { y: -0.48 },
+  feet: [{ id: "bot-wheels-r", bone: "bone_22", z: -0.111, color: "#3ef2ff" }, { id: "bot-wheels-l", bone: "bone_26", z: 0.111, color: "#ff2e88" }] as const,
+  /** rad/s while rolling; capped so the 60 Hz frame never strobes the spin backwards. */
+  spin: 21
+} as const;
+
+/** Forward lean (rad) of the `player` group while ducking. */
+export const DUCK_PITCH = 0.36;
+/**
+ * Duck squash for the 1.72 m Idol bot. The shared `poseScale` duck (sy 0.6) was tuned for the 1.55 m procedural bot;
+ * on the taller Idol bot it left the leaning head ~1.05 m up, through the 0.97 m underside of the duck bar the sim
+ * just judged as cleared. 0.5 keeps the leaning silhouette below the bar (pinned by collision-footprints.test.ts).
+ */
+export const IDOL_DUCK_SY = 0.5;
+
+/** Presented squash/stretch of the hero: `poseScale`, with the Idol bot's lower duck. */
+export function botPoseScale(pose: Pose, vy: number): { sx: number; sy: number; sz: number } {
+  const s = poseScale(pose, vy);
+  return IDOL_BOT && pose === "duck" ? { ...s, sy: IDOL_DUCK_SY } : s;
+}
+
+/** Clip lengths (s) in `assets.bhSkaterBot` (Idol in-place loops; `assets inspect`). */
+export const IDOL_BOT_CLIPS = { idle: 2.533, run: 1.167, jump: 1.667 } as const;
+
+type SocketLike = { readonly valid: boolean; bindWorldMatrix(out?: Float32Array): Float32Array };
+type AttachApi = { socket(bone: string): SocketLike; attach(spec: { socket: string; target: string; position: readonly [number, number, number]; rotation: readonly [number, number, number]; scale: number }): () => void };
+
+/** Bone-space offset that puts a skate-wheel group (raw GLB frame orientation) at `p` (raw GLB frame) on `bind`. */
+export function skateAttachOffset(bind: ArrayLike<number>, p: readonly [number, number, number]): { position: [number, number, number]; rotation: [number, number, number] } {
+  // bind is rigid (+ uniform scale): column-major [R*s | t]; inverse = [R^T/s | -R^T t / s]
+  const s2 = bind[0]! * bind[0]! + bind[1]! * bind[1]! + bind[2]! * bind[2]!;
+  const d = [p[0] - bind[12]!, p[1] - bind[13]!, p[2] - bind[14]!];
+  const position = [0, 1, 2].map((c) => (bind[c * 4]! * d[0]! + bind[c * 4 + 1]! * d[1]! + bind[c * 4 + 2]! * d[2]!) / s2) as [number, number, number];
+  const s = Math.sqrt(s2);
+  // inverse rotation M = R^T, entry M[r][c] = R[c][r] = bind[r * 4 + c] / s; Euler with q = qx * qy * qz (M = Rx Ry Rz)
+  const M = (r: number, c: number) => bind[r * 4 + c]! / s;
+  const ry = Math.asin(Math.max(-1, Math.min(1, M(0, 2))));
+  const rx = Math.atan2(-M(1, 2), M(2, 2));
+  const rz = Math.atan2(-M(0, 1), M(0, 0));
+  return { position, rotation: [rx, ry, rz] };
+}
+
+/** Pin both wheel rows to the ankle bones once the actor's sockets resolve; true when attached. */
+function attachIdolSkates(bot: unknown): boolean {
+  const anim = (bot as { animation?: AttachApi }).animation;
+  if (!anim || typeof anim.socket !== "function" || typeof anim.attach !== "function") return false;
+  for (const foot of IDOL_SKATE.feet) if (!anim.socket(foot.bone).valid) return false;
+  for (const foot of IDOL_SKATE.feet) {
+    const row: [number, number, number] = [0, IDOL_SKATE.sole.y, foot.z];
+    const off = skateAttachOffset(anim.socket(foot.bone).bindWorldMatrix(), row);
+    anim.attach({ socket: foot.bone, target: foot.id, position: off.position, rotation: off.rotation, scale: IDOL_BOT_HEIGHT });
+  }
+  return true;
+}
+
+/** Which Idol clip the skater-bot plays for a pose (pure; the world update applies it with `setAnimation`). */
+export function idolBotAnimation(
+  pose: string,
+  playing: boolean,
+  reduced: boolean
+): { readonly clip: keyof typeof IDOL_BOT_CLIPS; readonly loop: boolean; readonly speed: number; readonly duration: number; readonly crossFade: number } {
+  if (pose === "air") return { clip: "jump", loop: false, speed: 1.2, duration: IDOL_BOT_CLIPS.jump, crossFade: 0.08 };
+  if (pose !== "duck" && playing) return { clip: "run", loop: true, speed: reduced ? 0.8 : 1.15, duration: IDOL_BOT_CLIPS.run, crossFade: 0.15 };
+  return { clip: "idle", loop: true, speed: 1, duration: IDOL_BOT_CLIPS.idle, crossFade: 0.2 };
+}
 
 export const FOG_NEAR = 148;
 export const FOG_FAR = 365;
@@ -301,7 +392,7 @@ export function buildWorld(_options: WorldOptions): World {
   });
 
   /* Synthwave stage: floor, ridges, city, pylons, palms, raised chamfered arches, islands, equalizer, volumetric beams, motes */
-  const stageGroups = new Map<string, ReturnType<typeof geometry.custom>[]>();
+  const stageGroups = new Map<string, AuraNodeBuilder<AuraSceneNode>[]>();
   const stage = addStage((id, geom, spec, mount) => {
     const g = geometry.custom(geom, { name: id, material: material.custom(spec), castShadow: false, receiveShadow: false });
     if (mount === "live") builder.add(g.runtime({ id }));
@@ -311,7 +402,15 @@ export function buildWorld(_options: WorldOptions): World {
       list.push(g);
       stageGroups.set(mount.group, list);
     }
-  }, { haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE });
+  }, {
+    haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE,
+    // Idol wow pass: an Idol coconut palm (1 m GLB, uniform scale = height) replaces the procedural cyber-palm batches.
+    palms: (groupId, transforms) => {
+      const list = stageGroups.get(groupId) ?? [];
+      list.push(instances.model(assets.bhPalm, { name: `${groupId}-idol-palms`, scaleMode: "world", transforms, castShadow: false, receiveShadow: false }));
+      stageGroups.set(groupId, list);
+    }
+  });
   for (const [id, children] of stageGroups) builder.add(group(id, children).runtime({ id }));
 
   /* GPU-instanced procedural concert stage dressing (`grp-dress-stacks`, `grp-dress-decks`), equalizer banks (`grp-eq`) + hero z=0 judgement gate */
@@ -438,7 +537,36 @@ export function buildWorld(_options: WorldOptions): World {
   const partNode = (id: string, m: ColoredMeshData, mat: AuraMaterialSpec, cast = true) =>
     geometry.custom(dynamicFrom(m, CORRIDOR_BOUNDS), { name: id, material: mat, castShadow: cast, receiveShadow: false });
 
-  builder.add(group("player", []).runtime({ id: "player" }));
+  // Idol wow pass: the hero is a rigged Idol skater-bot GLB inside the `player` group, so the group's existing
+  // position / pitch / bank / squash-stretch drive it and its idle / run / jump clips follow the pose state. The GLB
+  // ships in Idol's raw frame (1 m tall, centred on y = 0, facing +X; an un-normalised skeleton keeps the skin check
+  // honest), so the node scales it to the procedural bot's 1.55 m, grounds it and turns +X to the -Z run direction.
+  // The procedural articulated parts are no longer mounted; the two skate pivots stay as empty runtime groups so the
+  // skate ribbon trails keep their anchors.
+  builder.add(group("player", [
+    model(assets.bhSkaterBot, {
+      name: IDOL_BOT_ID, scaleMode: "world", castShadow: true, receiveShadow: false,
+      // No `target`: the override applies to every material slot (a "*" target only matches a slot literally named "*",
+      // which left the bot unlit grey on the GPU).
+      materialOverrides: [{ emissive: IDOL_BOT_LOOK.emissive, emissiveIntensity: IDOL_BOT_LOOK.emissiveIntensity, rim: IDOL_BOT_LOOK.rim, envMapIntensity: IDOL_BOT_LOOK.envMapIntensity }]
+    })
+      .position(0, IDOL_BOT_HEIGHT / 2, 0)
+      .rotation(0, Math.PI / 2, 0)
+      .scale(IDOL_BOT_HEIGHT)
+      .runtime({ id: IDOL_BOT_ID })
+  ]).runtime({ id: "player" }));
+  builder.add(group("bot-skate-l", []).position(-0.150, 0, 0).runtime({ id: "bot-skate-l" }));
+  for (const foot of IDOL_SKATE.feet) {
+    const glow = material.glowingEmissive({ name: `${foot.id}-glow`, color: foot.color, emissive: foot.color, emissiveIntensity: 2.4, roughness: 0.2 });
+    builder.add(group(foot.id, IDOL_SKATE.row.map((x, i) =>
+      group(`${foot.id}-${i}`, [
+        primitives.cylinder({ name: `${foot.id}-${i}-tyre`, material: glow, size: [IDOL_SKATE.radius * 2, IDOL_SKATE.width, IDOL_SKATE.radius * 2], castShadow: false })
+          .rotation(Math.PI / 2, 0, 0)
+      ]).position(x, 0, 0).runtime({ id: `${foot.id}-${i}` })
+    )).position(0, -50, 0).runtime({ id: foot.id }));
+  }
+  builder.add(group("bot-skate-r", []).position(0.150, 0, 0).runtime({ id: "bot-skate-r" }));
+  if (!IDOL_BOT) {
   builder.add(partNode("bot-torso", bot.torso, botSatinMat).position(0, 0.94, 0).runtime({ id: "bot-torso" }));
   builder.add(
     group("bot-torso-glow", [
@@ -478,19 +606,20 @@ export function buildWorld(_options: WorldOptions): World {
       partNode("bot-leg-stripe-r", bot.legStripeMagenta, botNeonMagentaMat, false)
     ]).position(0.135, 0.62, 0).runtime({ id: "bot-leg-r" })
   );
-  builder.add(
-    group("bot-skate-l", [
+  }
+  if (!IDOL_BOT) builder.add(
+    group("bot-skate-l-proc", [
       partNode("bot-boot-l", bot.skate, botMetalTrimMat),
       partNode("bot-blade-l-cyan", bot.skateBladeCyan, botNeonCyanMat, false),
       partNode("bot-blade-l-magenta", bot.skateBladeMagenta, botNeonMagentaMat, false)
-    ]).position(-0.150, 0, 0).runtime({ id: "bot-skate-l" })
+    ]).position(-0.150, 0, 0)
   );
-  builder.add(
-    group("bot-skate-r", [
+  if (!IDOL_BOT) builder.add(
+    group("bot-skate-r-proc", [
       partNode("bot-boot-r", bot.skate, botMetalTrimMat),
       partNode("bot-blade-r-cyan", bot.skateBladeCyan, botNeonCyanMat, false),
       partNode("bot-blade-r-magenta", bot.skateBladeMagenta, botNeonMagentaMat, false)
-    ]).position(0.150, 0, 0).runtime({ id: "bot-skate-r" })
+    ]).position(0.150, 0, 0)
   );
   builder.add(partNode("bot-boost-flare", bot.boostFlare, botBoostGlowMat, false).position(0, -50, 0).runtime({ id: "bot-boost-flare" }));
   addCustom("player-shadow", boxMesh(1.65, 0.002, 1.65), shadowSpec());
@@ -671,6 +800,9 @@ export function buildWorld(_options: WorldOptions): World {
       let lastX = 0;
       let lastPose = "run";
       let lastBigJump = false;
+      let idolClip = "";
+      let skatesAttached = false;
+      let skateSpin = 0;
       let lastJudgeAt = -10;
       let lastMilestones = 0;
       let lastOrbs = 0;
@@ -837,13 +969,13 @@ export function buildWorld(_options: WorldOptions): World {
         node("underglow").setUniform?.("emissive", [linear("#00f2ff")[0] * (0.55 + gain), linear("#00f2ff")[1] * (0.55 + gain), linear("#00f2ff")[2] * (0.55 + gain)]);
 
         /* 132 BPM Cyber-DJ Street Hover-Skater choreography (`grounded`, `duck` < 0.75 m, `air`, and `bigJump` ~2.35 m booster flare) */
-        const scale = poseScale(pose, vyNow);
+        const scale = botPoseScale(pose, vyNow);
         const stride = reduced ? 0 : Math.sin(beatPhase * Math.PI);
         const headNod = reduced ? 0 : 0.12 * pulse;
         const bankRoll = reduced ? 0 : Math.max(-0.28, Math.min(0.28, -vx * 0.042));
         const bodyPitch =
           pose === "duck"
-            ? 0.36
+            ? DUCK_PITCH
             : isBigJump
               ? Math.max(-0.24, Math.min(0.22, -vyNow * 0.026))
               : pose === "air"
@@ -862,6 +994,8 @@ export function buildWorld(_options: WorldOptions): World {
           rz: number,
           partScale: [number, number, number] = [scale.sx, scale.sy, scale.sz]
         ) => {
+          // Idol wow pass: only the skate trail anchors are still placed; the Idol bot rides the `player` group.
+          if (IDOL_BOT && id !== "bot-skate-l" && id !== "bot-skate-r") return;
           const sx = lx * scale.sx;
           const sy = ly * scale.sy;
           const sz = lz * scale.sz;
@@ -898,6 +1032,20 @@ export function buildWorld(_options: WorldOptions): World {
           .setPosition(px, y, 0)
           .setRotation(bodyPitch, 0, bankRoll)
           .setScale([scale.sx, scale.sy, scale.sz]);
+        if (IDOL_BOT) {
+          // Idol clips, played by the engine's pose mixer through `node.animation` (it crossfades on a clip switch and
+          // advances by engine dt, so main.ts steps the app by real frame time): run while grounded, a one-shot jump
+          // from take-off in the air, idle otherwise.
+          const spec = idolBotAnimation(pose, o.phase === "playing", reduced);
+          if (spec.clip !== idolClip) {
+            idolClip = spec.clip;
+            node(IDOL_BOT_ID).setAnimation(spec);
+          }
+          if (!skatesAttached) skatesAttached = attachIdolSkates(node(IDOL_BOT_ID));
+          const rolling = o.phase === "playing" && pose !== "air" && !reduced;
+          skateSpin += (rolling ? IDOL_SKATE.spin : reduced && o.phase === "playing" ? 3 : 0) * dt;
+          for (const foot of IDOL_SKATE.feet) for (let w = 0; w < IDOL_SKATE.row.length; w++) node(`${foot.id}-${w}`).setRotation(0, 0, -skateSpin);
+        }
         const torsoBob = reduced ? 0 : 0.032 * pulse;
         const pelvisY = (pose === "duck" ? 0.48 : 0.65) + torsoBob;
         const pelvisZ = pose === "duck" ? 0.030 : 0;

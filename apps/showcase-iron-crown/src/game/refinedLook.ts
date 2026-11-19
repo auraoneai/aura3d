@@ -9,8 +9,15 @@
  * background, neutral grades (no venue LUT, no orange or sepia cast) and a grounded jet. No far backdrop.
  *
  * The 4.6.2 path (`?look=original`) is unchanged; `?look=gu47` forces this look on these venues.
+ *
+ * Owner neutral-grade pass ("too much orange / sun-bright fade", fighters blending into the pillars and throne): the
+ * fighters are the lit subject. Neutral/cool keys and ring spots, strong cool back rims on both fighters (p2 had a warm
+ * rim), a lower environment fill and a stronger vignette so the set sits darker than the pair, a neutral high-threshold
+ * bloom (the look's own bloom glowed at threshold 0.7 in the venue accent, gold or orange, over the whole frame) and no
+ * light cones through the fight plane. Bounds pinned in tests/unit/iron-crown/neutral-grade.test.ts.
  */
 import type { AuraColor, AuraHdriId, AuraLookOverrides, AuraSceneNode } from "@aura3d/engine";
+import { NEUTRAL_BLOOM_TINT } from "./look";
 import type { OriginalLook } from "./originalLook";
 import type { StageId } from "./stages";
 
@@ -34,7 +41,8 @@ export interface RefinedVenueLook {
   readonly followSpot?: { readonly color: AuraColor; readonly intensity: number };
   /** Screen-space floor reflections at High and above. */
   readonly mirror?: number;
-  readonly weather?: { readonly type: "snow"; readonly particles: number; readonly streakLimit: number; readonly color: AuraColor };
+  /** `intensity`: volume alpha (0..1; the engine scales flake alpha by it), so the flakes read as weather, not noise. */
+  readonly weather?: { readonly type: "snow"; readonly particles: number; readonly streakLimit: number; readonly color: AuraColor; readonly intensity?: number };
   readonly prayerFlags?: boolean;
   /**
    * Phase 4 (4.7.2): the spawn disc under each fighter. The 4.6.2 disc is near-black, so the fighters' cast and contact
@@ -51,7 +59,7 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     hdri: "outdoor-midday",
     overrides: {
       accent: "#e8c98a",
-      exposureEv: -0.02,
+      exposureEv: -0.08,
       fogDensityScale: 0.15,
       fog: {
         color: "#c9a46a",
@@ -59,28 +67,30 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
         far: 380,
         height: { mode: "linear", near: 120, far: 380, maxOpacity: 0.16, affectsBackground: false }
       },
-      environmentIntensity: 0.32,
+      environmentIntensity: 0.28,
       environmentRotationDeg: 330,
       sun: { elevationDeg: 34, azimuthDeg: -62 },
-      key: { color: "#fff3e2", intensity: 11, shadow: { filter: "pcf", mapSize: 2048 } },
-      grade: { contrast: 1.18, saturation: 1.1, temperature: 0, tint: 0 }
+      key: { color: "#fff6ee", intensity: 7.5, shadow: { filter: "pcf", mapSize: 2048 } },
+      grade: { contrast: 1.24, saturation: 1.12, temperature: 0, tint: 0 }
     },
-    rim: { color: "#fff2dc", intensity: 7 },
-    ringKey: { color: "#ffe6c4", intensity: 3 },
-    ringFill: { color: "#dfe8ff", intensity: 2.5 },
+    rim: { color: "#e2ecff", intensity: 16 },
+    ringKey: { color: "#f7f3ee", intensity: 9 },
+    ringFill: { color: "#dbe6ff", intensity: 6 },
     spawnDisc: "#8d8274",
     contact: { intensity: 1, length: 0.45 },
     cones: false,
-    vignette: 0.2,
-    bloom: { intensity: 0.18, threshold: 1.12 }
+    vignette: 0.28,
+    bloom: { intensity: 0.12, threshold: 1.5 }
   },
   "crown-arena": {
     lookId: "arena-fight",
-    hdri: "warm_bar",
+    // owner (22:58, "still too much orange"): the warm_bar HDRI lit every surface amber; a neutral studio probe lets the
+    // stone, wood and red throne show their real colours (measured background b* on a real-GPU frame, see report)
+    hdri: "studio_small_08",
     background: "#141519",
     overrides: {
       accent: "#ffd76a",
-      exposureEv: 0.02,
+      exposureEv: 0,
       fogDensityScale: 0.15,
       fog: {
         color: "#0d0b11",
@@ -88,16 +98,19 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
         far: 300,
         height: { mode: "linear", near: 95, far: 300, maxOpacity: 0.16, affectsBackground: false }
       },
-      environmentIntensity: 0.52,
-      grade: { contrast: 1.22, saturation: 1.08, temperature: -0.02, tint: 0 }
+      environmentIntensity: 0.34,
+      key: { color: "#f3f5fa", intensity: 2.4, shadow: { filter: "pcf", mapSize: 2048 } },
+      grade: { contrast: 1.26, saturation: 1.06, temperature: -0.06, tint: 0 }
     },
-    rim: { color: "#d8ebff", intensity: 9.5 },
-    ringKey: { color: "#ffe4b8", intensity: 4 },
-    ringFill: { color: "#d8e6ff", intensity: 2.3 },
-    cones: true,
-    vignette: 0.24,
-    bloom: { intensity: 0.2, threshold: 1.18 },
-    followSpot: { color: "#ffe8c6", intensity: 26 },
+    rim: { color: "#dce9ff", intensity: 18 },
+    ringKey: { color: "#f6f1ea", intensity: 6 },
+    ringFill: { color: "#d6e4ff", intensity: 3.5 },
+    // The two key cones ended at the fighters' shoulders (z -0.15): forge haze over the pair. The warmth stays in the
+    // braziers, the gold practicals and the warm_bar fill.
+    cones: false,
+    vignette: 0.3,
+    bloom: { intensity: 0.14, threshold: 1.45 },
+    followSpot: { color: "#f6f6f4", intensity: 30 },
     mirror: 0.16,
     spawnDisc: "#28222b",
     contact: { intensity: 1, length: 0.45 }
@@ -107,7 +120,7 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     hdri: "autumn_field_puresky",
     overrides: {
       accent: "#ffb03c",
-      exposureEv: 0,
+      exposureEv: -0.06,
       fogDensityScale: 0.15,
       fog: {
         color: "#b8724a",
@@ -115,27 +128,27 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
         far: 360,
         height: { mode: "linear", near: 115, far: 360, maxOpacity: 0.16, affectsBackground: false }
       },
-      environmentIntensity: 0.62,
+      environmentIntensity: 0.46,
       environmentRotationDeg: 200,
       sun: { elevationDeg: 26, azimuthDeg: -64 },
-      key: { color: "#ffd2a0", intensity: 4.4, shadow: { filter: "pcf", mapSize: 2048 } },
-      grade: { contrast: 1.16, saturation: 1.08, temperature: 0.06, tint: 0 }
+      key: { color: "#fff1e2", intensity: 4, shadow: { filter: "pcf", mapSize: 2048 } },
+      grade: { contrast: 1.24, saturation: 1.12, temperature: 0.02, tint: 0 }
     },
-    rim: { color: "#fff0dc", intensity: 8 },
-    ringKey: { color: "#ffe2bf", intensity: 3 },
-    ringFill: { color: "#dde8ff", intensity: 2.5 },
+    rim: { color: "#e2ecff", intensity: 16 },
+    ringKey: { color: "#f7f2ec", intensity: 8 },
+    ringFill: { color: "#dbe6ff", intensity: 5 },
     spawnDisc: "#9a8a72",
     contact: { intensity: 1, length: 0.45 },
     cones: false,
-    vignette: 0.2,
-    bloom: { intensity: 0.2, threshold: 1.12 }
+    vignette: 0.28,
+    bloom: { intensity: 0.12, threshold: 1.5 }
   },
   "himalayan-monastery": {
     lookId: "alpine-snow",
     hdri: "kloppenheim_06_puresky",
     overrides: {
       accent: "#7dd7ff",
-      exposureEv: 0.02,
+      exposureEv: -0.02,
       fogDensityScale: 0.15,
       fog: {
         color: "#b9c8d8",
@@ -143,21 +156,22 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
         far: 340,
         height: { mode: "linear", near: 105, far: 340, maxOpacity: 0.16, affectsBackground: false }
       },
-      environmentIntensity: 0.6,
+      environmentIntensity: 0.46,
       environmentRotationDeg: 300,
       sun: { elevationDeg: 28, azimuthDeg: 58 },
-      key: { color: "#ffe2c4", intensity: 4.2, shadow: { filter: "pcf", mapSize: 2048 } },
-      grade: { contrast: 1.16, saturation: 1.04, temperature: -0.04, tint: 0 }
+      key: { color: "#fff3e6", intensity: 4, shadow: { filter: "pcf", mapSize: 2048 } },
+      grade: { contrast: 1.22, saturation: 1.1, temperature: -0.04, tint: 0 }
     },
-    rim: { color: "#e6f2ff", intensity: 7 },
-    ringKey: { color: "#ffe6c8", intensity: 3 },
-    ringFill: { color: "#dceaff", intensity: 2.5 },
+    rim: { color: "#e2ecff", intensity: 15 },
+    ringKey: { color: "#f7f3ee", intensity: 8 },
+    ringFill: { color: "#dbe6ff", intensity: 5 },
     spawnDisc: "#8f949a",
     contact: { intensity: 1, length: 0.45 },
     cones: false,
-    vignette: 0.2,
-    bloom: { intensity: 0.18, threshold: 1.12 },
-    weather: { type: "snow", particles: 360, streakLimit: 40, color: "#f2f6ff" },
+    vignette: 0.28,
+    bloom: { intensity: 0.12, threshold: 1.5 },
+    // Fewer, dimmer flakes: the bright 360-flake volume read as white noise over the fighters.
+    weather: { type: "snow", particles: 240, streakLimit: 30, color: "#dde4ee", intensity: 0.4 },
     prayerFlags: true
   }
 };
@@ -166,9 +180,19 @@ export function refinedLook(id: StageId): RefinedVenueLook | undefined {
   return REFINED_LOOKS[id];
 }
 
-/** The look overrides of a refined row: its HDRI (drawn as the sky outdoors), no look rim (the back rims replace it). */
+/**
+ * The look overrides of a refined row: its HDRI (drawn as the sky outdoors), no look rim (the back rims replace it), and
+ * the row's bloom on the look's own bloom node in a neutral tint (the post bridge drives bloom from the first bloom node,
+ * which is the look's: left alone it bloomed at threshold 0.7 in the venue accent).
+ */
 export function refinedLookOverrides(row: RefinedVenueLook): AuraLookOverrides {
-  return { ...row.overrides, hdri: row.hdri, background: row.background ?? "look", rim: false };
+  return {
+    ...row.overrides,
+    hdri: row.hdri,
+    background: row.background ?? "look",
+    rim: false,
+    post: { bloom: { intensity: row.bloom.intensity, threshold: row.bloom.threshold, color: NEUTRAL_BLOOM_TINT } }
+  };
 }
 
 /** The airstrip jet sat 0.15 m above the deck (judges: "the jet floats"): parked on the deck. */

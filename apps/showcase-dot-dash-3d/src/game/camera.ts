@@ -107,3 +107,71 @@ export function fitPlayRig(base: CameraPose, aspect: number, framePullBack = 1.0
   const k = fitDistanceScale(portraitBase, aspect, margin) * pull;
   return { pose: scalePose(portraitBase, k), pullBack: k };
 }
+
+// ---------------------------------------------------------------------------
+// Arcade (default) camera: near top-down, the whole maze fills the frame (owner review 2026-11-18).
+// ---------------------------------------------------------------------------
+
+/** Visible maze extent in the arcade view: the outer neon lines sit 0.2 inside the 19 x 21 tile grid. */
+export const ARCADE_HALF_X = 9.35;
+export const ARCADE_HALF_Z = 10.35;
+/** Camera tilt from straight down (degrees, camera on the +z side) and vertical field of view. */
+export const ARCADE_TILT_DEG = 6;
+export const ARCADE_FOV = 34;
+
+/** NDC margins the maze must fit inside: x (both sides), top (under the HUD bar) and bottom (above the controls hint). */
+export interface ArcadeMargins { readonly x: number; readonly top: number; readonly bottom: number; readonly shiftX: number }
+export function arcadeMargins(aspect: number): ArcadeMargins {
+  if (aspect < 0.82) return { x: 0.975, top: 0.6, bottom: 0.74, shiftX: 0 };          // portrait: fit width, below the HUD rows
+  if (aspect < 1.3) return { x: 0.9, top: 0.84, bottom: 0.86, shiftX: 0 };
+  return { x: 0.94, top: 0.86, bottom: 0.88, shiftX: -0.45 };                           // desktop: fill the height, clear the HUD
+}
+
+const ARCADE_POINTS: readonly Vec3[] = (() => {
+  const pts: Vec3[] = [];
+  for (const x of [-ARCADE_HALF_X, ARCADE_HALF_X]) for (const z of [-ARCADE_HALF_Z, ARCADE_HALF_Z]) pts.push([x, 0, z], [x, 0.45, z]);
+  return pts;
+})();
+
+function arcadePose(tx: number, tz: number, dist: number): CameraPose {
+  const t = (ARCADE_TILT_DEG * Math.PI) / 180;
+  return { position: [tx, Math.cos(t) * dist, tz + Math.sin(t) * dist], target: [tx, 0, tz], fov: ARCADE_FOV };
+}
+
+function arcadeExtent(pose: CameraPose, aspect: number): { x: number; top: number; bottom: number } {
+  let x = 0, top = -Infinity, bottom = Infinity;
+  for (const p of ARCADE_POINTS) {
+    const n = projectNdc(pose, aspect, p);
+    if (!n) return { x: Infinity, top: Infinity, bottom: -Infinity };
+    x = Math.max(x, Math.abs(n[0]));
+    top = Math.max(top, n[1]);
+    bottom = Math.min(bottom, n[1]);
+  }
+  return { x, top, bottom };
+}
+
+/**
+ * The default arcade pose for `aspect`: the closest near-top-down camera at which the whole maze fits the margins,
+ * with the maze centred between the top and bottom margins (and nudged right of the desktop HUD column).
+ */
+export function fitArcadeRig(aspect: number): CameraPose {
+  const a = aspect > 0 && Number.isFinite(aspect) ? aspect : 16 / 9;
+  const m = arcadeMargins(a);
+  let tz = 0;
+  let pose = arcadePose(m.shiftX, tz, 30);
+  for (let iter = 0; iter < 6; iter++) {
+    let lo = 4, hi = 400;
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2;
+      const e = arcadeExtent(arcadePose(m.shiftX, tz, mid), a);
+      const fits = e.x <= m.x && e.top - e.bottom <= m.top + m.bottom;
+      if (fits) hi = mid; else lo = mid;
+    }
+    pose = arcadePose(m.shiftX, tz, hi);
+    const e = arcadeExtent(pose, a);
+    const centre = (e.top + e.bottom) / 2, want = (m.top - m.bottom) / 2;
+    const worldPerNdc = hi * Math.tan((ARCADE_FOV * Math.PI) / 360);
+    tz -= (centre - want) * worldPerNdc;
+  }
+  return pose;
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdDroneOrion",
+  "generatedAt": "2026-11-18T23:16:31.846Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09b-3778-7943-a10b-7e9fb9a38509",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1192866,
+        "num_faces": 2385980,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A futuristic single-seat racing hover drone craft seen from the front-left: a sleek streamlined central fuselage pod with a pointed nose and a smooth clear amber-tinted glass bubble cockpit canopy with a helmeted pilot sitting inside, two swept twin strakes along the sides, four round ducted lift fans on short stub arms at the four corners (open circular ducts with fan blades visible inside, ducts level with the body), twin round thruster nozzles at the tail glowing hot orange, burnt-orange clearcoat paint on the body panels with brushed titanium and dark carbon composite parts, rows of copper radiator cooling fins behind the cockpit, panel lines and heat-scorched exhaust staining Viewed from a low three-quarter front angle close to eye level, the craft perfectly level and horizontal, the whole underside flat, no landing gear, no legs, no ladder",
+  "role": "vehicle",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -45,
+    "scale": 3.139,
+    "size": [
+      3.036,
+      0.818,
+      3.8
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdDroneOrion.glb",
+  "sizeBytes": 7335252,
+  "preview": "artifacts/idol/heatsink/tdDroneOrion/views.png",
+  "usd": 0.37
+}

@@ -5,9 +5,13 @@
  * crossing has been judged). It steers with whole-lane steps: into a free lane before each wall (the orb lane when
  * there is one), towards the next orb otherwise; a deliberate mistake steers into a blocked lane and does nothing.
  * Deterministic: no clocks, no randomness.
+ *
+ * Autoplay (`?autoplay=1`, aliases `?autopilot=1` / `?autostart=1`, KeyO in play) uses AUTOPLAY_PARAMS: it also
+ * Big-Jumps a hop row when there is room to land before the next row, and on game over it leaves the results up for
+ * AUTOPLAY_RESULTS_SECONDS then presses start, so the run loops forever. Every action is an ordinary Input.
  */
 import {
-  APEX_T, CONFIG, IDLE, freeLanes, idealMoment, laneBit, LANES, type BeatHopperSim, type Input, type ObstacleSlot, type OrbSlot
+  APEX_T, BIG_APEX_T, CONFIG, isHop, IDLE, freeLanes, idealMoment, laneBit, LANES, type BeatHopperSim, type Input, type ObstacleSlot, type OrbSlot
 } from "./sim";
 
 const DT = CONFIG.DT;
@@ -17,8 +21,26 @@ export const DUCK_FRAMES = Math.ceil(CONFIG.DUCK_HOLD / DT);
 export interface AutopilotParams {
   /** Obstacle ordinals (0-based, per run) the pilot deliberately skips, for death-path tests. */
   readonly mistakeObstacles: readonly number[];
+  /** Big-Jump hop rows when the next row leaves room to land first (autoplay). */
+  readonly bigJumps?: boolean;
+  /** On game over, press start after this many results steps (autoplay loop); unset = stay on the results card. */
+  readonly restartAfterSteps?: number;
 }
 export const DEFAULT_PARAMS: AutopilotParams = { mistakeObstacles: [] };
+
+/** Results card time before autoplay restarts the run. */
+export const AUTOPLAY_RESULTS_SECONDS = 3;
+export const AUTOPLAY_PARAMS: AutopilotParams = {
+  mistakeObstacles: [],
+  bigJumps: true,
+  restartAfterSteps: Math.round(AUTOPLAY_RESULTS_SECONDS / DT)
+};
+/** `?autoplay=1` is the canonical flag; `?autopilot=1` and `?autostart=1` are aliases for it. */
+export const autoplayRequested = (flags: { readonly autoplay?: boolean; readonly autopilot?: boolean; readonly autostart?: boolean }): boolean =>
+  Boolean(flags.autoplay || flags.autopilot || flags.autostart);
+
+/** A Big Jump lands ~BIG_AIR_DURATION after take-off at cross - BIG_APEX_T; the next row needs this much lead after it. */
+const BIG_LAND_AFTER_CROSS = CONFIG.BIG_AIR_DURATION - BIG_APEX_T;
 
 export function nextObstacle(sim: BeatHopperSim): ObstacleSlot | null {
   let best: ObstacleSlot | null = null;
@@ -45,6 +67,7 @@ export class Autopilot {
   private resolved = 0;
   private seen = new Set<number>();
   private holding = false;
+  private overSteps = 0;
   constructor(readonly params: AutopilotParams = DEFAULT_PARAMS) {}
 
   get obstaclesResolved(): number {
@@ -59,6 +82,17 @@ export class Autopilot {
       this.seen.clear();
       return { ...IDLE, start: true };
     }
+    if (o.phase === "gameOver" && this.params.restartAfterSteps !== undefined) {
+      if (++this.overSteps >= this.params.restartAfterSteps) {
+        this.overSteps = 0;
+        this.holding = false;
+        this.resolved = 0;
+        this.seen.clear();
+        return { ...IDLE, start: true };
+      }
+      return this.release();
+    }
+    this.overSteps = 0;
     if (o.phase !== "playing") return this.release();
     for (const s of o.obstacles) {
       if (s.resolved && !this.seen.has(s.beat)) {
@@ -107,6 +141,12 @@ export class Autopilot {
       if (!this.holding && tNext >= downAt - DT / 2) return this.press();
       return IDLE;
     }
+    // Big Jump (autoplay): one boost press at the Big-Jump ideal (its apex on the crossing), when grounded and the
+    // next row leaves room to land; otherwise fall through to the normal tap, which comes later (ideal > bigIdeal).
+    const bigIdeal = slot.crossTime - BIG_APEX_T;
+    if (this.params.bigJumps && !this.holding && o.pose === "grounded" && tNext >= bigIdeal - DT / 2 && tNext < ideal - DT && this.roomForBig(sim, slot)) {
+      return { ...IDLE, boostJump: true };
+    }
     // Hop: a tap whose release lands on the ideal moment (apex exactly on the crossing).
     if (this.holding) {
       if (tNext >= ideal - DT / 2) return this.release();
@@ -114,6 +154,20 @@ export class Autopilot {
     }
     if (o.pose === "grounded" && tNext >= ideal - DT && tNext <= ideal + APEX_T) return this.press();
     return IDLE;
+  }
+
+  /** The row after `slot` crosses late enough that a Big Jump has landed before it needs an action. */
+  private roomForBig(sim: BeatHopperSim, slot: ObstacleSlot): boolean {
+    let after: ObstacleSlot | null = null;
+    for (const s of sim.o.obstacles) {
+      if (!s.active || s.resolved || s.crossTime <= slot.crossTime + 1e-9) continue;
+      if (!after || s.crossTime < after.crossTime) after = s;
+    }
+    if (!after) return true;
+    const gap = after.crossTime - slot.crossTime;
+    // A hop row needs its tap at cross - APEX_T; a bar's duck press comes ~DUCK_HOLD + DUCK_LEAD before its crossing.
+    const lead = after.type === "wall" ? 0 : isHop(after.type) ? APEX_T + 2 * DT : CONFIG.DUCK_HOLD + CONFIG.DUCK_LEAD + 2 * DT;
+    return gap >= BIG_LAND_AFTER_CROSS + lead + 4 * DT;
   }
 
   /** Ordinal of an obstacle within the run: resolved count plus unresolved obstacles ahead of it. */

@@ -10,7 +10,7 @@
  */
 
 import { CLUBS, CLUB_ORDER, launchBall, liePenalty, stepBall, suggestClub } from "./sim";
-import type { BallState, ClubId, ClubSpec, HoleTerrain, LieKind, ShotEnv, Vec3, WindState } from "./types";
+import type { BallState, ClubId, ClubSpec, HoleTerrain, LieKind, PinObstacle, ShotEnv, TreeObstacle, Vec3, WindState } from "./types";
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
@@ -41,6 +41,9 @@ export interface ShotSituation {
   readonly ballPos: Vec3;
   /** lie the ball is struck from (`tee` on the first stroke) */
   readonly lie: LieKind;
+  /** the trees (visible for this shot) and the flagstick the live shot will meet: the plan sees them too */
+  readonly obstacles?: readonly TreeObstacle[];
+  readonly pin?: PinObstacle;
 }
 
 export interface ShotPlan {
@@ -63,6 +66,8 @@ export function simulateShot(sit: ShotSituation, club: ClubSpec, power: number, 
     wind: sit.wind,
     lie: sit.lie,
     liePenalty: liePenalty(sit.lie),
+    ...(sit.obstacles ? { obstacles: sit.obstacles } : {}),
+    ...(sit.pin ? { pin: sit.pin } : {}),
   };
   let ball: BallState = { ...launchBall({ club, power, accuracy, spin, aimYaw }, env), pos: sit.ballPos };
   for (let t = 0; t < MAX_SIM_S; t += SIM_DT) {

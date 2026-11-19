@@ -138,13 +138,17 @@ export function samplePoses(glb: GlbData, hierarchy: Hierarchy, clips: readonly 
   return { poses, clipOfPose };
 }
 
-export function triangleStretch(skin: SkinInfo, prim: SkinnedPrimitive, poses: readonly WorldPose[], flapEdge: number, flapThin: number, flapOutlier = 2.5): { worst: Float32Array; flap: Uint8Array; flapEdgeMax: number } {
+export function triangleStretch(skin: SkinInfo, prim: SkinnedPrimitive, poses: readonly WorldPose[], flapEdge: number, flapThin: number, flapOutlier = 2.5, restPose?: WorldPose): { worst: Float32Array; flap: Uint8Array; flapEdgeMax: number } {
   const nTri = Math.floor(prim.indices.length / 3);
   const worst = new Float32Array(nTri);
   const flap = new Uint8Array(nTri);
   let flapEdgeMax = 0;
   const rest = prim.pos;
-  const restLen = (a: number, b: number): number => Math.max(vdist(rest[a] as Vec3, rest[b] as Vec3), 0.004);
+  // Posed vertices inherit every transform above the skeleton (e.g. a scaled root wrapper node), but bind positions do
+  // not. Measure that global scale once (median edge ratio of the file's rest pose over the bind mesh, robust to local
+  // bind mismatch) so a uniformly scaled rig is not reported as stretched by its scale factor.
+  const globalScale = restPose ? restToBindScale(skin, prim, restPose) : 1;
+  const restLen = (a: number, b: number): number => Math.max(vdist(rest[a] as Vec3, rest[b] as Vec3) * globalScale, 0.004);
   const restEdges: number[][] = [];
   for (let t = 0; t < nTri; t += 1) {
     const a = prim.indices[t * 3] ?? 0, b = prim.indices[t * 3 + 1] ?? 0, c = prim.indices[t * 3 + 2] ?? 0;
@@ -153,7 +157,7 @@ export function triangleStretch(skin: SkinInfo, prim: SkinnedPrimitive, poses: r
   // A flap is a thin triangle much longer than the mesh's normal triangles (long thin strips that tile a sleeve or trouser leg are not).
   const sortedEdges = restEdges.map((e) => Math.max(...e)).sort((a, b) => a - b);
   const p95 = sortedEdges[Math.floor(sortedEdges.length * 0.95)] ?? 0;
-  const flapFloor = Math.max(flapEdge, flapOutlier * p95);
+  const flapFloor = Math.max(flapEdge * globalScale, flapOutlier * p95);
   for (const pose of poses) {
     const out = skinnedPositions(skin, prim, pose);
     for (let t = 0; t < nTri; t += 1) {
@@ -171,6 +175,21 @@ export function triangleStretch(skin: SkinInfo, prim: SkinnedPrimitive, poses: r
     }
   }
   return { worst, flap, flapEdgeMax };
+}
+
+function restToBindScale(skin: SkinInfo, prim: SkinnedPrimitive, restPose: WorldPose): number {
+  const posed = skinnedPositions(skin, prim, restPose);
+  const ratios: number[] = [];
+  const step = Math.max(1, Math.floor(prim.indices.length / 3 / 4000));
+  for (let t = 0; t < Math.floor(prim.indices.length / 3); t += step) {
+    const a = prim.indices[t * 3] ?? 0, b = prim.indices[t * 3 + 1] ?? 0;
+    const bind = vdist(prim.pos[a] as Vec3, prim.pos[b] as Vec3);
+    if (bind > 1e-6) ratios.push(vdist(posed[a] as Vec3, posed[b] as Vec3) / bind);
+  }
+  if (!ratios.length) return 1;
+  ratios.sort((x, y) => x - y);
+  const m = ratios[Math.floor(ratios.length / 2)] as number;
+  return Number.isFinite(m) && m > 0 ? m : 1;
 }
 
 function modelHeight(skins: readonly SkinInfo[]): number {
@@ -343,7 +362,7 @@ export function analyzeSkin(glb: GlbData, options: SkinAnalysisOptions = {}): Sk
     const primReports: SkinPrimitiveReport[] = [];
     for (const prim of skin.primitives) {
       const label = `${prim.materialName} (mesh ${prim.meshIndex} prim ${prim.primitiveIndex})`;
-      const { worst, flap, flapEdgeMax } = triangleStretch(skin, prim, evalPoses, flapEdge, thresholds.flapThin);
+      const { worst, flap, flapEdgeMax } = triangleStretch(skin, prim, evalPoses, flapEdge, thresholds.flapThin, undefined, restPose);
       let maxStretch = 0, over = 0, flaps = 0;
       for (let t = 0; t < worst.length; t += 1) {
         const w = worst[t] as number;

@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "silt-and-signal-port",
+  "key": "duneCanyonGate",
+  "generatedAt": "2026-11-18T22:44:14.767Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f094-84b4-7b73-84db-892f717c69aa",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1005548,
+        "num_faces": 2011356,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A monumental ancient canyon resonance portal seen from the front: two tall fluted tapering sandstone obelisks at the far left and right, joined by a huge round stone arch of large voussoir blocks, a brass lattice truss across the very top with a brass beacon dome and a glowing turquoise crystal in the middle, a brass parabolic dish mounted on each obelisk, weathered warm sandstone and green-patina brass, wider than tall",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -120,
+    "scale": 51.937,
+    "size": [
+      53.8,
+      44.914,
+      54.097
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/silt-and-signal-port/assets/idol/duneCanyonGate.glb",
+  "sizeBytes": 3825956,
+  "preview": "artifacts/idol/silt-and-signal-port/duneCanyonGate/views.png",
+  "usd": 0.37
+}

@@ -5,6 +5,7 @@
  */
 import { GameRng } from "../../../examples/shared/runner-kit/rng";
 import { POPUP_LIMIT, type Popup } from "../../../examples/shared/runner-kit/popups";
+import { BALL_RADIUS, GEM_RADIUS, ORB_RADIUS } from "./meshes";
 
 export const CONFIG = {
   DT: 1 / 60,
@@ -21,7 +22,10 @@ export const CONFIG = {
   DESPAWN_BEHIND: 8,
   ORBS_PER_ROW: 3,
   MIXED_CHANCE: 0.7,
-  COLLECT_RADIUS: 1.2,
+  /** Hitboxes are the rendered footprints (meshes.ts radii): the ball (scaled by ballScale) touches an orb / gem. */
+  BALL_RADIUS,
+  ORB_RADIUS,
+  GEM_RADIUS,
   POINTS_ORB: 20,
   MAX_LIVES: 3,
   GROW: 1.02,
@@ -236,10 +240,13 @@ export class PolarityOrbsSim {
     o.magnetTimer = Math.max(0, o.magnetTimer - CONFIG.DT);
     o.scoreX2Timer = Math.max(0, o.scoreX2Timer - CONFIG.DT);
 
-    // Scroll rows + orbs; resolve each row exactly once at the player plane (C16).
+    // Scroll rows + orbs; resolve each row exactly once (C16): at first visual contact between the ball and the
+    // nearest orb of the row (footprint circles touch), or as a miss once the row crosses the player plane.
+    const orbReach = contactRadius(o.ballScale, CONFIG.ORB_RADIUS);
     for (const row of this.rows) {
       row.z += step;
-      if (!row.resolved && row.z >= 0) {
+      if (row.resolved || row.z < -orbReach) continue;
+      if (row.z >= 0 || this.rowTouches(row, orbReach)) {
         row.resolved = true;
         o.rowsPassed++;
         this.resolveRow(row);
@@ -260,12 +267,15 @@ export class PolarityOrbsSim {
       this.rows.shift();
     }
 
-    // Powerups scroll and collect on plane crossing within the collect radius.
+    // Powerups scroll and collect when the gem footprint touches the ball (or on plane crossing within reach).
+    const gemReach = contactRadius(o.ballScale, CONFIG.GEM_RADIUS);
     for (const p of this.powerups) {
       if (!p.active) continue;
       const prevZ = p.z;
       p.z += step;
-      if (prevZ < 0 && p.z >= 0 && Math.abs(p.x - o.laneOffset) < CONFIG.COLLECT_RADIUS) {
+      const dx = p.x - o.laneOffset;
+      const touching = dx * dx + p.z * p.z < gemReach * gemReach;
+      if (touching || (prevZ < 0 && p.z >= 0 && Math.abs(dx) < gemReach)) {
         this.takePowerup(p);
       }
       if (p.z > CONFIG.DESPAWN_BEHIND) p.active = false;
@@ -349,20 +359,33 @@ export class PolarityOrbsSim {
     return true;
   }
 
+  /** Nearest active orb of the row to the ball, by lateral distance. */
+  private nearestOrb(row: RowState): { orb: Orb | null; dx: number } {
+    let orb: Orb | null = null;
+    let dx = Infinity;
+    for (const candidate of this.orbs) {
+      if (!candidate.active || candidate.row !== row.id) continue;
+      const d = Math.abs(candidate.x - this.o.laneOffset);
+      if (d < dx) {
+        dx = d;
+        orb = candidate;
+      }
+    }
+    return { orb, dx };
+  }
+
+  /** True when the ball's footprint circle overlaps the nearest orb of the row (they visually touch). */
+  private rowTouches(row: RowState, reach: number): boolean {
+    const { orb, dx } = this.nearestOrb(row);
+    // Orbs scroll in lockstep with their row; the row z is already advanced this tick.
+    return orb !== null && dx * dx + row.z * row.z < reach * reach;
+  }
+
   /** C16: the row resolves once, against the nearest orb to the player. */
   private resolveRow(row: RowState): void {
     const o = this.o;
-    let nearest: Orb | null = null;
-    let nearestDx = Infinity;
-    for (const orb of this.orbs) {
-      if (!orb.active || orb.row !== row.id) continue;
-      const dx = Math.abs(orb.x - o.laneOffset);
-      if (dx < nearestDx) {
-        nearestDx = dx;
-        nearest = orb;
-      }
-    }
-    if (!nearest || nearestDx >= CONFIG.COLLECT_RADIUS) return;
+    const { orb: nearest, dx: nearestDx } = this.nearestOrb(row);
+    if (!nearest || nearestDx >= contactRadius(o.ballScale, CONFIG.ORB_RADIUS)) return;
     nearest.active = false;
     const matches = nearest.polarity === o.polarity || o.rainbowTimer > 0;
     if (matches) {
@@ -472,6 +495,11 @@ export class PolarityOrbsSim {
     this.popups.push({ n: this.o.score, seq: this.popupSeq++, text, color, size, at: this.o.tick });
     if (this.popups.length > POPUP_LIMIT) this.popups.splice(0, this.popups.length - POPUP_LIMIT);
   }
+}
+
+/** Centre distance at which the ball (rendered at `BALL_RADIUS * ballScale`) touches a pickup of `radius`. */
+export function contactRadius(ballScale: number, radius: number): number {
+  return CONFIG.BALL_RADIUS * ballScale + radius;
 }
 
 function clamp(v: number, lo: number, hi: number): number {

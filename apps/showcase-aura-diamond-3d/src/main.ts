@@ -48,6 +48,7 @@ import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flag
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { assets } from "./aura-assets.route";
 import { batContact, boundedBlend } from "./contact";
+import { AUTOPLAY_MENU_SEC, AUTOPLAY_TOGGLE_KEY, AutoplayWatchdog, autoplayLeavesResults, autoplayRequested, finishAfterSec, nextAutoplayPark } from "./autoplay";
 import {
   clamp,
   lerp,
@@ -89,6 +90,13 @@ import {
   currentFixture,
   crowdPlacements,
   countAfterPitch,
+  ballFloorY,
+  clampInsideFence,
+  separateBodies,
+  COACH_SPOTS,
+  FIELDER_FENCE_MARGIN,
+  PLAYER_MIN_SEP,
+  type SepBody,
   type Vec3,
   type ParkId,
   type ParkSpec,
@@ -208,6 +216,13 @@ import {
   type BaseballPoseBonesInput
 } from "./art/proceduralModels";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
+import { warmPrograms } from "@aura3d/engine/game";
+import { warmContactPrograms } from "./contactWarm";
+import { IDOL_GRIP, headgearKind, idolHeadgearFit, idolHeadgearWorld, idolKeyForActor, idolPoseForActor, type IdolAthleteKey, type IdolHeadgearFit } from "./idol/drive";
+import type { IdolPoseResult } from "./idol/athlete";
+import { PoseSmoother, batterMotion, diamondMotionPose, headingFix, mocapClipFor } from "./idol/mocap";
+import { BallSpin } from "../art/ballSpin";
+import { idolAthletesEnabled } from "./idol/drive";
 
 /* ================================================================== *
  *  Clubs + pitcher repertoires + pitch specs                          *
@@ -348,6 +363,8 @@ interface LivePitch {
   swung: boolean;
   /** The CPU batter has made its one take-or-swing decision for this pitch. */
   cpuDecided?: boolean;
+  /** Autoplay batting for the player's club: its one take-or-swing decision, aim and timing for this pitch. */
+  auto?: { swing: boolean; pciX: number; pciY: number; timingErr: number };
 }
 
 interface BattedBall {
@@ -583,6 +600,29 @@ function boot(): void {
   const ALL_ATHLETE_IDS = [...KIT_OWNERS, "coach-1b", "coach-3b"] as const;
   let actorJoints: Record<string, Partial<Record<BaseballBoneName, AnyHandle>>> = {};
   let actorBoneMats: Record<string, Record<BaseballBoneName | "Root", number[]>> = {};
+  /**
+   * Idol pass: actors whose body is a rigged Idol GLB (`<id>-idol`). The game rig still solves every pose (bat grip, gloves,
+   * sockets); driveIdolActor retargets it onto the GLB skeleton each frame. Their joint handles are stubs so every
+   * "rig is bound" check keeps passing.
+   */
+  const idolActors = new Map<string, { body: AnyHandle; key: IdolAthleteKey; fit: IdolHeadgearFit; pose: IdolPoseResult | null }>();
+  const IDOL_JOINT_STUB = { setRotation() { return IDOL_JOINT_STUB; }, setPosition() { return IDOL_JOINT_STUB; } };
+  /**
+   * `display`: a pose to show instead of the rig's (the batter's clip body); its palms are still put on the rig's palms
+   * (`actorBoneMats`, the grip solve the bat is placed from).
+   */
+  function driveIdolActor(id: string, display?: BaseballPoseBonesInput): void {
+    const actor = idolActors.get(id);
+    const mats = actorBoneMats[id];
+    if (!actor || !mats) return;
+    try {
+      const pose = idolPoseForActor(actor.key, display ? computeBaseballBoneMatrices(display) : mats, id === "batter" ? IDOL_GRIP.bat : IDOL_GRIP.relaxed, display ? mats : undefined);
+      actor.body?.setAnimationPose?.({ bones: pose.bones, morphTargets: {} });
+      actor.pose = pose;
+    } catch (err) {
+      console.error(`[aura-diamond] idol pose failed for ${id}: ${String((err as Error)?.message ?? err).slice(0, 200)}`);
+    }
+  }
   let waverArmsL: AnyHandle[] = [];
   let waverArmsR: AnyHandle[] = [];
   let windowFlashed = false;
@@ -634,6 +674,15 @@ function boot(): void {
       for (const suffix of BASEBALL_ACCENT_PART_SUFFIXES) {
         H[`${id}-${suffix}`] = tryReq(`${id}-${suffix}`);
       }
+    }
+    idolActors.clear();
+    for (const id of ALL_ATHLETE_IDS) {
+      const body = tryReq(`${id}-idol`);
+      if (!body) continue;
+      const key = idolKeyForActor(id);
+      idolActors.set(id, { body, key, fit: idolHeadgearFit(key, headgearKind(id)), pose: null });
+      actorJoints[id] = Object.fromEntries(BASEBALL_PLAYER_BONES.map((bone) => [bone, IDOL_JOINT_STUB])) as Partial<Record<BaseballBoneName, AnyHandle>>;
+      driveIdolActor(id);
     }
     H.wavers = Array.from({ length: WAVER_COUNT }, (_, i) => tryReq(`waver-${i}`));
     waverArmsL = Array.from({ length: WAVER_COUNT }, (_, i) => tryReq(`waver-${i}-arm-l`));
@@ -723,6 +772,8 @@ function boot(): void {
    * began). Without the parameter nothing changes.
    */
   const holdPlay = params.get("hold") === "1";
+  const qaFinishAfter = finishAfterSec(window.location.search);
+  let qaPlayT = 0;
   const reducedMotion = params.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
   const reducedFlash = params.has("reducedFlash") || (window.matchMedia?.("(prefers-reduced-flash: reduce)")?.matches ?? false);
 
@@ -826,6 +877,23 @@ function boot(): void {
     } catch {
       /* fx best-effort */
     }
+  }
+  /**
+   * The first contact and the first home run used to blank the field for a frame (real GPU: the crack and home-run flash
+   * lights and the first spark flipbook compile new programs, and their draws are skipped meanwhile; src/contactWarm.ts).
+   * Fired once per scene while it is still held (boot, park switch), behind a still of the last frame: the crack at the
+   * camera's target (its particles are gone before the still lifts), the park's celebration light below the field, and
+   * both flipbooks for 0.2 s.
+   */
+  function warmContactVariants(): Promise<unknown> {
+    if (!gu47Fx || reducedFlash) return Promise.resolve();
+    return warmContactPrograms(app as any, () => {
+      const at: Vec3 = [G.cam.target[0], Math.max(0.3, G.cam.target[1]), G.cam.target[2]];
+      burstVfx(juiceFxKind("crack", G.park), at);
+      burstVfx(juiceFxKind("homer", G.park), [0, -40, 0]);
+      triggerFlipbookBurst("sparks", at, 0.2);
+      triggerFlipbookBurst("dust", at, 0.2);
+    }).catch(() => undefined);
   }
   const fx = createFxParticlePass({
     burst: (kind: string, position: any, o: any) => {
@@ -1030,7 +1098,8 @@ function boot(): void {
     diff: "pro",
     playerClub: "seals",
     cpuClub: "liners",
-    autopilot: params.get("autoplay") === "1" || params.get("demo") === "1",
+    // `?autoplay=1` (aliases `?autopilot=1`, `?demo=1`): the CPU plays the player's side hands-free (src/autoplay.ts).
+    autopilot: autoplayRequested(window.location.search),
     inning: 1,
     inningsTotal: 3,
     half: "top",
@@ -1476,6 +1545,17 @@ function boot(): void {
       if (sceneCtx.variant !== "gu47") applyShotDof(false, 0);
       if (sceneCtx.variant !== "gu47") applyShotBlur(false);
       app.setScene(buildParkScene(PARKS[id], sceneCtx));
+      // A new park brings new Idol set pieces: hold the sim (appReady false keeps actors and camera posed) until they load
+      // and their programs are warm.
+      if (appReady) {
+        appReady = false;
+        void Promise.resolve((app as any).ready?.())
+          .then(async () => {
+            warmResult = await warmPrograms(app as any, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+            await warmContactVariants();
+          })
+          .finally(() => { appReady = true; });
+      }
       applyParkLook(id);
       registerParkVfx(id);
       bindHandles();
@@ -1732,7 +1812,7 @@ function boot(): void {
     } else {
       swingEvidence.lastContact = null;
     }
-    const foul = Math.abs(spray) > FOUL_DEG;
+    let foul = Math.abs(spray) > FOUL_DEG;
     const contactPos: Vec3 = [clamp(pciX, -1.4, 1.4) * 0.28 + cross[0] * 0.4, clamp(cross[1] - timingErr * 1.4, 0.45, 1.9), 0.35 - timingErr * 1.2];
 
     const ev = mphToMs(evMph);
@@ -1741,6 +1821,8 @@ function boot(): void {
     const vel: Vec3 = [ev * Math.cos(laRad) * Math.sin(sprayRad), ev * Math.sin(laRad), -ev * Math.cos(laRad) * Math.cos(sprayRad)];
 
     const ball = simBattedLanding(contactPos, vel);
+    // A ball that clips a foul pole above the wall is fair, a home run (rules.ts stepFlight), even from a spray just past the line.
+    if (foul && ball.predicted.hrCrossed) foul = false;
     ball.evMph = evMph;
     ball.launchDeg = la;
     ball.sprayDeg = spray;
@@ -1867,8 +1949,10 @@ function boot(): void {
   function rollOutcome(ball: BattedBall): string {
     const p = park();
     const theta = ball.landTheta;
+    // Checked before the foul line: a ball off a foul pole is a home run wherever its rebound lands.
+    if (ball.predicted.hrCrossed) return "homerun";
     if (Math.abs(theta) > FOUL_DEG) return "foul";
-    if (ball.predicted.hrCrossed || (ball.landDist >= fenceRadius(p, theta) - 1 && ball.maxY > p.wallH && ball.hangT > 2.0)) return "homerun";
+    if ((ball.landDist >= fenceRadius(p, theta) - 1 && ball.maxY > p.wallH && ball.hangT > 2.0)) return "homerun";
     if (ball.predicted.wallHit || ball.landDist >= fenceRadius(p, theta) - 3) return "double";
     if (ball.landDist < 26 || ball.launchDeg < 10) return G.rng() < 0.66 ? "groundout" : "single";
     const pCatch = clamp(0.16 + (ball.hangT - 1.1) * 0.3 - Math.max(0, ball.evMph - 82) * 0.009, 0.04, 0.93);
@@ -2238,6 +2322,28 @@ function boot(): void {
   }
 
   /**
+   * Autoplay batting reads the pitch like a good human hitter, not a machine: it decides once per pitch (swings at most
+   * strikes, chases some pitches just off the plate, takes the rest), and its contact point and timing carry a human-sized
+   * error, so it strikes out, grounds out and flies out as well as it hits. (The old autopilot put the PCI exactly on the
+   * ball with ±18 ms timing: every swing was a perfect home run, the top of the 1st never ended.) Autoplay only.
+   */
+  function autoBatPlan(p: LivePitch): { swing: boolean; pciX: number; pciY: number; timingErr: number } {
+    if (p.auto) return p.auto;
+    const [zx, zy] = zoneCoords(pitchPosAt(p, 1));
+    const off = Math.max(Math.abs(zx), Math.abs(zy));
+    const swingP = off <= 1 ? 0.8 : off <= 1.3 ? 0.3 : 0.04;
+    const swing = G.rng() < swingP;
+    const aimErr = 0.6;
+    p.auto = {
+      swing,
+      pciX: clamp(zx + jitter(G.rng) * aimErr, -1.1, 1.1),
+      pciY: clamp(zy + jitter(G.rng) * aimErr, -1.1, 1.1),
+      timingErr: jitter(G.rng) * 0.1
+    };
+    return p.auto;
+  }
+
+  /**
    * Autopilot swing: start it so the swing's contact phase lands exactly when
    * the pitch reaches the plane. Fast flights need the load to begin during
    * the windup (delay > 0); slow flights start in flight.
@@ -2249,7 +2355,7 @@ function boot(): void {
       pitch: p,
       power: 0.72,
       isPlayer: true,
-      timingErr: jitter(G.rng) * 0.018,
+      timingErr: autoBatPlan(p).timingErr,
       pciX: zx,
       pciY: zy,
       durPre: clamp(timeToPlane, 0.15, SWING_CONTACT_T * SWING_TOTAL),
@@ -2383,6 +2489,9 @@ function boot(): void {
 
   /* ---------- Phase machine ---------- */
   let appReady = false;
+  /** The last boot / park-switch warm-up (`window.__DIAMOND_WARM__`). */
+  let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+  (window as unknown as { __DIAMOND_WARM__?: () => typeof warmResult }).__DIAMOND_WARM__ = () => warmResult;
   let evidenceDue = true;
   let framesRendered = 0;
   let simTime = 0;
@@ -2623,11 +2732,10 @@ function boot(): void {
       const preNeed = SWING_CONTACT_T * SWING_TOTAL;
       const earlyStart = clamp(preNeed - CONTACT_PLANE_T * G.pitch.flightSec, 0, 0.25);
       if (G.phaseT >= WINDUP_RELEASE_T - earlyStart) {
-        const cross = pitchPosAt(G.pitch, 1);
-        const [zx, zy] = zoneCoords(cross);
-        if (Math.abs(zx) <= 1.08 && Math.abs(zy) <= 1.08) {
-          G.pci = [clamp(zx, -1.1, 1.1), clamp(zy, -1.1, 1.1)];
-          maybeStartAutoSwing(G.pitch, G.pci[0], G.pci[1], Math.max(0, WINDUP_RELEASE_T - G.phaseT));
+        const plan = autoBatPlan(G.pitch);
+        if (plan.swing) {
+          G.pci = [plan.pciX, plan.pciY];
+          maybeStartAutoSwing(G.pitch, plan.pciX, plan.pciY, Math.max(0, WINDUP_RELEASE_T - G.phaseT));
         }
       }
     }
@@ -2663,12 +2771,10 @@ function boot(): void {
       if (isSwingPressed() && !p.swung && !p.resolved && !isAutopilotActive()) triggerSwing(0.84);
       // Smart autopilot batting only when autopilot is explicitly enabled
       if (isAutopilotActive() && !p.swung && !p.resolved) {
-        const cross = pitchPosAt(p, 1);
-        const [zx, zy] = zoneCoords(cross);
+        const plan = autoBatPlan(p);
         const trackRate = clamp(dt * 8.5, 0, 1);
-        G.pci = [lerp(G.pci[0], clamp(zx, -1.1, 1.1), trackRate), lerp(G.pci[1], clamp(zy, -1.1, 1.1), trackRate)];
-        const shouldSwing = Math.abs(zx) <= 1.08 && Math.abs(zy) <= 1.08;
-        if (shouldSwing && !swingDrive.active) maybeStartAutoSwing(p, zx, zy);
+        G.pci = [lerp(G.pci[0], plan.pciX, trackRate), lerp(G.pci[1], plan.pciY, trackRate)];
+        if (plan.swing && !swingDrive.active) maybeStartAutoSwing(p, plan.pciX, plan.pciY);
       }
       // A swung pitch is settled by the swing reaching the plane; only a take is called at the plate.
       if (p.t >= 1.0 && !p.resolved && !p.swung) resolvePitchAtPlate(p);
@@ -2763,13 +2869,15 @@ function boot(): void {
       applyOutcome(ball);
       return;
     }
-    const landed = ball.pos[1] <= 0.05 || ball.age >= ball.resolveAt + 0.6 || (ball.crossedFence && ball.wallHit === false && ball.pos[1] <= park().wallH * 0.5 && ball.vel[1] < 0 && r >= fenceR + 4);
+    // The ground is raised on the mound (rules.ts ballFloorY), so a ball landing there stops on its surface, not inside it.
+    const floorY = ballFloorY(ball.pos[0], ball.pos[2]);
+    const landed = ball.pos[1] <= floorY + 0.005 || ball.age >= ball.resolveAt + 0.6 || (ball.crossedFence && ball.wallHit === false && ball.pos[1] <= park().wallH * 0.5 && ball.vel[1] < 0 && r >= fenceR + 4);
     if (landed && !ball.dead) {
       // DIA-V1: what a ball landing in the park kicks up (clay, chalk on a foul line, canyon dust, regolith). Reads the
       // ball only; the sim state and G.rng are untouched.
-      if (ball.pos[1] <= 0.05 && !ball.crossedFence) {
-        burstVfx(landingFxKind(G.park, ball.landTheta, FOUL_DEG), [ball.pos[0], 0.05, ball.pos[2]]);
-        triggerFlipbookBurst("dust", [ball.pos[0], 0.14, ball.pos[2]], 0.38);
+      if (ball.pos[1] <= floorY + 0.005 && !ball.crossedFence) {
+        burstVfx(landingFxKind(G.park, ball.landTheta, FOUL_DEG), [ball.pos[0], floorY + 0.005, ball.pos[2]]);
+        triggerFlipbookBurst("dust", [ball.pos[0], floorY + 0.095, ball.pos[2]], 0.38);
       }
       ball.dead = true;
       classifyBatted(ball);
@@ -2849,8 +2957,13 @@ function boot(): void {
     if (isSwingPressed() || (moveActive && G.phaseT > 0.35) || (isAutopilotActive() && G.phaseT > 0.85)) {
       if (isSwingPressed() || moveActive) lastManualInputAt = simTime;
       else {
-        G.selPitch = rep[G.pitchNo % rep.length] ?? "fourseam";
-        G.aim = [(G.pitchNo % 2 === 0 ? -0.55 : 0.55), ((G.pitchNo >> 1) % 2 === 0 ? -0.45 : 0.45)];
+        // Autoplay pitching works the count like a pitcher with a plan: a mixed repertoire, the edges early, a pitch off
+        // the plate to chase when ahead, and the fat part of the zone when a walk looms.
+        G.selPitch = rep[Math.floor(G.rng() * rep.length) % rep.length] ?? "fourseam";
+        const ahead = G.strikes > G.balls;
+        const r = G.balls >= 3 ? 0.35 + G.rng() * 0.3 : ahead && G.rng() < 0.6 ? 1.12 + G.rng() * 0.2 : 0.7 + G.rng() * 0.3;
+        const a = G.rng() * Math.PI * 2;
+        G.aim = [clamp(Math.cos(a) * r, -1.35, 1.35), clamp(Math.sin(a) * r, -1.35, 1.35)];
       }
       setPhase("pitchMeter");
       G.meterNeedle = 0;
@@ -2918,6 +3031,27 @@ function boot(): void {
     lastContact: null as null | { normal: Vec3; sprayDeg: number; launchDeg: number; normalBatSpeed: number; blendedSprayDeg: number; blendedLaunchDeg: number }
   };
 
+  /**
+   * Idol pass motion capture (src/idol/mocap.ts): the clip that fits this actor's state (pitch delivery, sprint, coach idle,
+   * catcher squat) replaces or mixes into the procedural pose; the pitcher's delivery runs on the sim's own clock (windup
+   * phaseT, pitch t) so the release frame lands on the sim's release. Every state switch cross-fades. `?idol=0` keeps the
+   * procedural motion untouched.
+   */
+  const motionSmoother = new PoseSmoother();
+  const ballSpin = new BallSpin();
+  const clipStartAt = new Map<string, { clip: string; at: number }>();
+  function motionPose(id: string, role: string, clip: string, speed: number, nowSec: number, procedural: BaseballPoseBonesInput): BaseballPoseBonesInput {
+    if (!idolAthletesEnabled()) return procedural;
+    let start = clipStartAt.get(id);
+    if (!start || start.clip !== clip) {
+      start = { clip, at: nowSec };
+      clipStartAt.set(id, start);
+    }
+    const localT = role === "pitcher" && clip === "Telegraph" ? G.phaseT : role === "pitcher" && clip === "Release" && G.pitch ? G.pitch.t : nowSec - start.at;
+    const pose = diamondMotionPose({ id, role, clip, localT, speed, procedural });
+    return motionSmoother.apply(id, mocapClipFor(role, clip) ?? `solve:${clip}`, pose, nowSec);
+  }
+
   function setAthlete(id: string, x: number, y: number, z: number, yaw: number, clip = "Crouch_Idle_Loop", speed = 1.0, nowSec = performance.now() / 1000): void {
     const h = H[id];
     if (!h) return;
@@ -2927,9 +3061,11 @@ function boot(): void {
     athleteState[id] = { pos: [x, y, z], yaw };
     if (id !== "batter" || clip === "Sprint_Loop") {
       const seedPhase = (id.charCodeAt(id.length - 1) ?? 0) * 0.37;
-      const rolePose = computeBaseballRolePose(roleForBaseballActorId(id), clip, nowSec, seedPhase, speed);
+      const role = roleForBaseballActorId(id);
+      const rolePose = motionPose(id, role, clip, speed, nowSec, computeBaseballRolePose(role, clip, nowSec, seedPhase, speed));
       applyBaseballPoseStateless(actorJoints[id] ?? {}, rolePose);
       actorBoneMats[id] = computeBaseballBoneMatrices(rolePose);
+      driveIdolActor(id);
     }
   }
 
@@ -3006,7 +3142,8 @@ function boot(): void {
         attachedCaps.add(id);
         refreshEquipmentVisibility(id);
       }
-      if (H[`${id}-belt`] && actorJoints[id]?.Hips) {
+      // Idol athletes wear their belt in the GLB texture; the procedural belt stays hidden.
+      if (H[`${id}-belt`] && actorJoints[id]?.Hips && !idolActors.has(id)) {
         attachedBelts.add(id);
         refreshEquipmentVisibility(id);
       }
@@ -3032,7 +3169,12 @@ function boot(): void {
       const st = athleteState[id];
       const mats = actorBoneMats[id];
       if (!st || !mats || kitVisible.get(id) !== true) continue;
-      if (attachedCaps.has(id) && H[`${id}-cap`]) {
+      const idol = idolActors.get(id);
+      if (attachedCaps.has(id) && H[`${id}-cap`] && idol?.pose) {
+        const cap = idolHeadgearWorld(idol.pose, idol.fit, st.pos, st.yaw);
+        const e = qToEulerZYX([...cap.quaternion] as [number, number, number, number]);
+        H[`${id}-cap`].setPosition(cap.position[0], cap.position[1], cap.position[2]).setRotation(e[0], e[1], e[2]);
+      } else if (attachedCaps.has(id) && H[`${id}-cap`]) {
         const capTrs = computeBaseballSocketWorldTRS(mats, "Head", st.pos, st.yaw, CAP_ATTACH_POS, [0, 0, 0]);
         H[`${id}-cap`].setPosition(capTrs.position[0], capTrs.position[1], capTrs.position[2]).setRotation(capTrs.rotation[0], capTrs.rotation[1], capTrs.rotation[2]);
       }
@@ -3048,7 +3190,7 @@ function boot(): void {
     for (const id of GLOVE_OWNERS) if (H[`glove-${id}`] && !attachedGloves.has(id)) return false;
     for (const id of KIT_OWNERS) {
       if (H[`${id}-cap`] && !attachedCaps.has(id)) return false;
-      if (H[`${id}-belt`] && !attachedBelts.has(id)) return false;
+      if (H[`${id}-belt`] && !attachedBelts.has(id) && !idolActors.has(id)) return false;
     }
     return true;
   }
@@ -3264,6 +3406,8 @@ function boot(): void {
    * Returns null when the overlay should be cleared (running / hidden).
    */
   let batterStepBlend = 0;
+  /** heading that lines the stance clip up with the solved stance (measured on the first stance frame) */
+  let batterYawFix: number | undefined;
   function updateBatterPose(dt: number, now: number, batterPos: Vec3, batterYaw: number): { tipWorld: Vec3; sweetWorld: Vec3; palmWorld: Vec3 } | null {
     if (!H.batter || !actorJoints.batter) return null;
     const sampled = sampleBatterTarget(swingDrive, now);
@@ -3280,6 +3424,15 @@ function boot(): void {
       const bonesInput = pose.bones as unknown as BaseballPoseBonesInput;
       applyBaseballPoseStateless(actorJoints.batter, bonesInput);
       actorBoneMats.batter = computeBaseballBoneMatrices(bonesInput);
+      // Idol pass: the stance / swing clip moves the legs, hips and half the torso; the arms stay this grip solve, warped so
+      // the clip's contact frame lands on the sim's contact (src/idol/mocap.ts batterMotion).
+      if (idolAthletesEnabled() && batterStepBlend <= 0) {
+        if (!swingDrive.active) batterYawFix ??= headingFix(bonesInput);
+        const display = batterMotion(bonesInput, { swinging: swingDrive.active, swingT: swingDrive.t, stanceT: now, yaw: batterYawFix ?? 0 });
+        driveIdolActor("batter", motionSmoother.apply("batter", swingDrive.active ? "Swing" : "BatStance", display, now));
+      } else {
+        driveIdolActor("batter");
+      }
       batState.poseApplied = true;
     } catch (err) {
       batState.poseApplied = false;
@@ -3373,6 +3526,8 @@ function boot(): void {
     if (qaRunT !== null) qaRunT += dt;
     const sprintingToFirst = qaRunT !== null || (G.phase === "batted" && Boolean(G.batted) && G.batterRunning && G.batted!.age >= 0.22);
     let batGeom: { tipWorld: Vec3; sweetWorld: Vec3; palmWorld: Vec3 } | null = null;
+    // Where the batter stands this frame (null while hidden): a solid body the fielders keep clear of.
+    let batterGround: [number, number] | null = null;
     if (sprintingToFirst && (G.batted || qaRunT !== null)) {
       const b = G.batted;
       const runAge = qaRunT !== null ? qaRunT : Math.max(0, b!.age - 0.22);
@@ -3382,6 +3537,7 @@ function boot(): void {
       const bz = lerp(batterZ, dest[2], prog * 0.92);
       const runYaw = Math.atan2(dest[0] - batterX, dest[2] - batterZ);
       setAthlete("batter", bx, 0, bz, runYaw, prog < 0.98 ? "Sprint_Loop" : "Crouch_Idle_Loop", prog < 0.98 ? 1.5 : 1.0);
+      batterGround = [bx, bz];
       try {
         H.batter?.setAnimationPose?.(undefined);
       } catch {
@@ -3394,6 +3550,7 @@ function boot(): void {
       const batterClip = G.batterStepTimer > 0 ? "Walk_Loop" : "Idle_Loop";
       const batterSpeed = G.batterStepTimer > 0 ? 1.25 : 1.0;
       setAthlete("batter", batterX, 0, batterZ, BATTER_YAW, batterClip, batterSpeed);
+      batterGround = [batterX, batterZ];
       stepBatSocketCalibration([batterX, 0, batterZ], BATTER_YAW);
       batGeom = updateBatterPose(dt, t, [batterX, 0, batterZ], BATTER_YAW);
     }
@@ -3446,16 +3603,18 @@ function boot(): void {
 
     // 1B & 3B base coaches grounded at y = 0 in athletic ready crouch (never stiff bind A-pose).
     if (H.coach1b) {
-      H.coach1b.setPosition(21.5, 0, -14.8).setRotation(0, -Math.PI * 0.72, 0).setVisible(true);
-      const p1 = computeBaseballRolePose("coach", "Crouch_Idle_Loop", t, 0.4, 0.92);
+      H.coach1b.setPosition(COACH_SPOTS["coach-1b"][0], 0, COACH_SPOTS["coach-1b"][1]).setRotation(0, -Math.PI * 0.72, 0).setVisible(true);
+      const p1 = motionPose("coach-1b", "coach", "Crouch_Idle_Loop", 0.92, t, computeBaseballRolePose("coach", "Crouch_Idle_Loop", t, 0.4, 0.92));
       applyBaseballPoseStateless(actorJoints["coach-1b"] ?? {}, p1);
       actorBoneMats["coach-1b"] = computeBaseballBoneMatrices(p1);
+      driveIdolActor("coach-1b");
     }
     if (H.coach3b) {
-      H.coach3b.setPosition(-21.5, 0, -14.8).setRotation(0, Math.PI * 0.72, 0).setVisible(true);
-      const p3 = computeBaseballRolePose("coach", "Crouch_Idle_Loop", t, 1.9, 0.96);
+      H.coach3b.setPosition(COACH_SPOTS["coach-3b"][0], 0, COACH_SPOTS["coach-3b"][1]).setRotation(0, Math.PI * 0.72, 0).setVisible(true);
+      const p3 = motionPose("coach-3b", "coach", "Crouch_Idle_Loop", 0.96, t, computeBaseballRolePose("coach", "Crouch_Idle_Loop", t, 1.9, 0.96));
       applyBaseballPoseStateless(actorJoints["coach-3b"] ?? {}, p3);
       actorBoneMats["coach-3b"] = computeBaseballBoneMatrices(p3);
+      driveIdolActor("coach-3b");
     }
 
     // Fielders — active fielder chasing a live batted ball sprints (Sprint_Loop); all stationary fielders hold athletic Crouch_Idle_Loop
@@ -3473,6 +3632,9 @@ function boot(): void {
         }
       }
     }
+    // Fielder poses are planned first and placed after the runners, so overlapping players can be pushed apart (runners keep
+    // their line, fielders yield).
+    const fielderPlan: { id: string; x: number; y: number; z: number; yaw: number; clip: string; speed: number; rank: number }[] = [];
     FIELDER_IDS.forEach((id, idx) => {
       const spot = FIELDER_SPOTS[id]!;
       let x = spot[0];
@@ -3497,6 +3659,9 @@ function boot(): void {
         const drift = clamp(catching ? rawProgress / 0.85 : rawProgress, 0, 1) * chaseScale;
         x = lerp(spot[0], b.landPos[0], drift);
         z = lerp(spot[2], b.landPos[2], drift);
+        // Never through the wall, into foul ground, the dugouts or the coaches: a home run or a ball off the wall is chased to
+        // the warning track, a foul down the line to the foul line (rules.ts clampInsideFence).
+        [x, z] = clampInsideFence(pk, x, z, FIELDER_FENCE_MARGIN);
         const stillMoving = (catching ? drift < 0.999 : rawProgress < 0.98) && distToLanding > 1.2;
         clip = stillMoving ? "Sprint_Loop" : catching ? "Contest" : "Crouch_Idle_Loop";
         speed = stillMoving ? (isPrimary ? 1.45 : 1.28) : 1.0;
@@ -3523,13 +3688,12 @@ function boot(): void {
       } else if (isOutfielder && !reducedMotion) {
         yaw += Math.sin(t * 1.35 + idx * 1.9) * 0.035;
       }
-      setAthlete(id, x, y, z, yaw, clip, speed);
+      // The catcher never moves; the fielder making the play outranks the others.
+      fielderPlan.push({ id, x, y, z, yaw, clip, speed, rank: id === "f-c" ? Infinity : id === activeFielderId ? 2 : 1 });
     });
 
-    // Catcher's mitt stays hidden until `syncEquipmentSockets` binds it to the crouched catcher's left forearm.
-    H.catcherMitt?.setVisible(mittAttached && kitVisible.get("f-c") !== false);
-
     // Runners on bases — advancing runners play Sprint_Loop while moving, standing runners hold athletic lead-off Crouch_Idle_Loop
+    const runnerPlan: { id: string; pos: Vec3; yaw: number; advancing: boolean }[] = [];
     G.runnerBase.forEach((baseIdx, i) => {
       const h = H[`runner-${i}`];
       if (!h) return;
@@ -3541,8 +3705,25 @@ function boot(): void {
       const pos: Vec3 = anim ? mix3(anim.from, anim.to, smoothstep(anim.t)) : [...BASES[baseIdx]!];
       const isAdvancing = Boolean(anim && anim.t < 0.98) || (G.phase === "batted" && Boolean(G.batted && !G.batted.dead && G.batted.age < G.batted.resolveAt));
       const yaw = anim ? Math.atan2(anim.to[0] - anim.from[0], anim.to[2] - anim.from[2]) : Math.atan2(-pos[0], -pos[2]);
-      setAthlete(`runner-${i}`, pos[0], pos[1], pos[2], yaw, isAdvancing ? "Sprint_Loop" : "Crouch_Idle_Loop", isAdvancing ? 1.45 : 0.98);
+      runnerPlan.push({ id: `runner-${i}`, pos, yaw, advancing: isAdvancing });
     });
+
+    // No two players overlap: runners, the batter, the pitcher and the coaches hold their spots; fielders step aside
+    // deterministically and stay inside the fence (rules.ts separateBodies, clampInsideFence).
+    const bodies: SepBody[] = [
+      ...fielderPlan.map((f) => ({ x: f.x, z: f.z, rank: f.rank })),
+      ...runnerPlan.map((r) => ({ x: r.pos[0], z: r.pos[2], rank: Infinity })),
+      { x: 0.1, z: MOUND_Z - 0.1, rank: Infinity },
+      { x: COACH_SPOTS["coach-1b"][0], z: COACH_SPOTS["coach-1b"][1], rank: Infinity },
+      { x: COACH_SPOTS["coach-3b"][0], z: COACH_SPOTS["coach-3b"][1], rank: Infinity },
+      ...(batterGround ? [{ x: batterGround[0], z: batterGround[1], rank: Infinity }] : [])
+    ];
+    separateBodies(bodies, PLAYER_MIN_SEP, (i, nx, nz) => (i < fielderPlan.length ? clampInsideFence(pk, nx, nz, FIELDER_FENCE_MARGIN) : [nx, nz]));
+    fielderPlan.forEach((f, i) => setAthlete(f.id, bodies[i]!.x, f.y, bodies[i]!.z, f.yaw, f.clip, f.speed));
+    for (const r of runnerPlan) setAthlete(r.id, r.pos[0], r.pos[1], r.pos[2], r.yaw, r.advancing ? "Sprint_Loop" : "Crouch_Idle_Loop", r.advancing ? 1.45 : 0.98);
+
+    // Catcher's mitt stays hidden until `syncEquipmentSockets` binds it to the crouched catcher's left forearm.
+    H.catcherMitt?.setVisible(mittAttached && kitVisible.get("f-c") !== false);
 
     updateProceduralEquipmentTransforms();
 
@@ -3568,6 +3749,9 @@ function boot(): void {
     if (qaBall) ballWorld = qaBall;
     G.lastBallPos = ballWorld;
     H.ball?.setPosition(ballWorld[0], ballWorld[1], ballWorld[2]).setVisible(ballWorld[1] > -30);
+    // Idol pass GPU QA: the ball rolls with its travel so the red seams read as spin (art/ballSpin.ts).
+    const spin = ballSpin.step(ballWorld, dt, Boolean(G.caughtBy && G.phase === "runners"));
+    H.ball?.setRotation(spin[0], spin[1], spin[2]);
     noteBallForTrail(ballWorld);
     const shScale = clamp(1.15 - ballWorld[1] * 0.02, 0.4, 1.1);
     // C17: the key light already casts the ball's real shadow near the ground; the fake disc only marks a high fly ball's spot.
@@ -4001,12 +4185,15 @@ function boot(): void {
     });
   });
 
-  el.tbAuto?.addEventListener("click", () => {
+  const toggleAutopilot = (): void => {
     G.autopilot = !G.autopilot;
+    autoWatch.reset();
+    autoMenuT = 0;
     syncAutoBtn();
     showBanner(G.autopilot ? "CPU AUTOPILOT ON" : "MANUAL CONTROLS ACTIVE", 1.4);
     cue("uiClick");
-  });
+  };
+  el.tbAuto?.addEventListener("click", toggleAutopilot);
   el.tbMenu?.addEventListener("click", () => {
     if (el.menu?.classList.contains("hidden")) openMenu();
     else closeMenu();
@@ -4023,6 +4210,8 @@ function boot(): void {
       if (el.menu?.classList.contains("hidden")) openMenu();
       else closeMenu();
     }
+    // P toggles hands-free autoplay (the CPU bats, pitches and fields for the player's club).
+    if (e.code === AUTOPLAY_TOGGLE_KEY && !e.repeat) toggleAutopilot();
   });
 
   buildMenuDom();
@@ -4033,7 +4222,8 @@ function boot(): void {
   const urlMode = params.get("mode") as ModeId | null;
   const validModes: ModeId[] = ["quick", "derby", "bullpen", "classic", "studio"];
   const initialMode: ModeId = urlMode && validModes.includes(urlMode) ? urlMode : "quick";
-  if (params.get("menu") === "1") {
+  // Autoplay never waits on the menu: `?menu=1&autoplay=1` still starts play by itself.
+  if (params.get("menu") === "1" && !G.autopilot) {
     openMenu();
   } else {
     startMode(initialMode);
@@ -4043,7 +4233,14 @@ function boot(): void {
   // A1: the shared loading helper tracks readiness and exposes progress as a data attribute (no visible UI).
   const loading = createLoadingProgress({ element: document.getElementById("boot-loading") ?? undefined, onProgress: (f) => { document.body.dataset.aura3dLoading = f.toFixed(2); } });
   loading.set(0.25, "scene");
-  void loading.track(Promise.resolve((app as any).ready?.()), 1, "assets").then(() => {
+  void loading.track(Promise.resolve((app as any).ready?.()), 1, "assets").then(async () => {
+    // Idol pass (lessons R2, artifacts/idol/FIRST-SECONDS.md): every park GLB (athletes, scoreboard, landmarks) is mounted by
+    // now; settle the HDRI, the Idol texture upgrades and their program variants before the sim ticks or the loading screen
+    // hides, so the first pitch never lands on a frozen clear-colour frame while programs compile.
+    loading.set(0.95, "warming");
+    warmResult = await warmPrograms(app as any, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+    bindHandles();
+    await warmContactVariants();
     loading.done("ready");
     // A2: publish `backendSelection` and `readiness` for `?diag=1` and the QA hooks.
     void publishBackendReport(app as any, (window as any).__AURA3D_GAME_DIAMOND__ ?? undefined);
@@ -4133,10 +4330,47 @@ function boot(): void {
     };
   }
 
+  /* ---------- Autoplay loop (src/autoplay.ts) ---------- */
+  const autoplayParkPinned = params.get("park") !== null;
+  const autoWatch = new AutoplayWatchdog();
+  let autoMenuT = 0;
+  /**
+   * Last-resort autoplay watchdog: the progress signature covers the phase, the count, outs, score, the pitch number and
+   * the ball in flight; if none of it moves for AUTOPLAY_STALL_SEC the play is cleared back to the next pitch.
+   */
+  function autoplayWatch(h: number): void {
+    const b = G.batted;
+    const sig = `${G.mode}|${G.phase}|${G.inning}${G.half}|${G.outs}|${G.balls}-${G.strikes}|${G.score.player}-${G.score.cpu}|${G.pitchNo}|${G.gameNo}|${b && !b.dead ? b.pos.map((v) => v.toFixed(1)).join(",") : ""}|${G.pitch ? G.pitch.t.toFixed(2) : ""}`;
+    if (!autoWatch.note(sig, h) || G.phase === "gameover") return;
+    tick("autoplay: play reset after a stall", "warning");
+    G.pitch = null;
+    G.batted = null;
+    G.catchPrompt = null;
+    G.runnersAnim = [];
+    G.batterRunning = false;
+    setPhase("between");
+  }
+
   /* ---------- Main loop ---------- */
   /** One fixed 1/120 s simulation step (C14): the phase machine, the PCI and the swing clock. */
   function simStep(h: number): void {
     simTime += h;
+    // `?finishAfter=<sec>` (src/autoplay.ts): end the match on its current score after that much live play, card held.
+    if (qaFinishAfter !== null && !G.over && G.phase !== "menu" && G.phase !== "gameover") {
+      qaPlayT += h;
+      if (qaPlayT >= qaFinishAfter) {
+        const { player, cpu } = G.score;
+        endGame(G.mode === "derby" || G.mode === "bullpen" || player === cpu ? null : player > cpu, `final after ${G.inning}`);
+      }
+    }
+    // Autoplay never sits on the menu: after a beat it starts the pending mode.
+    if (G.phase === "menu" && isAutopilotActive()) {
+      autoMenuT += h;
+      if (autoMenuT >= AUTOPLAY_MENU_SEC) {
+        autoMenuT = 0;
+        startMode(G.pendingMode);
+      }
+    }
     if (G.phase !== "menu") {
       switch (G.phase) {
         case "between": stepBetween(h); break;
@@ -4148,12 +4382,15 @@ function boot(): void {
         case "pitchMeter": stepPitchMeter(h); break;
         case "gameover":
           G.phaseT += h;
-          if (isAutopilotActive() && G.phaseT > 4.2) {
+          // Autoplay: the results card holds ~3 s, then the next ballpark (or the pinned `?park=`) plays the same mode.
+          if (autoplayLeavesResults(G.phaseT, isAutopilotActive(), qaFinishAfter !== null)) {
+            setPark(nextAutoplayPark(G.park, autoplayParkPinned));
             startMode(G.mode);
           }
           break;
         default: break;
       }
+      if (isAutopilotActive()) autoplayWatch(h);
       // PCI move (batting phases)
       if (battingIsPlayer() && (G.phase === "between" || G.phase === "windup" || G.phase === "pitch")) {
         const [ax, ay] = getManualMoveAxis();
@@ -4364,7 +4601,7 @@ function boot(): void {
       setCamOverride: (o: { eye: Vec3; target: Vec3; fov: number } | null) => {
         qaCam = o;
       },
-      state: () => ({ mode: G.mode, phase: G.phase, park: G.park, inning: G.inning, half: G.half, score: { ...G.score }, outs: G.outs, bases: [...G.bases] }),
+      state: () => ({ mode: G.mode, phase: G.phase, park: G.park, inning: G.inning, half: G.half, score: { ...G.score }, outs: G.outs, bases: [...G.bases], balls: G.balls, strikes: G.strikes, pitchNo: G.pitchNo, hits: { ...G.hits }, gameNo: G.gameNo, over: G.over, autopilot: G.autopilot, autoplayRecoveries: autoWatch.recoveries, simTime, lastGrade: G.lastGrade, lastEV: G.lastEV, lastDistFt: G.lastDistFt, batted: G.batted ? { outcome: G.batted.outcome, planned: G.batted.plannedOutcome, dead: G.batted.dead } : null }),
       ...(qaMode ? qaHooks() : {})
     };
   }

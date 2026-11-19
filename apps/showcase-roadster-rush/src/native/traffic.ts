@@ -20,7 +20,8 @@ import type { FreewayWorld } from "./world";
 import type { Player } from "./player";
 
 // Spacing, flow and spawn tuning.
-const SUPPORT_TOLERANCE = 0.7;
+/** Exported for the autoplay planner (src/native/autopilot.ts), which predicts the same collisions. */
+export const SUPPORT_TOLERANCE = 0.7;
 const NEAR_MISS_VERTICAL = 1.2;
 const NEAR_MISS_SKY_SIDE = 1.7;
 const SHIFT_LOOKAHEAD = 56;
@@ -40,8 +41,8 @@ const SKY_BAND_LOW = [3.3, 4.4] as const;
 const SKY_BAND_MID = [8.3, 11.5] as const;
 const SKY_BAND_HIGH = [13, 19.5] as const;
 const CRUISER_ALTITUDE = 6.6;
-const SKY_SPEED_MIN = 20;
-const SKY_SPEED_MAX = 32;
+export const SKY_SPEED_MIN = 20;
+export const SKY_SPEED_MAX = 32;
 const SKY_INCOMING_ETA = 2.5;
 const BOLT_CAP = 420;
 const HONK_COOLDOWN = 1.3;

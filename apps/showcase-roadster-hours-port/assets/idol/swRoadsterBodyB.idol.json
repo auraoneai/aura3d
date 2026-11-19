@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swRoadsterBodyB",
+  "generatedAt": "2026-11-18T22:23:35.806Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0c2-1ea7-7352-9940-0d2ebe1af226",
+      "prompt": "A single fictional classic 1960s open-top two-seat speedster roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge and a small air scoop, voluptuous pontoon front and rear fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes running over the bonnet and rear deck, two small low rounded racing aero screens with thick chrome frames instead of a full windscreen, open cockpit with two quilted tan leather bucket seats and a wooden steering wheel, twin thick chrome roll hoops behind the seats, chrome side exhaust pipes, round red tail lamps set into the smooth rear panel, chrome bumperettes, smooth painted rear panel with no number plate. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0cc-cf5f-7c52-b537-397448617868",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 31,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1334504,
+        "num_faces": 2669064,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single fictional classic 1960s open-top two-seat speedster roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge and a small air scoop, voluptuous pontoon front and rear fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes running over the bonnet and rear deck, two small low rounded racing aero screens with thick chrome frames instead of a full windscreen, open cockpit with two quilted tan leather bucket seats and a wooden steering wheel, twin thick chrome roll hoops behind the seats, chrome side exhaust pipes, round red tail lamps set into the smooth rear panel, chrome bumperettes, smooth painted rear panel with no number plate. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "hero",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90.5,
+    "scale": 4.43,
+    "size": [
+      2.533,
+      1.518,
+      4.44
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swRoadsterBodyB.glb",
+  "sizeBytes": 4022076,
+  "preview": "artifacts/idol/saltwind-highway/swRoadsterBodyB/views.png",
+  "usd": 0.37,
+  "orientationFix": "yawDeg -0.5 (long axis fitted; reference was a three-quarter view)",
+  "postProcess": "PNG textures re-encoded as JPEG q90 (4:4:4) to fit the per-game byte budget"
+}

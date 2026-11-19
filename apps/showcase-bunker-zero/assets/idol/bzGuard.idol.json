@@ -1,0 +1,83 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzGuard",
+  "generatedAt": "2026-11-18T23:43:48.202Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08d-1077-7b70-a127-662be91170b9",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f099-7fbe-7c72-9b85-d877622bdd36",
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 536150,
+        "num_faces": 1072304,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 28,
+        "animations": [
+          "idle"
+        ]
+      },
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Original bunker guard soldier: olive ballistic helmet with flipped-up night vision goggles and headset ear cups, woodland camouflage combat shirt and trousers, coyote tan plate carrier vest with magazine pouches and a small radio, olive elbow and knee pads, fingerless tan shooting gloves, black combat boots, stern face, empty hands",
+  "role": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 1.002 m, 1 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000        2.64x          71      0\n  bind-pose mismatch (SKIN_BIND_MISMATCH): bone_3 45% off-axis, bone_26 76% off-axis, bone_22 57% off-axis\n  ERROR material0 (mesh 0 prim 0): 71 of 30000 triangles stretch past 1.6x their rest edges (worst 2.64x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n  warn  3 bone(s) are not inside the mesh they move: bone_3 (vertices 0.032 m off a 0.071 m bone), bone_26 (vertices 0.049 m off a 0.064 m bone), bone_22 (vertices 0.041 m off a 0.073 m bone) (SKIN_BIND_MISMATCH). The mesh was modelled in a different pose than the skeleton assumes (typically mid-stride), so every clip rotates the limbs about joints off the limb. Rebuild the limbs in the skeleton's pose (assets repair-skin --rebuild-limbs) or re-rig.",
+    "repairLog": "Bind-pose mismatch on bone_3, bone_26, bone_22: the mesh was modelled in a different pose than the skeleton assumes. Weight smoothing and triangle cuts only mask it. For a recognised humanoid run repair-skin --rebuild-limbs (rebuilds the legs in the skeleton's pose); otherwise rebuild the limbs in your DCC tool or regenerate and re-rig the model in the pose the skeleton assumes.\nStill failing after smooth-bridges: SKIN_STRETCH, SKIN_BIND_MISMATCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand.\n",
+    "mocapRepairReverted": {
+      "at": "2026-11-19T03:07:16.245Z",
+      "reason": "Real-GPU QA: the repair-skin pass (weight smoothing, normalize/prune, --cut-stretch holes) shredded hands and straps and opened see-through holes although its stretch count fell. Shipped weights are the generator's own (bit-identical POSITION/JOINTS_0/WEIGHTS_0/indices); the game limits arm elevation (100 deg) and forearm/wrist twist (75/60 deg) instead.",
+      "revertedRepair": {
+        "at": "2026-11-19T02:15:46.967Z",
+        "clips": "fal text-to-motion clips (tools/idol/motion-specs/bunker-zero.json) baked from the shipped pose code",
+        "command": "aura3d assets repair-skin --keep-clips <those clips> --refit-skeleton --normalize --prune-distant --smooth-bridges --smooth-threshold 1.25 --smooth-rounds 12 --smooth-rings 6 --cut-stretch 4 (from the unrepaired Idol GLB)",
+        "note": "Skeleton unchanged (refit moved 0 joints); weights smoothed, triangles past 4x removed. Only the idle clip is stored; the game drives the bones from code.",
+        "beforeRepairMeshyClips": {
+          "max": "4.00x",
+          "over": "1343/30000"
+        },
+        "beforeRepairFalClips": {
+          "max": "4.44x",
+          "over": "603/29923"
+        }
+      }
+    }
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1,
+    "sceneScale": 1.896,
+    "size": [
+      0.95,
+      1.002,
+      0.193
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzGuard.glb",
+  "sizeBytes": 2539372,
+  "preview": "artifacts/idol/bunker-zero/bzGuard/views.png",
+  "usd": 0.42,
+  "admitRole": "character",
+  "renormalizedAt": "2026-11-18T23:48:18.044Z",
+  "doubleSided": {
+    "at": "2026-11-19T03:36:23.939Z",
+    "reason": "Real-GPU / CPU-skinned QA: skin folds at extreme generated-motion poses and single-sided cloth showed back faces, which back-face culling turned into see-through holes. Materials are double-sided (cull none) and opaque."
+  }
+}

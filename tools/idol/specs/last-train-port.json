@@ -1,0 +1,364 @@
+{
+  "game": "last-train-port",
+  "outDir": "apps/showcase-last-train-port/assets/idol",
+  "style": "Photograph of a real museum-quality hand-built scale model with model-railway diorama craftsmanship: real enamel paint, polished brass, varnished wood, plaster stucco, slate and terracotta materials, crisp clean edges, very light weathering, warm saturated colours, soft macro studio lighting, no base, no plinth, no display stand",
+  "items": [
+    {
+      "key": "llTram",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 10.6
+      },
+      "tex": 2048,
+      "seed": 47,
+      "subject": "(see prompt)",
+      "prompt": "A vintage early-1900s enclosed double-ended electric streetcar (heritage tram): a long, narrow single-deck car, about four times longer than it is wide, on two dark iron four-wheel bogies with spoked steel wheels; deep cherry-red lacquered lower body panels with thin brass pinstripes, cream upper body, a row of six large rectangular saloon windows along the side separated by slim cream pillars, a folding wooden door near each end, a curved three-window driver cab at each end, one round brass headlamp centred on the front dash, a thin teal band under the eaves, a dark grey cambered roof with a long low raised clerestory, a low iron cowcatcher at the front, nothing on top of the roof (no pantograph, no pole). Photograph of a real museum-quality hand-built scale model: real enamel paint, polished brass, varnished wood, crisp clean edges, undamaged, very light weathering, warm saturated colours. All windows are fully opaque glossy black glass, the interior is not visible at all. Seen from the front-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole tram small in the frame with generous empty margin, even soft studio lighting, no cast shadow, plain light-grey seamless background, no base, no rails, no track. No text, no logos, no lettering, no numbers, no route signs, no emblems anywhere on the tram.",
+      "yawDeg": 66,
+      "note": "Telephoto side reference (the default three-quarter framing came out fat twice); normalised with front +x and a 66 deg yaw fit to the minimum-area footprint; window glass cut out by examples/last-train-port/scripts/idol-windows.mjs --mode cut --region {\"y\":[1.2,2.8]}"
+    },
+    {
+      "key": "llMotorman",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.78
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A single tram driver from the early 1900s, navy-blue double-breasted wool uniform tunic with brass buttons, red neckerchief, navy peaked cap with a plain brass band, dark trousers, polished black boots, friendly moustached face",
+      "rig": true,
+      "animations": [
+        "idle"
+      ]
+    },
+    {
+      "key": "llPaxEasy",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.75
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A single relaxed elderly gentleman passenger, mustard-yellow wool overcoat, cream knitted scarf, brown flat cap, dark trousers, brown leather shoes, calm smile",
+      "rig": true,
+      "animations": [
+        "idle"
+      ]
+    },
+    {
+      "key": "llPaxSightseer",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.75
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A single cheerful young woman tourist, sea-green knee-length wool coat, coral-red scarf, short brown bob hair, dark stockings, brown shoes, a small brown satchel on a strap across her body",
+      "rig": true,
+      "animations": [
+        "idle"
+      ]
+    },
+    {
+      "key": "llPaxRushed",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.75
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A single hurried businessman, burnt-orange wool overcoat, cream scarf, dark slicked hair, dark grey trousers, black shoes",
+      "rig": true,
+      "animations": [
+        "idle"
+      ]
+    },
+    {
+      "key": "llPaxSleeper",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.75
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A single sleepy commuter, periwinkle-blue wool overcoat, navy scarf, navy knitted bobble hat, grey trousers, dark boots",
+      "rig": true,
+      "animations": [
+        "idle"
+      ]
+    },
+    {
+      "key": "llFolk0",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.71
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 11,
+      "subject": "A single standing woman from the early 1900s, one isolated figure only, no scenery, no shelter, no bench, no background objects, full body head to feet, standing upright facing forward, arms relaxed down at her sides holding a small cream suitcase in one hand, long terracotta-red wool coat, cream scarf, small brimmed hat, dark ankle boots"
+    },
+    {
+      "key": "llFolk1",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.71
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single standing man waiting for a tram, early-1900s seaside town, full body head to feet, standing upright facing forward, holding a folded newspaper in one hand, other arm relaxed, teal-blue wool overcoat, cream scarf, grey flat cap, dark trousers, brown shoes"
+    },
+    {
+      "key": "llFolk2",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.71
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single standing older woman, early-1900s seaside town, full body head to feet, standing upright facing forward, a wicker basket of bread on one arm, mustard-yellow wool coat, cream shawl, dark headscarf, long dark skirt, dark boots"
+    },
+    {
+      "key": "llFolk3",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.71
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single standing young man, early-1900s seaside town, full body head to feet, standing upright facing forward, hands in coat pockets, slate-blue wool peacoat, cream knitted scarf, dark woollen beanie, dark trousers, black boots"
+    },
+    {
+      "key": "llFolk4",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.71
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single standing woman, early-1900s seaside town, full body head to feet, standing upright facing forward, holding a closed cream umbrella like a cane, sage-green wool coat with belt, cream collar, brown hair in a bun, dark skirt, brown boots"
+    },
+    {
+      "key": "llFolk5",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 1.71
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single standing elderly gentleman, early-1900s seaside town, full body head to feet, standing upright facing forward, leaning lightly on a wooden walking stick, plum-purple wool overcoat, cream scarf, black bowler hat, grey moustache, dark trousers, black shoes"
+    },
+    {
+      "key": "llHouse0",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 13.6
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A single narrow three-storey Mediterranean seaside townhouse, warm white stucco walls, terracotta tiled gable roof with one chimney, deep green wooden window shutters on every window, rows of tall windows with dark glass, an arched wooden front door with a small step, small wrought-iron balcony on the first floor, simple stone cornice, rectangular footprint slightly deeper than wide"
+    },
+    {
+      "key": "llHouse1",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 15.0
+      },
+      "tex": 1024,
+      "seed": 19,
+      "subject": "A single three-storey Mediterranean seaside townhouse, honey-yellow ochre stucco walls, slate-blue tiled hipped roof with one chimney, brick-red wooden window shutters on every window, rows of tall windows with dark glass, a green wooden front door, two small wrought-iron balconies, white stone window trims and cornice, closed solid building with plain stucco side and back walls that also have shuttered windows, rectangular footprint about as deep as wide"
+    },
+    {
+      "key": "llHouse2",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 14.2
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A single three-storey seaside townhouse, pale powder-blue stucco walls, dark slate-grey tiled gable roof with a small dormer window and one chimney, cream wooden window shutters on every window, rows of tall windows with dark glass, a wooden front door under a small canopy, white stone corner quoins and cornice, rectangular footprint about as deep as wide"
+    },
+    {
+      "key": "llHouseSnow0",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 13.6
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A single narrow three-storey Mediterranean seaside townhouse in winter, warm white stucco walls, gable roof completely covered with a thick smooth layer of fresh white snow, one chimney with snow on top, deep green wooden window shutters on every window, rows of tall windows with dark glass, an arched wooden front door, small wrought-iron balcony with a little snow, rectangular footprint slightly deeper than wide"
+    },
+    {
+      "key": "llHouseSnow1",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 15.0
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A single three-storey seaside townhouse in winter, honey-yellow ochre stucco walls, hipped roof completely covered with a thick smooth layer of fresh white snow, one chimney with snow on top, brick-red wooden window shutters on every window, rows of tall windows with dark glass, a green wooden front door, two small wrought-iron balconies, white stone trims, rectangular footprint about as deep as wide"
+    },
+    {
+      "key": "llHouseSnow2",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 14.2
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A single three-storey seaside townhouse in winter, pale powder-blue stucco walls, gable roof completely covered with a thick smooth layer of fresh white snow, a small snowy dormer and one chimney, cream wooden window shutters on every window, rows of tall windows with dark glass, a wooden front door under a small canopy, white stone corner quoins, rectangular footprint about as deep as wide"
+    },
+    {
+      "key": "llClockTower",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 30.3
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A single tall slender square station clock tower, cream limestone ashlar shaft on a stepped stone plinth with an arched doorway, stone corner pilasters, a clock stage near the top with one round white enamel clock dial on each of the four faces showing only simple black tick marks and two black hands (no numerals), an open belfry stage above with arched openings and a bronze bell, crowned by a green weathered copper dome with a small brass finial"
+    },
+    {
+      "key": "llClockTowerSnow",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 30.3
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A single tall slender square station clock tower in winter, cream limestone ashlar shaft on a stepped stone plinth with an arched doorway, stone corner pilasters, a clock stage near the top with one round white enamel clock dial on each of the four faces showing only simple black tick marks and two black hands (no numerals), an open belfry stage with arched openings and a bronze bell, crowned by a dome completely covered with thick fresh white snow, snow on the ledges"
+    },
+    {
+      "key": "llLighthouse",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 27.6
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A single classic tall round coastal lighthouse, tapering white-painted masonry tower with two broad red horizontal bands, grey granite base with a small arched door, a few small windows up the shaft, a black iron gallery balcony with railings near the top, a glazed lantern room with a large brass lens inside, topped by a green copper cupola roof and a small finial"
+    },
+    {
+      "key": "llKeep",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 30.6
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A single old square coastal stone keep tower, weathered warm grey-gold limestone blocks, slightly battered base, narrow arched windows on several floors, crenellated battlements at the top with corner turrets, a small arched wooden door at the base, moss in the joints, footprint square"
+    },
+    {
+      "key": "llWatchtower",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 34.9
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A single tall round medieval coastal watchtower, rough honey-coloured stone masonry, tapering slightly, narrow arrow-slit windows, a projecting machicolated parapet near the top, topped by a pointed terracotta-tiled conical roof, small arched wooden door at the base"
+    },
+    {
+      "key": "llCrates",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 1.98
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A small cluster of railway freight: two stacked pine wooden shipping crates with iron corner straps on a low timber pallet, a domed brown leather steamer trunk with brass clasps beside them, and a cinched canvas mail sack leaning against them, no labels"
+    },
+    {
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "tex": 1024,
+      "seed": 7,
+      "key": "llWalkerA",
+      "size": {
+        "height": 1.76
+      },
+      "subject": "A man from the early 1900s, brown tweed three-piece suit with a flat cap, white shirt, dark tie, brown leather boots, one isolated figure only, friendly neutral face, no bag"
+    },
+    {
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "tex": 1024,
+      "seed": 11,
+      "key": "llWalkerB",
+      "size": {
+        "height": 1.7
+      },
+      "subject": "A young man from the early 1900s, white collarless shirt with rolled sleeves, brown braces, grey wool knee-length breeches with long grey socks, brown boots, flat newsboy cap, one isolated figure only, friendly neutral face, no bag"
+    },
+    {
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "tex": 1024,
+      "seed": 7,
+      "key": "llWalkerC",
+      "size": {
+        "height": 1.72
+      },
+      "subject": "An older man from the early 1900s, grey beard, navy wool coat over a waistcoat, bowler hat, black boots, one isolated figure only, friendly neutral face, no bag"
+    },
+    {
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk"
+      ],
+      "tex": 1024,
+      "seed": 11,
+      "key": "llWalkerD",
+      "size": {
+        "height": 1.64
+      },
+      "subject": "A woman from the early 1900s in a fitted plum wool jacket and narrow dark ankle-length trousers, white blouse, small straw boater hat, brown ankle boots, one isolated figure only, legs clearly separated, friendly neutral face, no bag, no skirt"
+    }
+  ]
+}

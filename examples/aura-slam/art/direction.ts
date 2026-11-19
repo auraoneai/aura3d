@@ -53,7 +53,19 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "static", subjectHeightFraction: [0.06, 0.16], fovDeg: [15, 60], mobile: "both" },
-  assets: [],
+  assets: [
+    // Idol wow pass (Nov 2026): image-to-3D GLBs (speridlabs/idol/max, tools/idol/specs/aura-slam.json) for the athletes, the
+    // chair umpire and the World Tour set pieces; court surfaces, lines, net, boards, bleacher tiers, roof truss and crowd stay procedural.
+    ...(["slamAthleteMatchPlayer", "slamAthleteMatchRival", "slamAthleteRival", "slamUmpireOfficial"] as const).map((assetKey) => (
+      { role: "character" as const, assetKey, kit: "K2" as const, maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+    )),
+    ...(["slamUmpireChair", "slamScoreboard", "slamArcadeFacade", "slamFloodlightTower"] as const).map((assetKey) => (
+      { role: "world" as const, assetKey, kit: "K4" as const, maxTriangles: 60000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+    )),
+    ...(["slamNetPost", "slamPlayerBench", "slamDrinksCooler", "slamTowelRack", "slamBoxwoodPlanter", "slamTvCamera"] as const).map((assetKey) => (
+      { role: "prop" as const, assetKey, kit: "K2" as const, maxTriangles: 30000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+    ))
+  ],
   vfx: [
     { event: "ball-bounce-clay", kind: "clay-puff" },
     { event: "ball-bounce-grass", kind: "grass-flick" },

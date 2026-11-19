@@ -774,6 +774,10 @@ export const texture = lazyNamespace(() => ({
       flipY: false,
       generateMipmaps: false, // three DataTexture sets both false
       dynamic: true,
+      // three DataTexture keeps `image.data` by reference: writing the caller's
+      // array in place and setting `needsUpdate` must re-upload those bytes.
+      // A construction snapshot would re-upload stale pixels forever.
+      copyCpuData: false,
       label: "texture.data"
     }));
   },

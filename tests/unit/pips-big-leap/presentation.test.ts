@@ -18,6 +18,7 @@ import {
 import { courseBounds } from "../../../apps/showcase-pips-big-leap/src/game/diorama";
 import { PIP_VFX } from "../../../apps/showcase-pips-big-leap/src/game/vfx";
 import { WORLD_LOOKS } from "../../../apps/showcase-pips-big-leap/src/game/looks";
+import { PIP_HERO_SCENE_SCALE } from "../../../apps/showcase-pips-big-leap/src/art/idolModels";
 
 function fakeApp() {
   const calls = {
@@ -193,7 +194,8 @@ describe("pips-big-leap runtime presentation", () => {
     p.event({ kind: "land" }, built, [0, 0.6, 0]);
     p.frame(frame({ dt: 0.001 }), built, n.lookup);
     expect(p.heroScaleY).toBeLessThan(0.9);
-    const scale = n.scales.get(nodeName.hero) as readonly number[];
+    // The rigged Idol Pip carries its metre scale on the node; the squash multiplies it.
+    const scale = (n.scales.get(nodeName.hero) as readonly number[]).map((v) => v / PIP_HERO_SCENE_SCALE);
     expect(scale[1]).toBeLessThan(0.9);
     expect(scale[0]).toBeGreaterThan(1);
   });

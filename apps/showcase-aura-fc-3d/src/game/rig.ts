@@ -13,8 +13,11 @@ import {
   FOOTBALLER_CANONICAL_HEIGHT,
   GOALKEEPER_CANONICAL_HEIGHT,
   buildArticulatedFootballerNode,
+  computeFootballerJointPose,
   poseArticulatedFootballer
 } from "../art/proceduralModels";
+import { animateIdolBody, idolBodiesEnabled, idolBodyNode, idolBodyScale, idolKeyForAthlete, type IdolBodyKey } from "./idolBodies";
+import { GAIT_PER_METRE } from "./locomotion";
 
 export type RigNode = any;
 
@@ -33,6 +36,10 @@ export interface AthleteRig {
   /** Clip and phase last handed to the body (published in the route evidence). */
   activeClip: string;
   activePhase: number;
+  /** Idol body GLB driving this athlete (undefined: procedural articulated body, `?idol=off`). */
+  readonly idolKey?: IdolBodyKey;
+  /** Uniform node scale of the Idol body (rendered target height / the GLB's admitted T-pose height). */
+  readonly idolScale: number;
 }
 
 export interface AthleteKit {
@@ -107,14 +114,24 @@ export const KIT_FABRIC_RIM = { color: "#eef4fc", power: 3.6, intensity: 0.45 } 
 export const BLOB_OPACITY = 0.32;
 export const HYBRID_BLOB_OPACITY = 0.14;
 
-export function athleteNodes(id: string, blobOpacity: number = BLOB_OPACITY, castMarkerShadows = true): RigNode[] {
+/** Rendered athlete height (m): keepers 2.32, defenders' power frame 2.26, the rest 2.22. */
+export function athleteTargetHeight(id: string): number {
+  return id.endsWith("-gk") ? 2.32 : isPowerFrameRole(id) ? 2.26 : 2.22;
+}
+
+export function athleteNodes(
+  id: string,
+  blobOpacity: number = BLOB_OPACITY,
+  castMarkerShadows = true,
+  idol: boolean = idolBodiesEnabled()
+): RigNode[] {
   const isKeeper = id.endsWith("-gk");
   const isPower = isPowerFrameRole(id);
   const isCaptain = id.endsWith("-mf");
   const kit = teamKitForId(id);
-  const targetHeight = isKeeper ? 2.32 : isPower ? 2.26 : 2.22;
+  const targetHeight = athleteTargetHeight(id);
   return [
-    buildArticulatedFootballerNode(
+    idol ? idolBodyNode(`${id}-body`, idolKeyForAthlete(id), idolBodyScale(idolKeyForAthlete(id), targetHeight)) : buildArticulatedFootballerNode(
       id,
       {
         shirt: kit.shirt,
@@ -144,7 +161,7 @@ export function athleteNodes(id: string, blobOpacity: number = BLOB_OPACITY, cas
   ];
 }
 
-export function resolveAthlete(app: any, id: string): AthleteRig {
+export function resolveAthlete(app: any, id: string, idol: boolean = idolBodiesEnabled()): AthleteRig {
   const req = (n: string) => app.nodes.require(`${id}-${n}`);
   const lookup = (nodeId: string) => {
     try {
@@ -167,7 +184,9 @@ export function resolveAthlete(app: any, id: string): AthleteRig {
     phaseOffset: ((idHash(id) % 1000) / 1000) * 1.8,
     loco: "Ready",
     activeClip: "Ready",
-    activePhase: 0
+    activePhase: 0,
+    ...(idol ? { idolKey: idolKeyForAthlete(id) } : {}),
+    idolScale: idolBodyScale(idolKeyForAthlete(id), athleteTargetHeight(id))
   };
 }
 
@@ -208,8 +227,7 @@ export function poseAthlete(rig: AthleteRig, p: PlayerState, t: number): void {
   const a = next.anim;
   rig.activeClip = a.clip;
   rig.activePhase = a.phase;
-  rig.body?.setAnimation?.({ clip: a.clip, loop: a.loop, duration: a.duration, startTime: t - a.phase, crossFade: false });
-  poseArticulatedFootballer(rig.lookup, rig.id, {
+  const poseInput = {
     clip: a.clip,
     phase: a.phase,
     duration: a.duration,
@@ -218,7 +236,18 @@ export function poseAthlete(rig: AthleteRig, p: PlayerState, t: number): void {
     celebrateT: p.celebrateT,
     diveDir: p.diveDir,
     yaw: p.yaw
-  });
+  };
+  if (rig.idolKey) {
+    // Idol body: motion-captured clips chosen by the same sim state (planted-foot locomotion by distance, kick contact
+    // on the sim frame, mirrored keeper dives); the code pose covers the moves the capture library lacks.
+    animateIdolBody(rig.body, rig.idolKey, {
+      clip: a.clip, phase: a.phase, duration: a.duration, metres: p.gait / GAIT_PER_METRE, isKeeper: p.isKeeper,
+      diveDir: p.diveDir, yaw: p.yaw, celebrateKind: poseInput.celebrateKind, celebrateT: p.celebrateT, now: t + rig.phaseOffset
+    }, rig.idolScale, t);
+  } else {
+    rig.body?.setAnimation?.({ clip: a.clip, loop: a.loop, duration: a.duration, startTime: t - a.phase, crossFade: false });
+    poseArticulatedFootballer(rig.lookup, rig.id, poseInput);
+  }
 
   rig.shadow.setPosition(p.x, 0.014, p.z).setScale([1, 1, 1]).setVisible(true);
   const pulse = p.controlled ? 1.05 + Math.sin(t * 6) * 0.08 : 0.72;

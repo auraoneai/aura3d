@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "last-train-port",
+  "key": "llHouse1",
+  "generatedAt": "2026-11-18T23:33:38.944Z",
+  "generator": "tools/idol/generate.mjs (resumed after its 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A single three-storey Mediterranean seaside townhouse, honey-yellow ochre stucco walls, slate-blue tiled hipped roof with one chimney, brick-red wooden window shutters on every window, rows of tall windows with dark glass, a green wooden front door, two small wrought-iron balconies, white stone window trims and cornice, closed solid building with plain stucco side and back walls that also have shuttered windows, rectangular footprint about as deep as wide. Photograph of a real museum-quality hand-built scale model with model-railway diorama craftsmanship: real enamel paint, polished brass, varnished wood, plaster stucco, slate and terracotta materials, crisp clean edges, very light weathering, warm saturated colours, soft macro studio lighting, no base, no plinth, no display stand. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17,
+      "note": "reference completed in generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0f1-ba40-7c61-81db-f955cd10f092",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 19,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1766272,
+        "num_faces": 3533308,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single three-storey Mediterranean seaside townhouse, honey-yellow ochre stucco walls, slate-blue tiled hipped roof with one chimney, brick-red wooden window shutters on every window, rows of tall windows with dark glass, a green wooden front door, two small wrought-iron balconies, white stone window trims and cornice, closed solid building with plain stucco side and back walls that also have shuttered windows, rectangular footprint about as deep as wide. Photograph of a real museum-quality hand-built scale model with model-railway diorama craftsmanship: real enamel paint, polished brass, varnished wood, plaster stucco, slate and terracotta materials, crisp clean edges, very light weathering, warm saturated colours, soft macro studio lighting, no base, no plinth, no display stand. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 14.309,
+    "size": [
+      9.647,
+      15,
+      10.387
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-last-train-port/assets/idol/llHouse1.glb",
+  "sizeBytes": 3600592,
+  "preview": "artifacts/idol/last-train-port/llHouse1/views.png",
+  "usd": 0.37
+}

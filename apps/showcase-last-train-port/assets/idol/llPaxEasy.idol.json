@@ -1,0 +1,71 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "last-train-port",
+  "key": "llPaxEasy",
+  "generatedAt": "2026-11-19T00:40:41.164Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f13f-a130-7ef1-b2dc-7541f76e5202",
+      "prompt": "A single relaxed elderly gentleman passenger, mustard-yellow wool overcoat, cream knitted scarf, brown flat cap, dark trousers, brown leather shoes, calm smile. Photograph of a real museum-quality hand-built scale model with model-railway diorama craftsmanship: real enamel paint, polished brass, varnished wood, plaster stucco, slate and terracotta materials, crisp clean edges, very light weathering, warm saturated colours, soft macro studio lighting, no base, no plinth, no display stand. Single full-body figure, head to feet in frame with margin, centered, standing in a T-pose: arms straight out horizontally to the sides, legs straight and apart at shoulder width, feet flat pointing forward, front view facing the camera, even soft studio lighting, no cast shadow, plain light-grey seamless background. Plain clothing back. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f144-0358-7220-9318-dd4ef144b8b4",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024,
+        "rig": true,
+        "animations": [
+          "idle"
+        ]
+      },
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 656208,
+        "num_faces": 1312432,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 34,
+        "animations": [
+          "idle"
+        ]
+      }
+    }
+  ],
+  "prompt": "A single relaxed elderly gentleman passenger, mustard-yellow wool overcoat, cream knitted scarf, brown flat cap, dark trousers, brown leather shoes, calm smile. Photograph of a real museum-quality hand-built scale model with model-railway diorama craftsmanship: real enamel paint, polished brass, varnished wood, plaster stucco, slate and terracotta materials, crisp clean edges, very light weathering, warm saturated colours, soft macro studio lighting, no base, no plinth, no display stand. Single full-body figure, head to feet in frame with margin, centered, standing in a T-pose: arms straight out horizontally to the sides, legs straight and apart at shoulder width, feet flat pointing forward, front view facing the camera, even soft studio lighting, no cast shadow, plain light-grey seamless background. Plain clothing back. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "admitRole": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 1 m, 1 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000        2.23x         104      2\n  bind-pose mismatch (SKIN_BIND_MISMATCH): bone_2 82% off-axis, bone_0 73% off-axis, bone_32 40% off-axis\n  ERROR material0 (mesh 0 prim 0): 104 of 30000 triangles stretch past 1.6x their rest edges (worst 2.23x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n  ERROR material0 (mesh 0 prim 0): 2 thin triangle(s) with a posed edge up to 0.145 m (> 0.14 m): they draw as shards or sails once a limb swings (SKIN_FLAP).",
+    "repairLog": "skin check still fails after repair: SKIN_STRETCH, SKIN_FLAP, SKIN_BIND_MISMATCH\nBind-pose mismatch on bone_2, bone_0, bone_32: the mesh was modelled in a different pose than the skeleton assumes. Weight smoothing and triangle cuts only mask it. For a recognised humanoid run repair-skin --rebuild-limbs (rebuilds the legs in the skeleton's pose); otherwise rebuild the limbs in your DCC tool or regenerate and re-rig the model in the pose the skeleton assumes.\nStill failing after smooth-bridges: SKIN_STRETCH, SKIN_FLAP, SKIN_BIND_MISMATCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand."
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1,
+    "sceneScale": 1.75,
+    "size": [
+      0.958,
+      1,
+      0.272
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-last-train-port/assets/idol/llPaxEasy.glb",
+  "sizeBytes": 2572508,
+  "preview": "artifacts/idol/last-train-port/llPaxEasy/views.png",
+  "usd": 0.42
+}

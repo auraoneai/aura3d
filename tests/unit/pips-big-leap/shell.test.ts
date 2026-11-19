@@ -83,10 +83,13 @@ describe("pips-big-leap shell", () => {
   });
 
   it("C11: spinning pickups do not cast shadow-map shadows", () => {
-    const nodes = (buildWorld(worldSpec("w1")).scene.toJSON() as unknown as { nodes: { kind: string; name?: string; castShadow?: boolean }[] }).nodes;
+    type N = { kind: string; name?: string; castShadow?: boolean; children?: N[] };
+    const nodes = (buildWorld(worldSpec("w1")).scene.toJSON() as unknown as { nodes: N[] }).nodes;
     const pickups = nodes.filter((n) => /^(seed|acorn|heart):/.test(n.name ?? ""));
     expect(pickups.length).toBeGreaterThan(10);
-    expect(pickups.every((n) => n.castShadow === false)).toBe(true);
+    // Idol pickups are a spinning group around one model; the shadow flag lives on the model (procedural fallback: the node).
+    const caster = (n: N): boolean => n.kind === "group" && n.children?.some((c) => c.kind === "model") ? n.children!.some((c) => c.castShadow !== false) : n.castShadow !== false;
+    expect(pickups.some(caster)).toBe(false);
   });
 
   it("C21: node handles are cached and the evidence global is throttled", () => {

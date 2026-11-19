@@ -1,10 +1,10 @@
 /**
- * Power-up pickups as Meshy toy models (presentation only). The simulation still owns type, lane and height; this module
+ * Power-up pickups as Idol vinyl-toy charms (presentation only, `idol.ts`). The simulation still owns type, lane and height; this module
  * maps each live pickup to a pooled model node of its type, wobbles it, and sets a soft coloured halo under it so the pale
  * models read against the white road. Types: rainbow, shield, x2 (score multiplier), switch (colour swap).
  */
 import { geometry, material, scene, type AuraApp } from "@aura3d/engine";
-import { buildPickupModelNode } from "./art/proceduralModels";
+import { PICKUP_KEY, PICKUP_TILT, idolPieceNode } from "./idol";
 import { cylinderMesh } from "./meshes";
 import type { Powerup } from "./sim";
 import { FLAT_FRAGMENT, FLAT_VERTEX } from "./shaders";
@@ -36,7 +36,7 @@ const haloGeometry = (() => {
 export function addPickups(builder: Scene): void {
   for (const type of TYPES) {
     for (let k = 0; k < PER_TYPE; k++) {
-      builder.add(buildPickupModelNode(type, { id: pickupId(type, k), size: SIZE }));
+      builder.add(idolPieceNode(pickupId(type, k), PICKUP_KEY[type], { size: SIZE, anchor: 0.5, tilt: PICKUP_TILT[type] }));
       builder.add(geometry.custom(haloGeometry(), {
         name: haloId(type, k),
         material: material.custom({

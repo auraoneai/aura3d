@@ -40,9 +40,17 @@ function findGlbFiles(rootDir: string): string[] {
 }
 
 describe("harbor drift 100% procedural @aura3d/engine models", () => {
-  it("ships zero .glb files on disk and zero .glb asset URLs in models.ts or aura-assets.ts", () => {
-    expect(findGlbFiles(portDir)).toEqual([]);
-    expect(findGlbFiles(showcaseDir)).toEqual([]);
+  it("ships only provenance-tracked Idol GLBs on disk and zero .glb asset URLs in models.ts or aura-assets.ts", () => {
+    // Idol pass: the only GLBs are the admitted image-to-3D sources under assets/idol, each with its provenance record
+    const idolDir = resolve(portDir, "assets/idol");
+    const portGlbs = findGlbFiles(portDir);
+    for (const file of portGlbs) {
+      expect(file.startsWith(idolDir + "/"), file).toBe(true);
+      expect(file).toMatch(/\/gc[A-Z][A-Za-z]+\.glb$/);
+      expect(existsSync(file.replace(/\.glb$/, ".idol.json")), file).toBe(true);
+    }
+    // the app serves the admitted copies from its own public/aura-assets (hashed names from the shared manifest)
+    for (const file of findGlbFiles(showcaseDir)) expect(file).toMatch(/\/public\/aura-assets\/gc[A-Z][A-Za-z]+\.[0-9a-f]+\.glb$/);
 
     const modelsSrc = readFileSync(resolve(portDir, "models.ts"), "utf8");
     const auraAssetsSrc = readFileSync(resolve(showcaseDir, "src/aura-assets.ts"), "utf8");

@@ -1,0 +1,39 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-diamond-3d",
+  "key": "diaIdolWaterTower",
+  "generatedAt": "2026-11-18T22:13:53.245Z",
+  "generator": "tools/idol/generate.mjs (finished by apps/showcase-aura-diamond-3d/scripts/idol-recover.mjs after the client poll timed out)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08c-faef-7552-a670-072f7a635906",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1094626,
+        "num_faces": 2189492,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 21.956,
+    "size": [
+      10.413,
+      22,
+      10.213
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-diamond-3d/assets/idol/diaIdolWaterTower.glb",
+  "sizeBytes": 3527272,
+  "preview": "artifacts/idol/aura-diamond-3d/diaIdolWaterTower/views.png",
+  "usd": 0.37
+}

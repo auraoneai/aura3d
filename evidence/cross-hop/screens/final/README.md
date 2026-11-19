@@ -1,28 +1,34 @@
-# Cross Hop: evidence screens (retaken 2026-11-01, GU47 phase 6 lane g14)
+# Cross Hop: final screenshots
 
-Retaken 2026-11-01 from branch `gu47/g14` (4.7.3 plus phase 6: Meadow and Critter Core boot the vivid look), image `g14p6f1` on remote ACR (`crmmeprodacr`), software WebGL2 (SwiftShader), same spec, names and sizes. 390 frames and card from runs `g14p6-s1-3` / `g14p6-s1-4`, 1280 frames from `g14p6-s2-2` (the first 1280 run was cancelled by the scheduler hang guard: the screens spec logs no GL_META); card-1x is card-2x downscaled. Quick Play starts on Meadow, which now opens the vivid look (blind panel g14p6f1 3/0/0), so these frames show the vivid look. The 2026-10-31 set (phase 3, 4.6 look) is in git history (`4815853a3`). The table below describes the 2026-10-29 set.
+Route: `/apps/showcase-cross-hop/`
 
-## Previous set (2026-10-29, audit lane G14)
+Runner: headed Chrome on a real GPU (Apple Metal), driven over CDP (`/tmp/gpu-shots/Ztools/cdp.mjs`), production build served from http://127.0.0.1:8790 (2026-11-19).
 
-Route: `apps/showcase-cross-hop`, built from branch `audit-fix/g14` (4.5.0 engine plus the lane G14 game fixes). This set replaces the 2026-10-25 set from `0d965903c`, which predated 4.5.0 (audit row RH-05). File names and sizes are unchanged.
+| Viewport | File | State | Meaning |
+|---|---|---|---|
+| 1280x720 | 1280-01-title.jpg | title | title menu (`?autostart=0`) over the Meadow Roads lanes |
+| 1280x720 | 1280-02-early.jpg | early | `?autoplay=1&seed=7`, step 25: waiting on the verge while a box truck passes, logs and traffic ahead |
+| 1280x720 | 1280-03-traffic.jpg | traffic | `?autoplay=1&theme=1&seed=11`: Downtown Trams, the autopilot holds at the kerb while a tram crosses its column |
+| 1280x720 | 1280-04-river.jpg | river | `?autoplay=1&theme=2&seed=5`: Riverbend, riding a lashed log raft past lily pads |
+| 1280x720 | 1280-05-theme.jpg | theme | `?autoplay=1&theme=5&seed=3`: Critter Core, threading between a tram and a box truck |
+| 1280x720 | 1280-06-results.jpg | results | results card (Snatched by the hawk) after idling a manual run |
+| 390x844 | 390-01-title.jpg | title | title menu, portrait |
+| 390x844 | 390-02-early.jpg | early | autoplay on Meadow Roads, a car passing behind the critter |
+| 390x844 | 390-03-traffic.jpg | traffic | Downtown Trams: a train and a tram passing just ahead |
+| 390x844 | 390-04-river.jpg | river | Riverbend, riding a log between two rafts |
+| 390x844 | 390-05-theme.jpg | theme | Critter Core, box truck passing alongside |
+| 390x844 | 390-06-results.jpg | results | results card, portrait |
+| 1440x900 | card-2x.jpg | card | autoplay mid-crossing on Meadow Roads: taxis, box trucks, logs and trams |
+| 720x450 | card-1x.jpg | card | card-2x.jpg downscaled (LANCZOS, q88) |
 
-**Runner:** remote Azure ACR Task, headless Chromium, **software WebGL2 (SwiftShader)**, about one frame every 2 to 4 seconds. This is not real-GPU evidence: it shows layout and content, not GPU look or frame rate. Spec: `tests/browser/audit-fix/cross-hop.spec.ts`. The run has no artifact egress, so frames are JPEG chunks in the run log, decoded into `evidence/cross-hop/audit-fix-g14/after/`.
+## Checked in the frames
 
-## Frames
+- Autoplay (`?autoplay=1`) now plans with exact look-ahead (`src/game/autopilot.ts`): it waits at the kerb for a real gap, lines up a column, hops straight through two-lane roads when the timing allows, rides logs and hops off before the edge. Real GPU: 3 runs of ~70 s (Downtown Trams, Neon District, default), 0 deaths, 222-248 rows, ~60 fps, no page errors.
+- Headless (tests/autopilot-sim.test.ts, 42 runs over seeds and all 6 themes, 120 s cap): median row 426, 1 death (row 426). Before: median row 45, 41 of 42 runs died, the first at row 6.
+- Road and tram lanes always leave a spot clear for at least 0.3 s between movers (late-game roads used to leave about 0.16 s, less than one hop through the lane, so nobody could cross them).
+- Critter, vehicles and logs grounded; wheels on the pool wheels; critter readable at both viewports.
 
-| File | Source run and shot | State |
-|---|---|---|
-| 1280-01-title.jpg | g14after-c `sc-screens-1280` / `1280-01-title` | `?autostart=0`, title menu, 25 s after ready |
-| 1280-02-early.jpg | g14after-c / `1280-02-early` | Quick Play clicked, 30 s later |
-| 1280-03-action.jpg | g14after-c / `1280-03-action` | after three Up presses (row 3, score 13) |
-| 1280-04-mid.jpg | g14after-a `sa-desk-play` / `settle-90s-hud` | `?seed=7&autoplay=1`, 90 s after ready |
-| 390-01-title.jpg | g14after-c `sc-screens-390` / `390-01-title` | as above, 390x844 |
-| 390-02-early.jpg | g14after-c / `390-02-early` | as above |
-| 390-03-action.jpg | g14after-c / `390-03-action` | as above (row 3, score 13) |
-| 390-04-mid.jpg | g14after-a `sa-phone-play` / `settle-90s-hud` | as above, 390x844 |
-| card-2x.jpg | g14after-card `sc-screens-card` / `card-2x` | 1440x900, `?seed=7&autoplay=1`, 90 s after ready |
-| card-1x.jpg | card-2x downscaled to 720x450 | |
+## Known issues
 
-The run that took the 01 to 03 frames hit the 60-minute task limit while reloading for the 04 frame, so the 04 frames come from the autoplay capture of the same branch.
-
-Steady-state luma and the game beacon for every frame are in `evidence/cross-hop/audit-fix-g14/after/*/meta.jsonl`. 0 page errors and 0 failed requests were logged in these runs.
+- Two neighbouring road lanes with nearly equal speed and direction can stay out of step for a long time late in a run (row 350+); the autopilot then waits about 7 s and takes the best gap, which can end in a squash (1 in 42 simulated runs).
+- Engine: TypedGLBActor part() lookup returns undefined for model nodes in production (packages/engine; game works around it).

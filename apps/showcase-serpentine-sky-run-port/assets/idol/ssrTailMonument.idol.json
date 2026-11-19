@@ -1,0 +1,57 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "serpentine-sky-run",
+  "key": "ssrTailMonument",
+  "generatedAt": "2026-11-18T22:40:41.742Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/serpentine-sky-run/ssrTailMonument/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f091-e1e9-74f3-a432-bbcb3a992d8c",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 938018,
+        "num_faces": 1876040,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Monument of a coiled jade serpent tail spiralling upward around itself on a round carved granite pedestal, emerald scales, gold fins along the coil, the thin tail tip topped with a gold finial and a glowing amber orb. Photograph of a real museum-quality handcrafted East Asian temple artefact: glossy cinnabar-red and black urushi lacquer, carved celadon jade, mother-of-pearl inlay, hand-applied gold leaf and carved granite, crisp real material wear and patina, warm soft studio light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 26.763,
+    "size": [
+      18.871,
+      26.75,
+      18.797
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-serpentine-sky-run-port/assets/idol/ssrTailMonument.glb",
+  "sizeBytes": 3057624,
+  "preview": "artifacts/idol/serpentine-sky-run/ssrTailMonument/views.png",
+  "usd": 0.2,
+  "postProcess": {
+    "by": "serpentine Idol pass (gltf-transform textureCompress + meshopt simplify)",
+    "textures": "JPEG q85-88; base/normal 1024 (ssrHeroViolet 2048), metallicRoughness 512 for props/backdrops, normal 512 for far backdrops",
+    "simplify": "static meshes only (lockBorder, error 0.002) to 7k-17k verts; rigged heroes untouched",
+    "sizeBytes": 1075528
+  }
+}

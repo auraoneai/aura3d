@@ -22,6 +22,8 @@ export interface TurfTextures {
 export interface BaseballSeamMaps {
   readonly normal: unknown;
   readonly roughness: unknown;
+  /** sRGB base-colour map: red stitch rows on white (multiplies the reserved ball colour) */
+  readonly color?: unknown;
 }
 
 let cached: TurfTextures | null | undefined;
@@ -119,7 +121,7 @@ export function batWoodTexture(tone: "ash" | "maple" | "ember"): unknown | null 
   }
 }
 
-/** Stitched cowhide normal + roughness maps for the baseball (keeps base color untouched). */
+/** Stitched cowhide normal + roughness maps for the baseball, plus a red-stitch colour map (white off the seams). */
 export function baseballSeamTextures(): BaseballSeamMaps | null {
   if (cachedBallSeams !== undefined) return cachedBallSeams;
   if (typeof document === "undefined") return (cachedBallSeams = null);
@@ -134,6 +136,12 @@ export function baseballSeamTextures(): BaseballSeamMaps | null {
     if (!nCtx || !rCtx) return (cachedBallSeams = null);
     const nImg = nCtx.createImageData(size, size);
     const rImg = rCtx.createImageData(size, size);
+    // Idol pass GPU QA: the seams were normal-only and spin did not read; a colour map with the red stitch rows (white
+    // elsewhere, so the reserved #f5f1e4 base colour is unchanged off the seams) makes the ball's rotation visible.
+    const cCvs = document.createElement("canvas");
+    cCvs.width = cCvs.height = size;
+    const cCtx = cCvs.getContext("2d");
+    const cImg = cCtx ? cCtx.createImageData(size, size) : null;
     for (let y = 0; y < size; y++) {
       const v = (y + 0.5) / size;
       const lat = (v - 0.5) * Math.PI;
@@ -162,15 +170,27 @@ export function baseballSeamTextures(): BaseballSeamMaps | null {
         rImg.data[i + 1] = roughByte;
         rImg.data[i + 2] = roughByte;
         rImg.data[i + 3] = 255;
+        if (cImg) {
+          // red double stitch rows either side of the seam groove, leather white elsewhere
+          const stitch = Math.max(0, Math.sin(lon * 54)) > 0.35 && dist > 0.025 && dist < 0.075 ? 1 : 0;
+          const groove = dist < 0.02 ? 0.12 : 0;
+          cImg.data[i] = 255 - Math.round(groove * 60);
+          cImg.data[i + 1] = Math.round(255 - stitch * 215 - groove * 60);
+          cImg.data[i + 2] = Math.round(255 - stitch * 205 - groove * 60);
+          cImg.data[i + 3] = 255;
+        }
       }
     }
+    if (cCtx && cImg) cCtx.putImageData(cImg, 0, 0);
     nCtx.putImageData(nImg, 0, 0);
     rCtx.putImageData(rImg, 0, 0);
     const normal = texture.canvas({ canvas: normCvs, colorSpace: "linear", flipY: false });
     const roughness = texture.canvas({ canvas: roughCvs, colorSpace: "linear", flipY: false });
     normal.wrapS = roughness.wrapS = "repeat";
     normal.wrapT = roughness.wrapT = "clamp";
-    cachedBallSeams = { normal, roughness };
+    const color = cCtx ? texture.canvas({ canvas: cCvs, colorSpace: "srgb", flipY: false }) : undefined;
+    if (color) { color.wrapS = "repeat"; color.wrapT = "clamp"; }
+    cachedBallSeams = { normal, roughness, ...(color ? { color } : {}) };
     return cachedBallSeams;
   } catch {
     return (cachedBallSeams = null);

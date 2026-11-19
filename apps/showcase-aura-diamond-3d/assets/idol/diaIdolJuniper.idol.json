@@ -1,0 +1,39 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-diamond-3d",
+  "key": "diaIdolJuniper",
+  "generatedAt": "2026-11-18T22:17:15.876Z",
+  "generator": "tools/idol/generate.mjs (finished by apps/showcase-aura-diamond-3d/scripts/idol-recover.mjs after the client poll timed out)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09d-47b4-71f2-8000-c5a53c6f7471",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1168566,
+        "num_faces": 2337720,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 9.041,
+    "size": [
+      8.918,
+      8.5,
+      8.094
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-diamond-3d/assets/idol/diaIdolJuniper.glb",
+  "sizeBytes": 4284340,
+  "preview": "artifacts/idol/aura-diamond-3d/diaIdolJuniper/views.png",
+  "usd": 0.37
+}

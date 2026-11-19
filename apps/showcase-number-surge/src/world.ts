@@ -4,21 +4,24 @@
  * deep midnight-violet `#0d0820` linear fog (`near >= 65, far >= 250`) + `neonBloom`,
  * paired GLSL 3.00 + WGSL holographic `frostedGateSpec` portals, `crystalWallSpec`
  * segmented boss walls, clearcoat hero core with curved `sphereCapMesh` inlay, glossy
- * `lacquer` + `ceramic` value-evolution crowd tokens, and `sparks` flipbook bursts.
+ * and `sparks` flipbook bursts. (The value-evolution escort squad beside the ball was removed after owner review.)
  */
 import {
   camera,
   effects,
   environments,
   geometry,
+  group,
   instances,
   lights,
   material,
+  model,
   scene,
   texture,
   type AuraApp,
   type AuraTransformSpec
 } from "@aura3d/engine";
+import { assets } from "./aura-assets.route";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch,
@@ -39,14 +42,8 @@ import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
 import {
   SURGE_MATERIALS,
   bossWallSawRollerHazardMeshData,
-  buildCeramicEscortGlowSpec,
-  buildCeramicEscortOrbSpec,
   buildHazardBuzzsawSpec,
   buildHeroSurgeBallNode,
-  buildLacquerEscortGlowSpec,
-  buildLacquerEscortOrbSpec,
-  buildRivalRiotGuardGlowSpec,
-  buildRivalRiotGuardSpec,
   highwayGateGantryFrameMeshData,
   powerupMedallionMeshData
 } from "./art/proceduralModels";
@@ -104,8 +101,81 @@ const KEY_SUN_DIR: Rgb = (() => {
   return [dx / len, dy / len, dz / len];
 })();
 
-const LACQUER_TOKEN_MAX = 8;
-const CERAMIC_TOKEN_MAX = 6;
+/**
+ * Idol wow pass: rigged Idol bodies ship in Idol's raw frame (1 m tall, centred on the origin, facing +X; an
+ * un-normalised skeleton keeps the skin check honest), so each slot scales the body to the procedural figure's
+ * height, grounds it and turns +X to the slot's facing. Clip lengths from `assets inspect`.
+ */
+const IDOL_RIG = { guard: 1.31 } as const;
+const IDOL_FACE_PLUS_Z = -Math.PI / 2;
+
+function idolRiggedSlot(id: string, asset: typeof assets.nsGuardRig, height: number, faceYaw: number) {
+  return group(id, [
+    model(asset, { name: `${id}-body`, scaleMode: "world", castShadow: true, receiveShadow: true })
+      .position(0, height / 2, 0)
+      .rotation(0, faceYaw, 0)
+      .scale(height)
+      .runtime({ id: `${id}-body` })
+  ]).position(0, -40, -60).scale(0.001).runtime({ id });
+}
+
+/** Writes per-slot transforms (the old instanced-pool scratch) to the slot group nodes; parked slots are hidden. */
+function applyIdolSlots(node: (id: string) => NodeHandle, prefix: string, scratch: readonly MutableCrowdTransform[]): void {
+  for (let i = 0; i < scratch.length; i++) {
+    const t = scratch[i]!;
+    const shown = t.scale > 0.01;
+    const h = node(`${prefix}-${i}`).setVisible(shown);
+    if (shown) h.setPosition(t.position[0], t.position[1], t.position[2]).setRotation(t.rotation[0], t.rotation[1], t.rotation[2]).setScale(t.scale);
+  }
+}
+
+/* ------------------------------------------------------------ contact geometry (visual == sim hitbox) */
+
+/**
+ * The sim has no lateral colliders: a gate row resolves when it reaches the ball plane (z = 0) and a boss wall resolves
+ * (smash / shield block / burst) when `wall.z` reaches 0 across the whole road. So the world keeps every solid gate part
+ * outside the ball's lateral sweep (`|x| <= LANE_LIMIT + BALL_RADIUS`) and draws the boss-wall assembly
+ * `wallVisualLead(shield)` beyond the sim plane, so its frontmost solid (the riot guards) touches the ball's front, or
+ * the shield bubble's, on exactly the step the sim resolves the wall: the ball stops against it instead of sinking in.
+ */
+/** Gate gantries keep only their outer stanchion (`highwayGateGantryFrameMeshData([-1])`); the +x gate is yawed by pi. */
+export const GATE_FRAME_SIDES: readonly (-1 | 1)[] = [-1];
+export const gateFrameYaw = (gateX: number): number => (gateX > 0 ? Math.PI : 0);
+export const SHIELD_RADIUS = 0.96;
+/** Flank buzzsaws on the boss wall (`buildHazardBuzzsawSpec`, r 0.86, half depth 0.09). */
+export const WALL_SAW = { x: 2.86, y: 1.82, z: 0.34, halfDepth: 0.09 } as const;
+/** Two flanking Heavy Riot Guards + one central Giant Riot Captain standing in front of each boss wall. */
+export const BOSS_GUARDS = [
+  { x: -1.86, z: 0.54, scale: 0.98, yaw: 0.14 },
+  { x: 0, z: 0.62, scale: 1.18, yaw: 0 },
+  { x: 1.86, z: 0.54, scale: 0.98, yaw: -0.14 }
+] as const;
+export const GUARD_SWAY = 0.055;
+/** nsGuardRig raw half extents (`assets/idol/nsGuardRig.idol.json` rawBounds; faces +X, so depth is raw X, T-pose span raw Z). */
+export const GUARD_RAW_HALF = { depth: 0.129, span: 0.501 } as const;
+/** Frontmost (+z) point of the `walls` batch mesh (flank bearing wheels; pinned against the mesh by the contact test). */
+export const WALL_MESH_FRONT = 0.52;
+
+/** Frontmost (+z) reach of one guard about the wall origin at its widest sway (body depth plus yawed T-pose arm span). */
+export function guardFrontZ(g: (typeof BOSS_GUARDS)[number]): number {
+  const yaw = Math.abs(g.yaw) + GUARD_SWAY;
+  const s = g.scale * IDOL_RIG.guard;
+  return g.z + s * (GUARD_RAW_HALF.depth * Math.cos(yaw) + GUARD_RAW_HALF.span * Math.sin(yaw));
+}
+
+/** Frontmost solid of the whole boss-wall assembly (wall mesh, saws, guards) about the wall origin. */
+export const WALL_ASSEMBLY_FRONT = Math.max(WALL_MESH_FRONT, WALL_SAW.z + WALL_SAW.halfDepth, ...BOSS_GUARDS.map(guardFrontZ));
+
+/** How far beyond the sim's wall plane the assembly is drawn so its front meets the ball (or shield) front at `wall.z = 0`. */
+export const wallVisualLead = (shield: boolean): number => WALL_ASSEMBLY_FRONT + (shield ? SHIELD_RADIUS : DIMS.BALL_RADIUS);
+
+/**
+ * Drawn z of a boss wall's origin (`back` = presentation step-back, or `o.distance` for run space). The sim wall z is
+ * clamped at its resolve plane: on a failed wall the run freezes a fraction of a step past z = 0, and the wall must
+ * stay in contact with the ball rather than slide over it.
+ */
+export const wallWorldZ = (simWallZ: number, back: number, shield: boolean): number =>
+  -(Math.max(0, simWallZ) + back) - wallVisualLead(shield);
 
 /* ------------------------------------------------------------ canvas-text label program (game-specific GLSL) */
 
@@ -293,13 +363,6 @@ const parkedTransforms = (count: number): MutableCrowdTransform[] =>
     scale: 0.001
   }));
 
-function crowdCounts(value: number): { readonly lacquer: number; readonly ceramic: number } {
-  if (value >= 1000) return { lacquer: 8, ceramic: 6 };
-  if (value >= 100) return { lacquer: 5, ceramic: 3 };
-  if (value >= 10) return { lacquer: 3, ceramic: 1 };
-  return { lacquer: 1, ceramic: 0 };
-}
-
 export function buildWorld(options: WorldOptions): World {
   const look = options.look ?? LOOK;
   void BROADCAST_CRISP_LUT;
@@ -355,7 +418,7 @@ export function buildWorld(options: WorldOptions): World {
 
   // Refractive holographic gate panels + lattice-truss alloy math-gate gantries.
   const panels = new Batch(gatePanelMesh(), CONFIG.GATES, LINEAR.gateGood, CORRIDOR_BOUNDS);
-  const frames = new Batch(highwayGateGantryFrameMeshData(), CONFIG.GATES, LINEAR.gateFrame, CORRIDOR_BOUNDS);
+  const frames = new Batch(highwayGateGantryFrameMeshData(GATE_FRAME_SIDES), CONFIG.GATES, LINEAR.gateFrame, CORRIDOR_BOUNDS);
   addBatch("gate-panels", panels, frostedGateSpec());
   addBatch("gate-frames", frames, stanchionSpec(KEY_SUN_DIR), true);
 
@@ -373,54 +436,7 @@ export function buildWorld(options: WorldOptions): World {
   const numberTexture = texture.canvas({ canvas: numberCanvas.canvas, colorSpace: "linear" });
   add("ball-label", sphereCapMesh(DIMS.BALL_RADIUS + 0.018, 0.72, 18), labelSpec(numberTexture));
   add("ball-shadow", shadowMesh(), shadowSpec());
-  add("shield", sphereMesh(0.96, 24, 16), hexShieldSpec(LINEAR.shield));
-
-  // Sculpted Cyber-Sprinters (`crowd-lacquer` squad + `crowd-ceramic` giant captains) + glowing visor/chevron/cleat passes.
-  builder
-    .add(
-      instances
-        .custom(buildLacquerEscortOrbSpec(), {
-          name: "crowd-lacquer",
-          castShadow: true,
-          receiveShadow: true,
-          material: SURGE_MATERIALS.escortLacquer,
-          transforms: parkedTransforms(LACQUER_TOKEN_MAX)
-        })
-        .runtime({ id: "crowd-lacquer" })
-    )
-    .add(
-      instances
-        .custom(buildLacquerEscortGlowSpec(), {
-          name: "crowd-lacquer-glow",
-          castShadow: false,
-          receiveShadow: false,
-          material: SURGE_MATERIALS.neonCyanPractical,
-          transforms: parkedTransforms(LACQUER_TOKEN_MAX)
-        })
-        .runtime({ id: "crowd-lacquer-glow" })
-    )
-    .add(
-      instances
-        .custom(buildCeramicEscortOrbSpec(), {
-          name: "crowd-ceramic",
-          castShadow: true,
-          receiveShadow: true,
-          material: SURGE_MATERIALS.escortCeramic,
-          transforms: parkedTransforms(CERAMIC_TOKEN_MAX)
-        })
-        .runtime({ id: "crowd-ceramic" })
-    )
-    .add(
-      instances
-        .custom(buildCeramicEscortGlowSpec(), {
-          name: "crowd-ceramic-glow",
-          castShadow: false,
-          receiveShadow: false,
-          material: SURGE_MATERIALS.neonGoldPractical,
-          transforms: parkedTransforms(CERAMIC_TOKEN_MAX)
-        })
-        .runtime({ id: "crowd-ceramic-glow" })
-    );
+  add("shield", sphereMesh(SHIELD_RADIUS, 24, 16), hexShieldSpec(LINEAR.shield));
 
   // Segmented crystal-masonry + crusher-roller boss walls, spinning flank buzzsaws & crimson-and-obsidian Heavy Riot Guards.
   const walls = new Batch(bossWallSawRollerHazardMeshData(), CONFIG.WALLS, LINEAR.wall, CORRIDOR_BOUNDS);
@@ -437,28 +453,10 @@ export function buildWorld(options: WorldOptions): World {
         })
         .runtime({ id: "hazard-saws" })
     )
-    .add(
-      instances
-        .custom(buildRivalRiotGuardSpec(), {
-          name: "boss-guards",
-          castShadow: true,
-          receiveShadow: true,
-          material: SURGE_MATERIALS.rivalRiotArmor,
-          transforms: parkedTransforms(CONFIG.WALLS * 3)
-        })
-        .runtime({ id: "boss-guards" })
-    )
-    .add(
-      instances
-        .custom(buildRivalRiotGuardGlowSpec(), {
-          name: "boss-guards-glow",
-          castShadow: false,
-          receiveShadow: false,
-          material: SURGE_MATERIALS.neonCrimsonPractical,
-          transforms: parkedTransforms(CONFIG.WALLS * 3)
-        })
-        .runtime({ id: "boss-guards-glow" })
-    );
+    ;
+  // Idol wow pass: rigged Idol heavy riot guards (`boss-guards-<i>`) playing their Idol idle clip, facing +Z toward the
+  // oncoming squad like the procedural guards.
+  for (let i = 0; i < CONFIG.WALLS * 3; i++) builder.add(idolRiggedSlot(`boss-guards-${i}`, assets.nsGuardRig, IDOL_RIG.guard, IDOL_FACE_PLUS_Z));
   const wallCanvases = Array.from({ length: CONFIG.WALLS }, () => makeCanvas(384, 208));
   const wallTextures = wallCanvases.map(({ canvas }) => texture.canvas({ canvas, colorSpace: "linear" }));
   for (let i = 0; i < CONFIG.WALLS; i++) {
@@ -539,8 +537,6 @@ export function buildWorld(options: WorldOptions): World {
       const powerupRunZ = new Float64Array(CONFIG.POWERUPS).fill(Number.NaN);
       const powerupKind = new Array<string>(CONFIG.POWERUPS).fill("");
       const segmentJ = new Array<number>(CONFIG.SEGMENTS).fill(Number.NaN);
-      const lacquerScratch = parkedTransforms(LACQUER_TOKEN_MAX);
-      const ceramicScratch = parkedTransforms(CERAMIC_TOKEN_MAX);
       const hazardSawScratch = parkedTransforms(CONFIG.WALLS * 2);
       const bossGuardScratch = parkedTransforms(CONFIG.WALLS * 3);
 
@@ -562,13 +558,13 @@ export function buildWorld(options: WorldOptions): World {
       node("ball");
       node("ball-label");
       node("ball-shadow");
-      node("crowd-lacquer");
-      node("crowd-lacquer-glow");
-      node("crowd-ceramic");
-      node("crowd-ceramic-glow");
       node("hazard-saws");
-      node("boss-guards");
-      node("boss-guards-glow");
+      // Idol clips (engine pose mixer; main.ts steps the app by frame time): staggered run phases for the squad,
+      // idle for the guards.
+      for (let i = 0; i < CONFIG.WALLS * 3; i++) {
+        node(`boss-guards-${i}`);
+        node(`boss-guards-${i}-body`).setAnimation({ clip: "idle", loop: true, speed: 1, duration: 2.533, startTime: (i * 0.71) % 2.533 });
+      }
       node("sparks-burst").setVisible(false);
       node("underlay");
       node("shield").setVisible(false);
@@ -626,7 +622,7 @@ export function buildWorld(options: WorldOptions): World {
             gateRunZ[slot] = runZ;
             const z = scrollFrameZ(runZ, roadAnchor);
             panels.place(slot, gate.x, 0, z, 0, 1, 1, 1);
-            frames.place(slot, gate.x, 0, z, 0, 1, 1, 1);
+            frames.place(slot, gate.x, 0, z, gateFrameYaw(gate.x), 1, 1, 1);
             const negative = gate.kind === "sub" || gate.kind === "div2";
             const bright = negative ? LINEAR.gateBad : LINEAR.gateGood;
             panels.setTone(slot, bright);
@@ -673,7 +669,7 @@ export function buildWorld(options: WorldOptions): World {
           }
           const { slot, fresh } = wallSlots.use(wall);
           if (slot < 0) continue;
-          const runZ = -(wall.z + o.distance);
+          const runZ = wallWorldZ(wall.z, o.distance, o.shieldActive);
           if (fresh || wallRunZ[slot] !== runZ) {
             wallRunZ[slot] = runZ;
             walls.place(slot, 0, 0, scrollFrameZ(runZ, roadAnchor), 0, 1, 1, 1);
@@ -686,38 +682,35 @@ export function buildWorld(options: WorldOptions): World {
             paintWallHp(wallCanvases[slot]!.g, wall.hp, canSmash);
             wallTextures[slot]!.needsUpdate = true;
           }
-          const worldWallZ = -(wall.z + back);
+          const worldWallZ = wallWorldZ(wall.z, back, o.shieldActive);
           node(`wall-label-${slot}`).setVisible(true).setPosition(0, 0, worldWallZ);
           for (let sideIdx = 0; sideIdx < 2; sideIdx += 1) {
             const side = sideIdx === 0 ? -1 : 1;
             const hs = hazardSawScratch[slot * 2 + sideIdx]!;
-            hs.position[0] = side * 2.86;
-            hs.position[1] = 1.82;
-            hs.position[2] = worldWallZ + 0.34;
+            hs.position[0] = side * WALL_SAW.x;
+            hs.position[1] = WALL_SAW.y;
+            hs.position[2] = worldWallZ + WALL_SAW.z;
             hs.rotation[0] = 0;
             hs.rotation[1] = 0;
             hs.rotation[2] = side * sawSpin;
             hs.scale = 1;
           }
           // Station 2 flanking Heavy Riot Guards + 1 central Giant Riot Captain (`minY = 0`) defending the boss wall
-          const guardOffsets = [-1.86, 0, 1.86] as const;
-          for (let gIdx = 0; gIdx < 3; gIdx += 1) {
-            const gx = guardOffsets[gIdx]!;
-            const isCaptain = gIdx === 1;
+          for (let gIdx = 0; gIdx < BOSS_GUARDS.length; gIdx += 1) {
+            const guard = BOSS_GUARDS[gIdx]!;
             const bg = bossGuardScratch[slot * 3 + gIdx]!;
-            const sway = view.reducedMotion ? 0 : 0.055 * Math.sin(time * 3.8 + slot * 1.3 + gIdx * 1.7);
-            bg.position[0] = gx;
+            const sway = view.reducedMotion ? 0 : GUARD_SWAY * Math.sin(time * 3.8 + slot * 1.3 + gIdx * 1.7);
+            bg.position[0] = guard.x;
             bg.position[1] = 0;
-            bg.position[2] = worldWallZ + (isCaptain ? 0.62 : 0.54);
+            bg.position[2] = worldWallZ + guard.z;
             bg.rotation[0] = 0;
-            bg.rotation[1] = (gx < 0 ? 0.14 : gx > 0 ? -0.14 : 0) + sway;
+            bg.rotation[1] = guard.yaw + sway;
             bg.rotation[2] = 0;
-            bg.scale = isCaptain ? 1.18 : 0.98;
+            bg.scale = guard.scale;
           }
         }
         node("hazard-saws").setInstances(hazardSawScratch);
-        node("boss-guards").setInstances(bossGuardScratch);
-        node("boss-guards-glow").setInstances(bossGuardScratch);
+        applyIdolSlots(node, "boss-guards", bossGuardScratch);
         const breakRatio = nearestAheadHp > 0 ? Math.min(1.5, Math.max(0, o.number / nearestAheadHp)) : 0;
         node("walls").setUniform?.("nsBreakRatio", breakRatio);
 
@@ -772,61 +765,6 @@ export function buildWorld(options: WorldOptions): World {
         }
         if (o.shieldActive) node("shield").setPosition(laneX, ballY, 0).setRotation(0, (time * 0.65) % tau, 0);
 
-        /* sculpted cyber-sprint squad runners in V-wedge formation scaled by floor(log10(number)) — zero per-frame allocs */
-        const counts = crowdCounts(o.number);
-        const cadence = view.reducedMotion ? 0 : time * 11.5;
-        for (let i = 0; i < LACQUER_TOKEN_MAX; i++) {
-          const t = lacquerScratch[i]!;
-          if (i < counts.lacquer) {
-            const side = i % 2 === 0 ? -1 : 1;
-            const rank = Math.floor(i / 2);
-            const flankX = side * (0.86 + rank * 0.34);
-            const tx = Math.max(-DIMS.EDGE_X + 0.34, Math.min(DIMS.EDGE_X - 0.34, laneX + flankX));
-            const stridePhase = cadence + i * 1.15;
-            const ty = view.reducedMotion ? 0 : 0.058 * Math.abs(Math.sin(stridePhase));
-            const tz = 0.42 + rank * 0.48 + (view.reducedMotion ? 0 : 0.04 * Math.cos(stridePhase));
-            t.position[0] = tx;
-            t.position[1] = ty;
-            t.position[2] = tz;
-            t.rotation[0] = -0.05;
-            t.rotation[1] = view.reducedMotion ? 0 : 0.09 * Math.sin(stridePhase) - laneBank * 0.45;
-            t.rotation[2] = view.reducedMotion ? 0 : -side * 0.05 - laneBank * 0.65;
-            t.scale = 0.96;
-          } else {
-            t.position[0] = 0;
-            t.position[1] = -40;
-            t.position[2] = -60;
-            t.scale = 0.001;
-          }
-        }
-        for (let i = 0; i < CERAMIC_TOKEN_MAX; i++) {
-          const t = ceramicScratch[i]!;
-          if (i < counts.ceramic) {
-            const side = i % 2 === 0 ? 1 : -1;
-            const rank = Math.floor(i / 2);
-            const flankX = side * (0.64 + rank * 0.42);
-            const tx = Math.max(-DIMS.EDGE_X + 0.34, Math.min(DIMS.EDGE_X - 0.34, laneX + flankX));
-            const stridePhase = cadence * 1.06 + i * 1.45 + 0.6;
-            const ty = view.reducedMotion ? 0 : 0.068 * Math.abs(Math.sin(stridePhase));
-            const tz = 0.95 + rank * 0.52;
-            t.position[0] = tx;
-            t.position[1] = ty;
-            t.position[2] = tz;
-            t.rotation[0] = -0.06;
-            t.rotation[1] = view.reducedMotion ? 0 : 0.1 * Math.cos(stridePhase) - laneBank * 0.45;
-            t.rotation[2] = view.reducedMotion ? 0 : -side * 0.06 - laneBank * 0.65;
-            t.scale = 1.08;
-          } else {
-            t.position[0] = 0;
-            t.position[1] = -40;
-            t.position[2] = -60;
-            t.scale = 0.001;
-          }
-        }
-        node("crowd-lacquer").setInstances(lacquerScratch);
-        node("crowd-lacquer-glow").setInstances(lacquerScratch);
-        node("crowd-ceramic").setInstances(ceramicScratch);
-        node("crowd-ceramic-glow").setInstances(ceramicScratch);
 
         /* gate-shatter / wall-smash sparks flipbook burst */
         const totalBursts = o.events.pickGood + o.events.smash + o.events.wallBlock;

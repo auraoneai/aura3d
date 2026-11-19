@@ -1,6 +1,7 @@
 /**
- * Legacy procedural constants retained for reference; all 3D geometry in Lamplight Line is authored
- * procedurally on `@aura3d/engine` in `art/proceduralModels.ts` and `world.ts` with zero `.glb` files.
+ * Legacy procedural constants retained for reference. Since the Nov 2026 Idol pass the tram, riders, motorman, townsfolk and
+ * town set pieces are Idol GLBs (`idolModels.ts`); terrain, track, flora and the procedural fallbacks live in
+ * `art/proceduralModels.ts` and `world.ts`.
  */
 export const MESHY_ENABLED = false;
 

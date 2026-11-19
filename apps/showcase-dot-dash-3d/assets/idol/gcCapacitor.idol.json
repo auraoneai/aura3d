@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "dot-dash-3d",
+  "key": "gcCapacitor",
+  "generatedAt": "2026-11-18T22:00:24.491Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-a601-7af2-bc25-365349b31d95",
+      "prompt": "A single upright radial electrolytic capacitor component standing on its two short legs: a tall brushed aluminium cylindrical can with a dark blue heat-shrink plastic sleeve covering the sides, a silver stripe down one side, a stamped cross-shaped vent on the flat aluminium top, a black rubber seal at the bottom. Macro photograph of a real miniature precision-machined electronic device, physically based polished metal, anodised aluminium, glossy plastic and glass, fine machining marks and tiny screws, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f096-c56c-7d82-a240-78f032a53d4d",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1015338,
+        "num_faces": 2030684,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single upright radial electrolytic capacitor component standing on its two short legs: a tall brushed aluminium cylindrical can with a dark blue heat-shrink plastic sleeve covering the sides, a silver stripe down one side, a stamped cross-shaped vent on the flat aluminium top, a black rubber seal at the bottom. Macro photograph of a real miniature precision-machined electronic device, physically based polished metal, anodised aluminium, glossy plastic and glass, fine machining marks and tiny screws, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 1,
+    "size": [
+      0.442,
+      1,
+      0.456
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-dot-dash-3d/assets/idol/gcCapacitor.glb",
+  "sizeBytes": 2456556,
+  "preview": "artifacts/idol/dot-dash-3d/gcCapacitor/views.png",
+  "usd": 0.57,
+  "rejectedRerolls": [
+    {
+      "requestId": "01a1f0b7-a6fd-7183-97c5-9451c2634728",
+      "seed": 11,
+      "usd": 0.2,
+      "reason": "invented red floral decals on the sleeve; v1 (faint marks on the back only) kept"
+    }
+  ]
+}

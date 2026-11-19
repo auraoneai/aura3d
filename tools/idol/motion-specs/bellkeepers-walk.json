@@ -1,0 +1,38 @@
+{
+  "game": "bellkeepers-walk",
+  "out": "apps/showcase-where-the-wind-wanders-port/src/motion.generated.ts",
+  "clips": [
+    {
+      "key": "Idle",
+      "prompt": "A traveller in a long cloak stands still on a grassy hill holding a tall walking staff upright in the right hand, breathing calmly, shifting weight gently and looking slowly to the left and to the right.",
+      "duration": 4,
+      "loop": true,
+      "seed": 801,
+      "guidance": 5
+    },
+    {
+      "key": "Walk",
+      "prompt": "A traveller walks forward in a straight line at a steady unhurried pace, holding a tall walking staff in the right hand and planting it with each step, the left arm swinging naturally.",
+      "duration": 3,
+      "loop": true,
+      "seed": 802,
+      "guidance": 5
+    },
+    {
+      "key": "Hop",
+      "prompt": "A person standing still bends the knees and makes one small light hop forward with both feet together, then lands softly with bent knees and stands up straight.",
+      "duration": 2,
+      "loop": false,
+      "seed": 803,
+      "guidance": 5
+    },
+    {
+      "key": "RingBell",
+      "prompt": "A person standing still raises a tall staff held in the right hand high above the head in a joyful salute, holds it up for a moment while looking up, then slowly lowers it back down to the side.",
+      "duration": 3,
+      "loop": false,
+      "seed": 804,
+      "guidance": 5
+    }
+  ]
+}

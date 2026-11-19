@@ -44,7 +44,39 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [56, 62], mobile: "both" },
-  assets: [],
+  // Idol wow pass (tools/idol/specs/teleoperator.json): wheel-less player fleet / rival / traffic bodies (gd*W, wheels spin in
+  // sf-wheels), wheeled parked cars (gd*T), commuter, street tree, two landmarks.
+  assets: [
+    { role: "vehicle", assetKey: "gdCruiserPodW3", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdCrossoverAvW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdHeavySemiW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdGtCrimsonW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdInterceptorCobaltW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdShuttleW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdGtChampagneW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdResponseSuvW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdCableCarW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdGtAmberW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdSedanSlateW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdSedanPearlW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdSedanPearlT", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdCoupeNavyW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdTaxiCabW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdHatchCoralW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdHatchMintW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdTransitBusW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdPickupGraphiteW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdPickupBronzeW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdBoxTruckW", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "vehicle", assetKey: "gdParkedHatchWhiteT", maxTriangles: 60000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    ...(["gdWalkerA", "gdWalkerB", "gdWalkerC", "gdWalkerD"] as const).map((assetKey) => (
+      { role: "character" as const, assetKey, maxTriangles: 40000, minTriangles: 8000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const, animated: { clips: ["idle", "walk"] } }
+    )),
+    { role: "character", assetKey: "gdCommuter", maxTriangles: 40000, minTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["idle", "walk"] } },
+    { role: "set-dressing", assetKey: "gdStreetTree", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "gdFerryTerminal", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "gdPyramidTower", maxTriangles: 60000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+  ],
   vfx: [
     { event: "collision", kind: "grid-impact" },
     { event: "pickup", kind: "grid-objective-ring" },

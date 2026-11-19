@@ -1,0 +1,52 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-links-3d",
+  "key": "linksIdolGolfCart",
+  "generatedAt": "2026-11-18T22:36:19.157Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/aura-links-3d/_refs/linksIdolGolfCart.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0cd-cd5b-72b1-b752-b51339f06e7d",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1646480,
+        "num_faces": 3293352,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Two-seat electric golf cart with a deep racing-green glossy body, cream-white flat roof canopy on four slim metal struts, clear raked windshield, tan leather bench seat, rear golf bag rack, small chrome hubcaps and black turf tyres. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 1.966,
+    "size": [
+      1.379,
+      1.85,
+      1.97
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-links-3d/assets/idol/linksIdolGolfCart.glb",
+  "sizeBytes": 7224532,
+  "preview": "artifacts/idol/aura-links-3d/linksIdolGolfCart/views.png",
+  "usd": 0.2,
+  "renormalized": "front +x, yawDeg 90 (normalise step re-run on the same Idol output)"
+}

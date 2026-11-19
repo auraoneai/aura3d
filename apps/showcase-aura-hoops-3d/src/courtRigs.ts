@@ -657,8 +657,12 @@ export function courtWaterNodes(rig: CourtRig, reducedMotion: boolean): AuraNode
 
 /** Runtime id of the storm court's lightning light (H47-E2; driven per frame by `lightningFlash`). */
 export const LIGHTNING_NODE_ID = "court-lightning";
-/** Peak intensity of the lightning light (reduced flash never reaches it: `lightningFlash` returns 0 there). */
-export const LIGHTNING_PEAK = 9;
+/**
+ * Peak intensity of the lightning light (reduced flash never reaches it: `lightningFlash` returns 0 there). Real-GPU
+ * 2026-11-19: 9 lit the wet surround and stands into a half-screen white veil (frame mean 68 -> 97 on the boot strike);
+ * 1.5 keeps a strike a visible cold flicker on the court without washing the frame.
+ */
+export const LIGHTNING_PEAK = 1.5;
 
 /** H47-E2: one cold point light high over the storm court, dark until `lightningFlash` drives it. */
 export function courtLightningNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
@@ -666,11 +670,16 @@ export function courtLightningNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNod
   return [lights.point({ name: LIGHTNING_NODE_ID, position: [6, 26, -18], intensity: 0, color: "#cfdcff", distance: 90 }).runtime({ id: LIGHTNING_NODE_ID }) as unknown as AuraNodeBuilder<AuraSceneNode>];
 }
 
-/** Lightning cadence on the storm court: one flash every `lightningEverySeconds`, 0.18 s long, skipped under reduced flash. */
-export function lightningFlash(rig: CourtRig, timeSeconds: number, reducedFlash: boolean): number {
-  const every = rig.weather.lightningEverySeconds;
-  if (every <= 0 || reducedFlash) return 0;
-  const t = timeSeconds % every;
+/**
+ * Lightning cadence on the storm court, driven by seconds of LIVE play (`game_.matchT`, frozen on menus, checks and
+ * results): the first double strike lands one full interval after play starts, never at load (the old t = 0 strike
+ * washed the first second of every Shanghai boot and autoplay restart white), then one every `lightningEverySeconds`;
+ * 0.18 s long; skipped under reduced flash. `everyOverride` is the `?diag=1&qaLightningEvery=N` measurement hook.
+ */
+export function lightningFlash(rig: CourtRig, playSeconds: number, reducedFlash: boolean, everyOverride = 0): number {
+  const every = rig.weather.lightningEverySeconds > 0 && everyOverride > 0 ? everyOverride : rig.weather.lightningEverySeconds;
+  if (every <= 0 || reducedFlash || !(playSeconds >= every)) return 0;
+  const t = playSeconds % every;
   // a double strike: 0.0-0.08 s and 0.12-0.18 s into the cycle
   if (t < 0.08) return 1;
   if (t >= 0.12 && t < 0.18) return 0.6;

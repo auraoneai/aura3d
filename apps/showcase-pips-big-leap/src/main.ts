@@ -15,17 +15,19 @@ import {
   type AuraRuntimeNodeHandle,
   type AuraSceneSnapshot
 } from "@aura3d/engine";
-import { createFixedStepPresenter, createGame, createRecordBlend, HUD_THEMES, hudThemeFontFaces, registerGameFonts, sfxUrl } from "@aura3d/engine/game";
+import { createFixedStepPresenter, createGame, createRecordBlend, HUD_THEMES, hudThemeFontFaces, registerGameFonts, sfxUrl, warmPrograms } from "@aura3d/engine/game";
 import { createLocomotionKit } from "@aura3d/animation";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { createImpactRig, type ImpactRig } from "../../showcase-port-shared/feel.js";
 import { BOSS_CLIPS, PIP_CLIPS } from "./aura-assets.js";
-import { PIP_RIG_SOCKETS } from "./art/proceduralModels.js";
+import { BOSS_IDOL_PIVOT_Y, BOSS_SCENE_SCALE, PIP_IDOL_PIVOT_Y, hawkPartNames } from "./art/idolModels.js";
+import { poseIdolBoss, poseIdolPip, resetIdolPoses } from "./game/idolPose.js";
 import { heroCapeMaterial } from "./game/diorama.js";
 import { buildWorld, nodeName, tickPlatforms, type BuiltWorld } from "./game/world.js";
 import { createPlayer, stepPlayer, type PlayerState } from "./game/player.js";
 import { createBoss, damageBoss, stepBoss, type BossPhase, type BossState } from "./game/boss.js";
+import { AUTOPLAY_RESULTS_SECONDS, autopilotInput, autopilotRescue, createAutopilotMemory } from "./game/autopilot.js";
 import { certifyWorld, type WorldCertification } from "./game/certify.js";
 import { createHud } from "./game/hud.js";
 import { createSaveStore, recordSeeds, totalSeeds, type PipSave } from "./game/save.js";
@@ -292,6 +294,7 @@ const node = (name: string): AuraRuntimeNodeHandle | null => {
   const registry = app.nodes as unknown as { readonly version?: number };
   if (registry !== cacheRegistry || registry.version !== cacheVersion) {
     nodeCache.clear();
+    resetIdolPoses();
     cacheRegistry = registry;
     cacheVersion = registry.version;
   }
@@ -342,6 +345,9 @@ function loadWorld(id: WorldId, mode?: ModeId): void {
     const target = run;
     pipsGame
       .setScene(built.scene as unknown as AuraSceneSnapshot)
+      // FIRST-SECONDS: a new world brings new Idol models (windmills, hawks, the boss); warm them while `swapping` still
+      // holds the sim, so the first seconds in the new world never compile programs mid-play.
+      .then(() => warmIdolPrograms().catch((error: unknown) => console.warn("[pips-big-leap] program warm-up after the world swap failed", error)))
       .then(() => {
         nodeCache.clear();
         swapping = false;
@@ -419,7 +425,6 @@ function applyRunNodeState(): void {
   for (const cp of spec.checkpoints) node(nodeName.checkpointFlag(cp.id))?.setVisible(true);
   node(nodeName.gateLock)?.setVisible(!run.gateUnlocked);
   applyStudioColors();
-  lastPipScaleY = -1;
   pipSpinTimer = 0;
   pipLandTimer = 0;
   run.clipState = "";
@@ -656,7 +661,7 @@ function completeWorld(): void {
       if (autopilot && run.complete) {
         loadWorld(nextId ?? "w1", run.mode);
       }
-    }, 2400);
+    }, AUTOPLAY_RESULTS_SECONDS * 1000);
   }
 }
 
@@ -669,12 +674,17 @@ function nextWorldId(id: WorldId): WorldId | null {
 // --------------------------------------------------------- AI autopilot
 
 const params = new URLSearchParams(window.location.search);
-let autopilot = params.get("autoplay") === "1" || params.get("demo") === "1";
+// `?autoplay=1` (AUTOPLAY addendum), with `?autopilot=1` and `?demo=1` as aliases: the computer plays from boot.
+let autopilot = params.get("autoplay") === "1" || params.get("autopilot") === "1" || params.get("demo") === "1";
 let appReady = false;
+
+/** FIRST-SECONDS: settle shader programs, the HDRI and every pending Idol texture upgrade (boot and every world swap). */
+async function warmIdolPrograms(): Promise<void> {
+  await warmPrograms(app as unknown as Parameters<typeof warmPrograms>[0], { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+}
 let userEngaged = false;
-let aiJumpCooldown = 0;
-let aiStuckTimer = 0;
-let aiLastZ = 0;
+/** Autopilot memory (src/game/autopilot.ts); one per page, like the old module-level counters. */
+const aiMemory = createAutopilotMemory();
 
 function setAutopilot(next: boolean): void {
   autopilot = next;
@@ -693,156 +703,13 @@ function setAutopilot(next: boolean): void {
   }
 }
 
-function hasGroundBelow(built: BuiltWorld, x: number, y: number, z: number): boolean {
-  for (const s of built.solids) {
-    if (!s.active) continue;
-    const top = s.y + s.hy;
-    if (
-      Math.abs(x - s.x) <= s.hx - 0.08 &&
-      Math.abs(z - s.z) <= s.hz - 0.08 &&
-      top <= y + 0.5 &&
-      top >= y - 1.6
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
 function computeAutopilotInput(
   built: BuiltWorld,
-  spec: BuiltWorld["spec"],
   seconds: number,
   bossVulnerable: boolean,
   bossAt?: readonly [number, number, number]
 ): import("./game/player.js").PlayerInput {
-  const p = run.player;
-  aiJumpCooldown = Math.max(0, aiJumpCooldown - seconds);
-
-  // Brief opening showcase beat on the starting platform so Pip, his sidekick,
-  // and the Whispering Forest jump course are framed cleanly on initial load.
-  if (run.worldClock < 1.15) {
-    return {
-      moveX: 0,
-      moveZ: run.worldClock > 0.45 ? 0.35 : 0,
-      jumpPressed: false,
-      jumpHeld: false,
-      divePressed: false,
-      poundPressed: false
-    };
-  }
-
-  if (Math.abs(p.z - aiLastZ) < 0.12 && Math.hypot(p.vx, p.vz) < 0.7) {
-    aiStuckTimer += seconds;
-  } else {
-    aiStuckTimer = 0;
-    aiLastZ = p.z;
-  }
-
-  // Pick next waypoint: boss (if in W5 arena), next platform/seed ahead, or Sun-Gate.
-  let tx = spec.gate.x;
-  let ty = spec.gate.y;
-  let tz = spec.gate.z;
-
-  if (run.boss && run.boss.hp > 0 && p.z < -52 && bossAt) {
-    if (bossVulnerable) {
-      tx = bossAt[0];
-      ty = bossAt[1] + 1.1;
-      tz = bossAt[2];
-    } else {
-      const orbitA = run.worldClock * 1.6;
-      tx = Math.sin(orbitA) * 4.2;
-      ty = 2.0;
-      tz = -69 + Math.cos(orbitA) * 4.2;
-    }
-  } else {
-    // Step platform-by-platform along the course so Pip never skips intermediate pads.
-    let currentPlat: (typeof built.solids)[number] | null = null;
-    for (const s of built.solids) {
-      if (!s.active) continue;
-      if (Math.abs(p.x - s.x) <= s.hx + 0.35 && Math.abs(p.z - s.z) <= s.hz + 0.35) {
-        currentPlat = s;
-        break;
-      }
-    }
-    const frontEdgeZ = currentPlat ? currentPlat.z - currentPlat.hz : p.z - 0.4;
-    let nextPlat: (typeof built.solids)[number] | null = null;
-    let bestNextDist = Infinity;
-    for (const s of built.solids) {
-      if (!s.active || s === currentPlat) continue;
-      if (s.z >= frontEdgeZ + 0.2) continue;
-      const d = Math.hypot((s.x - p.x) * 0.9, s.z - frontEdgeZ);
-      if (d < bestNextDist) {
-        bestNextDist = d;
-        nextPlat = s;
-      }
-    }
-    if (nextPlat) {
-      tx = nextPlat.x;
-      ty = nextPlat.y + nextPlat.hy;
-      tz = nextPlat.z;
-    }
-
-    // If an uncollected seed sits on the current or next platform, steer through it.
-    for (const s of spec.seeds) {
-      if (run.seeds.has(s.id)) continue;
-      if (s.z <= p.z + 1.0 && s.z >= tz - 1.5 && Math.abs(s.x - tx) <= 2.4) {
-        tx = s.x;
-        ty = s.y;
-        tz = s.z;
-        break;
-      }
-    }
-  }
-
-  const dx = tx - p.x;
-  const dz = tz - p.z;
-  const distXZ = Math.hypot(dx, dz);
-  const dirX = distXZ > 0.05 ? dx / distXZ : 0;
-  const dirZ = distXZ > 0.05 ? dz / distXZ : -1;
-
-  // Convert desired world direction (dirX, dirZ) into camera-relative moveX, moveZ.
-  const fwdX = Math.sin(p.camYaw);
-  const fwdZ = Math.cos(p.camYaw);
-  const rightX = -fwdZ;
-  const rightZ = fwdX;
-  const moveZ = Math.max(-1, Math.min(1, dirX * fwdX + dirZ * fwdZ));
-  const moveX = Math.max(-1, Math.min(1, dirX * rightX + dirZ * rightZ));
-
-  // Determine jump triggers right near the platform edge (0.42m ahead) so Pip never jumps early into a gap.
-  const lookX = p.x + dirX * 0.42;
-  const lookZ = p.z + dirZ * 0.42;
-  const groundAhead = hasGroundBelow(built, lookX, p.y, lookZ);
-  const hazardAhead = built.hazards.some(
-    (h) => Math.abs(lookX - h.x) <= h.hx + 0.5 && Math.abs(lookZ - h.z) <= h.hz + 0.5 && Math.abs(p.y - h.y) <= 1.4
-  );
-  const wantStepJump = ty > p.y + 0.45 && distXZ < 3.4 && !groundAhead;
-  const wantGapJump = p.grounded && !groundAhead && distXZ > 0.7;
-  const wantBossJump = Boolean(bossVulnerable && bossAt && Math.hypot(bossAt[0] - p.x, bossAt[2] - p.z) < 3.4);
-
-  let jumpPressed = false;
-  if (aiJumpCooldown <= 0) {
-    if (p.grounded && (wantGapJump || hazardAhead || wantStepJump || wantBossJump || aiStuckTimer > 0.55)) {
-      jumpPressed = true;
-      aiJumpCooldown = 0.28;
-      aiStuckTimer = 0;
-    } else if (!p.grounded && p.vy < -0.4 && p.jumpsLeft > 0 && !hasGroundBelow(built, p.x, p.y, p.z)) {
-      jumpPressed = true;
-      aiJumpCooldown = 0.32;
-    }
-  }
-
-  const jumpHeld = !p.grounded && (distXZ > 1.4 || ty > p.y - 0.2);
-  const divePressed = !p.grounded && p.vy < -1.8 && distXZ > 3.6 && !hasGroundBelow(built, p.x, p.y, p.z);
-
-  return {
-    moveX,
-    moveZ,
-    jumpPressed,
-    jumpHeld,
-    divePressed,
-    poundPressed: false
-  };
+  return autopilotInput(aiMemory, built, run.player, { worldClock: run.worldClock, seeds: run.seeds, bossAlive: Boolean(run.boss && run.boss.hp > 0) }, seconds, bossVulnerable, bossAt);
 }
 
 // -------------------------------------------------------------- clip state
@@ -856,16 +723,18 @@ const BOSS_CLIP_FOR: Record<BossPhase, { clip: string; loop?: boolean }> = {
   down: { clip: BOSS_CLIPS.die, loop: false }
 };
 
+// Idol wow pass: airborne and special states keep the idle clip on the spine while poseIdolPip overlays the
+// old articulated limb choreography (glide arms, dive, pound, celebrate...); swim strokes over the walk clip.
 const CLIP_FOR: Record<string, { clip: string; speed?: number; loop?: boolean }> = {
-  air: { clip: PIP_CLIPS.fall, speed: 1.15 },
-  jump: { clip: PIP_CLIPS.jump, loop: false, speed: 1.25 },
-  glide: { clip: PIP_CLIPS.fall, speed: 0.9 },
-  dive: { clip: PIP_CLIPS.fall, speed: 1.6 },
-  pound: { clip: PIP_CLIPS.crouch, speed: 1.2 },
+  air: { clip: PIP_CLIPS.idle, speed: 1.15 },
+  jump: { clip: PIP_CLIPS.idle, speed: 1.25 },
+  glide: { clip: PIP_CLIPS.idle, speed: 0.9 },
+  dive: { clip: PIP_CLIPS.idle, speed: 1.6 },
+  pound: { clip: PIP_CLIPS.idle, speed: 1.2 },
   swim: { clip: PIP_CLIPS.walk, speed: 0.85 },
-  hurt: { clip: PIP_CLIPS.hurt, loop: false, speed: 1.15 },
-  dead: { clip: PIP_CLIPS.die, loop: false },
-  celebrate: { clip: PIP_CLIPS.celebrate, loop: false }
+  hurt: { clip: PIP_CLIPS.idle, speed: 1.15 },
+  dead: { clip: PIP_CLIPS.idle, speed: 0.5 },
+  celebrate: { clip: PIP_CLIPS.idle, speed: 1.2 }
 };
 
 // ------------------------------------------------------- camera occlusion
@@ -885,10 +754,8 @@ function cameraClearance(p: PlayerState, built: BuiltWorld, camX: number, camZ: 
 let pipStridePhase = 0;
 let pipSpinTimer = 0;
 let pipLandTimer = 0;
-let lastPipScaleY = -1;
 
 const MAT_TORSO = new Float64Array(9);
-const MAT_HEAD = new Float64Array(9);
 
 function writeEulerZYXMatrix(out: Float64Array, rx: number, ry: number, rz: number): void {
   const sx = Math.sin(rx), cx = Math.cos(rx);
@@ -937,16 +804,8 @@ function placeYawPart(
 }
 
 function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: number): void {
-  const torso = node(`${nodeName.hero}:torso`);
-  const head = node(`${nodeName.hero}:head`);
-  const earL = node(`${nodeName.hero}:ear-l`);
-  const earR = node(`${nodeName.hero}:ear-r`);
-  const armL = node(`${nodeName.hero}:arm-l`);
-  const armR = node(`${nodeName.hero}:arm-r`);
-  const footL = node(`${nodeName.hero}:foot-l`);
-  const footR = node(`${nodeName.hero}:foot-r`);
-  const tail = node(`${nodeName.hero}:tail`);
-  if (!torso) return;
+  const hero = node(nodeName.hero);
+  if (!hero) return;
 
   const t = run.worldClock;
   if (dt > 0) {
@@ -964,9 +823,6 @@ function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: n
   const spinYaw = spinProgress > 0 ? spinProgress * Math.PI * 2 : 0;
   const landCushion = p.grounded && pipLandTimer > 0 ? Math.sin(Math.min(1, pipLandTimer / 0.24) * Math.PI) : 0;
 
-  if (spinYaw !== 0) {
-    node(nodeName.hero)?.setRotation(0, p.yaw + spinYaw, 0);
-  }
 
   let bobY = 0;
   let hipBobY = 0;
@@ -1172,161 +1028,26 @@ function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: n
     tailPitch += landCushion * 0.22;
   }
 
+  // Idol wow pass: the rigged Idol Pip is one skinned model. Its clip (idle/walk/run/jump, chosen in
+  // driveAnimation) animates the limbs; the same procedural pose parameters drive the body here — bob, lean,
+  // twist and roll about the old torso pivot (so the soles stay planted), the double-jump spin — plus the
+  // per-bone overlay (arms, legs, head) in poseIdolPip. Squash/stretch stays on presentation.ts's setScale.
   const effYaw = p.yaw + spinYaw;
   const syScale = presentation.heroScaleY || 1;
-  const xzScale = 1 / Math.sqrt(Math.max(0.25, syScale));
-  if (Math.abs(syScale - lastPipScaleY) > 1e-3) {
-    lastPipScaleY = syScale;
-    const sc: [number, number, number] = [xzScale, syScale, xzScale];
-    torso.setScale(sc);
-    head?.setScale(sc);
-    earL?.setScale(sc);
-    earR?.setScale(sc);
-    armL?.setScale(sc);
-    armR?.setScale(sc);
-    footL?.setScale(sc);
-    footR?.setScale(sc);
-    tail?.setScale(sc);
-  }
-
-  const torsoBaseY = PIP_RIG_SOCKETS.torso[1];
-  const torsoPivotY = (torsoBaseY + bobY) * syScale;
-  const hipPivotY = (torsoBaseY + hipBobY) * syScale;
-  writeEulerZYXMatrix(MAT_TORSO, leanX, torsoTwistY, rollZ);
-  placeYawPart(torso, p.x, p.y, p.z, effYaw, 0, torsoPivotY, 0, leanX, torsoTwistY, rollZ);
-
-  // Head socket locked to rotated torso neck
-  const headDx = PIP_RIG_SOCKETS.head[0] * xzScale;
-  const headDy = (PIP_RIG_SOCKETS.head[1] - torsoBaseY + Math.max(0, idleBreath) * 0.006) * syScale;
-  const headDz = PIP_RIG_SOCKETS.head[2] * xzScale;
-  const headLx = MAT_TORSO[0]! * headDx + MAT_TORSO[1]! * headDy + MAT_TORSO[2]! * headDz;
-  const headLy = torsoPivotY + MAT_TORSO[3]! * headDx + MAT_TORSO[4]! * headDy + MAT_TORSO[5]! * headDz;
-  const headLz = MAT_TORSO[6]! * headDx + MAT_TORSO[7]! * headDy + MAT_TORSO[8]! * headDz;
-  const headRx = leanX * 0.58 + headNod;
-  const headRy = torsoTwistY * 0.35 + headYaw;
-  const headRz = rollZ * 0.45 + headRoll;
-  writeEulerZYXMatrix(MAT_HEAD, headRx, headRy, headRz);
-  placeYawPart(head, p.x, p.y, p.z, effYaw, headLx, headLy, headLz, headRx, headRy, headRz);
-
-  // Cupped side-ears locked to rotated head sockets beneath the acorn helmet brim
-  const earLDx = PIP_RIG_SOCKETS.earFromHeadL[0] * xzScale;
-  const earLDy = PIP_RIG_SOCKETS.earFromHeadL[1] * syScale;
-  const earLDz = PIP_RIG_SOCKETS.earFromHeadL[2] * xzScale;
-  placeYawPart(
-    earL,
-    p.x,
-    p.y,
-    p.z,
-    effYaw,
-    headLx + MAT_HEAD[0]! * earLDx + MAT_HEAD[1]! * earLDy + MAT_HEAD[2]! * earLDz,
-    headLy + MAT_HEAD[3]! * earLDx + MAT_HEAD[4]! * earLDy + MAT_HEAD[5]! * earLDz,
-    headLz + MAT_HEAD[6]! * earLDx + MAT_HEAD[7]! * earLDy + MAT_HEAD[8]! * earLDz,
-    headRx + earPitch,
-    headRy - earSweepBack,
-    headRz - earPerk
-  );
-  const earRDx = PIP_RIG_SOCKETS.earFromHeadR[0] * xzScale;
-  const earRDy = PIP_RIG_SOCKETS.earFromHeadR[1] * syScale;
-  const earRDz = PIP_RIG_SOCKETS.earFromHeadR[2] * xzScale;
-  placeYawPart(
-    earR,
-    p.x,
-    p.y,
-    p.z,
-    effYaw,
-    headLx + MAT_HEAD[0]! * earRDx + MAT_HEAD[1]! * earRDy + MAT_HEAD[2]! * earRDz,
-    headLy + MAT_HEAD[3]! * earRDx + MAT_HEAD[4]! * earRDy + MAT_HEAD[5]! * earRDz,
-    headLz + MAT_HEAD[6]! * earRDx + MAT_HEAD[7]! * earRDy + MAT_HEAD[8]! * earRDz,
-    headRx + earPitch,
-    headRy + earSweepBack,
-    headRz + earPerk
-  );
-
-  // Shoulder sockets locked to rotated torso (`-armSplay` on armL and `+armSplay` on armR splay outward)
-  const armLDx = PIP_RIG_SOCKETS.armL[0] * xzScale;
-  const armLDy = (PIP_RIG_SOCKETS.armL[1] - torsoBaseY) * syScale;
-  const armLDz = PIP_RIG_SOCKETS.armL[2] * xzScale;
-  placeYawPart(
-    armL,
-    p.x,
-    p.y,
-    p.z,
-    effYaw,
-    MAT_TORSO[0]! * armLDx + MAT_TORSO[1]! * armLDy + MAT_TORSO[2]! * armLDz,
-    torsoPivotY + MAT_TORSO[3]! * armLDx + MAT_TORSO[4]! * armLDy + MAT_TORSO[5]! * armLDz,
-    MAT_TORSO[6]! * armLDx + MAT_TORSO[7]! * armLDy + MAT_TORSO[8]! * armLDz,
-    leanX * 0.35 + armPitchL,
-    torsoTwistY,
-    rollZ - armSplay
-  );
-  const armRDx = PIP_RIG_SOCKETS.armR[0] * xzScale;
-  const armRDy = (PIP_RIG_SOCKETS.armR[1] - torsoBaseY) * syScale;
-  const armRDz = PIP_RIG_SOCKETS.armR[2] * xzScale;
-  placeYawPart(
-    armR,
-    p.x,
-    p.y,
-    p.z,
-    effYaw,
-    MAT_TORSO[0]! * armRDx + MAT_TORSO[1]! * armRDy + MAT_TORSO[2]! * armRDz,
-    torsoPivotY + MAT_TORSO[3]! * armRDx + MAT_TORSO[4]! * armRDy + MAT_TORSO[5]! * armRDz,
-    MAT_TORSO[6]! * armRDx + MAT_TORSO[7]! * armRDy + MAT_TORSO[8]! * armRDz,
-    leanX * 0.35 + armPitchR,
-    torsoTwistY,
-    rollZ + armSplay
-  );
-
-  // Hip sockets locked to rotated lower pelvis while keeping soles planted at `y = 0` in idle
-  const footLDx = PIP_RIG_SOCKETS.footL[0] * xzScale;
-  const footLDy = (PIP_RIG_SOCKETS.footL[1] - torsoBaseY) * syScale;
-  const footLDz = PIP_RIG_SOCKETS.footL[2] * xzScale;
-  placeYawPart(
-    footL,
-    p.x,
-    p.y,
-    p.z,
-    effYaw,
-    MAT_TORSO[0]! * footLDx + MAT_TORSO[1]! * footLDy + MAT_TORSO[2]! * footLDz,
-    hipPivotY + MAT_TORSO[3]! * footLDx + MAT_TORSO[4]! * footLDy + MAT_TORSO[5]! * footLDz,
-    MAT_TORSO[6]! * footLDx + MAT_TORSO[7]! * footLDy + MAT_TORSO[8]! * footLDz,
-    leanX * 0.45 + legPitchL,
-    torsoTwistY * 0.25,
-    rollZ * 0.5 - legSplay
-  );
-  const footRDx = PIP_RIG_SOCKETS.footR[0] * xzScale;
-  const footRDy = (PIP_RIG_SOCKETS.footR[1] - torsoBaseY) * syScale;
-  const footRDz = PIP_RIG_SOCKETS.footR[2] * xzScale;
-  placeYawPart(
-    footR,
-    p.x,
-    p.y,
-    p.z,
-    effYaw,
-    MAT_TORSO[0]! * footRDx + MAT_TORSO[1]! * footRDy + MAT_TORSO[2]! * footRDz,
-    hipPivotY + MAT_TORSO[3]! * footRDx + MAT_TORSO[4]! * footRDy + MAT_TORSO[5]! * footRDz,
-    MAT_TORSO[6]! * footRDx + MAT_TORSO[7]! * footRDy + MAT_TORSO[8]! * footRDz,
-    leanX * 0.45 + legPitchR,
-    torsoTwistY * 0.25,
-    rollZ * 0.5 + legSplay
-  );
-
-  // Trailing curled waist-sprout leaf plume locked to back of waist ring
-  const tailDx = PIP_RIG_SOCKETS.tail[0] * xzScale;
-  const tailDy = (PIP_RIG_SOCKETS.tail[1] - torsoBaseY) * syScale;
-  const tailDz = PIP_RIG_SOCKETS.tail[2] * xzScale;
-  placeYawPart(
-    tail,
-    p.x,
-    p.y,
-    p.z,
-    effYaw,
-    MAT_TORSO[0]! * tailDx + MAT_TORSO[1]! * tailDy + MAT_TORSO[2]! * tailDz,
-    torsoPivotY + MAT_TORSO[3]! * tailDx + MAT_TORSO[4]! * tailDy + MAT_TORSO[5]! * tailDz,
-    MAT_TORSO[6]! * tailDx + MAT_TORSO[7]! * tailDy + MAT_TORSO[8]! * tailDz,
-    leanX * 0.75 + tailPitch,
-    torsoTwistY + tailWag,
-    rollZ * 0.6
-  );
+  const bodyLeanX = leanX * 0.7;
+  const bodyRollZ = rollZ * 0.8;
+  writeEulerZYXMatrix(MAT_TORSO, bodyLeanX, torsoTwistY * 0.5, bodyRollZ);
+  // Rotate about (0, PIP_IDOL_PIVOT_Y, 0): origin offset = pivot - R * pivot (pivot on the Y axis).
+  const pivotY = PIP_IDOL_PIVOT_Y * syScale;
+  const offX = -MAT_TORSO[1]! * pivotY;
+  const offY = pivotY - MAT_TORSO[4]! * pivotY + bobY * syScale;
+  const offZ = -MAT_TORSO[7]! * pivotY;
+  placeYawPart(hero, p.x, p.y, p.z, effYaw, offX, offY, offZ, bodyLeanX, torsoTwistY * 0.5, bodyRollZ);
+  poseIdolPip(hero, key, {
+    headNod: headNod + leanX * 0.2, headYaw: headYaw + torsoTwistY * 0.35, headRoll: headRoll + rollZ * 0.45,
+    armPitchL, armPitchR, armSplay, legPitchL, legPitchR, legSplay, hipBob: hipBobY - bobY
+  });
+  void earPerk; void earSweepBack; void earPitch; void tailPitch; void tailWag;
 }
 
 function driveAnimation(p: PlayerState, dt: number): void {
@@ -1517,6 +1238,11 @@ const MANUAL_PLAY_KEYS = new Set([
 ]);
 
 window.addEventListener("keydown", (event) => {
+  // AUTOPLAY addendum: O toggles the autopilot (P is pause).
+  if (event.code === "KeyO" && !event.repeat) {
+    setAutopilot(!autopilot);
+    return;
+  }
   if (MANUAL_PLAY_KEYS.has(event.code)) {
     userEngaged = true;
     if (autopilot) {
@@ -1685,7 +1411,7 @@ function simStep(seconds: number): void {
       bossNode.setPosition(frame.pos[0], bossY, frame.pos[2]);
       bossNode.setRotation(0, run.boss.yaw, 0);
       const squash = run.boss.phase === "vulnerable" ? 0.55 : run.boss.phase === "windup" ? 1.12 : 1;
-      bossNode.setScale([1, squash, 1]);
+      bossNode.setScale([BOSS_SCENE_SCALE, squash * BOSS_SCENE_SCALE, BOSS_SCENE_SCALE]);
       // Drive procedural Brambleback limbs across dormant/roll/windup/vulnerable/down + transient attack/hurt.
       run.bossFxT = Math.max(0, run.bossFxT - seconds);
       if (run.bossFxT <= 0 && run.boss.phase !== run.bossClip) {
@@ -1693,14 +1419,11 @@ function simStep(seconds: number): void {
         const clipSpec = BOSS_CLIP_FOR[run.boss.phase];
         bossNode.setAnimation?.({ clip: clipSpec.clip, loop: clipSpec.loop ?? true });
       }
-      const bBody = node(`${nodeName.boss}:body`);
-      const bArmL = node(`${nodeName.boss}:arm-l`);
-      const bArmR = node(`${nodeName.boss}:arm-r`);
-      const bLegL = node(`${nodeName.boss}:leg-l`);
-      const bLegR = node(`${nodeName.boss}:leg-r`);
+      // Idol wow pass: the rigged Idol Brambleback plays its phase clip; the old limb choreography becomes a body
+      // lean/roll about the belly (BOSS_IDOL_PIVOT_Y) plus a per-bone overlay for the arm swing and stride.
       const bt = run.worldClock;
       const activeMode = run.bossFxT > 0 ? run.bossClip : run.boss.phase;
-      if (bBody) {
+      {
         const bx = frame.pos[0];
         const bz = frame.pos[2];
         const byaw = run.boss.yaw;
@@ -1713,19 +1436,20 @@ function simStep(seconds: number): void {
           : activeMode === "down" ? 0.55
           : Math.sin(bt * 2.1) * 0.04;
         const bodyRoll = activeMode === "hurt" ? Math.sin(bt * 28) * 0.16 : activeMode === "roll" ? stomp * 0.08 : 0;
-        bBody.setScale([1, squash, 1]);
-        placeYawPart(bBody, bx, bossY, bz, byaw, 0, (1.08 + Math.abs(stomp) * (activeMode === "roll" ? 0.08 : 0.025)) * squash, 0, bodyPitch, 0, bodyRoll);
+        const lean = bodyPitch * 0.55;
+        const roll = bodyRoll;
+        writeEulerZYXMatrix(MAT_TORSO, lean, 0, roll);
+        const pivotY = BOSS_IDOL_PIVOT_Y * squash;
+        const bob = Math.abs(stomp) * (activeMode === "roll" ? 0.08 : 0.025) * squash;
+        placeYawPart(bossNode, bx, bossY, bz, byaw, -MAT_TORSO[1]! * pivotY, pivotY - MAT_TORSO[4]! * pivotY + bob, -MAT_TORSO[7]! * pivotY, lean, 0, roll);
         const armSwing =
           activeMode === "windup" ? -1.45 + Math.sin(bt * 18) * 0.18
           : activeMode === "attack" ? 0.95
           : activeMode === "roll" ? stomp * 0.85
           : activeMode === "vulnerable" || activeMode === "down" ? 0.52
           : Math.sin(bt * 2.1) * 0.12;
-        placeYawPart(bArmL, bx, bossY, bz, byaw, -0.78, 1.38 * squash, 0.12, armSwing, 0, 0.22);
-        placeYawPart(bArmR, bx, bossY, bz, byaw, 0.78, 1.38 * squash, 0.12, activeMode === "roll" ? -armSwing : armSwing, 0, -0.22);
         const legStride = activeMode === "roll" ? stomp * 0.68 : activeMode === "windup" ? Math.sin(bt * 12) * 0.24 : 0;
-        placeYawPart(bLegL, bx, bossY, bz, byaw, -0.44, 0.64 * squash, -0.06, -legStride, 0, 0);
-        placeYawPart(bLegR, bx, bossY, bz, byaw, 0.44, 0.64 * squash, -0.06, legStride, 0, 0);
+        poseIdolBoss(bossNode, activeMode, { armSwingL: armSwing, armSwingR: activeMode === "roll" ? -armSwing : armSwing, legStride });
       }
     }
     const spikesOut = run.boss.phase === "roll" || run.boss.phase === "windup" || run.boss.phase === "dormant";
@@ -1743,7 +1467,7 @@ function simStep(seconds: number): void {
 
   if (autopilot || userEngaged) {
     const playerInput = autopilot
-      ? computeAutopilotInput(built, spec, seconds, bossVulnerable, bossAt)
+      ? computeAutopilotInput(built, seconds, bossVulnerable, bossAt)
       : {
           moveX: frameInput.moveX,
           moveZ: frameInput.moveZ,
@@ -1759,29 +1483,7 @@ function simStep(seconds: number): void {
       bossVulnerable,
       bossAt
     });
-    if (autopilot && !run.player.swim && run.player.y < spec.spawn[1] - 0.15) {
-      let nearest = built.solids[0];
-      let bestD = Infinity;
-      for (const s of built.solids) {
-        if (!s.active) continue;
-        const d = Math.hypot(s.x - run.player.x, s.z - run.player.z);
-        if (d < bestD) {
-          bestD = d;
-          nearest = s;
-        }
-      }
-      if (nearest) {
-        run.player.x = nearest.x;
-        run.player.y = nearest.y + nearest.hy;
-        run.player.z = nearest.z;
-        run.player.vx = 0;
-        run.player.vy = 0;
-        run.player.vz = 0;
-        run.player.grounded = true;
-        run.player.groundId = nearest.id;
-        run.player.state = "grounded";
-      }
-    }
+    if (autopilot) autopilotRescue(built, run.player);
     for (const e of events) handleEvent(e);
 
     // Death → back at the last checkpoint Pip touched, with full hearts (C16:
@@ -1993,6 +1695,11 @@ const loading = createLoadingProgress({ shell: pipsGame.shell });
 
 void loading.track(app.ready(), 3, "Loading world").then(async () => {
   await loading.track(pipsGame.ready(), 1, "Starting");
+  // Idol wow pass (FIRST-SECONDS): the boot world mounts every Idol GLB it shows (Pip, villagers, pickups, gate, decor),
+  // but their texture upgrades, the HDRI and the program variants they switch to land after mount. Settle them all here,
+  // while the loading screen still covers the canvas and before the sim accepts input (appReady), so the first jump
+  // never shows skipped draws / a bare clear-colour frame (lessons-learned R2).
+  await loading.track(warmIdolPrograms(), 1, "Warming the diorama");
   loading.done();
   nodeCache.clear();
   applyRunNodeState();
@@ -2013,7 +1720,38 @@ void loading.track(app.ready(), 3, "Loading world").then(async () => {
       }
     },
     app,
-    extras: { crops: () => presentation.crops(ensureWorld(run.world).built, [drawnPlayer.x, drawnPlayer.y, drawnPlayer.z]) }
+    extras: {
+      crops: () => presentation.crops(ensureWorld(run.world).built, [drawnPlayer.x, drawnPlayer.y, drawnPlayer.z]),
+      // Motion audit (capture tooling only): Pip's clip, overlay bones and posed bounds (`?qa-pose=1` tags Pip for
+      // deformed bounds) plus every hawk's wing/bank rotation, read back from the runtime nodes this frame drew.
+      motion: () => {
+        const hero = node(nodeName.hero);
+        const ev = hero?.importedAssetEvidence?.();
+        const bones = hero?.animationPose?.()?.bones as Record<string, { readonly rotation?: readonly number[] }> | undefined;
+        const r3 = (v: readonly number[] | undefined) => (v ? v.map((x) => Number(x.toFixed(4))) : null);
+        const db = ev?.deformedBounds as { readonly min?: readonly number[]; readonly max?: readonly number[] } | undefined;
+        return {
+          clock: Number(run.worldClock.toFixed(3)),
+          state: drawnPlayer.state,
+          clip: ev?.activeClip ?? null,
+          position: r3(hero?.position),
+          rotation: r3(hero?.rotation),
+          deformed: db ? { min: r3(db.min), max: r3(db.max) } : null,
+          bones: bones ? Object.fromEntries(Object.entries(bones).map(([k, b]) => [k, r3(b.rotation)])) : null,
+          hawks: ensureWorld(run.world).built.presentation.animatedDecor.filter((d) => d.kind === "hawk").map((d) => {
+            const parts = hawkPartNames(d.name);
+            return {
+              name: d.name,
+              position: r3(node(d.name)?.position),
+              yaw: node(d.name)?.rotation?.[1] ?? null,
+              bank: node(parts.bank)?.rotation?.[2] ?? null,
+              wingR: node(parts.wingR)?.rotation?.[2] ?? null,
+              wingL: node(parts.wingL)?.rotation?.[2] ?? null
+            };
+          })
+        };
+      }
+    }
   });
   publishEvidence(true);
   document.body.dataset.aura3dReady = "true";

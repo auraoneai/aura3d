@@ -1,8 +1,9 @@
 /**
  * GU47 WP-27 SSR-15: camera shots layered on the chase camera under the colour script.
  *
- * - Intro (first 4 s of a run): the camera starts far ahead and high (from the serpent's head, looking back at the
- *   runner) and eases into the chase position, with cinema bars that open as it lands.
+ * - Intro (first 1.5 s of a run): the camera starts far ahead and high (from the serpent's head, looking back at the
+ *   runner) and swings over the runner into the chase position, with cinema bars that open as it lands. (F3 GPU QA: the
+ *   4 s straight-line blend parked the eye over the runner's head looking down the road, the runner off-screen ~6 s.)
  * - Stage-start push (1.2 s after crossing each stage boundary): the camera pushes in past the gate and settles back.
  * - Bank-following roll: the horizon tilts with the runner's lean (a third of it).
  * - Surge FOV kick: +8 deg when a surge starts, decaying over 0.6 s.
@@ -14,7 +15,7 @@
 import { STAGES, type RunState } from "../sim";
 import { lookDistance } from "./colorScript";
 
-export const INTRO_SECONDS = 4;
+export const INTRO_SECONDS = 1.5;
 export const PUSH_SECONDS = 1.2;
 export const PUSH_DEPTH = 0.21;
 export const FOV_KICK_DEG = 8;

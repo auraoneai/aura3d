@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/aura-slam/art/direction.ts",
-  "sourceSha256": "f1752d4d542b284bd6156fd694e2dc7f6a6886c3b94136a0b7e483e0b5617bfd",
+  "sourceSha256": "7b5f011892c6287ea673ca83700e67698b435fe2f71e4637c2ba461b6ae03ace",
   "id": "showcase-top-tennis",
   "genre": "basketball",
   "signatureEffect": "Surface-coloured ball marks that persist where the ball landed, venue-tinted bounce puffs, and a seated crowd whose heads follow the rally.",
@@ -53,7 +53,155 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "slamNetPost",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamNetPost",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamUmpireChair",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamUmpireOfficial",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamPlayerBench",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamPlayerBench",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamDrinksCooler",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamTowelRack",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamPlayerBench",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamPlayerBench",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamDrinksCooler",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamTowelRack",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamArcadeFacade",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamArcadeFacade",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamBoxwoodPlanter",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamBoxwoodPlanter",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamTvCamera",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamTvCamera",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamFloodlightTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamFloodlightTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "slamScoreboard",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "materials": [
       {
         "node": "moon-earth",
@@ -90,26 +238,6 @@
         "practical": false
       },
       {
-        "name": "brushed metal",
-        "node": "net-post-left material 0",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "net-post-left material 1",
-        "practical": false
-      },
-      {
-        "name": "brushed metal",
-        "node": "net-post-right material 0",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "net-post-right material 1",
-        "practical": false
-      },
-      {
         "name": "studio metal",
         "node": "wt-center-strap-anchor material 0",
         "practical": false
@@ -133,74 +261,44 @@
         "practical": false
       },
       {
-        "name": "brushed metal",
-        "node": "wt-umpire-stand material 0",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "wt-umpire-stand material 1",
-        "practical": false
-      },
-      {
-        "node": "wt-umpire-stand material 2",
-        "practical": false
-      },
-      {
-        "node": "umpire-torso",
-        "practical": false
-      },
-      {
         "node": "umpire-head",
         "practical": false
       },
       {
+        "name": "clearcoat paint",
+        "node": "wt-corner-panel-left-face",
+        "practical": false
+      },
+      {
+        "node": "wt-corner-panel-left-trim",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "wt-corner-panel-left-leaf",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "wt-corner-panel-right-face",
+        "practical": false
+      },
+      {
+        "node": "wt-corner-panel-right-trim",
+        "practical": false
+      },
+      {
+        "name": "clearcoat paint",
+        "node": "wt-corner-panel-right-leaf",
+        "practical": false
+      },
+      {
         "name": "brushed metal",
-        "node": "wt-sideline-kit-north material 0",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "wt-sideline-kit-north material 1",
-        "practical": false
-      },
-      {
-        "node": "wt-sideline-kit-north material 2",
-        "practical": false
-      },
-      {
-        "name": "brushed metal",
-        "node": "wt-sideline-kit-south material 0",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "wt-sideline-kit-south material 1",
-        "practical": false
-      },
-      {
-        "node": "wt-sideline-kit-south material 2",
-        "practical": false
-      },
-      {
         "node": "wt-stadium-bowl material 0",
         "practical": false
       },
       {
-        "name": "brushed metal",
-        "node": "wt-stadium-bowl material 1",
-        "practical": false
-      },
-      {
-        "node": "wt-stadium-pillars",
-        "practical": false
-      },
-      {
         "node": "wt-stadium-seats",
-        "practical": false
-      },
-      {
-        "node": "wt-camera-lens-glass",
         "practical": false
       },
       {
@@ -219,22 +317,12 @@
         "practical": true
       },
       {
-        "name": "brushed metal",
-        "node": "stadium-floodlight-left material 0",
-        "practical": false
-      },
-      {
-        "node": "stadium-floodlight-left material 1",
+        "node": "stadium-floodlight-left-lenses",
         "emissiveIntensity": 1.35,
         "practical": true
       },
       {
-        "name": "brushed metal",
-        "node": "stadium-floodlight-right material 0",
-        "practical": false
-      },
-      {
-        "node": "stadium-floodlight-right material 1",
+        "node": "stadium-floodlight-right-lenses",
         "emissiveIntensity": 1.35,
         "practical": true
       },
@@ -243,17 +331,7 @@
         "practical": false
       },
       {
-        "name": "brushed metal",
-        "node": "stadium-scoreboard-gantry material 0",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "stadium-scoreboard-gantry material 1",
-        "practical": false
-      },
-      {
-        "node": "stadium-scoreboard-gantry material 2",
+        "node": "stadium-scoreboard-leds",
         "emissiveIntensity": 0.85,
         "practical": true
       },
@@ -328,6 +406,10 @@
         "name": "felt",
         "node": "tennis-ball",
         "emissiveIntensity": 0.1,
+        "practical": false
+      },
+      {
+        "node": "tennis-ball-seam",
         "practical": false
       },
       {
@@ -647,7 +729,124 @@
       ],
       "mobile": "both"
     },
-    "assets": [],
+    "assets": [
+      {
+        "role": "character",
+        "assetKey": "slamAthleteMatchPlayer",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "slamAthleteMatchRival",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "slamAthleteRival",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "slamUmpireOfficial",
+        "kit": "K2",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "slamUmpireChair",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "slamScoreboard",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "slamArcadeFacade",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "slamFloodlightTower",
+        "kit": "K4",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "slamNetPost",
+        "kit": "K2",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "slamPlayerBench",
+        "kit": "K2",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "slamDrinksCooler",
+        "kit": "K2",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "slamTowelRack",
+        "kit": "K2",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "slamBoxwoodPlanter",
+        "kit": "K2",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "slamTvCamera",
+        "kit": "K2",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
     "vfx": [
       {
         "event": "ball-bounce-clay",

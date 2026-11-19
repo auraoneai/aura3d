@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdDroneBastion",
+  "generatedAt": "2026-11-18T21:20:50.296Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f088-a9ef-7a73-99a1-3173e3476f68",
+      "prompt": "A futuristic heavy armoured racing hover drone gunship: a wide bulky armour-plated central fuselage with thick bolted plates, a small armoured cockpit canopy with a helmeted pilot, two oversized round air intake shrouds on the sides, a dorsal cannon housing on top, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round thruster nozzles at the tail glowing orange, deep royal-blue clearcoat paint with gunmetal steel and dark composite, copper radiator fins, scratches and scorch marks. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f089-5e99-70d1-b59b-ee04f1dcbbd8",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1262094,
+        "num_faces": 2524648,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A futuristic heavy armoured racing hover drone gunship: a wide bulky armour-plated central fuselage with thick bolted plates, a small armoured cockpit canopy with a helmeted pilot, two oversized round air intake shrouds on the sides, a dorsal cannon housing on top, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round thruster nozzles at the tail glowing orange, deep royal-blue clearcoat paint with gunmetal steel and dark composite, copper radiator fins, scratches and scorch marks. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.507,
+    "size": [
+      4.1,
+      2.543,
+      4.092
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdDroneBastion.glb",
+  "sizeBytes": 2505312,
+  "preview": "artifacts/idol/heatsink/tdDroneBastion/views.png",
+  "usd": 0.37,
+  "admitRole": "vehicle",
+  "renormalizedAt": "2026-11-18T23:36:54.329Z"
+}

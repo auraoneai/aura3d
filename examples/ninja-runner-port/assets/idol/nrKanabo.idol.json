@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrKanabo",
+  "generatedAt": "2026-11-18T22:35:52.921Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/nrKanabo/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 52,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 581742,
+        "num_faces": 1163508,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A heavy octagonal war club lying horizontally in profile, a thin wrapped wooden handle widening into a long thick club head covered in rows of round iron studs, a gold collar ring between handle and head. Photograph of a real handmade weapon: dark lacquered hardwood, blackened forged iron studs and bands, worn gold collar, soft studio light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.997,
+    "size": [
+      0.996,
+      0.341,
+      1
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrKanabo.glb",
+  "sizeBytes": 2274748,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrKanabo/views.png",
+  "usd": 0.2
+}

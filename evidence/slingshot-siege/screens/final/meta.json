@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "slingshot-siege": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "title",
+        "flight",
+        "collapse",
+        "later",
+        "later-shot",
+        "results"
+      ],
+      "results": "result card reached (level 1 clear at ~8 s of autoplay; 5 levels cleared in a row in a 7-minute GPU autoplay run)",
+      "errors": "none (level 30 and 25 autoplay runs after the 2026-11-19 fix logged no page errors; earlier runs logged the engine's WEBGPU_PBR_LIGHT_LAYOUT_MISMATCH from transient VFX lights, now removed in the game)",
+      "capturedAt": "2026-11-18",
+      "loadTimes": "level 30 cold load (fresh profile, cold HTTP cache) on the real GPU: 5.1-6.9 s to play-ready over 4 runs (2026-11-19); the earlier ~70 s / AURA_READY_STALLED run was on a heavily loaded machine",
+      "retaken": {
+        "2026-11-19": [
+          "1280-04-later.jpg",
+          "1280-05-later-shot.jpg",
+          "390-04-later.jpg"
+        ]
+      }
+    }
+  }
+}

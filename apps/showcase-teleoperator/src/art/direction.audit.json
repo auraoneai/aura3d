@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-teleoperator/src/art/direction.ts",
-  "sourceSha256": "f89cfe6d368f5c8419ba92848d53324d71444547d3bad79d9ce2a6f38d44403f",
+  "sourceSha256": "f9f50c433c2c792783a02e281c965fd18395cd48722b4cabde5252f93a00d348",
   "id": "showcase-teleoperator",
   "genre": "racing",
   "signatureEffect": "Marine-layer fog deck that swallows the bay-city tower tops above a clear street, swept by a teal LiDAR scan pulse from the robotaxi's sensor feed.",
@@ -58,7 +58,274 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "gdPyramidTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdFerryTerminal",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdStreetTree",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdSedanPearlT",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdParkedHatchWhiteT",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdCommuter",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdCruiserPodW3",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdCrossoverAvW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdHeavySemiW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdGtCrimsonW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdInterceptorCobaltW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerD",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerD",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdWalkerD",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdShuttleW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdGtChampagneW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdResponseSuvW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdCableCarW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdGtAmberW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdSedanSlateW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdTaxiCabW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdSedanPearlW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdHatchMintW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdHatchCoralW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdCoupeNavyW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdTransitBusW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdPickupBronzeW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdPickupGraphiteW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gdBoxTruckW",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "materials": [
       {
         "node": "sf-peninsula-ground",
@@ -116,22 +383,6 @@
       },
       {
         "name": "sf-batched-landmark",
-        "node": "sf-pyramid-tower-opaque",
-        "practical": false
-      },
-      {
-        "name": "sf-window-practical",
-        "node": "sf-pyramid-tower-emissive",
-        "emissiveIntensity": 0.6133,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "sf-pyramid-tower-glazing",
-        "practical": false
-      },
-      {
-        "name": "sf-batched-landmark",
         "node": "sf-glass-landmark-opaque",
         "practical": false
       },
@@ -165,17 +416,6 @@
         "name": "av-glazing",
         "node": "sf-bridge-span-glazing",
         "practical": false
-      },
-      {
-        "name": "sf-batched-landmark",
-        "node": "sf-ferry-clocktower-opaque",
-        "practical": false
-      },
-      {
-        "name": "sf-window-practical",
-        "node": "sf-ferry-clocktower-emissive",
-        "emissiveIntensity": 0.6817,
-        "practical": true
       },
       {
         "name": "sf-batched-landmark",
@@ -285,11 +525,6 @@
       {
         "name": "sf-cast-iron",
         "node": "sf-curb-bollards",
-        "practical": false
-      },
-      {
-        "name": "sf-london-plane-bark",
-        "node": "sf-tree-trunks",
         "practical": false
       },
       {
@@ -502,16 +737,6 @@
         "practical": false
       },
       {
-        "name": "sf-parked-coat",
-        "node": "sf-parked-0",
-        "practical": false
-      },
-      {
-        "name": "sf-parked-coat",
-        "node": "sf-parked-1",
-        "practical": false
-      },
-      {
         "node": "sf-sign-plates",
         "practical": false
       },
@@ -609,213 +834,6 @@
         "practical": true
       },
       {
-        "name": "commuter-batched-cloth",
-        "node": "commuter-pelvis-mesh",
-        "practical": false
-      },
-      {
-        "name": "commuter-batched-cloth",
-        "node": "commuter-torso-mesh",
-        "practical": false
-      },
-      {
-        "name": "commuter-batched-cloth",
-        "node": "commuter-bag-mesh",
-        "practical": false
-      },
-      {
-        "name": "commuter-batched-cloth",
-        "node": "commuter-head-mesh",
-        "practical": false
-      },
-      {
-        "name": "commuter-batched-cloth",
-        "node": "commuter-arm-l-mesh",
-        "practical": false
-      },
-      {
-        "name": "commuter-phone-screen",
-        "node": "commuter-arm-l-mesh-screen",
-        "emissiveIntensity": 1.95,
-        "practical": true
-      },
-      {
-        "name": "commuter-batched-cloth",
-        "node": "commuter-arm-r-mesh",
-        "practical": false
-      },
-      {
-        "name": "commuter-batched-cloth",
-        "node": "commuter-forearm-r-mesh",
-        "practical": false
-      },
-      {
-        "name": "commuter-batched-cloth",
-        "node": "commuter-thigh-l",
-        "practical": false
-      },
-      {
-        "name": "commuter-batched-cloth",
-        "node": "commuter-shin-l",
-        "practical": false
-      },
-      {
-        "name": "commuter-batched-cloth",
-        "node": "commuter-thigh-r",
-        "practical": false
-      },
-      {
-        "name": "commuter-batched-cloth",
-        "node": "commuter-shin-r",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "player-car-cruiser-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-teal-status",
-        "node": "player-car-cruiser-practicals material 0",
-        "emissiveIntensity": 1.85,
-        "practical": true
-      },
-      {
-        "name": "av-cruiser-matrix-drl",
-        "node": "player-car-cruiser-practicals material 1",
-        "emissiveIntensity": 2.45,
-        "practical": true
-      },
-      {
-        "name": "av-cruiser-crimson-led",
-        "node": "player-car-cruiser-practicals material 2",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "name": "av-cruiser-canopy",
-        "node": "player-car-cruiser-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "player-car-coupe-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-teal-status",
-        "node": "player-car-coupe-practicals material 0",
-        "emissiveIntensity": 1.85,
-        "practical": true
-      },
-      {
-        "name": "av-headlamp",
-        "node": "player-car-coupe-practicals material 1",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "player-car-coupe-practicals material 2",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "player-car-coupe-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "player-car-truck-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-teal-status",
-        "node": "player-car-truck-practicals material 0",
-        "emissiveIntensity": 1.85,
-        "practical": true
-      },
-      {
-        "name": "av-headlamp",
-        "node": "player-car-truck-practicals material 1",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "player-car-truck-practicals material 2",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "player-car-truck-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "player-car-gt-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-teal-status",
-        "node": "player-car-gt-practicals material 0",
-        "emissiveIntensity": 1.85,
-        "practical": true
-      },
-      {
-        "name": "av-headlamp",
-        "node": "player-car-gt-practicals material 1",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "player-car-gt-practicals material 2",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "player-car-gt-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "player-car-interceptor-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-teal-status",
-        "node": "player-car-interceptor-practicals material 0",
-        "emissiveIntensity": 1.85,
-        "practical": true
-      },
-      {
-        "name": "av-amber-strobe",
-        "node": "player-car-interceptor-practicals material 1",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-headlamp",
-        "node": "player-car-interceptor-practicals material 2",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "player-car-interceptor-practicals material 3",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "player-car-interceptor-glazing",
-        "practical": false
-      },
-      {
         "name": "av-lidar-turret",
         "node": "pod-sensor-housing",
         "practical": false
@@ -835,381 +853,13 @@
         "practical": false
       },
       {
-        "name": "av-batched-coachwork",
-        "node": "rival-car-0-opaque",
+        "name": "sf-road-wheel",
+        "node": "sf-wheels",
         "practical": false
       },
       {
-        "name": "av-teal-status",
-        "node": "rival-car-0-practicals material 0",
-        "emissiveIntensity": 1.85,
-        "practical": true
-      },
-      {
-        "name": "av-headlamp",
-        "node": "rival-car-0-practicals material 1",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "rival-car-0-practicals material 2",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "rival-car-0-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "rival-car-1-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-teal-status",
-        "node": "rival-car-1-practicals material 0",
-        "emissiveIntensity": 1.85,
-        "practical": true
-      },
-      {
-        "name": "av-headlamp",
-        "node": "rival-car-1-practicals material 1",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "rival-car-1-practicals material 2",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "rival-car-1-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "rival-car-2-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-violet-strobe",
-        "node": "rival-car-2-practicals material 0",
-        "emissiveIntensity": 1.75,
-        "practical": true
-      },
-      {
-        "name": "av-amber-strobe",
-        "node": "rival-car-2-practicals material 1",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-headlamp",
-        "node": "rival-car-2-practicals material 2",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "rival-car-2-practicals material 3",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "rival-car-2-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "rival-car-3-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-amber-strobe",
-        "node": "rival-car-3-practicals material 0",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-headlamp",
-        "node": "rival-car-3-practicals material 1",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "rival-car-3-practicals material 2",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "rival-car-3-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "rival-car-4-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-teal-status",
-        "node": "rival-car-4-practicals material 0",
-        "emissiveIntensity": 1.85,
-        "practical": true
-      },
-      {
-        "name": "av-headlamp",
-        "node": "rival-car-4-practicals material 1",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "rival-car-4-practicals material 2",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "rival-car-4-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "traffic-0-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-headlamp",
-        "node": "traffic-0-practicals material 0",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "traffic-0-practicals material 1",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "traffic-0-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "traffic-1-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-amber-strobe",
-        "node": "traffic-1-practicals material 0",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-headlamp",
-        "node": "traffic-1-practicals material 1",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "traffic-1-practicals material 2",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "traffic-1-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "traffic-2-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-headlamp",
-        "node": "traffic-2-practicals material 0",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "traffic-2-practicals material 1",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "traffic-2-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "traffic-3-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-headlamp",
-        "node": "traffic-3-practicals material 0",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "traffic-3-practicals material 1",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "traffic-3-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "traffic-4-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-headlamp",
-        "node": "traffic-4-practicals material 0",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "traffic-4-practicals material 1",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "traffic-4-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "traffic-5-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-headlamp",
-        "node": "traffic-5-practicals material 0",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "traffic-5-practicals material 1",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "traffic-5-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "traffic-6-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-amber-strobe",
-        "node": "traffic-6-practicals material 0",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-headlamp",
-        "node": "traffic-6-practicals material 1",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "traffic-6-practicals material 2",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "traffic-6-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "traffic-7-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-headlamp",
-        "node": "traffic-7-practicals material 0",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "traffic-7-practicals material 1",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "traffic-7-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "traffic-8-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-headlamp",
-        "node": "traffic-8-practicals material 0",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "traffic-8-practicals material 1",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "traffic-8-glazing",
-        "practical": false
-      },
-      {
-        "name": "av-batched-coachwork",
-        "node": "traffic-9-opaque",
-        "practical": false
-      },
-      {
-        "name": "av-headlamp",
-        "node": "traffic-9-practicals material 0",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "traffic-9-practicals material 1",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "av-glazing",
-        "node": "traffic-9-glazing",
+        "name": "gd-blank-plate",
+        "node": "traffic-4-plate",
         "practical": false
       }
     ],
@@ -1277,7 +927,275 @@
       ],
       "mobile": "both"
     },
-    "assets": [],
+    "assets": [
+      {
+        "role": "vehicle",
+        "assetKey": "gdCruiserPodW3",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdCrossoverAvW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdHeavySemiW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdGtCrimsonW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdInterceptorCobaltW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdShuttleW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdGtChampagneW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdResponseSuvW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdCableCarW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdGtAmberW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdSedanSlateW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdSedanPearlW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdSedanPearlT",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdCoupeNavyW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdTaxiCabW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdHatchCoralW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdHatchMintW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdTransitBusW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdPickupGraphiteW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdPickupBronzeW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdBoxTruckW",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gdParkedHatchWhiteT",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "gdWalkerA",
+        "maxTriangles": 40000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "idle",
+            "walk"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "gdWalkerB",
+        "maxTriangles": 40000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "idle",
+            "walk"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "gdWalkerC",
+        "maxTriangles": 40000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "idle",
+            "walk"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "gdWalkerD",
+        "maxTriangles": 40000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "idle",
+            "walk"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "gdCommuter",
+        "maxTriangles": 40000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "idle",
+            "walk"
+          ]
+        }
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "gdStreetTree",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "gdFerryTerminal",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "gdPyramidTower",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
     "vfx": [
       {
         "event": "collision",

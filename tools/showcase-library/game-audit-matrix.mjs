@@ -32,9 +32,7 @@ const playbook = JSON.parse(
 );
 
 /** Routes that are games but are not registered in the showcase route-gates file. */
-const EXTRA_ROUTES = [
-  { id: "aura-clash-showcase", label: "Aura Clash Arena", path: "/apps/aura-clash-showcase/", releaseClass: "flagship" },
-];
+const EXTRA_ROUTES = [];
 
 function readJson(path) {
   if (!existsSync(path)) return null;

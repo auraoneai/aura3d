@@ -1,0 +1,39 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-diamond-3d",
+  "key": "diaIdolScoreboard",
+  "generatedAt": "2026-11-18T22:13:11.152Z",
+  "generator": "tools/idol/generate.mjs (finished by apps/showcase-aura-diamond-3d/scripts/idol-recover.mjs after the client poll timed out)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08c-ddb2-75d1-8649-bee0d7bd5a03",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1499966,
+        "num_faces": 3000500,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 16.249,
+    "size": [
+      15.4,
+      16.296,
+      5.443
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-diamond-3d/assets/idol/diaIdolScoreboard.glb",
+  "sizeBytes": 6963552,
+  "preview": "artifacts/idol/aura-diamond-3d/diaIdolScoreboard/views.png",
+  "usd": 0.37
+}

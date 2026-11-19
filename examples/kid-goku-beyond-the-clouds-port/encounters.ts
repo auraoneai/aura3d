@@ -33,6 +33,16 @@ export interface Trex {
 }
 export interface Threat { creature: Creature; kind: string; s: number }
 
+/**
+ * Rolling boulder size and the kid's body, for the boulder contact test. The ball is drawn with this radius (world.ts) and
+ * hits only when the kid's body (a capsule RUNNER_HALF_WIDTH thick from his feet to RUNNER_HEIGHT) touches it, so a jump
+ * that clears the drawn ball clears it and a grounded kid is hit only when he visibly runs into it (pass-through audit:
+ * the original's 3.8 m ball with a "jump above 1.7 m" test let the kid fly through its upper half on every jump).
+ */
+export const BOULDER_RADIUS = 1.1;
+export const RUNNER_HALF_WIDTH = 0.3;
+export const RUNNER_HEIGHT = 1.45;
+
 export class Encounters {
   time = 0;
   s = 0;
@@ -62,6 +72,12 @@ export class Encounters {
 
   /** Boulder lane as it rolls across the road toward the runner (original: -16 + (distance + 36) * 0.44). */
   boulderLane(b: Boulder, runnerS: number): number { return -16 + (runnerS - b.s + 36) * 0.44; }
+
+  /** Whether the kid at (`runnerS`, `lane`, feet `jump` above the ground) touches the drawn boulder (centre BOULDER_RADIUS up). */
+  boulderContact(b: Boulder, runnerS: number, lane: number, jump: number): boolean {
+    const c = BOULDER_RADIUS, y = Math.min(Math.max(c, jump), jump + RUNNER_HEIGHT);
+    return Math.hypot(runnerS - b.s, lane - this.boulderLane(b, runnerS), y - c) < BOULDER_RADIUS + RUNNER_HALF_WIDTH;
+  }
 
   /** Original `rewind`: put every encounter beyond `s` back, after a respawn. */
   rewind(s: number): void {
@@ -128,11 +144,14 @@ export class Encounters {
         prompt = { tag: "ROCK SLIDE!", title: "BOULDER INCOMING", help: "JUMP IT OR STEER CLEAR" };
       }
       if (d > -44 && d < -40 && !b.rumbled) { b.rumbled = true; events.push({ type: "rumble" }); }
-      if (!b.passed && d >= 0) {
+      // contact while the kid crosses the ball's span; a clean crossing is a close call once he is past it
+      const reach = BOULDER_RADIUS + RUNNER_HALF_WIDTH;
+      if (!b.passed && d > -reach && d < reach && this.boulderContact(b, state.s, state.lane, state.jump)) {
+        b.passed = true; b.hit = true; events.push({ type: "boulder-hit", index: b.id });
+      } else if (!b.passed && d >= reach) {
         b.passed = true;
-        if (d > 6) continue;
-        if (Math.abs(state.lane - b.lane) < 2.1 && state.jump < 1.7) { b.hit = true; events.push({ type: "boulder-hit", index: b.id }); }
-        else events.push({ type: "close-call", points: Math.abs(state.lane - b.lane) < 3.4 ? 250 : 120 });
+        if (d > reach + 6) continue;
+        events.push({ type: "close-call", points: Math.abs(state.lane - b.lane) < 3.4 ? 250 : 120 });
       }
     }
 

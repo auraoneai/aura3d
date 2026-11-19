@@ -112,3 +112,25 @@ export function stepPieces(pieces: Piece[], dt: number): Piece[] {
 
 /** Visible scale of a piece: 1 while alive, shrinking to 0 over the last `PIECE_FADE` seconds. */
 export const pieceScale = (p: Piece): number => Math.max(0, Math.min(1, (p.life - p.age) / PIECE_FADE));
+
+/** A camera / hit-stop kick request (`createImpactRig().trigger`). */
+export interface ImpactKick { freezeSeconds?: number; trauma?: number; fovKickDeg?: number }
+/**
+ * Impact-feel throttle. A run with echo clones and the gale star lands a kill, clone strike or wind impact every few
+ * tenths of a second; each one used to add camera trauma (0.28-0.52), a 32-55 ms freeze and an FOV kick, so the trauma
+ * never decayed and the frame (and with it the runner) shook back and forth the whole run. Kicks closer together than
+ * `IMPACT_SPACING` are scaled by how much of that spacing has passed, and only one freeze lands per `FREEZE_SPACING`.
+ */
+export const IMPACT_SPACING = 0.6;
+export const FREEZE_SPACING = 0.9;
+export function createImpactThrottle(): (now: number, kick: ImpactKick) => ImpactKick | null {
+  let lastKick = -Infinity, lastFreeze = -Infinity;
+  return (now, kick) => {
+    const k = Math.max(0, Math.min(1, (now - lastKick) / IMPACT_SPACING));
+    if (k <= 0) return null;
+    lastKick = now;
+    const freeze = (kick.freezeSeconds ?? 0) > 0 && now - lastFreeze >= FREEZE_SPACING;
+    if (freeze) lastFreeze = now;
+    return { freezeSeconds: freeze ? kick.freezeSeconds! : 0, trauma: (kick.trauma ?? 0) * k, fovKickDeg: (kick.fovKickDeg ?? 0) * k };
+  };
+}

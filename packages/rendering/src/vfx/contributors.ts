@@ -78,7 +78,7 @@ export interface VfxFrameSource {
 export interface AtmosphereFrameSource {
   readonly sky: AuraSkySpecLike | null;
   /** P3-T6 — live state + sky-change listener for SkyCaptureAdapter wiring. */
-  state?(): { readonly sky: unknown | null };
+  state?(): { readonly sky: unknown | null; readonly captureEnvironment?: boolean };
   onSkyChanged?(listener: () => void): (() => void) | void;
 }
 
@@ -459,6 +459,8 @@ const wetnessContributor: FrameContributor = {
  * CPU prefilter (T0-25).
  */
 const skyCaptureAdapters = new WeakMap<RenderDevice, { source: unknown; adapter: SkyCaptureAdapter }>();
+/** Sources whose adapter could not be wired: not retried (or re-warned) every frame. */
+const skyCaptureFailedSources = new WeakSet<object>();
 
 const skyCaptureContributor: FrameContributor = {
   id: "prd07.environmentProbe",
@@ -473,16 +475,29 @@ const skyCaptureContributor: FrameContributor = {
     }
     const environment = src.environmentLighting ?? src.environmentBackground ?? null;
     let entry = skyCaptureAdapters.get(ctx.device);
+    if ((!entry || entry.source !== ctx.source) && skyCaptureFailedSources.has(ctx.source)) {
+      ctx.blackboard.set("prd07.environmentProbe", null);
+      return items;
+    }
     if (!entry || entry.source !== ctx.source) {
       entry?.adapter.dispose();
-      entry = {
-        source: ctx.source,
-        adapter: new SkyCaptureAdapter(
+      skyCaptureAdapters.delete(ctx.device);
+      let adapter: SkyCaptureAdapter;
+      // The adapter contains capture failures itself; anything else that goes
+      // wrong wiring an optional sky probe must not fail the whole frame.
+      try {
+        adapter = new SkyCaptureAdapter(
           { atmosphere: atmosphere as SkyCaptureAppLike["atmosphere"], environment },
           ctx.device,
           ctx.flags
-        )
-      };
+        );
+      } catch (error) {
+        skyCaptureFailedSources.add(ctx.source);
+        if (typeof console !== "undefined") console.warn(`SKY_CAPTURE_FAILED: ${error instanceof Error ? error.message : String(error)}`);
+        ctx.blackboard.set("prd07.environmentProbe", null);
+        return items;
+      }
+      entry = { source: ctx.source, adapter };
       skyCaptureAdapters.set(ctx.device, entry);
     }
     ctx.blackboard.set("prd07.environmentProbe", entry.adapter.current());

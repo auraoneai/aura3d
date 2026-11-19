@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cumulus-dash",
+  "key": "cdBonsaiPine",
+  "generatedAt": "2026-11-18T22:31:10.495Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/cumulus-dash/cdBonsaiPine/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 881726,
+        "num_faces": 1763796,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single windswept mountain pine tree with a twisting reddish-brown scaly trunk and flat layered tiers of dark green needle pads, like a large wild bonsai growing on a cliff, freestanding with no ground or pot. Photoreal storm-washed mountain realism: real physical materials as if photographed on a high sandstone ridge just after a squall, crisp physically based surface detail and gentle wear, saturated rain-washed colours, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.022,
+    "size": [
+      0.995,
+      1,
+      0.853
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/kid-goku-beyond-the-clouds-port/assets/idol/cdBonsaiPine.glb",
+  "sizeBytes": 1454696,
+  "preview": "artifacts/idol/cumulus-dash/cdBonsaiPine/views.png",
+  "usd": 0.2
+}

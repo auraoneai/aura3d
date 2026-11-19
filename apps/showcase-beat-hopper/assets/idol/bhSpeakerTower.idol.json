@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "beat-hopper",
+  "key": "bhSpeakerTower",
+  "generatedAt": "2026-11-18T22:50:58.603Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0a0-ebe5-7443-a8b7-3b44771a601a",
+      "prompt": "A tall professional concert loudspeaker tower: a vertical stack of black textured plywood speaker cabinets with black metal grilles and large woofer cones, a curved line-array of smaller horn speakers on top, mounted in a black steel rigging frame on a heavy steel base plate, thin cyan LED strips along the cabinet edges. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a6-ac4f-7160-8509-99d6b393f286",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1259626,
+        "num_faces": 2519700,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A tall professional concert loudspeaker tower: a vertical stack of black textured plywood speaker cabinets with black metal grilles and large woofer cones, a curved line-array of smaller horn speakers on top, mounted in a black steel rigging frame on a heavy steel base plate, thin cyan LED strips along the cabinet edges. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 7.72,
+    "size": [
+      3.617,
+      8.6,
+      2.874
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-beat-hopper/assets/idol/bhSpeakerTower.glb",
+  "sizeBytes": 3761200,
+  "preview": "artifacts/idol/beat-hopper/bhSpeakerTower/views.png",
+  "usd": 0.37
+}

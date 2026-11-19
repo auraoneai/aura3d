@@ -6,7 +6,8 @@
  * and cryo-manifolds, while borosilicate vacuum quartz pods and stratified Tokamak sky islands drift
  * in outer parallax lanes. Two tiled spans per group wrap seamlessly via `zShift = (distance * PARALLAX) % SPAN`.
  */
-import type { AuraApp, AuraSceneBuilder } from "@aura3d/engine";
+import { instances, type AuraApp, type AuraSceneBuilder } from "@aura3d/engine";
+import { assets } from "./aura-assets.route";
 import { buildBackdropGroupNode, type BackdropAssetKind } from "./art/proceduralModels";
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
@@ -187,9 +188,30 @@ export function backdropPose(p: BackdropPiece, distance: number, elapsed: number
   };
 }
 
+/**
+ * Idol wow pass: each backdrop kind's body is an Idol image-to-3D GLB (`tools/idol/specs/polarity-orbs.json`),
+ * normalised to the same grounded max dimension (`size`) the procedural assembly was fitted to, so the slot
+ * transforms, parallax and bob stay identical. One instanced draw class per kind.
+ */
+export const IDOL_BACKDROP_ASSETS = {
+  poChargeCoil: assets.poResonanceCoil,
+  poMagnet: assets.poHorseshoeMagnet,
+  poCrystalRed: assets.poCrystalRed,
+  poCrystalBlue: assets.poCrystalBlue,
+  poCrystalIslandB: assets.poIslandWarm,
+  poCrystalIsland: assets.poIslandCool
+} as const satisfies Record<AssetKind, unknown>;
+
 export function addBackdrop(builder: AuraSceneBuilder): void {
   for (const g of BACKDROP_GROUPS) {
-    builder.add(buildBackdropGroupNode(g));
+    const body = instances.model(IDOL_BACKDROP_ASSETS[g.kind], {
+      name: `${g.id}-idol`,
+      scaleMode: "world",
+      transforms: g.transforms.map((t) => ({ position: [...t.position], rotation: [...t.rotation], scale: t.scale })),
+      castShadow: false,
+      receiveShadow: false
+    });
+    builder.add(buildBackdropGroupNode(g, body));
   }
 }
 

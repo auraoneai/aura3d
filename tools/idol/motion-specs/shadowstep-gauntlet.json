@@ -1,0 +1,110 @@
+{
+  "game": "shadowstep-gauntlet",
+  "out": "apps/showcase-ninja-runner-port/src/motion.generated.ts",
+  "clips": [
+    {
+      "key": "Run",
+      "prompt": "A nimble lightly armored warrior sprints forward in a straight line at full speed, leaning forward, arms pumping hard.",
+      "duration": 2,
+      "loop": true,
+      "seed": 801,
+      "guidance": 5
+    },
+    {
+      "key": "Dash",
+      "prompt": "A nimble warrior dashes forward in a straight line in a very low fast lunge, torso leaning far forward, both arms swept straight back behind the body, long bounding strides.",
+      "duration": 2,
+      "loop": true,
+      "seed": 802,
+      "guidance": 5
+    },
+    {
+      "key": "Jump",
+      "prompt": "A nimble warrior standing in place crouches, jumps high straight up, tucks both knees up to the chest at the top of the jump, then lands softly on both feet and straightens.",
+      "duration": 2,
+      "loop": false,
+      "seed": 803,
+      "guidance": 5
+    },
+    {
+      "key": "Slide",
+      "prompt": "A runner drops into a low feet-first slide along the ground, the front leg extended forward, the back leg bent underneath, torso leaning back with one hand trailing on the ground, and holds that low slide.",
+      "duration": 1.6,
+      "loop": false,
+      "seed": 804,
+      "guidance": 5
+    },
+    {
+      "key": "Slash",
+      "prompt": "A swordsman holding a sword in the right hand steps forward and slashes diagonally down from above the right shoulder, then whips a fast backhand horizontal slash across the body, ending in a ready stance.",
+      "duration": 1.6,
+      "loop": false,
+      "seed": 805,
+      "guidance": 5
+    },
+    {
+      "key": "Throw",
+      "prompt": "A warrior standing in place quickly throws a small object overhand with the right hand, stepping forward with the left foot and following through.",
+      "duration": 1.2,
+      "loop": false,
+      "seed": 806,
+      "guidance": 5
+    },
+    {
+      "key": "Jab",
+      "prompt": "A crouched fighter lunges forward and makes a quick straight thrust with the right hand, then springs back into the crouch.",
+      "duration": 1.2,
+      "loop": false,
+      "seed": 807,
+      "guidance": 5
+    },
+    {
+      "key": "Smash",
+      "prompt": "A big heavy fighter raises a huge club high overhead with both hands, then smashes it straight down onto the ground in front with the whole body, then straightens up.",
+      "duration": 2,
+      "loop": false,
+      "seed": 808,
+      "guidance": 5
+    },
+    {
+      "key": "Cast",
+      "prompt": "A robed figure standing in place raises both hands to the chest, gathers energy between the palms, then thrusts both palms forward at arm's length and holds.",
+      "duration": 2,
+      "loop": false,
+      "seed": 809,
+      "guidance": 5
+    },
+    {
+      "key": "Hit",
+      "prompt": "A fighter is struck hard in the chest and staggers back one step, the head snapping back, then recovers into a ready stance.",
+      "duration": 1.2,
+      "loop": false,
+      "seed": 810,
+      "guidance": 5
+    },
+    {
+      "key": "Death",
+      "prompt": "A fighter is struck down, collapses to the knees and falls backward onto the ground, then lies still.",
+      "duration": 2.5,
+      "loop": false,
+      "seed": 811,
+      "guidance": 5
+    },
+    {
+      "key": "Idle",
+      "prompt": "A warrior stands in a low ready fighting stance, knees bent, weight shifting slightly from foot to foot, breathing.",
+      "duration": 3,
+      "loop": true,
+      "seed": 812,
+      "guidance": 5
+    },
+    {
+      "key": "Guard",
+      "prompt": "A guard stands on watch holding a weapon low in the right hand, shifting weight and turning the head to look left and right.",
+      "duration": 3,
+      "loop": true,
+      "seed": 813,
+      "guidance": 5
+    }
+  ]
+}

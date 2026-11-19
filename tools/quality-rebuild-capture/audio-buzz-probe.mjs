@@ -37,7 +37,7 @@ const MIME = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/jav
 
 function serveLocal() {
   const roots = [path.join(here, ".build", "site"), path.join(repoRoot, "public"),
-    path.join(repoRoot, "apps", "aura-clash-showcase", "public"), path.join(repoRoot, "marketing", "public")];
+    path.join(repoRoot, "marketing", "public")];
   const tryFile = (root, rel) => {
     const full = path.resolve(root, `.${rel}`);
     if (!full.startsWith(path.resolve(root))) return null;

@@ -1,0 +1,81 @@
+{
+  "game": "shape-shift-sprint",
+  "outDir": "apps/showcase-shape-shift-sprint/assets/idol",
+  "style": "Photograph of a real handmade toy miniature, glossy painted wood and smooth glazed ceramic, pastel candy colours, soft bright daylight, tactile surface detail",
+  "items": [
+    {
+      "key": "sssCastleIslandCream",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 10.0
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A floating toy island: an inverted cone of terracotta-brown rock with a green grassy top, a small cream-white toy castle with round towers and ruby-red conical roofs, two round lollipop trees and a small cluster of pastel crystals"
+    },
+    {
+      "key": "sssCastleIslandBlush",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 10.0
+      },
+      "front": "+z",
+      "seed": 8,
+      "tex": 1024,
+      "subject": "A floating toy island: an inverted cone of terracotta-brown rock with a green grassy top, a small blush-pink toy castle with round towers and royal-blue conical roofs, two round lollipop trees and a small cluster of pastel crystals"
+    },
+    {
+      "key": "sssCastleIslandMint",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 10.0
+      },
+      "front": "+z",
+      "seed": 9,
+      "tex": 1024,
+      "subject": "A floating toy island: an inverted cone of terracotta-brown rock with a green grassy top, a small mint-green toy castle with round towers and plum-purple conical roofs, two round lollipop trees and a small cluster of pastel crystals"
+    },
+    {
+      "key": "sssBlockTower",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "maxDim": 26.0
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A tall slender toy tower built from stacked wooden toy blocks: a stepped stone-grey base, cream cylinder blocks, coral-pink and cerulean-blue painted tiers, small arched windows, topped with a pointed golden spire"
+    },
+    {
+      "key": "sssRivalDrillBoat",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 1.1
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A small toy hover boat with a spiral auger drill nose: glossy coral-red painted hull, champagne and brass trim, a dark smoked glass cockpit canopy, a cyan glowing thruster at the back",
+      "yawDeg": 45
+    },
+    {
+      "key": "sssRivalCoupe",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 1.1
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A small toy aero sports coupe hover car with no wheels: glossy plum-purple painted body, silver trim, a dark smoked glass bubble canopy, small rear fins and a cyan glowing thruster at the back",
+      "yawDeg": 90
+    }
+  ]
+}

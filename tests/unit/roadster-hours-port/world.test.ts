@@ -46,7 +46,8 @@ describe("roadster-hours-port world", () => {
       const lineup = levelLayout(level).vehicles.length;
       expect(world.vehicleCount).toBe(lineup + level.traffic.length);
       expect(world.vehicleCount).toBeGreaterThan(20);
-      expect(world.vehicleSlots).toBeGreaterThan(world.vehicleCount);
+      // one instance per Idol vehicle (`instances.model`), several per procedural/baked car (one per material group)
+      expect(world.vehicleSlots).toBeGreaterThanOrEqual(world.vehicleCount);
       expect(world.vehicleMeshes).toBeGreaterThanOrEqual(3);
       expect(world.vehicleGeometries).toBeGreaterThan(2);
     });

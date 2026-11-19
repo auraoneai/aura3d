@@ -4,8 +4,9 @@
  * adaptive DPR, QA hooks (`__AURA_NUMBER_SURGE__`), route health, localStorage
  * best/mute/motion/howtoSeen, and the How to play dialog (auto-opens on the first Play). The sim is pure; everything here is presentation.
  *
- * Query params: seed=N, manual=1, autostart=1, autopilot=1, warmup=N, dpr=N,
- * motion=reduced|full.
+ * Query params: seed=N, manual=1, autoplay=1 (aliases autostart=1, autopilot=1: skip the title, the autopilot plays
+ * through the normal input path, results hold ~3 s then the run restarts, forever), warmup=N, dpr=N,
+ * motion=reduced|full. KeyO toggles the autopilot during play.
  */
 import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
@@ -22,7 +23,7 @@ import { LOOK } from "./look";
 import { NumberSurgeHud } from "./hud";
 import { FxDriver, diffFx } from "./fx";
 import { createNumberSurgeSound, diffSounds, type AudioFrame } from "./audio";
-import { Autopilot } from "./autopilot";
+import { AUTOPLAY_PILOT, Autopilot } from "./autopilot";
 import { createHowto } from "./howto";
 
 const PHASE_CODE: Record<Phase, number> = { splash: 0, playing: 1, bursting: 2, gameOver: 3 };
@@ -30,6 +31,7 @@ const PHASE_CODE: Record<Phase, number> = { splash: 0, playing: 1, bursting: 2, 
 const config = readQaParams({
   seed: { type: "number", default: 20261103 },
   manual: { type: "flag" },
+  autoplay: { type: "flag" },
   autostart: { type: "flag" },
   autopilot: { type: "flag" },
   warmup: { type: "number", default: 30 },
@@ -50,7 +52,9 @@ let runtime: WorldRuntime | undefined;
 let ready = false;
 let steps = 0;
 let renderFailed = false;
-let pilot: Autopilot | null = config.autopilot ? new Autopilot() : null;
+/** `?autoplay=1`, with `?autostart=1` and `?autopilot=1` kept as aliases. */
+const autoplay = config.autoplay || config.autostart || config.autopilot;
+let pilot: Autopilot | null = autoplay ? new Autopilot(AUTOPLAY_PILOT) : null;
 const pending: Input = { ...IDLE };
 let nextPopupSeq = 0;
 let popupsShown = 0;
@@ -228,6 +232,8 @@ function updateHud(): void {
 
 /* ------------------------------------------------------------------ frame */
 
+let lastRenderMs = -1;
+
 function render(live = false): void {
   if (!app || !runtime || renderFailed || isPageHidden()) return;
   try {
@@ -240,7 +246,12 @@ function render(live = false): void {
       shakeOffset: impactState.shakeOffset,
       shakeRoll: impactState.shakeRoll
     });
-    app.step(0);
+    // Idol wow pass: advance the engine clock by the real frame time; the rigged squad / guard clips play on the
+    // engine's pose mixer, which advances by engine dt (`step(0)` would hold them at the crossfade start: bind T-pose).
+    const nowMs = typeof performance !== "undefined" ? performance.now() : 0;
+    const frameDt = lastRenderMs < 0 ? 0 : Math.min(0.1, Math.max(0, (nowMs - lastRenderMs) / 1000));
+    lastRenderMs = nowMs;
+    app.step(frameDt);
   } catch (error) {
     renderFailed = true;
     qa.reportError(error);
@@ -348,10 +359,10 @@ async function boot(): Promise<void> {
   ready = true;
   loading.done();
   startButton.removeAttribute("aria-busy");
-  if (config.autostart) {
+  if (autoplay) {
     for (let i = 0; i < config.warmup; i += 1) advance(IDLE);
     steps = 0;
-    if (!pilot) pilot = new Autopilot();
+    if (!pilot) pilot = new Autopilot(AUTOPLAY_PILOT);
   }
   render();
   updateHud();
@@ -409,7 +420,11 @@ function dropInput(): void {
 addEventListener("blur", dropInput);
 addEventListener("keydown", (e) => {
   void sound.unlock();
-  if (config.manual || pilot || e.repeat) return;
+  if (config.manual || e.repeat) return;
+  if (e.code === "KeyO") {
+    toggleAutopilot();
+    return;
+  }
   if (e.code === "KeyM") {
     toggleMute();
     return;
@@ -418,7 +433,7 @@ addEventListener("keydown", (e) => {
     setPaused(!paused);
     return;
   }
-  if (paused) return;
+  if (paused || pilot) return;
   if (e.code === "Space" || e.code === "Enter") {
     e.preventDefault();
     if (sim.o.phase === "splash") requestStart();
@@ -438,6 +453,21 @@ addEventListener("keyup", (e) => {
 });
 
 /* ------------------------------------------------------------------ pause, settings, buttons */
+
+/** KeyO: hand the run to the autopilot (from the real steering target) or take it back. */
+function toggleAutopilot(): void {
+  dropInput();
+  if (pilot) {
+    pilot = null;
+    return;
+  }
+  if (howto.isOpen) howto.close();
+  pilot = new Autopilot(AUTOPLAY_PILOT);
+  pilot.sync(sim);
+  // Step 0 means "press start"; mid-run the autopilot must steer, not restart.
+  if (sim.o.phase !== "splash") steps = Math.max(1, steps);
+  if (paused) setPaused(false);
+}
 
 function setPaused(on: boolean): void {
   if (on && sim.o.phase !== "playing") on = false;
@@ -622,7 +652,7 @@ const qa = installQaHooks("number-surge", {
     prevAudio = null;
     prevEvents = null;
     lastPhase = "splash";
-    pilot = config.autopilot ? new Autopilot() : null;
+    pilot = autoplay ? new Autopilot(AUTOPLAY_PILOT) : null;
     render();
     updateHud();
   },
@@ -641,7 +671,7 @@ const qa = installQaHooks("number-surge", {
       return snapshotState();
     },
     autopilot(on: boolean) {
-      pilot = on ? new Autopilot() : null;
+      pilot = on ? new Autopilot(AUTOPLAY_PILOT) : null;
       steps = 0;
     },
     restart() {

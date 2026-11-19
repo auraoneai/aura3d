@@ -447,11 +447,6 @@ artifacts/meshy/**
 .meshy-task-state/
 
 # Local source asset archives and bulky generated candidates
-apps/aura-clash-showcase/assets/candidates/
-apps/aura-clash-showcase/assets/quaternius-source/
-apps/aura-clash-showcase/assets/source/
-apps/aura-clash-showcase/assets/quaternius-*.json
-apps/world-war-x-showcase/
 marketing/public/aura-assets/
 
 # Curated production marketing previews.
@@ -536,3 +531,6 @@ tests/fixtures/agent-loop-seeded/_staged-*/
 # Motion Studio quarantined upstream repos & nested dependencies
 motion-studio/third_party/
 motion-studio/**/node_modules/
+
+# Idol (fal.ai) raw downloads; provenance lives next to each admitted GLB as <key>.idol.json
+artifacts/idol/**

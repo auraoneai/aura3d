@@ -35,7 +35,8 @@ export function loadProfile(): Profile {
       dashEnabled: p.dashEnabled !== false,
       orbColor: typeof p.orbColor === "string" ? p.orbColor : DEF.orbColor,
       trailColor: typeof p.trailColor === "string" ? p.trailColor : DEF.trailColor,
-      cameraDefault: p.cameraDefault === "overhead" ? "overhead" : "follow",
+      // arcade-readability pass: every session opens on the top-down arcade view ("overhead"); V / Tilt Cam switches
+      cameraDefault: "overhead",
       mazesPlayed: p.mazesPlayed ?? 0
     };
   } catch { return { ...DEF, mazeBest: {}, cleared: [] }; }

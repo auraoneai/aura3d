@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "pips-big-leap",
+  "key": "pipWindmillSails",
+  "generatedAt": "2026-11-19T00:24:56.340Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f131-3741-7433-b94a-7badf12b42b9",
+      "prompt": "A single windmill sail cross seen straight from the front, lying flat: four long wooden lattice sail arms with cream cloth panels arranged in an X, joined at one round wooden hub in the centre, nothing else. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f131-da4e-7961-9f03-aac34923ac20",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 738698,
+        "num_faces": 1477408,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single windmill sail cross seen straight from the front, lying flat: four long wooden lattice sail arms with cream cloth panels arranged in an X, joined at one round wooden hub in the centre, nothing else. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.926,
+    "size": [
+      3.8,
+      0.598,
+      3.932
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-pips-big-leap/assets/idol/pipWindmillSails.glb",
+  "sizeBytes": 708516,
+  "preview": "artifacts/idol/pips-big-leap/pipWindmillSails/views.png",
+  "usd": 0.37
+}

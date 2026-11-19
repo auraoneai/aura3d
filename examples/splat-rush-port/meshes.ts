@@ -182,7 +182,7 @@ export function blobMesh(scale: number, thickness: number): MeshData {
  * Smooth surface of revolution around +Y from `[r, y]` profile samples (`radial` segments, optional Z ellipse scale).
  * Computes analytical profile-tangent normals so lathed bulbous drips and collars shade without facet creases.
  */
-function revolveProfileMesh(profile: readonly (readonly [number, number])[], radial: number, scaleZ = 1): MeshData {
+export function revolveProfileMesh(profile: readonly (readonly [number, number])[], radial: number, scaleZ = 1): MeshData {
   const m = empty();
   const n = profile.length;
   const row = radial + 1;

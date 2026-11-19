@@ -473,10 +473,13 @@ export function buildScoreboardGantryNode(position: V3): AuraNodeBuilder<AuraGro
 // 5. Batched Grand Slam Bowl, Instanced Seats & Colonnade Pillars (`>= 60 FPS`)
 // ---------------------------------------------------------------------------
 
-export function buildStadiumBowlNodes(): AuraSceneNode[] {
-  // Compact 3-material static bowl (`stoneLight` arcade, `trussSteel` cantilever roof/tripods, `foliage` courtside boxwoods)
-  const stoneParts: RawMesh[] = [transformMesh(bevelBoxMesh(24.4, 0.44, 1.15, 0.05), { pos: [0, 4.18, -18.9] })];
-  for (const archX of [-9.2, -4.6, 0, 4.6, 9.2]) {
+export function buildStadiumBowlNodes(options: { readonly idolSetPieces?: boolean } = {}): AuraSceneNode[] {
+  // Compact 3-material static bowl (`stoneLight` arcade, `trussSteel` cantilever roof/tripods, `foliage` courtside boxwoods).
+  // Idol wow pass: with `idolSetPieces` the arcade, colonnade, boxwood urns and TV camera tripods come from Idol GLBs
+  // (view/idolVenue.ts); the cantilever roof truss and the 240 instanced bucket seats stay procedural.
+  const idol = options.idolSetPieces === true;
+  const stoneParts: RawMesh[] = idol ? [] : [transformMesh(bevelBoxMesh(24.4, 0.44, 1.15, 0.05), { pos: [0, 4.18, -18.9] })];
+  for (const archX of idol ? [] : [-9.2, -4.6, 0, 4.6, 9.2]) {
     for (const s of archwayVoussoirSlots({ radius: 1.48, thickness: 0.36, depth: 0.68, voussoirs: 9, stoneMatA: 0, stoneMatB: 0, keystoneMat: 0 })) {
       stoneParts.push(transformMesh(s.mesh, { pos: [archX, 2.15, -18.9] }));
     }
@@ -486,11 +489,12 @@ export function buildStadiumBowlNodes(): AuraSceneNode[] {
     transformMesh(bevelBoxMesh(25.0, 0.14, 3.2, 0.03), { pos: [0, 5.14, -18.0], rot: [0.08, 0, 0] })
   ];
   const foliageParts: RawMesh[] = [];
-  const opticalGlasses: RawMesh[] = [
+  // the umpire's tablet glass sits on the procedural high chair's console arm (the Idol chair has no console)
+  const opticalGlasses: RawMesh[] = idol ? [] : [
     transformMesh(bevelBoxMesh(0.19, 0.008, 0.24, 0.002), { pos: [-6.394, 2.392, 0.18], rot: [0, -0.28, -0.42] })
   ];
 
-  for (const sx of [-1, 1] as const) {
+  for (const sx of idol ? [] : [-1, 1] as const) {
     const cx = sx * 10.55;
     const cz = 4.4;
     const yaw = sx * 0.42;
@@ -509,7 +513,7 @@ export function buildStadiumBowlNodes(): AuraSceneNode[] {
       })
     );
   }
-  for (const [idx, px] of [-8.2, 8.2].entries()) {
+  for (const [idx, px] of (idol ? [] : [-8.2, 8.2]).entries()) {
     stoneParts.push(transformMesh(latheMesh([[0.28, 0], [0.38, 0.52], [0.42, 0.58], [0.36, 0.62], [0, 0.62]], 14, false), { pos: [px, 0, -11.35] }));
     foliageParts.push(transformMesh(layeredCanopyMesh({ radius: 0.48, height: 0.72, puffs: 8, seed: 31 + idx * 17 }), { pos: [px, 0.54, -11.35] }));
   }
@@ -546,6 +550,21 @@ export function buildStadiumBowlNodes(): AuraSceneNode[] {
     rotation: [0, seat.yaw, 0] as [number, number, number]
   }));
 
+  const seatsNode = instances.custom(seatSpec, {
+    name: "wt-stadium-seats",
+    material: TOUR_MATS.cushionNavy,
+    transforms: seatTransforms,
+    castShadow: false
+  }).toJSON();
+  if (idol) {
+    return [
+      assembleMultiMaterialNode("wt-stadium-bowl", [{ mesh: mergeRawMeshesToRaw(steelParts), materialIndex: 0 }], [TOUR_MATS.trussSteel], {
+        castShadow: false,
+        receiveShadow: true
+      }).toJSON(),
+      seatsNode
+    ];
+  }
   const bowlSlots: MultiMatSlot[] = [
     { mesh: mergeRawMeshesToRaw(stoneParts), materialIndex: 0 },
     { mesh: mergeRawMeshesToRaw(steelParts), materialIndex: 1 },
@@ -562,12 +581,7 @@ export function buildStadiumBowlNodes(): AuraSceneNode[] {
       transforms: pillarTransforms,
       castShadow: false
     }).toJSON(),
-    instances.custom(seatSpec, {
-      name: "wt-stadium-seats",
-      material: TOUR_MATS.cushionNavy,
-      transforms: seatTransforms,
-      castShadow: false
-    }).toJSON(),
+    seatsNode,
     geometry.custom(mergeRawMeshes(opticalGlasses), {
       name: "wt-camera-lens-glass",
       material: TOUR_MATS.opticalGlass,

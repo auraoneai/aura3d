@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shape-shift-sprint",
+  "key": "sssBlockTower",
+  "generatedAt": "2026-11-18T23:15:49.886Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-a62f-7e70-8c1f-b256f1a053aa",
+      "prompt": "A tall slender toy tower built from stacked wooden toy blocks: a stepped stone-grey base, cream cylinder blocks, coral-pink and cerulean-blue painted tiers, small arched windows, topped with a pointed golden spire. Photograph of a real handmade toy miniature, glossy painted wood and smooth glazed ceramic, pastel candy colours, soft bright daylight, tactile surface detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f097-957e-7050-bb4e-57bb2d497e53",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1542900,
+        "num_faces": 3086104,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A tall slender toy tower built from stacked wooden toy blocks: a stepped stone-grey base, cream cylinder blocks, coral-pink and cerulean-blue painted tiers, small arched windows, topped with a pointed golden spire. Photograph of a real handmade toy miniature, glossy painted wood and smooth glazed ceramic, pastel candy colours, soft bright daylight, tactile surface detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 21.997,
+    "size": [
+      10.819,
+      26,
+      9.818
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-shape-shift-sprint/assets/idol/sssBlockTower.glb",
+  "sizeBytes": 3973868,
+  "preview": "artifacts/idol/shape-shift-sprint/sssBlockTower/views.png",
+  "usd": 0.37
+}

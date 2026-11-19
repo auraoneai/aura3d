@@ -31,31 +31,34 @@ import { readPortableFlag } from "../shared/portable-flag";
 import { createLightning } from "./storm";
 import { dressingFor } from "./dressing";
 import { DECAL_OPACITY, decalMesh, decalPlan } from "./decals";
+import {
+  createIdolBannerMast,
+  createIdolBuggy,
+  createIdolCanyonGate,
+  createIdolGatehouse,
+  createIdolMesaSpire,
+  createIdolObelisk,
+  createIdolRelayTower,
+  createIdolRiderNode,
+  createIdolSkiffNode,
+  createIdolStall,
+  createIdolTowShellNode,
+  createIdolViaduct,
+  idolMesaBatch,
+  idolPylonBatch
+} from "./art/idolModels";
+import { riderDriver, riderMotionPose } from "./art/idolRider";
+import { createOcclusionFade } from "./occlusionFade";
 import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type SiltLookMode } from "./art/look";
 import {
   DESERT_INST_MAT,
   SURFER_PELVIS_REST,
-  batchedMesaSpireSpec,
-  batchedSignalPylonBodySpec,
-  batchedSignalRelayDishSpec,
-  batchedSolarArraySpec,
   billowingRoutePennantSpec,
   canyonYardangRockSpec,
   collaredBronzeMastSpec,
-  createBazaarStall,
   createBoardSailNode,
   createBoardTrimNode,
-  createCanyonResonanceGate,
-  createDesertBuggyCrawlerNode,
-  createDesertSurferRigNode,
-  createDesertViaduct,
-  createFlutedObeliskPillar,
-  createGatehouseNeri,
-  createSandSkiffNode,
-  createSignalRelayTower,
-  createStratifiedMesaSpire,
   createTowRelicNodes,
-  createWindBannerMast,
   desertLanternPostSpec,
   desertScreeBoulderSpec,
   desertScrubBushSpec,
@@ -508,6 +511,72 @@ export function sequencePost(state: { readonly boosting: boolean; readonly seque
   return { depthOfField: false, motionBlur: state.boosting && !state.sequence && !state.reducedMotion };
 }
 
+/** Decor masts stay this far (m) from every leg of the ring route, so the rider never flies through one. */
+export const BANNER_ROUTE_CLEARANCE = 20;
+
+/** Distance (m, ground plane) from (x, z) to the chapter's ring route (the polyline through every objective point). */
+export function routeDistance(chapter: number, x: number, z: number): number {
+  const pts = CHAPTERS[chapter]!.objectives.flatMap((o) => o.points);
+  let best = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i]!, b = pts[Math.min(i + 1, pts.length - 1)]!;
+    const dx = b.x - a.x, dz = b.z - a.z;
+    const l2 = dx * dx + dz * dz;
+    const t = l2 > 1e-9 ? Math.max(0, Math.min(1, ((x - a.x) * dx + (z - a.z) * dz) / l2)) : 0;
+    best = Math.min(best, Math.hypot(a.x + dx * t - x, a.z + dz * t - z));
+  }
+  return best;
+}
+
+/**
+ * Chapter-0 banner masts: every other ring point of each objective (up to four), 42 m out on alternating sides,
+ * perpendicular to the local route leg; a side that lands within BANNER_ROUTE_CLEARANCE of the route is mirrored, and a
+ * point where both sides are too close gets no mast.
+ */
+export function bannerMastSpots(chapter: number): { x: number; z: number; yaw: number }[] {
+  const out: { x: number; z: number; yaw: number }[] = [];
+  for (const objective of CHAPTERS[chapter]!.objectives) {
+    objective.points.forEach((pt, i) => {
+      if (i % 2 !== 0 || out.length >= 4) return;
+      const prev = objective.points[Math.max(0, i - 1)]!, next = objective.points[Math.min(objective.points.length - 1, i + 1)]!;
+      let dx = next.x - prev.x, dz = next.z - prev.z;
+      const len = Math.hypot(dx, dz);
+      if (len < 1e-6) { dx = 0; dz = -1; } else { dx /= len; dz /= len; }
+      const preferred = out.length % 2 === 0 ? 1 : -1;
+      for (const side of [preferred, -preferred]) {
+        const x = pt.x - dz * side * 42, z = pt.z + dx * side * 42;
+        if (routeDistance(chapter, x, z) >= BANNER_ROUTE_CLEARANCE) { out.push({ x, z, yaw: side * 0.6 }); return; }
+      }
+    });
+  }
+  return out;
+}
+
+/**
+ * WP-28 signal monoliths: 38 m either side of every other ring point (up to 32), perpendicular to the leg ahead; spots over
+ * the canal or inside a wall (`skip`) and spots within BANNER_ROUTE_CLEARANCE of any route leg (a corner brings the next
+ * leg past them) are dropped, so the 11-15 m obsidian slabs never stand where the rider flies.
+ */
+export function monolithSpots(chapter: number, skip: (x: number, z: number) => boolean = () => false): { x: number; z: number; nx: number; nz: number; side: -1 | 1; yaw: number }[] {
+  const out: { x: number; z: number; nx: number; nz: number; side: -1 | 1; yaw: number }[] = [];
+  for (const objective of CHAPTERS[chapter]!.objectives) {
+    for (let i = 0; i < objective.points.length && out.length < 32; i += 2) {
+      const pt = objective.points[i]!;
+      const next = objective.points[Math.min(objective.points.length - 1, i + 1)]!;
+      const dx = next.x - pt.x, dz = next.z - pt.z;
+      const len = Math.hypot(dx, dz) || 1;
+      const nx = -dz / len, nz = dx / len;
+      const yaw = Math.atan2(dx, dz);
+      for (const side of [-1, 1] as const) {
+        const x = pt.x + nx * side * 38, z = pt.z + nz * side * 38;
+        if (skip(x, z) || routeDistance(chapter, x, z) < BANNER_ROUTE_CLEARANCE) continue;
+        out.push({ x, z, nx, nz, side, yaw });
+      }
+    }
+  }
+  return out;
+}
+
 const FAR = [0, -400, 0] as const;
 /** Impact shake: at most 0.35 m of eye offset, fading out over 0.25 s. */
 const SHAKE_SECONDS = 0.25;
@@ -518,6 +587,8 @@ const WATER_PIN: number | undefined = (() => {
   const v = typeof location !== "undefined" ? new URLSearchParams(location.search).get("watert") : null;
   return v !== null && Number.isFinite(Number(v)) ? Number(v) : undefined;
 })();
+/** Transparent tree copies available to the line-of-sight fade (occlusionFade.ts). */
+const TREE_FADE_SLOTS = 4;
 const NO_BEACON = typeof location !== "undefined" && new URLSearchParams(location.search).has("nobeacon");
 /** Sand skiff deck non-slip footpad sits at y = 0.192 in unscaled skiff space; surfer boots stand flush at y = 0 on it. */
 const BOARD_SCALE = 1.15;
@@ -814,14 +885,20 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       receiveShadow: true,
       material: DESERT_INST_MAT.tamariskFoliage,
       ...(inked ? { colors: props.trees.map((_, i) => floraTint(i, orchard)), wind: treeWind(!!buildOptions.reducedMotion) } : {})
-    }));
+    }).runtime({ id: "trees" }));
     builder.add(instances.custom(desertTamariskTrunkSpec(), {
       name: "trees-trunks",
       transforms: treeTransforms,
       castShadow: false,
       receiveShadow: true,
       material: DESERT_INST_MAT.tamariskTrunk
-    }));
+    }).runtime({ id: "trees-trunks" }));
+    // line-of-sight fade slots: a tree crossing the camera->courier sightline moves out of the opaque pools into one of
+    // these transparent copies and fades to 25% (occlusionFade.ts); parked far away otherwise
+    for (let k = 0; k < TREE_FADE_SLOTS; k++) {
+      builder.add(geometry.custom(desertTamariskCanopySpec(), { name: `tree-fade-${k}`, position: [...FAR], castShadow: false, receiveShadow: false, material: { ...DESERT_INST_MAT.tamariskFoliage, opacity: 0.999 } }).runtime({ id: `tree-fade-${k}` }));
+      builder.add(geometry.custom(desertTamariskTrunkSpec(), { name: `tree-fade-trunk-${k}`, position: [...FAR], castShadow: false, receiveShadow: false, material: { ...DESERT_INST_MAT.tamariskTrunk, opacity: 0.999 } }).runtime({ id: `tree-fade-trunk-${k}` }));
+    }
   }
   // WP-28 stratified canyon yardang outcrops & wind-abraded desert scree boulders
   if (props.rocks.length) {
@@ -910,27 +987,15 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     const insideWall = (x: number, z: number): boolean =>
       props.walls.some((w) => Math.abs(x - w.x) < w.halfX + 4 && Math.abs(z - w.z) < w.halfZ + 4);
     let idx = 0;
-    for (const objective of ch.objectives) {
-      for (let i = 0; i < objective.points.length && monolithBodies.length < 32; i += 2) {
-        const pt = objective.points[i]!;
-        const next = objective.points[Math.min(objective.points.length - 1, i + 1)]!;
-        const dx = next.x - pt.x, dz = next.z - pt.z;
-        const len = Math.hypot(dx, dz) || 1;
-        const nx = -dz / len, nz = dx / len;
-        const yaw = Math.atan2(dx, dz);
-        for (const side of [-1, 1] as const) {
-          const mx = pt.x + nx * side * 38;
-          const mz = pt.z + nz * side * 38;
-          if (overCanal(chapter, mx, mz) || insideWall(mx, mz)) continue;
-          const gy = terrain.heightAt(mx, mz);
-          const h = 11.5 + (idx % 3) * 2.2;
-          monolithBodies.push({ position: [mx, gy + h * 0.48, mz], rotation: [side * 0.04, yaw, 0], scale: [1.55, h, 1.15] });
-          monolithCaps.push({ position: [mx, gy + h - 0.15, mz], rotation: [side * 0.04, yaw, 0], scale: [1.88, 0.72, 1.42] });
-          monolithGlyphs.push({ position: [mx - nx * side * 0.62, gy + h * 0.56, mz - nz * side * 0.62], rotation: [side * 0.04, yaw, 0], scale: [0.16, h * 0.58, 0.22] });
-          monolithSails.push({ position: [mx - nx * side * 1.45, gy + h * 0.72, mz - nz * side * 1.45], rotation: [0, yaw, 0], scale: [1.9, 3.4, 0.24] });
-          idx++;
-        }
-      }
+    // monoliths have no collider (decor): monolithSpots drops any that would stand within BANNER_ROUTE_CLEARANCE of a route leg
+    for (const { x: mx, z: mz, nx, nz, side, yaw } of monolithSpots(chapter, (x, z) => overCanal(chapter, x, z) || insideWall(x, z))) {
+      const gy = terrain.heightAt(mx, mz);
+      const h = 11.5 + (idx % 3) * 2.2;
+      monolithBodies.push({ position: [mx, gy + h * 0.48, mz], rotation: [side * 0.04, yaw, 0], scale: [1.55, h, 1.15] });
+      monolithCaps.push({ position: [mx, gy + h - 0.15, mz], rotation: [side * 0.04, yaw, 0], scale: [1.88, 0.72, 1.42] });
+      monolithGlyphs.push({ position: [mx - nx * side * 0.62, gy + h * 0.56, mz - nz * side * 0.62], rotation: [side * 0.04, yaw, 0], scale: [0.16, h * 0.58, 0.22] });
+      monolithSails.push({ position: [mx - nx * side * 1.45, gy + h * 0.72, mz - nz * side * 1.45], rotation: [0, yaw, 0], scale: [1.9, 3.4, 0.24] });
+      idx++;
     }
     if (monolithBodies.length) {
       builder.add(instances.custom(windCarvedMonolithSpec(), { name: "signal-monoliths", castShadow: true, receiveShadow: true, transforms: monolithBodies, material: DESERT_INST_MAT.monolithObsidian }));
@@ -950,7 +1015,9 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   // The same marker in red, shown instead while a timed gate is shut.
   builder.addMany(prefabs.objectiveMarker({ id: "gate", diameter: beaconDiameter, hiddenPosition: [...FAR], ...GATE_SHUT }));
   // Sculpted ancient brass-and-ceramic resonance vessel towed behind the sand-skiff (parked until the rider latches on).
-  for (const towNode of createTowRelicNodes([...FAR])) builder.add(towNode);
+  // Idol wow pass: the Idol vessel replaces the lathed shell; the amber `tow-glow` core stays procedural.
+  builder.add(createIdolTowShellNode(FAR));
+  builder.add(createTowRelicNodes([...FAR])[1]);
 
   for (const side of ["l", "r"]) {
     // GU47 DG-A3 (part): the inked look swaps the two cyan thruster spheres for flat jade strips under the deck (same 2 draws)
@@ -1013,49 +1080,55 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       })
     }).runtime({ id: "signal-ripple" }));
   }
-  builder.add(createSandSkiffNode({ inked, scale: BOARD_SCALE }));
-  builder.add(createDesertSurferRigNode({ inked }));
+  // Idol wow pass: Idol skiff hull and rigid Idol courier (articulation ids kept; see art/idolModels.ts).
+  builder.add(createIdolSkiffNode({ scale: BOARD_SCALE }));
+  builder.add(createIdolRiderNode());
   // GU47 phase 4 (inked, not on Low): an indigo-umber shadow shape on the ground under the board, so the rider reads as
   // grounded at every altitude (rubric shadows; the poster's flat shadow shapes). +1 draw; bind moves it each frame.
   const blob = inked && !buildOptions.low;
   if (blob) builder.add(primitives.cylinder({ name: "rider-blob", position: [...FAR], size: [1, 1, 1], castShadow: false, receiveShadow: false, material: pbr({ color: look.night ? "#0b0d24" : "#2a1a10", roughness: 1, opacity: RIDER_BLOB.opacity }) }).runtime({ id: "rider-blob" }));
 
   const groundAt = (x: number, z: number): number => Math.max(0, terrain.heightAt(x, z));
-  const isNightChapter = inked ? look.night : rig.night;
+  /**
+   * Idol wow pass grounding: the lowest rendered terrain surface under a footprint (3 x 3 samples over +-half metres).
+   * Wide Idol set pieces (stall, mesas) settle onto it, so no edge hangs over a dip or the canal bank.
+   */
+  const settleAt = (x: number, z: number, half: number): number => {
+    let lo = Infinity;
+    for (const ox of [-half, 0, half]) for (const oz of [-half, 0, half]) lo = Math.min(lo, terrain.surfaceHeightAt(x + ox, z + oz));
+    return lo;
+  };
   const mesaBatchTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
-  const pylonBodyTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
-  const pylonDishTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
-  const pylonSolarTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const pylonIdolTransforms: { position: [number, number, number]; yaw: number; height: number }[] = [];
   const pushBatchedPylon = (x: number, z: number, height: number, yaw: number) => {
     const gy = groundAt(x, z);
-    pylonBodyTransforms.push({ position: [x, gy, z], rotation: [0, yaw, 0], scale: [height * 0.42, height, height * 0.42] });
-    pylonDishTransforms.push({ position: [x, gy + height * 0.86, z], rotation: [0, yaw, 0], scale: [2.35, 2.35, 2.35] });
-    pylonSolarTransforms.push({ position: [x, gy + height * 0.68, z], rotation: [0, yaw, 0], scale: [2.2, 2.2, 2.2] });
+    pylonIdolTransforms.push({ position: [x, gy, z], yaw, height });
   };
 
   if (usesOriginalTerrain(chapter) && chapter === 0) {
-    builder.add(createGatehouseNeri("gatehouse-neri", [-34, groundAt(-34, -262), -262], 0.35));
-    builder.add(createDesertViaduct("aqueduct-east", [150, groundAt(150, -520), -520], Math.PI / 2));
-    builder.add(createDesertViaduct("aqueduct-west", [-170, groundAt(-170, -720), -720], Math.PI / 2));
-    builder.add(createCanyonResonanceGate("canyon-gate", [0, groundAt(0, -1295), -1295], 0));
-    builder.add(createBazaarStall("stall-0", [85, groundAt(85, -12), -12], 0.4));
-    builder.add(createDesertBuggyCrawlerNode("desert-crawler-0", [112, groundAt(112, -26), -26], -0.52, inked));
-    builder.add(createSignalRelayTower("watchtower-0", [196, groundAt(196, -108), -108], -0.65, inked));
-    let banners = 0;
-    for (const objective of ch.objectives) {
-      objective.points.forEach((pt, i) => {
-        if (i % 2 !== 0 || banners >= 4) return;
-        const side = banners % 2 === 0 ? 1 : -1;
-        const x = pt.x + side * 42, z = pt.z;
-        builder.add(createWindBannerMast(`banner-${banners}`, [x, groundAt(x, z), z], side * 0.6, banners));
-        banners += 1;
-      });
+    // Idol wow pass: Idol landmarks at the procedural positions, yaws and footprints.
+    builder.add(createIdolGatehouse("gatehouse-neri", [-34, groundAt(-34, -262), -262], 0.35));
+    builder.add(createIdolViaduct("aqueduct-east", [150, groundAt(150, -520), -520], Math.PI / 2));
+    builder.add(createIdolViaduct("aqueduct-west", [-170, groundAt(-170, -720), -720], Math.PI / 2));
+    builder.add(createIdolCanyonGate("canyon-gate", [0, groundAt(0, -1295), -1295], 0));
+    // settled on the lowest surface under its 6.9 m footprint (+0.6 for the procedural base it replaces): groundAt
+    // clamps the 3 m dip beside the canal to 0, which floated the stall 2.4 m
+    builder.add(createIdolStall("stall-0", [85, settleAt(85, -12, 3.2) + 0.6, -12], 0.4));
+    // the procedural crawler's (112, -26) sits inside the canal wall and over the canal basin (colliders-ch0 rows
+    // [110, -25.9] and [110, -36]); the larger Idol buggy parks 11 m north on open ground instead (decor only, no collider)
+    builder.add(createIdolBuggy("desert-crawler-0", [112, groundAt(112, -15), -15], -0.52));
+    builder.add(createIdolRelayTower("watchtower-0", [196, groundAt(196, -108), -108], -0.65));
+    // banner masts have no collider (decor): bannerMastSpots keeps them 42 m to the side of the ring route and at least
+    // BANNER_ROUTE_CLEARANCE m from every leg of it (owner pass-through rule: banner-2 used to stand inside ring 4)
+    for (const [k, spot] of bannerMastSpots(chapter).entries()) {
+      builder.add(createIdolBannerMast(`banner-${k}`, [spot.x, Math.min(groundAt(spot.x, spot.z), settleAt(spot.x, spot.z, 1.6)), spot.z], spot.yaw));
     }
-    builder.add(createFlutedObeliskPillar("pillar-0", [-85, groundAt(-85, -930), -930], 0, 24));
+    builder.add(createIdolObelisk("pillar-0", [-85, groundAt(-85, -930), -930], 0, 24));
     for (const [i, [x, z, s]] of ([[92, -980, 28], [-110, -1060, 26], [105, -1120, 22], [-78, -1180, 30], [88, -1230, 25], [-120, -640, 27], [135, -870, 29]] as const).entries()) {
       pushBatchedPylon(x, z, s, (i + 1) * 1.45);
     }
-    builder.add(createStratifiedMesaSpire("mesa-spire-0", [235, groundAt(235, -185), -185], 0.4, 22, isNightChapter));
+    // the 86 m mesa settles 1 m into the lowest dune under its footprint instead of perching on the ridge at its centre
+    builder.add(createIdolMesaSpire("mesa-spire-0", [235, settleAt(235, -185, 1.96 * 22) - 1 + 0.09 * 22, -185], 0.4, 22));
     for (const [x, z, s, yaw] of [
       [-225, -430, 26, -0.5],
       [228, -790, 24, 1.1],
@@ -1072,11 +1145,11 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       [-195, 540, 33, -0.6],
       [245, 560, 30, 1.25]
     ] as const) {
-      mesaBatchTransforms.push({ position: [x, Math.max(0, terrain.surfaceHeightAt(x, z)) - 3.0, z], rotation: [0, yaw, 0], scale: [s, s, s] });
+      mesaBatchTransforms.push({ position: [x, Math.min(Math.max(0, terrain.surfaceHeightAt(x, z)) - 3.0, settleAt(x, z, 1.96 * s) - 1), z], rotation: [0, yaw, 0], scale: [s, s, s] });
     }
   } else {
     const midZ = -terrain.length * 0.44;
-    builder.add(createDesertBuggyCrawlerNode("desert-crawler-0", [132, groundAt(132, -68), -68], -0.45, inked));
+    builder.add(createIdolBuggy("desert-crawler-0", [132, groundAt(132, -68), -68], -0.45));
     for (const [x, z, s, yaw] of [
       [360, midZ, 26, 0.55],
       [-360, midZ - 180, 28, -0.7],
@@ -1087,7 +1160,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       [295, 440, 31, 1.1],
       [-310, 460, 30, -1.0]
     ] as const) {
-      mesaBatchTransforms.push({ position: [x, Math.max(0, terrain.surfaceHeightAt(x, z)) - 3.0, z], rotation: [0, yaw, 0], scale: [s, s, s] });
+      mesaBatchTransforms.push({ position: [x, Math.min(Math.max(0, terrain.surfaceHeightAt(x, z)) - 3.0, settleAt(x, z, 1.96 * s) - 1), z], rotation: [0, yaw, 0], scale: [s, s, s] });
     }
     for (let k = 0; k < 6; k++) {
       const side = k % 2 === 0 ? 1 : -1;
@@ -1097,40 +1170,9 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     }
   }
 
-  if (mesaBatchTransforms.length) {
-    builder.add(instances.custom(batchedMesaSpireSpec(), {
-      name: "batched-mesa-spires",
-      castShadow: false,
-      receiveShadow: true,
-      material: isNightChapter
-        ? unnamed(material.pbr({ color: "#5e506b", roughness: 0.88, metalness: 0.02, clearcoat: 0, sheen: 0 }))
-        : DESERT_INST_MAT.redRockMesa,
-      transforms: mesaBatchTransforms
-    }));
-  }
-  if (pylonBodyTransforms.length) {
-    builder.add(instances.custom(batchedSignalPylonBodySpec(), {
-      name: "batched-signal-pylons",
-      castShadow: false,
-      receiveShadow: true,
-      material: DESERT_INST_MAT.sandstone,
-      transforms: pylonBodyTransforms
-    }));
-    builder.add(instances.custom(batchedSignalRelayDishSpec(), {
-      name: "batched-relay-dishes",
-      castShadow: false,
-      receiveShadow: true,
-      material: DESERT_INST_MAT.relayDishBrass,
-      transforms: pylonDishTransforms
-    }));
-    builder.add(instances.custom(batchedSolarArraySpec(), {
-      name: "batched-solar-arrays",
-      castShadow: false,
-      receiveShadow: true,
-      material: DESERT_INST_MAT.solarPanelArray,
-      transforms: pylonSolarTransforms
-    }));
-  }
+  // Idol wow pass: the Idol red-rock mesa and the Idol signal pylon (body, solar wing and dish in one GLB) as instanced pools.
+  if (mesaBatchTransforms.length) builder.add(idolMesaBatch(mesaBatchTransforms));
+  if (pylonIdolTransforms.length) builder.add(idolPylonBatch(pylonIdolTransforms));
 
   // Batched turquoise oasis & canal-bank scrub bushes (`layeredCanopyMesh` + `instances.custom`, 1 draw call)
   {
@@ -1195,6 +1237,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         armTrail: ReturnType<AuraApp["nodes"]["require"]>;
         scarf: ReturnType<AuraApp["nodes"]["require"]>;
         scarfTip: ReturnType<AuraApp["nodes"]["require"]>;
+        /** Idol wow pass: the rigged Idol courier on the deck (bones posed from the same motion values each frame). */
+        body: ReturnType<AuraApp["nodes"]["require"]>;
       } | undefined;
       try {
         if (options.animate === false) throw new Error("animation disabled (norig=1)");
@@ -1206,7 +1250,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           armLead: node("rider-arm-lead"),
           armTrail: node("rider-arm-trail"),
           scarf: node("rider-scarf"),
-          scarfTip: node("rider-scarf-tip")
+          scarfTip: node("rider-scarf-tip"),
+          body: node("rider-body")
         };
         animation = { bound: true, clip: "idle" };
       } catch (error) {
@@ -1221,6 +1266,41 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
 
       let lookX = 0, lookY = 0, lookZ = 0, init = false;
       const clearance = createChaseClearance();
+      // line-of-sight fade over the trees (bounding sphere of the canopy spec, scaled per tree)
+      const treeList = props.trees;
+      const treeBase = placements(treeList);
+      const canopy = (() => {
+        const pos = desertTamariskCanopySpec().positions as ArrayLike<number>;
+        const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+        for (let i = 0; i < pos.length; i += 3) for (let a = 0; a < 3; a++) { lo[a] = Math.min(lo[a]!, pos[i + a]!); hi[a] = Math.max(hi[a]!, pos[i + a]!); }
+        return { cy: (lo[1]! + hi[1]!) / 2, r: Math.hypot(hi[0]! - lo[0]!, hi[1]! - lo[1]!, hi[2]! - lo[2]!) / 2 };
+      })();
+      const treeFade = createOcclusionFade(treeList.map((t) => ({ x: t.x, y: t.y + canopy.cy * t.scale, z: t.z, r: canopy.r * t.scale * 0.85 })), { maxFaded: TREE_FADE_SLOTS });
+      const treeColors = inked ? treeList.map((_, i) => floraTint(i, orchard)) : undefined;
+      let treeFadeOn = treeList.length > 0;
+      const applyTreeFade = (changed: boolean): void => {
+        if (!treeFadeOn) return;
+        try {
+          if (changed) {
+            const hidden = new Set(treeFade.faded);
+            const transforms = treeBase.map((t, i) => (hidden.has(i) ? { ...t, scale: 1e-4 } : t));
+            node("trees").setInstances(transforms, treeColors);
+            node("trees-trunks").setInstances(transforms);
+          }
+          for (let k = 0; k < TREE_FADE_SLOTS; k++) {
+            const i = treeFade.faded[k];
+            for (const id of [`tree-fade-${k}`, `tree-fade-trunk-${k}`]) {
+              const h = node(id);
+              if (i === undefined) { h.setPosition(...FAR); continue; }
+              const t = treeBase[i]!;
+              h.setPosition(t.position[0], t.position[1], t.position[2]).setRotation(0, t.rotation[1], 0).setScale(t.scale);
+              h.setOpacity?.(treeFade.opacity[i]!);
+            }
+          }
+        } catch {
+          treeFadeOn = false; // a world without the tree nodes (QA/minimal builds) skips the fade
+        }
+      };
       const scenery = sceneryColumns(props);
       let cachedBlockedWorld: Sim["world"] | null = null;
       let cachedBlockedFn: ((x: number, y: number, z: number) => boolean) | null = null;
@@ -1351,7 +1431,9 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             // under the board, slid a little along the key's shadow direction (capped), smaller as the board climbs
             const slide = Math.min(RIDER_BLOB.maxSlide, boardAlt / Math.max(0.2, Math.tan(Math.asin(Math.min(0.99, keyDir[1])))));
             const h = Math.hypot(keyDir[0], keyDir[2]) || 1;
-            const shrink = 1 - Math.min(0.55, boardAlt / 18);
+            // Idol wow pass (QA F2): the blob reads detached once the board hovers (the key light's real shadow from the
+            // Idol skiff and courier carries it then), so it fades out between 0.4 m and 2 m of hover height
+            const shrink = (1 - Math.min(0.55, boardAlt / 18)) * Math.max(0, Math.min(1, (2 - boardAlt) / 1.6));
             const b = node("rider-blob");
             b.setPosition(state.x - (keyDir[0] / h) * slide, floorUnder + 0.09, state.z - (keyDir[2] / h) * slide);
             b.setRotation(0, state.yaw, 0);
@@ -1477,6 +1559,12 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             surferParts.scarf.setRotation(scarfEuler[0], scarfEuler[1], scarfEuler[2]);
             const scarfTipEuler = mat3ToEulerZYX(mat3Mul(mat3RotY(scarfWave2), mat3RotX(0.05 + scarfFlutter * 0.85)));
             surferParts.scarfTip.setRotation(scarfTipEuler[0], scarfTipEuler[1], scarfTipEuler[2]);
+            // Idol wow pass: pose the rigged courier: fal motion clips (balance / lean / crouch) on the upper body, blended by
+            // carve and crouch, over the code stance that keeps the boots planted on the deck (art/idolRider.ts)
+            const riderRig = riderDriver();
+            if (riderRig) {
+              surferParts.body.setAnimationPose?.(riderRig.pose(riderMotionPose({ crouch, leanFwd, carve, air01, celebrate, breathe, armWave: armBalanceWave, time, motion, speed01 })));
+            }
           }
 
           const o = objectiveOf(state);
@@ -1514,7 +1602,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             const kt = 1 - Math.exp(-dt * 6);
             towX += (bx - towX) * kt; towY += (by - towY) * kt; towZ += (bz - towZ) * kt;
             node("tow-shell").setPosition(towX, towY, towZ);
-            node("tow-glow").setPosition(towX, towY + 0.95, towZ);
+            // Idol wow pass: the amber signal core rides just above the Idol vessel's tow ring (inside the old shell height it was hidden)
+            node("tow-glow").setPosition(towX, towY + 2.55, towZ).setScale(0.6);
           } else if (towing) {
             node("tow-shell").setPosition(...FAR);
             node("tow-glow").setPosition(...FAR);
@@ -1564,6 +1653,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           const baseFov = aspect < 0.85 ? 78 : 62;
           const safe = guardPose({ position: shown, target: [lookX, lookY, lookZ], up, fov: baseFov + kick }, lastGoodPose, { position: [sim.state.x, sim.state.y + 5, sim.state.z + 13], target: [sim.state.x, sim.state.y + 1.5, sim.state.z], up: [0, 1, 0], fov: baseFov });
           lastGoodPose = safe;
+          applyTreeFade(treeFade.update(safe.position, [sim.state.x, sim.state.y - 0.6, sim.state.z], dt));
           if (safe.target[0] !== lookX || safe.target[1] !== lookY || safe.target[2] !== lookZ) { lookX = safe.target[0]; lookY = safe.target[1]; lookZ = safe.target[2]; }
           cameraController.setPose({ position: [...safe.position], target: [...safe.target], up: [...safe.up], fov: safe.fov }, { cut });
         },

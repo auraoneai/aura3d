@@ -1,0 +1,45 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdDroneSpectre",
+  "generatedAt": "2026-11-18T23:06:46.553Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b0-dbe9-7650-8fb4-253100f5bb3d",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1568094,
+        "num_faces": 3136624,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A futuristic stealth racing hover drone: a low forward-swept faceted delta-wing fuselage, tinted bubble cockpit canopy with a helmeted pilot, two long laser cannon barrels in finned cooling shrouds along the sides, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round thruster nozzles at the tail, dusty rose-pink clearcoat paint with brushed titanium and dark carbon composite parts, copper radiator fins, panel lines and light wear Viewed from a low three-quarter front angle close to eye level, the craft perfectly level and horizontal, the whole underside flat, no landing gear, no legs, no ladder",
+  "role": "vehicle",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.332,
+    "size": [
+      3.75,
+      0.724,
+      3.63
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdDroneSpectre.glb",
+  "sizeBytes": 2282804,
+  "preview": "artifacts/idol/heatsink/tdDroneSpectre/views.png",
+  "usd": 0.37,
+  "admitRole": "vehicle",
+  "renormalizedAt": "2026-11-18T23:36:32.018Z"
+}

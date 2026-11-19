@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeFarLighthouseIslet",
+  "generatedAt": "2026-11-18T23:38:18.922Z",
+  "generator": "tools/idol/generate.mjs (post steps finished locally from the downloaded Idol result)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0a3-6a76-7632-b8fd-72966c5df429",
+      "prompt": "A small toy diorama island: a rocky islet with a sandy beach rim and a tall white lighthouse with red stripes and a glass lantern room, a tiny white keeper's cottage with a red roof beside it, a few green bushes. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a9-7b88-7e83-b550-4cccb75be6b8",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 796872,
+        "num_faces": 1594436,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A small toy diorama island: a rocky islet with a sandy beach rim and a tall white lighthouse with red stripes and a glass lantern room, a tiny white keeper's cottage with a red roof beside it, a few green bushes. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 6.587,
+    "size": [
+      6.594,
+      6.9,
+      6.585
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeFarLighthouseIslet.glb",
+  "sizeBytes": 1417840,
+  "preview": "artifacts/idol/slingshot-siege/siegeFarLighthouseIslet/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90, textures capped at 512px",
+    "bytesBefore": 4041040,
+    "bytesAfter": 1417840
+  }
+}

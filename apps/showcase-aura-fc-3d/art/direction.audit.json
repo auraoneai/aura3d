@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-fc-3d/art/direction.ts",
-  "sourceSha256": "dddf72edb97e0e744cbc854619cb7748e762b643d0b8e90fe89aca936ec50a97",
+  "sourceSha256": "c6fb12506960dfbfddb796603dd9619f0e02c624b53af4f921d1aaadb6b53d11",
   "id": "showcase-aura-fc-3d",
   "genre": "basketball",
   "signatureEffect": "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
@@ -58,7 +58,176 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "fcIdolFanA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolFanB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolFanC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolFanA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolFanC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolFanB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolDugout",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolDugout",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolCrane",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolCrane",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolReferee",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolTrophy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolBall",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolBall",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolKeeperHome",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolHomeA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolHomeB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolHomeA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolHomeB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolKeeperAway",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolAwayA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolAwayB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolAwayA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcIdolAwayB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "materials": [
       {
         "node": "fc-ground",
@@ -287,456 +456,6 @@
       {
         "name": "supporter club jersey micromesh",
         "node": "fc-wavers",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-shorts",
-        "node": "fc-fan-0-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-0-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-kit",
-        "node": "fc-fan-0-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-0-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-hair",
-        "node": "fc-fan-0-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-sclera",
-        "node": "fc-fan-0-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-kit",
-        "node": "fc-fan-0-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-0-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-0-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-kit",
-        "node": "fc-fan-0-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-0-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-0-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-shorts",
-        "node": "fc-fan-1-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-1-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-kit",
-        "node": "fc-fan-1-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-1-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-hair",
-        "node": "fc-fan-1-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-sclera",
-        "node": "fc-fan-1-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-kit",
-        "node": "fc-fan-1-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-1-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-1-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-kit",
-        "node": "fc-fan-1-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-1-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-1-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-shorts",
-        "node": "fc-fan-2-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-2-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-kit",
-        "node": "fc-fan-2-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-2-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-hair",
-        "node": "fc-fan-2-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-sclera",
-        "node": "fc-fan-2-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-kit",
-        "node": "fc-fan-2-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-2-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-2-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-kit",
-        "node": "fc-fan-2-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-2-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-2-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-shorts",
-        "node": "fc-fan-3-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-3-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-kit",
-        "node": "fc-fan-3-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-3-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-hair",
-        "node": "fc-fan-3-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-sclera",
-        "node": "fc-fan-3-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-kit",
-        "node": "fc-fan-3-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-3-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-3-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-kit",
-        "node": "fc-fan-3-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-3-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-3-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-shorts",
-        "node": "fc-fan-4-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-4-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-kit",
-        "node": "fc-fan-4-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-4-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-hair",
-        "node": "fc-fan-4-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-sclera",
-        "node": "fc-fan-4-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-kit",
-        "node": "fc-fan-4-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-4-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-4-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-kit",
-        "node": "fc-fan-4-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-4-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-4-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-shorts",
-        "node": "fc-fan-5-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-5-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-kit",
-        "node": "fc-fan-5-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-5-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-hair",
-        "node": "fc-fan-5-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-sclera",
-        "node": "fc-fan-5-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-kit",
-        "node": "fc-fan-5-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-5-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-5-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-kit",
-        "node": "fc-fan-5-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-5-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "fc-fan-5-forearm-r-mesh-0",
         "practical": false
       },
       {
@@ -1040,29 +759,6 @@
         "practical": false
       },
       {
-        "node": "fc-dugouts material 0",
-        "practical": false
-      },
-      {
-        "name": "anodized stadium aluminium",
-        "node": "fc-dugouts material 1",
-        "practical": false
-      },
-      {
-        "name": "galvanized structural steel",
-        "node": "fc-dugouts material 2",
-        "practical": false
-      },
-      {
-        "node": "fc-dugouts material 3",
-        "practical": false
-      },
-      {
-        "name": "curved dugout polycarbonate",
-        "node": "fc-dugouts material 4",
-        "practical": false
-      },
-      {
         "node": "fc-ball-cart material 0",
         "practical": false
       },
@@ -1075,32 +771,6 @@
         "name": "thermally bonded match pearl",
         "node": "fc-ball-cart material 2",
         "practical": false
-      },
-      {
-        "name": "galvanized structural steel",
-        "node": "fc-camera-cranes material 0",
-        "practical": false
-      },
-      {
-        "name": "anodized stadium aluminium",
-        "node": "fc-camera-cranes material 1",
-        "practical": false
-      },
-      {
-        "name": "non-slip vulcanized rubber",
-        "node": "fc-camera-cranes material 2",
-        "practical": false
-      },
-      {
-        "name": "storm navy dugout shell",
-        "node": "fc-camera-cranes material 3",
-        "practical": false
-      },
-      {
-        "name": "cranes-tally",
-        "node": "fc-camera-cranes material 4",
-        "emissiveIntensity": 1.5,
-        "practical": true
       },
       {
         "name": "architectural precast concrete",
@@ -1149,196 +819,6 @@
         "practical": true
       },
       {
-        "name": "fc-referee-shorts",
-        "node": "fc-referee-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-kit",
-        "node": "fc-referee-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-badge",
-        "node": "fc-referee-chest-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-eyes",
-        "node": "fc-referee-chest-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-hair",
-        "node": "fc-referee-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-eyes",
-        "node": "fc-referee-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-sclera",
-        "node": "fc-referee-head-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-kit",
-        "node": "fc-referee-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-forearm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-kit",
-        "node": "fc-referee-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-forearm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-shorts",
-        "node": "fc-referee-leg-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-leg-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-leg-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-calf-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-socks",
-        "node": "fc-referee-calf-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-calf-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-boot",
-        "node": "fc-referee-boot-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-boot-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-studs",
-        "node": "fc-referee-boot-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-shorts",
-        "node": "fc-referee-leg-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-leg-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-leg-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-calf-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-socks",
-        "node": "fc-referee-calf-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-calf-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-boot",
-        "node": "fc-referee-boot-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-boot-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-studs",
-        "node": "fc-referee-boot-r-mesh-2",
-        "practical": false
-      },
-      {
         "node": "fc-trophy-plinth",
         "practical": false
       },
@@ -1350,29 +830,6 @@
       {
         "name": "championship 24k gold trim",
         "node": "fc-trophy-plinth-collar material 1",
-        "practical": false
-      },
-      {
-        "name": "honed obsidian granite",
-        "node": "fc-trophy-case material 0",
-        "practical": false
-      },
-      {
-        "node": "fc-trophy-case material 1",
-        "practical": false
-      },
-      {
-        "name": "goal anchor accent",
-        "node": "fc-trophy-case material 2",
-        "practical": false
-      },
-      {
-        "node": "fc-spare-ball material 0",
-        "practical": false
-      },
-      {
-        "name": "match ball star panel",
-        "node": "fc-spare-ball material 1",
         "practical": false
       },
       {
@@ -1427,15 +884,6 @@
         "practical": false
       },
       {
-        "node": "fc-ball-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "match ball star panel",
-        "node": "fc-ball-mesh material 1",
-        "practical": false
-      },
-      {
         "node": "fc-ball-shadow",
         "practical": false
       },
@@ -1455,201 +903,6 @@
         "practical": true
       },
       {
-        "name": "h-gk-shorts",
-        "node": "h-gk-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-kit",
-        "node": "h-gk-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-badge",
-        "node": "h-gk-chest-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-gk-skin",
-        "node": "h-gk-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-hair",
-        "node": "h-gk-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-eyes",
-        "node": "h-gk-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-gk-sclera",
-        "node": "h-gk-head-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "h-gk-kit",
-        "node": "h-gk-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-skin",
-        "node": "h-gk-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-gk-kit",
-        "node": "h-gk-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-forearm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-glove",
-        "node": "h-gk-forearm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-gk-kit",
-        "node": "h-gk-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-skin",
-        "node": "h-gk-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-gk-kit",
-        "node": "h-gk-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-forearm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-glove",
-        "node": "h-gk-forearm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-gk-shorts",
-        "node": "h-gk-leg-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-leg-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-skin",
-        "node": "h-gk-leg-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-gk-skin",
-        "node": "h-gk-calf-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-socks",
-        "node": "h-gk-calf-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-calf-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-gk-boot",
-        "node": "h-gk-boot-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-boot-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-studs",
-        "node": "h-gk-boot-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-gk-shorts",
-        "node": "h-gk-leg-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-leg-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-skin",
-        "node": "h-gk-leg-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-gk-skin",
-        "node": "h-gk-calf-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-socks",
-        "node": "h-gk-calf-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-calf-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-gk-boot",
-        "node": "h-gk-boot-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-gk-trim",
-        "node": "h-gk-boot-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-studs",
-        "node": "h-gk-boot-r-mesh-2",
-        "practical": false
-      },
-      {
         "node": "h-gk-shadow",
         "practical": false
       },
@@ -1657,191 +910,6 @@
         "node": "h-gk-ring",
         "emissiveIntensity": 1.1,
         "practical": true
-      },
-      {
-        "name": "h-df0-shorts",
-        "node": "h-df0-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-kit",
-        "node": "h-df0-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-badge",
-        "node": "h-df0-chest-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df0-skin",
-        "node": "h-df0-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-hair",
-        "node": "h-df0-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-eyes",
-        "node": "h-df0-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df0-sclera",
-        "node": "h-df0-head-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "h-df0-kit",
-        "node": "h-df0-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-skin",
-        "node": "h-df0-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df0-skin",
-        "node": "h-df0-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-forearm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-kit",
-        "node": "h-df0-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-skin",
-        "node": "h-df0-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df0-skin",
-        "node": "h-df0-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-forearm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-shorts",
-        "node": "h-df0-leg-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-leg-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-skin",
-        "node": "h-df0-leg-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df0-skin",
-        "node": "h-df0-calf-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-socks",
-        "node": "h-df0-calf-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-calf-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df0-boot",
-        "node": "h-df0-boot-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-boot-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-studs",
-        "node": "h-df0-boot-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df0-shorts",
-        "node": "h-df0-leg-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-leg-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-skin",
-        "node": "h-df0-leg-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df0-skin",
-        "node": "h-df0-calf-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-socks",
-        "node": "h-df0-calf-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-calf-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df0-boot",
-        "node": "h-df0-boot-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df0-trim",
-        "node": "h-df0-boot-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-studs",
-        "node": "h-df0-boot-r-mesh-2",
-        "practical": false
       },
       {
         "node": "h-df0-shadow",
@@ -1853,191 +921,6 @@
         "practical": true
       },
       {
-        "name": "h-df1-shorts",
-        "node": "h-df1-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-kit",
-        "node": "h-df1-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-badge",
-        "node": "h-df1-chest-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df1-skin",
-        "node": "h-df1-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-hair",
-        "node": "h-df1-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-eyes",
-        "node": "h-df1-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df1-sclera",
-        "node": "h-df1-head-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "h-df1-kit",
-        "node": "h-df1-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-skin",
-        "node": "h-df1-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df1-skin",
-        "node": "h-df1-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-forearm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-kit",
-        "node": "h-df1-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-skin",
-        "node": "h-df1-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df1-skin",
-        "node": "h-df1-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-forearm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-shorts",
-        "node": "h-df1-leg-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-leg-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-skin",
-        "node": "h-df1-leg-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df1-skin",
-        "node": "h-df1-calf-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-socks",
-        "node": "h-df1-calf-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-calf-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df1-boot",
-        "node": "h-df1-boot-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-boot-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-studs",
-        "node": "h-df1-boot-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df1-shorts",
-        "node": "h-df1-leg-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-leg-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-skin",
-        "node": "h-df1-leg-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df1-skin",
-        "node": "h-df1-calf-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-socks",
-        "node": "h-df1-calf-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-calf-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-df1-boot",
-        "node": "h-df1-boot-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-df1-trim",
-        "node": "h-df1-boot-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-studs",
-        "node": "h-df1-boot-r-mesh-2",
-        "practical": false
-      },
-      {
         "node": "h-df1-shadow",
         "practical": false
       },
@@ -2045,191 +928,6 @@
         "node": "h-df1-ring",
         "emissiveIntensity": 1.1,
         "practical": true
-      },
-      {
-        "name": "h-mf-shorts",
-        "node": "h-mf-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-kit",
-        "node": "h-mf-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-badge",
-        "node": "h-mf-chest-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-mf-skin",
-        "node": "h-mf-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-hair",
-        "node": "h-mf-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-eyes",
-        "node": "h-mf-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-mf-sclera",
-        "node": "h-mf-head-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "h-mf-kit",
-        "node": "h-mf-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-skin",
-        "node": "h-mf-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-mf-skin",
-        "node": "h-mf-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-forearm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-kit",
-        "node": "h-mf-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-skin",
-        "node": "h-mf-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-mf-skin",
-        "node": "h-mf-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-forearm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-shorts",
-        "node": "h-mf-leg-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-leg-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-skin",
-        "node": "h-mf-leg-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-mf-skin",
-        "node": "h-mf-calf-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-socks",
-        "node": "h-mf-calf-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-calf-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-mf-boot",
-        "node": "h-mf-boot-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-boot-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-studs",
-        "node": "h-mf-boot-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-mf-shorts",
-        "node": "h-mf-leg-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-leg-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-skin",
-        "node": "h-mf-leg-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-mf-skin",
-        "node": "h-mf-calf-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-socks",
-        "node": "h-mf-calf-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-calf-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-mf-boot",
-        "node": "h-mf-boot-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-mf-trim",
-        "node": "h-mf-boot-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-studs",
-        "node": "h-mf-boot-r-mesh-2",
-        "practical": false
       },
       {
         "node": "h-mf-shadow",
@@ -2241,191 +939,6 @@
         "practical": true
       },
       {
-        "name": "h-fw-shorts",
-        "node": "h-fw-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-kit",
-        "node": "h-fw-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-badge",
-        "node": "h-fw-chest-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-fw-skin",
-        "node": "h-fw-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-hair",
-        "node": "h-fw-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-eyes",
-        "node": "h-fw-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-fw-sclera",
-        "node": "h-fw-head-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "h-fw-kit",
-        "node": "h-fw-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-skin",
-        "node": "h-fw-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-fw-skin",
-        "node": "h-fw-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-forearm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-kit",
-        "node": "h-fw-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-skin",
-        "node": "h-fw-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-fw-skin",
-        "node": "h-fw-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-forearm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-shorts",
-        "node": "h-fw-leg-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-leg-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-skin",
-        "node": "h-fw-leg-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-fw-skin",
-        "node": "h-fw-calf-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-socks",
-        "node": "h-fw-calf-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-calf-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-fw-boot",
-        "node": "h-fw-boot-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-boot-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-studs",
-        "node": "h-fw-boot-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-fw-shorts",
-        "node": "h-fw-leg-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-leg-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-skin",
-        "node": "h-fw-leg-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-fw-skin",
-        "node": "h-fw-calf-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-socks",
-        "node": "h-fw-calf-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-calf-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "h-fw-boot",
-        "node": "h-fw-boot-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "h-fw-trim",
-        "node": "h-fw-boot-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-studs",
-        "node": "h-fw-boot-r-mesh-2",
-        "practical": false
-      },
-      {
         "node": "h-fw-shadow",
         "practical": false
       },
@@ -2433,201 +946,6 @@
         "node": "h-fw-ring",
         "emissiveIntensity": 1.1,
         "practical": true
-      },
-      {
-        "name": "a-gk-shorts",
-        "node": "a-gk-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-kit",
-        "node": "a-gk-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-badge",
-        "node": "a-gk-chest-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-gk-skin",
-        "node": "a-gk-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-hair",
-        "node": "a-gk-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-eyes",
-        "node": "a-gk-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-gk-sclera",
-        "node": "a-gk-head-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "a-gk-kit",
-        "node": "a-gk-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-skin",
-        "node": "a-gk-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-gk-kit",
-        "node": "a-gk-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-forearm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-glove",
-        "node": "a-gk-forearm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-gk-kit",
-        "node": "a-gk-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-skin",
-        "node": "a-gk-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-gk-kit",
-        "node": "a-gk-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-forearm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-glove",
-        "node": "a-gk-forearm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-gk-shorts",
-        "node": "a-gk-leg-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-leg-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-skin",
-        "node": "a-gk-leg-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-gk-skin",
-        "node": "a-gk-calf-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-socks",
-        "node": "a-gk-calf-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-calf-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-gk-boot",
-        "node": "a-gk-boot-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-boot-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-studs",
-        "node": "a-gk-boot-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-gk-shorts",
-        "node": "a-gk-leg-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-leg-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-skin",
-        "node": "a-gk-leg-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-gk-skin",
-        "node": "a-gk-calf-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-socks",
-        "node": "a-gk-calf-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-calf-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-gk-boot",
-        "node": "a-gk-boot-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-gk-trim",
-        "node": "a-gk-boot-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-studs",
-        "node": "a-gk-boot-r-mesh-2",
-        "practical": false
       },
       {
         "node": "a-gk-shadow",
@@ -2639,191 +957,6 @@
         "practical": true
       },
       {
-        "name": "a-df0-shorts",
-        "node": "a-df0-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-kit",
-        "node": "a-df0-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-badge",
-        "node": "a-df0-chest-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df0-skin",
-        "node": "a-df0-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-hair",
-        "node": "a-df0-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-eyes",
-        "node": "a-df0-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df0-sclera",
-        "node": "a-df0-head-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "a-df0-kit",
-        "node": "a-df0-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-skin",
-        "node": "a-df0-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df0-skin",
-        "node": "a-df0-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-forearm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-kit",
-        "node": "a-df0-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-skin",
-        "node": "a-df0-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df0-skin",
-        "node": "a-df0-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-forearm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-shorts",
-        "node": "a-df0-leg-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-leg-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-skin",
-        "node": "a-df0-leg-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df0-skin",
-        "node": "a-df0-calf-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-socks",
-        "node": "a-df0-calf-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-calf-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df0-boot",
-        "node": "a-df0-boot-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-boot-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-studs",
-        "node": "a-df0-boot-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df0-shorts",
-        "node": "a-df0-leg-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-leg-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-skin",
-        "node": "a-df0-leg-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df0-skin",
-        "node": "a-df0-calf-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-socks",
-        "node": "a-df0-calf-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-calf-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df0-boot",
-        "node": "a-df0-boot-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df0-trim",
-        "node": "a-df0-boot-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-studs",
-        "node": "a-df0-boot-r-mesh-2",
-        "practical": false
-      },
-      {
         "node": "a-df0-shadow",
         "practical": false
       },
@@ -2831,191 +964,6 @@
         "node": "a-df0-ring",
         "emissiveIntensity": 1.1,
         "practical": true
-      },
-      {
-        "name": "a-df1-shorts",
-        "node": "a-df1-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-kit",
-        "node": "a-df1-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-badge",
-        "node": "a-df1-chest-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df1-skin",
-        "node": "a-df1-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-hair",
-        "node": "a-df1-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-eyes",
-        "node": "a-df1-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df1-sclera",
-        "node": "a-df1-head-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "a-df1-kit",
-        "node": "a-df1-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-skin",
-        "node": "a-df1-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df1-skin",
-        "node": "a-df1-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-forearm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-kit",
-        "node": "a-df1-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-skin",
-        "node": "a-df1-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df1-skin",
-        "node": "a-df1-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-forearm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-shorts",
-        "node": "a-df1-leg-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-leg-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-skin",
-        "node": "a-df1-leg-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df1-skin",
-        "node": "a-df1-calf-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-socks",
-        "node": "a-df1-calf-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-calf-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df1-boot",
-        "node": "a-df1-boot-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-boot-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-studs",
-        "node": "a-df1-boot-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df1-shorts",
-        "node": "a-df1-leg-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-leg-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-skin",
-        "node": "a-df1-leg-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df1-skin",
-        "node": "a-df1-calf-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-socks",
-        "node": "a-df1-calf-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-calf-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-df1-boot",
-        "node": "a-df1-boot-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-df1-trim",
-        "node": "a-df1-boot-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-studs",
-        "node": "a-df1-boot-r-mesh-2",
-        "practical": false
       },
       {
         "node": "a-df1-shadow",
@@ -3027,191 +975,6 @@
         "practical": true
       },
       {
-        "name": "a-mf-shorts",
-        "node": "a-mf-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-kit",
-        "node": "a-mf-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-badge",
-        "node": "a-mf-chest-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-mf-skin",
-        "node": "a-mf-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-hair",
-        "node": "a-mf-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-eyes",
-        "node": "a-mf-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-mf-sclera",
-        "node": "a-mf-head-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "a-mf-kit",
-        "node": "a-mf-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-skin",
-        "node": "a-mf-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-mf-skin",
-        "node": "a-mf-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-forearm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-kit",
-        "node": "a-mf-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-skin",
-        "node": "a-mf-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-mf-skin",
-        "node": "a-mf-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-forearm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-shorts",
-        "node": "a-mf-leg-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-leg-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-skin",
-        "node": "a-mf-leg-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-mf-skin",
-        "node": "a-mf-calf-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-socks",
-        "node": "a-mf-calf-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-calf-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-mf-boot",
-        "node": "a-mf-boot-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-boot-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-studs",
-        "node": "a-mf-boot-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-mf-shorts",
-        "node": "a-mf-leg-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-leg-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-skin",
-        "node": "a-mf-leg-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-mf-skin",
-        "node": "a-mf-calf-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-socks",
-        "node": "a-mf-calf-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-calf-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-mf-boot",
-        "node": "a-mf-boot-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-mf-trim",
-        "node": "a-mf-boot-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-studs",
-        "node": "a-mf-boot-r-mesh-2",
-        "practical": false
-      },
-      {
         "node": "a-mf-shadow",
         "practical": false
       },
@@ -3219,191 +982,6 @@
         "node": "a-mf-ring",
         "emissiveIntensity": 1.1,
         "practical": true
-      },
-      {
-        "name": "a-fw-shorts",
-        "node": "a-fw-pelvis-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-pelvis-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-kit",
-        "node": "a-fw-chest-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-chest-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-badge",
-        "node": "a-fw-chest-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-fw-skin",
-        "node": "a-fw-head-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-hair",
-        "node": "a-fw-head-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-eyes",
-        "node": "a-fw-head-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-fw-sclera",
-        "node": "a-fw-head-mesh-3",
-        "practical": false
-      },
-      {
-        "name": "a-fw-kit",
-        "node": "a-fw-arm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-arm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-skin",
-        "node": "a-fw-arm-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-fw-skin",
-        "node": "a-fw-forearm-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-forearm-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-kit",
-        "node": "a-fw-arm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-arm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-skin",
-        "node": "a-fw-arm-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-fw-skin",
-        "node": "a-fw-forearm-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-forearm-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-shorts",
-        "node": "a-fw-leg-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-leg-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-skin",
-        "node": "a-fw-leg-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-fw-skin",
-        "node": "a-fw-calf-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-socks",
-        "node": "a-fw-calf-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-calf-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-fw-boot",
-        "node": "a-fw-boot-l-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-boot-l-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-studs",
-        "node": "a-fw-boot-l-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-fw-shorts",
-        "node": "a-fw-leg-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-leg-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-skin",
-        "node": "a-fw-leg-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-fw-skin",
-        "node": "a-fw-calf-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-socks",
-        "node": "a-fw-calf-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-calf-r-mesh-2",
-        "practical": false
-      },
-      {
-        "name": "a-fw-boot",
-        "node": "a-fw-boot-r-mesh-0",
-        "practical": false
-      },
-      {
-        "name": "a-fw-trim",
-        "node": "a-fw-boot-r-mesh-1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-studs",
-        "node": "a-fw-boot-r-mesh-2",
-        "practical": false
       },
       {
         "node": "a-fw-shadow",
@@ -3479,7 +1057,130 @@
       ],
       "mobile": "both"
     },
-    "assets": [],
+    "assets": [
+      {
+        "role": "character",
+        "assetKey": "fcIdolHomeA",
+        "kit": "K2",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "fcIdolHomeB",
+        "kit": "K2",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "fcIdolAwayA",
+        "kit": "K2",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "fcIdolAwayB",
+        "kit": "K2",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "fcIdolKeeperHome",
+        "kit": "K2",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "fcIdolKeeperAway",
+        "kit": "K2",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "fcIdolReferee",
+        "kit": "K2",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "fcIdolFanA",
+        "kit": "K2",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "character",
+        "assetKey": "fcIdolFanB",
+        "kit": "K2",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "character",
+        "assetKey": "fcIdolFanC",
+        "kit": "K2",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "fcIdolDugout",
+        "kit": "K4",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "fcIdolCrane",
+        "kit": "K4",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "fcIdolTrophy",
+        "kit": "K4",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "prop",
+        "assetKey": "fcIdolBall",
+        "kit": "K2",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
     "vfx": [
       {
         "event": "kick",

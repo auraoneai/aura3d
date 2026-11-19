@@ -1731,8 +1731,9 @@ const PAINT_ROLLER_CACHE = new Map<string, { mesh: MeshData; tones: number[] }>(
  * Ultra-smooth 64-segment bevelled chrome gyro-gimbal collar, Taubin-faired Aero Hydro-Pods & Aft Surf-Cradle,
  * swept chrome handlebars, and the Playable Paint-Runner Mascot surfing behind the hero chroma orb (`ball-roller`).
  */
-export function buildPaintRollerCollarMesh(ballRadius: number): { mesh: MeshData; tones: number[] } {
-  const cacheKey = ballRadius.toFixed(3);
+export function buildPaintRollerCollarMesh(ballRadius: number, options: { readonly withRunner?: boolean } = {}): { mesh: MeshData; tones: number[] } {
+  const withRunner = options.withRunner ?? true;
+  const cacheKey = `${ballRadius.toFixed(3)}:${withRunner ? "runner" : "rig"}`;
   const cached = PAINT_ROLLER_CACHE.get(cacheKey);
   if (cached) return cached;
 
@@ -1898,7 +1899,9 @@ export function buildPaintRollerCollarMesh(ballRadius: number): { mesh: MeshData
   );
   appendTonedRawMesh(out, tubeSweepMesh(handlebarPts.map((p): V4 => [p[0], p[1], p[2], 0.013]), 28), chrome);
 
-  // 5. Playable Paint-Runner Mascot surfing on the aft cradle (facing forward `-Z` via `rotY = Math.PI`, tucked inside `r <= 0.90` shield bubble)
+  // 5. Playable Paint-Runner Mascot surfing on the aft cradle (facing forward `-Z` via `rotY = Math.PI`, tucked inside `r <= 0.90` shield bubble).
+  //    `withRunner: false` leaves the cradle empty for the Idol vinyl-toy runner (`../idol.ts`, `splatHeroRunner`).
+  if (withRunner) {
   const runnerParts = buildPaintRunnerCharacterParts({
     pose: "surf",
     hoodieRgb: ivory,
@@ -1914,6 +1917,7 @@ export function buildPaintRollerCollarMesh(ballRadius: number): { mesh: MeshData
     rot: [0.34, Math.PI, 0],
     scale: 0.42
   });
+  }
 
   const { tones, ...mesh } = out;
   const built = { mesh, tones };

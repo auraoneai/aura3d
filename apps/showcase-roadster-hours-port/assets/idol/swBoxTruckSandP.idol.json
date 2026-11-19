@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swBoxTruckSandP",
+  "generatedAt": "2026-11-18T23:15:49.388Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/saltwind-highway/swBoxTruckSandP/ref-src.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0f1-f8bb-79f0-93b7-6ce69e4c2880",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 108,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1424776,
+        "num_faces": 2849920,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single medium box truck of a fictional unbranded design, white flat-fronted cab-over cab with large windscreen and mirrors, tall plain sand-beige rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, dual rear wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -14,
+    "scale": 7.155,
+    "size": [
+      6.723,
+      5.36,
+      9
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swBoxTruckSandP.glb",
+  "sizeBytes": 1699000,
+  "preview": "artifacts/idol/saltwind-highway/swBoxTruckSandP/views.png",
+  "usd": 0.2,
+  "orientationFix": "yawDeg 76 (long axis fitted; reference was a three-quarter view)",
+  "postProcess": "PNG textures re-encoded as JPEG q90 (4:4:4) to fit the per-game byte budget"
+}

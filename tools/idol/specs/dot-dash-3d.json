@@ -1,0 +1,91 @@
+{
+  "game": "dot-dash-3d",
+  "outDir": "apps/showcase-dot-dash-3d/assets/idol",
+  "style": "Macro photograph of a real miniature precision-machined electronic device, physically based polished metal, anodised aluminium, glossy plastic and glass, fine machining marks and tiny screws, high detail",
+  "items": [
+    {
+      "key": "gcCourierBot",
+      "kind": "object",
+      "role": "hero",
+      "size": {
+        "height": 1.15
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 2048,
+      "subject": "A small round hovering courier robot about the size of a fist: a smooth polished gold and brass spherical body like a vintage pocket-watch casing, a wide glowing cyan glass visor band across the front as its single eye, two short stubby rounded arms with small gripper hands, a tiny brass antenna on top, a small rounded cargo pouch on its back, and a round chrome hover thruster disk underneath instead of legs, cheerful friendly design, facing forward"
+    },
+    {
+      "key": "gcHunterRed",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 0.7
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A small menacing hovering security drone robot: a rounded dome-shaped body of glossy candy-red anodised aluminium with a short skirt of overlapping red metal plates hanging around its base, a horizontal black glass visor slit with a single bright white sensor eye across the front, a sharp swept-back red fin crest on top, two small side thruster pods, no legs, facing forward"
+    },
+    {
+      "key": "gcHunterViolet",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 0.7
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A small sly hovering security drone robot: a rounded dome-shaped body of glossy violet-purple anodised aluminium with a scalloped skirt of overlapping violet metal plates hanging around its base, a narrow black glass visor slit with a white sensor eye across the front, two small curved horns on top of the dome, slim side thruster pods, no legs, facing forward"
+    },
+    {
+      "key": "gcHunterLime",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 0.7
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A small jittery hovering security drone robot: a rounded dome-shaped body of glossy lime-green anodised aluminium with a wavy skirt of overlapping green metal plates hanging around its base, a black glass visor slit with a white sensor eye across the front, a small three-point metal tiara crown on top, little side thruster pods, no legs, facing forward"
+    },
+    {
+      "key": "gcHunterAmber",
+      "kind": "object",
+      "role": "character",
+      "size": {
+        "height": 0.7
+      },
+      "front": "+x",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A small timid hovering security drone robot: a rounded dome-shaped body of glossy amber-orange anodised aluminium with a skirt of overlapping orange metal plates hanging around its base, a black glass visor slit with a white sensor eye across the front, two thin springy antennae with tiny ball tips on top, little side thruster pods, no legs, facing forward"
+    },
+    {
+      "key": "gcCapacitor",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1.0
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A single upright radial electrolytic capacitor component standing on its two short legs: a tall brushed aluminium cylindrical can with a dark blue heat-shrink plastic sleeve covering the sides, a silver stripe down one side, a stamped cross-shaped vent on the flat aluminium top, a black rubber seal at the bottom"
+    },
+    {
+      "key": "gcHeatsink",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1.0
+      },
+      "front": "+z",
+      "seed": 7,
+      "tex": 1024,
+      "subject": "A single square extruded aluminium heatsink block from a circuit board, many thin tall parallel cooling fins rising from a thick flat base plate, dark grey anodised finish with bright machined edges on the fin tips, a small black processor chip clamped underneath, roughly as tall as it is wide"
+    }
+  ]
+}

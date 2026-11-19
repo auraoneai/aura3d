@@ -1,0 +1,755 @@
+{
+  "game": "saltwind-highway",
+  "outDir": "apps/showcase-roadster-hours-port/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "swRoadsterBody",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.44
+      },
+      "tex": 2048,
+      "seed": 7,
+      "subject": "A single fictional classic 1960s open-top two-seat grand-touring roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge, voluptuous pontoon front and rear fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes running over the bonnet and rear deck, raked chrome-framed low windscreen, open cockpit with two quilted tan leather bucket seats and a wooden steering wheel, twin chrome roll hoops behind the seats, chrome side exhaust pipes, round red tail lamps, chrome bumperettes"
+    },
+    {
+      "key": "swRoadsterBodyDriver",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.44
+      },
+      "tex": 2048,
+      "seed": 11,
+      "subject": "A single fictional classic 1960s open-top two-seat grand-touring roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge, voluptuous pontoon fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes over the bonnet and rear deck, raked chrome-framed low windscreen, open cockpit with quilted tan leather bucket seats and a wooden steering wheel, a driver seated at the wheel wearing a cream knit polo shirt, brown leather driving gloves and dark sunglasses, short dark hair, twin chrome roll hoops, chrome side exhaust pipes, round red tail lamps"
+    },
+    {
+      "key": "swRoadsterBodyB",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.44
+      },
+      "tex": 2048,
+      "seed": 31,
+      "subject": "A single fictional classic 1960s open-top two-seat speedster roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge and a small air scoop, voluptuous pontoon front and rear fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes running over the bonnet and rear deck, two small low rounded racing aero screens with thick chrome frames instead of a full windscreen, open cockpit with two quilted tan leather bucket seats and a wooden steering wheel, twin thick chrome roll hoops behind the seats, chrome side exhaust pipes, round red tail lamps set into the smooth rear panel, chrome bumperettes, smooth painted rear panel with no number plate"
+    },
+    {
+      "key": "swRoadsterBodyC",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.44
+      },
+      "tex": 2048,
+      "seed": 47,
+      "subject": "A single fictional classic 1960s open-top two-seat speedster roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge and a small air scoop, voluptuous pontoon front and rear fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes running over the bonnet and rear deck, two small low rounded racing aero screens with thick chrome frames instead of a full windscreen, open cockpit with two quilted tan leather bucket seats and a wooden steering wheel, twin thick chrome roll hoops behind the seats, chrome side exhaust pipes, round red tail lamps set into the smooth rear panel, chrome bumperettes, smooth painted rear panel with no number plate"
+    },
+    {
+      "key": "swSedanBlue",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 7,
+      "subject": "A single ordinary four-door family saloon car of a fictional unbranded timeless design, sun-faded sea-blue metallic paint, dark tinted windows, chrome window trim and door handles, body-colour bumpers, black tyres on silver alloy wheels, clean body panels"
+    },
+    {
+      "key": "swSedanSand",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 8,
+      "subject": "A single ordinary four-door family saloon car of a fictional unbranded timeless design, pale sand-cream paint, dark tinted windows, chrome window trim and door handles, body-colour bumpers, black tyres on silver steel wheels with chrome hubcaps, clean body panels"
+    },
+    {
+      "key": "swSedanClay",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 9,
+      "subject": "A single ordinary four-door family saloon car of a fictional unbranded timeless design, warm terracotta clay-orange metallic paint, dark tinted windows, chrome window trim, black lower trim, black tyres on grey alloy wheels, clean body panels"
+    },
+    {
+      "key": "swHatchMustard",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.12
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 7,
+      "subject": "A single compact five-door hatchback car of a fictional unbranded design, mustard-yellow paint, black plastic lower trim and bumpers, dark tinted windows, black roof rails, black tyres on silver alloy wheels"
+    },
+    {
+      "key": "swHatchSeaGlass",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.12
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 8,
+      "subject": "A single compact five-door hatchback car of a fictional unbranded design, pale sea-glass mint-teal paint with a white roof, black plastic lower trim, dark tinted windows, black tyres on white-painted steel wheels"
+    },
+    {
+      "key": "swSuvSlate",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.82
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 7,
+      "subject": "A single tall five-door sport utility vehicle of a fictional unbranded design, slate-blue metallic paint, black roof rails with a surfboard strapped on the roof, dark tinted windows, black wheel-arch cladding, chunky black tyres on dark alloy wheels"
+    },
+    {
+      "key": "swSuvOlive",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.82
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 8,
+      "subject": "A single boxy rugged five-door off-road sport utility vehicle of a fictional unbranded design, matte sage-olive green paint, black roof rack, black bumpers, spare wheel on the rear door, dark tinted windows, chunky all-terrain tyres on black steel wheels"
+    },
+    {
+      "key": "swPickupRust",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.84
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 7,
+      "subject": "A single full-size crew-cab pickup truck of a fictional unbranded design, sun-faded burnt-orange red paint, open cargo bed with black bed liner, chrome grille surround and chrome bumpers, dark tinted windows, chunky all-terrain tyres on silver wheels"
+    },
+    {
+      "key": "swPickupSand",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.84
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 8,
+      "subject": "A single classic-styled full-size pickup truck of a fictional unbranded design, two-tone sand-beige and white paint, open wooden-slat cargo bed, chrome round headlamp surrounds, chrome bumpers, dark tinted windows, white-wall tyres on chrome hubcaps"
+    },
+    {
+      "key": "swBusCoach",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 12
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 7,
+      "subject": "A single long single-deck touring coach bus of a fictional unbranded design, glossy cream-white body with broad sea-teal and sunset-orange sweeping side stripes, long continuous dark tinted side window band, large curved front windscreen, luggage bay doors along the lower sides, black tyres on silver wheels, plain livery"
+    },
+    {
+      "key": "swBusShuttle",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 12
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 8,
+      "subject": "A single long single-deck coastal shuttle bus of a fictional unbranded rounded retro design, two-tone mustard-yellow lower body and white upper body, big rounded front windscreen, row of square dark side windows, chrome bumpers, black tyres on silver wheels, plain livery"
+    },
+    {
+      "key": "swBoxTruckWhite",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 9
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 7,
+      "subject": "A single medium box truck of a fictional unbranded design, short-nosed sea-blue cab with large windscreen and side mirrors, tall plain white rectangular cargo box body with aluminium corner rails and side rub strips, a ribbed roll-up shutter door at the rear, black chassis and fuel tank, dual rear wheels"
+    },
+    {
+      "key": "swBoxTruckSand",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 9
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 8,
+      "subject": "A single medium box truck of a fictional unbranded design, white flat-fronted cab-over cab with large windscreen and mirrors, tall plain sand-beige rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, dual rear wheels"
+    },
+    {
+      "key": "swSemiNavy",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 20.8
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "subject": "A single long-haul articulated lorry of a fictional unbranded design, side three-quarter view: a deep navy-blue long-nose conventional tractor unit with a tall sleeper cab, chrome grille, chrome vertical exhaust stacks and chrome fuel tanks, coupled to a long plain white 53-foot box semi-trailer with silver side skirts, many black wheels"
+    },
+    {
+      "key": "swSemiRed",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 20.8
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 8,
+      "subject": "A single long-haul articulated lorry of a fictional unbranded design, side three-quarter view: a faded brick-red long-nose conventional tractor unit with a sleeper cab, chrome grille and chrome exhaust stacks, coupled to a long ribbed brushed-aluminium refrigerated box semi-trailer with a refrigeration unit on its front, many black wheels"
+    },
+    {
+      "key": "swTanker",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 17.6
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "subject": "A single fuel tanker articulated lorry of a fictional unbranded design, side three-quarter view: a white conventional long-nose tractor unit with a chrome grille and chrome exhaust stacks, coupled to a long polished mirror-chrome cylindrical tank semi-trailer with a top catwalk, ladder and hose cabinets, many black wheels, plain no markings"
+    },
+    {
+      "key": "swTractorNavy",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 7.4
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 7,
+      "subject": "A single semi-truck tractor unit with no trailer, fictional unbranded design, long-nose conventional cab with a tall sleeper, deep slate-navy paint, big chrome grille, chrome bumper, chrome vertical exhaust stacks and chrome cylindrical fuel tanks, empty fifth-wheel coupling plate on the rear chassis, dual rear axles with black tyres on polished aluminium wheels"
+    },
+    {
+      "key": "swTractorTeal",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 7.4
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 8,
+      "subject": "A single semi-truck tractor unit with no trailer, fictional unbranded design, long-nose conventional day cab without sleeper, glossy sea-teal paint, big chrome grille, chrome bumper, chrome exhaust stacks and fuel tanks, empty fifth-wheel coupling plate on the rear chassis, dual rear axles with black tyres on polished aluminium wheels"
+    },
+    {
+      "key": "swCarCarrier",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 21.75
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 7,
+      "subject": "A single car-transporter articulated lorry of a fictional unbranded design, side three-quarter view: a slate-grey cab-over tractor unit with a large windscreen, coupled to a long two-deck open steel-frame car-carrier trailer loaded with six small plain hatchback cars in assorted pastel colours on the upper and lower decks, open lattice side frames and hydraulic ramps, many black wheels"
+    },
+    {
+      "key": "swLighthouse",
+      "kind": "object",
+      "role": "world",
+      "size": {
+        "height": 74
+      },
+      "tex": 2048,
+      "maxVerts": 20000,
+      "seed": 21,
+      "subject": "A single very tall and slender classic headland lighthouse tower, about seven times taller than its base is wide: a gently tapering round whitewashed stone masonry tower with two broad crimson-red daymark bands, a few small arched windows up the tower, a corbelled stone gallery deck with a solid bronze parapet near the top, a compact solid-looking lantern room with a thick bronze frame and opaque glowing amber glass panes, a ribbed verdigris green copper dome with a ball finial on top, standing on a low round stone plinth, no other buildings"
+    },
+    {
+      "key": "swViaduct",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "width": 34.65
+      },
+      "tex": 1024,
+      "maxVerts": 15000,
+      "seed": 7,
+      "subject": "A single short section of an old Mediterranean coastal stone viaduct bridge seen from the side: three tall round Romanesque arches carried on tapered warm limestone piers with stone plinth footings, sandstone voussoir arch stones and proud keystones, a flat road deck on top with a low wrought-iron parapet railing, weathered sun-bleached stone with moss at the base, open sky visible through the arches",
+      "image": "artifacts/idol/saltwind-highway/swViaduct/ref-src.png"
+    },
+    {
+      "key": "swDiner",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "width": 16
+      },
+      "tex": 1024,
+      "maxVerts": 15000,
+      "seed": 7,
+      "subject": "A single classic streamline-moderne roadside diner building: a long low single-storey building with rounded ends clad in brushed stainless steel and cream enamel panels, a wrap-around ribbon of large windows, coral-pink and sea-teal neon tube trim lines along the roofline, a small entrance porch with a chrome canopy, and beside it a tall freestanding googie pylon sign with a blank coral and teal neon starburst on top and no lettering"
+    },
+    {
+      "key": "swVilla",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single two-storey Mediterranean cliffside villa house: whitewashed rough stucco walls, a low-pitched terracotta clay tile hip roof, arched windows with sea-blue wooden louvred shutters, an arched loggia porch on the ground floor, a small balcony with a wrought-iron railing, pink bougainvillea climbing one corner"
+    },
+    {
+      "key": "swVillaOchre",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 8,
+      "subject": "A single two-storey Mediterranean seaside villa house: warm pale ochre stucco walls, a terracotta clay tile roof, a roof terrace with a white parapet, arched windows with sage-green wooden louvred shutters, a ground-floor arched doorway, terracotta potted lemon trees by the door"
+    },
+    {
+      "key": "swTownhouse",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "subject": "A single narrow three-storey Italian coastal fishing-village townhouse: pastel coral-pink stucco walls, a terracotta tile gable roof, tall rectangular windows with forest-green wooden louvred shutters, small wrought-iron balconies, a wooden front door at street level, weathered plaster"
+    },
+    {
+      "key": "swTownhouseSand",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 1
+      },
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 8,
+      "subject": "A single narrow three-storey Italian coastal fishing-village townhouse: pale sand-yellow stucco walls, a terracotta tile roof, tall rectangular windows with sea-blue wooden louvred shutters, small wrought-iron balconies with flower boxes, an arched wooden front door at street level, weathered plaster",
+      "image": "artifacts/idol/saltwind-highway/swTownhouseSand/ref-src.png"
+    },
+    {
+      "key": "swSedanBlueP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 107,
+      "subject": "A single ordinary four-door family saloon car of a fictional unbranded timeless design, sun-faded sea-blue metallic paint, dark tinted windows, chrome window trim and door handles, body-colour bumpers, black tyres on silver alloy wheels, clean body panels",
+      "prompt": "A single ordinary four-door family saloon car of a fictional unbranded timeless design, sun-faded sea-blue metallic paint, dark tinted windows, chrome window trim and door handles, body-colour bumpers, black tyres on silver alloy wheels, clean body panels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swSedanBlueP/ref-src.png"
+    },
+    {
+      "key": "swSedanSandP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 108,
+      "subject": "A single ordinary four-door family saloon car of a fictional unbranded timeless design, pale sand-cream paint, dark tinted windows, chrome window trim and door handles, body-colour bumpers, black tyres on silver steel wheels with chrome hubcaps, clean body panels",
+      "prompt": "A single ordinary four-door family saloon car of a fictional unbranded timeless design, pale sand-cream paint, dark tinted windows, chrome window trim and door handles, body-colour bumpers, black tyres on silver steel wheels with chrome hubcaps, clean body panels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swSedanSandP/ref-src.png"
+    },
+    {
+      "key": "swSedanClayP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.8
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 109,
+      "subject": "A single ordinary four-door family saloon car of a fictional unbranded timeless design, warm terracotta clay-orange metallic paint, dark tinted windows, chrome window trim, black lower trim, black tyres on grey alloy wheels, clean body panels",
+      "prompt": "A single ordinary four-door family saloon car of a fictional unbranded timeless design, warm terracotta clay-orange metallic paint, dark tinted windows, chrome window trim, black lower trim, black tyres on grey alloy wheels, clean body panels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swSedanClayP/ref-src.png"
+    },
+    {
+      "key": "swHatchMustardP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.12
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 107,
+      "subject": "A single compact five-door hatchback car of a fictional unbranded design, mustard-yellow paint, black plastic lower trim and bumpers, dark tinted windows, black roof rails, black tyres on silver alloy wheels",
+      "prompt": "A single compact five-door hatchback car of a fictional unbranded design, mustard-yellow paint, black plastic lower trim and bumpers, dark tinted windows, black roof rails, black tyres on silver alloy wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swHatchMustardP/ref-src.png"
+    },
+    {
+      "key": "swHatchSeaGlassP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.12
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 108,
+      "subject": "A single compact five-door hatchback car of a fictional unbranded design, pale sea-glass mint-teal paint with a white roof, black plastic lower trim, dark tinted windows, black tyres on white-painted steel wheels",
+      "prompt": "A single compact five-door hatchback car of a fictional unbranded design, pale sea-glass mint-teal paint with a white roof, black plastic lower trim, dark tinted windows, black tyres on white-painted steel wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swHatchSeaGlassP/ref-src.png"
+    },
+    {
+      "key": "swSuvSlateP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.82
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 107,
+      "subject": "A single tall five-door sport utility vehicle of a fictional unbranded design, slate-blue metallic paint, black roof rails with a surfboard strapped on the roof, dark tinted windows, black wheel-arch cladding, chunky black tyres on dark alloy wheels",
+      "prompt": "A single tall five-door sport utility vehicle of a fictional unbranded design, slate-blue metallic paint, black roof rails with a surfboard strapped on the roof, dark tinted windows, black wheel-arch cladding, chunky black tyres on dark alloy wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swSuvSlateP/ref-src.png"
+    },
+    {
+      "key": "swSuvOliveP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 4.82
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 108,
+      "subject": "A single boxy rugged five-door off-road sport utility vehicle of a fictional unbranded design, matte sage-olive green paint, black roof rack, black bumpers, spare wheel on the rear door, dark tinted windows, chunky all-terrain tyres on black steel wheels",
+      "prompt": "A single boxy rugged five-door off-road sport utility vehicle of a fictional unbranded design, matte sage-olive green paint, black roof rack, black bumpers, spare wheel on the rear door, dark tinted windows, chunky all-terrain tyres on black steel wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swSuvOliveP/ref-src.png"
+    },
+    {
+      "key": "swPickupRustP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.84
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 107,
+      "subject": "A single full-size crew-cab pickup truck of a fictional unbranded design, sun-faded burnt-orange red paint, open cargo bed with black bed liner, chrome grille surround and chrome bumpers, dark tinted windows, chunky all-terrain tyres on silver wheels",
+      "prompt": "A single full-size crew-cab pickup truck of a fictional unbranded design, sun-faded burnt-orange red paint, open cargo bed with black bed liner, chrome grille surround and chrome bumpers, dark tinted windows, chunky all-terrain tyres on silver wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swPickupRustP/ref-src.png"
+    },
+    {
+      "key": "swPickupSandP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 5.84
+      },
+      "tex": 1024,
+      "maxVerts": 14000,
+      "seed": 108,
+      "subject": "A single classic-styled full-size pickup truck of a fictional unbranded design, two-tone sand-beige and white paint, open wooden-slat cargo bed, chrome round headlamp surrounds, chrome bumpers, dark tinted windows, white-wall tyres on chrome hubcaps",
+      "prompt": "A single classic-styled full-size pickup truck of a fictional unbranded design, two-tone sand-beige and white paint, open wooden-slat cargo bed, chrome round headlamp surrounds, chrome bumpers, dark tinted windows, white-wall tyres on chrome hubcaps. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swPickupSandP/ref-src.png"
+    },
+    {
+      "key": "swBusCoachP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 12
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 107,
+      "subject": "A single long single-deck touring coach bus of a fictional unbranded design, glossy cream-white body with broad sea-teal and sunset-orange sweeping side stripes, long continuous dark tinted side window band, large curved front windscreen, luggage bay doors along the lower sides, black tyres on silver wheels, plain livery",
+      "prompt": "A single long single-deck touring coach bus of a fictional unbranded design, glossy cream-white body with broad sea-teal and sunset-orange sweeping side stripes, long continuous dark tinted side window band, large curved front windscreen, luggage bay doors along the lower sides, black tyres on silver wheels, plain livery. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swBusCoachP/ref-src.png"
+    },
+    {
+      "key": "swBusShuttleP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 12
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 108,
+      "subject": "A single long single-deck coastal shuttle bus of a fictional unbranded rounded retro design, two-tone mustard-yellow lower body and white upper body, big rounded front windscreen, row of square dark side windows, chrome bumpers, black tyres on silver wheels, plain livery",
+      "prompt": "A single long single-deck coastal shuttle bus of a fictional unbranded rounded retro design, two-tone mustard-yellow lower body and white upper body, big rounded front windscreen, row of square dark side windows, chrome bumpers, black tyres on silver wheels, plain livery. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swBusShuttleP/ref-src.png"
+    },
+    {
+      "key": "swBoxTruckWhiteP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 9
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 107,
+      "subject": "A single medium box truck of a fictional unbranded design, short-nosed sea-blue cab with large windscreen and side mirrors, tall plain white rectangular cargo box body with aluminium corner rails and side rub strips, a ribbed roll-up shutter door at the rear, black chassis and fuel tank, dual rear wheels",
+      "prompt": "A single medium box truck of a fictional unbranded design, short-nosed sea-blue cab with large windscreen and side mirrors, tall plain white rectangular cargo box body with aluminium corner rails and side rub strips, a ribbed roll-up shutter door at the rear, black chassis and fuel tank, dual rear wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swBoxTruckWhiteP/ref-src.png"
+    },
+    {
+      "key": "swBoxTruckSandP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 9
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 108,
+      "subject": "A single medium box truck of a fictional unbranded design, white flat-fronted cab-over cab with large windscreen and mirrors, tall plain sand-beige rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, dual rear wheels",
+      "prompt": "A single medium box truck of a fictional unbranded design, white flat-fronted cab-over cab with large windscreen and mirrors, tall plain sand-beige rectangular cargo box body with aluminium corner rails, a ribbed roll-up shutter door at the rear, black chassis, dual rear wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swBoxTruckSandP/ref-src.png"
+    },
+    {
+      "key": "swSemiNavyP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 20.8
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 107,
+      "subject": "A single long-haul articulated lorry of a fictional unbranded design, side three-quarter view: a deep navy-blue long-nose conventional tractor unit with a tall sleeper cab, chrome grille, chrome vertical exhaust stacks and chrome fuel tanks, coupled to a long plain white 53-foot box semi-trailer with silver side skirts, many black wheels",
+      "prompt": "A single long-haul articulated lorry of a fictional unbranded design, side three-quarter view: a deep navy-blue long-nose conventional tractor unit with a tall sleeper cab, chrome grille, chrome vertical exhaust stacks and chrome fuel tanks, coupled to a long plain white 53-foot box semi-trailer with silver side skirts, many black wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swSemiNavyP/ref-src.png"
+    },
+    {
+      "key": "swSemiRedP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 20.8
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 108,
+      "subject": "A single long-haul articulated lorry of a fictional unbranded design, side three-quarter view: a faded brick-red long-nose conventional tractor unit with a sleeper cab, chrome grille and chrome exhaust stacks, coupled to a long ribbed brushed-aluminium refrigerated box semi-trailer with a refrigeration unit on its front, many black wheels",
+      "prompt": "A single long-haul articulated lorry of a fictional unbranded design, side three-quarter view: a faded brick-red long-nose conventional tractor unit with a sleeper cab, chrome grille and chrome exhaust stacks, coupled to a long ribbed brushed-aluminium refrigerated box semi-trailer with a refrigeration unit on its front, many black wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swSemiRedP/ref-src.png"
+    },
+    {
+      "key": "swTankerP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 17.6
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 107,
+      "subject": "A single fuel tanker articulated lorry of a fictional unbranded design, side three-quarter view: a white conventional long-nose tractor unit with a chrome grille and chrome exhaust stacks, coupled to a long polished mirror-chrome cylindrical tank semi-trailer with a top catwalk, ladder and hose cabinets, many black wheels, plain no markings",
+      "prompt": "A single fuel tanker articulated lorry of a fictional unbranded design, side three-quarter view: a white conventional long-nose tractor unit with a chrome grille and chrome exhaust stacks, coupled to a long polished mirror-chrome cylindrical tank semi-trailer with a top catwalk, ladder and hose cabinets, many black wheels, plain no markings. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swTankerP/ref-src.png"
+    },
+    {
+      "key": "swTractorNavyP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 7.4
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 107,
+      "subject": "A single semi-truck tractor unit with no trailer, fictional unbranded design, long-nose conventional cab with a tall sleeper, deep slate-navy paint, big chrome grille, chrome bumper, chrome vertical exhaust stacks and chrome cylindrical fuel tanks, empty fifth-wheel coupling plate on the rear chassis, dual rear axles with black tyres on polished aluminium wheels",
+      "prompt": "A single semi-truck tractor unit with no trailer, fictional unbranded design, long-nose conventional cab with a tall sleeper, deep slate-navy paint, big chrome grille, chrome bumper, chrome vertical exhaust stacks and chrome cylindrical fuel tanks, empty fifth-wheel coupling plate on the rear chassis, dual rear axles with black tyres on polished aluminium wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swTractorNavyP/ref-src.png"
+    },
+    {
+      "key": "swTractorTealP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 7.4
+      },
+      "tex": 1024,
+      "maxVerts": 16000,
+      "seed": 108,
+      "subject": "A single semi-truck tractor unit with no trailer, fictional unbranded design, long-nose conventional day cab without sleeper, glossy sea-teal paint, big chrome grille, chrome bumper, chrome exhaust stacks and fuel tanks, empty fifth-wheel coupling plate on the rear chassis, dual rear axles with black tyres on polished aluminium wheels",
+      "prompt": "A single semi-truck tractor unit with no trailer, fictional unbranded design, long-nose conventional day cab without sleeper, glossy sea-teal paint, big chrome grille, chrome bumper, chrome exhaust stacks and fuel tanks, empty fifth-wheel coupling plate on the rear chassis, dual rear axles with black tyres on polished aluminium wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swTractorTealP/ref-src.png"
+    },
+    {
+      "key": "swCarCarrierP",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 21.75
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 107,
+      "subject": "A single car-transporter articulated lorry of a fictional unbranded design, side three-quarter view: a slate-grey cab-over tractor unit with a large windscreen, coupled to a long two-deck open steel-frame car-carrier trailer loaded with six small plain hatchback cars in assorted pastel colours on the upper and lower decks, open lattice side frames and hydraulic ramps, many black wheels",
+      "prompt": "A single car-transporter articulated lorry of a fictional unbranded design, side three-quarter view: a slate-grey cab-over tractor unit with a large windscreen, coupled to a long two-deck open steel-frame car-carrier trailer loaded with six small plain hatchback cars in assorted pastel colours on the upper and lower decks, open lattice side frames and hydraulic ramps, many black wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swCarCarrierP/ref-src.png"
+    },
+    {
+      "key": "swRoadsterBodyR",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.44
+      },
+      "tex": 2048,
+      "seed": 61,
+      "subject": "A single fictional classic 1960s open-top two-seat grand-touring roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge, voluptuous pontoon fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes over the bonnet and rear deck, raked chrome-framed low windscreen, open cockpit with quilted tan leather bucket seats and a wooden steering wheel, a driver seated at the wheel wearing a cream knit polo shirt, brown leather driving gloves and dark sunglasses, short dark hair, twin chrome roll hoops, chrome side exhaust pipes, four round red tail lamps set into a smooth painted rear panel with no number plate",
+      "prompt": "A single fictional classic 1960s open-top two-seat grand-touring roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge, voluptuous pontoon fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes over the bonnet and rear deck, raked chrome-framed low windscreen, open cockpit with quilted tan leather bucket seats and a wooden steering wheel, a driver seated at the wheel wearing a cream knit polo shirt, brown leather driving gloves and dark sunglasses, short dark hair, twin chrome roll hoops, chrome side exhaust pipes, four round red tail lamps set into a smooth painted rear panel with no number plate. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swRoadsterBodyR/ref-src.png"
+    },
+    {
+      "key": "swRoadsterBodyR2",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.44
+      },
+      "tex": 2048,
+      "seed": 73,
+      "subject": "A single fictional classic 1960s open-top two-seat grand-touring roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge, voluptuous pontoon fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes over the bonnet and rear deck, raked chrome-framed low windscreen, open cockpit with quilted tan leather bucket seats and a wooden steering wheel, a driver seated at the wheel wearing a cream knit polo shirt, brown leather driving gloves and dark sunglasses, short dark hair, twin chrome roll hoops, chrome side exhaust pipes, four round red tail lamps set into a smooth painted rear panel with no number plate",
+      "prompt": "A single fictional classic 1960s open-top two-seat grand-touring roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge, voluptuous pontoon fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes over the bonnet and rear deck, raked chrome-framed low windscreen, open cockpit with quilted tan leather bucket seats and a wooden steering wheel, a driver seated at the wheel wearing a cream knit polo shirt, brown leather driving gloves and dark sunglasses, short dark hair, twin chrome roll hoops, chrome side exhaust pipes, four round red tail lamps set into a smooth painted rear panel with no number plate. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+      "image": "artifacts/idol/saltwind-highway/swRoadsterBodyR2/ref-src.png"
+    },
+    {
+      "key": "swLighthouseB",
+      "kind": "object",
+      "role": "world",
+      "size": {
+        "height": 74
+      },
+      "tex": 2048,
+      "maxVerts": 20000,
+      "seed": 33,
+      "subject": "A single very tall and slender classic headland lighthouse, about six times taller than its base is wide: a gently tapering round whitewashed stone tower with two bold saturated crimson-red painted bands, a few small arched windows, near the top a wide projecting stone gallery balcony with a solid white parapet wall, above it a large chunky octagonal lantern room built as a solid bronze drum with big opaque glowing amber glass panels, crowned by a tall pointed verdigris green copper dome with a ball finial, standing on a low round stone plinth, no other buildings"
+    },
+    {
+      "key": "swDinerB",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "width": 13
+      },
+      "tex": 1024,
+      "maxVerts": 15000,
+      "seed": 19,
+      "subject": "A single classic streamline-moderne roadside diner building standing alone on a clean flat concrete slab: a long low single-storey railcar-style building with rounded ends, walls clad in horizontal brushed stainless steel bands and cream enamel panels, a continuous ribbon of large windows along the front with red booth seats visible inside, a smooth plain grey flat roof edged with coral-pink and sea-teal neon tube trim, a centred entrance vestibule with glass doors and a chrome canopy, short steps, no sign, no plants, no lettering"
+    },
+    {
+      "key": "swSemiRedNW",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 20.8
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 21,
+      "subject": "A single long-haul articulated lorry of a fictional unbranded design: a faded brick-red long-nose conventional tractor unit with a sleeper cab, chrome grille and chrome exhaust stacks, coupled to a long ribbed brushed-aluminium refrigerated box semi-trailer with a refrigeration unit on its front, the trailer perfectly straight and in line with the tractor. Vehicle body only with NO wheels and NO tyres: completely empty wheel arches and bare axle housings, the bare chassis resting low on the ground",
+      "meshResolution": 1024,
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin",
+      "front": "+z",
+      "yawDeg": 229.5
+    },
+    {
+      "key": "swSemiRedNW2",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 20.8
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 42,
+      "subject": "A single long-haul articulated lorry of a fictional unbranded design: a faded brick-red long-nose conventional tractor unit with a sleeper cab, chrome grille and chrome exhaust stacks, coupled to a long ribbed brushed-aluminium refrigerated box semi-trailer with a refrigeration unit on its front, the trailer perfectly straight and in line with the tractor. Vehicle body only with NO wheels and NO tyres: completely empty wheel arches and bare axle housings, the bare chassis resting low on the ground",
+      "meshResolution": 1536,
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "swSemiRedNW3",
+      "kind": "vehicle",
+      "role": "vehicle",
+      "size": {
+        "length": 20.8
+      },
+      "tex": 1024,
+      "maxVerts": 20000,
+      "seed": 77,
+      "subject": "A single long-haul articulated lorry of a fictional unbranded design: a faded brick-red long-nose conventional tractor unit with a sleeper cab, chrome grille and chrome exhaust stacks, coupled to a long ribbed brushed-aluminium refrigerated box semi-trailer with a refrigeration unit on its front, the trailer perfectly straight and in line with the tractor. Vehicle body only with NO wheels and NO tyres: completely empty wheel arches and bare axle housings, the bare chassis resting low on the ground",
+      "meshResolution": 1536,
+      "style": "Photoreal studio product render of a clean, freshly washed, undamaged vehicle body, physically based materials, crisp panel gaps, high detail. All windows are fully opaque glossy black privacy glass, the interior is not visible at all. Seen from the rear-left side at a 30 degree angle, photographed from far away with a long telephoto lens so there is almost no perspective distortion, the whole vehicle small in the frame with generous empty margin"
+    },
+    {
+      "key": "swDriver",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.75
+      },
+      "tex": 1024,
+      "seed": 7,
+      "subject": "A fictional vintage sports-car racing driver, slim adult, wearing a light cream cotton racing overall with a thin dark-teal collar trim, brown leather racing gloves, dark brown leather driving shoes, and a cream open-face leather racing helmet with clear goggles resting on its brim, calm face, no text, no badges, no numbers"
+    },
+    {
+      "key": "swDriverB",
+      "kind": "character",
+      "role": "character",
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "size": {
+        "height": 1.75
+      },
+      "tex": 1024,
+      "seed": 19,
+      "subject": "A fictional vintage sports-car racing driver, slim adult, wearing a light cream cotton racing overall with a thin dark-teal collar trim, brown leather racing gloves, dark brown leather driving shoes, and a cream open-face leather racing helmet with clear goggles resting on its brim, calm face, no text, no badges, no numbers"
+    }
+  ]
+}

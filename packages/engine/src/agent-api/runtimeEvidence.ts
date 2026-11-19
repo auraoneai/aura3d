@@ -61,15 +61,25 @@ export function createRuntimeNodeImportedAssetEvidence(
   };
 }
 
+// Pose transforms may arrive as `[x, y, z(, w)]` tuples as well as `{ x, y, z(, w) }` objects. Spreading a tuple yields
+// `{ 0, 1, 2, 3 }`, which the glTF runtime rejects for the whole pose (the actor silently falls back to its bind pose),
+// so tuples are normalised to object form here.
+function cloneVecLike<T>(v: T): T {
+  return (Array.isArray(v) ? { x: v[0], y: v[1], z: v[2] } : { ...(v as object) }) as T;
+}
+function cloneQuatLike<T>(q: T): T {
+  return (Array.isArray(q) ? { x: q[0], y: q[1], z: q[2], w: q[3] } : { ...(q as object) }) as T;
+}
+
 export function cloneRuntimeAnimationPose(pose: AnimationPose): AnimationPose {
   return {
     bones: Object.fromEntries(
       Object.entries(pose.bones ?? {}).map(([bone, transform]) => [
         bone,
         {
-          position: transform.position ? { ...transform.position } : undefined,
-          rotation: transform.rotation ? { ...transform.rotation } : undefined,
-          scale: transform.scale ? { ...transform.scale } : undefined
+          position: transform.position ? cloneVecLike(transform.position) : undefined,
+          rotation: transform.rotation ? cloneQuatLike(transform.rotation) : undefined,
+          scale: transform.scale ? cloneVecLike(transform.scale) : undefined
         }
       ])
     ),

@@ -11,6 +11,7 @@ import {
   railWarning, wrapSpan, type Lane
 } from "../../../apps/showcase-cross-hop/src/game/world";
 import { FIELD_HALF, STRIP_W } from "../../../apps/showcase-cross-hop/src/game/themes";
+import { idolAssets } from "../../../apps/showcase-cross-hop/src/aura-assets.idol";
 
 /** Keyboard stand-in with the engine's buffered/consume contract: a press stays buffered until consumed. */
 function fakeInput() {
@@ -176,12 +177,20 @@ describe("cross hop hitboxes match the drawn models (CH-5)", () => {
       expect(Math.abs(moverHalf(l) - half)).toBeLessThanOrEqual(0.2);
     });
   }
-  it("core.ts sizes every vehicle pool from MOVER_LENGTH / TRAIN_CAR_LENGTH", () => {
-    const core = readFileSync(path.resolve("apps/showcase-cross-hop/src/game/core.ts"), "utf8");
-    const dims = [...core.matchAll(/targetMaxDimension: ([^,}]+)/g)].map((m) => m[1]!.trim());
-    expect(dims.length).toBeGreaterThanOrEqual(10);
-    // invariant: source must keep `targetMaxDimension: MOVER_LENGTH.*`/`TRAIN_CAR_LENGTH` — drawn vehicles match moverHalf hitboxes, so collisions line up with visuals
-    for (const d of dims) expect(d).toMatch(/^(MOVER_LENGTH\.\w+|TRAIN_CAR_LENGTH)$/);
+  it("every Idol vehicle model is drawn at its MOVER_LENGTH / TRAIN_CAR_LENGTH (Idol pass)", () => {
+    // invariant: the Idol fleet is generated and admitted at the hitbox lengths, so collisions line up with visuals.
+    const spec = JSON.parse(readFileSync(path.resolve("tools/idol/specs/cross-hop.json"), "utf8")) as { items: { key: string; size: { length?: number } }[] };
+    const want: Record<string, number> = {
+      hopCarSedan: MOVER_LENGTH.car, hopCarHatch: MOVER_LENGTH.hatch, hopCarSuv: MOVER_LENGTH.suv, hopCarTaxi: MOVER_LENGTH.taxi,
+      hopCarVan: MOVER_LENGTH.van, hopCarPickup: MOVER_LENGTH.pickup, hopBoxTruck: MOVER_LENGTH.truck, hopTram: MOVER_LENGTH.tram,
+      hopTrainLoco: TRAIN_CAR_LENGTH, hopTrainCoach: TRAIN_CAR_LENGTH, hopHoverCar: MOVER_LENGTH.hover, hopLogRaft: MOVER_LENGTH.log,
+      hopCandyRaft: MOVER_LENGTH.log, hopRiverLog: MOVER_LENGTH.log
+    };
+    const admitted = idolAssets as unknown as Record<string, { bounds: readonly [number, number, number] }>;
+    for (const [key, length] of Object.entries(want)) {
+      expect(spec.items.find((i) => i.key === key)?.size.length, key).toBe(length);
+      expect(Math.abs(admitted[key]!.bounds[2] - length), key).toBeLessThanOrEqual(HIT_MARGIN);
+    }
     expect(HIT_MARGIN).toBeLessThanOrEqual(0.2);
   });
 });

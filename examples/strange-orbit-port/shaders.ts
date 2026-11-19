@@ -342,7 +342,7 @@ void main() {
   float stream = pow(max(0.0, sin(z * 8.0 + sin(y * 0.65 - veilTime) * 1.1 - veilTime * 0.4)), 30.0);
   float rim = exp(-pow((abs(z) - edge + 0.25) * 3.0, 2.0));
   float alpha = (stream * 0.09 + rim * 0.4) * mask * smoothstep(0.0, 0.7, y) * (1.0 - smoothstep(11.5, 13.0, y));
-  outColor = vec4(mix(vec3(0.48, 0.79, 1.0), vec3(1.0, 0.75, 0.3), 0.65 + 0.35 * sin(veilTime + y)), alpha * (1.0 + veilPulse * 2.0));
+  outColor = vec4(mix(vec3(0.48, 0.79, 1.0), vec3(1.0, 0.75, 0.3), 0.65 + 0.35 * sin(veilTime + y)), alpha * (1.0 + veilPulse * 2.0) * veilFade);
 }`;
 
 /** Round glowing points with a per-point `size` (stars, stardust, exhaust). */

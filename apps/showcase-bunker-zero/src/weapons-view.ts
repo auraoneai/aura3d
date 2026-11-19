@@ -90,3 +90,33 @@ export function formatTacticalFeed(raw: string): string {
   const trimmed = raw.trim();
   return FEED_LABELS[trimmed] ?? trimmed;
 }
+
+/**
+ * Real-GPU audit (2026-11-18): a player bullet's tracer dart spawned 0.55 m in front of the eye and 0.37 m below it, so
+ * for its first frames the 0.42 m dart filled the space beside the pistol and read as an upright shell; and its trail
+ * (life 0.14 s, sampled whether or not the dart is visible) drew a streak from wherever the dart was parked to the
+ * muzzle. The dart now stays hidden and still for BULLET_TRACER_HOLD_S after a new bullet takes its slot (longer than
+ * the trail life, so the parked points expire before it jumps) and until the bullet is BULLET_TRACER_MIN_RANGE out.
+ */
+export const BULLET_TRACER_HOLD_S = 0.18;
+export const BULLET_TRACER_MIN_RANGE = 1.6;
+export const BULLET_TRAIL_LIFE_S = 0.14;
+export function bulletTracerVisible(heldFor: number, travelled: number): boolean {
+  return heldFor >= BULLET_TRACER_HOLD_S && travelled >= BULLET_TRACER_MIN_RANGE;
+}
+
+/**
+ * Real-GPU audit (2026-11-18): an enemy tracer was 60% of the shot length and rode to 70% of the way to the player, so
+ * at 4 m its near end was ~0.5 m from the eye and the dart, pointing at the camera from below, filled the frame as a
+ * tall upright spike. It is now at most ENEMY_TRACER_MAX_LEN long and its near end stays ENEMY_TRACER_CLEAR from the
+ * player; returns null (not drawn) when the shooter is too close for that. `along` is the dart centre's distance from
+ * the shooter, `length` its length (the dart mesh spans one unit along z).
+ */
+export const ENEMY_TRACER_CLEAR = 1.8;
+export const ENEMY_TRACER_MAX_LEN = 1.0;
+export function enemyTracerSpan(len: number, k: number): { along: number; length: number } | null {
+  const length = Math.min(ENEMY_TRACER_MAX_LEN, Math.max(0.2, len * 0.3));
+  const far = len - ENEMY_TRACER_CLEAR - length / 2;
+  if (far < length / 2) return null;
+  return { along: Math.min(len * (0.35 + 0.35 * Math.min(1, Math.max(0, k))), far), length };
+}

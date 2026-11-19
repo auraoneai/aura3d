@@ -767,8 +767,14 @@ function pillar(g: Geo, x: number, z: number, y0: number, y1: number, b0: number
   quad(g, cap[0]!, cap[1]!, cap[2]!, cap[3]!);
 }
 
+/** Near-layer trackside dressing placement (shared with tests/unit/polarity-orbs/corridor-clearance.test.ts). */
+export const NEAR_DRESSING = {
+  arch: { r: 8.2, yc: -1.2, tube: 0.34, pillarHalf: 0.78 },
+  island: { minX: 13, maxR: 2.6 + 2.8 }
+} as const;
+
 function arch(g: Geo, z: number): void {
-  const R = 8.2, yc = -1.2, segs = 28;
+  const R = NEAR_DRESSING.arch.r, yc = NEAR_DRESSING.arch.yc, segs = 28;
   const outer: V3[] = [], inner: V3[] = [];
   for (let i = 0; i <= segs; i++) {
     const a = Math.PI - (i / segs) * Math.PI;
@@ -872,7 +878,7 @@ function buildLayer(layer: SceneryLayer): Geo {
     for (let k = 0; k < count; k++) {
       const pole = (k % 2 === 0 ? -1 : 1) as -1 | 1;
       const z = WRAP_BEHIND - 4 - (k / count) * (tile - 8) - rnd() * 6;
-      const x = pole * (13 + rnd() * 14);
+      const x = pole * (NEAR_DRESSING.island.minX + rnd() * 14);
       at(z);
       island(g, rnd, x, -3 - rnd() * 7, z, 2.6 + rnd() * 2.8, pole, true, 16);
       if (rnd() < 0.6) island(g, rnd, x + pole * (4 + rnd() * 5), 1 + rnd() * 5, z - 6 - rnd() * 4, 0.7 + rnd() * 0.8, pole, false, 12);

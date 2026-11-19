@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/ninja-runner-port/art/direction.ts",
-  "sourceSha256": "0d2a2d22b186c4006589a3c40f5d681b7733c791b65caa329fcdf9bec84da785",
+  "sourceSha256": "c61714c48ee2a0be618e717f6d13a236076639b062a4981e37700a5c1ebcb4fb",
   "id": "showcase-ninja-runner-port",
   "genre": "rhythm-runner",
   "signatureEffect": "scarf-trail: a vermilion scarf ribbon streaming from the runner's upper spine under an indigo woodblock ink outline, the evening sinking with distance.",
@@ -62,7 +62,15 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "nrWaterWheel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "materials": [
       {
         "node": "proc-houseC-glazed",
@@ -348,22 +356,6 @@
         "practical": false
       },
       {
-        "node": "setpiece-waterWheel material 1",
-        "practical": false
-      },
-      {
-        "node": "setpiece-waterWheel material 2",
-        "practical": false
-      },
-      {
-        "node": "setpiece-waterWheel material 7",
-        "practical": false
-      },
-      {
-        "node": "setpiece-waterWheel material 8",
-        "practical": false
-      },
-      {
         "node": "setpiece-pagoda material 0",
         "practical": false
       },
@@ -565,6 +557,13 @@
             "death"
           ]
         }
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "nrWaterWheel",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
       }
     ],
     "vfx": [

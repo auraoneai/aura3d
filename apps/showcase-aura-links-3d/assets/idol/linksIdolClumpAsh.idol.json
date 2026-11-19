@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-links-3d",
+  "key": "linksIdolClumpAsh",
+  "generatedAt": "2026-11-19T02:56:15.341Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f1bb-bf72-7962-9b7f-db1dcca691f2",
+      "prompt": "Single small clump of dry dead grass on volcanic ground: brittle ash-grey and dark brown spiky grass blades fanning out from a tight base, a few black cinders at the root. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f1bc-5373-71e0-8341-2c714fa34418",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 598238,
+        "num_faces": 1196824,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Single small clump of dry dead grass on volcanic ground: brittle ash-grey and dark brown spiky grass blades fanning out from a tight base, a few black cinders at the root. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.538,
+    "size": [
+      0.416,
+      0.4,
+      0.331
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-links-3d/assets/idol/linksIdolClumpAsh.glb",
+  "sizeBytes": 1057568,
+  "preview": "artifacts/idol/aura-links-3d/linksIdolClumpAsh/views.png",
+  "usd": 0.37
+}

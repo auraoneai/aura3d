@@ -1,0 +1,48 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "craterline-gp",
+  "key": "cgGantry",
+  "generatedAt": "2026-11-18T22:58:48.507Z",
+  "generator": "tools/idol/generate.mjs (Idol step resumed from the original queued request after the generator's 20 min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A monumental lunar race start and finish gantry arch spanning a very wide road, about twice as wide as it is tall: two slender square steel lattice truss towers on heavy concrete footings standing far apart at the two outer ends, joined at the top by one long thin horizontal steel lattice truss bridge with a row of round marshal signal lamps and a blank dark display panel in the middle, small diagonal knee braces where the bridge meets the towers, a huge empty open space under the bridge between the towers, brushed gunmetal steel with white ceramic accents, front view. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a9-1038-7d12-97d7-16cdf23204c5",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 400710,
+        "num_faces": 801896,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A monumental lunar race start and finish gantry arch spanning a very wide road, about twice as wide as it is tall: two slender square steel lattice truss towers on heavy concrete footings standing far apart at the two outer ends, joined at the top by one long thin horizontal steel lattice truss bridge with a row of round marshal signal lamps and a blank dark display panel in the middle, small diagonal knee braces where the bridge meets the towers, a huge empty open space under the bridge between the towers, brushed gunmetal steel with white ceramic accents, front view. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -135,
+    "scale": 24.569,
+    "size": [
+      33.8,
+      16.975,
+      5.832
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-strange-orbit-port/assets/idol/cgGantry.glb",
+  "sizeBytes": 2065468,
+  "preview": "artifacts/idol/craterline-gp/cgGantry/views.png",
+  "usd": 0.37,
+  "postProcess": [
+    "examples/strange-orbit-port/tools/shrink-normal-map.mjs 1024 (normal map PNG -> JPEG q92)"
+  ]
+}

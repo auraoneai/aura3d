@@ -1,9 +1,9 @@
 /** Cross Hop — endless lane-hopper showcase (PRD: docs/prd/cross-hop.md). */
 import { game, createFixedStepLoop } from "@aura3d/engine";
-import { createGame, sfxUrl } from "@aura3d/engine/game";
+import { createGame, sfxUrl, warmPrograms } from "@aura3d/engine/game";
 import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, setLookMode, setP4Dress, getLookMode, deathEffect, dioramaView, mountSpectators, setCameraImpact, SIM_STEP } from "./game/core";
 import { qaCrops } from "./game/qa";
-import { assets } from "./aura-assets";
+import { idolAssets } from "./aura-assets.idol";
 import { modelUrls, modelProgressFraction, modelLabel, watchModelDownloads, MODEL_PROGRESS_CEIL } from "./game/loadingUx";
 import { defaultLookFor, p4DressFor } from "./game/look";
 import { mountUI, tickUI, setUiSound, setUiHop, type HopAction } from "./game/ui";
@@ -18,7 +18,8 @@ import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 installBlackFrameGuard();
 
 const params = new URLSearchParams(window.location.search);
-const AUTOPLAY = params.get("autoplay") === "1" || params.get("demo") === "1";
+// `?autoplay=1` (AUTOPLAY addendum), with `?autopilot=1` and `?demo=1` as aliases: a run starts and the computer hops.
+const AUTOPLAY = params.get("autoplay") === "1" || params.get("autopilot") === "1" || params.get("demo") === "1";
 const AUTOSTART = params.get("autostart") !== "0";
 
 const inputOptions = {
@@ -140,9 +141,24 @@ const app = g.app;
 const loading = createLoadingProgress({ shell: g.shell });
 loading.set(0.05, "Loading Cross Hop");
 // 5.0.3 A1: the bar follows the real GLB downloads (resource timing, no extra requests) instead of sitting at 5 percent.
-const stopWatchingModels = watchModelDownloads(modelUrls(assets as unknown as Record<string, unknown>), (done, total) => {
+// Idol pass: the downloads are the Idol GLBs the scene mounts (critters, fleet, wheels, river movers, trees, hawk).
+const IDOL_MODEL_URLS = modelUrls(idolAssets as unknown as Record<string, unknown>);
+let idolModelsDone = 0;
+const stopWatchingModels = watchModelDownloads(IDOL_MODEL_URLS, (done, total) => {
+  idolModelsDone = done;
   loading.set(modelProgressFraction(done, total), modelLabel(done, total));
 });
+/** Resolves once every Idol GLB has downloaded (resource timing), or after `capMs` so a slow link never blocks play. */
+function idolModelsDownloaded(capMs: number): Promise<void> {
+  const t0 = performance.now();
+  return new Promise((resolve) => {
+    const poll = (): void => {
+      if (idolModelsDone >= IDOL_MODEL_URLS.length || performance.now() - t0 > capMs || typeof PerformanceObserver === "undefined") resolve();
+      else setTimeout(poll, 50);
+    };
+    poll();
+  });
+}
 bindApp(app);
 g.start();
 
@@ -193,6 +209,13 @@ if (AUTOSTART) {
 /** 5.0.3 A1: "Ready" means the first frame is on screen (`app.readiness`), not just that the renderer mounted. Bounded so a hidden tab never stalls the run. */
 async function readyForPlay(): Promise<void> {
   await g.ready();
+  // Idol pass (first-seconds fix): every Idol GLB of the first scene and the first seconds of play is mounted by
+  // buildScene (the vehicle, wheel, river and tree pools are parked below the floor until used); the diorama look's
+  // spectator critters are mounted here too. Wait for their downloads, then settle every program, the HDRI and every
+  // texture upgrade before the loop runs (appReady) and the loading screen hides: a draw whose program is still
+  // compiling is skipped, which froze the first seconds of play on the clear colour (lessons-learned R2).
+  mountSpectators();
+  await idolModelsDownloaded(30_000);
   loading.set(MODEL_PROGRESS_CEIL, "Drawing the first frame");
   stopWatchingModels();
   const outcome = await Promise.race([
@@ -200,12 +223,13 @@ async function readyForPlay(): Promise<void> {
     new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 4000))
   ]);
   if (outcome && outcome.state === "failed") console.warn(`[cross-hop] first frame not reached: ${outcome.code}`);
+  syncVisuals(1);
+  await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
 }
 
 void loading.track(readyForPlay(), 1, "Ready").then(() => {
   loading.done("Ready");
   appReady = true;
-  mountSpectators();
   syncVisuals(1);
   document.body.dataset.aura3dReady = "true";
 });

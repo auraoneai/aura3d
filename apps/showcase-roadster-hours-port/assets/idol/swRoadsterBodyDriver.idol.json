@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swRoadsterBodyDriver",
+  "generatedAt": "2026-11-18T22:25:23.286Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the client's 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f089-f05d-7801-8866-c5d1f4897008",
+      "prompt": "A single fictional classic 1960s open-top two-seat grand-touring roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge, voluptuous pontoon fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes over the bonnet and rear deck, raked chrome-framed low windscreen, open cockpit with quilted tan leather bucket seats and a wooden steering wheel, a driver seated at the wheel wearing a cream knit polo shirt, brown leather driving gloves and dark sunglasses, short dark hair, twin chrome roll hoops, chrome side exhaust pipes, round red tail lamps. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08f-0049-7351-9f5b-23942e775be4",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 11,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1164252,
+        "num_faces": 2328572,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single fictional classic 1960s open-top two-seat grand-touring roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge, voluptuous pontoon fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes over the bonnet and rear deck, raked chrome-framed low windscreen, open cockpit with quilted tan leather bucket seats and a wooden steering wheel, a driver seated at the wheel wearing a cream knit polo shirt, brown leather driving gloves and dark sunglasses, short dark hair, twin chrome roll hoops, chrome side exhaust pipes, round red tail lamps. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "hero",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -59,
+    "scale": 4.177,
+    "size": [
+      2.583,
+      1.508,
+      4.44
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swRoadsterBodyDriver.glb",
+  "sizeBytes": 4030724,
+  "preview": "artifacts/idol/saltwind-highway/swRoadsterBodyDriver/views.png",
+  "usd": 0.37,
+  "orientationFix": "yawDeg 31 (long axis fitted; reference was a three-quarter view)",
+  "postProcess": "PNG textures re-encoded as JPEG q90 (4:4:4) to fit the per-game byte budget"
+}

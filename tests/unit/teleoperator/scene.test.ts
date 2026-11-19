@@ -49,7 +49,7 @@ describe("grid dispatch scene", () => {
     for (const id of ["player-lidar-dome", "player-tailbar", "player-contact-shadow", "peer-waymo-lidar-ring"]) expect(app.nodes.has(id)).toBe(false);
     app.dispose?.();
   });
-  it("mounts zero GLB models; commuter, vehicles, buildings, and SF landmarks are 100% @aura3d/engine procedural multi-material with WebGPU-safe glazing", () => {
+  it("Idol wow pass: vehicles, commuter, ferry terminal and pyramid tower are Idol models; facades and the other landmarks stay procedural with WebGPU-safe glazing", () => {
     const app = createAuraApp(undefined, { scene: buildGridDispatchScene("golden"), autoStart: false });
     const modelNames: string[] = [];
     const groupNames = new Set<string>();
@@ -68,8 +68,13 @@ describe("grid dispatch scene", () => {
       }
     };
     walk((app.scene as unknown as { nodes: unknown[] }).nodes);
-    expect(modelNames).toEqual([]);
-    for (const landmark of ["taxi-passenger", "taxi-passenger-pelvis", "taxi-passenger-torso", "taxi-passenger-head", "sf-pyramid-tower", "sf-bridge-tower-l", "sf-bridge-tower-r", "sf-bridge-span", "sf-ferry-clocktower", "sf-coit-tower"]) {
+    // 5 player cars + 5 rivals + 10 traffic + 2 parked pools + street trees + commuter + ferry terminal + pyramid tower
+    // + 12 sidewalk walkers.
+    expect(modelNames).toHaveLength(38);
+    for (const id of ["taxi-passenger-idol", "player-car-cruiser-idol", "rival-car-3-idol", "traffic-9-idol", "sf-parked-0", "sf-parked-1", "sf-tree-trunks", "sf-ferry-clocktower-idol", "sf-pyramid-tower-idol"]) {
+      expect(modelNames, id).toContain(id);
+    }
+    for (const landmark of ["sf-pyramid-tower", "sf-bridge-tower-l", "sf-bridge-tower-r", "sf-bridge-span", "sf-ferry-clocktower", "sf-coit-tower"]) {
       expect(groupNames.has(landmark), landmark).toBe(true);
     }
     app.dispose?.();
@@ -93,5 +98,26 @@ describe("grid dispatch renderer options (wave 2, E1 handoff)", () => {
     expect(resolveMountQuality(GRID_DISPATCH_RENDERER as never)).toEqual(resolveMountQuality({ quality: { tier: "high" } } as never));
     expect(resolveMountQuality(GRID_DISPATCH_RENDERER as never).tier).toBe("high");
     expect(parseQualityRendererOptions(GRID_DISPATCH_RENDERER as never, null).requested).toBe(parseQualityRendererOptions({ quality: "high" } as never, null).requested);
+  });
+  it("rigged Idol figures (commuter, sidewalk walkers) are top-level nodes: a rigged node nested in a moving group renders in world space and lands off-screen", () => {
+    const app = createAuraApp(undefined, { scene: buildGridDispatchScene("golden"), autoStart: false });
+    const roots = (app.scene as unknown as { nodes: Array<{ kind?: string; name?: string; asset?: { url?: string }; runtime?: { id?: string }; children?: unknown[] }> }).nodes;
+    const rigged = /gdCommuter|gdWalker/;
+    const nested: string[] = [];
+    const walk = (nodes: readonly unknown[], depth: number): void => {
+      for (const n of nodes as Array<{ kind?: string; name?: string; asset?: { url?: string }; children?: unknown[] }>) {
+        if (n.kind === "model" && rigged.test(n.asset?.url ?? "") && depth > 0) nested.push(n.name ?? "?");
+        if (n.children) walk(n.children, depth + 1);
+      }
+    };
+    walk(roots, 0);
+    expect(nested).toEqual([]);
+    const commuter = roots.find((n) => n.name === "taxi-passenger-idol");
+    expect(commuter?.kind).toBe("model");
+    expect(app.nodes.has("taxi-passenger")).toBe(true);
+    const h = app.nodes.require("taxi-passenger");
+    h.setPosition(4.5, 0.18, -30);
+    expect((h.snapshot() as { position?: number[] }).position).toEqual([4.5, 0.18, -30]);
+    app.dispose?.();
   });
 });

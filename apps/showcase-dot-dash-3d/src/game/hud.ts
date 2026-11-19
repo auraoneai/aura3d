@@ -176,7 +176,7 @@ function syncTopBar(): void {
   $("dd-btn-dash").classList.toggle("on", st.profile.dashEnabled);
   $("dd-btn-dash").textContent = st.profile.dashEnabled ? "Dash ON" : "Dash OFF";
   $("dd-btn-cam").classList.toggle("on", st.camera === "overhead");
-  $("dd-btn-cam").textContent = st.camera === "overhead" ? "Overhead" : "Tilt Cam";
+  $("dd-btn-cam").textContent = st.camera === "overhead" ? "Arcade View" : "Tilt Cam";
   for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-venue]"))) {
     b.classList.toggle("active", b.dataset.venue === st.mazeId);
   }

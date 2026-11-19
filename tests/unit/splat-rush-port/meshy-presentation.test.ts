@@ -4,11 +4,13 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { scene } from "@aura3d/engine";
 import { createProductionRuntimeEnvironment } from "../../../packages/engine/src/agent-api/compiler/environment";
-import { BACKDROP_ENVIRONMENT_INTENSITY, PIECES, addBackdrop, updateBackdrop } from "../../../examples/splat-rush-port/backdrop";
+import { BACKDROP_ENVIRONMENT_INTENSITY, ISLAND_KEY, PIECES, addBackdrop, pieceModel, updateBackdrop } from "../../../examples/splat-rush-port/backdrop";
+import { IDOL_DIMS, type IdolKey } from "../../../examples/splat-rush-port/idol";
 import { LOOKS } from "../../../examples/splat-rush-port/look";
 import { addPickups, haloId, pickupId, pickupNodeIds, updatePickups } from "../../../examples/splat-rush-port/pickups";
 import { MODELS } from "../../../examples/splat-rush-port/models";
-import type { Powerup } from "../../../examples/splat-rush-port/sim";
+import { SplatRushSim, type Powerup } from "../../../examples/splat-rush-port/sim";
+import { buildWorld } from "../../../examples/splat-rush-port/world";
 
 interface Call { visible?: boolean; position?: [number, number, number]; scale?: number }
 function recorder() {
@@ -27,7 +29,7 @@ function recorder() {
   return { calls, node };
 }
 
-describe("Meshy presentation layer (backdrop + pickups)", () => {
+describe("Idol presentation layer (backdrop + pickups)", () => {
   it("backdrop layout is deterministic with unique ids on both sides of the road", () => {
     expect(new Set(PIECES.map((p) => p.id)).size).toBe(PIECES.length);
     expect(PIECES.some((p) => p.side === -1) && PIECES.some((p) => p.side === 1)).toBe(true);
@@ -94,7 +96,7 @@ describe("Meshy presentation layer (backdrop + pickups)", () => {
     }
   });
 
-  it("mounts zero static GLB model nodes and builds normalized multi-material procedural studio backdrop and pickup groups", () => {
+  it("mounts the Idol vinyl-toy GLBs as grouped typed models normalised to each piece size", () => {
     const collectAll = (nodes: readonly Record<string, unknown>[]): Record<string, unknown>[] => {
       const out: Record<string, unknown>[] = [];
       const visit = (n: Record<string, unknown>): void => {
@@ -106,35 +108,15 @@ describe("Meshy presentation layer (backdrop + pickups)", () => {
       for (const n of nodes) visit(n);
       return out;
     };
-
-    const maxSpanOfGroup = (groupNode: Record<string, unknown>): number => {
-      const prims = collectAll([groupNode]).filter((n) => n.kind === "primitive");
-      expect(prims.length).toBeGreaterThanOrEqual(2);
-      let minX = Infinity, minY = Infinity, minZ = Infinity;
-      let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
-      let allFinite = true;
-      const seen = new Set<ArrayLike<number>>();
-      for (const p of prims) {
-        const geom = p.geometry as { positions: ArrayLike<number> };
-        const pos = geom.positions;
-        if (seen.has(pos)) continue;
-        seen.add(pos);
-        for (let i = 0; i < pos.length; i += 3) {
-          const x = Number(pos[i]), y = Number(pos[i + 1]), z = Number(pos[i + 2]);
-          if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
-            allFinite = false;
-            break;
-          }
-          if (x < minX) minX = x;
-          if (y < minY) minY = y;
-          if (z < minZ) minZ = z;
-          if (x > maxX) maxX = x;
-          if (y > maxY) maxY = y;
-          if (z > maxZ) maxZ = z;
-        }
-      }
-      expect(allFinite).toBe(true);
-      return Math.max(maxX - minX, maxY - minY, maxZ - minZ);
+    /** Rendered max dimension of a group's single Idol model child (GLB dims x child scale). */
+    const modelSpan = (groupNode: Record<string, unknown>): { key: string; span: number } => {
+      const models = collectAll([groupNode]).filter((n) => n.kind === "model");
+      expect(models).toHaveLength(1);
+      const m = models[0] as { asset?: { id?: string }; scale?: number | readonly number[]; scaleMode?: string };
+      expect(m.scaleMode).toBe("world");
+      const key = String(m.asset?.id ?? "") as IdolKey;
+      const s = typeof m.scale === "number" ? m.scale : Number((m.scale as readonly number[] | undefined)?.[0] ?? 1);
+      return { key, span: Math.max(...IDOL_DIMS[key]) * s };
     };
 
     for (const look of [LOOKS.original, LOOKS.carnival]) {
@@ -142,13 +124,13 @@ describe("Meshy presentation layer (backdrop + pickups)", () => {
       addBackdrop(builder, look);
       addPickups(builder);
       const roots = builder.toJSON().nodes as unknown as Record<string, unknown>[];
-      const all = collectAll(roots);
-      expect(all.filter((n) => n.kind === "model")).toHaveLength(0);
 
       for (const p of PIECES) {
         const node = roots.find((n) => (n.runtime as { id?: string } | undefined)?.id === p.id)!;
         expect(node?.kind).toBe("group");
-        expect(maxSpanOfGroup(node)).toBeCloseTo(p.size, 3);
+        const { key, span } = modelSpan(node);
+        expect(key).toBe(ISLAND_KEY[pieceModel(look, p)]);
+        expect(span).toBeCloseTo(p.size, 3);
       }
 
       const declaredIds = new Set(roots.map((n) => (n.runtime as { id?: string } | undefined)?.id).filter(Boolean));
@@ -157,16 +139,24 @@ describe("Meshy presentation layer (backdrop + pickups)", () => {
         if (!id.startsWith("pickup-halo-")) {
           const node = roots.find((n) => (n.runtime as { id?: string } | undefined)?.id === id)!;
           expect(node?.kind).toBe("group");
-          expect(maxSpanOfGroup(node)).toBeCloseTo(2.1, 3);
+          expect(modelSpan(node).span).toBeCloseTo(2.1, 3);
         }
       }
-
-      const glassPrims = all.filter((n) => n.kind === "primitive" && String(n.name ?? "").endsWith("-glass"));
-      expect(glassPrims.length).toBeGreaterThan(0);
-      for (const gp of glassPrims) {
-        expect(gp.castShadow).toBe(false);
-        expect(gp.receiveShadow).toBe(false);
-      }
     }
+  });
+  it("every Idol model node in the full carnival world (instanced arches/sweepers included) renders at world scale", () => {
+    const g = globalThis as Record<string, unknown>;
+    const had = "document" in g;
+    if (!had) g.document = { createElement: () => ({ width: 0, height: 0, getContext: () => new Proxy({}, { get: () => () => undefined }) }) };
+    try {
+      const nodes = buildWorld({ sim: new SplatRushSim(7), aspect: 16 / 9, look: LOOKS.carnival }).scene.toJSON().nodes as unknown as Record<string, unknown>[];
+      const all: Record<string, unknown>[] = [];
+      const visit = (n: Record<string, unknown>): void => { all.push(n); for (const c of (n.children as Record<string, unknown>[] | undefined) ?? []) visit(c); };
+      nodes.forEach(visit);
+      const models = all.filter((n) => n.kind === "model");
+      const keys = new Set(models.map((n) => String((n.asset as { id?: string } | undefined)?.id)));
+      for (const k of ["splatRunnerRig", "splatFinishArch", "splatSweeperBot", "splatIslandTree", "splatPickupSwitch"]) expect(keys.has(k), k).toBe(true);
+      for (const m of models) expect((m as { scaleMode?: string }).scaleMode, String(m.name)).toBe("world");
+    } finally { if (!had) delete g.document; }
   });
 });

@@ -1,0 +1,63 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-slam",
+  "key": "slamArcadeFacade",
+  "generatedAt": "2026-11-18T21:20:54.330Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f088-b92f-7aa1-8501-12ba1f5d6b53",
+      "prompt": "A long straight stadium outer facade wall section in warm pale travertine stone: a classical arcade of five tall round arches in a row separated by six fluted round columns, a flat stone cornice along the top, seen from the front. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f089-db91-7f50-91bf-5544f26f6763",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 832758,
+        "num_faces": 1665532,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A long straight stadium outer facade wall section in warm pale travertine stone: a classical arcade of five tall round arches in a row separated by six fluted round columns, a flat stone cornice along the top, seen from the front. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -135,
+    "scale": 18.881,
+    "size": [
+      24.4,
+      12.605,
+      4.134
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/aura-slam/assets/idol/slamArcadeFacade.glb",
+  "sizeBytes": 2750336,
+  "preview": "artifacts/idol/aura-slam/slamArcadeFacade/views.png",
+  "usd": 0.37,
+  "manualNormalize": {
+    "role": "background",
+    "front": "+x",
+    "yawDeg": -45,
+    "size": {
+      "width": 24.4
+    },
+    "tex": 1024
+  }
+}

@@ -31,7 +31,9 @@ are:
 
 There is no `episode:plan`, `episode:preview`, `episode:render`,
 `episode:package`, `episode:review`, or `episode:verify` script on this
-template.
+template. `aura3d animation plan|preview|render|package|review|verify` only
+forward to those scripts, so here they exit 1 and name the missing script; use
+`aura3d animation scene <verb>` (the `scene` script) instead.
 
 ## 2. Author a working document
 
@@ -65,7 +67,8 @@ your own rigged GLB:
 
 ```bash
 npx @aura3d/cli@latest assets add ./assets/hero.glb --name hero
-npx @aura3d/cli@latest assets validate-animation --require-license
+npx @aura3d/cli@latest assets validate --asset hero --require-license
+npx @aura3d/cli@latest assets validate-animation --asset hero --require-rig
 ```
 
 Resolve/search profiles that exist on `@aura3d/cli` are

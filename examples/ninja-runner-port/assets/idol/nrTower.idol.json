@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrTower",
+  "generatedAt": "2026-11-18T22:37:33.303Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/nrTower/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 36,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2643550,
+        "num_faces": 5291656,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A three-storey feudal-era watchtower on a sloped dry-stone base, square cream plaster walls with dark timber framing and small barred windows, an open lookout gallery with a wooden railing on top, curved grey clay tiled eaves on every level and a hipped tiled roof. Photograph of a real, hand-built painted wood and clay architectural miniature in Japanese woodblock-print colours: weathered dark cedar timber, real fired grey clay roof tiles, cream lime plaster, persimmon-vermilion painted trim, fine ink-line edging, soft warm golden-hour light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.431,
+    "size": [
+      1.099,
+      1.9,
+      1.389
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrTower.glb",
+  "sizeBytes": 4703832,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrTower/views.png",
+  "usd": 0.2
+}

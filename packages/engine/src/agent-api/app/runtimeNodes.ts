@@ -382,16 +382,32 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
   // read because handles are collected before `configure` delivers the flags
   // and because `add`/`reset` create handles continuously. Flag-off handles
   // keep the pre-lane shape — the member is simply absent.
+  const applessMembers = new WeakMap<AuraRuntimeNodeHandle, Map<string, unknown>>();
   const applyHandleExtensions = (handle: AuraRuntimeNodeHandle): AuraRuntimeNodeHandle => {
+    const target = handle as unknown as Record<string, unknown>;
+    // createAuraApp's first mount reads handles synchronously (frame pivot
+    // checks) before `configure` delivers the app. A member created then is
+    // bound to no app (`handle.part` resolved actors in the ownerless context
+    // and answered undefined for every part), so recreate it once the app is known.
+    const appless = app === undefined ? undefined : applessMembers.get(handle);
+    if (appless) {
+      applessMembers.delete(handle);
+      for (const [member, value] of appless) if (target[member] === value) delete target[member];
+    }
     for (const ext of nodeHandleExtensionsAll()) {
-      const target = handle as unknown as Record<string, unknown>;
       if (target[ext.member] !== undefined) continue;
       if (!ext.appliesTo.includes(handle.kind as keyof AuraNodeKindMap)) continue;
       if (!flags.on(ext.flag)) continue;
       // `app` is populated by `configure` (createAuraApp passes the live app);
       // members that tolerate an absent app still attach, matching the
       // pre-existing `create(handle, app?)` api signatures.
-      target[ext.member] = ext.create(handle, app as AuraApp);
+      const value = ext.create(handle, app as AuraApp);
+      target[ext.member] = value;
+      if (app === undefined) {
+        let members = applessMembers.get(handle);
+        if (!members) applessMembers.set(handle, members = new Map());
+        members.set(ext.member, value);
+      }
     }
     return handle;
   };
@@ -1071,9 +1087,28 @@ function assertNoGeneratedInstanceLightMutation(handle: AuraRuntimeNodeHandle): 
 function assertMutableInstanceBuffer(handle: AuraRuntimeNodeHandle): void {
   assertNoGeneratedInstanceLightMutation(handle);
   const node = runtimeParentedNodes.get(handle)?.localNode ?? parityL7NodeSpecs.get(handle);
-  if (node?.kind === "model" && (node as { readonly placements?: unknown }).placements !== undefined) {
+  if (node?.kind === "model" && (node as { readonly placements?: unknown }).placements !== undefined && !isWindOnlyInstanceBatch(node)) {
     throw new Error("INSTANCE_SCATTER_RUNTIME_UNSUPPORTED: packed placements cannot follow live instance changes; rebuild the batch.");
   }
+}
+
+/**
+ * `instances.model({ wind })` stamps the PRD-10 placements block only because `wind` is a world option, but the wind
+ * itself (GU47 E-G `instanceWind`) deforms the ordinary instance draw from its live instance matrices; a model node's
+ * placements are never promoted to a scatter node. Such a batch is as mutable as any other (tree clearance hides
+ * trees through `setInstances`). Batches with any other world option (static, chunkSize, shadowLod, impostor) stay packed.
+ */
+function isWindOnlyInstanceBatch(node: object): boolean {
+  const spec = node as {
+    readonly placements?: { readonly wind?: boolean; readonly impostor?: unknown; readonly shadowLod?: unknown; readonly chunkSize?: unknown };
+    readonly instanceWind?: unknown;
+    readonly unappliedOptions?: readonly string[];
+  };
+  const placements = spec.placements;
+  if (!placements || placements.wind !== true || spec.instanceWind === undefined) return false;
+  if (placements.impostor !== undefined || placements.shadowLod !== undefined || placements.chunkSize !== undefined) return false;
+  // `static` is not packed into the block; the builder reports it as an unapplied option.
+  return !(spec.unappliedOptions ?? []).some((note) => note.includes('option "static"'));
 }
 
 /** Resolve the live group owning a tagged LOD subtree without sharing state across mounts. */

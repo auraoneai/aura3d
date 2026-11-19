@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swRoadsterBodyR",
+  "generatedAt": "2026-11-18T23:15:48.883Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/saltwind-highway/swRoadsterBodyR/ref-src.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0f1-fad1-7fd1-9516-99bbfa7db9e1",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 61,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1416544,
+        "num_faces": 2833216,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single fictional classic 1960s open-top two-seat grand-touring roadster car body shown WITHOUT ANY WHEELS OR TYRES fitted, the four empty rounded wheel arches show only dark hollow wheel wells, long sculpted bonnet with a power bulge, voluptuous pontoon fenders, oval chrome slatted front grille, twin round headlamps under glass covers, deep sapphire-teal metallic clearcoat paint with two ivory-white racing stripes over the bonnet and rear deck, raked chrome-framed low windscreen, open cockpit with quilted tan leather bucket seats and a wooden steering wheel, a driver seated at the wheel wearing a cream knit polo shirt, brown leather driving gloves and dark sunglasses, short dark hair, twin chrome roll hoops, chrome side exhaust pipes, four round red tail lamps set into a smooth painted rear panel with no number plate. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+  "role": "hero",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.447,
+    "size": [
+      4.422,
+      1.509,
+      4.44
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swRoadsterBodyR.glb",
+  "sizeBytes": 7174640,
+  "preview": "artifacts/idol/saltwind-highway/swRoadsterBodyR/views.png",
+  "usd": 0.2
+}

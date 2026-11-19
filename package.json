@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/engine",
-  "version": "5.5.6",
+  "version": "5.6.0",
   "packageManager": "pnpm@11.1.3",
   "engines": {
     "node": ">=22.12.0"
@@ -199,8 +199,6 @@
   },
   "scripts": {
     "arch:check": "tsx --tsconfig tsconfig.base.json tools/arch-gates/index.ts",
-    "assets:provenance": "pnpm assets:provenance:raw && tsx --tsconfig tsconfig.base.json tools/aura3d105-release-readiness/index.ts --area assets --out tests/reports/aura3d105/assets-provenance-gate.json",
-    "assets:provenance:raw": "tsx --tsconfig tsconfig.base.json tools/assets-provenance-evidence/index.ts --out tests/reports/assets/provenance.json",
     "audit:external-parity-broad-parity": "tsx --tsconfig tsconfig.base.json tools/external-parity-broad-parity-readiness/index.ts",
     "audit:external-parity-completion": "tsx --tsconfig tsconfig.base.json tools/external-parity-completion-audit/index.ts",
     "audit:external-parity-external-evidence-readiness": "tsx --tsconfig tsconfig.base.json tools/external-parity-external-evidence-readiness/index.ts",
@@ -238,6 +236,7 @@
     "check:public-api": "pnpm build && pnpm exec tsx --tsconfig tsconfig.base.json tools/public-api-contract/index.ts",
     "check:public-surface-diff": "pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/index.ts",
     "check:release": ": \"${A3D_RELEASE_PLAN:?A3D_RELEASE_PLAN must identify the candidate plan}\" && : \"${NATIVE_CONSUMER_SOURCE_REPORT:?NATIVE_CONSUMER_SOURCE_REPORT must identify its source report}\" && pnpm typecheck && pnpm lint && pnpm --dir marketing check:version && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:public-surface-diff && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:asset-screening && pnpm check:agent-docs && pnpm check:templates && pnpm check:template-source-audit && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:claim-lineage && pnpm check:package-graph && pnpm check:production-path-benchmark && pnpm check:marketing-truth && pnpm check:tarballs && pnpm check:clean-install --phase verify --source-report \"$NATIVE_CONSUMER_SOURCE_REPORT\" --candidate-plan \"$A3D_RELEASE_PLAN\" && pnpm check:installed-tree-shaking --source-report \"$NATIVE_CONSUMER_SOURCE_REPORT\" --candidate-plan \"$A3D_RELEASE_PLAN\" && pnpm check:game-runtime && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:effects-vfx && pnpm check:no-three-runtime",
+    "check:cli-packed": "node tools/cli-packed-smoke/index.mjs --report tests/reports/cli-packed-smoke.json",
     "check:skills": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-skills/check.ts",
     "skills:sync": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-skills/sync.ts",
     "check:tarballs": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-tarball-audit/index.ts",

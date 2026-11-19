@@ -1,0 +1,61 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzWarden",
+  "generatedAt": "2026-11-18T23:44:09.562Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08d-1077-7351-8d3d-4fbffd633200",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0fe-1b6e-7f61-a2db-73e2f49c7b90",
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 651506,
+        "num_faces": 1303008,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 19,
+        "animations": [
+          "idle"
+        ]
+      },
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Original towering scarred bunker commander, huge and broad: long charcoal grey military greatcoat with crimson lapels and crimson epaulettes, dark slate armored chest cuirass over the coat, black leather cross-belt and officer belt, tall polished black jackboots, crimson peaked officer cap with a plain brass badge, black eyepatch, short dark stubble, black leather gloves, compact armored backpack with two small antennas, empty hands",
+  "role": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 1.001 m, 1 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000        3.35x         200      0\n  bind-pose mismatch (SKIN_BIND_MISMATCH): bone_9 46% off-axis, bone_0 85% off-axis, bone_5 58% off-axis\n  ERROR material0 (mesh 0 prim 0): 200 of 30000 triangles stretch past 1.6x their rest edges (worst 3.35x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n  warn  3 bone(s) are not inside the mesh they move: bone_9 (vertices 0.037 m off a 0.079 m bone), bone_0 (vertices 0.079 m off a 0.094 m bone), bone_5 (vertices 0.043 m off a 0.073 m bone) (SKIN_BIND_MISMATCH). The mesh was modelled in a different pose than the skeleton assumes (typically mid-stride), so every clip rotates the limbs about joints off the limb. Rebuild the limbs in the skeleton's pose (assets repair-skin --rebuild-limbs) or re-rig.",
+    "repairLog": "Bind-pose mismatch on bone_9, bone_0, bone_5: the mesh was modelled in a different pose than the skeleton assumes. Weight smoothing and triangle cuts only mask it. For a recognised humanoid run repair-skin --rebuild-limbs (rebuilds the legs in the skeleton's pose); otherwise rebuild the limbs in your DCC tool or regenerate and re-rig the model in the pose the skeleton assumes.\nStill failing after smooth-bridges: SKIN_STRETCH, SKIN_BIND_MISMATCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand.\n"
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1,
+    "sceneScale": 2.997,
+    "size": [
+      0.987,
+      1.001,
+      0.267
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzWarden.glb",
+  "sizeBytes": 2462212,
+  "preview": "artifacts/idol/bunker-zero/bzWarden/views.png",
+  "usd": 0.42,
+  "admitRole": "character",
+  "renormalizedAt": "2026-11-18T23:48:14.158Z"
+}

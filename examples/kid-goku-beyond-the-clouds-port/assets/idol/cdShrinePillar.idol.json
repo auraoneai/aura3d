@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cumulus-dash",
+  "key": "cdShrinePillar",
+  "generatedAt": "2026-11-18T23:11:04.559Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/cumulus-dash/cdShrinePillar/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 621348,
+        "num_faces": 1242700,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "One single tall freestanding vermilion lacquered round wooden shrine pillar on a black lacquered stone base, topped by a small curved pagoda roof cap of dark glazed tiles with upturned corners and a brass finial, with a cast bronze temple bell hanging from a short wooden bracket under the roof cap; a tall slender vertical object. Photoreal storm-washed mountain realism: real physical materials as if photographed on a high sandstone ridge just after a squall, crisp physically based surface detail and gentle wear, saturated rain-washed colours, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 7.654,
+    "size": [
+      3.398,
+      7.94,
+      3.246
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/kid-goku-beyond-the-clouds-port/assets/idol/cdShrinePillar.glb",
+  "sizeBytes": 2727180,
+  "preview": "artifacts/idol/cumulus-dash/cdShrinePillar/views.png",
+  "usd": 0.2
+}

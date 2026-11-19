@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { CFG } from "../../../examples/heatsink-port/config";
-import { Operation, STRIKE, segmentSphere, segmentVerticalCapsule } from "../../../examples/heatsink-port/operation";
+import { Operation, STRIKE, craftTouchesTarget, segmentSphere, segmentVerticalCapsule } from "../../../examples/heatsink-port/operation";
 import { FRAME, Race } from "../../../examples/heatsink-port/race";
 import { Track } from "../../../examples/heatsink-port/track";
 import { IDLE, type Input } from "../../../examples/heatsink-port/vehicle";
@@ -14,9 +14,11 @@ const FIRE: Input = { ...IDLE, fire: true };
 /*
  * Pinned strike outcome of the reference movement with the gun held. Re-pinned proportionally after smoothing
  * vehicle throttle/boost envelopes, afterburner hysteresis, and C1 Catmull-Rom hover damping (previous unsmoothed
- * pin was score 6350, kills 6, barrels 9, shots 872, hits 38, bestChain 7, hash 914c9b7d).
+ * pin was score 6350, kills 6, barrels 9, shots 872, hits 38, bestChain 7, hash 914c9b7d). Re-pinned again for the
+ * craft-vs-target collider (Nov 2026): the reference movement flies through three live targets, which now shatter as
+ * rams (was score 3450, kills 6, hits 27, bestChain 6, hash 21f89ac4). The movement itself is unchanged (below).
  */
-const SCORE_PIN = 3450, KILLS_PIN = 6, BARRELS_PIN = 4, SHOTS_PIN = 878, HITS_PIN = 27, CHAIN_PIN = 6, HASH_PIN = "21f89ac4";
+const SCORE_PIN = 3300, KILLS_PIN = 9, BARRELS_PIN = 4, SHOTS_PIN = 878, HITS_PIN = 26, CHAIN_PIN = 5, HASH_PIN = "a947ca9a";
 
 /** put the player `back` metres behind `target` on its lane, heading straight down the track, in the race state */
 function aim(race: Race, target: { s: number; x: number; world: { y: number } }, back = 30): void {
@@ -116,6 +118,58 @@ describe("strike replay (reference movement, gun held down)", () => {
   it("does not earn a medal by holding the trigger alone", () => {
     const race = run();
     expect(race.ops.medalFor(race.ops.kills)).toBe("none");
+  });
+});
+
+describe("craft-vs-target collider (no flying through a live target)", () => {
+  it("a craft that flies into a live sentry shatters it: a ram kill at half value, chain broken, movement untouched", () => {
+    const race = new Race();
+    const t = race.ops.targets.find((x) => x.kind === "sentry")!;
+    aim(race, t, 4);
+    race.player.yW = t.world.y;
+    race.ops.chain = 3;
+    race.ops.chainT = 5;
+    const before = { s: race.player.s, x: race.player.x, v: race.player.v, shield: race.player.shield };
+    race.ops.advance(SUB, IDLE, race);
+    expect(t.alive).toBe(false);
+    expect(race.ops.kills).toBe(1);
+    expect(race.player.takedowns).toBe(1);
+    expect(race.ops.chain).toBe(0);
+    expect(race.ops.score).toBe(STRIKE.score.sentry * STRIKE.ramScoreFactor);
+    expect(race.ops.events.at(-1)).toMatchObject({ type: "ram", detail: t.id });
+    expect({ s: race.player.s, x: race.player.x, v: race.player.v, shield: race.player.shield }).toEqual(before);
+  });
+
+  it("misses a craft that passes beside, above, or well behind the target", () => {
+    const track = new Track();
+    const ops = new Operation(track);
+    const t = ops.targets.find((x) => x.kind === "heavy")!;
+    expect(craftTouchesTarget(track, t.s, t.x, t.world.y, t)).toBe(true);
+    expect(craftTouchesTarget(track, t.s, t.x + STRIKE.ram.heavy.across + CFG.vehicle.halfWidth, t.world.y, t)).toBe(false);
+    expect(craftTouchesTarget(track, t.s, t.x, t.world.y + STRIKE.ram.heavy.up + 0.1, t)).toBe(false);
+    expect(craftTouchesTarget(track, track.wrap(t.s - 20), t.x, t.world.y, t)).toBe(false);
+  });
+
+  it("the collider covers the target's visible wingspan (art/idolModels.ts fits)", async () => {
+    const { SENTRY_FIT, HEAVY_FIT } = await import("../../../examples/heatsink-port/art/idolModels");
+    expect(STRIKE.ram.sentry.across * 2).toBeGreaterThanOrEqual(SENTRY_FIT.span - 0.1);
+    expect(STRIKE.ram.heavy.across * 2).toBeGreaterThanOrEqual(HEAVY_FIT.span - 0.1);
+  });
+
+  it("over the whole reference race the craft never sits inside a live target's body (it shatters on contact)", () => {
+    const race = new Race();
+    let inside = 0;
+    let rams = 0;
+    for (const input of SCRIPT) {
+      race.frame(FRAME, input as Input);
+      const p = race.player;
+      if (race.state !== "race" || p.crashed) continue;
+      for (const t of race.ops.targets) if (t.alive && craftTouchesTarget(race.track, p.s, p.x, p.yW, t)) inside++;
+    }
+    rams = race.ops.events.filter((e) => e.type === "ram").length;
+    expect(inside).toBe(0);
+    /* the reference line does fly into targets (no gun held), so the collider is exercised, not vacuous */
+    expect(rams).toBeGreaterThan(0);
   });
 });
 

@@ -16,7 +16,7 @@
  *                                                                        # map back via map-stack.mjs
  *   node tools/quality-rebuild-capture/capture-games.mjs --skip-build    # reuse .build/ output
  *   node tools/quality-rebuild-capture/capture-games.mjs --local-build   # build + serve all selected games from source
- *   node tools/quality-rebuild-capture/capture-games.mjs --games showcase-bank-shot,aura-clash-showcase
+ *   node tools/quality-rebuild-capture/capture-games.mjs --games showcase-iron-crown,showcase-pips-big-leap
  *   node tools/quality-rebuild-capture/capture-games.mjs --validate      # schema-check games.json, no browser
  *
  * Output: <out>/<game>/<run>__<shot>.png, <out>/<game>/contact-sheet.png|html, <out>/report.json,
@@ -329,7 +329,6 @@ function startStaticServer() {
     // /aura-assets/ URLs whose files live in apps/<appDir>/public — mount every
     // selected game's public tree so those URLs resolve in local-build mode.
     ...selectedGames.map((g) => path.join(repoRoot, "apps", g.appDir, "public")),
-    path.join(repoRoot, "apps", "aura-clash-showcase", "public"),
     path.join(repoRoot, "examples", "neon-corridor-strike", "public"),
     path.join(repoRoot, "marketing", "public")
   ];

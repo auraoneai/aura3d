@@ -1,0 +1,46 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzArmor",
+  "generatedAt": "2026-11-18T23:40:26.309Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f099-6c99-7502-80af-180efc6c2376",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0e8-f05c-7881-90fc-0ee4d8f73b80",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1234076,
+        "num_faces": 2468252,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "subject": "Ballistic plate carrier vest standing upright on its own, coyote tan with armor plates, straps and magazine pouches",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.831,
+    "size": [
+      0.739,
+      0.83,
+      0.806
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzArmor.glb",
+  "sizeBytes": 2672800,
+  "preview": "artifacts/idol/bunker-zero/bzArmor/views.png",
+  "usd": 0.37
+}

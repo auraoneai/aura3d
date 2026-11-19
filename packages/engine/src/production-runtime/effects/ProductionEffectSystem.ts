@@ -749,6 +749,7 @@ export class ProductionEffectSystem {
     const scene = registry?.sceneWithRuntimeAdditions?.() ?? this.#app.scene;
     const fogNodes: EffectNodeLike[] = [], volumes: EffectNodeLike[] = [];
     let sky: object | null = null;
+    let skyCaptureEnvironment = true;
     if (this.#childrenContainAtmosphere(scene.nodes)) {
       const visit = (nodes: readonly EffectNodeLike[], parentVisible: boolean, transformedAncestor: boolean): void => {
         for (const node of nodes) {
@@ -771,7 +772,10 @@ export class ProductionEffectSystem {
           }
           if (visible && node.kind === "sky") {
             const spec = (node as { spec?: unknown }).spec;
-            if (spec && typeof spec === "object") sky = spec;
+            if (spec && typeof spec === "object") {
+              sky = spec;
+              skyCaptureEnvironment = (node as { captureEnvironment?: boolean }).captureEnvironment !== false;
+            }
           }
           if (hasAtmoChildren && node.children) {
             const n = node as unknown as Record<string, unknown>;
@@ -784,7 +788,7 @@ export class ProductionEffectSystem {
     }
     this.#atmosphere.batchRenderUpdates(() => {
       if (sky !== this.sceneSky) {
-        if (sky) this.#setSceneSky(sky);
+        if (sky) this.#setSceneSky(sky, skyCaptureEnvironment);
         else if (this.sceneSky && this.#atmosphere.state().sky === this.sceneSky) this.#clearSceneSky();
         this.sceneSky = sky;
       }
@@ -917,9 +921,9 @@ export class ProductionEffectSystem {
   /** The sky spec the current scene's sky node put on LiveAtmosphere (null: the scene has none). */
   private sceneSky: object | null = null;
 
-  #setSceneSky(spec: object): void {
+  #setSceneSky(spec: object, captureEnvironment: boolean): void {
     this.#sceneSkyWrites++;
-    this.#atmosphere.setSky(spec as Parameters<LiveAtmosphere["setSky"]>[0]);
+    this.#atmosphere.setSky(spec as Parameters<LiveAtmosphere["setSky"]>[0], { captureEnvironment });
   }
 
   #clearSceneSky(): void {
@@ -936,7 +940,7 @@ export class ProductionEffectSystem {
       const spec = (node as { spec?: unknown }).spec;
       if (spec && typeof spec === "object") {
         found = spec;
-        this.#setSceneSky(spec);
+        this.#setSceneSky(spec, (node as { captureEnvironment?: boolean }).captureEnvironment !== false);
       }
     });
     // A sky that came from the previous scene's sky node leaves with it (setScene to a scene without one); a sky set

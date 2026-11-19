@@ -1,0 +1,48 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "craterline-gp",
+  "key": "cgDish",
+  "generatedAt": "2026-11-18T22:36:50.783Z",
+  "generator": "tools/idol/generate.mjs (Idol step resumed from the original queued request after the generator's 20 min poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A lunar deep-space communications dish antenna: a large white parabolic dish reflector on a tilting yoke, with a tripod feed horn at the focus, mounted on a dark gunmetal turntable pedestal and a stepped concrete-grey base with gold foil service boxes and cable conduits. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0c2-f0b2-7572-bcca-aa58e912e0f0",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1237010,
+        "num_faces": 2474296,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A lunar deep-space communications dish antenna: a large white parabolic dish reflector on a tilting yoke, with a tripod feed horn at the focus, mounted on a dark gunmetal turntable pedestal and a stepped concrete-grey base with gold foil service boxes and cable conduits. Photograph of a real hand-built studio scale model finished in thick matte gouache paint: visible soft brush strokes and chalky matte pigment over real sculpted material detail (panel seams, bolts, rubber, brushed metal, crinkled foil), warm soft studio lighting. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 9.007,
+    "size": [
+      7.993,
+      9.2,
+      7.85
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-strange-orbit-port/assets/idol/cgDish.glb",
+  "sizeBytes": 1956164,
+  "preview": "artifacts/idol/craterline-gp/cgDish/views.png",
+  "usd": 0.37,
+  "postProcess": [
+    "examples/strange-orbit-port/tools/shrink-normal-map.mjs 1024 (normal map PNG -> JPEG q92)"
+  ]
+}

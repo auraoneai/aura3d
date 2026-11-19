@@ -17,7 +17,7 @@
  * findings, and runs auditArtDirection — exits 1 on any violation.
  *
  * Usage:
- *   node scripts/check-art-direction.mjs --routes showcase-bank-shot[,…]
+ *   node scripts/check-art-direction.mjs --routes showcase-iron-crown[,…]
  *   node scripts/check-art-direction.mjs --apps-root <dir> --routes <name>
  */
 

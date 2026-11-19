@@ -14,12 +14,25 @@ import { VENUES, type VenueSpec } from "./content";
 import type { VenueId } from "./types";
 import {
   PITCH_HX, PITCH_HZ, GOAL_HALF_W, GOAL_H, GOAL_DEPTH, BOX_DEPTH, BOX_HALF_W,
-  PEN_X, CIRCLE_R, BALL_R, BALL_VIS_R, CAGE_GOAL_GAP
+  PEN_X, CIRCLE_R, BALL_R, BALL_VIS_R, CAGE_GOAL_GAP,
+  CAGE_INNER_X, CAGE_INNER_Z, CAGE_WALL_T, CAGE_WALL_H, CAGE_RAIL_H, CAGE_TOP
 } from "./dims";
 import { HYBRID_BLOB_OPACITY, KIT_FABRIC_RIM, athleteNodes } from "./rig";
-import { refereePatrol } from "./locomotion";
+import { refereeMetres, refereePatrol } from "./locomotion";
 import { HYBRID_LAYERS, MAIN_FLOOD_TOWER, ORIGINAL_LOOKS, VENUE_LOOKS, fcLookMode, type FcLookMode, type FcVenueLook } from "./look";
 import { scoreboardTextNodes } from "./scoreboard3d";
+import {
+  animateIdolBody,
+  animateIdolFan,
+  idolBodyScale,
+  idolBodiesEnabled,
+  idolBodyNode,
+  idolCraneNodes,
+  idolDugoutNodes,
+  idolKeyForFan,
+  idolMatchBallNode,
+  idolTrophyNode,
+} from "./idolBodies";
 import {
   FC_MAT,
   FOOTBALLER_CANONICAL_HEIGHT,
@@ -48,6 +61,7 @@ import {
   buildVenueBackdropNodes,
   buildWaverSupporterGeometry,
   poseArticulatedFootballer,
+  computeFootballerJointPose,
   poseArticulatedPitchFan
 } from "../art/proceduralModels";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
@@ -74,7 +88,22 @@ export interface FcSceneOptions {
   readonly engineGates?: Partial<FcEngineGates>;
   /** Look path (default: `fcLookMode`, the venue default or `?look=`). */
   readonly lookMode?: FcLookMode;
+  /** Idol GLB bodies and set pieces (default: on unless `?idol=off`, see `idolBodiesEnabled`). */
+  readonly idol?: boolean;
 }
+
+/** Technical-area dugouts (open side faces the pitch) and the behind-goal camera cranes. */
+const DUGOUTS = [
+  { pos: [-35.5, 0, -8] as [number, number, number], rotY: Math.PI / 2 },
+  { pos: [35.5, 0, -8] as [number, number, number], rotY: -Math.PI / 2 }
+];
+const CRANES = [
+  { pos: [-PITCH_HX - 5.2, 0, 7.8] as [number, number, number], yaw: Math.PI * 0.42 },
+  { pos: [PITCH_HX + 5.2, 0, -7.8] as [number, number, number], yaw: -Math.PI * 0.58 }
+];
+
+/** Idol switch for the scene being built (set by `buildFcScene`; the stadium builders read it). */
+let buildIdol = true;
 
 /** PRD D11: true when the venue renders the 4.6.2 look path (`?look=original` or the venue default). */
 export function usesOriginalLook(venue: VenueId, mode?: FcLookMode): boolean {
@@ -319,23 +348,27 @@ export const FLARE_TOWERS: readonly number[] = [MAIN_FLOOD_TOWER, 0];
  * so a flare also shows through a stand roof; edge fade 0.2). Three elements each (glow on the lamp head, two small
  * ghosts) in the venue's flood colour; day venues get none. Expected cost: 6 additive sprites on the sprite path.
  */
+/** lamp-head flare glow size (px): small enough never to read as a white disc over play */
+export const FLARE_GLOW_PX = 96;
+const portraitViewport = (): boolean => typeof window !== "undefined" && window.innerWidth < window.innerHeight;
+
 export function floodFlareNodes(venue: VenueId, mode?: FcLookMode): any[] {
   const vl = VENUE_LOOKS[venue];
   const m = mode ?? fcLookMode(venue);
   if (m === "original") return [];
   if (m === "hybrid" ? !HYBRID_LAYERS[venue].flares : !vl.floodShadow) return [];
   const flareColor = m === "hybrid" ? VENUES[venue].floodColor : vl.floodColor;
+  // Owner QA (real GPU, 390x844): the 260 px glow and the two ghost discs are fixed pixel sizes, so on a phone they became
+  // big blown-out white discs drifting over the pitch (and show through the stand roofs: frustum occlusion only). Keep a
+  // small glow on the lamp head only, no ghosts, and none on portrait screens.
+  if (portraitViewport()) return [];
   return FLARE_TOWERS.map((i) => {
     const [x, z] = FLOOD_TOWERS[i]!;
     return lights.lensFlare({
       name: `fc-flood-flare-${i}`,
       position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94],
-      elements: [
-        { size: 260, distance: 0, color: flareColor },
-        { size: 46, distance: 0.55, color: flareColor },
-        { size: 90, distance: 0.9, color: flareColor }
-      ],
-      occlusion: "frustum", edgeFade: 0.2, intensity: i === MAIN_FLOOD_TOWER ? 0.9 : 0.6
+      elements: [{ size: FLARE_GLOW_PX, distance: 0, color: flareColor }],
+      occlusion: "frustum", edgeFade: 0.2, intensity: i === MAIN_FLOOD_TOWER ? 0.55 : 0.35
     });
   });
 }
@@ -343,9 +376,14 @@ export function floodFlareNodes(venue: VenueId, mode?: FcLookMode): any[] {
 /** Night venues: intensity of the three secondary tower spots relative to the main-stand flood. */
 export const SECONDARY_FLOOD_SCALE = 0.6;
 
+/** The four corner tower structures (procedural: the Idol tower read thinner than the batched lattice; Nov 2026). */
+function floodTowerNodes(floodColor: string): any[] {
+  return [buildFloodlightTowersBatchedNode(FLOOD_TOWERS, floodColor, FLOOD_HEAD_Y)];
+}
+
 /** The 4.6.2 floods: one batched 4-corner floodlight tower assembly, four spots and cones (hybrid: spots x `scale`). */
 function originalFloodNodes(v: VenueSpec, scale = 1, coneIntensity = 0.3, pools = 0, shadowTower = -1): any[] {
-  const nodes: any[] = [buildFloodlightTowersBatchedNode(FLOOD_TOWERS, v.floodColor, FLOOD_HEAD_Y)];
+  const nodes: any[] = floodTowerNodes(v.floodColor);
   FLOOD_TOWERS.forEach(([x, z], i) => {
     nodes.push(
       lights.spot({ name: `flood-spot-${i}`, position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94], target: [0, 0, 0], angle: 0.52, penumbra: 0.5, intensity: ORIGINAL_LOOKS[v.id].flood * scale, color: v.floodColor, distance: 90,
@@ -378,7 +416,7 @@ function floodNodes(v: VenueSpec, gates: FcEngineGates, mode?: FcLookMode): any[
     return originalFloodNodes(v, hl.floodScale, hl.coneIntensity, v.night ? hl.pools : 0, v.night && hybridSpotShadow() ? MAIN_FLOOD_TOWER : -1);
   }
   const vl = VENUE_LOOKS[v.id];
-  const nodes: any[] = [buildFloodlightTowersBatchedNode(FLOOD_TOWERS, vl.floodColor, FLOOD_HEAD_Y)];
+  const nodes: any[] = floodTowerNodes(vl.floodColor);
   FLOOD_TOWERS.forEach(([x, z], i) => {
     if (vl.cones > 0) {
       nodes.push(
@@ -832,10 +870,12 @@ const CAGE_GAP_HALF = CAGE_GOAL_GAP;
 export const GOAL_NET_GLB_MAX = 1.897;
 const CAGE_TAGS = ["w-n", "w-s", "e-n", "e-s", "n", "s"] as const;
 
+/** End hoardings stand this far behind the back net, so no board cuts through the goal (back net at PITCH_HX + GOAL_DEPTH). */
+export const HOARDING_END_X = PITCH_HX + GOAL_DEPTH + 0.6;
 /** Sponsor hoarding ring transforms (FC47-PF1 batch). */
 export function hoardingTransforms(): { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] {
   const hz = PITCH_HZ + 2.4;
-  const hx = PITCH_HX + 2.4;
+  const hx = HOARDING_END_X;
   return ([
     [0, -hz, hx * 2, 0], [0, hz, hx * 2, 0],
     [-hx, 0, hz * 2, Math.PI / 2], [hx, 0, hz * 2, Math.PI / 2]
@@ -885,9 +925,11 @@ export const PITCH_FANS: readonly { readonly x: number; readonly yaw: number; re
 export const PITCH_FAN_Z = -(PITCH_HZ + 3.0);
 /** Fitted fan height: between the capsule crowd and the 2.22 m athletes, so the row reads as people at the rail. */
 export const PITCH_FAN_HEIGHT = 2.0;
-export function pitchFanNodes(): any[] {
+export function pitchFanNodes(idol: boolean = buildIdol): any[] {
   return PITCH_FANS.map((f, i) =>
-    buildArticulatedPitchFanNode(i, f.model, PITCH_FAN_HEIGHT, gameRuntime)
+    (idol
+      ? idolBodyNode(`fc-fan-${i}`, idolKeyForFan(f.model), idolBodyScale(idolKeyForFan(f.model), PITCH_FAN_HEIGHT))
+      : buildArticulatedPitchFanNode(i, f.model, PITCH_FAN_HEIGHT, gameRuntime))
       .position(f.x, 0, PITCH_FAN_Z)
       .rotate(0, f.yaw, 0)
   );
@@ -944,25 +986,27 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
   // so the goal mouth stays open; sim.ts exempts the same gap from the cage bounce.
   const endLen = PITCH_HZ + 0.3 - CAGE_GAP_HALF;
   const endZ = CAGE_GAP_HALF + endLen / 2;
+  // inner faces at CAGE_INNER_X / CAGE_INNER_Z and rail top at CAGE_TOP: sim.ts bounces the ball off exactly these faces
+  const wx = CAGE_INNER_X + CAGE_WALL_T / 2, wz = CAGE_INNER_Z + CAGE_WALL_T / 2;
   const wallDefs: [string, number, number, number, number][] = [
-    ["w-n", -PITCH_HX - 0.35, -endZ, 0.3, endLen],
-    ["w-s", -PITCH_HX - 0.35, endZ, 0.3, endLen],
-    ["e-n", PITCH_HX + 0.35, -endZ, 0.3, endLen],
-    ["e-s", PITCH_HX + 0.35, endZ, 0.3, endLen],
-    ["n", 0, -PITCH_HZ - 0.35, PITCH_HX * 2 + 1, 0.3],
-    ["s", 0, PITCH_HZ + 0.35, PITCH_HX * 2 + 1, 0.3]
+    ["w-n", -wx, -endZ, CAGE_WALL_T, endLen],
+    ["w-s", -wx, endZ, CAGE_WALL_T, endLen],
+    ["e-n", wx, -endZ, CAGE_WALL_T, endLen],
+    ["e-s", wx, endZ, CAGE_WALL_T, endLen],
+    ["n", 0, -wz, PITCH_HX * 2 + 1, CAGE_WALL_T],
+    ["s", 0, wz, PITCH_HX * 2 + 1, CAGE_WALL_T]
   ];
   const cageScale: [number, number, number] = v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN];
   for (const [tag, x, z, w, l] of wallDefs) {
     nodes.push(
       withBuildVisible(
-        primitives.box({ name: `cage-${tag}`, size: [w, 1.5, l], material: wallMat, castShadow: false })
-          .position(x, 0.75, z).scale(cageScale).runtime(gameRuntime(`cage-${tag}`)),
+        primitives.box({ name: `cage-${tag}`, size: [w, CAGE_WALL_H, l], material: wallMat, castShadow: false })
+          .position(x, CAGE_WALL_H / 2, z).scale(cageScale).runtime(gameRuntime(`cage-${tag}`)),
         v.walled
       ),
       withBuildVisible(
-        primitives.box({ name: `cage-rail-${tag}`, size: [w, 0.08, l], material: railMat, castShadow: false })
-          .position(x, 1.55, z).scale(cageScale).runtime(gameRuntime(`cage-rail-${tag}`)),
+        primitives.box({ name: `cage-rail-${tag}`, size: [w, CAGE_RAIL_H, l], material: railMat, castShadow: false })
+          .position(x, CAGE_TOP - CAGE_RAIL_H / 2, z).scale(cageScale).runtime(gameRuntime(`cage-rail-${tag}`)),
         v.walled
       )
     );
@@ -1128,42 +1172,40 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
 
   /* ---- Technical-area dugouts, broadcast camera cranes, stadium bowl (integrated roof columns), tunnel, trophy & referee ---- */
   nodes.push(
-    buildTechnicalDugoutsBatchedNode([
-      { pos: [-35.5, 0, -8], rotY: Math.PI / 2 },
-      { pos: [35.5, 0, -8], rotY: -Math.PI / 2 }
-    ], v.accent),
+    ...(buildIdol ? idolDugoutNodes(DUGOUTS) : [buildTechnicalDugoutsBatchedNode(DUGOUTS, v.accent)]),
     buildBallTrolleyNode([34.5, 0, -14.5], v.accent),
-    buildBroadcastCranesBatchedNode([
-      { pos: [-PITCH_HX - 5.2, 0, 7.8], yaw: Math.PI * 0.42 },
-      { pos: [PITCH_HX + 5.2, 0, -7.8], yaw: -Math.PI * 0.58 }
-    ]),
+    ...(buildIdol ? idolCraneNodes(CRANES) : [buildBroadcastCranesBatchedNode(CRANES)]),
     ...(v.standCount > 0 ? [
       buildStadiumBowlUpperNode(v.standCount, v.accent).runtime(gameRuntime("fc-stadium-bowl"))
     ] : []),
     buildPlayerTunnelNode([PLAYER_TUNNEL_X, 0, -(PITCH_HZ + 1.9 + PLAYER_TUNNEL_DEPTH / 2)], v.accent),
-    buildArticulatedFootballerNode(
-      "fc-referee",
-      {
-        shirt: "#e6d02e",
-        shorts: "#15171c",
-        socks: "#15171c",
-        skin: "#b98462",
-        trim: "#15171c",
-        boots: "#161920",
-        targetHeight: REFEREE_TARGET_HEIGHT,
-        isReferee: true,
-        fabricRim: KIT_FABRIC_RIM
-      },
-      { rawRootName: true, runtimeFactory: gameRuntime }
-    ).position(0, 0, -(PITCH_HZ + 1.1)),
+    (buildIdol
+      ? idolBodyNode("fc-referee", "fcIdolReferee", idolBodyScale("fcIdolReferee", REFEREE_TARGET_HEIGHT))
+      : buildArticulatedFootballerNode(
+        "fc-referee",
+        {
+          shirt: "#e6d02e",
+          shorts: "#15171c",
+          socks: "#15171c",
+          skin: "#b98462",
+          trim: "#15171c",
+          boots: "#161920",
+          targetHeight: REFEREE_TARGET_HEIGHT,
+          isReferee: true,
+          fabricRim: KIT_FABRIC_RIM
+        },
+        { rawRootName: true, runtimeFactory: gameRuntime }
+      )).position(0, 0, -(PITCH_HZ + 1.1)),
     // FC-19: ceremonial trophy plinth + stepped granite/brass collar + sculpted silver championship cup (minY = 0 -> y = 0.9)
     primitives.box({ name: "fc-trophy-plinth", size: [1.3, 0.9, 1.3], castShadow: false, material: material.pbr({ color: "#1c232b", roughness: 0.45, metalness: 0.32 }) })
       .position(-PITCH_HX - 4.5, 0.45, -(PITCH_HZ + 3.5))
       .rotate(0, 0.8, 0),
     buildTrophyPlinthCollarNode([-PITCH_HX - 4.5, 0, -(PITCH_HZ + 3.5)], 0.8),
-    buildChampionshipTrophyNode([-PITCH_HX - 4.5, 0.9, -(PITCH_HZ + 3.5)], 0.8, v.accent),
+    buildIdol
+      ? idolTrophyNode([-PITCH_HX - 4.5, 0.9, -(PITCH_HZ + 3.5)], 0.8)
+      : buildChampionshipTrophyNode([-PITCH_HX - 4.5, 0.9, -(PITCH_HZ + 3.5)], 0.8, v.accent),
     // spare match ball, tucked behind the away dugout, resting tangent on the grass (`position[1] === 0`)
-    buildMatchBallNode("fc-spare-ball", [34.0, 0, -15.5], undefined, false),
+    buildIdol ? idolMatchBallNode("fc-spare-ball", [34.0, 0, -15.5], false) : buildMatchBallNode("fc-spare-ball", [34.0, 0, -15.5], undefined, false),
     // Bespoke multi-material architectural backdrop per venue (Munich ETFE, Glacier ski-jump/peaks, Kyoto kawara/pagoda, Lagos louvres/palms, Favela hillside/Corcovado, Uyuni cordillera)
     ...buildVenueBackdropNodes(v.id, v.accent)
   );
@@ -1185,7 +1227,7 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
 function ballNodes(hybrid = false): any[] {
   // Procedural thermally-bonded match ball centered at local `[0, BALL_VIS_R, 0]` (`minY = 0`).
   const nodes: any[] = [
-    buildMatchBallNode("fc-ball-mesh", [0, BALL_VIS_R, 0], "fc-ball-mesh", true)
+    (buildIdol ? idolMatchBallNode("fc-ball-mesh", [0, BALL_VIS_R, 0]) : buildMatchBallNode("fc-ball-mesh", [0, BALL_VIS_R, 0], "fc-ball-mesh", true))
       .runtime(gameRuntime("fc-ball-mesh")),
     primitives.cylinder({ name: "fc-ball-shadow", size: [BALL_VIS_R * 2.3, 0.01, BALL_VIS_R * 2.3], castShadow: false, material: material.pbr({ color: "#000000", opacity: 0.32, roughness: 1 }) })
       .runtime(gameRuntime("fc-ball-shadow")),
@@ -1257,6 +1299,7 @@ export const ATHLETE_IDS = [
 
 /** Full scene graph — the venue look first (per look-recipes), then world, atmosphere and post. */
 export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {}) {
+  buildIdol = opts.idol ?? idolBodiesEnabled();
   const v = VENUES[venue];
   const vl = VENUE_LOOKS[venue];
   const mode = opts.lookMode ?? fcLookMode(venue);
@@ -1291,7 +1334,7 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
     .addMany(ballNodes(hybrid));
   // phase 4 hybrid: the fitted key casts the players' shadows, so the blob discs fade to a soft contact darkening
   for (const id of ATHLETE_IDS) {
-    s.addMany(original ? athleteNodes(id) : athleteNodes(id, hybrid ? HYBRID_BLOB_OPACITY : undefined, false));
+    s.addMany(original ? athleteNodes(id, undefined, undefined, buildIdol) : athleteNodes(id, hybrid ? HYBRID_BLOB_OPACITY : undefined, false, buildIdol));
   }
   s.addMany(atmosphereNodes(venue, opts))
     // WP-04 hybrid: crisp contact shadows + SSAO grounding under boots, ball, goalposts and perimeter boards
@@ -1359,6 +1402,8 @@ export interface WorldHandles {
   nets: any[];
   dome: any;
   referee: any;
+  /** Idol bodies (referee, fans) are driven through setAnimationPose instead of joint nodes. */
+  idol: boolean;
   /** Articulated front-row fans (empty on venues without a bowl) and the clip each one is playing. */
   fans: any[];
   fanClips: string[];
@@ -1399,6 +1444,7 @@ export function resolveWorld(app: any): WorldHandles {
     nets: ["net-back--1", "net-roof--1", "net-n--1", "net-s--1", "net-back-1", "net-roof-1", "net-n-1", "net-s-1"].map((n) => tryReq(app, n)),
     dome: tryReq(app, "fc-dome"),
     referee: tryReq(app, "fc-referee"),
+    idol: idolBodiesEnabled(),
     fans: PITCH_FANS.map((_, i) => tryReq(app, `fc-fan-${i}`)).filter((n) => n !== null),
     fanClips: [],
     lookup,
@@ -1495,8 +1541,13 @@ export function tickWorld(
   // at walking pace, Walk_Loop phase driven by distance walked so the feet do not slide.
   const ref = refereePatrol(t, REFEREE_TARGET_HEIGHT / FOOTBALLER_CANONICAL_HEIGHT);
   h.referee?.setPosition(ref.x, 0, -(PITCH_HZ + 1.1)).setRotation(0, ref.yaw, 0).setScale([1, 1, 1]);
-  h.referee?.setAnimation?.({ clip: ref.clip, loop: true, duration: ref.duration, startTime: t - ref.phase, crossFade: false });
-  poseArticulatedFootballer(h.lookup, "fc-referee", { clip: ref.clip, phase: ref.phase, duration: ref.duration });
+  if (h.idol) {
+    animateIdolBody(h.referee, "fcIdolReferee", { clip: ref.clip, phase: ref.phase, duration: ref.duration, metres: refereeMetres(t), now: t, referee: true },
+      idolBodyScale("fcIdolReferee", REFEREE_TARGET_HEIGHT), t);
+  } else {
+    h.referee?.setAnimation?.({ clip: ref.clip, loop: true, duration: ref.duration, startTime: t - ref.phase, crossFade: false });
+    poseArticulatedFootballer(h.lookup, "fc-referee", { clip: ref.clip, phase: ref.phase, duration: ref.duration });
+  }
 
   if (typeof h.wavers?.setInstanceMatrices === "function") {
     h.wavers.setInstanceMatrices(fillWaverMatrices(t, cheer, waverMatrixScratch), WAVERS);
@@ -1506,6 +1557,10 @@ export function tickWorld(
   // Front-row articulated fans switch clip only on a change and pose their joints statelessly every frame
   for (let i = 0; i < (h.fans?.length ?? 0); i++) {
     const clip = pitchFanClip(i, cheer);
+    if (h.idol) {
+      animateIdolFan(h.fans[i], idolKeyForFan(PITCH_FANS[i]!.model), clip, t, i, idolBodyScale(idolKeyForFan(PITCH_FANS[i]!.model), PITCH_FAN_HEIGHT));
+      continue;
+    }
     poseArticulatedPitchFan(h.lookup, i, clip, t);
     if (h.fanClips[i] === clip) continue;
     h.fanClips[i] = clip;

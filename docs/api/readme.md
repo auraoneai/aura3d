@@ -48,6 +48,16 @@ Use these labels in API docs and examples:
 | [`racket-athlete-rig.md`](racket-athlete-rig.md) | Procedural racket-sport athlete: locomotion solver and limb posing. | `game.racketSports().athleteRig` |
 | [`cli-asset-tools.md`](cli-asset-tools.md) | `assets optimize`, `assets merge-clips`, isolated `assets import-meshy`, `meshy ledger`. | `@aura3d/cli` |
 
+## Topic pages added in 5.5
+
+| Page | Covers | Entry point |
+| --- | --- | --- |
+| [`sculpt.md`](sculpt.md) | Procedural sculpting kernel (5.5.6): mesh builders, SDF sculpting, limb chains, fairing, multi-material assembly. | `@aura3d/engine/sculpt` |
+| [`motion-camera-clear.md`](motion-camera-clear.md) | `computeCameraClearance` (5.5.6) options and result, plus the `game` clearance and texture-readiness helpers. | `@aura3d/engine`, `@aura3d/engine/game` |
+| [`qa-kit.md`](qa-kit.md) | 5.5.5 additions: run telemetry, virtual gamepads, offline audio checks, `createAuraTuneOverlay`. | `@aura3d/engine`, `@aura3d/engine/devtools` |
+| [`quality-governor.md`](quality-governor.md) | Runtime quality ladder and stepping rules (5.5.3). | `createAuraApp`, `@aura3d/rendering` |
+| [`humanoid-motion.md`](humanoid-motion.md) | Humanoid and SMPL motion import used by `aura3d animation import` (5.6.0). | `@aura3d/animation` |
+
 Canonical user commands:
 
 ```bash

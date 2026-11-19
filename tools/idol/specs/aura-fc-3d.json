@@ -1,0 +1,202 @@
+{
+  "game": "aura-fc-3d",
+  "outDir": "apps/showcase-aura-fc-3d/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "fcIdolHomeA",
+      "subject": "Realistic adult male professional soccer player, lean athletic build, deep brown skin, very short black hair, clean-shaven, wearing a deep brick-red short-sleeved soccer jersey with a subtle all-over tonal pinstripe weave front and back with a slim cream round collar and cream cuffs, plain cream soccer shorts, brick-red knee-high soccer socks over shin guards, black soccer cleats, bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 2.22
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 402
+    },
+    {
+      "key": "fcIdolHomeB",
+      "subject": "Realistic adult male professional soccer player, lean athletic build, fair skin, short tousled light brown hair, light stubble, wearing a plain deep brick-red short-sleeved soccer jersey with a slim cream round collar and cream cuffs, plain cream soccer shorts, brick-red knee-high soccer socks over shin guards, black soccer cleats, bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 2.22
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 311
+    },
+    {
+      "key": "fcIdolAwayA",
+      "subject": "Realistic adult male professional soccer player, lean athletic build, olive-tan skin, short dark curly hair, short trimmed dark beard, wearing a plain pale sky-blue short-sleeved soccer jersey with a slim navy round collar and navy cuffs, plain navy blue soccer shorts, off-white knee-high soccer socks over shin guards, black soccer cleats, bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 2.22
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 103
+    },
+    {
+      "key": "fcIdolAwayB",
+      "subject": "Realistic adult male professional soccer player, lean athletic build, medium brown skin, short black hair with a neat skin fade, clean-shaven, wearing a plain pale sky-blue short-sleeved soccer jersey with a slim navy round collar and navy cuffs, plain navy blue soccer shorts, off-white knee-high soccer socks over shin guards, black soccer cleats, bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 2.22
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 104
+    },
+    {
+      "key": "fcIdolKeeperHome",
+      "subject": "Realistic adult male professional soccer goalkeeper, tall athletic build, light skin, short dark brown hair, clean-shaven, wearing a mustard-yellow long-sleeved padded goalkeeper jersey with a subtle all-over tonal diagonal stripe pattern front and back, plain black soccer shorts, mustard-yellow knee-high socks, black soccer cleats, large black goalkeeper gloves with white wrist straps",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 2.22
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 403
+    },
+    {
+      "key": "fcIdolKeeperAway",
+      "subject": "Realistic adult male professional soccer goalkeeper, tall athletic build, dark brown skin, short black twisted hair, clean-shaven, wearing a plain violet-purple long-sleeved padded goalkeeper jersey, plain black soccer shorts, violet-purple knee-high socks, black soccer cleats, large black goalkeeper gloves with white wrist straps",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 2.22
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 106
+    },
+    {
+      "key": "fcIdolReferee",
+      "subject": "Realistic adult male soccer referee, fit athletic build, light olive skin, short greying dark hair, clean-shaven, wearing a plain black short-sleeved referee shirt with a black collar and a small chest pocket, plain black shorts, black knee-high socks, black soccer cleats, bare hands, a black wristwatch",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 2.22
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 107
+    },
+    {
+      "key": "fcIdolFanA",
+      "subject": "Realistic adult soccer supporter, ordinary build, light skin, short brown hair, short beard, wearing a deep brick-red zip-up track jacket, a cream knitted scarf, dark navy jeans, dark sneakers, bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 2.0
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 121
+    },
+    {
+      "key": "fcIdolFanB",
+      "subject": "Realistic adult soccer supporter, ordinary build, deep brown skin, short black hair, clean-shaven, wearing a dark navy hooded winter jacket, a bright lime-yellow knitted scarf, charcoal trousers, dark sneakers, bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 2.0
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 122
+    },
+    {
+      "key": "fcIdolFanC",
+      "subject": "Realistic adult soccer supporter, ordinary build, East Asian features, light skin, black hair in a short ponytail, a woman, wearing a pale sky-blue windbreaker jacket, a brick-red knitted scarf, dark navy jeans, white sneakers, bare hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 2.0
+      },
+      "rig": true,
+      "animations": [
+        "idle"
+      ],
+      "tex": 1024,
+      "seed": 123
+    },
+    {
+      "key": "fcIdolDugout",
+      "subject": "A modern soccer stadium team dugout shelter: a long low shelter with a solid opaque dark grey painted steel back wall and solid opaque side walls, a solid curved dark grey steel roof canopy, one row of six padded black bucket seats on a black rubber floor deck, fully open front with no glass and no transparent panels",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "width": 4.66
+      },
+      "tex": 1024,
+      "seed": 141
+    },
+    {
+      "key": "fcIdolCrane",
+      "subject": "A professional television camera jib crane on a heavy black steel tripod base with wheels: a long black telescopic boom arm with counterweights at the back end and a remote camera head with a large broadcast lens at the front end",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "height": 3.3
+      },
+      "tex": 1024,
+      "seed": 134,
+      "yawDeg": -180
+    },
+    {
+      "key": "fcIdolTrophy",
+      "subject": "A large polished sterling-silver championship cup trophy with two tall curved handles, a deep bowl, a slim waist, gold trim bands and a round black marble stepped base",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "height": 2.2
+      },
+      "tex": 1024,
+      "seed": 135
+    },
+    {
+      "key": "fcIdolBall",
+      "subject": "A single professional soccer ball: white leather-look thermally bonded panels with a few dark charcoal pentagon panels, subtle pebbled texture and slight scuffs",
+      "kind": "object",
+      "role": "prop",
+      "size": {
+        "maxDim": 0.42
+      },
+      "tex": 1024,
+      "seed": 136
+    }
+  ]
+}

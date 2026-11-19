@@ -4,6 +4,8 @@
  * main.ts calls these; tests/unit/aura-hoops/rules.test.ts pins them.
  */
 
+import { resolveObstacles, type Bounds, type Obstacle } from "./courtObstacles";
+
 export type TeamId = "home" | "away";
 export type DiffId = "playground" | "pro" | "legend";
 
@@ -95,7 +97,13 @@ export function clearTarget(x: number, z: number, rim: readonly [number, number,
   const uz = d > 0.2 ? dz / d : 1;
   const r = arcR + 1.4;
   // keep the clear point on the playable floor in front of the rim
-  return [rim[0] + ux * r * 0.85, Math.max(rim[2] + 1.5, rim[2] + uz * r)];
+  let tx = rim[0] + ux * r * 0.85, tz = Math.max(rim[2] + 1.5, rim[2] + uz * r);
+  // on a low wing the 0.85 pull-in left the point inside the arc (a CPU handler stood there forever): push it out past
+  // the clear line along the same bearing
+  const need = arcR + 0.8;
+  const td = Math.hypot(tx - rim[0], tz - rim[2]);
+  if (td < need) { tx = rim[0] + ((tx - rim[0]) / td) * need; tz = rim[2] + ((tz - rim[2]) / td) * need; }
+  return [tx, tz];
 }
 
 /* ------------------------------------------------------------------ *
@@ -191,11 +199,15 @@ export function teamKits(home: { readonly color: string; readonly alt: string },
 export interface Body { x: number; z: number; readonly pinned?: boolean }
 /** Minimum centre distance between two athletes (shoulder width). */
 export const MIN_SEPARATION = 0.55;
+/** An athlete's body radius against solid furniture (half the shoulder width). */
+export const BODY_RADIUS = MIN_SEPARATION / 2;
 /**
  * One pairwise push-apart pass: any two bodies closer than `min` move apart along their line of centres, half each (a pinned
- * body, for example a dunker in the air, does not move and the other takes the whole correction). Returns the pairs fixed.
+ * body, for example a dunker in the air, does not move and the other takes the whole correction). Then every body, pinned
+ * or not, is pushed out of the solid `obstacles` (the stanchion, scorer's table, ball cart: courtObstacles.ts), staying
+ * inside `bounds`; furniture never moves. Returns the pairs and bodies fixed.
  */
-export function separate(bodies: readonly Body[], min = MIN_SEPARATION): number {
+export function separate(bodies: readonly Body[], min = MIN_SEPARATION, obstacles: readonly Obstacle[] = [], bounds?: Bounds): number {
   let fixed = 0;
   for (let i = 0; i < bodies.length; i++) {
     for (let j = i + 1; j < bodies.length; j++) {
@@ -214,7 +226,54 @@ export function separate(bodies: readonly Body[], min = MIN_SEPARATION): number 
       fixed++;
     }
   }
+  if (obstacles.length > 0) {
+    for (const body of bodies) if (resolveObstacles(body, obstacles, min / 2, bounds)) fixed++;
+  }
   return fixed;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Passing lanes                                                      *
+ * ------------------------------------------------------------------ */
+
+/** Launch velocity of a chest pass from `from` to `to` (a flat line drive with a little loft; 0.22..0.7 s in the air). */
+export function passLaunch(from: readonly [number, number, number], to: readonly [number, number, number]): [number, number, number] {
+  const d = Math.hypot(from[0] - to[0], from[2] - to[2]);
+  const t = Math.max(0.22, Math.min(0.7, d / 11));
+  return [(to[0] - from[0]) / t, (to[1] - from[1]) / t + 0.9, (to[2] - from[2]) / t];
+}
+
+/** A pass is picked off when a defender's body is this close (floor plane) to the ball... */
+export const PASS_INTERCEPT_RADIUS = 0.45;
+/** ...while the ball is below this height (plus the defender's jump height): a lob over the top sails on. */
+export const PASS_INTERCEPT_MAX_Y = 2.1;
+
+export interface LaneBody { readonly x: number; readonly z: number; readonly y?: number }
+
+/**
+ * The defender (index into `defenders`) whose body the passed ball is touching, or -1. Nearest wins, ties go to the lower
+ * index, so the outcome is deterministic.
+ */
+export function passInterceptor(ball: { readonly x: number; readonly y: number; readonly z: number }, defenders: readonly LaneBody[], radius = PASS_INTERCEPT_RADIUS, maxY = PASS_INTERCEPT_MAX_Y): number {
+  let best = -1, bestD = radius;
+  for (let i = 0; i < defenders.length; i++) {
+    const d = defenders[i]!;
+    if (ball.y >= maxY + Math.max(0, d.y ?? 0)) continue;
+    const dist = Math.hypot(ball.x - d.x, ball.z - d.z);
+    if (dist < bestD) { bestD = dist; best = i; }
+  }
+  return best;
+}
+
+/** True when no defender stands within `margin` of the straight pass line from `from` to `to` (floor plane). */
+export function passLaneOpen(from: LaneBody, to: LaneBody, defenders: readonly LaneBody[], margin = PASS_INTERCEPT_RADIUS + 0.2): boolean {
+  const dx = to.x - from.x, dz = to.z - from.z;
+  const l2 = dx * dx + dz * dz || 1;
+  for (const d of defenders) {
+    const t = Math.max(0, Math.min(1, ((d.x - from.x) * dx + (d.z - from.z) * dz) / l2));
+    if (Math.hypot(from.x + dx * t - d.x, from.z + dz * t - d.z) < margin) return false;
+  }
+  return true;
 }
 
 /* ------------------------------------------------------------------ *

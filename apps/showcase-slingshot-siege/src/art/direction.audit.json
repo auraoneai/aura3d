@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-slingshot-siege/src/art/direction.ts",
-  "sourceSha256": "2ac00fb50e9a37d306ca1840706593947c3c8c4c54b73164ebf54d8ce51efbdf",
+  "sourceSha256": "d9bad522a1084bc435ed929f6a13fd783c5126e91c308c806df25dea70515b37",
   "id": "showcase-slingshot-siege",
   "genre": "golf-physics",
   "signatureEffect": "Tilt-shift miniature focus band that keeps the toy fort crisp over a real sea horizon, through six times of one seaside day.",
@@ -34,7 +34,526 @@
       "kind": "hdri",
       "background": true
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "siegeFarSeaStack",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeFarLighthouseIslet",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeFarQuarryCrane",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeFarGreenhouse",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeFarCurtainWall",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeFarCrystalCrater",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeStoneBridge",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegePineTree",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegePineTree",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegePineTree",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegePineTree",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegePineTree",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeSlingshotBase",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeSlingshotFork",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdPebbleBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdPebbleWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdPebbleWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdStoneBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdStoneWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdStoneWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdTripleBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdTripleWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdTripleWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdEmberBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdEmberWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdEmberWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeRaiderKing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeRaiderKnight",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeRaiderGrunt",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeRaiderKnight",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeRaiderGrunt",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeRaiderKnight",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeRaiderGrunt",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeRaiderKnight",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdPebbleBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdPebbleWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdPebbleWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdStoneBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdStoneWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdStoneWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdTripleBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdTripleWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdTripleWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdSquidBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdSquidWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdSquidWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdEmberBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdEmberWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdEmberWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdPebbleBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdPebbleWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdPebbleWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdStoneBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdStoneWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdStoneWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdTripleBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdTripleWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdTripleWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdSquidBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdSquidWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdSquidWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdEmberBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdEmberWing",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBirdEmberWingR",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeWatchtower",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeGatehouse",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeWindmillBody",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeWindmillSails",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeCrate",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeCrate",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeCrate",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBarrel",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeBarrel",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "siegeFlagBastion",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "materials": [
       {
         "node": "stage-ground",
@@ -61,88 +580,6 @@
         "practical": false
       },
       {
-        "node": "far-sea-stack material 0",
-        "practical": false
-      },
-      {
-        "name": "lighthouse crimson stripe",
-        "node": "far-sea-stack material 1",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "far-sea-stack material 2",
-        "practical": false
-      },
-      {
-        "name": "warm lantern window",
-        "node": "far-sea-stack material 3",
-        "emissiveIntensity": 1.35,
-        "practical": true
-      },
-      {
-        "node": "far-lighthouseIslet material 0",
-        "practical": false
-      },
-      {
-        "name": "lighthouse crimson stripe",
-        "node": "far-lighthouseIslet material 1",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "far-lighthouseIslet material 2",
-        "practical": false
-      },
-      {
-        "name": "warm lantern window",
-        "node": "far-lighthouseIslet material 3",
-        "emissiveIntensity": 1.35,
-        "practical": true
-      },
-      {
-        "name": "dressed quoin stone",
-        "node": "far-quarryCrane material 0",
-        "practical": false
-      },
-      {
-        "name": "seasoned siege oak",
-        "node": "far-quarryCrane material 2",
-        "practical": false
-      },
-      {
-        "name": "dressed quoin stone",
-        "node": "far-greenhouseFrame material 0",
-        "practical": false
-      },
-      {
-        "name": "warm lantern window",
-        "node": "far-greenhouseFrame material 3",
-        "emissiveIntensity": 1.35,
-        "practical": true
-      },
-      {
-        "name": "dressed quoin stone",
-        "node": "far-curtainWall material 0",
-        "practical": false
-      },
-      {
-        "name": "coastal slate tiles",
-        "node": "far-curtainWall material 1",
-        "practical": false
-      },
-      {
-        "name": "dressed quoin stone",
-        "node": "far-crystalCrater material 0",
-        "practical": false
-      },
-      {
-        "name": "warm lantern window",
-        "node": "far-crystalCrater material 3",
-        "emissiveIntensity": 1.35,
-        "practical": true
-      },
-      {
         "node": "launch-knoll-and-bridge material 0",
         "practical": false
       },
@@ -154,15 +591,6 @@
       {
         "name": "forged blackened iron",
         "node": "launch-knoll-and-bridge material 2",
-        "practical": false
-      },
-      {
-        "name": "seasoned siege oak",
-        "node": "prop-stone-bridge material 0",
-        "practical": false
-      },
-      {
-        "node": "prop-stone-bridge material 1",
         "practical": false
       },
       {
@@ -234,56 +662,9 @@
         "practical": false
       },
       {
-        "name": "monterey pine bark",
-        "node": "island-trees",
-        "practical": false
-      },
-      {
-        "name": "coastal pine canopy",
-        "node": "island-tree-canopies",
-        "practical": false
-      },
-      {
         "name": "horizon cumulus",
         "node": "horizon-cumulus-clouds",
         "emissiveIntensity": 0.09,
-        "practical": false
-      },
-      {
-        "node": "slingshot-base material 0",
-        "practical": false
-      },
-      {
-        "node": "slingshot-base material 1",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "slingshot-base material 2",
-        "practical": false
-      },
-      {
-        "name": "turned naval brass",
-        "node": "slingshot-base material 3",
-        "practical": false
-      },
-      {
-        "node": "sling-driftwood-yoke material 0",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "sling-driftwood-yoke material 1",
-        "practical": false
-      },
-      {
-        "name": "turned naval brass",
-        "node": "sling-driftwood-yoke material 2",
-        "practical": false
-      },
-      {
-        "name": "braided hemp line",
-        "node": "sling-driftwood-yoke material 3",
         "practical": false
       },
       {
@@ -298,77 +679,6 @@
       {
         "node": "sling-band-r",
         "practical": false
-      },
-      {
-        "name": "gull plumage pebble",
-        "node": "sling-loaded material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "sling-loaded material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "sling-loaded material 2",
-        "practical": false
-      },
-      {
-        "name": "gull plumage stone",
-        "node": "ammo-wait-0 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "ammo-wait-0 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "ammo-wait-0 material 2",
-        "practical": false
-      },
-      {
-        "name": "bomber aviator helm",
-        "node": "ammo-wait-0 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull plumage triple",
-        "node": "ammo-wait-1 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "ammo-wait-1 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "ammo-wait-1 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull plumage ember",
-        "node": "ammo-wait-2 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "ammo-wait-2 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "ammo-wait-2 material 2",
-        "practical": false
-      },
-      {
-        "name": "ember blazing crest",
-        "node": "ammo-wait-2 material 3",
-        "emissiveIntensity": 1.35,
-        "practical": true
       },
       {
         "name": "chiseled limestone",
@@ -417,413 +727,6 @@
         "name": "timber beam",
         "node": "v-debris-pool",
         "practical": false
-      },
-      {
-        "name": "raider sculpted cartoon skin",
-        "node": "v-gull-0-body material 0",
-        "practical": false
-      },
-      {
-        "name": "raider ivory & ermine",
-        "node": "v-gull-0-body material 1",
-        "practical": false
-      },
-      {
-        "name": "raider pupil & brow",
-        "node": "v-gull-0-body material 2",
-        "practical": false
-      },
-      {
-        "name": "raider royal gold",
-        "node": "v-gull-0-body material 3",
-        "practical": false
-      },
-      {
-        "name": "raider crimson velvet & plume",
-        "node": "v-gull-0-body material 4",
-        "practical": false
-      },
-      {
-        "name": "raider sculpted cartoon skin",
-        "node": "v-gull-1-body material 0",
-        "practical": false
-      },
-      {
-        "name": "raider ivory & ermine",
-        "node": "v-gull-1-body material 1",
-        "practical": false
-      },
-      {
-        "name": "raider pupil & brow",
-        "node": "v-gull-1-body material 2",
-        "practical": false
-      },
-      {
-        "name": "raider forged helm",
-        "node": "v-gull-1-body material 3",
-        "practical": false
-      },
-      {
-        "name": "raider crimson velvet & plume",
-        "node": "v-gull-1-body material 4",
-        "practical": false
-      },
-      {
-        "name": "raider brass trim",
-        "node": "v-gull-1-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider sculpted cartoon skin",
-        "node": "v-gull-2-body material 0",
-        "practical": false
-      },
-      {
-        "name": "raider ivory & ermine",
-        "node": "v-gull-2-body material 1",
-        "practical": false
-      },
-      {
-        "name": "raider pupil & brow",
-        "node": "v-gull-2-body material 2",
-        "practical": false
-      },
-      {
-        "name": "raider forged helm",
-        "node": "v-gull-2-body material 3",
-        "practical": false
-      },
-      {
-        "name": "raider saddle leather",
-        "node": "v-gull-2-body material 4",
-        "practical": false
-      },
-      {
-        "name": "raider brass trim",
-        "node": "v-gull-2-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider sculpted cartoon skin",
-        "node": "v-gull-3-body material 0",
-        "practical": false
-      },
-      {
-        "name": "raider ivory & ermine",
-        "node": "v-gull-3-body material 1",
-        "practical": false
-      },
-      {
-        "name": "raider pupil & brow",
-        "node": "v-gull-3-body material 2",
-        "practical": false
-      },
-      {
-        "name": "raider forged helm",
-        "node": "v-gull-3-body material 3",
-        "practical": false
-      },
-      {
-        "name": "raider crimson velvet & plume",
-        "node": "v-gull-3-body material 4",
-        "practical": false
-      },
-      {
-        "name": "raider brass trim",
-        "node": "v-gull-3-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider sculpted cartoon skin",
-        "node": "v-gull-4-body material 0",
-        "practical": false
-      },
-      {
-        "name": "raider ivory & ermine",
-        "node": "v-gull-4-body material 1",
-        "practical": false
-      },
-      {
-        "name": "raider pupil & brow",
-        "node": "v-gull-4-body material 2",
-        "practical": false
-      },
-      {
-        "name": "raider forged helm",
-        "node": "v-gull-4-body material 3",
-        "practical": false
-      },
-      {
-        "name": "raider saddle leather",
-        "node": "v-gull-4-body material 4",
-        "practical": false
-      },
-      {
-        "name": "raider brass trim",
-        "node": "v-gull-4-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider sculpted cartoon skin",
-        "node": "v-gull-5-body material 0",
-        "practical": false
-      },
-      {
-        "name": "raider ivory & ermine",
-        "node": "v-gull-5-body material 1",
-        "practical": false
-      },
-      {
-        "name": "raider pupil & brow",
-        "node": "v-gull-5-body material 2",
-        "practical": false
-      },
-      {
-        "name": "raider forged helm",
-        "node": "v-gull-5-body material 3",
-        "practical": false
-      },
-      {
-        "name": "raider crimson velvet & plume",
-        "node": "v-gull-5-body material 4",
-        "practical": false
-      },
-      {
-        "name": "raider brass trim",
-        "node": "v-gull-5-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider sculpted cartoon skin",
-        "node": "v-gull-6-body material 0",
-        "practical": false
-      },
-      {
-        "name": "raider ivory & ermine",
-        "node": "v-gull-6-body material 1",
-        "practical": false
-      },
-      {
-        "name": "raider pupil & brow",
-        "node": "v-gull-6-body material 2",
-        "practical": false
-      },
-      {
-        "name": "raider forged helm",
-        "node": "v-gull-6-body material 3",
-        "practical": false
-      },
-      {
-        "name": "raider saddle leather",
-        "node": "v-gull-6-body material 4",
-        "practical": false
-      },
-      {
-        "name": "raider brass trim",
-        "node": "v-gull-6-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider sculpted cartoon skin",
-        "node": "v-gull-7-body material 0",
-        "practical": false
-      },
-      {
-        "name": "raider ivory & ermine",
-        "node": "v-gull-7-body material 1",
-        "practical": false
-      },
-      {
-        "name": "raider pupil & brow",
-        "node": "v-gull-7-body material 2",
-        "practical": false
-      },
-      {
-        "name": "raider forged helm",
-        "node": "v-gull-7-body material 3",
-        "practical": false
-      },
-      {
-        "name": "raider crimson velvet & plume",
-        "node": "v-gull-7-body material 4",
-        "practical": false
-      },
-      {
-        "name": "raider brass trim",
-        "node": "v-gull-7-body material 5",
-        "practical": false
-      },
-      {
-        "name": "gull plumage pebble",
-        "node": "v-proj-0 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "v-proj-0 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "v-proj-0 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull plumage stone",
-        "node": "v-proj-1 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "v-proj-1 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "v-proj-1 material 2",
-        "practical": false
-      },
-      {
-        "name": "bomber aviator helm",
-        "node": "v-proj-1 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull plumage triple",
-        "node": "v-proj-2 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "v-proj-2 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "v-proj-2 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull plumage squid",
-        "node": "v-proj-3 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "v-proj-3 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "v-proj-3 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull plumage ember",
-        "node": "v-proj-4 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "v-proj-4 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "v-proj-4 material 2",
-        "practical": false
-      },
-      {
-        "name": "ember blazing crest",
-        "node": "v-proj-4 material 3",
-        "emissiveIntensity": 1.35,
-        "practical": true
-      },
-      {
-        "name": "gull plumage pebble",
-        "node": "v-proj-5 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "v-proj-5 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "v-proj-5 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull plumage stone",
-        "node": "v-proj-6 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "v-proj-6 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "v-proj-6 material 2",
-        "practical": false
-      },
-      {
-        "name": "bomber aviator helm",
-        "node": "v-proj-6 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull plumage triple",
-        "node": "v-proj-7 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "v-proj-7 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "v-proj-7 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull plumage squid",
-        "node": "v-proj-8 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "v-proj-8 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "v-proj-8 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull plumage ember",
-        "node": "v-proj-9 material 0",
-        "practical": false
-      },
-      {
-        "name": "gull sculpted two-part beak",
-        "node": "v-proj-9 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye & tail",
-        "node": "v-proj-9 material 2",
-        "practical": false
-      },
-      {
-        "name": "ember blazing crest",
-        "node": "v-proj-9 material 3",
-        "emissiveIntensity": 1.35,
-        "practical": true
       },
       {
         "node": "v-dot-0",
@@ -1138,63 +1041,6 @@
         "practical": false
       },
       {
-        "node": "prop-watchtower material 0",
-        "practical": false
-      },
-      {
-        "node": "prop-watchtower material 1",
-        "practical": false
-      },
-      {
-        "name": "turned naval brass",
-        "node": "prop-watchtower material 2",
-        "practical": false
-      },
-      {
-        "name": "warm lantern window",
-        "node": "prop-watchtower material 3",
-        "emissiveIntensity": 1.35,
-        "practical": true
-      },
-      {
-        "node": "prop-gatehouse material 0",
-        "practical": false
-      },
-      {
-        "node": "prop-gatehouse material 1",
-        "practical": false
-      },
-      {
-        "name": "warm lantern window",
-        "node": "prop-gatehouse material 2",
-        "emissiveIntensity": 1.35,
-        "practical": true
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "prop-gatehouse material 3",
-        "practical": false
-      },
-      {
-        "node": "prop-windmill material 0",
-        "practical": false
-      },
-      {
-        "node": "prop-windmill material 1",
-        "practical": false
-      },
-      {
-        "name": "turned naval brass",
-        "node": "prop-windmill material 2",
-        "practical": false
-      },
-      {
-        "name": "warm lantern window",
-        "node": "prop-windmill material 3",
-        "emissiveIntensity": 1.35,
-        "practical": true
-      },
-      {
         "name": "seasoned siege oak",
         "node": "prop-plank-scatter material 0",
         "practical": false
@@ -1202,21 +1048,6 @@
       {
         "name": "forged blackened iron",
         "node": "prop-plank-scatter material 1",
-        "practical": false
-      },
-      {
-        "name": "chamfered crate pine",
-        "node": "fg-crates",
-        "practical": false
-      },
-      {
-        "name": "powder keg crimson lacquer",
-        "node": "fg-barrels",
-        "practical": false
-      },
-      {
-        "name": "explosive keg iron strap",
-        "node": "fg-barrel-bands",
         "practical": false
       },
       {
@@ -1231,15 +1062,6 @@
       {
         "name": "turned naval brass",
         "node": "flag-finials",
-        "practical": false
-      },
-      {
-        "node": "fortress-flag-bastion material 0",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "fortress-flag-bastion material 1",
         "practical": false
       },
       {
@@ -1387,13 +1209,6 @@
       },
       {
         "role": "backdrop",
-        "assetKey": "sling_seaStackIsland",
-        "maxTriangles": 150000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "backdrop",
         "assetKey": "propRockA",
         "maxTriangles": 200000,
         "textureSet": "BC+N+ORM",
@@ -1421,58 +1236,255 @@
         "maxTextureSize": 1024
       },
       {
-        "role": "backdrop",
-        "assetKey": "sling_rocksA",
-        "maxTriangles": 200000,
+        "role": "hero",
+        "assetKey": "siegeBirdPebbleBody",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
+        "maxTextureSize": 1024
       },
       {
-        "role": "backdrop",
-        "assetKey": "sling_rocksB",
-        "maxTriangles": 200000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "sling_islandTrees",
-        "maxTriangles": 200000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "sling_lighthouseIslet",
+        "role": "prop",
+        "assetKey": "siegeBirdPebbleWing",
         "maxTriangles": 15000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },
       {
-        "role": "backdrop",
-        "assetKey": "sling_quarryCrane",
+        "role": "prop",
+        "assetKey": "siegeBirdPebbleWingR",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "hero",
+        "assetKey": "siegeBirdStoneBody",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeBirdStoneWing",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeBirdStoneWingR",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "hero",
+        "assetKey": "siegeBirdTripleBody",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeBirdTripleWing",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeBirdTripleWingR",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "hero",
+        "assetKey": "siegeBirdSquidBody",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeBirdSquidWing",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeBirdSquidWingR",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "hero",
+        "assetKey": "siegeBirdEmberBody",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeBirdEmberWing",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeBirdEmberWingR",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "enemy",
+        "assetKey": "siegeRaiderKing",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "enemy",
+        "assetKey": "siegeRaiderKnight",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "enemy",
+        "assetKey": "siegeRaiderGrunt",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeSlingshotFork",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeSlingshotBase",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeFlagBastion",
         "maxTriangles": 20000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },
       {
-        "role": "backdrop",
-        "assetKey": "sling_greenhouseFrame",
-        "maxTriangles": 20000,
+        "role": "prop",
+        "assetKey": "siegeCrate",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeBarrel",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "siegeWatchtower",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "siegeGatehouse",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "siegeWindmillBody",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "siegeWindmillSails",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "siegeStoneBridge",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "siegePineTree",
+        "maxTriangles": 40000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },
       {
         "role": "backdrop",
-        "assetKey": "sling_curtainWall",
-        "maxTriangles": 20000,
+        "assetKey": "siegeFarSeaStack",
+        "maxTriangles": 40000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },
       {
         "role": "backdrop",
-        "assetKey": "sling_crystalCrater",
-        "maxTriangles": 20000,
+        "assetKey": "siegeFarLighthouseIslet",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "siegeFarQuarryCrane",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "siegeFarGreenhouse",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "siegeFarCurtainWall",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "siegeFarCrystalCrater",
+        "maxTriangles": 40000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       }

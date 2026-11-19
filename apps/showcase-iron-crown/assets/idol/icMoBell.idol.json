@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icMoBell",
+  "generatedAt": "2026-11-18T23:35:22.036Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0ca-6d6c-7ee3-bb7f-212d7cf46435",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0df-05b2-7681-805e-4ff4d3a6b097",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1712322,
+        "num_faces": 3424988,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Temple bell pavilion: four dark timber posts under a curved tiled roof, a large bronze temple bell hanging inside, a wooden striker log on ropes, stone base",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.547,
+    "size": [
+      3.747,
+      4.26,
+      3.543
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icMoBell.glb",
+  "sizeBytes": 3728200,
+  "preview": "artifacts/idol/iron-crown/icMoBell/views.png",
+  "usd": 0.37
+}

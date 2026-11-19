@@ -5,15 +5,19 @@
  *
  * Query parameters (all optional): `autostart=1` (skip the menu), `manual=1` (the sim only advances through
  * `__AURA_HEATSINK__.stepFrames`), `quality=high|low` (default: low on coarse-pointer devices, else high), `touch=1`
- * (show the touch controls on any device), `motion=reduced|full` (override the saved or system motion setting).
+ * (show the touch controls on any device), `motion=reduced|full` (override the saved or system motion setting),
+ * `autoplay=1` (alias `autopilot=1`: skip the menu, the bot drives through the normal input path, results hold 3 s and
+ * the race restarts, forever; the P key toggles the autopilot in any session).
  */
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createLoadingProgress } from "../shared/loading-progress";
+import { warmPrograms } from "@aura3d/engine/game";
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { expandSegments, parseInputScript } from "./input-script";
 import { createHeatsinkAudio } from "./audio";
 import { runBotRace, createBot, type BotOptions } from "./bot";
+import { AUTOPLAY, autoplayRequested, createAutoplay } from "./autoplay";
 import { CFG } from "./config";
 import { HudModel, MEDAL_TEXT, OBJECTIVE_TEXT, countText, formatTime, projectTargetLock, type TargetLockHud } from "./hud";
 import { STRIKE } from "./operation";
@@ -23,13 +27,15 @@ import { Track } from "./track";
 import { IDLE, type Input } from "./vehicle";
 import { DRONE_CROP, buildWorld, type WorldRuntime } from "./world";
 import { postToggles } from "./art/look";
+import { WARM_SWEEP_COUNTDOWNS } from "./art/director";
 import { createTelemetry, stepTelemetry } from "./art/telemetry";
 
 const params = new URLSearchParams(location.search);
 const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
 const maxDprCap = coarse ? 1.35 : 2;
 const qualityParam = params.get("quality");
-const autostartParam = params.get("autostart") === "1" || params.get("autoplay") === "1";
+const autoplayParam = autoplayRequested(params);
+const autostartParam = params.get("autostart") === "1" || autoplayParam;
 const suppressAutoPause = autostartParam || params.get("capture") === "1";
 const config = {
   autostart: autostartParam,
@@ -79,6 +85,9 @@ let frames = 0;
 let lastHud: ReturnType<HudModel["update"]> | undefined;
 let lastCount = "";
 let lastThrottle = 0;
+/* hands-free play (autoplay.ts): the bot feeds `sampleInput`, so the sim sees it exactly like keys */
+const autoplay = createAutoplay();
+let autopilot = autoplayParam && !config.manual;
 
 /* ------------------------------------------------------------------ settings (HP-13) */
 
@@ -94,8 +103,8 @@ const ACTIONS: readonly { id: Action; label: string }[] = [
   { id: "afterburner", label: "Afterburner" }, { id: "ramjet", label: "Overdrive" }, { id: "drift", label: "Drift" }, { id: "fire", label: "Fire" }
 ];
 const DEFAULT_BIND: Readonly<Record<Action, readonly string[]>> = { throttle: ["KeyW", "ArrowUp"], brake: ["KeyS", "ArrowDown"], left: ["KeyA", "ArrowLeft"], right: ["KeyD", "ArrowRight"], afterburner: ["ShiftLeft", "ShiftRight"], ramjet: ["Space"], drift: ["KeyE"], fire: ["KeyF", "KeyJ"] };
-/** keys that are never bindable: pause, start, mute */
-const RESERVED = new Set(["Escape", "Enter", "KeyM"]);
+/** keys that are never bindable: pause, start, mute, autopilot */
+const RESERVED = new Set(["Escape", "Enter", "KeyM", AUTOPLAY.key]);
 
 function loadBinds(): Record<Action, string[]> {
   const out = Object.fromEntries(ACTIONS.map((a) => [a.id, [...DEFAULT_BIND[a.id]]])) as Record<Action, string[]>;
@@ -142,7 +151,7 @@ function renderBinds(): void {
     row.append(label, button);
     return row;
   }));
-  setText(el.menuControls, `${ACTIONS.map((a) => `${BIND[a.id].map(keyName).join("/")} ${a.label.toLowerCase()}`).join(", ")}. Esc pause, M mute.${touchMode ? " On touch: the drone accelerates by itself; hold the arrows to steer." : ""}`);
+  setText(el.menuControls, `${ACTIONS.map((a) => `${BIND[a.id].map(keyName).join("/")} ${a.label.toLowerCase()}`).join(", ")}. Esc pause, M mute, P autopilot.${touchMode ? " On touch: the drone accelerates by itself; hold the arrows to steer." : ""}`);
 }
 
 const prefersReduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -182,6 +191,11 @@ function setTouchMode(on: boolean): void {
 
 function sampleInput(dt: number): Input {
   if (heldInput) return heldInput;
+  if (autopilot) {
+    const input = autoplay.input(race);
+    lastThrottle = input.throttle;
+    return input;
+  }
   const target = (held("right") ? 1 : 0) - (held("left") ? 1 : 0);
   steerSmooth += (target - steerSmooth) * (1 - Math.exp(-dt * 12));
   const brake = held("brake") ? 1 : 0;
@@ -205,6 +219,7 @@ addEventListener("keydown", (e) => {
   if (e.repeat) return;
   if (e.code === "Escape") { if (started && !race.resultsOpen) setPaused(!paused, "key"); return; }
   if (e.code === "Enter" && !started && ready) { begin(); return; }
+  if (e.code === AUTOPLAY.key) { setAutopilot(!autopilot); return; }
   down.add(e.code);
 });
 addEventListener("keyup", (e) => down.delete(e.code));
@@ -253,7 +268,21 @@ function setPaused(on: boolean, reason: "key" | "button" | "blur" | "hidden" | "
   loop.resetAccumulator();
 }
 
+/** P / `?autoplay=1`: hand the craft to the bot (or take it back); from the menu it also starts the race */
+function setAutopilot(on: boolean): void {
+  autopilot = on && !config.manual;
+  autoplay.reset();
+  document.body.dataset.autopilot = autopilot ? "on" : "off";
+  if (autopilot && !started && ready) { begin(); return; }
+  if (started) {
+    setText(el.notice, autopilot ? "Autopilot on (P to drive)" : "Autopilot off");
+    el.notice.classList.remove("warn");
+    noticeT = NOTICE_SECONDS;
+  }
+}
+
 function begin(): void {
+  autoplay.reset();
   race = new Race(track);
   presenter.reset();
   hudModel.current = new HudModel();
@@ -327,6 +356,16 @@ function updateHud(v: NonNullable<typeof lastHud>, dt: number): void {
     document.body.style.setProperty("--district", telemetry.color);
     el.districtBanner.textContent = telemetry.label;
     el.districtBanner.classList.toggle("hidden", telemetry.bannerT <= 0);
+  }
+  /* Owner QA (Nov 19): at 390 px the objective wraps to 2-3 lines and the fixed-top banner covered it; seat the banner
+     6 px under the objective's real bottom edge whenever both are showing (CSS tops remain the fallback). */
+  if (!el.districtBanner.classList.contains("hidden")) {
+    const obj = el.objective.getBoundingClientRect();
+    const parent = (el.districtBanner.offsetParent as HTMLElement | null)?.getBoundingClientRect();
+    if (obj.height > 0 && parent && getComputedStyle(el.objective).visibility !== "hidden") {
+      const top = `${Math.round(obj.bottom - parent.top + 6)}px`;
+      if (el.districtBanner.style.top !== top) el.districtBanner.style.top = top;
+    } else if (el.districtBanner.style.top) el.districtBanner.style.top = "";
   }
   if (race.resultsOpen && el.results.classList.contains("hidden")) {
     el.results.classList.remove("hidden");
@@ -427,6 +466,8 @@ function tick(now: number): void {
       renderTime += frameDt;
       render(frameDt, started && !paused && !race.resultsOpen);
       govern(dt);
+      /* autoplay loops: the results card holds AUTOPLAY.resultsSeconds, then the next race starts */
+      if (autopilot && started && !paused && autoplay.shouldRestart(race, frameDt)) begin();
     }
   } catch (error) {
     runtimeError(error);
@@ -450,7 +491,7 @@ const state = () => {
   const p = race.player;
   return {
     state: race.state, step: race.frames, raceTime: race.raceTime, countdown: race.countdown, goT: race.goT, lapIdx: race.lapIdx, bestLap: race.bestLap,
-    paused, faulted, touchMode, reducedMotion, lowFps, look: lookRow?.id ?? null, quality: config.quality, qualityReason: config.qualityReason, pixelRatioCap: governor.cap,
+    paused, faulted, autopilot, touchMode, reducedMotion, lowFps, look: lookRow?.id ?? null, quality: config.quality, qualityReason: config.qualityReason, pixelRatioCap: governor.cap,
     player: { s: p.s, x: p.x, dist: p.dist, v: p.v, ab: p.ab, heat: p.heat, shield: p.shield, gunHeat: p.gunHeat, theta: p.theta, phi: p.phi, yW: p.yW, vyW: p.vyW, steerVal: p.steerVal, burning: p.burning, invuln: p.invuln, burstT: p.burstT, landT: p.landT, crashT: p.crashT, crashes: p.crashes, crashed: p.crashed, finished: p.finished, takedowns: p.takedowns },
     events: race.events.length,
     ops: { score: race.ops.score, kills: race.ops.kills, barrels: race.ops.barrelsShot, shots: race.ops.shots, hits: race.ops.hits, chain: race.ops.chain, bestChain: race.ops.bestChain, medal: race.ops.medal, targetsAlive: race.ops.targets.filter((t) => t.alive).length, hash: race.ops.hash() }
@@ -558,13 +599,26 @@ const hooks = installQaHooks("heatsink", {
       if (opts.grab) shot = grabCanvas();
       return { ...state(), shot };
     },
+    /** QA (motion audits): a runtime node's local position/rotation and world quaternion, e.g. `drone-rotor-0`, `target-3-fan-0` */
+    nodePose(id: string) {
+      const h = app?.nodes.get(id);
+      if (!h) return null;
+      const snap = h.snapshot();
+      return { position: snap.position, rotation: snap.rotation, visible: snap.visible, world: h.getWorldQuaternion?.() ?? null };
+    },
+    /** QA: hide or show one runtime node (identify which mesh a frame shows) */
+    setNodeVisible(id: string, on: boolean) { const h = app?.nodes.get(id); h?.setVisible(on); return !!h; },
     /** QA: force a runtime error through the same path a render exception takes */
     faultForTest(message = "test fault") { runtimeError(new Error(message)); },
+    /** QA: the P key's toggle (hands-free play through the normal input path) */
+    setAutopilot(on: boolean) { setAutopilot(on); return autopilot; },
     pause(on: boolean) { setPaused(on, "button"); return paused; },
     /** the input the live loop would read this frame (keys, touch buttons, auto-throttle), without stepping */
     input: () => sampleInput(FRAME),
     frames: () => frames,
     hud: () => lastHud ?? null,
+    /** QA: boot warm-up timings (ms) and the programs the countdown-sweep warm added */
+    bootTimings: () => ({ ...bootTimings }),
     bot: (opts: BotOptions = {}) => { const r = runBotRace(new Race(track), opts); return { state: r.state, kills: r.ops.kills, medal: r.ops.medal, time: r.player.finishTime }; }
   }
 });
@@ -585,6 +639,63 @@ const loadingProgress = createLoadingProgress({ element: document.getElementById
 /* W-8: experimental lab flags (?backend=, ?worker=, ?gamut=) are parsed here; all off by default, so `lab` is `{}` without a query. */
 // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
 const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
+
+/** QA: how long the boot warm-up took (menu pose, countdown sweep poses) and the programs the sweep poses added */
+const bootTimings = { warmMenuMs: 0, warmSweepMs: 0, sweepPrograms: 0, settleMs: 0 };
+
+/**
+ * Countdown frame rate (owner QA, Nov 2026: the countdown ran at ~16 fps). The menu shows the hero pose, but the IC-22
+ * countdown sweep starts 150 degrees round the drone looking back down the start straight and arcs into the chase pose,
+ * so it draws pieces of the scene (and program variants) no menu frame drew; they compiled while the countdown ran
+ * (draws skipped, frames stalled). Render each sweep pose once and settle its programs before the menu goes live, then
+ * put the race and camera back exactly as they were.
+ */
+async function warmCountdownSweep(): Promise<void> {
+  if (!app || !runtime || config.manual) return;
+  const before = (app.diagnostics?.() as { programs?: { compiled?: number } } | undefined)?.programs?.compiled ?? 0;
+  for (const cd of WARM_SWEEP_COUNTDOWNS) {
+    race.countdown = cd;
+    render(0);
+    await warmPrograms(app, { waitForEnvironment: false, waitForTextures: false, maxFrames: 8 });
+  }
+  /* the strike bursts' flash lights (up to the pool's 4 at once): each extra live light is a new program variant, which
+     compiled on the first hit and kill (~20 programs each, a visible hitch). Light 1..4 here, then let them expire. */
+  for (const kind of ["barrel", "kill", "hit", "kill"] as const) {
+    if (!runtime.warmBurst(kind)) break;
+    app.step(0);
+    await warmPrograms(app, { waitForEnvironment: false, waitForTextures: false, maxFrames: 4 });
+  }
+  for (let i = 0; i < 3; i++) app.step(0.5);
+  race = new Race(track);
+  runtime.resetCamera();
+  const after = (app.diagnostics?.() as { programs?: { compiled?: number } } | undefined)?.programs?.compiled ?? 0;
+  bootTimings.sweepPrograms = after - before;
+}
+
+/** next animation frame time, or a 250 ms timeout (a hidden tab gets no animation frames) */
+const nextFrame = (): Promise<number> => new Promise((resolve) => {
+  const timer = setTimeout(() => resolve(performance.now()), 250);
+  requestAnimationFrame((t) => { clearTimeout(timer); resolve(t); });
+});
+
+/**
+ * Real-GPU QA (Nov 2026): with ?autoplay=1 the countdown began on the first live frame after the warm-up and the first
+ * countdown frames stalled 1.5-2.8 s while the GPU drained the warm-up's queued work. Keep the loading card up and draw
+ * the menu pose until four frames in a row arrive under 120 ms (bounded at 4 s), so the countdown starts on a flowing
+ * frame rate.
+ */
+async function settleFirstFrames(maxMs = 4000): Promise<void> {
+  const t0 = performance.now();
+  let last = t0;
+  let smooth = 0;
+  while (smooth < 4 && performance.now() - t0 < maxMs) {
+    render(0);
+    const now = await nextFrame();
+    smooth = now - last < 120 ? smooth + 1 : 0;
+    last = now;
+  }
+  bootTimings.settleMs = Math.round(performance.now() - t0);
+}
 
 async function boot(): Promise<void> {
   loadingProgress.set(0.1);
@@ -608,8 +719,20 @@ async function boot(): Promise<void> {
   loadingProgress.set(0.92);
   runtime = world.bind(app);
   applyMotion();
+  /* Idol wow pass: settle every program before the menu goes live. The Idol craft, targets and canyon pools stream in
+     after the mount; their texture upgrades (and the twilight HDRI) switch materials to new program variants, and draws
+     whose program is still compiling are skipped (lessons-learned R2). `ready` is still false, so tick() renders nothing
+     concurrently. */
+  lastHud = hudModel.current.update(0, race);
+  render(0);
+  const warmT0 = performance.now();
+  await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+  bootTimings.warmMenuMs = Math.round(performance.now() - warmT0);
+  await warmCountdownSweep();
+  bootTimings.warmSweepMs = Math.round(performance.now() - warmT0) - bootTimings.warmMenuMs;
   /* QA crops for the E-I steady-state capture (normalised to the canvas; the chase camera holds the drone there) */
   (window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ = { ...((window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ ?? {}), crops: [DRONE_CROP, { name: "road", x: 0.3, y: 0.72, w: 0.4, h: 0.26 }, { name: "sky", x: 0, y: 0, w: 1, h: 0.25 }] };
+  await settleFirstFrames();
   ready = true;
   loadingProgress.done();
   el.loading.classList.add("hidden");
@@ -618,6 +741,8 @@ async function boot(): Promise<void> {
   lastHud = hudModel.current.update(0, race);
   render(0);
   if (config.autostart) begin();
+  /* ?autoplay=1: say who is flying (and how to take over) on the first race */
+  if (autopilot) setAutopilot(true);
 }
 
 el.menuObjective.textContent = `${OBJECTIVE_TEXT} · Chain kills for up to x5 multiplier across ${CFG.track.laps} laps.`;
@@ -642,6 +767,7 @@ setTouchMode(touchMode);
 el.touch.classList.toggle("hidden", !touchMode);
 renderBinds();
 applyMotion();
+document.body.dataset.autopilot = autopilot ? "on" : "off";
 scheduleTick();
 
 function reportError(error: unknown): void {

@@ -514,24 +514,33 @@ describe("beat-hopper sim", () => {
     expect(sim.o.steering).toBe(false);
   });
 
-  it("airborne clearance awards GOOD with zero damage on early or reactive late hops over blocks and gaps, while grounded landings still MISS", () => {
-    // 1. Reactive human hop pressed 0.10 s before arrival (delta ≈ 0.286 s > GOOD_WINDOW = 0.16 s, yet visually airborne at y > 0.6 m)
+  it("airborne clearance follows the drawn hazard: any airtime clears a gap, a block needs feet over its 0.95 m crate, grounded landings still MISS", () => {
+    // 1. Reactive human hop pressed 0.10 s before arrival (delta ≈ 0.286 s > GOOD_WINDOW): airborne at ~0.74 m. That
+    //    clears the flat gap trench, but it is below the 0.95 m speaker crate, so the hopper would run through the block:
+    //    the block takes the normal MISS hit response.
     for (const kind of ["block", "gap"] as const) {
       const cross = 2.0;
       const sim = withObstacle(kind, cross);
       advanceTo(sim, cross - 0.10 - DT);
       sim.advance({ ...IDLE, hop: true });
       advanceTo(sim, cross + DT);
-      expect(sim.o.good, `late airborne ${kind} clears cleanly`).toBe(1);
-      expect(sim.o.miss).toBe(0);
-      expect(sim.o.lives).toBe(3);
-      expect(sim.o.score).toBe(CONFIG.POINTS_GOOD);
+      if (kind === "gap") {
+        expect(sim.o.good, "late airborne gap clears cleanly").toBe(1);
+        expect(sim.o.miss).toBe(0);
+        expect(sim.o.lives).toBe(3);
+        expect(sim.o.score).toBe(CONFIG.POINTS_GOOD);
+      } else {
+        expect(sim.o.good, "feet below the crate top do not clear the block").toBe(0);
+        expect(sim.o.miss).toBe(1);
+        expect(sim.o.lives).toBe(2);
+      }
     }
 
-    // 2. Early human hop pressed 0.26 s before ideal (delta = 0.26 s > GOOD_WINDOW, still descending in the air above AIR_CLEARANCE_Y)
+    // 2. Late hop pressed 0.18 s after ideal (delta > GOOD_WINDOW): still rising, feet ~1.2 m up at the crossing, above
+    //    the crate top, so the block is cleanly cleared with GOOD by clearance alone.
     const earlyCross = 2.0;
     const earlySim = withObstacle("block", earlyCross);
-    advanceTo(earlySim, idealMoment("block", earlyCross) - 0.26 - DT);
+    advanceTo(earlySim, idealMoment("block", earlyCross) + 0.18 - DT);
     earlySim.advance({ ...IDLE, hop: true });
     advanceTo(earlySim, earlyCross + DT);
     expect(earlySim.o.good).toBe(1);

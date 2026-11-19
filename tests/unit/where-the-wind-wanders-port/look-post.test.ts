@@ -3,7 +3,8 @@ import { buildWorld, bellLightIntensity, eulerZYXFromYawPitchRoll, paintSpec, pr
 import { PAPER_GLSL, paperPass } from "../../../examples/where-the-wind-wanders-port/paper-pass";
 import { PAINT_FRAGMENT, PROP_FRAGMENT } from "../../../examples/where-the-wind-wanders-port/shaders";
 import { DAYLIGHT_KEYS } from "../../../examples/where-the-wind-wanders-port/daylight";
-import { BELLKEEPER_JOINT_IDS, MAT, getHighlandMaterials } from "../../../examples/where-the-wind-wanders-port/art/proceduralModels";
+import { BELLKEEPER_JOINT_IDS, MAT, createBellkeeperWandererNode, createSanctuaryBellNode, getHighlandMaterials } from "../../../examples/where-the-wind-wanders-port/art/proceduralModels";
+import { IDOL_MODELS } from "../../../examples/where-the-wind-wanders-port/art/idolModels";
 
 interface Node {
   readonly kind?: string;
@@ -64,28 +65,37 @@ const findNamedNode = (options: Parameters<typeof buildWorld>[0], targetName: st
   return hit;
 };
 
-describe("where-the-wind-wanders-port zero-GLB procedural Bellkeeper & sanctuary bell (WW47-M1)", () => {
-  it("mounts zero external GLB models in both GU47 and original looks and sculpts the articulated multi-material Bellkeeper and bronze bell", () => {
-    expect(modelsOf({})).toEqual([]);
-    expect(modelsOf({ look: "original" })).toEqual([]);
+describe("where-the-wind-wanders-port Idol models and the procedural Bellkeeper & sanctuary bell (WW47-M1)", () => {
+  it("mounts only admitted Idol GLB models, and keeps the articulated multi-material Bellkeeper and bronze bell for ?idol=0", () => {
+    expect(IDOL_MODELS).toBe(true);
+    for (const look of [{}, { look: "original" as const }]) {
+      for (const m of modelsOf(look)) expect((m as { asset?: { url?: string } }).asset?.url ?? "").toMatch(/^\/aura-assets\/bk[A-Za-z]+\.[0-9a-f]+\.glb$/);
+    }
 
     const heroGroup = findNamedNode({}, "hero");
     expect(heroGroup?.kind).toBe("group");
+    const find = (root: Node, targetName: string): Node | undefined => {
+      if (root.name === targetName) return root;
+      for (const c of root.children ?? []) { const hit = find(c, targetName); if (hit) return hit; }
+      return undefined;
+    };
+    const sculpted = createBellkeeperWandererNode({ name: "hero", id: "hero", castShadow: true, receiveShadow: true }).toJSON() as unknown as Node;
     for (const jointName of BELLKEEPER_JOINT_IDS) {
-      const joint = findNamedNode({}, jointName);
+      const joint = find(sculpted, jointName);
       expect(joint?.kind).toBe("group");
     }
-    const torsoMesh = findNamedNode({}, "hero-torso-mesh");
+    const torsoMesh = find(sculpted, "hero-torso-mesh");
     const torsoSheens = (torsoMesh?.children ?? []).map((c) => c.material?.sheen ?? 0);
     expect(Math.max(...torsoSheens)).toBeGreaterThan(0.6);
 
-    const chimeMesh = findNamedNode({}, "hero-staff-chime-mesh");
+    // the staff chime rides in the Idol hero's hand (or on the sculpted right arm)
+    const chimeMesh = findNamedNode({}, "hero-staff-chime-mesh") ?? find(sculpted, "hero-staff-chime-mesh");
     const chimeMetals = (chimeMesh?.children ?? []).map((c) => c.material?.metallic ?? 0);
     expect(Math.max(...chimeMetals)).toBeGreaterThanOrEqual(0.9);
 
-    const bellGroup = findNamedNode({}, "belltower-bell");
-    expect(bellGroup?.kind).toBe("group");
-    const bellChildMetals = (bellGroup?.children ?? []).map((c) => c.material?.metallic ?? 0);
+    const bellGroup = createSanctuaryBellNode({ name: "belltower-bell", id: "bell-model", position: [0, 0, 0], castShadow: true, receiveShadow: true }).toJSON() as unknown as Node;
+    expect(bellGroup.kind).toBe("group");
+    const bellChildMetals = (bellGroup.children ?? []).map((c) => c.material?.metallic ?? 0);
     expect(Math.max(...bellChildMetals)).toBeGreaterThanOrEqual(0.9);
 
     // Matte-soft cloak/hood/scarf/skin anti-twig-reflection invariant + ZYX Euler heading/lean stability

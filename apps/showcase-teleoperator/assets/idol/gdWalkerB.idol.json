@@ -1,0 +1,73 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "teleoperator",
+  "key": "gdWalkerB",
+  "generatedAt": "2026-11-19T02:51:45.494Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f1b7-a12b-74a1-9287-3b3e3323fc04",
+      "prompt": "An adult woman in her twenties, short curly dark hair, camel-brown suede jacket, cream knit top, olive cargo trousers, black ankle boots, friendly neutral face, no bag, no hat. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single full-body figure, head to feet in frame with margin, centered, standing in a T-pose: arms straight out horizontally to the sides, legs straight and apart at shoulder width, feet flat pointing forward, front view facing the camera, even soft studio lighting, no cast shadow, plain light-grey seamless background. Plain clothing back. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f1b8-13d2-7f93-a0d6-8725710f37f2",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024,
+        "rig": true,
+        "animations": [
+          "idle",
+          "walk"
+        ]
+      },
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 494244,
+        "num_faces": 988484,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 28,
+        "animations": [
+          "idle",
+          "walk"
+        ]
+      }
+    }
+  ],
+  "prompt": "An adult woman in her twenties, short curly dark hair, camel-brown suede jacket, cream knit top, olive cargo trousers, black ankle boots, friendly neutral face, no bag, no hat. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single full-body figure, head to feet in frame with margin, centered, standing in a T-pose: arms straight out horizontally to the sides, legs straight and apart at shoulder width, feet flat pointing forward, front view facing the camera, even soft studio lighting, no cast shadow, plain light-grey seamless background. Plain clothing back. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "admitRole": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 0.995 m, 2 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000         2.9x         156      0\n  ERROR material0 (mesh 0 prim 0): 156 of 30000 triangles stretch past 1.6x their rest edges (worst 2.9x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n\nrefit: material0 (mesh 0 prim 0): 156 of 30000 triangles stretch past 1.6x their rest edges (worst 2.9x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.",
+    "repairLog": "wrote /Users/gurbakshchahal/platforms/A-LIVE/aura3d/artifacts/idol/teleoperator/gdWalkerB/refit.glb (7567368 bytes)\nskin check still fails after repair: SKIN_STRETCH\nStill failing after smooth-bridges: SKIN_STRETCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand."
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1,
+    "sceneScale": 1.659,
+    "size": [
+      0.919,
+      0.995,
+      0.174
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-teleoperator/assets/idol/gdWalkerB.glb",
+  "sizeBytes": 2467452,
+  "preview": "artifacts/idol/teleoperator/gdWalkerB/views.png",
+  "usd": 0.42
+}

@@ -1,0 +1,67 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cumulus-dash",
+  "key": "cdRideLog",
+  "generatedAt": "2026-11-19T03:17:33.528Z",
+  "generator": "tools/idol/generate.mjs (aura3d assets generate)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f1cc-581c-7f01-ab2e-9928f1bf1138",
+      "prompt": "A single long felled cedar tree trunk lying horizontally, seen from the side: thick deeply furrowed reddish-brown bark with clear vertical plates and cracks, a few patches of green moss on top, both ends sawn flat showing pale golden end grain with concentric growth rings, perfectly straight and round, no branches. Photoreal storm-washed mountain realism: real physical materials as if photographed on a high sandstone ridge just after a squall, crisp physically based surface detail and gentle wear, saturated rain-washed colours, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f1cd-08fd-71e0-b5a0-9805f0519333",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 71,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 853464,
+        "num_faces": 1706920,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single long felled cedar tree trunk lying horizontally, seen from the side: thick deeply furrowed reddish-brown bark with clear vertical plates and cracks, a few patches of green moss on top, both ends sawn flat showing pale golden end grain with concentric growth rings, perfectly straight and round, no branches. Photoreal storm-washed mountain realism: real physical materials as if photographed on a high sandstone ridge just after a squall, crisp physically based surface detail and gentle wear, saturated rain-washed colours, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "settings": {
+    "kind": "object",
+    "role": "prop",
+    "size": {
+      "maxDim": 6.44
+    },
+    "maxVerts": 10000,
+    "tex": 1024,
+    "seed": 71
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 6.469,
+    "size": [
+      6.44,
+      2.598,
+      6.435
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/kid-goku-beyond-the-clouds-port/assets/idol/cdRideLog.glb",
+  "sizeBytes": 1397792,
+  "preview": "artifacts/idol/cumulus-dash/cdRideLog/views.png",
+  "work": "artifacts/idol/cumulus-dash/cdRideLog",
+  "ledger": "artifacts/idol/ledger.jsonl",
+  "usd": 0.37
+}

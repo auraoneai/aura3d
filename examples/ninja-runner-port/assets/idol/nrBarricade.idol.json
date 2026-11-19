@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrBarricade",
+  "generatedAt": "2026-11-19T01:55:35.618Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f184-356b-7831-8816-7d5aa2568726",
+      "prompt": "A low wide feudal-era roadblock seen straight from the front: a long heavy crate of dark cedar planks bound with blackened iron straps and round studs, a row of short sharpened wooden stakes along its top edge, thick hemp rope lashed around both ends, symmetrical, no writing. Photograph of a real, hand-built painted wood miniature in Japanese woodblock-print colours: weathered dark cedar planks, blackened forged iron straps and studs, rough hemp rope, fine ink-line edging, soft warm golden-hour light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f184-bbee-72a0-b604-0a631632df2b",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 61,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2049060,
+        "num_faces": 4099628,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A low wide feudal-era roadblock seen straight from the front: a long heavy crate of dark cedar planks bound with blackened iron straps and round studs, a row of short sharpened wooden stakes along its top edge, thick hemp rope lashed around both ends, symmetrical, no writing. Photograph of a real, hand-built painted wood miniature in Japanese woodblock-print colours: weathered dark cedar planks, blackened forged iron straps and studs, rough hemp rope, fine ink-line edging, soft warm golden-hour light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.859,
+    "size": [
+      2.1,
+      0.909,
+      1.563
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrBarricade.glb",
+  "sizeBytes": 2282512,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrBarricade/views.png",
+  "usd": 0.37
+}

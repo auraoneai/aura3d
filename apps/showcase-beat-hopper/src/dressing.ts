@@ -1,5 +1,5 @@
 /**
- * Beat Hopper procedural concert stage dressing (presentation only): GPU-instanced curved J-hang concert
+ * Beat Hopper concert stage dressing (Idol GLBs since the Idol wow pass; was procedural) (presentation only): GPU-instanced curved J-hang concert
  * line-array speaker towers (`dress-stack-a-*`), folded-horn modular synth stacks (`dress-stack-b-*`), and
  * floating twin direct-drive DJ turntable consoles (`dress-deck-*`) beside the elevated track.
  * Alternating clusters repeat every `CLUSTER_P = 32 m` (`PERIOD = 64 m` full left-right cycle) inside two
@@ -7,8 +7,8 @@
  * speaker feet locked to the floor, and `grp-dress-decks` at `DECK.y`). Positive scales only (`det > 0`)
  * guarantee single-call GPU instancing on both WebGPU and WebGL2.
  */
-import { group, type AuraApp, type AuraSceneBuilder, type AuraTransformSpec } from "@aura3d/engine";
-import { buildConcertDressingNodes } from "./art/proceduralModels";
+import { group, instances, type AuraApp, type AuraSceneBuilder, type AuraTransformSpec } from "@aura3d/engine";
+import { assets } from "./aura-assets.route";
 import { FLOOR_Y } from "./stage";
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
@@ -46,14 +46,15 @@ export function addDressing(builder: AuraSceneBuilder): void {
     });
   }
 
-  const { stackChildren, deckChildren } = buildConcertDressingNodes({
-    stackATransforms,
-    stackBTransforms,
-    deckTransforms,
-    stackAHeight: STACK_A.height,
-    stackBHeight: STACK_B.height,
-    deckMaxDim: DECK.size
-  });
+  // Idol wow pass: Idol concert line-array towers, modular synth stacks and DJ consoles, normalised to the procedural
+  // heights (STACK_A 8.6 m, STACK_B 6.6 m) and max dimension (DECK 5.2 m); fronts face +Z like the procedural cabinets.
+  const dress = (name: string, asset: typeof assets.bhSpeakerTower | typeof assets.bhSynthStack | typeof assets.bhDjConsole, transforms: AuraTransformSpec[]) =>
+    instances.model(asset, { name, scaleMode: "world", transforms, castShadow: false, receiveShadow: false });
+  const stackChildren = [
+    dress("dress-stack-a", assets.bhSpeakerTower, stackATransforms),
+    dress("dress-stack-b", assets.bhSynthStack, stackBTransforms)
+  ];
+  const deckChildren = [dress("dress-deck", assets.bhDjConsole, deckTransforms)];
 
   builder.add(
     group("grp-dress-stacks", stackChildren)

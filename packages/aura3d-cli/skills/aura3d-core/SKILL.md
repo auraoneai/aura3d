@@ -22,7 +22,10 @@ without a look ships flat shading, void background and floating props.
 ## Establish the contract
 
 1. Run `npx @aura3d/cli@latest --help` (or `pnpm exec aura3d --help` inside the
-   monorepo) and use only the commands and flags it prints.
+   monorepo) and use only the commands and flags it prints;
+   `aura3d help <command>` prints one command and `aura3d help --json` the
+   whole catalog. Upgrading across engine versions: `aura3d codemod <name> <glob>`
+   (names in `aura3d help --json`) and `aura3d migrate lighting`.
 2. Run `aura3d info` for the installed versions and the engine's namespaces and
    members; `aura3d info --name material.pbr` prints one builder's option keys.
    Do not name an export `aura3d info` does not list.

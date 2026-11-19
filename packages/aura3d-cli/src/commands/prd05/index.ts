@@ -1,9 +1,10 @@
 /**
  * C-39 lane-05 command registrations (PRD-05 §7.1, §14 Phase 0).
  *
- * Phase 0 implements `assets admit` and `assets review` for real; the other
- * verbs are registered now so the surface and usage text exist, and return a
- * clear "lands in Phase N" until their phases land.
+ * `assets admit`, `review`, `optimize`, `lookdev`, `library`, `prune`. The
+ * `assets budget` verb was removed in 5.6.0 (it only printed "lands in
+ * Phase 2"); `assets optimize <id…>` and `assets lookdev` are monorepo-only
+ * (src/monorepo-only.ts) and say so up front.
  */
 
 import { registerCliCommand, registerCodemod } from "../../contracts/commands.js";
@@ -16,6 +17,7 @@ import { reviewAsset } from "./review.js";
 import { assetsLibraryVerb } from "./library.js";
 import { assetsPrune } from "./prune.js";
 import { assetsRouteModulesCodemod } from "./codemods/assetsRouteModules.js";
+import { monorepoOnlyMessage, unmetMonorepoRule } from "../../monorepo-only.js";
 
 function readFlag(argv: readonly string[], name: string): string | undefined {
   const index = argv.indexOf(name);
@@ -104,23 +106,10 @@ registerCliCommand({
   },
 });
 
-function phaseStub(name: string, phase: string, summary: string, usage: string): void {
-  registerCliCommand({
-    name,
-    owner: "prd05",
-    summary,
-    usage,
-    run: async (_argv, io) => {
-      io.stderr(`${name}: lands in PRD-05 ${phase}; the verb is registered now so scripts can detect it.`);
-      return 1;
-    },
-  });
-}
-
 registerCliCommand({
   name: "assets optimize",
   owner: "prd05",
-  summary: "Optimize assets through the §6.3 step pipeline (tools/asset-optimize).",
+  summary: "Optimize a GLB or HDRI file (--file); the manifest <id…> pipeline (tools/asset-optimize) is monorepo-only.",
   usage: "aura3d assets optimize --file in.glb --out out.glb [--role hero|vehicle|character|prop|background] [--max-verts N] [--tex N] [--no-simplify] [--meshopt] [--json] | aura3d assets optimize --file in.hdr --out out_1k.hdr --hdri 1k|2k [--rgb9e5-cube] [--json] | aura3d assets optimize --file in.hdr --out out_1k.hdr --hdri 1k|2k --rgb9e5-cube --standard-ktx2-primaries bt709|unspecified [--json] | aura3d assets optimize <id...> [--profile <id>] [--geometry meshopt|draco|none] [--dry-run] [--allow-local-small] [--ktx <path>] [--report <file>] [--out-dir <dir>] [--no-manifest]",
   run: async (argv, io) => {
     // Direct-file mode: `assets optimize --file in.glb --out out.glb [--role ...]` (no manifest, no admission pipeline).
@@ -134,6 +123,11 @@ registerCliCommand({
   summary: "Dispatch the §6.7 look-dev capture workflow (apps/asset-lookdev) for assets.",
   usage: "aura3d assets lookdev <id...> [--group <route>] [--stage <v>]",
   run: async (argv, io) => {
+    const unmet = unmetMonorepoRule("assets lookdev", argv, io.cwd);
+    if (unmet) {
+      io.stderr(monorepoOnlyMessage("assets lookdev", unmet.needs, unmet));
+      return 2;
+    }
     const ids = argv.filter((arg) => !arg.startsWith("--") && argv[argv.indexOf(arg) - 1] !== "--group" && argv[argv.indexOf(arg) - 1] !== "--stage");
     if (ids.length === 0) {
       io.stderr("Usage: aura3d assets lookdev <id...> [--group <route>] [--stage <v>]");
@@ -150,7 +144,6 @@ registerCliCommand({
     return result.ok ? 0 : 2;
   },
 });
-phaseStub("assets budget", "Phase 2 (budget measurement)", "Report per-tier asset budgets (lands in Phase 2).", "aura3d assets budget [--route apps/<app>] [--tier low|medium|high|ultra] [--json]");
 registerCliCommand({
   name: "assets library",
   owner: "prd05",

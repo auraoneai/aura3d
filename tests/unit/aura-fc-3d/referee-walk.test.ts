@@ -4,8 +4,8 @@ import { buildFcScene, REFEREE_TARGET_HEIGHT } from "../../../apps/showcase-aura
 import { CLIP_SECONDS, STANCE_SPEED_MODEL, refereePatrol } from "../../../apps/showcase-aura-fc-3d/src/game/locomotion";
 import { FOOTBALLER_CANONICAL_HEIGHT, FOOTBALLER_JOINT_SUFFIXES } from "../../../apps/showcase-aura-fc-3d/src/art/proceduralModels";
 
-function flat() {
-  const j = JSON.parse(JSON.stringify(buildFcScene("munich")));
+function flat(idol = false) {
+  const j = JSON.parse(JSON.stringify(buildFcScene("munich", { idol })));
   const out: any[] = [];
   const walk = (n: any) => { out.push(n); for (const c of n.children ?? []) walk(c); };
   (j.nodes as any[]).forEach(walk);
@@ -14,7 +14,7 @@ function flat() {
 
 const scale = REFEREE_TARGET_HEIGHT / FOOTBALLER_CANONICAL_HEIGHT;
 
-describe("aura-fc-3d procedural referee rig and zero GLB model() mounts", () => {
+describe("aura-fc-3d referee: procedural rig (?idol=off) or the Idol body, no model() in rig.ts/scene.ts", () => {
   it("rig.ts and scene.ts pass no model(...) mounts and no ignored animation key", () => {
     for (const file of ["apps/showcase-aura-fc-3d/src/game/rig.ts", "apps/showcase-aura-fc-3d/src/game/scene.ts"]) {
       const src = readFileSync(file, "utf8");
@@ -31,7 +31,15 @@ describe("aura-fc-3d procedural referee rig and zero GLB model() mounts", () => 
     for (const suffix of FOOTBALLER_JOINT_SUFFIXES) {
       expect(names.has(`fc-referee-${suffix}`)).toBe(true);
     }
-  });
+  }, 20_000);
+
+  it("with Idol bodies on, the referee is one rigged Idol model node at the referee height", () => {
+    const all = flat(true);
+    const ref = all.find((n) => n.name === "fc-referee");
+    expect(ref?.kind).toBe("model");
+    expect(ref?.asset?.url).toMatch(/fcIdolReferee/);
+    expect(all.some((n) => /^fc-referee-(pelvis|chest)$/.test(n.name ?? ""))).toBe(false);
+  }, 20_000);
 });
 
 describe("referee patrol walks at walking pace with planted feet", () => {

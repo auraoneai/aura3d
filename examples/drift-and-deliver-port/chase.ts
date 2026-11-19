@@ -43,6 +43,14 @@ export const SHIFT_FOV = 60;
 const CLOSE_OFFSET = { back: 4.95, backPerSpeed: 0.022, backBoost: 0.65, up: 2.12, upPerSpeed: 0.006, minAboveGround: 1.82, lead: 4.6, leadPerSpeed: 0.22, lookUp: 1.08 } as const;
 const CLOSE_SNAP = { back: 4.95, up: 2.12, lead: 4.6, lookUp: 1.08, fov: 56 } as const;
 export const CLOSE_FOV = 56;
+/**
+ * Owner QA (Nov 18): "the car is too close to the viewport; it should be further away so the user has more of a bird's-eye
+ * view of the street". Elevated 3/4 chase: 15 m up, 16 m back, aiming 3 m ahead of the car at road level (about 38 degrees
+ * down), so the courier is ~15-20% of the frame height in the lower-middle third and the next intersection reads.
+ */
+const BIRD_OFFSET = { back: 16, backPerSpeed: 0.03, backBoost: 0.8, up: 15, upPerSpeed: 0.03, minAboveGround: 8, lead: 3, leadPerSpeed: 0.05, lookUp: 0 } as const;
+const BIRD_SNAP = { back: 16, up: 15, lead: 3, lookUp: 0, fov: 55 } as const;
+export const BIRD_FOV = 55;
 const CLOSE_ORIG_OFFSET = { back: 4.95, backPerSpeed: 0.024, backBoost: 0.7, up: 2.22, upPerSpeed: 0.007, minAboveGround: 1.85, lead: 4.6, leadPerSpeed: 0.22, lookUp: 1.08 } as const;
 const CLOSE_ORIG_SNAP = { back: 4.95, up: 2.22, lead: 4.6, lookUp: 1.08, fov: 55 } as const;
 /** `prefers-reduced-motion`: no shake at all and the speed/nitro field-of-view kick capped at 3 degrees. */
@@ -68,13 +76,15 @@ const FRAMING_SPECS = {
   original: { offset: OFFSET, snap: SNAP },
   shift: { offset: SHIFT_OFFSET, snap: SNAP },
   close: { offset: CLOSE_OFFSET, snap: CLOSE_SNAP },
-  "close-original": { offset: CLOSE_ORIG_OFFSET, snap: CLOSE_ORIG_SNAP }
+  "close-original": { offset: CLOSE_ORIG_OFFSET, snap: CLOSE_ORIG_SNAP },
+  bird: { offset: BIRD_OFFSET, snap: BIRD_SNAP }
 } as const;
 const rigs = {
   original: { full: makeRig(OFFSET, 56, false), calm: makeRig(OFFSET, 56, true) },
   shift: { full: makeRig(SHIFT_OFFSET, SHIFT_FOV, false), calm: makeRig(SHIFT_OFFSET, SHIFT_FOV, true) },
   close: { full: makeRig(CLOSE_OFFSET, CLOSE_FOV, false, CLOSE_SNAP, CLOSE_KICK), calm: makeRig(CLOSE_OFFSET, CLOSE_FOV, true, CLOSE_SNAP, CLOSE_KICK) },
-  "close-original": { full: makeRig(CLOSE_ORIG_OFFSET, 55, false, CLOSE_ORIG_SNAP, CLOSE_KICK), calm: makeRig(CLOSE_ORIG_OFFSET, 55, true, CLOSE_ORIG_SNAP, CLOSE_KICK) }
+  "close-original": { full: makeRig(CLOSE_ORIG_OFFSET, 55, false, CLOSE_ORIG_SNAP, CLOSE_KICK), calm: makeRig(CLOSE_ORIG_OFFSET, 55, true, CLOSE_ORIG_SNAP, CLOSE_KICK) },
+  bird: { full: makeRig(BIRD_OFFSET, BIRD_FOV, false, BIRD_SNAP, CLOSE_KICK), calm: makeRig(BIRD_OFFSET, BIRD_FOV, true, BIRD_SNAP, CLOSE_KICK) }
 };
 for (const set of Object.values(rigs)) {
   set.full.snap({});
@@ -90,11 +100,12 @@ export function setReducedMotion(on: boolean): void {
   rig = rigs[framing][calm ? "calm" : "full"];
 }
 /** GU47 WP-28 GC-C2 / WP-22: "shift" and "original" keep their exact unit-test rigs; "close" frames the live presentation closer. */
-export function setChaseFraming(next: "shift" | "original" | "close" | "close-original"): void {
+export function setChaseFraming(next: "shift" | "original" | "close" | "close-original" | "bird"): void {
   framing = next;
   rig = rigs[framing][calm ? "calm" : "full"];
 }
 export const reducedMotion = (): boolean => calm;
+export const chaseFraming = (): keyof typeof rigs => framing;
 
 const target = (c: ChaseInput, groundAt?: (x: number, z: number) => number) => ({
   position: [c.x, c.y, c.z] as const,

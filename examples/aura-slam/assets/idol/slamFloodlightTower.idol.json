@@ -1,0 +1,45 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-slam",
+  "key": "slamFloodlightTower",
+  "generatedAt": "2026-11-18T22:18:05.401Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the generator's 20-minute poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/aura-slam/slamFloodlightTower/ref.png",
+      "note": "reference still from the first (timed-out) run, already paid"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09d-4e84-7293-9685-b4eb6dbab0fc",
+      "usd": 0.2,
+      "rig": null
+    }
+  ],
+  "prompt": "A tall stadium floodlight tower: a slender square galvanised grey steel lattice truss mast on a concrete footing, topped by a rectangular steel frame holding two rows of four large round floodlight lamps all aimed forward, a small maintenance catwalk with handrail below the lamps",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 9.47,
+    "size": [
+      3.605,
+      9.5,
+      1.527
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/aura-slam/assets/idol/slamFloodlightTower.glb",
+  "sizeBytes": 1630164,
+  "usd": 0.2,
+  "postOptimize": {
+    "tool": "aura3d assets optimize",
+    "role": "background",
+    "tex": 512,
+    "maxVerts": 15000,
+    "reason": "far set piece; per-game byte budget"
+  }
+}

@@ -1,8 +1,8 @@
 # Security Policy
 
-Version: 5.5.6
+Version: 5.6.0
 
-Current release: Aura3D 5.5.6.
+Current release: Aura3D 5.6.0.
 
 ## Aura3D advantage
 

@@ -8,7 +8,9 @@ import type { AuraPhotometricProfile } from "@aura3d/engine";
 import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, texture } from "@aura3d/engine";
 import { CAR_KINDS, buildCarShell, buildProceduralTrafficFleet, type CarKind, type CarShell } from "./vehicles";
 import { planProps, propNodes, type PropPlan } from "./props";
-import { GROUND_HALF, SIDEWALK_MID, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture } from "./city";
+import { buildIdolTrafficFleet, idolPedestrianNodes } from "./idol";
+import type { TrafficWheelRig } from "./wheels";
+import { GROUND_HALF, SIDEWALK_MID, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture, type RoofInfo } from "./city";
 import { farCitySpec, shiftFarSpec, shiftSkySpec, skySpec } from "./sky";
 import { HDRI_URL, ORIGINAL, environmentRotationFor, lightDir, type LookMode, type PhaseRow } from "./phases";
 import { KEY_DISTANCE, lookFrame } from "./daylight";
@@ -202,13 +204,19 @@ export interface TrafficGroup {
   /** traffic indices drawn by this node, in instance order */
   cars: readonly number[];
   scale: number;
+  /** body height above the road (Idol bodies ride on separate wheels) */
+  lift?: number;
 }
 
 export interface LookRig {
   builder: ReturnType<typeof scene>;
+  /** Roof of every dressed building (by building index): the camera keeps its eye out of gables and roof clutter. */
+  roofs?: readonly RoofInfo[];
   traffic: TrafficRig[];
   /** traffic drawn as generated models, one instanced node per car kind; empty when the instanced shells are used */
   modelTraffic: TrafficGroup[];
+  /** Idol pass: the traffic fleet's separate rolling wheels (null for the procedural fleet, whose wheels are in the mesh) */
+  trafficWheels: TrafficWheelRig | null;
   /** collision solids of the generated hydrants and bus shelters (empty with `models: false`) */
   propSolids: readonly Solid[];
   coinMesh: ReturnType<typeof instances.mesh>;
@@ -291,6 +299,8 @@ export interface LookOptions {
   headlightProfile?: AuraPhotometricProfile;
   /** Coarse-pointer mobile handset budget trim (`>=60 FPS` on iPhone while keeping desktop/QA captures at full High). */
   mobileTrim?: boolean;
+  /** Idol pass: image-to-3D traffic, pedestrians, landmarks and street props (`idol.ts`); needs `models`. */
+  idol?: boolean;
 }
 
 /**
@@ -340,8 +350,9 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   for (const shell of [...shells.values(), playerShell]) bakePaletteUVs(shell.detail, palette);
   const far = farCity();
   bakePaletteUVs(far, palette);
-  const propPlan: PropPlan | null = opts.models ? planProps(furniture, world.blocks, world.buildings, opts.start) : null;
-  const props = buildProps(furniture, propPlan?.skip);
+  const propPlan: PropPlan | null = opts.models ? planProps(furniture, world.blocks, world.buildings, opts.start, city.roofs) : null;
+  const idol = Boolean(opts.models && opts.idol);
+  const props = buildProps(furniture, { ...propPlan?.skip, pedestrians: idol });
   bakePaletteUVs(props, palette);
   const paletteCanvas = canvas(PALETTE_SLOTS * 16, 16);
   paintPalette(paletteCanvas.g, palette.hexes, PALETTE_SLOTS);
@@ -454,20 +465,23 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     }
   }
 
-  // ---- street furniture, trees and pedestrians: one merged static mesh in palette colours ----
+  // ---- street furniture, trees and pedestrians: one merged static mesh in palette colours (Idol pass: people are instanced models) ----
+  if (idol) for (const n of idolPedestrianNodes(furniture.pedestrians)) b.add(n);
   b.add(geometry.custom(geo(props, "props"), { name: "props", material: material.pbr({ color: "#ffffff", roughness: 0.82, texture: asRef(paletteTex) }), castShadow: false, receiveShadow: true }));
 
   // ---- procedural multi-material props: near-field lamps, signals, trees, hydrants, shelters, shopfronts & landmarks ----
   // GC-L2: in the shift look the near-field lamps, signals, shelters and landmarks cast into the raking sun
   if (propPlan) {
-    for (const n of propNodes(propPlan, shift)) b.add(n);
+    for (const n of propNodes(propPlan, shift, idol, mobileTrim)) b.add(n);
   }
 
   // ---- traffic: 6-class multi-material procedural city fleet (or `?models=0` low-poly fallback shells) ----
   const modelTraffic: TrafficGroup[] = [];
+  let trafficWheels: TrafficWheelRig | null = null;
   if (opts.models) {
-    const fleet = buildProceduralTrafficFleet(world.traffic, shift && !mobileTrim);
+    const fleet = idol ? buildIdolTrafficFleet(world.traffic, shift && !mobileTrim) : buildProceduralTrafficFleet(world.traffic, shift && !mobileTrim);
     for (const n of fleet.nodes) b.add(n);
+    if ("wheels" in fleet) trafficWheels = fleet.wheels;
     modelTraffic.push(...fleet.groups);
   }
   const traffic: TrafficRig[] = (opts.models ? [] : CAR_KINDS).map((kind) => {
@@ -499,8 +513,10 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
 
   return {
     builder: b,
+    roofs: city.roofs,
     traffic,
     modelTraffic,
+    trafficWheels,
     propSolids: propPlan?.solids ?? [],
     coinMesh,
     starMesh,

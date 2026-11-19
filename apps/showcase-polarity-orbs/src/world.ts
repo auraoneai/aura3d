@@ -11,7 +11,10 @@
  */
 import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
-import { Batch, CORRIDOR_BOUNDS, Slots, scrollFrameZ, type MeshData } from "../../../examples/shared/runner-kit/batch";
+import { Batch, CORRIDOR_BOUNDS, OPEN_BOUNDS, Slots, scrollFrameZ, type MeshData } from "../../../examples/shared/runner-kit/batch";
+
+/** Culling bounds for the unbounded scrolling road frame (see the road batches in `buildWorld`). */
+export const ROAD_FRAME_BOUNDS = OPEN_BOUNDS;
 import { hexToLinear, type Rgb } from "../../../examples/shared/runner-kit/look-utils";
 import { flatSpec, shadowSpec, toonSpec, type CustomSpec } from "../../../examples/shared/runner-kit/shaders";
 import { dualEnergyFieldSpec } from "../../showcase-port-shared/dual-shaders";
@@ -400,11 +403,16 @@ export function buildWorld(_options: WorldOptions): World {
   add("shield", orbMesh(), shieldSpec, false, false);
   add("shockwave", fluxWaveMesh(), fluxRingSpec(LINEAR.red, NORTH_EDGE, LOOK.shockwave.alpha, 4.0), false, false);
 
+  /*
+   * Road-frame batches (deck halves, rails, dashes) sit at local z = -segment * SEG_LEN under a node moved to +distance,
+   * so local z grows without bound: the fixed corridor box (local z >= -420) culled the whole deck after ~420 m
+   * (real-GPU full-run QA). They use ROAD_FRAME_BOUNDS (= OPEN_BOUNDS); entity batches below stay corridor-tight.
+   */
   /* Scrolling road & entity batches with tight CORRIDOR_BOUNDS; road receives shadows without inflating shadow cascades */
-  const deckWarm = new Batch(translateMesh(deckHalfMesh(), -DECK_WIDTH / 4, 0, 0), CONFIG.POOL_SEGMENTS, LINEAR.deckWarm, CORRIDOR_BOUNDS);
-  const deckCool = new Batch(translateMesh(deckHalfMesh(), DECK_WIDTH / 4, 0, 0), CONFIG.POOL_SEGMENTS, LINEAR.deckCoolDim, CORRIDOR_BOUNDS);
-  const rails = new Batch(arenaBezelRailMesh(SEG_LEN), CONFIG.POOL_SEGMENTS * 2, LINEAR.railWarm, CORRIDOR_BOUNDS);
-  const dashes = new Batch(dashMesh(), 60, LINEAR.dash, CORRIDOR_BOUNDS);
+  const deckWarm = new Batch(translateMesh(deckHalfMesh(), -DECK_WIDTH / 4, 0, 0), CONFIG.POOL_SEGMENTS, LINEAR.deckWarm, ROAD_FRAME_BOUNDS);
+  const deckCool = new Batch(translateMesh(deckHalfMesh(), DECK_WIDTH / 4, 0, 0), CONFIG.POOL_SEGMENTS, LINEAR.deckCoolDim, ROAD_FRAME_BOUNDS);
+  const rails = new Batch(arenaBezelRailMesh(SEG_LEN), CONFIG.POOL_SEGMENTS * 2, LINEAR.railWarm, ROAD_FRAME_BOUNDS);
+  const dashes = new Batch(dashMesh(), 60, LINEAR.dash, ROAD_FRAME_BOUNDS);
   addBatch("deck-warm", deckWarm, deckSpec(), false, true);
   addBatch("deck-cool", deckCool, deckSpec(), false, true);
   addBatch("rails", rails, toonSpec([1, 1, 1], undefined, [0, 0, 0], true), false, true);

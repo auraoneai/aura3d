@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink-port",
+  "key": "ioncGatePylon",
+  "generatedAt": "2026-11-18T22:07:18.574Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "local",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 752584,
+        "num_faces": 1505172,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A tall slender futuristic race-track checkpoint pylon tower: a sculpted chamfered stone and metal anchor plinth at the bottom, rising into two tall razor-thin swept aerodynamic blade fins side by side with glowing cyan chevron light strips running up them, brushed titanium and dark anodised alloy, weathered by moon dust",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 20.422,
+    "size": [
+      11.813,
+      22,
+      7.05
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/heatsink-port/assets/idol/ioncGatePylon.glb",
+  "sizeBytes": 2598824,
+  "preview": "artifacts/idol/heatsink-port/ioncGatePylon/views.png",
+  "usd": 0.37
+}

@@ -1,6 +1,6 @@
 ---
 name: aura3d-character-animation
-description: Drives rigged Aura3D characters from inspected clip, skeleton, and morph metadata with an animation controller, clip events, runtime pose and morph state, and voice-bridge visemes, then proves motion in character-region pixels. Use when animating a humanoid or creature, using `AnimationController`, `createAnimationController`, or `animation.sampleAuraVoiceBridgeAtTime`, setting morph targets or visemes, or running `assets inspect --animation`, `assets validate-animation`, or `assets assemble-character`.
+description: Drives rigged Aura3D characters from inspected clip, skeleton, and morph metadata with an animation controller, clip events, runtime pose and morph state, and voice-bridge visemes, then proves motion in character-region pixels. Use when animating a humanoid or creature, using `AnimationController`, `createAnimationController`, or `animation.sampleAuraVoiceBridgeAtTime`, setting morph targets or visemes, or running `animation import`, `animation generate`, `assets inspect --animation`, `assets validate-animation`, or `assets assemble-character`.
 ---
 
 # Aura3D character animation
@@ -20,14 +20,19 @@ in flat light can vanish inside night-city shadow pools or golden-hour haze.
 ## Establish the contract
 
 1. Run `npx @aura3d/cli@latest --help` and use only the `assets inspect`,
-   `assets validate-animation`, and `assets assemble-character` flags it prints.
+   `assets validate-animation`, `animation import`, `animation generate` and
+   `assets assemble-character` flags it prints.
 2. Read `src/aura-assets.ts` and `aura.assets.json`. The character must be a
    typed key with role `character`. No key: load `aura3d-assets` first.
-   Need a new humanoid? Generate it from a text prompt (a-pose or t-pose
-   preview, remesh to about 10,000 triangles, rig, animate, `assets
-   merge-clips`) as laid out in section 5 of the
-   [asset workflow](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md);
-   rigging adds walk and run, each extra `animate` task is one action.
+   Need a new lifelike humanoid? Run
+   `assets generate "<subject>" --kind character --rig` (paid fal.ai,
+   `--dry-run` first; it faces, scales and grounds the model, and
+   `assets normalize` re-tunes that), then `assets validate --skin`. Missing
+   clips: retarget BVH, FBX, GLB or HY-Motion motion with `animation import`,
+   or make them from text with `animation generate`
+   ([import and generate](references/import-and-generate.md); its engine is the
+   5.6.0 `@aura3d/animation` humanoid module: `smplMotionToClip`,
+   `skeletalMotionToFrames`, `mapHumanoid`, `createHumanoidDriver`).
 3. Inspect the rig and record the real names:
 
    ```bash
@@ -106,8 +111,11 @@ in flat light can vanish inside night-city shadow pools or golden-hour haze.
    });
    ```
 
-7. Retargeting is explicit and selected-roster only. Use an explicit humanoid
-   map; do not claim arbitrary-rig retargeting or full-body IK.
+7. Retargeting runs at import time onto humanoid rigs:
+   `animation import <src> --onto rig.glb --out hero.glb` maps roles
+   automatically (`--map` to override), fails on limb flips or a frozen T-pose, and runs the skin check
+   (allow-list aware; `--strict` fails on any unlisted skin error). Do not
+   claim arbitrary-rig retargeting or full-body IK at runtime.
 8. Normal mode: `npm run build` locally. Browser proof (deterministic capture
    times inside the clip's keyframe range, stable camera, character-region
    pixel delta, backend and fallback named) runs on a remote runner
@@ -125,6 +133,9 @@ in flat light can vanish inside night-city shadow pools or golden-hour haze.
 - The claim is "visible skinning, morphs, or visemes" and you only have
   controller snapshots or clip lists: label it `prototype`.
 - Only the certified roster in the skinning doc may be called certified.
+- `animation import` or `animation generate` exits 1: read the named check
+  (limb flip, retarget error, T-pose, skin); fix the rig or pick a gentler
+  clip. Never ship the clip by loosening the allow-list without a reason.
 
 ## References
 
@@ -133,5 +144,7 @@ in flat light can vanish inside night-city shadow pools or golden-hour haze.
 - [Animation, retargeting, IK](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/animation.md)
 - [Animation runtime events](https://github.com/auraoneai/aura3d/blob/main/docs/api/animation-runtime-events.md)
 - [Animation runtime support](https://github.com/auraoneai/aura3d/blob/main/docs/animation/runtime-support.md)
+- [Asset workflow (rig and clip admission)](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md)
 - [Agent guide llms.txt](https://github.com/auraoneai/aura3d/blob/main/llms.txt)
 - [Character staging and lighting](references/stage-and-lighting.md)
+- [Import and generate motion](references/import-and-generate.md)

@@ -133,10 +133,16 @@ export function cinematicShot(input: CinematicInput): CinematicShot | null {
   }
   if (input.phase === "boutEnd" && input.winner) {
     const w = input.winner;
-    return { name: "win-hero", position: [w[0] + 0.6, 0.85, w[2] + 3.1], target: [w[0], 1.5, w[2]], fov: 36 };
+    // Aim at the body's middle (1.15 m, still above the 0.85 m lens: a low shot looking up). Aimed at the chest (1.5 m)
+    // the 1280x720 frame cut the winner at the knees (real-GPU bout-end frame); main.ts then dollies it back across the
+    // floor until the whole body fits inside the letterbox (cinematicLandscapeSafe / fitDollyFactor).
+    return { name: "win-hero", position: [w[0] + 0.6, 0.85, w[2] + 3.1], target: [w[0], WIN_SHOT_AIM_Y, w[2]], fov: 36 };
   }
   return null;
 }
+
+/** Aim height (m) of the win hero shot: the winner's middle, so head and feet both fit the letterboxed frame. */
+export const WIN_SHOT_AIM_Y = 1.15;
 
 /** Letterbox bars are shown while the camera performs (intro, K.O. and bout end). */
 export function letterboxWanted(phase: CinematicPhase, hasWinner: boolean): boolean {
@@ -209,4 +215,190 @@ export function hudSlamFor(prev: CinematicShot["name"] | null, next: CinematicSh
   if (next === "p2-closeup") return "p2";
   if (next === null && (prev === "venue-dolly" || prev === "p1-closeup" || prev === "p2-closeup")) return "center";
   return null;
+}
+
+/**
+ * Portrait framing (owner: "390x844 Neo-Tokyo: the camera sits too close to a fighter"). On a narrow viewport the fight
+ * lens, the intro close-ups, the K.O. orbit and the win shot cropped a fighter (the horizontal field of view on 390x844 is
+ * under half the vertical one). `fitShotToFrame` dollies the camera along its own view line until every subject's full
+ * body box (feet to head, with reach either side) projects inside the safe rectangle: inside the top HUD plates and the
+ * bottom mode strip, with side margins. Camera only; the sim never reads it.
+ */
+export interface FrameSubject {
+  /** Feet position (the kinematic body position; y is the jump height). */
+  readonly position: AuraVec3;
+  /** Standing height (m) of the fighter's model at its scale. */
+  readonly height: number;
+  /** Half-width (m) either side of the feet point; default FRAME_SUBJECT_BOX.halfWidth. */
+  readonly reach?: number;
+}
+
+/** Normalised device rectangle a subject must stay inside ([-1, 1], y up). */
+export interface SafeFrame {
+  readonly left: number;
+  readonly right: number;
+  readonly top: number;
+  readonly bottom: number;
+}
+
+/**
+ * The portrait safe rectangle: the top HUD (health plates and clock) covers about the top 15% of a 390x844 frame and
+ * the mode strip the bottom 5%; the sides keep a 6% margin. (Measured on real-GPU 390x844 frames.)
+ */
+export const PORTRAIT_SAFE_FRAME: SafeFrame = { left: -0.88, right: 0.88, top: 0.64, bottom: -0.86 };
+
+/** Standing height (m) of a scale-1 fighter model (Kenji); a fighter's box is this times its `scale`. */
+export const FIGHTER_FRAME_HEIGHT = 1.85;
+
+/** The subject box beyond the feet point: reach either side (a strike, a raised knee, a fall) and body depth. */
+export const FRAME_SUBJECT_BOX = { halfWidth: 0.75, halfDepth: 0.4, headroom: 0.1 } as const;
+
+/** Viewports narrower than this are framed by `fitShotToFrame` (390x844 is 0.46; a landscape tablet is above 1). */
+export const PORTRAIT_FIT_MAX_ASPECT = 1;
+
+/** The camera's view of a world point in normalised device coordinates, `null` behind the near plane. */
+export function projectNdc(eye: AuraVec3, target: AuraVec3, fovDeg: number, aspect: number, p: AuraVec3): readonly [number, number] | null {
+  const fx = target[0] - eye[0];
+  const fy = target[1] - eye[1];
+  const fz = target[2] - eye[2];
+  const fl = Math.hypot(fx, fy, fz) || 1;
+  const f = [fx / fl, fy / fl, fz / fl] as const;
+  // right = f x up(0,1,0); up' = right x f
+  let rx = -f[2];
+  let rz = f[0];
+  const rl = Math.hypot(rx, rz) || 1;
+  rx /= rl;
+  rz /= rl;
+  const ux = -rz * f[1];
+  const uy = rz * f[0] - rx * f[2];
+  const uz = rx * f[1];
+  const d = [p[0] - eye[0], p[1] - eye[1], p[2] - eye[2]] as const;
+  const depth = d[0] * f[0] + d[1] * f[1] + d[2] * f[2];
+  if (!(depth > 0.05)) return null;
+  const t = Math.tan((fovDeg * Math.PI) / 360);
+  const x = d[0] * rx + d[2] * rz;
+  const y = d[0] * ux + d[1] * uy + d[2] * uz;
+  return [x / (depth * t * aspect), y / (depth * t)];
+}
+
+/** The eight corners of a subject's body box. */
+export function subjectCorners(s: FrameSubject): AuraVec3[] {
+  const b = FRAME_SUBJECT_BOX;
+  const [x, y, z] = s.position;
+  const feet = Math.max(0, y);
+  const top = feet + s.height + b.headroom;
+  const out: AuraVec3[] = [];
+  const hw = s.reach ?? b.halfWidth;
+  for (const cx of [x - hw, x + hw]) for (const cy of [feet, top]) for (const cz of [z - b.halfDepth, z + b.halfDepth]) out.push([cx, cy, cz]);
+  return out;
+}
+
+/** True when every subject corner projects inside the safe rectangle. */
+export function subjectsInFrame(eye: AuraVec3, target: AuraVec3, fovDeg: number, aspect: number, subjects: readonly FrameSubject[], safe: SafeFrame = PORTRAIT_SAFE_FRAME): boolean {
+  for (const s of subjects) {
+    for (const c of subjectCorners(s)) {
+      const n = projectNdc(eye, target, fovDeg, aspect, c);
+      if (!n || n[0] < safe.left || n[0] > safe.right || n[1] > safe.top || n[1] < safe.bottom) return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * The dolly factor along the camera's view line (eye = target + (eye0 - target) * k) that fits every subject: the
+ * smallest k in [minK, maxK] whose frame holds them all (bisection; projection shrinks monotonically as k grows).
+ * `minK < 1` lets the fight lens move in when the pair has room to spare; cinematic shots pass `minK = 1` (pull back only).
+ */
+export function fitDollyFactor(
+  eye: AuraVec3,
+  target: AuraVec3,
+  fovDeg: number,
+  aspect: number,
+  subjects: readonly FrameSubject[],
+  opts: { readonly minK?: number; readonly maxK?: number; readonly safe?: SafeFrame; readonly keepHeight?: boolean } = {}
+): number {
+  const minK = opts.minK ?? 1;
+  const maxK = opts.maxK ?? 4;
+  const safe = opts.safe ?? PORTRAIT_SAFE_FRAME;
+  const at = (k: number): AuraVec3 => dollyEye(eye, target, k, opts.keepHeight);
+  if (subjectsInFrame(at(minK), target, fovDeg, aspect, subjects, safe)) return minK;
+  if (!subjectsInFrame(at(maxK), target, fovDeg, aspect, subjects, safe)) return maxK;
+  let lo = minK;
+  let hi = maxK;
+  for (let i = 0; i < 24; i += 1) {
+    const mid = (lo + hi) / 2;
+    if (subjectsInFrame(at(mid), target, fovDeg, aspect, subjects, safe)) hi = mid;
+    else lo = mid;
+  }
+  return hi;
+}
+
+/**
+ * `fitDollyFactor` applied: the shot's eye moved along its view line, or (`keepHeight`) back across the floor at the
+ * same height. Cinematic shots keep their height: the low win shot looks up at the winner, and dollying it back along its
+ * line took the lens under the floor on 390x844 (real-GPU frame: an empty dark frame with the floor's underside).
+ */
+export function dollyEye(eye: AuraVec3, target: AuraVec3, k: number, keepHeight = false): AuraVec3 {
+  return [target[0] + (eye[0] - target[0]) * k, keepHeight ? eye[1] : target[1] + (eye[1] - target[1]) * k, target[2] + (eye[2] - target[2]) * k];
+}
+
+/**
+ * Portrait keeps the authored dolly, K.O. orbit and win shot (fitted by the dolly) but not the single-fighter close-ups:
+ * at aspect 0.46 a close-up cannot hold the rival standing beside its subject (real-GPU intro frame: the rival cut in
+ * half at the edge, "the camera sits too close to a fighter"), so the fight lens frames the pair through those beats.
+ */
+export function portraitKeepsShot(name: CinematicShot["name"]): boolean {
+  return name !== "p1-closeup" && name !== "p2-closeup";
+}
+
+/** Half-width (m) the win shot keeps around the winner (victory step plus raised arms). */
+export const WIN_SHOT_REACH = 1.5;
+
+/** Which fighters a portrait shot must keep whole: the winner (wider box) on the win shot, else both. */
+export function shotSubjects(name: CinematicShot["name"] | null, p1: FrameSubject, p2: FrameSubject, winner: FrameSubject | null): FrameSubject[] {
+  // Close-ups keep both fighters whole too: on 390x844 the rival stands beside the close-up's subject and was cut in half
+  // at the frame edge (real-GPU intro frame), which read as the camera sitting too close to a fighter.
+  // The victory clip steps and raises the arms off the body point (real-GPU 390x844: the winner drifted ~0.6 m toward the
+  // frame edge), so the win shot keeps a wider box around its subject.
+  if (name === "win-hero" && winner) return [{ ...winner, reach: WIN_SHOT_REACH }];
+  return [p1, p2];
+}
+
+/**
+ * Portrait crane (m): the fight lens rises this much (eye and aim together, same tilt) before the dolly fit, so the pair
+ * sits in the lower-middle of the tall frame with the venue above them, instead of floating mid-frame over a wide band
+ * of empty mirror floor.
+ */
+export const PORTRAIT_CRANE_Y = 1.4;
+
+/** The fight lens lifted by PORTRAIT_CRANE_Y (the portrait dolly then fits the pair from here). */
+export function portraitFightBase(framed: { readonly position: AuraVec3; readonly target: AuraVec3 }): { readonly eye: AuraVec3; readonly target: AuraVec3 } {
+  return {
+    eye: [framed.position[0], framed.position[1] + PORTRAIT_CRANE_Y, framed.position[2]],
+    target: [framed.target[0], framed.target[1] + PORTRAIT_CRANE_Y, framed.target[2]]
+  };
+}
+
+/** Fight-lens dolly range in portrait: moves in to 0.55x when the pair has room, pulls back to 3.2x at most. */
+export const PORTRAIT_FIGHT_DOLLY = { minK: 0.55, maxK: 3.2 } as const;
+
+/** Cinematic shots in portrait hide the HUD plates behind the letterbox, so the bars (plus 2% of the frame) are the limit. */
+export function cinematicPortraitSafe(letterboxBar: number): SafeFrame {
+  const edge = 1 - 2 * letterboxBar - 0.04;
+  return { ...PORTRAIT_SAFE_FRAME, top: Math.min(PORTRAIT_SAFE_FRAME.top, edge), bottom: Math.max(PORTRAIT_SAFE_FRAME.bottom, -edge) };
+}
+
+/**
+ * Landscape (1280x720) safe rectangle for the shots that must hold a whole body: inside the letterbox bars with 3% of
+ * the frame to spare top and bottom, 5% at the sides. The win shot is fitted to it (pull back only, same lens height),
+ * so the winner reads head to feet (real-GPU frame: cut at the knees).
+ */
+export function cinematicLandscapeSafe(letterboxBar: number): SafeFrame {
+  const edge = 1 - 2 * letterboxBar - 0.06;
+  return { left: -0.9, right: 0.9, top: edge, bottom: -edge };
+}
+
+/** Landscape shots fitted to their subject box: the win shot (intro close-ups are tight by design; the orbit frames the pair). */
+export function landscapeFitsShot(name: CinematicShot["name"]): boolean {
+  return name === "win-hero";
 }

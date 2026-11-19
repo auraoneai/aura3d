@@ -18,8 +18,8 @@ import {
   type V3
 } from "../../../apps/showcase-aura-links-3d/src/game/swingMath";
 import {
-  meshyForwardKinematics,
-  meshyProfile,
+  rigForwardKinematics,
+  rigProfile,
   retargetSolved
 } from "../../../apps/showcase-aura-links-3d/src/game/golferRetarget";
 import { CLUBS } from "../../../apps/showcase-aura-links-3d/src/game/sim";
@@ -33,21 +33,21 @@ const lineDistance = (p: V3, origin: V3, dir: V3): number => {
 };
 
 describe("Links golfer: both procedural arms stay attached, visible and on the grip in every pose", () => {
-  beforeAll(() => useSkeleton(meshyProfile()));
+  beforeAll(() => useSkeleton(rigProfile()));
   afterAll(() => useSkeleton(SKELETON_ATHLETE));
 
   it("keeps the upper arm and forearm at exact rigid segment lengths through the retargeted FK chain", () => {
-    const prof = meshyProfile();
+    const prof = rigProfile();
     const restUpperR = vLen(prof.rig.tForearmR);
     const restUpperL = vLen(prof.rig.tForearmL);
-    const bindFk = meshyForwardKinematics({});
+    const bindFk = rigForwardKinematics({});
     const restForeR = vDist(bindFk.get("RightForeArm")!.pos, bindFk.get("RightHand")!.pos);
     const restForeL = vDist(bindFk.get("LeftForeArm")!.pos, bindFk.get("LeftHand")!.pos);
     const bad: string[] = [];
     for (const phase of PHASES) {
       for (let s = 0; s <= 10; s += 1) {
         const solved = solveSwing(evaluateSwing(phase, s / 10), root);
-        const fk = meshyForwardKinematics(retargetSolved(solved));
+        const fk = rigForwardKinematics(retargetSolved(solved));
         const upperR = vDist(fk.get("RightArm")!.pos, fk.get("RightForeArm")!.pos) / restUpperR;
         const foreR = vDist(fk.get("RightForeArm")!.pos, fk.get("RightHand")!.pos) / restForeR;
         const upperL = vDist(fk.get("LeftArm")!.pos, fk.get("LeftForeArm")!.pos) / restUpperL;
@@ -60,7 +60,7 @@ describe("Links golfer: both procedural arms stay attached, visible and on the g
   });
 
   it("puts the drawn right palm on the grip and the drawn left palm on the shaft line, for every club and aim yaw", () => {
-    const prof = meshyProfile();
+    const prof = rigProfile();
     const reachMaxR = vLen(prof.rig.tForearmR) + vLen(prof.rig.palmR);
     const reachMaxL = vLen(prof.rig.tForearmL) + vLen(prof.rig.palmL);
     const misses: string[] = [];
@@ -85,7 +85,7 @@ describe("Links golfer: both procedural arms stay attached, visible and on the g
   it("keeps both elbows separated and clear of the torso core in every pose", () => {
     for (const phase of PHASES) {
       for (let s = 0; s <= 6; s += 1) {
-        const fk = meshyForwardKinematics(retargetSolved(solveSwing(evaluateSwing(phase, s / 6), root)));
+        const fk = rigForwardKinematics(retargetSolved(solveSwing(evaluateSwing(phase, s / 6), root)));
         expect(vDist(fk.get("RightForeArm")!.pos, fk.get("LeftForeArm")!.pos), `${phase}@${s}`).toBeGreaterThan(0.12);
       }
     }

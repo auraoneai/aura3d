@@ -2,14 +2,14 @@
  * Aura Links 3D: retarget of the procedural swing onto the 24-joint golfer rig.
  *
  * The swing (swingMath.ts) is solved on a "virtual" skeleton: the original athlete's 15 bones, whose bind rotations are all
- * identity. The Meshy rig is a T-pose humanoid whose bones have arbitrary bind orientations and different proportions. This
+ * identity. The 24-joint rig is a T-pose humanoid whose bones have arbitrary bind orientations and different proportions. This
  * module does two things:
  *
- *   1. `meshyProfile()` builds a `SkeletonProfile` from the Meshy bind pose (golferSkeleton.ts), so the solve uses the Meshy
+ *   1. `rigProfile()` builds a `SkeletonProfile` from the 24-joint bind pose (golferSkeleton.ts), so the solve uses the 24-joint
  *      rig's real shoulder, arm, torso and leg lengths. The virtual chain Hips - Spine - Chest - Head maps onto the real
  *      Hips / Spine02 / Spine / Head (Spine01 shares Spine02's rotation, neck and the shoulder joints share the chest's), so the
  *      virtual joint offsets equal the real ones and the real hand ends up exactly where the solve puts the palm.
- *   2. `retargetSolved()` turns the solved world rotation DELTAS (relative to the virtual bind) into the Meshy bones' local
+ *   2. `retargetSolved()` turns the solved world rotation DELTAS (relative to the virtual bind) into the 24-joint bones' local
  *      rotations: world = delta * bindWorld, local = conj(parentWorld) * world. The Hips also carries its position (the
  *      Armature node scales its children by 0.01, so the local value is in centimetres).
  *
@@ -23,13 +23,13 @@ import {
 
 /** `targetHeight` the game gives the golfer (m) */
 export const GOLFER_TARGET_HEIGHT = 1.84;
-/** height of the Meshy GLB (m): the asset bounds row and the mesh accessor max y */
-export const MESHY_GLB_HEIGHT = 1.82;
-/** the palm sits this far past the Meshy hand joint (m), along the forearm */
+/** height of the 24-joint GLB (m): the asset bounds row and the mesh accessor max y */
+export const RIG_GLB_HEIGHT = 1.82;
+/** the palm sits this far past the 24-joint hand joint (m), along the forearm */
 export const PALM_PAST_HAND = 0.08;
 
-/** original athlete bone -> Meshy bone that carries it ("Root" has no Meshy counterpart: the Armature node is the root) */
-export const ATHLETE_TO_MESHY: Readonly<Record<string, string | null>> = {
+/** original athlete bone -> 24-joint bone that carries it ("Root" has no 24-joint counterpart: the Armature node is the root) */
+export const ATHLETE_TO_RIG: Readonly<Record<string, string | null>> = {
   Root: null,
   Hips: "Hips",
   Spine: "Spine02",
@@ -47,8 +47,8 @@ export const ATHLETE_TO_MESHY: Readonly<Record<string, string | null>> = {
   RightForearm: "RightForeArm"
 };
 
-/** every Meshy bone the pose writes, with the solved delta that drives it (null = keeps its bind orientation) */
-export const MESHY_DRIVE: Readonly<Record<string, keyof SolvedDeltas | null>> = {
+/** every 24-joint bone the pose writes, with the solved delta that drives it (null = keeps its bind orientation) */
+export const RIG_DRIVE: Readonly<Record<string, keyof SolvedDeltas | null>> = {
   Hips: "hips",
   Spine02: "spine",
   Spine01: "spine",
@@ -76,7 +76,7 @@ export const MESHY_DRIVE: Readonly<Record<string, keyof SolvedDeltas | null>> = 
 const bindByName = new Map<string, GolferBindJoint>(GOLFER_BIND.map((j) => [j.name, j]));
 const joint = (name: string): GolferBindJoint => {
   const j = bindByName.get(name);
-  if (!j) throw new Error(`golferRetarget: joint "${name}" is not in the Meshy golfer bind table`);
+  if (!j) throw new Error(`golferRetarget: joint "${name}" is not in the 24-joint golfer bind table`);
   return j;
 };
 const P = (name: string): V3 => [...joint(name).pos] as V3;
@@ -119,17 +119,17 @@ const palmFrom = (fore: string, hand: string): V3 => {
 };
 
 /**
- * Tuning of the Meshy profile (what the Meshy rig needs that the original athlete did not): the legs are nearly straight at
+ * Tuning of the 24-joint profile (what the 24-joint rig needs that the original athlete did not): the legs are nearly straight at
  * bind, so the knee flex comes from lowering the hips; the torso is shorter than the athlete's, so the spine flexes a little less.
  */
-export const MESHY_TUNING = { crouch: 0.012, hipsBack: -0.02, hipsSide: 0.05, flexScale: 1.25 };
+export const RIG_TUNING = { crouch: 0.012, hipsBack: -0.02, hipsSide: 0.05, flexScale: 1.25 };
 
 let cachedProfile: SkeletonProfile | undefined;
 
-/** the Meshy golfer's proportions as a swing-solve skeleton (GLB model space, metres) */
-export function meshyProfile(): SkeletonProfile {
+/** the 24-joint golfer's proportions as a swing-solve skeleton (GLB model space, metres) */
+export function rigProfile(): SkeletonProfile {
   if (cachedProfile) return cachedProfile;
-  const fit = GOLFER_TARGET_HEIGHT / MESHY_GLB_HEIGHT;
+  const fit = GOLFER_TARGET_HEIGHT / RIG_GLB_HEIGHT;
   const oldFit = 1.84 / 1.897;
   const hips = P("Hips");
   const spine = P("Spine");
@@ -160,32 +160,32 @@ export function meshyProfile(): SkeletonProfile {
       hipJointL: vSub(P("LeftUpLeg"), hips), hipJointR: vSub(P("RightUpLeg"), hips),
       thighBindL: l.thighBind, shinBindL: l.shinBind, thighBindR: r.thighBind, shinBindR: r.shinBind,
       ankleL: P("LeftFoot"), ankleR: P("RightFoot"), toeL: P("LeftToeBase"), toeR: P("RightToeBase"),
-      crouch: MESHY_TUNING.crouch, hipsBack: MESHY_TUNING.hipsBack, hipsSide: MESHY_TUNING.hipsSide
+      crouch: RIG_TUNING.crouch, hipsBack: RIG_TUNING.hipsBack, hipsSide: RIG_TUNING.hipsSide
     },
     fitScale: fit,
     clubScale: oldFit / fit,
-    flexScale: MESHY_TUNING.flexScale,
+    flexScale: RIG_TUNING.flexScale,
     anatomic: true,
     palmNormalBind: [0, 0, 1]
   };
   return cachedProfile;
 }
 
-export interface MeshyBonePose {
+export interface RigBonePose {
   readonly rotation: Quat;
   readonly position?: { readonly x: number; readonly y: number; readonly z: number };
 }
 
 /**
- * The overlay pose for the Meshy skeleton from one solved swing: local rotations for every bone in MESHY_DRIVE, plus the Hips
+ * The overlay pose for the 24-joint skeleton from one solved swing: local rotations for every bone in RIG_DRIVE, plus the Hips
  * local position (centimetres, the Armature scale folded out).
  */
-export function retargetSolved(solved: Pick<SolvedSwing, "deltas" | "hipsPos">): Record<string, MeshyBonePose> {
+export function retargetSolved(solved: Pick<SolvedSwing, "deltas" | "hipsPos">): Record<string, RigBonePose> {
   const world = new Map<string, Quat>();
   const deltaOf = (name: string): Quat | undefined => {
     if (name === "Spine01") return qSlerp(solved.deltas.spine, solved.deltas.chest, 0.18);
     if (name === "neck") return qSlerp(solved.deltas.chest, solved.deltas.head, 0.5);
-    const key = MESHY_DRIVE[name];
+    const key = RIG_DRIVE[name];
     return key ? solved.deltas[key] : undefined;
   };
   const worldOf = (name: string): Quat => {
@@ -196,8 +196,8 @@ export function retargetSolved(solved: Pick<SolvedSwing, "deltas" | "hipsPos">):
     world.set(name, w);
     return w;
   };
-  const out: Record<string, MeshyBonePose> = {};
-  for (const name of Object.keys(MESHY_DRIVE)) {
+  const out: Record<string, RigBonePose> = {};
+  for (const name of Object.keys(RIG_DRIVE)) {
     const parent = joint(name).parent;
     const local = parent ? qNormalize(qMul(qConj(worldOf(parent)), worldOf(name))) : worldOf(name);
     out[name] = { rotation: local };
@@ -211,10 +211,10 @@ export function retargetSolved(solved: Pick<SolvedSwing, "deltas" | "hipsPos">):
 }
 
 /**
- * Forward kinematics of a Meshy pose (what the engine's skeleton evaluates): world position and rotation of every joint, in GLB
+ * Forward kinematics of a 24-joint pose (what the engine's skeleton evaluates): world position and rotation of every joint, in GLB
  * model space (metres). Joints the pose does not write keep their bind local transform.
  */
-export function meshyForwardKinematics(pose: Readonly<Record<string, MeshyBonePose>>): Map<string, { pos: V3; rot: Quat }> {
+export function rigForwardKinematics(pose: Readonly<Record<string, RigBonePose>>): Map<string, { pos: V3; rot: Quat }> {
   const out = new Map<string, { pos: V3; rot: Quat }>();
   for (const j of GOLFER_BIND) {
     const bindRot = Q(j.name);

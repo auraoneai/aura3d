@@ -68,11 +68,11 @@ export const AMMO_TRAIL_COLOR: Readonly<Record<AmmoId, string>> = {
 export function siegeVfxPresets(options: SiegeVfxOptions): Readonly<Record<SiegeVfxName, AuraVfxEffectSpec>> {
   const n = (count: number): number => Math.max(1, Math.round(options.reducedMotion ? count / 2 : count));
   const camera = (shake: number): Layer[] => (options.reducedMotion ? [] : [{ type: "camera", shake }]);
-  const light = (intensity: number, range: number, duration: number, color: string): Layer[] => [
-    options.reducedFlash
-      ? { type: "light", intensity: Math.min(0.3, intensity), range, duration: Math.min(0.2, duration), color }
-      : { type: "light", intensity, range, duration, color }
-  ];
+  // No transient point lights: each short-lived VFX light changes the scene's light count, which recompiles the
+  // light-count-keyed PBR programs on the next frames and on WebGPU threw "Packed lights exceed the selected generated
+  // PBR program" mid-shot (real-GPU audit 2026-11-19, Gull Keep / Moon Roost autoplay; engine defect). The impact-flash
+  // and explosion emitters carry the flash instead. The signature stays so the presets read as authored.
+  const light = (_intensity: number, _range: number, _duration: number, _color: string): Layer[] => [];
   const spec = (name: SiegeVfxName, layers: Layer[]): AuraVfxEffectSpec => ({ name, layers });
   return {
     [SIEGE_VFX.breakWood]: spec(SIEGE_VFX.breakWood, [

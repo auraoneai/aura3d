@@ -13,6 +13,8 @@
  * - High-count street-prop instanced batches (`>16`) use `material.pbr` or `material.metal` with `clearcoat: 0, sheen: 0`.
  * - Glazing uses `material.physical` (`clearcoat: 1, ior: 1.5`) with `castShadow: false`. Zero `three` imports.
  */
+import type { Solid } from "../sim";
+import { FADE, registerFadeLayer, vegetationOccluderVolumes, type OccluderVolume } from "../occluderFade";
 import {
   geometry,
   group,
@@ -26,6 +28,7 @@ import {
 } from "@aura3d/engine";
 
 type GroupNodeBuilder = ReturnType<typeof group>;
+type ModelNodeBuilder = ReturnType<typeof import("@aura3d/engine").model>;
 import {
   archwayVoussoirSlots,
   assembleMultiMaterialNode,
@@ -654,7 +657,8 @@ export function buildHeroCourierWheelSlots(side: -1 | 1): readonly MultiMatSlot[
     );
   }
 
-  // 2: 32-segment slotted steel brake rotor + courier brake caliper
+  // 2: 32-segment slotted steel brake rotor (axisymmetric). The caliper is not part of the spinning node: on the wheel it
+  // orbited the hub with the spin (owner QA Nov 18, wheel pivot pass), and a fixed caliper would need its own steered node.
   const rotorMesh = joinRawMeshes([
     transformMesh(
       latheMesh(
@@ -668,10 +672,7 @@ export function buildHeroCourierWheelSlots(side: -1 | 1): readonly MultiMatSlot[
         false
       ),
       { rot: rotToAxleX }
-    ),
-    transformMesh(taubinSmoothMesh(bevelBoxMesh(hw * 0.42, r * 0.32, r * 0.2, r * 0.032), 3), {
-      pos: [-side * hw * 0.06, r * 0.22, r * 0.3]
-    })
+    )
   ]);
 
   // 3: 28-segment center locknut & chrome courier hubcap medallion
@@ -1426,6 +1427,17 @@ export function buildLighthouseLandmarkNode(
   });
 }
 
+/**
+ * Pass-through QA (Nov 18): the drop-off parcel kiosk stands on the curb line (8.6 m off the street centre, 0.3 m into the
+ * paved width) with no collider, so a car hugging the curb slid through it. It is a stiff post-like solid matching the
+ * kiosk's 1.82 x 0.82 m footprint (art/proceduralModels.ts buildDropoffParcelKioskNode), moved with each job.
+ */
+export function kioskSolid(job: { readonly x: number; readonly z: number } | null): Solid | null {
+  if (!job) return null;
+  const pose = dropoffKioskPose(job);
+  const alongZ = Math.abs(Math.sin(pose.yaw)) > 0.5;
+  return { x: pose.x, z: pose.z, hw: alongZ ? 0.41 : 0.91, hd: alongZ ? 0.91 : 0.41, kind: "post" };
+}
 /** Computes sidewalk kerb placement for the Drop-Off Parcel Kiosk beside an active delivery job. */
 export function dropoffKioskPose(job: { readonly x: number; readonly z: number } | null): {
   readonly x: number;
@@ -1540,6 +1552,19 @@ function propSurfaceMaterials() {
   };
 }
 
+/** Pole and gooseneck head of one street lamp (world metres) for the occluder fade; the arm reaches 1.38 m along local +X. */
+export function lampOccluderVolumes(t: AuraTransformSpec): OccluderVolume[] {
+  const s = typeof t.scale === "number" ? t.scale : 1;
+  const x = t.position?.[0] ?? 0, z = t.position?.[2] ?? 0;
+  const yaw = t.rotation?.[1] ?? 0;
+  // Ry(yaw) maps local +X to (cos yaw, 0, -sin yaw)
+  const hx = x + Math.cos(yaw) * 1.38 * s * 0.6, hz = z - Math.sin(yaw) * 1.38 * s * 0.6;
+  return [
+    { x, z, r: 0.25 * s, yMin: 0, yMax: 4.6 * s },
+    { x: hx, z: hz, r: 0.75 * s, yMin: 4.2 * s, yMax: 5.05 * s }
+  ];
+}
+
 let cachedStreetLamp: { readonly iron: RawMesh; readonly brass: RawMesh; readonly bulb: RawMesh } | null = null;
 /** 5.0 m Harbor Gooseneck Street Lamp (`castIron` mast & reflector hood, `brass` collar, `sodiumBulb` globe, `minY = 0`). */
 function buildStreetLampMeshes(): { readonly iron: RawMesh; readonly brass: RawMesh; readonly bulb: RawMesh } {
@@ -1586,6 +1611,41 @@ function buildTrafficSignalMeshes() {
     greenLens: transformMesh(lensDisc, { pos: [0.88, 3.17, 0.14], rot: [Math.PI * 0.5, 0, 0] })
   };
   return cachedTrafficSignal;
+}
+
+/** Metre bounds [w, h, d] at scale 1 of the code-built street tree and date palm (occluder volumes). */
+export const VEGETATION_BOUNDS = { tree: [3.2, 4.6, 3.2], palm: [5.4, 7.5, 5.4] } as const;
+
+/**
+ * Owner QA (Nov 19): one-piece trunk + crown geometry of the code-built tree / palm for the translucent "ghost" draws of
+ * the occluder fade. The Idol trees use it too: an imported GLB's `material` override keeps the glTF's opaque blend state
+ * (opacity alone is ignored), so a ghost of the Idol model drew as a solid tree and the trees never faded.
+ */
+export function vegetationGhostGeometry(kind: "tree" | "palm") {
+  return kind === "tree"
+    ? memoizeGeometry("drift:prop-tree-ghost", () => { const { trunk, canopy } = buildStreetTreeMeshes(); return mergeRawMeshes([trunk, canopy]); })
+    : memoizeGeometry("drift:prop-palm-ghost", () => { const { trunk, fronds } = buildDatePalmMeshes(); return mergeRawMeshes([trunk, fronds]); });
+}
+
+/** Vegetation ghosts draw at this share of the shared `FADE.opacities`. */
+export const VEGETATION_GHOST_OPACITY = 0.6;
+
+/** Translucent ghost draws (one per fade stage) of a tree / palm layer, parked under the road until the fader fills them. */
+export function vegetationGhostNodes(kind: "tree" | "palm") {
+  const spec = vegetationGhostGeometry(kind);
+  return FADE.opacities.map((opacity, k) => {
+    const id = `model-${kind}-ghost-${k}`;
+    return instances
+      .custom(spec, {
+        name: id,
+        transforms: [{ position: [0, FADE.parkedY, 0], rotation: [0, 0, 0], scale: 1 }],
+        // a crown is far bigger than a lamp head: its ghost is fainter (0.3 then 0.12) and a muted sage, not a white haze
+        material: material.pbr({ color: "#a9c39c", roughness: 0.9, metallic: 0, opacity: opacity * VEGETATION_GHOST_OPACITY, alphaMode: "blend" }),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .runtime({ id });
+  });
 }
 
 let cachedStreetTree: { readonly trunk: RawMesh; readonly canopy: RawMesh } | null = null;
@@ -1831,12 +1891,32 @@ function bakeWorldBatch(base: RawMesh, transforms: readonly AuraTransformSpec[])
   });
 }
 
+/** Prop kinds an image-to-3D model may stand in for (`examples/drift-and-deliver-port/idol.ts`). */
+export type PropReplacementKind = "tree" | "palm" | "shelter" | "hydrant" | "watertank" | "scooter" | "clocktower" | "lighthouse";
+
+/**
+ * Optional stand-in for one prop kind: receives the kind's world-metre transforms (sized for a model at the procedural
+ * reference size) and returns the nodes to mount instead, or `null` to keep the procedural build.
+ */
+export type PropReplacement = (
+  kind: PropReplacementKind,
+  transforms: readonly AuraTransformSpec[],
+  castShadow: boolean
+) => readonly (AuraNodeBuilder<AuraPrimitiveNode> | ModelNodeBuilder | GroupNodeBuilder)[] | null;
+
 /** Builds all batched procedural multi-material street furniture, kerb bollards, delivery scooters, trees, landmarks & shopfronts. */
 export function buildProceduralPropNodes(
   plan: PropPlacementInput,
-  cast = false
-): readonly (AuraNodeBuilder<AuraPrimitiveNode> | GroupNodeBuilder)[] {
-  const out: (AuraNodeBuilder<AuraPrimitiveNode> | GroupNodeBuilder)[] = [];
+  cast = false,
+  replace?: PropReplacement
+): readonly (AuraNodeBuilder<AuraPrimitiveNode> | ModelNodeBuilder | GroupNodeBuilder)[] {
+  const out: (AuraNodeBuilder<AuraPrimitiveNode> | ModelNodeBuilder | GroupNodeBuilder)[] = [];
+  const swap = (kind: PropReplacementKind, transforms: readonly AuraTransformSpec[], castShadow: boolean): boolean => {
+    const nodes = replace?.(kind, transforms, castShadow);
+    if (!nodes) return false;
+    out.push(...nodes);
+    return true;
+  };
   const mats = propSurfaceMaterials();
 
   const castIronParts: RawMesh[] = [];
@@ -1852,17 +1932,31 @@ export function buildProceduralPropNodes(
     const tr = toMetreTransforms(lamps, 5.0);
     const { iron, brass, bulb } = buildStreetLampMeshes();
     const lampIronSpec = memoizeGeometry("drift:prop-lamp-iron", () => mergeRawMeshes([iron]));
+    // Owner QA (Nov 18): the mast, collar and globe are three instanced draws (were mast + world-merged accents) so a lamp
+    // between the chase eye and the courier can step into the translucent ghost draws as one piece (occluderFade.ts)
+    const lampBrassSpec = memoizeGeometry("drift:prop-lamp-brass", () => mergeRawMeshes([brass]));
+    const lampBulbSpec = memoizeGeometry("drift:prop-lamp-bulb", () => mergeRawMeshes([bulb]));
+    const lampIds = ["model-lamp-masts", "model-lamp-collars", "model-lamp-globes"] as const;
     out.push(
-      instances.custom(lampIronSpec, {
-        name: "model-lamp-masts",
-        transforms: tr,
-        material: mats.castIron,
-        castShadow: false,
-        receiveShadow: true
-      })
+      instances.custom(lampIronSpec, { name: lampIds[0], transforms: tr, material: mats.castIron, castShadow: false, receiveShadow: true }).runtime({ id: lampIds[0] }),
+      instances.custom(lampBrassSpec, { name: lampIds[1], transforms: tr, material: mats.brass, castShadow: false, receiveShadow: true }).runtime({ id: lampIds[1] }),
+      instances.custom(lampBulbSpec, { name: lampIds[2], transforms: tr, material: mats.sodiumBulb, castShadow: false, receiveShadow: false }).runtime({ id: lampIds[2] })
     );
-    brassParts.push(...bakeWorldBatch(brass, tr));
-    sodiumParts.push(...bakeWorldBatch(bulb, tr));
+    const ghostIds = FADE.opacities.map((_, k) => `model-lamp-ghost-${k}`);
+    for (const [k, gid] of ghostIds.entries()) {
+      out.push(
+        instances
+          .custom(lampIronSpec, {
+            name: gid,
+            transforms: [{ position: [0, FADE.parkedY, 0], rotation: [0, 0, 0], scale: 1 }],
+            material: material.pbr({ color: "#d9dee4", roughness: 0.8, metallic: 0, opacity: FADE.opacities[k], alphaMode: "blend" }),
+            castShadow: false,
+            receiveShadow: false
+          })
+          .runtime({ id: gid })
+      );
+    }
+    registerFadeLayer({ opaqueIds: lampIds, ghostIds, transforms: tr, volumes: tr.map((t) => lampOccluderVolumes(t)) });
   }
 
   // 2. Traffic Signals + Sculpted Mediterranean Street-Corner Kerb Bollards
@@ -1917,7 +2011,7 @@ export function buildProceduralPropNodes(
 
   // 3. Broadleaf Street & Park Trees (4.6 m ref, instanced trunk + smooth `layeredCanopyMesh` crown)
   const trees = plan.placements.get("tree") ?? [];
-  if (trees.length > 0) {
+  if (trees.length > 0 && !swap("tree", toMetreTransforms(trees, 4.6), false)) {
     const tr = toMetreTransforms(trees, 4.6);
     const { trunk, canopy } = buildStreetTreeMeshes();
     const treeTrunkSpec = memoizeGeometry("drift:prop-tree-trunk", () => mergeRawMeshes([trunk]));
@@ -1931,7 +2025,7 @@ export function buildProceduralPropNodes(
         material: mats.bark,
         castShadow: false,
         receiveShadow: true
-      }),
+      }).runtime({ id: "model-tree-trunks" }),
       instances.custom(treeCanopySpec, {
         name: "model-tree",
         transforms: tr,
@@ -1939,13 +2033,16 @@ export function buildProceduralPropNodes(
         material: mats.foliageTintable,
         castShadow: false,
         receiveShadow: true
-      })
+      }).runtime({ id: "model-tree" }),
+      ...vegetationGhostNodes("tree")
     );
+    // Owner QA (Nov 19): code-built trees between the chase eye and the courier fade too (mobile handset tier)
+    registerFadeLayer({ opaqueIds: ["model-tree-trunks", "model-tree"], ghostIds: FADE.opacities.map((_, k) => `model-tree-ghost-${k}`), transforms: tr, volumes: tr.map((t) => vegetationOccluderVolumes(t, VEGETATION_BOUNDS.tree)), colors: { "model-tree": colors } });
   }
 
   // 4. Coastal Date Palms (7.5 m ref, instanced curved trunk + smooth arched pinnate fronds)
   const palms = plan.placements.get("palm") ?? [];
-  if (palms.length > 0) {
+  if (palms.length > 0 && !swap("palm", toMetreTransforms(palms, 7.5), false)) {
     const tr = toMetreTransforms(palms, 7.5);
     const { trunk, fronds } = buildDatePalmMeshes();
     const palmTrunkSpec = memoizeGeometry("drift:prop-palm-trunk", () => mergeRawMeshes([trunk]));
@@ -1958,7 +2055,7 @@ export function buildProceduralPropNodes(
         material: mats.bark,
         castShadow: false,
         receiveShadow: true
-      }),
+      }).runtime({ id: "model-palm-trunks" }),
       instances.custom(palmFrondsSpec, {
         name: "model-palm",
         transforms: tr,
@@ -1966,13 +2063,15 @@ export function buildProceduralPropNodes(
         material: mats.foliageTintable,
         castShadow: false,
         receiveShadow: true
-      })
+      }).runtime({ id: "model-palm" }),
+      ...vegetationGhostNodes("palm")
     );
+    registerFadeLayer({ opaqueIds: ["model-palm-trunks", "model-palm"], ghostIds: FADE.opacities.map((_, k) => `model-palm-ghost-${k}`), transforms: tr, volumes: tr.map((t) => vegetationOccluderVolumes(t, VEGETATION_BOUNDS.palm)), colors: { "model-palm": palmColors } });
   }
 
   // 5. Transit Bus Shelters (4.2 m x 1.3 m, grounded steel frame, cedar bench, route-map lightbox & safety glass)
   const shelters = plan.placements.get("shelter") ?? [];
-  if (shelters.length > 0) {
+  if (shelters.length > 0 && !swap("shelter", toMetreTransforms(shelters, 4.2), cast)) {
     const tr = toMetreTransforms(shelters, 4.2);
     const { steelFrame, cedarBench, mapGlow, glass } = buildTransitShelterMeshes();
     steelParts.push(...bakeWorldBatch(steelFrame, tr));
@@ -1990,7 +2089,7 @@ export function buildProceduralPropNodes(
 
   // 6. Fire Hydrants (0.8 m tall, merged into static cast-iron, vermilion & brass batches)
   const hydrants = plan.placements.get("hydrant") ?? [];
-  if (hydrants.length > 0) {
+  if (hydrants.length > 0 && !swap("hydrant", toMetreTransforms(hydrants, 0.8), false)) {
     const tr = toMetreTransforms(hydrants, 0.8);
     const { body, ironBase, brassCaps } = buildFireHydrantMeshes();
     castIronParts.push(...bakeWorldBatch(ironBase, tr));
@@ -2017,16 +2116,18 @@ export function buildProceduralPropNodes(
       transformMesh(latheMesh([[0.28, 0.92], [0.31, 1.08], [0.25, 1.1], [0, 0.96]], 12), { pos: [0.42, 0, 0] }),
       tubeSweepMesh([[0.82, 0.35, 0, 0.045], [1.18, 0.35, 0, 0.045], [1.18, 0.04, 0, 0.045]], 6)
     ]);
-    castIronParts.push(...bakeWorldBatch(ironTrestleAndHoops, tr));
-    cedarParts.push(...bakeWorldBatch(cedarBarrel, tr));
+    if (!swap("watertank", tr, cast)) {
+      castIronParts.push(...bakeWorldBatch(ironTrestleAndHoops, tr));
+      cedarParts.push(...bakeWorldBatch(cedarBarrel, tr));
+    }
     steelParts.push(...bakeWorldBatch(hvacRaw, hvacTransforms));
   }
 
   // 8. Harbor Landmarks (`clocktower` & `lighthouse` — key skyline shadow casters)
   const clock = plan.placements.get("clocktower")?.[0];
-  if (clock) out.push(buildClocktowerLandmarkNode(clock, cast));
+  if (clock && !swap("clocktower", toMetreTransforms([clock], 38), cast)) out.push(buildClocktowerLandmarkNode(clock, cast));
   const lighthouse = plan.placements.get("lighthouse")?.[0];
-  if (lighthouse) out.push(buildLighthouseLandmarkNode(lighthouse, cast));
+  if (lighthouse && !swap("lighthouse", toMetreTransforms([lighthouse], 24), cast)) out.push(buildLighthouseLandmarkNode(lighthouse, cast));
 
   // 9. Deterministic Sidewalk Postboxes, Newspaper Stands, Cafe Umbrellas, Curbside Delivery Scooters & Shopfront Awnings
   if (lamps.length > 0) {
@@ -2084,7 +2185,7 @@ export function buildProceduralPropNodes(
         })
       );
     }
-    if (scooterTr.length > 0) {
+    if (scooterTr.length > 0 && !swap("scooter", scooterTr, false)) {
       const { bodySpec, trimSpec } = buildDeliveryScooterSpecs();
       const scooterColors = scooterTr.map((_, i) => ["#ff9b3d", "#22c3c9", "#f2eadc", "#e76f51"][i % 4]!);
       out.push(

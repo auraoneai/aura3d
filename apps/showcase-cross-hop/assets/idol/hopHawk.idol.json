@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cross-hop",
+  "key": "hopHawk",
+  "generatedAt": "2026-11-19T01:08:49.989Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f159-6672-7eb3-8088-001082f03ce3",
+      "prompt": "A toy peregrine hawk gliding, perfectly symmetrical, body pointing straight at the viewer, both wings spread fully flat and horizontal to the left and right like a letter T, dark brown feathered wings and back, cream speckled breast, yellow hooked beak, yellow talons tucked under the body, fanned tail behind. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f159-fdc0-7731-a59e-0917b223222f",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 21,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 573916,
+        "num_faces": 1147828,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A toy peregrine hawk gliding, perfectly symmetrical, body pointing straight at the viewer, both wings spread fully flat and horizontal to the left and right like a letter T, dark brown feathered wings and back, cream speckled breast, yellow hooked beak, yellow talons tucked under the body, fanned tail behind. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 2.484,
+    "size": [
+      1.42,
+      1.321,
+      2.481
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-cross-hop/assets/idol/hopHawk.glb",
+  "sizeBytes": 1293392,
+  "preview": "artifacts/idol/cross-hop/hopHawk/views.png",
+  "usd": 0.37
+}

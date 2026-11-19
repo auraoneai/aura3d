@@ -46,7 +46,8 @@ describe("Saltwind Highway far LODs (GU47 phase 6, WP-32 triangle budget)", () =
   });
 
   it("GU47 looks add an unshadowed far node per repeated prop and per traffic model; ?look=original keeps one node each", () => {
-    const gu = nodes(buildWorld(0, "gu47").scene);
+    // the procedural LOD pairs (`?idol=0`); the Idol town and traffic are single instanced GLB nodes (see idol.test.ts)
+    const gu = nodes(buildWorld(0, "gu47", { idol: false }).scene);
     for (const name of ["palms", "pines", "boulders", "town-villas", "town-townhouses"]) {
       const near = gu.find((n) => n.name === name), far = gu.find((n) => n.name === `${name}-far`);
       expect(near?.castShadow).not.toBe(false);

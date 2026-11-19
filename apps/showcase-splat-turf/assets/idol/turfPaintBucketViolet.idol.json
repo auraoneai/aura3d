@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-turf",
+  "key": "turfPaintBucketViolet",
+  "generatedAt": "2026-11-18T23:37:19.949Z",
+  "generator": "tools/idol/generate.mjs (client-timeout resume)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A large open metal paint bucket with a wire bail handle, overflowing with thick glossy violet-purple paint that drips down the sides and pools around the base, a paint roller resting across the rim. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17,
+      "note": "billed in the timed-out generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f105-b78a-7133-aba0-b84df0c04a88",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 972800,
+        "num_faces": 1945632,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A large open metal paint bucket with a wire bail handle, overflowing with thick glossy violet-purple paint that drips down the sides and pools around the base, a paint roller resting across the rim. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.466,
+    "size": [
+      1.434,
+      1.35,
+      1.462
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-turf/assets/idol/turfPaintBucketViolet.glb",
+  "sizeBytes": 1246236,
+  "preview": "artifacts/idol/splat-turf/turfPaintBucketViolet/views.png",
+  "usd": 0.37,
+  "postProcess": "PNG textures re-encoded as JPEG q90 (normal map) by the splat Idol pass to fit the per-game byte budget"
+}

@@ -1,0 +1,68 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "drift-and-deliver-port",
+  "key": "gcClocktower",
+  "generatedAt": "2026-11-18T22:53:35.655Z",
+  "generator": "tools/idol/generate.mjs (resumed after its 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A tall slender square harbour plaza clock tower in warm cream limestone with a rusticated stone base and arched doorway, long shaft with narrow arched windows, a belfry stage with open round arches, four large round white clock faces with black hands and simple dash marks (no numerals) on each side, a cornice and a weathered green copper pyramid cupola roof with a small finial on top. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17,
+      "note": "reference completed in generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a7-49f4-7cb2-8982-b01985d44011",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 865084,
+        "num_faces": 1730588,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A tall slender square harbour plaza clock tower in warm cream limestone with a rusticated stone base and arched doorway, long shaft with narrow arched windows, a belfry stage with open round arches, four large round white clock faces with black hands and simple dash marks (no numerals) on each side, a cornice and a weathered green copper pyramid cupola roof with a small finial on top. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 35.62,
+    "size": [
+      8.716,
+      38,
+      8.738
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/drift-and-deliver-port/assets/idol/gcClocktower.glb",
+  "sizeBytes": 2727368,
+  "preview": "artifacts/idol/drift-and-deliver-port/gcClocktower/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "texture-jpeg",
+      "maxTexPx": 1536,
+      "before": 7251024,
+      "after": 3818976
+    },
+    {
+      "step": "texture-jpeg",
+      "maxTexPx": 1024,
+      "before": 3818976,
+      "after": 2727368
+    }
+  ]
+}

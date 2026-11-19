@@ -13,6 +13,7 @@ import { loadSave, persistSave, newCircuit, type FcSave, type CircuitSave, type 
 import { PITCH_HX, PITCH_HZ } from "./dims";
 import { makeRng } from "./sim";
 import { CELEBRATIONS } from "./locomotion";
+import { AUTOPLAY_RESULT_HOLD_S, createAutoplayLoop, demoMatchConfig, nextAutoplayVenue } from "./autoplay";
 
 export type AppMode = "menu" | "quick" | "demo" | "shootout" | "touch" | "circuit" | "studio";
 
@@ -515,10 +516,11 @@ export function createModes(deps: {
     if (s.phase !== "ended" || endedHandled) return;
     endedHandled = true;
     if (mode === "demo") {
-      // demo loops — fresh kickoff keeps capture alive
-      window.setTimeout(() => {
-        if (mode === "demo") api.startDemo();
-      }, 3800);
+      // autoplay / demo loops for ever: the result holds AUTOPLAY_RESULT_HOLD_S (frame() counts it), then the next
+      // fixture kicks off at the next venue — never a menu or a "press a key" prompt
+      const h = CLUBS[cfg?.homeClub ?? "aurora"]?.name ?? "";
+      const a = CLUBS[cfg?.awayClub ?? "iron"]?.name ?? "";
+      deps.banner(`FULL TIME · ${h} ${s.score[0]}–${s.score[1]} ${a}`, AUTOPLAY_RESULT_HOLD_S * 1000, "gold");
       return;
     }
     if (mode === "circuit" && circuitMatch) {
@@ -555,6 +557,7 @@ export function createModes(deps: {
   /* ------------------------- public api ------------------------- */
 
   const venueRef = { value: save.venue };
+  const demoLoop = createAutoplayLoop();
 
   const api: Modes = {
     get mode() { return mode; },
@@ -573,6 +576,10 @@ export function createModes(deps: {
       if (mode === "touch") touchFrame(dt, ctx);
       if (mode === "shootout") shootoutLabFrame(ctx);
       if (mode === "quick" || mode === "demo" || mode === "circuit") matchEndFrame();
+      if (mode === "demo" && demoLoop.tick(dt, sim.state.phase === "ended")) {
+        venueRef.value = nextAutoplayVenue(venueRef.value);   // rotation only: the saved venue preference is untouched
+        api.startDemo();
+      }
       if (circuit && mode === "circuit" && circuitMatch) ctx.tag = `WORLD CIRCUIT · ${STAGE_LABEL[circuitMatch.stage]}`;
       return ctx;
     },
@@ -601,14 +608,10 @@ export function createModes(deps: {
     startDemo() {
       closePanel();
       mode = "demo"; endedHandled = false;
-      const [h, a] = [CLUB_ORDER[(rand() * 8) | 0], CLUB_ORDER[(rand() * 8) | 0]];
-      const away = a === h ? "iron" : a;
-      cfg = {
-        mode: "quick", venue: venueRef.value, homeClub: h, awayClub: away,
-        userTeam: null, difficulty: 0.65, goldenGoal: false, shootoutOnTie: false
-      };
+      demoLoop.reset();
+      cfg = demoMatchConfig(rand, venueRef.value);
       sim.startMatch(cfg);
-      deps.banner(`${CLUBS[h].name} vs ${CLUBS[away].name} — CPU v CPU`, 2400);
+      deps.banner(`${CLUBS[cfg.homeClub].name} vs ${CLUBS[cfg.awayClub].name} — CPU v CPU`, 2400);
     },
 
     startShootoutLab() {

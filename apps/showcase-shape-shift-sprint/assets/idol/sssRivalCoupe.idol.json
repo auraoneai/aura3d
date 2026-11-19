@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shape-shift-sprint",
+  "key": "sssRivalCoupe",
+  "generatedAt": "2026-11-18T23:20:10.167Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0a0-ec25-7ae3-ae7b-076bca739d77",
+      "prompt": "A small toy aero sports coupe hover car with no wheels: glossy plum-purple painted body, silver trim, a dark smoked glass bubble canopy, small rear fins and a cyan glowing thruster at the back. Photograph of a real handmade toy miniature, glossy painted wood and smooth glazed ceramic, pastel candy colours, soft bright daylight, tactile surface detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a6-fc3c-7e03-95e7-ce694e4a85d0",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1136282,
+        "num_faces": 2272832,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A small toy aero sports coupe hover car with no wheels: glossy plum-purple painted body, silver trim, a dark smoked glass bubble canopy, small rear fins and a cyan glowing thruster at the back. Photograph of a real handmade toy miniature, glossy painted wood and smooth glazed ceramic, pastel candy colours, soft bright daylight, tactile surface detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 1.101,
+    "size": [
+      0.622,
+      0.361,
+      1.1
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-shape-shift-sprint/assets/idol/sssRivalCoupe.glb",
+  "sizeBytes": 3671736,
+  "preview": "artifacts/idol/shape-shift-sprint/sssRivalCoupe/views.png",
+  "usd": 0.37,
+  "renormalizedAt": "2026-11-18T23:20:36.289Z"
+}

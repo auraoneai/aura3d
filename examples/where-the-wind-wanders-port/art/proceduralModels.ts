@@ -14,6 +14,7 @@ import {
   type AuraCustomGeometrySpec,
   type AuraMaterialSpec,
   type AuraNodeBuilder,
+  type AuraSceneNode,
   type AuraTransformSpec,
   type scene
 } from "@aura3d/engine";
@@ -62,6 +63,8 @@ import { CLIP_SECONDS, STRIDE_SPEED, type Gait } from "../locomotion";
 import { STRUCTURES } from "../sim";
 import { SEA_LEVEL, terrainHeight } from "../terrain";
 import type { Scenery } from "../scenery";
+import { JETTY_LANTERN, PATH_LANTERNS, SHRINE_SPOT, VILLAGER_SPOTS } from "../decor-layout";
+import { IDOL_FIT, IDOL_MODELS, createIdolBellkeeperNode, idolBellNode, idolBoatNode, idolCottageNode, idolLanternPosts, idolStaticNode, idolVillagerNode, idolWindmillNode } from "./idolModels";
 
 type SceneBuilder = ReturnType<typeof scene>;
 type AuraGroupNode = ReturnType<typeof group>["value"];
@@ -2263,6 +2266,12 @@ function buildBellkeeperLeftArmSlots(): readonly MultiMatSlot[] {
   });
 }
 
+/** The bell-staff alone (the last five right-arm slots: shaft, spur, leather grip, ferrule, collar), in right-arm space. */
+function buildBellkeeperStaffSlots(): readonly MultiMatSlot[] {
+  const all = buildBellkeeperRightArmAndStaffSlots();
+  return all.slice(all.length - 5);
+}
+
 function buildBellkeeperRightArmAndStaffSlots(): readonly MultiMatSlot[] {
   return memoSlots("ww:hero:armR:v6", () => {
     const slots: MultiMatSlot[] = [];
@@ -3415,22 +3424,31 @@ export function mountProceduralStaticScenery(
   const batchMats = getInstFloraMats();
   if (flags.cottage) {
     sc.placements.cottages.forEach((p, i) => {
-      builder.add(createHighlandCottageNode({ name: `cottage-${i}`, position: [p.x, p.y, p.z], yaw: p.yaw, scale: p.s, variant: i, castShadow, receiveShadow }));
+      builder.add((IDOL_MODELS
+        ? idolCottageNode(`cottage-${i}`, [p.x, p.y, p.z], p.yaw, p.s, i, castShadow, receiveShadow)
+        : null) ?? createHighlandCottageNode({ name: `cottage-${i}`, position: [p.x, p.y, p.z], yaw: p.yaw, scale: p.s, variant: i, castShadow, receiveShadow }));
     });
     const millY = terrainHeight(STRUCTURES.windmill.x, STRUCTURES.windmill.z) - 0.2;
-    builder.add(createWindmillTowerNode({ name: "windmill-tower", position: [STRUCTURES.windmill.x, millY, STRUCTURES.windmill.z], castShadow, receiveShadow }));
-    builder.add(createPackhorseBridgeNode({ name: "packhorse-bridge", position: [-4.0, terrainHeight(-4.0, -6.54) - 0.16, -6.54], yaw: Math.PI * 0.5 - 0.06, castShadow: false, receiveShadow }));
-    builder.add(createWaysideShrineNode({ name: "wayside-shrine", position: [21.8, terrainHeight(21.8, 7.6) - 0.05, 7.6], yaw: -0.28, castShadow: false, receiveShadow }));
+    const millAt: V3 = [STRUCTURES.windmill.x, millY, STRUCTURES.windmill.z];
+    builder.add((IDOL_MODELS
+      ? idolWindmillNode("windmill-tower", millAt, castShadow, receiveShadow)
+      : null) ?? createWindmillTowerNode({ name: "windmill-tower", position: millAt, castShadow, receiveShadow }));
+    const bridgeAt: V3 = [-4.0, terrainHeight(-4.0, -6.54) - 0.16, -6.54];
+    builder.add((IDOL_MODELS
+      ? idolStaticNode("bkBridge", { name: "packhorse-bridge", position: bridgeAt, yaw: Math.PI * 0.5 - 0.06, axis: 0, size: IDOL_FIT.bridgeLength, lift: -0.22, castShadow: false, receiveShadow })
+      : null) ?? createPackhorseBridgeNode({ name: "packhorse-bridge", position: bridgeAt, yaw: Math.PI * 0.5 - 0.06, castShadow: false, receiveShadow }));
+    const shrineAt: V3 = [SHRINE_SPOT[0], terrainHeight(SHRINE_SPOT[0], SHRINE_SPOT[1]) - 0.05, SHRINE_SPOT[1]];
+    builder.add((IDOL_MODELS
+      ? idolStaticNode("bkShrine", { name: "wayside-shrine", position: shrineAt, yaw: SHRINE_SPOT[2], axis: 1, size: IDOL_FIT.shrineHeight, castShadow: false, receiveShadow, ground: true })
+      : null) ?? createWaysideShrineNode({ name: "wayside-shrine", position: shrineAt, yaw: SHRINE_SPOT[2], castShadow: false, receiveShadow }));
 
     // Pastoral Studio-Ghibli Highland Villagers & Sanctuary Wind Spirits welcoming the Bellkeeper along the meadow path
-    const villagerSpots: readonly { readonly x: number; readonly z: number; readonly yaw: number }[] = [
-      { x: -12.4, z: 2.1, yaw: 0.42 },
-      { x: 14.4, z: 3.1, yaw: -0.52 },
-      { x: 20.2, z: 6.9, yaw: -0.24 }
-    ];
+    // on the path verges, never in the walk (decor-layout.ts; they collide in colliders.ts)
+    const villagerSpots = VILLAGER_SPOTS;
     villagerSpots.forEach((vp, idx) => {
-      builder.add(
-        createHighlandVillagerNode({
+      builder.add((IDOL_MODELS
+        ? idolVillagerNode(`village-folk-${idx}`, [vp.x, terrainHeight(vp.x, vp.z), vp.z], vp.yaw, idx, castShadow, receiveShadow)
+        : null) ?? createHighlandVillagerNode({
           name: `village-folk-${idx}`,
           position: [vp.x, terrainHeight(vp.x, vp.z), vp.z],
           yaw: vp.yaw,
@@ -3476,28 +3494,38 @@ export function mountProceduralStaticScenery(
     // Instanced wayside & jetty lanterns (castShadow: false on lantern trinkets)
     const deckY = SEA_LEVEL + 0.82;
     const lanternXfs: AuraTransformSpec[] = [
-      { position: [31, deckY, -17.52], rotation: [0, 0, 0], scale: [1, 1, 1] },
-      { position: [-13.5, terrainHeight(-13.5, 2.35) - 0.04, 2.35], rotation: [0, 0.35, 0], scale: [1, 1, 1] },
-      { position: [13.5, terrainHeight(13.5, 3.35) - 0.04, 3.35], rotation: [0, -0.3, 0], scale: [1, 1, 1] }
+      { position: [JETTY_LANTERN[0], deckY, JETTY_LANTERN[1]], rotation: [0, JETTY_LANTERN[2], 0], scale: [1, 1, 1] },
+      ...PATH_LANTERNS.map(([lx, lz, yaw]): AuraTransformSpec => ({ position: [lx, terrainHeight(lx, lz) - 0.04, lz], rotation: [0, yaw, 0], scale: [1, 1, 1] }))
     ];
-    builder.add(instances.custom(specs.lanternPost, { name: "village-lantern-posts", material: batchMats.iron, transforms: lanternXfs, castShadow: false, receiveShadow }));
-    builder.add(instances.custom(specs.lanternBrass, { name: "village-lantern-brass", material: batchMats.brass, transforms: lanternXfs, castShadow: false, receiveShadow }));
-    builder.add(instances.custom(specs.lanternEmber, { name: "village-lantern-embers", material: batchMats.ember, transforms: lanternXfs, castShadow: false, receiveShadow: false }));
-    builder.add(instances.custom(specs.lanternPane, { name: "village-lantern-glass", material: getMullionGlassMat(), transforms: lanternXfs, castShadow: false, receiveShadow }));
+    const idolLanterns = IDOL_MODELS ? idolLanternPosts(lanternXfs, receiveShadow) : null;
+    if (idolLanterns) builder.add(idolLanterns);
+    else {
+      builder.add(instances.custom(specs.lanternPost, { name: "village-lantern-posts", material: batchMats.iron, transforms: lanternXfs, castShadow: false, receiveShadow }));
+      builder.add(instances.custom(specs.lanternBrass, { name: "village-lantern-brass", material: batchMats.brass, transforms: lanternXfs, castShadow: false, receiveShadow }));
+      builder.add(instances.custom(specs.lanternEmber, { name: "village-lantern-embers", material: batchMats.ember, transforms: lanternXfs, castShadow: false, receiveShadow: false }));
+      builder.add(instances.custom(specs.lanternPane, { name: "village-lantern-glass", material: getMullionGlassMat(), transforms: lanternXfs, castShadow: false, receiveShadow }));
+    }
   }
   if (flags.bell) {
     sc.placements.bell.forEach((p) => {
-      builder.add(createBellShrineBelfryNode({ name: "belltower", position: [p.x, p.y, p.z], height: p.h, castShadow, receiveShadow }));
+      builder.add((IDOL_MODELS
+        ? idolStaticNode("bkBelfry", { name: "belltower", position: [p.x, p.y, p.z], axis: 1, size: IDOL_FIT.belfryHeight * ((p.h ?? 4.6) / 4.6), planScale: 0.76, castShadow, receiveShadow, ground: true, keepTop: true })
+        : null) ?? createBellShrineBelfryNode({ name: "belltower", position: [p.x, p.y, p.z], height: p.h, castShadow, receiveShadow }));
     });
   }
   if (flags.bellModel) {
     sc.placements.bell.slice(0, 1).forEach((p) => {
       const pose = bellPoseOf(p);
-      builder.add(createSanctuaryBellNode({ name: "belltower-bell", id: "bell-model", position: pose.position, castShadow, receiveShadow }));
+      builder.add((IDOL_MODELS
+        ? idolBellNode("belltower-bell", "bell-model", pose.position, castShadow, receiveShadow)
+        : null) ?? createSanctuaryBellNode({ name: "belltower-bell", id: "bell-model", position: pose.position, castShadow, receiveShadow }));
     });
   }
   if (flags.trees) {
-    builder.add(createGrandAncientOakNode({ name: "grand-ancient-oak", position: [-25, terrainHeight(-25, 0) - 0.2, 0], castShadow, receiveShadow }));
+    const oakAt: V3 = [-25, terrainHeight(-25, 0) - 0.2, 0];
+    builder.add((IDOL_MODELS
+      ? idolStaticNode("bkOak", { name: "grand-ancient-oak", position: oakAt, axis: 1, size: IDOL_FIT.oakHeight, castShadow, receiveShadow, ground: true })
+      : null) ?? createGrandAncientOakNode({ name: "grand-ancient-oak", position: oakAt, castShadow, receiveShadow }));
     addProceduralFloraBatches(builder, sc, castShadow, receiveShadow);
   } else if (flags.shrubs) {
     addProceduralFloraBatches(builder, { ...sc, placements: { ...sc.placements, pines: [], oaks: [] } }, false, receiveShadow);
@@ -3520,7 +3548,19 @@ export function mountProceduralAnimatedActors(
   receiveShadow: boolean
 ): void {
   if (flags.hero) {
-    builder.add(createBellkeeperWandererNode({ name: "hero", id: "hero", castShadow, receiveShadow }));
+    const R = BELLKEEPER_RIG_SPEC;
+    const idolHero = IDOL_MODELS
+      ? createIdolBellkeeperNode({
+        name: "hero", id: "hero", castShadow, receiveShadow,
+        staff: buildPartNode("hero-staff-shaft", buildBellkeeperStaffSlots(), false, receiveShadow) as unknown as AuraNodeBuilder<AuraSceneNode>,
+        chime: buildPartNode("hero-staff-chime-mesh", buildStaffChimeSlots(), false, receiveShadow) as unknown as AuraNodeBuilder<AuraSceneNode>,
+        ribbon: buildPartNode("hero-staff-ribbon-mesh", buildStaffRibbonSlots(), false, receiveShadow) as unknown as AuraNodeBuilder<AuraSceneNode>,
+        chimeOffset: [...R.staffChimeOffset], ribbonOffset: [...R.staffRibbonOffset]
+      })
+      : null;
+    // the rigged body is its own top-level node (skinned nodes ignore a moving parent group; idolModels.ts)
+    if (idolHero) { builder.add(idolHero.group); builder.add(idolHero.body); }
+    else builder.add(createBellkeeperWandererNode({ name: "hero", id: "hero", castShadow, receiveShadow }));
   }
   if (flags.letter) {
     for (let i = 0; i < letterCount; i += 1) {
@@ -3533,6 +3573,6 @@ export function mountProceduralAnimatedActors(
     builder.add(createFiligreeWispNode({ name: "wisp", id: "wisp" }));
   }
   if (flags.boat) {
-    builder.add(createClinkerRowboatNode({ name: "boat", id: "boat", castShadow: false, receiveShadow }));
+    builder.add((IDOL_MODELS ? idolBoatNode("boat", "boat", false, receiveShadow) : null) ?? createClinkerRowboatNode({ name: "boat", id: "boat", castShadow: false, receiveShadow }));
   }
 }

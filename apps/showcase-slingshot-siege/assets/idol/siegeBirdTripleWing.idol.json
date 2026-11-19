@@ -1,0 +1,64 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeBirdTripleWing",
+  "generatedAt": "2026-11-19T01:04:08.118Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f155-18d4-7a61-91d0-5ec45d61832f",
+      "prompt": "A single detached cartoon bird wing toy piece lying flat, seen from directly above: a flat rounded paddle-shaped dark sky blue wing, narrow rounded root end on the left widening to three layered scalloped feathers at the right, feather tips painted darker blue, about three times longer than wide, nothing else. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f155-fe13-7f03-b727-642447405545",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 609608,
+        "num_faces": 1219212,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single detached cartoon bird wing toy piece lying flat, seen from directly above: a flat rounded paddle-shaped dark sky blue wing, narrow rounded root end on the left widening to three layered scalloped feathers at the right, feather tips painted darker blue, about three times longer than wide, nothing else. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.701,
+    "size": [
+      0.7,
+      0.104,
+      0.398
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeBirdTripleWing.glb",
+  "sizeBytes": 393208,
+  "preview": "artifacts/idol/slingshot-siege/siegeBirdTripleWing/views.png",
+  "usd": 0.37,
+  "derived": {
+    "from": "siegeBirdEmberWing",
+    "how": "artifacts/idol/slingshot-siege/_scratch/recolor-wing.mjs: same geometry, normal and ORM maps; base colour hue-shifted (no paid call). This key's own Idol output was rejected (stub shape) and is kept only in artifacts/idol/slingshot-siege/siegeBirdTripleWing/"
+  },
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90",
+    "bytesBefore": 720300,
+    "bytesAfter": 393208
+  }
+}

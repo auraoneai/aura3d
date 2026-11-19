@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swTractorTealP",
+  "generatedAt": "2026-11-18T23:15:49.194Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/saltwind-highway/swTractorTealP/ref-src.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0f1-f9a7-7141-bbc3-b1ebc850805e",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 108,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1707778,
+        "num_faces": 3416124,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single semi-truck tractor unit with no trailer, fictional unbranded design, long-nose conventional day cab without sleeper, glossy sea-teal paint, big chrome grille, chrome bumper, chrome exhaust stacks and fuel tanks, empty fifth-wheel coupling plate on the rear chassis, dual rear axles with black tyres on polished aluminium wheels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0.5,
+    "scale": 7.418,
+    "size": [
+      3.218,
+      4.543,
+      7.4
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swTractorTealP.glb",
+  "sizeBytes": 2294612,
+  "preview": "artifacts/idol/saltwind-highway/swTractorTealP/views.png",
+  "usd": 0.2,
+  "orientationFix": "yawDeg 90.5 (long axis fitted; reference was a three-quarter view)",
+  "postProcess": "textures re-encoded as JPEG, <= 1024 px, to fit the per-game byte budget"
+}

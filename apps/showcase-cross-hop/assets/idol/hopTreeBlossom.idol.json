@@ -1,0 +1,58 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cross-hop",
+  "key": "hopTreeBlossom",
+  "generatedAt": "2026-11-18T22:32:38.124Z",
+  "generator": "tools/idol/generate.mjs (optimise/normalise re-run after the generator's set-dressing role was rejected by assets optimize)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0bc-cabe-7b10-9ed0-3d416e3db987",
+      "prompt": "A cute toy candy blossom tree: a straight brown wooden trunk topped with a big round fluffy canopy of pastel pink and lilac blossom clusters. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0c0-4c67-7011-b8a5-4b6e727ce712",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2
+    }
+  ],
+  "prompt": "A cute toy candy blossom tree: a straight brown wooden trunk topped with a big round fluffy canopy of pastel pink and lilac blossom clusters. Photograph of a real hand-painted wooden and sculpted clay toy miniature made for a tabletop diorama, smooth rounded sanded forms, glossy enamel paint with subtle brush strokes, soft macro studio lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.346,
+    "size": [
+      1.063,
+      1.345,
+      0.937
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-cross-hop/assets/idol/hopTreeBlossom.glb",
+  "sizeBytes": 677728,
+  "preview": "artifacts/idol/cross-hop/hopTreeBlossom/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "shrink",
+    "tool": "aura3d assets optimize + gltf-transform jpeg (normal map PNG->JPEG q90)",
+    "maxVerts": 7000,
+    "tex": 512,
+    "sizeBytesBefore": 2990124
+  },
+  "baked": {
+    "step": "node transforms baked into vertices (gltf-transform flatten + clearNodeTransform) so manifest bounds are exact"
+  }
+}

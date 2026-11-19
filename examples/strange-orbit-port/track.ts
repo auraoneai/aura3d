@@ -55,6 +55,17 @@ export function surfaceNoise(s: number, t: number): number {
   return 0.055 * Math.sin(n * 47 + t * 0.38) + 0.028 * Math.sin(n * 103 - t * 0.8);
 }
 
+/**
+ * Drawn share of the surface ripple (owner QA Nov 18: "same issues from the top head to the bottom tire, too bouncy"). The
+ * sim's ripple (+-8 cm, 14 m and 31 m waves) read as a 1-3 Hz bounce of the whole bike at racing speed. The road mesh and
+ * the drawn bike now share a quarter of it (+-2 cm, under 0.5 cm per frame at 40 m/s); the sim keeps `surfaceNoise`.
+ */
+export const DRAWN_RIPPLE = 0; // owner QA 22:30: even +-2 cm read as a bounce against the smoothed camera; draw the road flat
+/** Presentation-only road ripple: the road mesh and the drawn riders both sit on this, so wheels stay on the road. */
+export function drawnSurfaceNoise(s: number, t: number): number {
+  return DRAWN_RIPPLE * surfaceNoise(s, t);
+}
+
 /** Frame of `route` at distance `s`. */
 export function routeFrame(s: number, route: Route = "main"): Frame {
   if (route === "main") return mainFrame(s);

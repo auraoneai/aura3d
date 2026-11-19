@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icAbJet",
+  "generatedAt": "2026-11-18T22:20:01.866Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0be-da10-7ed1-90a5-621d53e33623",
+      "prompt": "Modern single-seat fighter jet parked on the ground with landing gear down, matte desert-grey camouflage paint, closed tinted canopy, twin vertical tails, plain unmarked panels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0c9-ca2c-7552-b026-6c0bb394019f",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 711018,
+        "num_faces": 1422052,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Modern single-seat fighter jet parked on the ground with landing gear down, matte desert-grey camouflage paint, closed tinted canopy, twin vertical tails, plain unmarked panels. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 5.408,
+    "size": [
+      5.399,
+      3.024,
+      4.77
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icAbJet.glb",
+  "sizeBytes": 5432208,
+  "preview": "artifacts/idol/iron-crown/icAbJet/views.png",
+  "usd": 0.37
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "cumulus-dash",
+  "key": "cdHermitCottage",
+  "generatedAt": "2026-11-18T22:31:09.851Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/cumulus-dash/cdHermitCottage/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2304874,
+        "num_faces": 4612180,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A small round hermit's cottage on a mountain top: whitewashed lime-plaster round walls on a stepped dressed sandstone plinth, a wide sweeping two-tier conical roof of glazed crimson clay tiles with upturned eaves and a brass finial, a cedar plank front door with stone entry steps, one round porthole window, celadon flower pots by the door, a hanging paper lantern. Photoreal storm-washed mountain realism: real physical materials as if photographed on a high sandstone ridge just after a squall, crisp physically based surface detail and gentle wear, saturated rain-washed colours, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -50,
+    "scale": 5,
+    "size": [
+      6.303,
+      5.4,
+      6.595
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/kid-goku-beyond-the-clouds-port/assets/idol/cdHermitCottage.glb",
+  "sizeBytes": 4497728,
+  "preview": "artifacts/idol/cumulus-dash/cdHermitCottage/views.png",
+  "usd": 0.2
+}

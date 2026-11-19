@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swTankerP",
+  "generatedAt": "2026-11-18T23:15:48.877Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/saltwind-highway/swTankerP/ref-src.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0f1-f9b7-7603-9beb-01015f924f02",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 107,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1250792,
+        "num_faces": 2502080,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single fuel tanker articulated lorry of a fictional unbranded design, side three-quarter view: a white conventional long-nose tractor unit with a chrome grille and chrome exhaust stacks, coupled to a long polished mirror-chrome cylindrical tank semi-trailer with a top catwalk, ladder and hose cabinets, many black wheels, plain no markings. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated vehicle, the entire vehicle in frame with generous margin, centered, seen from a shallow rear three-quarter angle: the camera is mostly to the left side and a little behind the vehicle and slightly above it, so the full length of the left side and the whole rear are visible, the vehicle points to the left of the frame, long telephoto lens with almost no perspective distortion, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems and no number plates anywhere on the vehicle.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -8,
+    "scale": 16.231,
+    "size": [
+      8.553,
+      5.767,
+      17.6
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swTankerP.glb",
+  "sizeBytes": 2415392,
+  "preview": "artifacts/idol/saltwind-highway/swTankerP/views.png",
+  "usd": 0.2,
+  "orientationFix": "yawDeg 82 (long axis fitted; reference was a three-quarter view)",
+  "postProcess": "PNG textures re-encoded as JPEG q90 (4:4:4) to fit the per-game byte budget"
+}

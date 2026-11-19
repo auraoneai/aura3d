@@ -1,36 +1,37 @@
-# Aura Links 3D: final screenshots
+# Aura Links 3D: final screenshots (2026-11-18)
 
-## GU47 phase 3 retake (2026-10-31, 4.7.1 build)
+Route: `/apps/showcase-aura-links-3d/`
 
-- **Build:** branch `gu47/g10` (the GU47 look plus the phase-3 presentation fixes; image `g10p3-r8`), remote ACR task on
-  `crmmeprodacr`, headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**.
-- **Retaken:** `1280x720/` all eleven frames `02-early` to `03-action-10-...` (run `g10p3-r8-1`), both `01-title.jpg`
-  (`g10p3-r8b-1`), `card/card-1x.jpg` and `card/card-2x.jpg` (`g10p3-r8b-1`; index posters rebuilt with
-  `node tools/site/build-card-images.mjs`).
-- **Not retaken (still the 2026-10-29 audit-fix build, 4.5.0-era look):** `390x844/02-early` to `03-action-10-...`,
-  both `04-results.jpg`, `card/flat-lighting-card-2x.jpg`. The phone sequence and the nine-hole round did not fit before
-  the 4.7.1 cut (each software-GL sequence runs 45-50 min); open for 4.7.2.
-- **Spec change:** one JPEG screenshot per shot (luma read from it); the PNG + JPEG pair pushed the eleven-shot
-  sequence past the 50 min test timeout.
+Runner: headed Chrome on a real GPU (Apple Metal) via REA, production build (http://127.0.0.1:8790).
 
-## Earlier set (retaken 2026-10-29)
+| Viewport | State | Meaning |
+|---|---|---|
+| 1280 | `1280-01-title.jpg` | modes menu (loading bar no longer drawn over the menu) |
+| 1280 | `1280-02-tee.jpg` | ?autoplay=1 St Auroras hole 1, golfer at address on the tee |
+| 1280 | `1280-03-swing.jpg` | backswing, ball at the clubhead, power meter |
+| 1280 | `1280-04-flight.jpg` | follow-through with ball-flight telemetry |
+| 1280 | `1280-05-green.jpg` | putt on the St Auroras green, lighthouse and gallery |
+| 1280 | `1280-06-maple.jpg` | second course: Maple Hollow tee shot |
+| 1280 | `1280-07-mare.jpg` | Mare Course (black-sky lunar), bright regolith, drive leaving the tee |
+| 1280 | `1280-08-results.jpg` | ROUND COMPLETE scorecard (`?autoplay=1&hole=7`: holes 7-9 played hands-free, -5 on 6 strokes; unplayed holes read "-", the PAR total sums the played holes only: par 11) |
+| 390x844 | `390-01-title.jpg` | modes menu on a phone |
+| 390x844 | `390-02-tee.jpg` | address on the tee, touch controls |
+| 390x844 | `390-03-swing.jpg` | backswing |
+| 390x844 | `390-04-flight.jpg` | follow-through with telemetry |
+| 390x844 | `390-05-maple.jpg` | Maple Hollow tee |
+| 390x844 | `390-06-mare.jpg` | Mare Course, white ball at the clubhead |
+| 390x844 | `390-07-results.jpg` | ROUND COMPLETE scorecard on a phone |
+| 1440x900 | `card-2x.jpg` | putt on the St Auroras green with caddie, lighthouse, clubhouse and gallery (`card-1x.jpg` = 720x450 LANCZOS downscale) |
 
-- **Build:** branch `audit-fix/g10` at `f03ec0bd1` (4.5.0 engine plus the audit fixes: player-driven swing, holes that finish, closing scorecard, aim camera and tee-marker changes). The 2026-10-25 set this replaces came from `origin/game-rework` `8da9c05d3` on engine 4.0.2.
-- **Runner:** remote ACR task (`tools/remote-acr/run.sh`), headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**.
-- **Spec:** `tests/browser/audit-fix/aura-links-3d.spec.ts`, tag `@shots` (screens and card) and `@round` (results). RUN_IDs `g10m-links-shots-*` (screens, card) and `g10final-round` (results). Frames are logged as base64 JPEG chunks and decoded locally, since the run has no artifact egress.
-- **How the sequence is driven:** `?course=stAuroras&qa=1`. Game logic is held (`__AURA_LINKS_QA__.hold(true)`) and stepped with `advance()`, so each frame shows the state it is named for; the three swing presses are real Space key presses.
-- **Layout:** same file names and sizes as before. `1280x720/`, `390x844/`, `card/` (720x450 at 1x and 2x). New: `04-results.jpg` in both sizes, the closing scorecard after a nine-hole `?autoplay=1` round. `card/flat-lighting-card-2x.jpg` is the old frame and was not retaken.
+## Checked in the frames
 
-## Frames
+- the ball sits at the clubhead on tee and fairway shots on all six courses (QA node dump: golf-ball within 1 cm of golfer-club-head, golfer 0.52 m from the ball); the white dot the owner saw was a dunes wildflower sphere and on Mare the aim line's near tip
+- address posture: ~30 deg hip hinge, straight upper back, head up (Idol body follows the solve at address, unit-tested per golfer)
+- trees: no floating (procedural conifers/oaks and alpine horizon pines now on the lowest ground under the root spread, all courses tested); the ball hits trunks/canopies and the flagstick
+- pond water draws (St Auroras hole 1); Mare exposure: bright grey regolith, black sky, horizon kept in flight frames
+- every hole of every course (54) swept hands-free with ?autoplay=1
 
-- `01-title`: the menu (`?menu=1`).
-- `02-early`, `03-action-01-address`: hole 1 tee, aim camera, ball in the lower third beside the golfer.
-- `03-action-02-power`, `03-action-03-accuracy`: the meter after the first and second press (power about 52%).
-- `03-action-04-swing-0` to `-09-swing-5`: the swing and the ball flight on the chase camera.
-- `03-action-10-route-...-state-p`: the next address after the shot (strokes 1 in the HUD).
-- `04-results`: closing scorecard. Remote state: `ROUND COMPLETE`, par 36, 19 strokes, -17 (autopilot demo, not a human round).
+## Known issues
 
-## Known limits
-
-- Software GL frames; colours and shadow detail on a GPU differ.
-- The golfer's glossy blue-silver sheen under the sky environment (noted in the 2026-10-25 set) is unchanged; it needs a re-hashed asset.
+- Cinder Rim reads flat brown with few landmarks (look, not a defect)
+- bunkers on St Auroras hole 1 show green patches inside the sand (grass islands or terrain poking through; not changed)

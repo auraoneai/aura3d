@@ -25,7 +25,7 @@ describe("Serpentine procedural sky-runner & original look parity", () => {
     }
   });
 
-  it("resolves loadRunner to null so the sculpted procedural sky-runner renders with zero GLB fetches", async () => {
+  it("keeps the procedural runner refs and falls back to the sculpted figure (null) when the Idol runner cannot load", async () => {
     for (const mode of ["original", "script"] as const) {
       const ref = runnerModelForLook(mode);
       expect(ref.kind).toBe("aura-asset-ref");

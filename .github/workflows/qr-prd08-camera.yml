@@ -124,7 +124,6 @@ jobs:
           grep -q 'showcase-turbo-drift-circuit/src/legacy/main.ts:2760' /tmp/camera-cast.md
           grep -q 'showcase-cinematic-architecture/src/main.ts:500' /tmp/camera-cast.md
           grep -q 'showcase-skyline-runner/src/legacy/feel.ts' /tmp/camera-cast.md
-          grep -q 'showcase-blockfall-reactor/src/legacy/camera-feel.ts' /tmp/camera-cast.md
       - run: node tools/qr-ownership/check.mjs
       # Repo-wide gates run after the lane suites so lane results are always
       # reported. T0-31 (lane 15) tracks pre-existing typecheck errors on main;

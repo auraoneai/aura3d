@@ -1,0 +1,141 @@
+{
+  "game": "aura-diamond-3d",
+  "outDir": "apps/showcase-aura-diamond-3d/assets/idol",
+  "style": "realistic",
+  "items": [
+    {
+      "key": "diaIdolFielderA",
+      "subject": "Realistic adult male professional baseball fielder, athletic build, light olive skin, short neatly cropped dark brown hair, clean-shaven, bareheaded with no cap and no helmet, wearing a plain white button-front short-sleeve baseball jersey with thin charcoal piping over a fitted charcoal crew-neck undershirt, plain white knee-length baseball pants with a black belt, charcoal knee-high socks, black molded baseball cleats, bare hands with no gloves",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.88
+      },
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run"
+      ],
+      "tex": 1024,
+      "seed": 11
+    },
+    {
+      "key": "diaIdolFielderB",
+      "subject": "Realistic adult male professional baseball fielder, athletic build, deep brown skin, very short black buzz-cut hair, short trimmed beard, bareheaded with no cap and no helmet, wearing a plain white button-front short-sleeve baseball jersey with thin charcoal piping over a fitted charcoal crew-neck undershirt, plain white knee-length baseball pants with a black belt, charcoal knee-high socks, black molded baseball cleats, bare hands with no gloves",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.88
+      },
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run"
+      ],
+      "tex": 1024,
+      "seed": 12
+    },
+    {
+      "key": "diaIdolBatterA",
+      "subject": "Realistic adult male professional baseball hitter, athletic muscular build, fair skin with light freckles, short cropped light brown hair, clean-shaven, bareheaded with no cap and no helmet, wearing a plain light grey button-front short-sleeve road baseball jersey with thin navy piping over a fitted navy long-sleeve undershirt, plain light grey knee-length baseball pants with a black belt, navy knee-high socks, black molded baseball cleats, black leather batting gloves on both hands",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.88
+      },
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run"
+      ],
+      "tex": 2048,
+      "seed": 21
+    },
+    {
+      "key": "diaIdolCatcher",
+      "subject": "Realistic adult male professional baseball catcher in full protective gear, stocky athletic build, light brown skin, short black hair, bareheaded with no helmet and no mask, wearing a plain white short-sleeve baseball jersey with a fitted charcoal undershirt, a black padded chest protector strapped over the jersey, black hard-shell knee-to-ankle shin guards with knee caps, plain white baseball pants, black molded baseball cleats, bare hands with no glove",
+      "kind": "character",
+      "role": "character",
+      "size": {
+        "height": 1.86
+      },
+      "rig": true,
+      "animations": [
+        "idle",
+        "walk",
+        "run"
+      ],
+      "tex": 2048,
+      "seed": 31
+    },
+    {
+      "key": "diaIdolScoreboard",
+      "subject": "A classic centre-field ballpark scoreboard structure: a wide dark green painted steel cabinet with a large blank flat black screen panel filling its front face, a raised arched pediment on top holding a round analogue clock with plain hour marks, the cabinet standing on two square steel lattice truss legs on concrete plinths, a rear catwalk with handrail, realistic weathered paint and rivets",
+      "kind": "object",
+      "role": "set-dressing",
+      "size": {
+        "width": 15.4
+      },
+      "tex": 2048,
+      "seed": 43
+    },
+    {
+      "key": "diaIdolLighthouse",
+      "subject": "A tall classic harbour lighthouse: a tapering round white-painted masonry tower with two broad red painted bands, a black iron lantern room with glass panes and a red domed cap and walkway railing at the top, a small white keeper's cottage with a grey slate roof attached at the base on a rough stone foundation",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 24
+      },
+      "tex": 1024,
+      "seed": 51
+    },
+    {
+      "key": "diaIdolWaterTower",
+      "subject": "A vintage city rooftop-style wooden water tower on a tall steel frame: a cylindrical cedar-stave tank bound with iron hoops and a conical wooden roof with a small finial, standing on four riveted steel legs with cross bracing and a steel ladder",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 22
+      },
+      "tex": 1024,
+      "seed": 53
+    },
+    {
+      "key": "diaIdolLunarRover",
+      "subject": "A realistic open-frame lunar exploration rover: aluminium tube chassis, four large wire-mesh wheels with chevron treads, two seats, a gold foil wrapped equipment box, a high-gain dish antenna on a mast, fenders, lightly dusted with grey regolith",
+      "kind": "vehicle",
+      "role": "set-dressing",
+      "size": {
+        "length": 3.6
+      },
+      "tex": 1024,
+      "seed": 55
+    },
+    {
+      "key": "diaIdolJuniper",
+      "subject": "A gnarled desert juniper tree: twisted silvery-brown trunk with shredded bark, dense clumps of blue-green scale foliage, growing from a small mound of red sandstone gravel",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 8.5
+      },
+      "tex": 1024,
+      "seed": 56
+    },
+    {
+      "key": "diaIdolLightPole",
+      "subject": "A tall ballpark stadium floodlight pole: one smooth tapered round galvanised steel monopole on a square concrete footing, topped by a solid rectangular steel crossarm frame carrying two neat rows of five round floodlight fixtures with clear glass lenses all aimed forward, a small maintenance platform with a simple solid handrail under the lights, clean realistic galvanised steel",
+      "kind": "object",
+      "role": "background",
+      "size": {
+        "height": 16
+      },
+      "tex": 1024,
+      "seed": 61
+    }
+  ]
+}

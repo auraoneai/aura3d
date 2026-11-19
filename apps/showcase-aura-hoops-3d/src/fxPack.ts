@@ -34,13 +34,15 @@ export const HOOPS_FX_PRESETS: Readonly<Record<HoopsFxKind, AuraVfxEffectSpec>> 
     name: "hoops blacktop-dust",
     layers: [{ type: "emitter", preset: "dust", count: 12, speed: 0.9, life: 0.7, gravity: -0.6, color: "#6f6a63", size: 0.16, spread: 1, sprite: "smoke-b", maxScreen: 0.06, drag: 2.2 }]
   },
-  // Paint mist from the rim on a dunk (sodium flash light for 0.18 s); the Jam dunk also stencils the spray tag (H47-V3).
+  // Paint mist from the rim on a dunk; the Jam dunk also stencils the spray tag (H47-V3). No `light` layer: real GPU
+  // 2026-11-19 (?autoplay=1&qaLuma=1, Rucker) - the burst's transient point light changed the scene's light count, and the
+  // frame it appeared in drew a white void (court floor on a blank sky, frame mean 90 -> 124 -> 86 for one frame, on every
+  // dunk; gone with the bursts off). VFX stays emitters only (see HOOPS_FX_NO_LIGHT_LAYERS).
   "spray-burst": {
     name: "hoops spray-burst",
     layers: [
       { type: "emitter", preset: "spark", count: 26, speed: 3.6, life: 0.55, gravity: -3, color: "#ff7a1a", size: 0.05, spread: 1, sprite: "soft-dot", maxScreen: 0.03, drag: 1.2 },
-      { type: "emitter", preset: "dust", count: 8, speed: 0.8, life: 0.9, gravity: -0.4, color: "#ffb347", size: 0.22, spread: 1, sprite: "smoke-a", maxScreen: 0.07, drag: 1.6, at: 0.04 },
-      { type: "light", intensity: 2.2, range: 6, duration: 0.18, color: "#ffb347" }
+      { type: "emitter", preset: "dust", count: 8, speed: 0.8, life: 0.9, gravity: -0.4, color: "#ffb347", size: 0.22, spread: 1, sprite: "smoke-a", maxScreen: 0.07, drag: 1.6, at: 0.04 }
     ]
   },
   // Splash crowns where the ball and feet hit wet ground (the rain courts swap blacktop-dust for this).
@@ -54,6 +56,9 @@ export const HOOPS_FX_PRESETS: Readonly<Record<HoopsFxKind, AuraVfxEffectSpec>> 
     layers: [{ type: "emitter", preset: "spark", count: 8, speed: 2.4, life: 0.4, gravity: -9, color: "#e8f2ff", size: 0.02, spread: 0.9, sprite: "soft-dot", maxScreen: 0.015 }]
   }
 };
+
+/** No preset adds a transient light: a light appearing mid-play flashed one white-void frame (spray-burst note above). */
+export const HOOPS_FX_NO_LIGHT_LAYERS = true;
 
 /** One kind per juice event that draws (H47-V1 acceptance: each juice event maps to one). */
 export const JUICE_FX: Readonly<Record<string, HoopsFxKind>> = {
@@ -126,4 +131,14 @@ export const TRAIL_FIRE_COLOR = "#ff6a1a";
  */
 export function ballTrailOptions(jamFull: boolean): AuraTrailOptions {
   return { width: jamFull ? 0.14 : 0.09, life: 0.3, color: jamFull ? TRAIL_FIRE_COLOR : TRAIL_COLOR, widthOverSpeed: [5.5, 11] };
+}
+
+/**
+ * The ribbon draws only while a shot is in flight. Real GPU 2026-11-19 (Shanghai ?autoplay=1): passes and pokes run the
+ * ball past the low chase eye, and the ribbon points that end up beside or behind the camera spread a translucent white
+ * sheet over half the frame for ~0.2 s (frame mean 74 -> 98 at the 0:06 poke; 78 with the ribbon off). Shot arcs fly
+ * away from the camera toward the rim, so they keep the ribbon.
+ */
+export function ballTrailWanted(ballState: string): boolean {
+  return ballState === "flight";
 }

@@ -1,0 +1,45 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdDroneVolt",
+  "generatedAt": "2026-11-18T22:47:14.783Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f089-ee5f-7a81-a9c7-60eb071e6f76",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1126810,
+        "num_faces": 2254528,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A futuristic single-seat racing hover drone craft: a light split-prong catamaran fuselage with two slim forward prongs joined by a glowing arc bridge, small tinted bubble cockpit canopy with a helmeted pilot, four round ducted lift fans on short arms at the four corners (open circular ducts with fan blades visible inside), twin round cyan-glowing thruster nozzles at the tail, electric sky-blue clearcoat paint with white and brushed titanium parts and dark carbon composite, copper radiator fins, panel lines and light wear",
+  "role": "vehicle",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.042,
+    "size": [
+      3.573,
+      1.434,
+      3.6
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdDroneVolt.glb",
+  "sizeBytes": 2336668,
+  "preview": "artifacts/idol/heatsink/tdDroneVolt/views.png",
+  "usd": 0.37,
+  "admitRole": "vehicle",
+  "renormalizedAt": "2026-11-18T23:36:24.958Z"
+}

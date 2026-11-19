@@ -45,7 +45,19 @@ export default defineArtDirection({
     exposureEV: 0.4
   },
   framing: { rig: "chase", subjectHeightFraction: [0.15, 0.25], fovDeg: [62, 84], mobile: "both" },
-  assets: [],
+  assets: [
+    // Idol wow pass (Nov 2026): image-to-3D GLBs (speridlabs/idol/max, tools/idol/specs/heatsink.json) for the seven
+    // drones, the foundry landmarks, track hazards and pickups; road, walls, skyline, lava/water set pieces stay procedural.
+    ...(["tdDroneOrion", "tdDroneVolt", "tdDroneBastion", "tdDroneSpectre", "tdDroneRazor", "tdDroneNighthawk", "tdDroneWraith"] as const).map((assetKey) => (
+      { role: "vehicle" as const, assetKey, kit: "K2" as const, maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM" as const, maxTextureSize: 2048 as const }
+    )),
+    ...(["tdCoolingTower", "tdSmokestacks", "tdWaterTower", "tdLadleCrane", "tdReactorRing", "tdGantryStart"] as const).map((assetKey) => (
+      { role: "world" as const, assetKey, kit: "K4" as const, maxTriangles: 60000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+    )),
+    ...(["tdBarrier", "tdExplosiveBarrel", "tdCoolantCell", "tdShieldPickup", "tdShockwavePylon", "tdMine"] as const).map((assetKey) => (
+      { role: "prop" as const, assetKey, kit: "K2" as const, maxTriangles: 20000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+    ))
+  ],
   vfx: [
     { event: "barrel", kind: "td-slag-burst" },
     { event: "hit", kind: "td-ember-hit" },

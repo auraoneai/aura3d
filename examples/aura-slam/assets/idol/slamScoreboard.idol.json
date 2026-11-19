@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-slam",
+  "key": "slamScoreboard",
+  "generatedAt": "2026-11-18T21:39:48.635Z",
+  "generator": "tools/idol/generate.mjs (+ manual optimise/normalise after the generator's optimise step rejected role set-dressing)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f088-b92f-7e22-ab1b-75d3898d3df2",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08a-5cb1-7a40-9618-586bb863eb5c",
+      "usd": 0.2
+    }
+  ],
+  "prompt": "A wide freestanding outdoor stadium scoreboard: a long rectangular dark charcoal metal housing with a blank switched-off black screen face and thin trim, raised on two grey steel lattice truss legs standing on the ground, with a round clock housing on top centre, blank screen",
+  "role": "background",
+  "rig": false,
+  "usd": 0.37,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 6.4,
+    "size": [
+      6.4,
+      6.395,
+      1.377
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/aura-slam/assets/idol/slamScoreboard.glb",
+  "sizeBytes": 1368324,
+  "preview": "artifacts/idol/aura-slam/slamScoreboard/views.png",
+  "manualNormalize": {
+    "role": "background",
+    "front": "+x",
+    "yawDeg": 0,
+    "size": {
+      "width": 6.4
+    },
+    "tex": 1024
+  },
+  "postOptimize": {
+    "tool": "aura3d assets optimize",
+    "role": "background",
+    "tex": 512,
+    "maxVerts": 12000,
+    "reason": "small on screen under the broadcast camera; per-game byte budget"
+  }
+}

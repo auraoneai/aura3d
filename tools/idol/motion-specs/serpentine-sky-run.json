@@ -1,0 +1,12 @@
+{
+  "game": "serpentine-sky-run",
+  "out": "apps/showcase-serpentine-sky-run-port/src/motion.generated.ts",
+  "clips": [
+    { "key": "Idle", "prompt": "A young martial artist stands in a ready stance with knees slightly bent, bouncing lightly on the balls of the feet, fists loose at the hips, breathing.", "duration": 3, "loop": true, "seed": 700, "guidance": 5 },
+    { "key": "Run", "prompt": "A young martial artist sprints forward in a straight line at full speed, leaning forward, knees driving high and arms pumping hard.", "duration": 2, "loop": true, "seed": 701, "guidance": 5 },
+    { "key": "Jump", "prompt": "A sprinting person leaps high into the air off one foot, tucks both knees up to the chest at the top of the jump, then lands on both feet and keeps running forward.", "duration": 2, "loop": false, "seed": 702, "guidance": 5 },
+    { "key": "Slide", "prompt": "A running person drops low and slides forward feet first along the ground on the hip with one leg extended and one arm trailing behind, then springs back up to running.", "duration": 1.6, "loop": false, "seed": 703, "guidance": 5 },
+    { "key": "DodgeLeft", "prompt": "A running person makes one quick sidestep hop to the left while still moving forward, leaning the body to the left, then keeps running straight.", "duration": 1.2, "loop": false, "seed": 704, "guidance": 5 },
+    { "key": "Stumble", "prompt": "A running person trips and stumbles forward, arms flailing out to keep balance, then catches the fall and keeps running.", "duration": 1.6, "loop": false, "seed": 705, "guidance": 5 }
+  ]
+}

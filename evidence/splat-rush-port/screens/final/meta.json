@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "splat-rush-port": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "route": "/apps/chroma-roll/",
+      "states": [
+        "1280x720 title: splash with controls incl. O autoplay",
+        "1280x720 early play: autoplay rolling the red ball under a gate gantry",
+        "1280x720 peak action: ball through a gantry, paint splash, 2x pickup",
+        "1280x720 power-up: shield + PERFECT/MILESTONE at 54,412",
+        "1280x720 results: SPLAT! game-over card",
+        "390x844 title: splash",
+        "390x844 early play: red ball under a gantry",
+        "390x844 peak action: splash through a gate, 2x",
+        "390x844 power-up: shield streak x5",
+        "390x844 results: SPLAT! card"
+      ],
+      "frames": [
+        "1280-01-title.jpg",
+        "1280-02-early-run.jpg",
+        "1280-03-streak.jpg",
+        "1280-04-shield-perfect.jpg",
+        "1280-05-results.jpg",
+        "390-01-title.jpg",
+        "390-02-early-run.jpg",
+        "390-03-streak.jpg",
+        "390-04-shield-streak.jpg",
+        "390-05-results.jpg",
+        "card-1x.jpg",
+        "card-2x.jpg"
+      ],
+      "results": "idle run splats after ~25 s (score 184-299, 'SPLAT!' card); autoplay keeps a x5 streak past 64,000 and loops after game over",
+      "autoplay": "?autoplay=1 (alias ?autopilot=1, O toggles): starts from the splash, steers into its own colour's gates, takes pickups; results 3 s then a new run, forever",
+      "errors": "none",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

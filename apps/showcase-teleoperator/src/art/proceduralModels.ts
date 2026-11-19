@@ -3586,3 +3586,17 @@ export function buildUrbanCommuterNode(options: {
     ...(options.scale ? { scale: options.scale } : {})
   }).runtime({ id: rootId });
 }
+
+/**
+ * Idol wow pass: unit road wheel (radius 1, width 1, axle along X) as one vertex-coloured mesh: black tyre, alloy rim with
+ * six spokes and a darker rotor, so an instanced pool can scale it per vehicle and spin it about X (the spokes read).
+ */
+export function unitWheelGeometrySpec(): AuraCustomGeometrySpec {
+  return memoGeometrySpec("idol-unit-wheel", () =>
+    mergeColoredMeshesToSpec(
+      wheelAssemblySlots({ radius: 1, width: 1, spokeCount: 6, tireMat: 0, rimMat: 1, rotorMat: 2 }).map((s) =>
+        tintRawMesh(s.mesh, s.materialIndex === 0 ? "#16191e" : s.materialIndex === 1 ? "#c9d1db" : "#5b6573")
+      )
+    )
+  );
+}

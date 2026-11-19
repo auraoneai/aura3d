@@ -3,7 +3,9 @@
  * Features multi-touch drag steering + dedicated right-thumb Flip button + tap-to-flip discrimination, real-time
  * `createImpactRig` hit-stop & camera trauma, AuraOne licensed HUD (`hud-tokens.css`), adaptive DPR, and QA hooks.
  *
- * Query parameters: `seed=N`, `manual=1`, `autostart=1`, `autopilot=1`, `warmup=N`, `dpr=N`, `motion=reduced|full`.
+ * Query parameters: `seed=N`, `manual=1`, `autoplay=1` (aliases `autostart=1`, `autopilot=1`), `warmup=N`, `dpr=N`,
+ * `motion=reduced|full`. Autoplay skips the title, the Autopilot drives the normal input path, and the results screen
+ * holds ~3 s before it restarts the run, forever. KeyO toggles the autopilot in play.
  */
 import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
@@ -20,12 +22,13 @@ import { LOOK } from "./look";
 import { Hud } from "./hud";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { createPolaritySound, diffSounds, frameStateOf, type FrameState } from "./audio";
-import { Autopilot } from "./autopilot";
+import { AUTOPLAY_RESULTS_STEPS, Autopilot } from "./autopilot";
 import { createHowtoDialog } from "./howto";
 
 const config = readQaParams({
   seed: { type: "number", default: 20261124 },
   manual: { type: "flag" },
+  autoplay: { type: "flag" },
   autostart: { type: "flag" },
   autopilot: { type: "flag" },
   warmup: { type: "number", default: 30 },
@@ -50,7 +53,11 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let steps = 0;
-let pilot: Autopilot | null = config.autopilot ? new Autopilot() : null;
+/** `?autoplay=1` == `?autostart=1&autopilot=1`; either alias alone turns the looping attract pilot on too. */
+const autoStart = config.autoplay || config.autostart;
+const autoPilot = autoStart || config.autopilot;
+const makePilot = (): Autopilot => new Autopilot({ restartAfterSteps: AUTOPLAY_RESULTS_STEPS });
+let pilot: Autopilot | null = autoPilot ? makePilot() : null;
 let renderFailed = false;
 const pending: Input = { ...IDLE };
 let nextPopupSeq = 0;
@@ -220,7 +227,9 @@ const loop = createFixedStepLoop({
     pending.start = pending.down = pending.up = false;
     pending.dx = 0;
     pending.tap = false;
+    const restarting = input.start && sim.o.phase === "gameOver";
     advance(input);
+    if (restarting && sim.o.phase === "playing") resetPresentation();
     presenter.afterStep();
   },
   render(frameSeconds) {
@@ -294,10 +303,10 @@ async function boot(): Promise<void> {
   startButton.textContent = "PLAY NOW";
   startButton.removeAttribute("aria-busy");
   $("splash-best").textContent = `best ${best.toLocaleString()}`;
-  if (config.autostart) {
+  if (autoStart) {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);
     steps = 0;
-    if (!pilot) pilot = new Autopilot();
+    if (!pilot) pilot = makePilot();
   }
   if (!isPageHidden() || config.manual) render();
   updateHud();
@@ -436,6 +445,11 @@ paintMute();
 
 function restart(): void {
   sim.begin();
+  resetPresentation();
+}
+
+/** Re-seat camera, interpolation, impact, HUD cache and overlays for a fresh run (sim already begun). */
+function resetPresentation(): void {
   presenter.reset();
   rig.reset(sim);
   impactRig.reset();
@@ -476,9 +490,22 @@ $("btn-restart").addEventListener("click", () => {
 
 const KEY_DIR: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 };
 const held = new Set<string>();
+/** KeyO: hand the ball to the autopilot (looping attract play) or take it back mid-run. */
+function toggleAutopilot(): void {
+  dropInput();
+  if (pilot) {
+    pilot = null;
+    pending.up = true;
+    return;
+  }
+  pilot = makePilot();
+  if (paused) setPaused(false);
+}
+
 addEventListener("keydown", (e) => {
   void sound.unlock();
   if (howto.handleKey(e)) return;
+  if (e.code === "KeyO" && !config.manual && !e.repeat) { toggleAutopilot(); return; }
   if (config.manual || pilot || e.repeat) return;
   if (e.code === "KeyM") { toggleMute(); return; }
   if (e.code === "KeyP" || e.code === "Escape") { setPaused(!paused); return; }
@@ -591,7 +618,7 @@ const qa = installQaHooks("polarity-orbs", {
     nextPopupSeq = 0;
     prevFrame = null;
     fx?.clearReveal();
-    pilot = config.autopilot ? new Autopilot() : null;
+    pilot = autoPilot ? makePilot() : null;
     render();
     updateHud();
   },

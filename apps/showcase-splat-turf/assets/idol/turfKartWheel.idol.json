@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-turf",
+  "key": "turfKartWheel",
+  "generatedAt": "2026-11-19T00:25:09.089Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f131-6993-78d2-8b61-cf2182b897c8",
+      "prompt": "A single small go-kart wheel seen exactly from the side: a chunky black treaded rubber tyre on a brass-gold five-spoke alloy rim with a chrome centre hub nut, standing upright on its tread. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f131-ec32-7a91-a060-9f2bddc88418",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1433956,
+        "num_faces": 2867928,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single small go-kart wheel seen exactly from the side: a chunky black treaded rubber tyre on a brass-gold five-spoke alloy rim with a chrome centre hub nut, standing upright on its tread. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 0.361,
+    "size": [
+      0.162,
+      0.36,
+      0.358
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-turf/assets/idol/turfKartWheel.glb",
+  "sizeBytes": 668104,
+  "preview": "artifacts/idol/splat-turf/turfKartWheel/views.png",
+  "usd": 0.37,
+  "renormalizedAt": "2026-11-19T00:38:01.003Z"
+}

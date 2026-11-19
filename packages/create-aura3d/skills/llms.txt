@@ -1,6 +1,6 @@
 # Aura3D
 
-> Aura3D 5.5.6: a TypeScript SDK for browser 3D apps and games. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed GLB/glTF assets, checks and deploy gates. Built to be driven by AI coding agents. Site: https://aura3d.auraone.ai
+> Aura3D 5.6.0: a TypeScript SDK for browser 3D apps and games. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed GLB/glTF assets, checks and deploy gates. Built to be driven by AI coding agents. Site: https://aura3d.auraone.ai
 
 ## First screen: Aura3D patterns (copy the shape, change the subject)
 
@@ -154,18 +154,18 @@ Whole starter scenes, each GPU-verified and passing `check-deploy`: `npx create-
 
 ## Read first
 
-1. Coming from three.js? `docs/agents/threejs-to-aura3d.md` maps each three.js idiom to the Aura3D line (every line type-checked). Do not port renderer, resize, loop or disposal code: `createAuraApp` owns them.
-2. Two high-craft 3D modeling paths (never default to melted-clay single-mesh Meshy blobs or 1-box programmer art):
+1. From three.js: `docs/agents/threejs-to-aura3d.md` maps each idiom (type-checked). Do not port renderer, resize, loop or disposal code; `createAuraApp` owns them.
+2. Two 3D modeling paths (never single-mesh Meshy clay or 1-box programmer art):
    - Clean, sharp, properly UV'd or rigged skeletal GLBs via `model(assets.x)` when one exists in the project or open CC0/CC-BY sources.
-   - Multi-part, multi-material procedural sculpting in `@aura3d/engine`: compose `primitives.extrude`, `primitives.lathe`, `primitives.tube`, `primitives.roundedBox`, `primitives.polyhedron`, `geometry.define`, `geometry.applyMatrix4`, `geometry.merge`, `geometry.multiMaterial`, and `instances.custom` across 3 to 8 distinct physical materials (`material.carPaint`, `material.lacquer`, `material.brushedMetal`, `material.ceramic`, `material.studioGlass`, `material.fabric`, `material.physical`) so every bevel, seam, window pane, trim collar, and foliage tier catches crisp IBL and key-light speculars. Eight complete procedural scenes are in `docs/agents/recipes.md` recipes 8 to 15 (sources in `docs/agents/recipes-src/`).
-   - Organic characters, creatures and hulls: `@aura3d/engine/sculpt` (5.5.6) builds smooth meshes for `geometry.define` / `geometry.multiMaterial`: `sculptOrganicSdfMesh`, `sculptStylizedHeadMesh`, `sculptAnatomicalLimbMesh`, `sculptSdfLimbChainMesh` (one-piece shoulder-to-mitten limbs, no ball joints), `sculptCurvedHairLockMesh`, `sculptDrapedGarmentMesh`, `sculptStreamlinedHullMesh`, `taubinSmoothMesh`, `bakeMeshCavityAO`, `assembleMultiMaterialNode`. Bake once at load, never per frame.
+   - Multi-part, multi-material procedural sculpting in `@aura3d/engine`: compose `primitives.extrude|lathe|tube|roundedBox|polyhedron`, `geometry.define|applyMatrix4|merge|multiMaterial` and `instances.custom` across 3 to 8 physical materials (`material.carPaint`, `lacquer`, `brushedMetal`, `ceramic`, `studioGlass`, `fabric`, `physical`) so bevels and seams catch IBL and key-light speculars. Eight complete procedural scenes are in `docs/agents/recipes.md` recipes 8 to 15 (sources in `docs/agents/recipes-src/`).
+   - Organic characters, creatures and hulls: `@aura3d/engine/sculpt` (5.5.6): SDF bodies (`sculptOrganicSdfMesh`), heads, one-piece limbs (`sculptSdfLimbChainMesh`), hair, garments and hulls for `geometry.define` / `geometry.multiMaterial`; list in `docs/api/sculpt.md`. Bake once at load, never per frame.
 
 ## More pitfalls
 
 - `looks.preset(id)` loads `/hdri/<file>.hdr` from `public/hdri/` (scaffolds ship it); if the file is missing the scene gets a procedural probe and `LOOK_HDRI_MISSING` in `app.diagnostics().warnings`. Colours accept any CSS form (`hsl()`, `rgb()`, names, `#rgb`); an invalid one throws `COLOR_INVALID`.
-- Follow cameras clip into walls and trunks unless cleared: call `computeCameraClearance(target, desired, obstacles, { minDistance, allowVerticalRise })` from `@aura3d/engine` each frame with circle (`{ shape: "circle", x, z, radius }`) and box (`{ shape: "box", x, z, halfX, halfZ, yaw }`) obstacles; it returns the pulled-in or risen camera position. Ease the result in your game.
-- Pools (bullets, traffic, particles) must be sized from the simulation's measured peak, or objects pop in and out.
-- Judge steady state: the first frame is lit differently from the baked probe seconds later. Capture at 3, 25 and 60 s; animated scenes flip between captures, so compare static bands before reverting anything.
+- Follow cameras clip into walls unless cleared: call `computeCameraClearance(target, desired, obstacles, { minDistance, allowVerticalRise })` from `@aura3d/engine` each frame with circle and yawed box obstacles, then ease the returned position (`docs/api/motion-camera-clear.md`).
+- Size pools (bullets, traffic, particles) from the measured peak, or objects pop.
+- Judge steady state: frame 1 is lit before the probe bakes. Capture at 3, 25 and 60 s and compare static bands before reverting anything.
 
 ## Fast path (read this first)
 
@@ -208,14 +208,14 @@ createAuraApp("#app", {
 - Never a solid void background; the look's sky, biome or studio backdrop owns it.
 - Never a hand-placed camera for the subject: `.camera(camera.auto())` frames what the scene holds (`{ subject: "name", fill }` for one node). Hand-built light: `lights.key({ target })` casts the shadow; give it a ground plane.
 - Never `pixelRatio`, `qualityProfile`, `safe-basic`, FXAA or `replaceTextures: true` overrides; `looks.appOptions(id)` carries the renderer contract.
-- Hero subject & props: use `model(assets.x)` when a clean, sharp, properly UV'd or rigged skeletal GLB exists. When no clean asset exists, sculpt a multi-part, multi-material procedural `@aura3d/engine` model (`primitives.extrude`, `primitives.lathe`, `primitives.tube`, `primitives.roundedBox`, `geometry.define`, `geometry.merge`, `geometry.multiMaterial` across 3 to 8 distinct physical materials) instead of defaulting to muddy single-texture Meshy clay—and never drop 1 to 3 raw box/cone/sphere programmer-art placeholders.
+- Hero subject & props: a clean `model(assets.x)` GLB, or a multi-part, multi-material procedural model ("Read first" 2); never single-mesh clay or one-box programmer art.
 - Never emissive cards or sprites faking reflections, puddles or glows; use the look's grade and `effects.*`.
 - Never CSS/DOM particles or labels standing in for rendered output. HUD lives in the DOM, the scene does not.
 - Gate frame 1 on `app.ready().then(...)` (never a module top-level `await app.ready()`: a production build deadlocks and the page stays black); mutate node handles on restart instead of calling `app.setScene()` again.
 
 ## Genre looks (starting points)
 
-Pick the look first, then tune. Palette and atmosphere cues per genre:
+Pick the look first, then tune:
 
 | Genre | Look | Camera | Palette and atmosphere |
 | --- | --- | --- | --- |
@@ -232,7 +232,7 @@ Pick the look first, then tune. Palette and atmosphere cues per genre:
 
 ## Porting three.js
 
-Porting existing three.js code: `aura3d migrate three` and the `aura3d-threejs-migration` skill record every approximation; the codemod is not a drop-in claim.
+`aura3d migrate three` and the `aura3d-threejs-migration` skill record every approximation; the codemod is not drop-in.
 
 ## Assets
 
@@ -241,18 +241,23 @@ Do not invent asset paths, URLs or ids. Every model comes from a generated `asse
 - `npx @aura3d/cli@latest assets search "<object>"` searches licence-tagged open public sources and a starter pack; results are candidates to check, and there is no Aura3D-run search service to rely on.
 - `assets resolve "<object>" --name <name>` pulls the top match and types it as `assets.<name>`.
 - `assets add ./assets/model.glb --name model` adds a local file; then read the generated `src/aura-assets.ts`.
-- No open/project asset match: prefer sculpting a multi-part, multi-material procedural `@aura3d/engine` model (`primitives.extrude`, `primitives.lathe`, `primitives.tube`, `primitives.roundedBox`, `geometry.define`, `geometry.merge`, `geometry.multiMaterial`) over single-mesh Meshy clay; use Meshy (`meshy-cli` skill, then `assets optimize --file in.glb --out out.glb --role <role>` and `assets import-meshy`) only when explicitly requested by the user or when organic rigged generation is required.
-- Production needs every model to have a same-origin URL, a 64-character sha256 and provenance, otherwise it draws nothing.
+- No open/project asset match: prefer a multi-part, multi-material procedural model (Fast path above, or `@aura3d/engine/sculpt`) over single-mesh Meshy clay; use Meshy (`meshy-cli` skill, then `assets optimize --file in.glb --out out.glb --role <role>` and `assets import-meshy`) only when explicitly requested by the user or when organic rigged generation is required.
+- Other formats: `assets convert in.fbx --out out.glb` (FBX, OBJ, DAE, USD, PLY, STL, 3MF, VOX, BVH; partial, losses reported).
+- Custom character or vehicle: `assets generate "<subject>" --name <key> --kind character --rig --dry-run` prints the fal.ai cost; the paid run admits a `candidate`. `assets normalize` fixes facing/size.
+- Clips: `animation import <file.bvh|.fbx|.glb|motion.json> --onto rig.glb --out hero.glb` retargets; `animation generate "<motion>" --onto rig.glb --out hero.glb` makes them from text (fal.ai). Key: `FAL_KEY` or `--key-file`; ledger `.aura3d/fal/ledger.jsonl`; reruns never pay twice.
+- Every command and flag: `aura3d help --json` or `docs/api/cli-reference.md`.
+- In production a model without a same-origin URL, 64-char sha256 and provenance draws nothing.
 
 ## Kits (build the shell from these)
 
-- `@aura3d/engine/game`: `createGame` (lifecycle, pause, results, DOM HUD, touch, juice, game sound).
-- `@aura3d/engine`: `createFixedStepLoop`, `installQaHooks`, `readQaParams`, `createCountedRng` (deterministic replay); `defineModelAssets`; `game.racketSports()`, `game.platformer`, `game.racing`, `game.fallingBlocks`, `game.fighting`; `effects.toon`.
+- `@aura3d/engine/game`: `createGame` (lifecycle, pause, results, DOM HUD, mobile touch controls, first-gesture audio unlock, juice, game sound).
+- `@aura3d/engine`: `createFixedStepLoop`, `installQaHooks`, `readQaParams`, `createCountedRng` (replay, telemetry, virtual pads, offline audio: `qa-kit.md`); `defineModelAssets`; `game.racketSports()`, `game.platformer`, `game.racing`, `game.fallingBlocks`, `game.fighting`; `effects.toon`.
+- `@aura3d/engine/devtools`: `createAuraTuneOverlay` (live sliders). `RuntimeQualityGovernor` is on by default (`quality-governor.md`).
 - `@aura3d/engine/audio`: `createCueBank`, `createStepSequencer`, `createToneLoop`, `createSampleSlices` on the single `AudioContextManager` (never `new AudioContext(`).
 - `@aura3d/debug`: `installSafetyNet` (`?diag=1`, quality switches, black-frame self-heal).
 - `material.custom` shaders: `#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_toon>`; keep `pow`, `normalize`, `sqrt` and divides NaN-safe.
 
-Details: `docs/api/game-kit.md`, `qa-kit.md`, `safety-net.md`, `audio-synth.md`, `model-loader.md`, `glsl-chunks.md`, `scatter-merge.md`, `cli-asset-tools.md`, `toon.md`.
+Details: `docs/api/game-kit.md`, `qa-kit.md`, `safety-net.md`, `sculpt.md`, `audio-synth.md`, `model-loader.md`, `glsl-chunks.md`, `scatter-merge.md`, `cli-asset-tools.md`, `toon.md`.
 
 ## Look-dev loop
 
@@ -268,7 +273,7 @@ Use every feature freely. Claim only what a judged capture shows.
 - Label every capability as one of: `createAuraApp` root safe API, `production-runtime`, `rendering` internals, CLI asset pipeline, template-only scaffold, prototype, or roadmap.
 - Public examples prove only what the safe API renders through `@aura3d/engine`.
 - A compiling route is not proof: route health, typed provenance and a readable frame are required.
-- Comparison numbers against three.js exist only in `evidence/vs-threejs/RESULTS.md`: software WebGL2, one author, five small scenes. They are not GPU results and not a general "less code" or "faster" claim.
+- Three.js comparison numbers live only in `evidence/vs-threejs/RESULTS.md` (software WebGL2, one author, five small scenes): not GPU results, not a general "less code" or "faster" claim.
 
 Release integrity rules:
 - no raw string asset IDs, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports, or `GLTFLoader` in public examples;
@@ -287,4 +292,4 @@ Release integrity rules:
 - Docs: https://aura3d.auraone.ai/docs/api, https://aura3d.auraone.ai/docs/agent-quickstart, https://aura3d.auraone.ai/docs/claims
 - Showcase (30 playable games): https://aura3d.auraone.ai/apps/showcase-index/
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml; crawl policy: https://aura3d.auraone.ai/robots.txt
-- Last updated: 2026-11-12
+- Last updated: 2026-11-14

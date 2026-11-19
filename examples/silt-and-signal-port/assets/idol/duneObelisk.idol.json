@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "silt-and-signal-port",
+  "key": "duneObelisk",
+  "generatedAt": "2026-11-18T23:05:35.975Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b0-3f8a-7503-929b-e2143079cfd7",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 724464,
+        "num_faces": 1448948,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A very tall slender ancient fluted sandstone obelisk, four times taller than it is wide, tapering upward to a pointed pyramid tip, vertical fluting grooves, wind-eroded weathered edges, standing on a rough low red-rock boulder plinth",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 25.816,
+    "size": [
+      14.388,
+      27.9,
+      16.033
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/silt-and-signal-port/assets/idol/duneObelisk.glb",
+  "sizeBytes": 3064208,
+  "preview": "artifacts/idol/silt-and-signal-port/duneObelisk/views.png",
+  "usd": 0.37
+}

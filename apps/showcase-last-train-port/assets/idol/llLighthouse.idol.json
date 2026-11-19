@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "last-train-port",
+  "key": "llLighthouse",
+  "generatedAt": "2026-11-18T23:15:36.061Z",
+  "generator": "tools/idol/generate.mjs (resumed after its 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A single classic tall round coastal lighthouse, tapering white-painted masonry tower with two broad red horizontal bands, grey granite base with a small arched door, a few small windows up the shaft, a black iron gallery balcony with railings near the top, a glazed lantern room with a large brass lens inside, topped by a green copper cupola roof and a small finial. Photograph of a real museum-quality hand-built scale model with model-railway diorama craftsmanship: real enamel paint, polished brass, varnished wood, plaster stucco, slate and terracotta materials, crisp clean edges, very light weathering, warm saturated colours, soft macro studio lighting, no base, no plinth, no display stand. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17,
+      "note": "reference completed in generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ab-e9d3-75b0-bf38-c852f13eefbf",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1041108,
+        "num_faces": 2082372,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single classic tall round coastal lighthouse, tapering white-painted masonry tower with two broad red horizontal bands, grey granite base with a small arched door, a few small windows up the shaft, a black iron gallery balcony with railings near the top, a glazed lantern room with a large brass lens inside, topped by a green copper cupola roof and a small finial. Photograph of a real museum-quality hand-built scale model with model-railway diorama craftsmanship: real enamel paint, polished brass, varnished wood, plaster stucco, slate and terracotta materials, crisp clean edges, very light weathering, warm saturated colours, soft macro studio lighting, no base, no plinth, no display stand. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 28.203,
+    "size": [
+      9.391,
+      27.6,
+      9.888
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-last-train-port/assets/idol/llLighthouse.glb",
+  "sizeBytes": 6602924,
+  "preview": "artifacts/idol/last-train-port/llLighthouse/views.png",
+  "usd": 0.37
+}

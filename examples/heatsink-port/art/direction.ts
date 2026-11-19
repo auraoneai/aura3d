@@ -47,7 +47,20 @@ export default defineArtDirection({
     exposureEV: 0.07
   },
   framing: { rig: "chase", subjectHeightFraction: [0.08, 0.16], fovDeg: [62, 84], mobile: "both" },
-  assets: [],
+  assets: [
+    // Idol wow pass (Nov 2026): image-to-3D GLBs (speridlabs/idol/max, tools/idol/specs/heatsink-port.json) for the craft,
+    // strike targets, gate pylons, canyon scenery, barrels and pickups; road, rails, sky and VFX stay procedural.
+    { role: "vehicle", assetKey: "ioncDrone", kit: "K2", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    ...(["ioncSentry", "ioncHeavy"] as const).map((assetKey) => (
+      { role: "vehicle" as const, assetKey, kit: "K2" as const, maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+    )),
+    ...(["ioncGatePylon", "ioncMesa", "ioncCryoVent", "ioncCoolantTower", "ioncBoostArch"] as const).map((assetKey) => (
+      { role: "world" as const, assetKey, kit: "K4" as const, maxTriangles: 60000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+    )),
+    ...(["ioncBarrel", "ioncPickupShield", "ioncPickupRepair"] as const).map((assetKey) => (
+      { role: "prop" as const, assetKey, kit: "K2" as const, maxTriangles: 20000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+    ))
+  ],
   vfx: [
     { event: "cruise", kind: "trail" },
     { event: "afterburner", kind: "trail" },

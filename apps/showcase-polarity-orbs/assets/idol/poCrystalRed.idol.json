@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "polarity-orbs",
+  "key": "poCrystalRed",
+  "generatedAt": "2026-11-18T23:16:08.954Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-a62f-7431-a965-3622f37df85b",
+      "prompt": "A cluster of large translucent rose-red quartz crystal points growing upward from a dark rock base, sharp faceted hexagonal prisms of different heights, glassy with internal veils. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f097-c52b-7ed3-97bf-2ed021f7c5dc",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1251210,
+        "num_faces": 2502424,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A cluster of large translucent rose-red quartz crystal points growing upward from a dark rock base, sharp faceted hexagonal prisms of different heights, glassy with internal veils. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 6.636,
+    "size": [
+      6.165,
+      6.6,
+      6.258
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-polarity-orbs/assets/idol/poCrystalRed.glb",
+  "sizeBytes": 3107304,
+  "preview": "artifacts/idol/polarity-orbs/poCrystalRed/views.png",
+  "usd": 0.37
+}

@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "silt-and-signal-port",
+  "key": "duneSignalPylon",
+  "generatedAt": "2026-11-18T21:23:40.921Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-43fe-7c02-b9c7-ff467d32ce31",
+      "prompt": "A tall slender ancient sandstone signal pylon column: a tapered square sandstone column with carved bands, a small flat solar panel array mounted on a bracket two thirds up, and a brass parabolic relay dish mounted at the top, weathered sandstone and green patina brass, about six times taller than wide. Hand-painted stylised look of a high-end animated feature film prop: simplified bold readable shapes and warm sunlit desert colours (terracotta, ochre, bone, indigo, turquoise, brass), but with real physical material detail: weathered sandstone grain, oiled leather, woven linen, hammered brass patina, glazed ceramic; soft painterly studio render. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f095-03ad-71f1-893f-b808c965456a",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 445966,
+        "num_faces": 891952,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A tall slender ancient sandstone signal pylon column: a tapered square sandstone column with carved bands, a small flat solar panel array mounted on a bracket two thirds up, and a brass parabolic relay dish mounted at the top, weathered sandstone and green patina brass, about six times taller than wide. Hand-painted stylised look of a high-end animated feature film prop: simplified bold readable shapes and warm sunlit desert colours (terracotta, ochre, bone, indigo, turquoise, brass), but with real physical material detail: weathered sandstone grain, oiled leather, woven linen, hammered brass patina, glazed ceramic; soft painterly studio render. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.079,
+    "size": [
+      0.269,
+      1.08,
+      0.262
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/silt-and-signal-port/assets/idol/duneSignalPylon.glb",
+  "sizeBytes": 2834352,
+  "preview": "artifacts/idol/silt-and-signal-port/duneSignalPylon/views.png",
+  "usd": 0.37
+}

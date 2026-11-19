@@ -1,0 +1,357 @@
+{
+  "game": "slingshot-siege",
+  "outDir": "apps/showcase-slingshot-siege/assets/idol",
+  "style": "Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight",
+  "items": [
+    {
+      "key": "siegeRaiderKing",
+      "kind": "object",
+      "role": "character",
+      "tex": 512,
+      "maxVerts": 12000,
+      "seed": 7,
+      "size": {
+        "height": 1.42
+      },
+      "subject": "A chubby round green pig-goblin king toy figure, big round lime-green head-body with a large pink pig snout, small ivory tusks, beady black eyes, a grand curled black handlebar moustache, pointed green ears, wearing a tall golden crown with red jewels sitting on a small red velvet cushion, a golden armour collar with a white ermine trim, short stubby legs"
+    },
+    {
+      "key": "siegeRaiderKnight",
+      "kind": "object",
+      "role": "character",
+      "tex": 512,
+      "maxVerts": 12000,
+      "seed": 7,
+      "size": {
+        "height": 1.53
+      },
+      "subject": "A chubby round green pig-goblin knight toy figure, big round lime-green head-body with a large pink pig snout, beady black eyes, a bristly curled black moustache, wearing a forged iron medieval knight helmet with a nose guard, brass trim and a swept red feather plume on top, a riveted iron gorget collar, short stubby legs"
+    },
+    {
+      "key": "siegeRaiderGrunt",
+      "kind": "object",
+      "role": "character",
+      "tex": 512,
+      "maxVerts": 12000,
+      "seed": 7,
+      "size": {
+        "height": 1.25
+      },
+      "subject": "A chubby round green pig-goblin soldier toy figure, big round lime-green head-body with a large pink pig snout, two ivory underbite tusks, beady black eyes, wearing a dented iron kettle helmet tilted to one side with brass rivets and a brown leather chin strap, a studded leather armour collar, short stubby legs"
+    },
+    {
+      "key": "siegeSlingshotFork",
+      "kind": "object",
+      "role": "prop",
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "size": {
+        "height": 1.24
+      },
+      "subject": "A large carved oak Y-shaped slingshot fork standing upright on its own, one thick round trunk splitting into two smoothly curved prongs of equal height rising in a symmetric Y, a dark iron band around the trunk, braided hemp rope lashing at the fork crotch, small brass caps on both prong tips, no elastic band, no pouch, flat cut base"
+    },
+    {
+      "key": "siegeSlingshotBase",
+      "kind": "object",
+      "role": "prop",
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "size": {
+        "maxDim": 1.58
+      },
+      "subject": "A low square siege-engine base platform: a grey stone slab supporting a wooden sled frame of two carved oak skids with diagonal oak struts and iron corner straps, an iron-banded wooden winch drum wrapped in hemp rope with a toothed iron ratchet wheel and crank handle at the back, and a round iron socket post with brass collars in the centre of the top, nothing mounted on the socket"
+    },
+    {
+      "key": "siegeFarSeaStack",
+      "kind": "object",
+      "role": "background",
+      "seed": 7,
+      "size": {
+        "height": 4.62
+      },
+      "subject": "A small toy diorama sea stack: a tall white chalk rock pillar rising from a little sandy islet, layered cliff faces, a green grassy cap on top with a tiny wooden flag pole and a red pennant flag",
+      "maxVerts": 40000
+    },
+    {
+      "key": "siegeFarLighthouseIslet",
+      "kind": "object",
+      "role": "background",
+      "seed": 7,
+      "size": {
+        "height": 6.9
+      },
+      "subject": "A small toy diorama island: a rocky islet with a sandy beach rim and a tall white lighthouse with red stripes and a glass lantern room, a tiny white keeper's cottage with a red roof beside it, a few green bushes",
+      "maxVerts": 25000
+    },
+    {
+      "key": "siegeFarQuarryCrane",
+      "kind": "object",
+      "role": "background",
+      "seed": 7,
+      "size": {
+        "height": 7.55
+      },
+      "subject": "A small toy diorama island: a grey rocky quarry islet with cut stone blocks stacked on it and a tall wooden quarry crane with a long angled boom, a rope and hook hanging from the boom tip, a small wooden treadwheel at its base",
+      "maxVerts": 40000
+    },
+    {
+      "key": "siegeFarGreenhouse",
+      "kind": "object",
+      "role": "background",
+      "seed": 7,
+      "size": {
+        "height": 6.3
+      },
+      "subject": "A small toy diorama island: a grassy islet with a sandy rim and a white-framed glass greenhouse with an arched roof and a small domed cupola, green plants visible inside, a little flower garden around it",
+      "maxVerts": 25000
+    },
+    {
+      "key": "siegeFarCurtainWall",
+      "kind": "object",
+      "role": "background",
+      "seed": 7,
+      "size": {
+        "height": 5.9
+      },
+      "subject": "A small toy diorama island: a rocky islet carrying a stretch of grey stone castle curtain wall with crenellated battlements between two round stone towers with dark slate cone roofs and small red pennant flags",
+      "maxVerts": 40000
+    },
+    {
+      "key": "siegeFarCrystalCrater",
+      "kind": "object",
+      "role": "background",
+      "seed": 7,
+      "size": {
+        "height": 5.8
+      },
+      "subject": "A small toy diorama island: a dark volcanic rock islet with a shallow crater from which a cluster of tall translucent violet and teal crystal spires grows, smaller crystals scattered around the rim",
+      "maxVerts": 40000
+    },
+    {
+      "key": "siegeWatchtower",
+      "kind": "object",
+      "role": "background",
+      "seed": 7,
+      "size": {
+        "height": 6.04
+      },
+      "subject": "A round coastal castle watchtower: a tapered grey ashlar stone tower on a wide stone base, a white half-timbered upper storey with dark wooden beams overhanging on wooden brackets, small glowing amber windows, a steep dark slate cone roof with a brass finial on top, an arched wooden door at the bottom",
+      "maxVerts": 20000
+    },
+    {
+      "key": "siegeGatehouse",
+      "kind": "object",
+      "role": "background",
+      "seed": 7,
+      "size": {
+        "height": 4.14
+      },
+      "subject": "A small castle gatehouse seen from the front: a grey stone arch with a heavy wooden plank gate with iron straps, flanked by two round stone towers with dark slate cone roofs, crenellated battlements along the top, a few small amber windows",
+      "maxVerts": 20000
+    },
+    {
+      "key": "siegeStoneBridge",
+      "kind": "object",
+      "role": "background",
+      "seed": 7,
+      "size": {
+        "width": 3.84
+      },
+      "front": "+x",
+      "subject": "A short arched footbridge seen from the side: a gently curved deck of wooden planks resting on three square grey stone piers, low stone parapet blocks along both edges, the arch profile clearly visible",
+      "maxVerts": 20000
+    },
+    {
+      "key": "siegeFlagBastion",
+      "kind": "object",
+      "role": "prop",
+      "tex": 1024,
+      "maxVerts": 8000,
+      "seed": 7,
+      "size": {
+        "height": 1.24
+      },
+      "subject": "A small square grey stone bastion block: a stepped stone plinth, a square ashlar stone body, a projecting stone cornice with eight square crenellation merlons around the top edge and a round dark iron socket in the centre of the top, nothing mounted in the socket"
+    },
+    {
+      "key": "siegeCrate",
+      "kind": "object",
+      "role": "prop",
+      "tex": 1024,
+      "maxVerts": 6000,
+      "seed": 7,
+      "size": {
+        "maxDim": 1.68
+      },
+      "subject": "A sturdy cube-shaped wooden supply crate of light pine planks with darker diagonal cross braces on each side and dark iron corner brackets with rivets"
+    },
+    {
+      "key": "siegeBarrel",
+      "kind": "object",
+      "role": "prop",
+      "tex": 1024,
+      "maxVerts": 6000,
+      "seed": 7,
+      "size": {
+        "height": 1.5
+      },
+      "subject": "A round red-painted wooden keg barrel standing upright, curved staves, two dark iron hoops near the top and bottom and one crimson hoop in the middle, flat wooden lid"
+    },
+    {
+      "key": "siegePineTree",
+      "kind": "object",
+      "role": "background",
+      "seed": 7,
+      "size": {
+        "height": 9.5
+      },
+      "subject": "A windswept coastal pine tree: a slightly leaning brown trunk with two side branches, layered tiers of dark green pine boughs forming an irregular cone crown, two smaller bough clusters on the side branches",
+      "maxVerts": 40000
+    },
+    {
+      "key": "siegeWindmillBody",
+      "kind": "object",
+      "role": "background",
+      "maxVerts": 20000,
+      "seed": 7,
+      "size": {
+        "height": 4.7
+      },
+      "subject": "A seaside tower windmill without any sails: a round grey stone base, a white plastered tapered tower with dark timber ribs and a small amber window, a terracotta red cap roof, a short round wooden axle hub sticking straight out of the front of the cap, no sails, no blades, no arms, nothing attached to the hub"
+    },
+    {
+      "key": "siegeWindmillSails",
+      "kind": "object",
+      "role": "prop",
+      "tex": 1024,
+      "maxVerts": 10000,
+      "seed": 7,
+      "size": {
+        "maxDim": 3.6
+      },
+      "subject": "A detached windmill sail cross lying flat: four long straight lattice wooden sail arms with cream canvas panels arranged in an even X around a small round wooden hub, all four arms the same length, seen straight from the front, nothing else"
+    },
+    {
+      "kind": "object",
+      "role": "hero",
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "size": {
+        "height": 1.42
+      },
+      "key": "siegeBirdPebbleBody",
+      "subject": "A chubby round red cartoon bird toy figure standing on two small orange feet, egg-shaped body with a cream belly patch, short pointed orange beak, big round white eyes with dark pupils under thick angry slanted dark eyebrows, two small red crest feathers on top of the head, three short black-tipped tail feathers, smooth rounded sides with NO wings at all, no arms, nothing on the sides of the body"
+    },
+    {
+      "key": "siegeBirdPebbleWing",
+      "kind": "object",
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 4000,
+      "seed": 7,
+      "size": {
+        "maxDim": 0.7
+      },
+      "subject": "A single detached cartoon bird wing toy piece lying flat, seen from directly above: a flat rounded paddle-shaped bright red wing, narrow rounded root end on the left widening to three layered scalloped feathers at the right, feather tips painted black-tipped red, about three times longer than wide, nothing else"
+    },
+    {
+      "kind": "object",
+      "role": "hero",
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "size": {
+        "height": 1.59
+      },
+      "key": "siegeBirdStoneBody",
+      "subject": "A heavy chubby round slate-blue cartoon bird toy figure standing on two small orange feet, wide barrel body with a pale grey belly patch, short thick orange beak, big round white eyes with dark pupils under stern slanted eyebrows, wearing a dark gunmetal iron aviator helmet with brass rivets, a small golden crest tuft poking out of the helmet top, short tail feathers, smooth rounded sides with NO wings at all, no arms, nothing on the sides of the body"
+    },
+    {
+      "key": "siegeBirdStoneWing",
+      "kind": "object",
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 4000,
+      "seed": 7,
+      "size": {
+        "maxDim": 0.7
+      },
+      "subject": "A single detached cartoon bird wing toy piece lying flat, seen from directly above: a flat rounded paddle-shaped slate blue wing, narrow rounded root end on the left widening to three layered scalloped feathers at the right, feather tips painted dark slate blue, about three times longer than wide, nothing else"
+    },
+    {
+      "kind": "object",
+      "role": "hero",
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "size": {
+        "height": 1.36
+      },
+      "key": "siegeBirdTripleBody",
+      "subject": "A small zippy round sky-blue cartoon songbird toy figure standing on two small orange feet, round body with a white belly patch, short pointed yellow-orange beak, big round white eyes with teal irises and cheeky eyebrows, a perky three-feather bright yellow crest on the head, smooth rounded sides with NO wings at all, no arms, nothing on the sides of the body"
+    },
+    {
+      "key": "siegeBirdTripleWing",
+      "kind": "object",
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 4000,
+      "seed": 7,
+      "size": {
+        "maxDim": 0.7
+      },
+      "subject": "A single detached cartoon bird wing toy piece lying flat, seen from directly above: a flat rounded paddle-shaped dark sky blue wing, narrow rounded root end on the left widening to three layered scalloped feathers at the right, feather tips painted darker blue, about three times longer than wide, nothing else"
+    },
+    {
+      "kind": "object",
+      "role": "hero",
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "size": {
+        "height": 1.34
+      },
+      "key": "siegeBirdSquidBody",
+      "subject": "A round purple cartoon bird toy figure standing on two small orange feet, plump body with a pale lavender belly patch, short orange beak, big round white eyes with mint-green irises and determined eyebrows, a crest of three curled mint-green feathers on the head shaped like little curling tentacles, short dark purple tail feathers, smooth rounded sides with NO wings at all, no arms, nothing on the sides of the body"
+    },
+    {
+      "key": "siegeBirdSquidWing",
+      "kind": "object",
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 4000,
+      "seed": 7,
+      "size": {
+        "maxDim": 0.7
+      },
+      "subject": "A single detached cartoon bird wing toy piece lying flat, seen from directly above: a flat rounded paddle-shaped dark purple wing, narrow rounded root end on the left widening to three layered scalloped feathers at the right, feather tips painted purple with mint-green tips, about three times longer than wide, nothing else"
+    },
+    {
+      "kind": "object",
+      "role": "hero",
+      "tex": 1024,
+      "maxVerts": 12000,
+      "seed": 7,
+      "size": {
+        "height": 1.45
+      },
+      "key": "siegeBirdEmberBody",
+      "subject": "A round golden-yellow cartoon bird toy figure standing on two small orange feet, plump body shading to bright orange at the bottom with a cream belly patch, short orange beak, big round white eyes with orange irises under fierce eyebrows, a tall crest of four flame-shaped golden and orange feathers swept back on the head like a flame, short flame-shaped orange tail feathers, smooth rounded sides with NO wings at all, no arms, nothing on the sides of the body"
+    },
+    {
+      "key": "siegeBirdEmberWing",
+      "kind": "object",
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 4000,
+      "seed": 7,
+      "size": {
+        "maxDim": 0.7
+      },
+      "subject": "A single detached cartoon bird wing toy piece lying flat, seen from directly above: a flat rounded paddle-shaped golden orange wing, narrow rounded root end on the left widening to three layered scalloped feathers at the right, feather tips painted orange with flame-yellow tips, about three times longer than wide, nothing else"
+    }
+  ]
+}

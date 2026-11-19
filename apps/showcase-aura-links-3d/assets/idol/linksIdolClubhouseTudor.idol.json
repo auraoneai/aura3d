@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-links-3d",
+  "key": "linksIdolClubhouseTudor",
+  "generatedAt": "2026-11-18T22:36:19.160Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/aura-links-3d/_refs/linksIdolClubhouseTudor.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0cd-d08e-7be0-bacb-26c68b18a7b2",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2029318,
+        "num_faces": 4060556,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Tudor-style country golf clubhouse: cream plaster walls with dark oak half-timber framing, steep red-brown clay tile gable roof with two gabled dormers, tall brick chimney, mullioned leaded bay windows, covered front veranda with turned white columns, stone foundation and front steps. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 12.019,
+    "size": [
+      12,
+      12.223,
+      12.182
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-links-3d/assets/idol/linksIdolClubhouseTudor.glb",
+  "sizeBytes": 7791836,
+  "preview": "artifacts/idol/aura-links-3d/linksIdolClubhouseTudor/views.png",
+  "usd": 0.2
+}

@@ -3,82 +3,6 @@
   "idleMs": 3000,
   "controlMs": 3000,
   "games": {
-    "aura-clash-showcase": {
-      "setup": [
-        {
-          "wait": 1500
-        }
-      ],
-      "controls": [
-        {
-          "name": "move-right",
-          "keys": [
-            "KeyD"
-          ],
-          "mode": "hold"
-        },
-        {
-          "name": "move-left",
-          "keys": [
-            "KeyA"
-          ],
-          "mode": "hold"
-        },
-        {
-          "name": "jump",
-          "keys": [
-            "KeyW"
-          ],
-          "mode": "tap"
-        },
-        {
-          "name": "light",
-          "keys": [
-            "KeyJ"
-          ],
-          "mode": "tap"
-        }
-      ]
-    },
-    "showcase-blockfall-reactor": {
-      "controls": [
-        {
-          "name": "left",
-          "keys": [
-            "KeyA"
-          ],
-          "mode": "tap"
-        },
-        {
-          "name": "right",
-          "keys": [
-            "KeyD"
-          ],
-          "mode": "tap"
-        },
-        {
-          "name": "rotate",
-          "keys": [
-            "KeyW"
-          ],
-          "mode": "tap"
-        },
-        {
-          "name": "soft-drop",
-          "keys": [
-            "KeyS"
-          ],
-          "mode": "hold"
-        },
-        {
-          "name": "hard-drop",
-          "keys": [
-            "Space"
-          ],
-          "mode": "tap"
-        }
-      ]
-    },
     "showcase-skyline-runner": {
       "controls": [
         {
@@ -135,31 +59,6 @@
           "mode": "charge",
           "chargeMs": 900,
           "ms": 4000
-        }
-      ]
-    },
-    "showcase-aurora-lander": {
-      "controls": [
-        {
-          "name": "thrust",
-          "keys": [
-            "KeyW"
-          ],
-          "mode": "hold"
-        },
-        {
-          "name": "lateral-left",
-          "keys": [
-            "KeyA"
-          ],
-          "mode": "hold"
-        },
-        {
-          "name": "lateral-right",
-          "keys": [
-            "KeyD"
-          ],
-          "mode": "hold"
         }
       ]
     },
@@ -363,33 +262,6 @@
         }
       ]
     },
-    "showcase-vault-breakers": {
-      "controls": [
-        {
-          "name": "serve",
-          "keys": [
-            "Space"
-          ],
-          "mode": "charge",
-          "chargeMs": 1800,
-          "ms": 4000
-        },
-        {
-          "name": "left-flipper",
-          "keys": [
-            "KeyA"
-          ],
-          "mode": "tap"
-        },
-        {
-          "name": "right-flipper",
-          "keys": [
-            "KeyD"
-          ],
-          "mode": "tap"
-        }
-      ]
-    },
     "showcase-rooftop-buckets": {
       "controls": [
         {
@@ -525,33 +397,6 @@
             "KeyD"
           ],
           "mode": "hold"
-        }
-      ]
-    },
-    "showcase-bank-shot": {
-      "controls": [
-        {
-          "name": "aim-left",
-          "keys": [
-            "KeyA"
-          ],
-          "mode": "hold"
-        },
-        {
-          "name": "aim-right",
-          "keys": [
-            "KeyD"
-          ],
-          "mode": "hold"
-        },
-        {
-          "name": "strike",
-          "keys": [
-            "Space"
-          ],
-          "mode": "charge",
-          "chargeMs": 850,
-          "ms": 4000
         }
       ]
     },

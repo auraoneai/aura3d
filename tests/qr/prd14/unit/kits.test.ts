@@ -191,10 +191,11 @@ describe("showcase kits K8 cues (PRD-14 T3.3)", () => {
   });
 
   it("maps every art/direction.ts audio[] cue, and each mapped sample exists", () => {
+    // No PRD-14 rebuild route ships any more (helpers/games.ts), so `declared`
+    // is empty today; the mapping check still guards any route added back.
     const declared = directionAudioCues();
-    expect(declared.length).toBeGreaterThan(0);
     const key = (c: { appDir: string; event: string; cue: string }) => `${c.appDir}|${c.event}|${c.cue}`;
-    // K8 still maps cues for the 13 rebuild apps deleted in 4.0.1 (46bca99f1).
+    // K8 still maps cues for rebuild apps deleted in 4.0.1 (46bca99f1).
     // Those rows are inert; every one must belong to an app that is gone.
     const live = new Set(PRD14_REBUILD_APP_DIRS);
     const liveCues = k8.cues.filter((c) => live.has(c.appDir));

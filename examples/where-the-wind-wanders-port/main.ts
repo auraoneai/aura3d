@@ -3,7 +3,8 @@
  * The simulation lives in `sim.ts` (pure); `world.ts` draws it through the public engine surface.
  *
  * Query parameters (GU47 adds `look=original` for the 4.6 look and `found=0..3|epilogue` to pin the daylight key): `manual=1` (the sim only advances through `__AURA_WIND__.stepFrames`; no title
- * card, no sound), `start=1` (skip the title card), `quality=low`. The hooks mirror the capture harness: `applyInput(keys, act)` then
+ * card, no sound), `start=1` (skip the title card), `quality=low`, `autoplay=1` (alias `autopilot=1`: the computer walks to the letters and
+ * the bell, shows the result, plays the voyage and starts again, forever; key O toggles it). The hooks mirror the capture harness: `applyInput(keys, act)` then
  * `stepFrames(n)`, or `runScript(segments)` to replay a recorded key script; `realtime(seconds)` advances the game clock
  * (captions, the bell-to-epilogue wait, the voyage) without drawing a frame per tick.
  *
@@ -12,6 +13,7 @@
  */
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
+import { warmPrograms } from "@aura3d/engine/game";
 import { CAMERA_FOLLOW, CAMERA_OFFSET, LETTERS, VIRTUAL_STEP_MS, createState, expandScript, nearbyInteraction, stepFrame, type Action, type FrameInput, type ScriptSegment, type WindState } from "./sim";
 import { createCaptionQueue } from "./captions";
 import { footstepCell } from "./locomotion";
@@ -21,6 +23,7 @@ import { createAudio } from "./audio";
 import { STORY, createUi } from "./ui";
 import { lookPostFor, parseFoundParam, resolveLook } from "./daylight";
 import { PAPER_PASS_NAME, paperPass, paperScale, warmGradingLut } from "./paper-pass";
+import { createAutopilot, createAutoplaySession } from "./autopilot";
 
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 
@@ -53,8 +56,13 @@ let frames = 0;
 const held = new Set<string>();
 let pendingAct: Action = null;
 let toastTimer = 0;
+let journalTimer = 0;
 let touchKeys = "";
-let started = manual || params.get("start") === "1";
+/** Autoplay: `?autoplay=1` (alias `?autopilot=1`) starts straight into a hands-free walk; key O toggles it in play. */
+let autopilotOn = !manual && (params.get("autoplay") === "1" || params.get("autopilot") === "1");
+const pilot = createAutopilot();
+const autoSession = createAutoplaySession({ resultsSeconds: 3, voyageSeconds: 9 });
+let started = manual || params.get("start") === "1" || autopilotOn;
 let paused = false;
 let lastStrideCell = 0;
 let lastHopPhase = "idle";
@@ -102,6 +110,8 @@ function handleMessage(m: string): void {
     const index = LETTERS.findIndex((l) => `letter:${l.id}` === m);
     if (index >= 0) {
       ui.addLetter(index);
+      // autoplay: the journal never stays open over the walk (closes ~4 s after a letter)
+      if (autopilotOn) { window.clearTimeout(journalTimer); journalTimer = window.setTimeout(() => { if (autopilotOn) ui.toggleJournal(false); }, 4000); }
       captions.say(STORY.letters[index]!.text, 11);
       audio.chime(index);
     }
@@ -175,6 +185,28 @@ function walkAgain(): void {
   });
 }
 
+/** Autoplay end of walk: the result for ~3 s, the voyage, then a fresh walk (no title card), looping forever. */
+function autoplayClock(dt: number): void {
+  const phase = autoSession.tick(state, dt);
+  if (phase === "voyage" && epilogueClock === null) { startEpilogue(); runtime?.setEpilogue(0); runtime?.cutToVoyage(); }
+  if (phase === "restart") {
+    captions.clear();
+    epilogueClock = null;
+    ui.showEpilogue(false);
+    ui.fade(() => { runtime?.setEpilogue(null); resetWalk(); pilot.reset(); autoSession.reset(); });
+  }
+}
+
+function setAutopilot(on: boolean): void {
+  autopilotOn = on;
+  pilot.reset();
+  autoSession.reset();
+  held.clear();
+  touchKeys = "";
+  showToast(on ? "Autopilot on: the keeper walks herself (O to stop)" : "Autopilot off");
+  if (on && ui.titleVisible) beginWalk();
+}
+
 function setPaused(value: boolean): void {
   if (!started || ui.titleVisible) return;
   paused = value;
@@ -205,7 +237,7 @@ function updatePrompt(): void {
 }
 
 function advance(frame: FrameInput, dtMs = VIRTUAL_STEP_MS, tickTime = true): void {
-  stepFrame(state, frame, dtMs);
+  stepFrame(state, frame, dtMs, runtime?.rails);
   if (tickTime) renderTime += dtMs / 1000;
   const cell = footstepCell(state.stride);
   if (state.moved && state.hop.phase === "idle" && cell !== lastStrideCell) audio.footstep();
@@ -248,7 +280,11 @@ const loop = createFixedStepLoop({
   minFrameSeconds: 0,
   isActive: () => ready && started && !paused && !isDocumentHidden(),
   step() {
-    advance({ keys: epilogueClock === null ? heldKeys() : "", act: epilogueClock === null ? pendingAct : null }, VIRTUAL_STEP_MS, false);
+    // autoplay drives the same input path as the keys (a held key or a pressed act still wins for that step)
+    const auto = autopilotOn && epilogueClock === null && !state.complete ? pilot.next(state, VIRTUAL_STEP_MS / 1000) : null;
+    const keys = heldKeys() || auto?.keys || "";
+    const act = pendingAct ?? auto?.act ?? null;
+    advance({ keys: epilogueClock === null ? keys : "", act: epilogueClock === null ? act : null }, VIRTUAL_STEP_MS, false);
     presenter.afterStep();
     pendingAct = null;
   }
@@ -267,6 +303,7 @@ window.addEventListener("keydown", (e) => {
     return;
   }
   if (e.code === "KeyM") { audio.setMuted(!audio.muted); ui.setSound(audio.muted, audio.started); return; }
+  if (e.code === "KeyO") { setAutopilot(!autopilotOn); return; }
   if (!started) return;
   if (e.code === "KeyJ") { ui.toggleJournal(); return; }
   if (e.code === "Escape" || e.code === "KeyP") { setPaused(!paused); return; }
@@ -332,6 +369,7 @@ function tick(now: number): void {
     render(VIRTUAL_STEP_MS);
     return;
   }
+  if (autopilotOn) autoplayClock(dtMs / 1000);
   advanceGameClock(dtMs / 1000);
   updatePrompt();
   renderTime += dtMs / 1000;
@@ -432,6 +470,9 @@ installQaHooks("wind", {
     get foliageCards() { return runtime?.foliageCards ?? 0; },
     get nodeCount() { return runtime?.nodeCount ?? 0; },
     get stats() { return runtime?.stats ?? null; },
+    /** Autoplay state (QA): on/off and the leg being walked (0 oak, 1 mill, 2 shore, 3 bell, -1 done). */
+    get autoplay() { return { on: autopilotOn, leg: pilot.leg }; },
+    setAutoplay(on: boolean): void { setAutopilot(on); },
     async frame(width = 480, height = 270, quality = 0.72): Promise<string> {
       render(VIRTUAL_STEP_MS);
       const out = document.createElement("canvas");
@@ -462,6 +503,10 @@ function watchModelLoads(): () => void {
   return () => {};
 }
 
+/** The last boot warm-up (`window.__IDOL_WARM__`): programs, HDRI and Idol texture uploads settled before play. */
+let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+if (typeof window !== "undefined") (window as unknown as { __IDOL_WARM__?: () => typeof warmResult }).__IDOL_WARM__ = () => warmResult;
+
 async function boot(): Promise<void> {
   sizeCanvas();
   const stopWatching = watchModelLoads();
@@ -487,6 +532,13 @@ async function boot(): Promise<void> {
     warmGradingLut();
   }
   if (paperOn) app.post?.addPostPass?.(paperPass(canvas.width, canvas.height, lookPostFor(daylightKey ?? 0).paper));
+  // Idol wow pass (first-seconds stall): settle every shader program, the HDRI and the Idol GLB texture uploads before
+  // play, so no draw is skipped while a program compiles in the first seconds (lessons-learned R2). `?manual=1` QA keeps
+  // the no-wait boot.
+  if (new URLSearchParams(location.search).get("manual") !== "1") {
+    $("loading-status").textContent = "Painting the valley…";
+    warmResult = await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+  }
   stopWatching();
   ready = true;
   $("loading").classList.add("hidden");

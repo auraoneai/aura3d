@@ -95,7 +95,7 @@ export function swingMetrics(s: SolvedSwing, root: RootFrame): SwingMetrics {
   const u = Math.max(0, Math.min(1, vDot(vSub(j.head, j.grip), seg) / vDot(seg, seg)));
   const headClearance = vLen(vSub(j.head, vAdd(j.grip, vScale(seg, u))));
   const stanceX = (SKELETON.leg.ankleL[0] + SKELETON.leg.ankleR[0]) / 2;
-  // palm normals from the forearm rolls: bind palm normal is down (-Y) (Meshy T-pose hands: palm forward, +Z; see scripts/golfer-hand-axes.mjs)
+  // palm normals from the forearm rolls: bind palm normal is down (-Y) (24-joint T-pose hands: palm forward, +Z; see scripts/golfer-hand-axes.mjs)
   const nBind: V3 = SKELETON.palmNormalBind ?? [0, 0, 1];
   const nL = qRotate(s.deltas.foreArmL, nBind);
   const nR = qRotate(s.deltas.foreArmR, nBind);

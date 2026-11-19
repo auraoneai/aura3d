@@ -239,6 +239,42 @@ export interface ShotEnv {
   readonly lie: LieKind;
   /** rough/sand contact quality multiplies effective power (0.7–1) */
   readonly liePenalty: number;
+  /**
+   * Trees the ball can hit (game/treeSpots.ts `treeColliders`, visible trees only): a trunk cylinder up to the canopy top
+   * and a canopy cylinder (tapered to `canopyTopR` when given) between the world heights canopyY0 and canopyY1.
+   */
+  readonly obstacles?: readonly TreeObstacle[];
+  /** the flagstick: a ball in flight that meets the pole bounces back off it */
+  readonly pin?: PinObstacle;
+}
+
+export interface TreeObstacle {
+  /** canopy centre on the ground plane (the tree's planted spot) */
+  readonly x: number;
+  readonly z: number;
+  /** trunk radius (m) */
+  readonly trunkR: number;
+  /** canopy radius (m) at canopyY0 */
+  readonly canopyR: number;
+  /** world heights of the canopy's underside and top (m) */
+  readonly canopyY0: number;
+  readonly canopyY1: number;
+  /** canopy radius at canopyY1 (conifers taper); defaults to canopyR */
+  readonly canopyTopR?: number;
+  /** trunk centre when the model's trunk is off its origin; defaults to (x, z) */
+  readonly trunkX?: number;
+  readonly trunkZ?: number;
+}
+
+export interface PinObstacle {
+  readonly x: number;
+  readonly z: number;
+  /** foot of the pole (the cup's turf height) */
+  readonly y0: number;
+  /** pole height above y0 (m) */
+  readonly height: number;
+  /** pole radius (m) */
+  readonly radius: number;
 }
 
 export interface WindState {

@@ -22,7 +22,7 @@ const routeConfig = JSON.parse(readFileSync(resolve(root, 'tools/showcase-librar
 const routeIds = routeConfig.routes
   .filter(route => route.published && (route.primaryAssets.length > 0 || route.requiresRoutePrimaryProbe === true) && route.retainedEvidenceFrozen !== true)
   .map(route => route.id);
-const isolatedRoutes = ['showcase-gallery-shift', 'showcase-blockfall-reactor', 'showcase-patrol-wing', 'showcase-mech-hangar'];
+const isolatedRoutes = ['showcase-gallery-shift', 'showcase-patrol-wing', 'showcase-mech-hangar'];
 const parallelRoutes = routeIds.filter(id => !isolatedRoutes.includes(id));
 
 const run = (phase: 'capture' | 'aggregate', ids: readonly string[] = [], workerCount = 1) => {

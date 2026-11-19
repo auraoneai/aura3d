@@ -44,7 +44,24 @@ export default defineArtDirection({
     exposureEV: 0.07
   },
   framing: { rig: "chase", subjectHeightFraction: [0.18, 0.22], fovDeg: [40, 52], mobile: "both" },
-  assets: [],
+  // Idol wow pass: high-detail image-to-3D storybook miniatures (art/idolModels.ts); `?idol=0` keeps the procedural models.
+  assets: [
+    { role: "hero", assetKey: "bkHero", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048, animated: { clips: ["idle"] } },
+    { role: "character", assetKey: "bkVillagerShepherdess", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "character", assetKey: "bkVillagerMiller", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "character", assetKey: "bkVillagerKeeper", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "backdrop", assetKey: "bkCottageA", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "backdrop", assetKey: "bkCottageB", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "backdrop", assetKey: "bkWindmill", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "backdrop", assetKey: "bkWindmillSails", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "backdrop", assetKey: "bkBelfry", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "bkBell", maxTriangles: 15000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "bkShrine", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "bkBridge", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "backdrop", assetKey: "bkOak", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "vehicle", assetKey: "bkBoat", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "prop", assetKey: "bkLantern", maxTriangles: 15000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+  ],
   vfx: [
     { event: "wind-petals", kind: "wind-petals" },
     { event: "gust-streak", kind: "wind-gust-streak" },

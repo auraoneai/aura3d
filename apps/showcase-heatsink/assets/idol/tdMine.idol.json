@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdMine",
+  "generatedAt": "2026-11-18T23:23:20.053Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b5-97ea-7302-8d31-01f721a461fd",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1708982,
+        "num_faces": 3419256,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A low round industrial hazard beacon puck lying flat on the ground: a flat disc-shaped dark gunmetal steel casing with six small rugged armoured sensor studs around the rim and a red glowing domed lamp in the centre on top, scuffed paint, bolts and yellow hazard trim",
+  "role": "prop",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.454,
+    "size": [
+      1.433,
+      0.576,
+      1.45
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdMine.glb",
+  "sizeBytes": 3460892,
+  "preview": "artifacts/idol/heatsink/tdMine/views.png",
+  "usd": 0.37
+}

@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-rush-port",
+  "key": "splatPickupDouble",
+  "generatedAt": "2026-11-18T22:49:42.858Z",
+  "generator": "tools/idol/generate.mjs (client-timeout resume)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0da-07f6-79f0-a8b7-eb8ee22a8417",
+      "prompt": "A glossy collectible power-up charm: two chunky interlocked golden yellow five-point stars standing upright, one slightly behind and tilted from the other, a polished brass gyroscope ring around them and a glowing amber gem in the centre. Photograph of a real glossy designer vinyl art-toy collectible, smooth sculpted soft-vinyl and lacquered resin surfaces, saturated candy paint colours with real paint drips, crisp studio product lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0e4-0ce2-7d33-90a8-d4bd2cbead7d",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 807132,
+        "num_faces": 1614276,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A glossy collectible power-up charm: two chunky interlocked golden yellow five-point stars standing upright, one slightly behind and tilted from the other, a polished brass gyroscope ring around them and a glowing amber gem in the centre. Photograph of a real glossy designer vinyl art-toy collectible, smooth sculpted soft-vinyl and lacquered resin surfaces, saturated candy paint colours with real paint drips, crisp studio product lighting, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 2.102,
+    "size": [
+      1.961,
+      2.1,
+      1.878
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-rush-port/assets/idol/splatPickupDouble.glb",
+  "sizeBytes": 1075828,
+  "preview": "artifacts/idol/splat-rush-port/splatPickupDouble/views.png",
+  "usd": 0.37,
+  "postProcess": "PNG textures re-encoded as JPEG q90 (normal map) by the splat Idol pass to fit the per-game byte budget"
+}

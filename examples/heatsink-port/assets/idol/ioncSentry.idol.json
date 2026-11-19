@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink-port",
+  "key": "ioncSentry",
+  "generatedAt": "2026-11-18T22:21:33.564Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0c0-413d-70d3-a895-a6f90e0f2156",
+      "prompt": "A hostile hovering interceptor sentry drone: a compact armoured swept-wing fuselage with two ducted rotors at the wingtips, a large round glowing red-orange sensor eye at the front centre like a bullseye, electric-cyan and hazard-crimson armour plates, gunmetal frame, small cannon barrels under the nose, panel lines and wear. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0cb-aded-7c91-bd56-60bcef371ffc",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 863304,
+        "num_faces": 1726660,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A hostile hovering interceptor sentry drone: a compact armoured swept-wing fuselage with two ducted rotors at the wingtips, a large round glowing red-orange sensor eye at the front centre like a bullseye, electric-cyan and hazard-crimson armour plates, gunmetal frame, small cannon barrels under the nose, panel lines and wear. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "vehicle",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 6.618,
+    "size": [
+      6.63,
+      1.936,
+      6.553
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/heatsink-port/assets/idol/ioncSentry.glb",
+  "sizeBytes": 3586692,
+  "preview": "artifacts/idol/heatsink-port/ioncSentry/views.png",
+  "usd": 0.37
+}

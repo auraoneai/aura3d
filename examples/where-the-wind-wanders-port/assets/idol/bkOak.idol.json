@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bellkeepers-walk",
+  "key": "bkOak",
+  "generatedAt": "2026-11-18T22:08:46.137Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b4-8b99-76d0-89a5-f6793616ebc8",
+      "prompt": "A grand ancient oak tree standing alone: a massive gnarled mossy trunk with exposed roots, thick twisting branches and a broad, billowing rounded canopy of dense sage-green leaves, no ground plane. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0b7-3dd5-73e0-86a7-bd7c80d0de81",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 39,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1471602,
+        "num_faces": 2943564,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A grand ancient oak tree standing alone: a massive gnarled mossy trunk with exposed roots, thick twisting branches and a broad, billowing rounded canopy of dense sage-green leaves, no ground plane. Photograph of a real handcrafted storybook miniature painted in soft gouache colours: hand-painted carved wood with visible brush grain, felted wool and woven linen fabrics, matte chalky paint surfaces in sage green, apricot, slate teal and warm cream, soft warm late-afternoon light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 14.165,
+    "size": [
+      13.86,
+      13.1,
+      14.074
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/where-the-wind-wanders-port/assets/idol/bkOak.glb",
+  "sizeBytes": 7907876,
+  "preview": "artifacts/idol/bellkeepers-walk/bkOak/views.png",
+  "usd": 0.37
+}

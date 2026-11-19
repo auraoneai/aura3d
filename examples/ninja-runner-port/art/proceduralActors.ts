@@ -47,6 +47,8 @@ import {
 import type { LookMode } from "../districtLook";
 import { EVENING_SLOT_MODEL, SLOT_MODEL, type CharacterId } from "../models";
 import { mergeColoredRawMeshes, paintVerticalGradient } from "./proceduralModels";
+import { IDOL_ACTORS, buildIdolActorNode, syncIdolActorNode } from "./idolActors";
+import type { IdolMotionContext } from "./idolMotion";
 
 export const PROCEDURAL_PART_KEYS = ["body", "head", "legL", "legR", "armL", "armR"] as const;
 export type ProceduralPartKey = (typeof PROCEDURAL_PART_KEYS)[number];
@@ -2111,7 +2113,20 @@ function hideNodeBuilder<TNode extends AuraSceneNode>(builder: AuraNodeBuilder<T
   return new Ctor({ ...(builder.toJSON() as unknown as Record<string, unknown>), visible: false });
 }
 
+/** Actor nodes of one slot: the rigged Idol GLB (`idolActors.ts`), or the six sculpted parts under `?idol=0`. */
 export function buildProceduralActorNodes(
+  slot: number,
+  id: CharacterId,
+  castShadow: boolean,
+  variant?: ActorVisualVariant
+): AuraNodeBuilder<AuraSceneNode>[] {
+  const resolvedVariant: ActorVisualVariant = variant ?? (slot >= 1 && slot <= 3 ? "clone" : "std");
+  if (IDOL_ACTORS) return [buildIdolActorNode(slot, id, castShadow, resolvedVariant)];
+  return buildSculptedActorNodes(slot, id, castShadow, resolvedVariant);
+}
+
+/** The six articulated sculpted parts of one slot (the pre-Idol actors, kept for `?idol=0`). */
+export function buildSculptedActorNodes(
   slot: number,
   id: CharacterId,
   castShadow: boolean,
@@ -2309,7 +2324,7 @@ const CLIP_DURATIONS: Readonly<Record<string, number>> = {
   death: 0.72
 };
 
-interface PoseAngles {
+export interface PoseAngles {
   lift: number;
   bodyPitch: number;
   bodyYaw: number;
@@ -2323,7 +2338,7 @@ interface PoseAngles {
   armRSplay: number;
 }
 
-function sampleClipAngles(clip: string, t: number, duration: number): PoseAngles {
+export function sampleClipAngles(clip: string, t: number, duration: number): PoseAngles {
   const u = duration > 0 ? (t / duration) % 1 : 0;
   const ph = u * Math.PI * 2;
   const s = Math.sin(ph);
@@ -2535,6 +2550,12 @@ function buildPoseFromAngles(a: PoseAngles, id: CharacterId): ProceduralLimbPose
 
 export interface ProceduralNinjaActor extends TypedGLBActor {
   readonly __pose: () => ProceduralLimbPose;
+  /** Clip angles of the current pose (the Idol rig driver reads these instead of the six rigid parts). */
+  readonly __angles: () => PoseAngles;
+  /** The game clip, its time and length this frame (the Idol actors map it onto a captured clip). */
+  readonly __clip: () => { clip: string; time: number; duration: number };
+  /** Idol pass: joint positions measured on the posed Idol skeleton (actor space); they replace the procedural joints. */
+  __setJoints(joints: Readonly<Record<string, V3>> | null): void;
 }
 
 const SKELETON_JOINTS = ["Spine", "Spine01", "Spine02", "LeftForeArm", "LeftHand", "RightForeArm", "RightHand"] as const;
@@ -2556,10 +2577,12 @@ function createProceduralNinjaSlot(id: CharacterId, clips: readonly string[]): P
     })
   );
 
+  let currentAngles: PoseAngles = sampleClipAngles(activeClip, 0, CLIP_DURATIONS[activeClip] ?? 1);
+  let measuredJoints: Readonly<Record<string, V3>> | null = null;
   const syncJoints = (): void => {
     for (const name of SKELETON_JOINTS) {
       const m = jointMatrices.get(name)!;
-      const p = currentPose.joints[name] ?? [0, 1, 0];
+      const p = measuredJoints?.[name] ?? currentPose.joints[name] ?? [0, 1, 0];
       m[12] = p[0];
       m[13] = p[1];
       m[14] = p[2];
@@ -2574,6 +2597,7 @@ function createProceduralNinjaSlot(id: CharacterId, clips: readonly string[]): P
       const k = 1 - fadeLeft / fadeTotal;
       next = lerpAngles(prevAngles, next, Math.max(0, Math.min(1, k)));
     }
+    currentAngles = next;
     currentPose = buildPoseFromAngles(next, id);
     syncJoints();
   };
@@ -2590,6 +2614,12 @@ function createProceduralNinjaSlot(id: CharacterId, clips: readonly string[]): P
 
   const actor = {
     __pose: () => currentPose,
+    __angles: () => currentAngles,
+    __clip: () => ({ clip: activeClip, time: activeTime, duration: CLIP_DURATIONS[activeClip] ?? 1 }),
+    __setJoints(joints: Readonly<Record<string, V3>> | null) {
+      measuredJoints = joints;
+      syncJoints();
+    },
     evidence: { clips: [...clips] },
     animation: {
       resolvedClipInfos: () => clips.map((name) => ({ name, duration: CLIP_DURATIONS[name] ?? 1 })),
@@ -2688,10 +2718,17 @@ export function syncProceduralActorSceneNodes(
   wy = -500,
   wz = 0,
   yaw = 0,
-  scale = 1
+  scale = 1,
+  motion?: IdolMotionContext
 ): void {
   const poseFn = (actor as Partial<ProceduralNinjaActor>).__pose;
   if (!poseFn) return;
+  if (IDOL_ACTORS) {
+    const ninja = actor as Partial<ProceduralNinjaActor>;
+    const joints = syncIdolActorNode(node, slot, show ? ninja.__angles?.() ?? null : null, show, wx, wy, wz, yaw, scale, show ? ninja.__clip?.() ?? null : null, motion);
+    if (joints) ninja.__setJoints?.(joints);
+    return;
+  }
   if (!show) {
     for (const part of PROCEDURAL_PART_KEYS) node(`actor-${slot}-${part}`).setVisible(false);
     return;

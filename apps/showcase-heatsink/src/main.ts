@@ -5,7 +5,7 @@ import { createImpactRig } from "../../showcase-port-shared/feel";
 import { createGradingLut } from "../../showcase-port-shared/vfx-pack";
 import { createAuraApp, createFixedStepLoop, type AuraOutputOptions, type AuraRuntimeNodeHandle } from "@aura3d/engine";
 import { installBlackFrameGuard } from "@aura3d/debug";
-import { createFixedStepPresenter, installGameBeacon } from "@aura3d/engine/game";
+import { createFixedStepPresenter, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { createThermalDriftAudio } from "./audio";
 import { ChaseCamera, projectToScreen, type CameraShot, type ScreenPoint } from "./camera";
 import { CIRCUITS, DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, TOTAL_LAPS, type CircuitId, type DroneId, type ModeId } from "./data";
@@ -14,7 +14,7 @@ import { createHud } from "./hud";
 import { CIRCUIT_LOOKS, circuitFromParam } from "./look";
 import { HeatHazeController, hazeQaCrops, type GameQaCrop } from "./heatHaze";
 import { droneEulerZYX, InstanceWriter, slotRivals } from "./view";
-import { droneRotorMount } from "./art/proceduralModels";
+import { exhaustNodeId, fanSpinAngle, IDOL_FANS, IDOL_NOZZLES } from "./art/idolModels";
 import {
   anchorPosition,
   burstOptions,
@@ -102,7 +102,7 @@ const audio = createThermalDriftAudio((muted) => hud.setMuted(muted));
 let selectedDrone: DroneId = "orion";
 let selectedCircuit: CircuitId = circuitFromParam(params.get("circuit")) ?? "grand";
 let selectedMode: ModeId = "race";
-let autopilotOn = params.get("autoplay") === "1" || params.get("demo") === "1";
+let autopilotOn = ["autoplay", "autopilot", "demo"].some((k) => params.get(k) === "1");
 let started = autopilotOn;
 let ready = false;
 
@@ -287,15 +287,15 @@ async function boot(): Promise<void> {
   const slotOut = new Map<DroneId, number>();
   const rivalModelsFor = Object.fromEntries(DRONE_ORDER.map((d) => [d, DRONE_ORDER.filter((o) => o !== d)])) as unknown as Record<DroneId, readonly DroneId[]>;
   const SIDES = [-1, 1] as const;
-  // Per-drone lift-fan duct centres + blur scale, measured once from each fitted hull sculpt so discs sit inside the shroud.
+  // Idol wow pass: rotor-blur discs sit in the Idol hulls' measured lift-fan ducts (IDOL_FANS) and spin (fanSpinAngle).
   const ROTOR_MOUNTS = Object.fromEntries(
     DRONE_ORDER.map((id) => {
-      const m = droneRotorMount(id, DRONE_SPECS[id]);
+      const m = IDOL_FANS[id];
       const corners: readonly (readonly [number, number])[] = [
-        [-m.lateral, -m.foreAft],
-        [m.lateral, -m.foreAft],
-        [-m.lateral, m.foreAft],
-        [m.lateral, m.foreAft]
+        [-m.lateral, -m.fore],
+        [m.lateral, -m.fore],
+        [-m.lateral, m.aft],
+        [m.lateral, m.aft]
       ];
       return [id, { corners, y: m.y, scale: m.radius / (ROTOR_DISC.size * 0.5) }];
     })
@@ -336,7 +336,8 @@ async function boot(): Promise<void> {
     if (plume && plume.drone === drone && plume.reduced === reduced) return;
     plume?.handle?.stop({ immediate: true });
     const spec = reduced ? { ...EXHAUST_PLUME, layers: EXHAUST_PLUME.layers.map((l) => ({ ...l, count: 3 })) } : EXHAUST_PLUME;
-    plume = { drone, reduced, handle: auraApp.effects?.spawn(spec, { node: DRONE_SPECS[drone].nodeId }, { seed: 7 }) };
+    // Idol wow pass: the streak core follows the empty node at the Idol hull's nozzle pair, not the hull centre.
+    plume = { drone, reduced, handle: auraApp.effects?.spawn(spec, { node: exhaustNodeId(DRONE_SPECS[drone]) }, { seed: 7 }) };
   }
   function fireVfx(target: readonly [number, number, number] | null, drone: readonly [number, number, number], reduced: boolean): void {
     const effects = auraApp.effects;
@@ -615,15 +616,19 @@ async function boot(): Promise<void> {
     plumeRadialScale = 1
   ): void {
     const halfLen = THRUSTER_PLUME.length * 0.5 * plumeLengthScale;
+    // Idol wow pass: the plumes leave the Idol hull's measured tail nozzles (IDOL_NOZZLES).
+    const nozzle = IDOL_NOZZLES[drone];
     for (const side of SIDES) {
-      placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, side * THRUSTER_PLUME.lateral, THRUSTER_PLUME.y, THRUSTER_PLUME.back + halfLen, attachPt);
+      placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, side * nozzle.lateral, nozzle.y, nozzle.back + halfLen, attachPt);
       writers.thrusters.pushThrusterPlumePose(attachPt[0], attachPt[1], attachPt[2], pitch, worldYaw, roll, plumeRadialScale, plumeLengthScale);
     }
+    // Spinning rotor-blur discs inside the Idol hull's four lift-fan ducts (frozen under reduced motion).
     const mount = ROTOR_MOUNTS[drone];
-    for (const [rx, rz] of mount.corners) {
+    const spinT = reducedMotionQuery?.matches ? 0 : performance.now() / 1000;
+    mount.corners.forEach(([rx, rz], corner) => {
       placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, rx, mount.y, rz, attachPt);
-      writers.rotors.pushPose(attachPt[0], attachPt[1], attachPt[2], pitch, worldYaw, roll, mount.scale, 1, mount.scale);
-    }
+      writers.rotors.pushPose(attachPt[0], attachPt[1], attachPt[2], pitch, worldYaw + fanSpinAngle(spinT, corner), roll, mount.scale, 1, mount.scale);
+    });
   }
 
   let lastHudAt = performance.now();
@@ -924,6 +929,8 @@ async function boot(): Promise<void> {
     track.place(18, shown.player[1]! * 0.4, 1.8, pose2);
     const aspect = (auraApp.canvas?.clientWidth || innerWidth) / Math.max(1, auraApp.canvas?.clientHeight || innerHeight);
     if (race.phase === "results") resultsSeconds += frameSeconds; else resultsSeconds = 0;
+    // Autoplay (owner standard, Nov 18): hold the results ~3.5 s, then race again hands-free, forever
+    if (autopilotOn && started && race.phase === "results" && resultsSeconds > 3.5) restart();
     const shot: CameraShot = !started ? { kind: "title" }
       : race.phase === "countdown" ? { kind: "countdown", digit: Math.ceil(race.countdown) }
       : race.phase === "results" ? { kind: "results", seconds: resultsSeconds }
@@ -976,7 +983,7 @@ async function boot(): Promise<void> {
     // Heat haze sources
     const hs = haze.sources;
     hs.begin();
-    exhaustAt[0] = dronePos[0]; exhaustAt[1] = dronePos[1] + 0.15; exhaustAt[2] = dronePos[2] + 1.5;
+    exhaustAt[0] = dronePos[0]; exhaustAt[1] = dronePos[1] + IDOL_NOZZLES[race.drone].y; exhaustAt[2] = dronePos[2] + IDOL_NOZZLES[race.drone].back + 0.2;
     if (p.respawn <= 0) hs.add(camPose, aspect, exhaustAt, 1.3, 0.55 + (isBoosting ? 0.25 : 0) + heat01 * 0.35);
     for (let i = 0; i < hotRivalCount; i += 1) hs.add(camPose, aspect, hotRivals[i]!, 1.1, 0.5);
     if (lavaVisible) hs.add(camPose, aspect, lavaAt, 6, 0.9);
@@ -1081,6 +1088,12 @@ async function boot(): Promise<void> {
     hud.hideStart();
   }
   if (!started) hud.showStart(inputs.touch);
+  // Idol wow pass: settle every program before the loop and the start screen go live. The Idol drones and foundry
+  // landmarks stream in after the mount; their texture upgrades (and the circuit HDRI) switch materials to new program
+  // variants, and draws whose program is still compiling are skipped, so without this the first seconds of a race
+  // showed missing drones and bare sky (lessons-learned R2). Steps run before onFrame is registered: no sim time passes.
+  draw(STEP);
+  await warmPrograms(auraApp, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
   simClockMs = performance.now();
   loop.resetAccumulator();
   // Real-time `dt` advances `createImpactRig` hit-stop & camera trauma; `simClockMs` advances only by `impactState.simDt`.

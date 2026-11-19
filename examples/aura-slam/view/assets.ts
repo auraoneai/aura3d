@@ -1,16 +1,25 @@
 import { defineAuraAssets, type AuraAssetDefinition, type AuraAssetMap } from "@aura3d/engine";
+import { idolModels, type IdolModelKey } from "./idolAssets.generated";
 
 type ModelAsset = AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number] };
 
 /**
- * World Tour stadium set-pieces (`WP-01`) are sculpted procedurally in `examples/aura-slam/art/proceduralModels.ts`
- * with zero static GLB dependencies; `stadiumAssets` and `STADIUM_PUBLIC_FILES` remain exported empty maps for compatibility.
+ * Idol wow pass (2026-11): the World Tour athletes, umpire and venue set pieces are Idol image-to-3D GLBs
+ * (tools/idol/specs/aura-slam.json), admitted to the shared manifest and copied into `idolAssets.generated.ts`
+ * (examples/aura-slam/tools/idol-assets.mjs). The procedural set pieces in `art/proceduralModels.ts` remain for
+ * `?look=original` and `?idol=0`.
  */
-const definitions: Record<string, ModelAsset> = {};
+export { idolModels, IDOL_MODEL_KEYS, type IdolModelKey } from "./idolAssets.generated";
+const definitions: Record<string, ModelAsset> = idolModels as unknown as Record<string, ModelAsset>;
+
+/** True when the Idol GLB `key` is admitted (the scene falls back to the procedural piece otherwise). */
+export function hasIdolModel(key: string): key is IdolModelKey {
+  return Object.hasOwn(idolModels, key);
+}
 
 export const stadiumAssets: AuraAssetMap<typeof definitions> = defineAuraAssets(definitions as never) as AuraAssetMap<typeof definitions>;
 
-/** Files a remote run must ship (`PUBLIC_ASSETS`). */
+/** Files a remote run must ship (`PUBLIC_ASSETS`): the Idol GLBs under public/aura-assets. */
 export const STADIUM_PUBLIC_FILES = Object.values(definitions).map((a) => a.url.replace("/aura-assets/", ""));
 
 type HdriAsset = AuraAssetDefinition & { readonly type: "texture"; readonly format: "hdr"; readonly url: string };

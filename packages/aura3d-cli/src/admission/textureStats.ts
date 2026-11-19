@@ -1,13 +1,11 @@
 /**
  * PRD-05 §6.4 G6 — texture sanity measurement on 256² decoded proxies.
  *
- * Pixel decode needs `sharp`, which is a `tools/asset-optimize` dependency
- * (the CLI itself carries no image deps per §4.4). Resolution follows the
- * established lane-05 bridge: `createRequire(<repo>/tools/asset-optimize/
- * package.json)` + `import(resolve("sharp"))`. When the tool deps are not
- * installed (plain `pnpm install` without `tools/asset-optimize` npm
- * install), the report is `available: false` and G6 records a fail —
- * release admission requires the measurement, never assumes it.
+ * Pixel decode needs `sharp` (the CLI itself carries no image deps per §4.4).
+ * It resolves like the glTF toolkit: from the project, then from the CLI's own
+ * install, then (repo checkouts) from `tools/asset-optimize`. When sharp is
+ * not installed anywhere the report is `available: false` and G6 records a
+ * fail — release admission requires the measurement, never assumes it.
  *
  * Measured per §6.4 G6:
  * - normal maps: decoded vector length within [0.9, 1.1] for ≥ 95 % texels,
@@ -89,14 +87,27 @@ function isPowerOfTwo(n: number): boolean {
   return n > 0 && (n & (n - 1)) === 0;
 }
 
+/**
+ * Resolves `sharp` the way the glTF toolkit does (commands/assets/gltfToolkit.ts):
+ * the project first, then the CLI's own install — so G6 works after
+ * `npm i -D @aura3d/cli sharp` in any project. The monorepo's
+ * `tools/asset-optimize` install stays a last fallback for repo checkouts.
+ */
 async function loadSharp(repoRoot: string): Promise<SharpFactory | undefined> {
-  try {
-    const toolRequire = createRequire(resolve(repoRoot, "tools", "asset-optimize", "package.json"));
-    const mod = (await import(toolRequire.resolve("sharp"))) as { default?: SharpFactory } & SharpFactory;
-    return (mod.default ?? mod) as SharpFactory;
-  } catch {
-    return undefined;
+  const requirers = [
+    createRequire(resolve(repoRoot, "package.json")),
+    createRequire(import.meta.url),
+    createRequire(resolve(repoRoot, "tools", "asset-optimize", "package.json"))
+  ];
+  for (const req of requirers) {
+    try {
+      const mod = req("sharp") as { default?: SharpFactory } & SharpFactory;
+      return (mod.default ?? mod) as SharpFactory;
+    } catch {
+      // try the next resolution root
+    }
   }
+  return undefined;
 }
 
 const PROXY = 256;
@@ -210,7 +221,7 @@ export async function measureTextureSanity(json: AdmissionGltfJson, bin: Buffer 
   if (!sharp) {
     return {
       available: false,
-      unavailableReason: "sharp is not installed — run `npm install` in tools/asset-optimize (G6 decode needs it).",
+      unavailableReason: "sharp is not installed — G6 decodes textures with it: npm install --save-dev sharp (in the project you run aura3d from).",
       textures: jobs.map((job) => {
         const size = sniffImageSize(job.bytes, job.mimeType);
         return {

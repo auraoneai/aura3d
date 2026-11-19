@@ -28,6 +28,7 @@ import {
   type LookJudgement
 } from "./rubric.js";
 import type { AuraCliCommand } from "../contracts/commands.js";
+import { monorepoOnlyMessage, unmetMonorepoRule } from "../monorepo-only.js";
 
 /** The C-32 provider signature (`judgeWithPrism` in tools/quality-gate/src/judge-prism.ts:38). */
 export type PrismJudgeFn = (
@@ -204,6 +205,14 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
 type JudgeIo = { readonly cwd: string; stdout(s: string): void; stderr(s: string): void };
 
 async function runPrismLookJudge(flags: ReadonlyMap<string, string>, asJson: boolean, io: JudgeIo, deps: LookJudgeDeps): Promise<number> {
+  // Monorepo-only: the C-32 provider lives in the repo's tools/ tree, not in the npm package. Say so before any work.
+  if (!deps.loadPrismJudge) {
+    const unmet = unmetMonorepoRule("look judge", ["--judge", "prism"], io.cwd);
+    if (unmet) {
+      io.stderr(monorepoOnlyMessage("look judge", unmet.needs, unmet));
+      return 2;
+    }
+  }
   const spec = flags.get("shots");
   if (!spec) {
     io.stderr(`look judge --judge prism requires --shots <a.jpg,b.jpg,...|dir> (at most ${PRISM_MAX_SHOTS} JPEG frames)`);

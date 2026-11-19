@@ -25,6 +25,22 @@ function trackedManifests(): string[] {
 
 const digestOf = (value: string | undefined) => value?.replace(/^sha256[-:]/, "").toLowerCase();
 
+/**
+ * The typed entry for `id` carries `integrity` with the document digest and every sidecar URI. Layout-agnostic:
+ * `assets typegen` writes the map multi-line (`"version": 1,` ...), older generators wrote it on one line.
+ */
+function typedHasIntegrityMap(typed: string, id: string, digest: string, uris: readonly string[]): boolean {
+  const keys = [JSON.stringify(id), ...(/^[A-Za-z_$][\w$]*$/.test(id) ? [id] : [])];
+  const start = keys.map((key) => typed.indexOf(`\n  ${key}: {`)).find((index) => index >= 0) ?? -1;
+  if (start < 0) return false;
+  const end = typed.indexOf("\n  },", start);
+  const block = typed.slice(start, end < 0 ? undefined : end);
+  const integrityAt = block.indexOf("integrity: {");
+  if (integrityAt < 0) return false;
+  const integrity = block.slice(integrityAt);
+  return integrity.includes(`sha256-${digest}`) && /\bdependencies"?: \{/.test(integrity) && uris.every((uri) => integrity.includes(JSON.stringify(uri)));
+}
+
 describe("catalog-wide GLB provenance digests", () => {
   const manifests = trackedManifests();
 
@@ -56,7 +72,7 @@ describe("catalog-wide GLB provenance digests", () => {
         problems.push(...checked.failures.map((failure) => `${file}: ${failure}`));
         if (checked.uris.length > 0) {
           withSidecars++;
-          if (typed !== undefined && !typed.includes(`integrity: { version: 1, digest: "sha256-${expected}", dependencies: {`)) {
+          if (typed !== undefined && !typedHasIntegrityMap(typed, asset.id, expected, checked.uris)) {
             problems.push(`${file} ${asset.id}: typed source lacks the dependency integrity map`);
           }
         }

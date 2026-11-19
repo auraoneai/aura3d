@@ -81,7 +81,8 @@ export const POOL_CAPS = {
   cap: 80,
   glow: 120,
   hero: 2,
-  halo: 2,
+  // courier (+ echo) and one glowing, spinning under-ring per sentry (+ echo), in the actor's colour
+  halo: 10,
   shC: 2,
   shB: 2,
   shT: 2,
@@ -89,7 +90,10 @@ export const POOL_CAPS = {
   visor: 8,
   scan: 8,
   trophy: 12,
-  gem: 12
+  gem: 12,
+  // readability: glow halo + dark contrast core under the courier (+ echo) and each sentry (+ echo)
+  auraGlow: 10,
+  auraCore: 10
 } as const;
 
 export type PoolKey = keyof typeof POOL_CAPS;
@@ -149,9 +153,9 @@ export const DD_MATERIALS = {
   // Hero Electric Gold & Electric Cyan courier materials (clean soft-satin shading, zero noisy HDRI streaks)
   courierClearcoatShell: material.pbr({
     name: "courier electric gold shell",
-    color: "#ffc422",
-    emissive: "#ffaa18",
-    emissiveIntensity: 0.24,
+    color: "#ffd84a",
+    emissive: "#ffc93a",
+    emissiveIntensity: 1.6, // readability: the courier is self-lit gold-white and blooms
     roughness: 0.50,
     metalness: 0.06,
     clearcoat: 0,
@@ -162,8 +166,8 @@ export const DD_MATERIALS = {
   courierBurnishedGold: material.studioMetal({
     name: "courier burnished amber gold",
     color: "#ffaa18",
-    emissive: "#ff9410",
-    emissiveIntensity: 0.20,
+    emissive: "#ffb020",
+    emissiveIntensity: 1.2,
     roughness: 0.34,
     metalness: 0.78,
     clearcoat: 0,
@@ -289,7 +293,7 @@ export const DD_MATERIALS = {
     clearcoat: 0,
     sheen: 0
   }),
-  poolWallTrim: instancedGlowPbr(0.92, 0.24),
+  poolWallTrim: instancedGlowPbr(0.42, 0.32), // readability: bezels sit below the actors
   poolRail: material.metal({
     color: "#ffffff",
     roughness: BOARD_PARTS.pin.roughness,
@@ -307,7 +311,7 @@ export const DD_MATERIALS = {
     sheen: 0
   }),
   poolTraceLit: instancedGlowPbr(1.9, 0.24),
-  poolDot: instancedGlowPbr(1.55, 0.15),
+  poolDot: instancedGlowPbr(0.85, 0.15), // readability: pellets secondary to the actors
   poolOrb: material.brushedMetal({
     color: BOARD_PARTS.can.color,
     roughness: 0.24,
@@ -334,7 +338,7 @@ export const DD_MATERIALS = {
     name: "specter soft-satin multi-part eye",
     color: "#ffffff",
     emissive: "#ffffff",
-    emissiveIntensity: 0.14,
+    emissiveIntensity: 0.85, // readability: the actors' eyes / visors glow at the top-down camera
     roughness: 0.36,
     metalness: 0.02,
     clearcoat: 0,
@@ -370,21 +374,33 @@ export const DD_MATERIALS = {
     envMapIntensity: 0.12,
     practical: true
   }),
+  // readability: the sentry body is self-lit in its (instance) arcade colour so it blooms over the board
   poolSentryArmor: material.pbr({
     name: "sentry ectoplasm ghost mantle",
     color: "#ffffff",
-    roughness: 0.52,
+    emissive: "#ffffff",
+    emissiveIntensity: 1.6,
+    roughness: 0.4,
     metalness: 0.02,
     clearcoat: 0,
     sheen: 0,
     envMapIntensity: 0.08,
-    rim: { color: "#e4f2ff", power: 2.3, intensity: 0.68 }
+    practical: true
+  }),
+  /** Soft coloured glow puddle (1.6 tiles) under each actor, tinted per instance. */
+  poolAuraGlow: material.pbr({
+    name: "actor glow halo", color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.1, roughness: 1, metalness: 0,
+    opacity: 0.3, alphaMode: "blend", clearcoat: 0, sheen: 0, practical: true
+  }),
+  /** Dark core puck (0.95 tile, opaque) under each actor: separates the self-lit body from bright chips / pale boards. */
+  poolAuraCore: material.pbr({
+    name: "actor contrast core", color: "#020304", roughness: 1, metalness: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0
   }),
   poolSentryVisor: material.pbr({
     name: "sentry expressive multi-part eyes",
     color: "#ffffff",
     emissive: "#ffffff",
-    emissiveIntensity: 0.14,
+    emissiveIntensity: 0.85, // readability: the actors' eyes / visors glow at the top-down camera
     roughness: 0.36,
     metalness: 0.02,
     clearcoat: 0,
@@ -1370,32 +1386,51 @@ function buildSentrySkittishSpec(): AuraCustomGeometrySpec {
   return finalizePhantomSpec(parts);
 }
 
-export const POOL_GEOMETRIES: Readonly<Record<PoolKey, AuraCustomGeometrySpec>> = {
-  wall: buildWallModuleSpec(),
-  wallTrim: buildWallTrimBezelSpec(),
-  rail: buildGullWingPinSpec(),
-  trace: buildCopperTraceSpec(),
-  traceLit: buildLitTraceSpec(),
-  dot: buildEnergyPelletSpec(),
-  orb: buildPowerCollarSpec(),
-  prism: buildGyroPrismShellSpec(),
-  vent: buildPlasmaStarCoreSpec(),
-  marker: buildReticleMarkerSpec(),
-  eyes: buildSpecterEyePodSpec(),
-  dress: buildFinnedHeatsinkSpec(),
-  cap: buildElectrolyticCapSpec(),
-  glow: buildNixieFilamentSpec(),
-  hero: buildHeroVisorSpec(),
-  halo: buildCourierHaloRingSpec(),
-  shC: buildSentryHunterSpec(),
-  shB: buildSentryAmbusherSpec(),
-  shT: buildSentryDrifterSpec(),
-  shY: buildSentrySkittishSpec(),
-  visor: buildSentryVisorSpec(),
-  scan: buildSentryScanFanSpec(),
-  trophy: buildNixieEnvelopeSpec(),
-  gem: buildCrownGemSpec()
+/**
+ * WP-12 pool geometries, built lazily per key on first read (the arcade-readability pass mounts arcadeActors.ts pools;
+ * these sculpts stay available to the kit tests and relic builders without costing every boot).
+ */
+const POOL_GEOMETRY_BUILDERS: Readonly<Record<PoolKey, () => AuraCustomGeometrySpec>> = {
+  wall: () => buildWallModuleSpec(),
+  wallTrim: () => buildWallTrimBezelSpec(),
+  rail: () => buildGullWingPinSpec(),
+  trace: () => buildCopperTraceSpec(),
+  traceLit: () => buildLitTraceSpec(),
+  dot: () => buildEnergyPelletSpec(),
+  orb: () => buildPowerCollarSpec(),
+  prism: () => buildGyroPrismShellSpec(),
+  vent: () => buildPlasmaStarCoreSpec(),
+  marker: () => buildReticleMarkerSpec(),
+  eyes: () => buildSpecterEyePodSpec(),
+  dress: () => buildFinnedHeatsinkSpec(),
+  cap: () => buildElectrolyticCapSpec(),
+  glow: () => buildNixieFilamentSpec(),
+  hero: () => buildHeroVisorSpec(),
+  halo: () => buildCourierHaloRingSpec(),
+  shC: () => buildSentryHunterSpec(),
+  shB: () => buildSentryAmbusherSpec(),
+  shT: () => buildSentryDrifterSpec(),
+  shY: () => buildSentrySkittishSpec(),
+  visor: () => buildSentryVisorSpec(),
+  scan: () => buildSentryScanFanSpec(),
+  trophy: () => buildNixieEnvelopeSpec(),
+  gem: () => buildCrownGemSpec(),
+  auraGlow: () => buildActorDiscSpec(),
+  auraCore: () => buildActorDiscSpec()
 };
+const poolGeometryCache: Partial<Record<PoolKey, AuraCustomGeometrySpec>> = {};
+export const POOL_GEOMETRIES: Readonly<Record<PoolKey, AuraCustomGeometrySpec>> = Object.defineProperties(
+  {} as Record<PoolKey, AuraCustomGeometrySpec>,
+  Object.fromEntries((Object.keys(POOL_GEOMETRY_BUILDERS) as PoolKey[]).map((k) => [k, {
+    enumerable: true,
+    get: () => (poolGeometryCache[k] ??= POOL_GEOMETRY_BUILDERS[k]())
+  }]))
+);
+
+/** Flat disc (unit, [-0.5..0.5] in x/z, 2% tall) for the actor glow halo / contrast core. */
+function buildActorDiscSpec(): AuraCustomGeometrySpec {
+  return unitSpec([latheMesh([[0, 0], [0.5, 0], [0.5, 0.01], [0, 0.01]], 40, false)], [0.992, 0.02, 0.992]);
+}
 
 export function buildInstancedPoolNodes(
   pad: (count: number) => AuraTransformSpec[]
@@ -1437,15 +1472,17 @@ export function buildInstancedPoolNodes(
     pool("cap", "capacitors", DD_MATERIALS.poolCap, { castShadow: true }),
     pool("glow", "glow", DD_MATERIALS.poolGlow, { instanceColorTarget: "both" }),
     pool("hero", "courier-visor", DD_MATERIALS.poolHeroVisor, { instanceColorTarget: "both" }),
-    pool("halo", "courier-halo", DD_MATERIALS.poolHalo),
-    pool("shC", "sentry-hunter", DD_MATERIALS.poolSentryArmor, { castShadow: true }),
-    pool("shB", "sentry-ambusher", DD_MATERIALS.poolSentryArmor, { castShadow: true }),
-    pool("shT", "sentry-drifter", DD_MATERIALS.poolSentryArmor, { castShadow: true }),
-    pool("shY", "sentry-skittish", DD_MATERIALS.poolSentryArmor, { castShadow: true }),
+    pool("halo", "courier-halo", DD_MATERIALS.poolHalo, { instanceColorTarget: "both" }),
+    pool("shC", "sentry-hunter", DD_MATERIALS.poolSentryArmor, { castShadow: true, instanceColorTarget: "both" }),
+    pool("shB", "sentry-ambusher", DD_MATERIALS.poolSentryArmor, { castShadow: true, instanceColorTarget: "both" }),
+    pool("shT", "sentry-drifter", DD_MATERIALS.poolSentryArmor, { castShadow: true, instanceColorTarget: "both" }),
+    pool("shY", "sentry-skittish", DD_MATERIALS.poolSentryArmor, { castShadow: true, instanceColorTarget: "both" }),
     pool("visor", "sentry-visors", DD_MATERIALS.poolSentryVisor, { instanceColorTarget: "both" }),
     pool("scan", "sentry-scans", DD_MATERIALS.poolSentryScan, { instanceColorTarget: "both" }),
     pool("trophy", "nixie-tubes", DD_MATERIALS.poolTrophyGlass, { castShadow: false }),
-    pool("gem", "cache-gem", DD_MATERIALS.poolGem, { instanceColorTarget: "both", castShadow: true })
+    pool("gem", "cache-gem", DD_MATERIALS.poolGem, { instanceColorTarget: "both", castShadow: true }),
+    pool("auraGlow", "actor-glow-halo", DD_MATERIALS.poolAuraGlow, { instanceColorTarget: "both" }),
+    pool("auraCore", "actor-contrast-core", DD_MATERIALS.poolAuraCore)
   ];
 }
 

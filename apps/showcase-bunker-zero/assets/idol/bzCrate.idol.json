@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzCrate",
+  "generatedAt": "2026-11-18T23:30:49.375Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0ab-ba19-7b92-ba8f-ba435c10b6d9",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ea-d76e-79f2-a165-a4087a747e3d",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1253334,
+        "num_faces": 2506680,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Large military supply crate: olive drab painted wooden crate with steel corner brackets, rope handles and stencil-free panels, scuffed",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.598,
+    "size": [
+      1.603,
+      1.17,
+      1.16
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzCrate.glb",
+  "sizeBytes": 2712504,
+  "preview": "artifacts/idol/bunker-zero/bzCrate/views.png",
+  "usd": 0.37
+}

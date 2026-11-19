@@ -16,9 +16,8 @@
  * primitive-built humanoid hero must carry the explicit abstract label;
  * removing the primitive hero (typed-rig migration) also clears the file. A
  * retained primitive fallback behind a typed-first branch is still a
- * violation — e.g. `apps/world-war-x-showcase/src/WorldWarXApp.ts:1074`
- * (`character.lowPolyHumanoid` fallback, no abstract label; OPEN, route-owner
- * lane, reported by the T2 test fixture).
+ * violation — e.g. a `character.lowPolyHumanoid` fallback with no abstract
+ * label (the shape the T2 test fixture reproduces).
  *
  * INTEGRITY NOTE (T2 task 2 blocker, source-verified 2026-09-04): the typed
  * exits this gate migrates toward do not currently survive the production

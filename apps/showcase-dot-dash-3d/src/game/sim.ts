@@ -40,6 +40,8 @@ export const RELEASE_STEP_DECAY = 0.32;
 /** One extra life when the score first reaches this. */
 export const EXTRA_LIFE_AT = 10000;
 export const MAX_LIVES = 5;
+/** Autoplay (?autoplay=1 or P): seconds the game-over / win card shows before the next run starts. */
+export const AUTOPLAY_RESULTS_SECONDS = 3;
 const EYE_FX_EVERY = 0.09;
 
 export type GhostId = "blitz" | "sly" | "flick" | "dim";
@@ -51,11 +53,12 @@ export const GHOST_LABEL: Record<GhostId, string> = {
   flick: "DRIFTER",
   dim: "SKITTISH"
 };
+/** Sentry colours (arcade-readability pass): solid saturated red, magenta, cyan and orange, body + HUD + markers. */
 export const GHOST_TINT: Record<GhostId, string> = {
-  blitz: "#ff4d3d",
-  sly: "#c47dff",
-  flick: "#a6ff3b",
-  dim: "#ffc43d"
+  blitz: "#ff2a2a",
+  sly: "#ff2bd6",
+  flick: "#18e8ff",
+  dim: "#ff8c1a"
 };
 export const GHOST_BLURB: Record<GhostId, string> = {
   blitz: "Locks onto your tile and follows your path.",
@@ -168,6 +171,8 @@ export interface Sim {
   camera: "follow" | "overhead";
   school: boolean;             // ghost-school overlay mode
   autopilot: boolean;
+  /** Seconds spent on the game-over / win card (autoplay restarts after AUTOPLAY_RESULTS_SECONDS). */
+  endT: number;
   hasMoved: boolean;
   events: SimEvents;
   msg: string;
@@ -209,9 +214,10 @@ export const st: Sim = {
   readyT: 0,
   deathT: 0,
   clearT: 0,
-  camera: "follow",
+  camera: "overhead", // the arcade top-down view (V / Tilt Cam toggles the 3/4 follow view)
   school: false,
   autopilot: false,
+  endT: 0,
   hasMoved: false,
   events: freshEvents(),
   msg: "",
@@ -822,9 +828,10 @@ export function frame(dt: number, ctl: { held(a: string): boolean; consume(a: st
       return;
     case "gameover":
     case "win":
+      // autoplay: show the results card, then start a new run (from board 1 after a win), looping forever
       if (st.autopilot) {
-        st.time += dt;
-        if (st.time > 1.5) startRun("quick", st.mazeId);
+        st.endT += dt;
+        if (st.endT > AUTOPLAY_RESULTS_SECONDS) startRun("quick", st.mode === "win" ? MAZE_ORDER[0]! : st.mazeId);
       }
       return;
     case "ready":
@@ -837,7 +844,6 @@ export function frame(dt: number, ctl: { held(a: string): boolean; consume(a: st
       st.deathT -= dt;
       if (st.deathT <= 0) {
         if (st.lives <= 0) {
-          if (st.autopilot) { startRun("quick", st.mazeId); return; }
           gameOver();
           return;
         }
@@ -1006,6 +1012,7 @@ function loseLife(): void {
 
 function gameOver(): void {
   st.mode = "gameover";
+  st.endT = 0;
   st.school = false;
   if (st.score > st.profile.best) {
     st.profile.best = st.score;
@@ -1028,6 +1035,7 @@ function advanceMaze(): void {
   // circuit + school runs end at the picked maze; quick play chains all six
   if (st.runKind !== "quick" || !hasNext) {
     st.mode = "win";
+    st.endT = 0;
     return;
   }
   const nextId = MAZE_ORDER[nextIdx]!;

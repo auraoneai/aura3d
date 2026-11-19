@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "splat-turf",
+  "key": "turfScrubBrush",
+  "generatedAt": "2026-11-19T00:25:09.231Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f131-6993-7f93-b009-e7d9c13095da",
+      "prompt": "A single cylindrical rotary street-sweeper brush lying horizontally, seen from the front: a long cylinder densely covered in bright cyan nylon bristles all around a steel core, polished steel end caps with a short axle stub on each end. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f131-edf2-7c62-947f-95fc8cdb8626",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 3475138,
+        "num_faces": 6954744,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single cylindrical rotary street-sweeper brush lying horizontally, seen from the front: a long cylinder densely covered in bright cyan nylon bristles all around a steel core, polished steel end caps with a short axle stub on each end. Photoreal studio product photograph of a premium toy-grade scale model, glossy automotive clearcoat paint, real rubber, brushed and chromed metal, real fabric, fine surface detail and light wear, saturated street-art colours. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "admitRole": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.108,
+    "size": [
+      1.1,
+      0.456,
+      0.612
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-splat-turf/assets/idol/turfScrubBrush.glb",
+  "sizeBytes": 2238956,
+  "preview": "artifacts/idol/splat-turf/turfScrubBrush/views.png",
+  "usd": 0.37
+}

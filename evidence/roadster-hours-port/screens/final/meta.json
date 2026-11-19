@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "roadster-hours-port": {
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": [
+        "01-title",
+        "02-early",
+        "03-close-pass",
+        "04-relay",
+        "05-redline",
+        "06-halo"
+      ],
+      "results": "not captured (each route runs ~50-60 s; autoplay holds results 3.5 s then drives the next route; results screens were read in the full-run audit)",
+      "errors": "none (no page errors in any capture)",
+      "capturedAt": "2026-11-18"
+    }
+  }
+}

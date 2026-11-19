@@ -29,10 +29,13 @@ import {
 } from "../../../examples/kid-goku-beyond-the-clouds-port/art/proceduralModels";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
+/** Idol wow pass: the GLB keys idol.ts mounts (hero, steed, creatures, landmarks, roadside set pieces, pickups). */
+const IDOL_KEYS = ["cdSkyKidHero", "cdCloudSteed", "cdSkyWyvernBody", "cdSkyWyvernWingL", "cdSkyWyvernWingR", "cdStormTyrantRig", "cdHermitCottage", "cdShrinePillar", "cdBoulder", "cdHoneyRoast", "cdRideLog", "cdCanopyTree", "cdBonsaiPine", "cdShoulderRock"];
+
 /**
  * GU47 WP-35 look contract. The snapshot mirrors what world.ts mounts for the storm-washed row: the look's one shadowed key
  * and its unshadowed cool rim (no hemisphere, no ambient), the spruit_sunrise IBL behind the custom dome (background off),
- * and zero external GLB models (100% procedural multi-material assemblies). The sky pearls and orbs are the only
+ * and the Idol GLB models idol.ts mounts by default (the procedural kit stays behind `?idol=0`). The sky pearls and orbs are the only
  * emissive-looking materials and both are light sources by design.
  */
 function mountedSceneMirror(): ArtDirectionSnapshot {
@@ -44,7 +47,7 @@ function mountedSceneMirror(): ArtDirectionSnapshot {
     ],
     hasAmbient: row.hemisphere !== null,
     environment: { kind: "hdri", background: false },
-    models: [],
+    models: IDOL_KEYS.map((assetKey) => ({ assetKey, triangles: 0, textures: 3, unlit: false, overridesTextures: false })),
     materials: [
       { node: "ball", emissiveIntensity: 1.6, lightSource: true },
       { node: "orbs", emissiveIntensity: 1.2, lightSource: true }
@@ -141,8 +144,8 @@ describe("Cumulus Dash art direction (GU47 WP-35)", () => {
     }
   });
 
-  it("WP-29: zero external GLBs, sculpted Sky Kid Cloud-Surfer Hero grounded at minY=0, and all procedural node IDs intact", () => {
-    expect(direction.assets).toEqual([]);
+  it("WP-29: Idol GLBs contracted; the `?idol=0` sculpted Sky Kid Cloud-Surfer Hero grounded at minY=0 with all procedural node IDs intact", () => {
+    expect(direction.assets.map((a) => a.assetKey).sort()).toEqual([...IDOL_KEYS].sort());
     expect(direction.standIns).toEqual([]);
 
     const heroJson = buildSkyKidHeroNode(CUMULUS_LOOK[0].heroRim).toJSON() as unknown as {

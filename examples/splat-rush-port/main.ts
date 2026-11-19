@@ -3,7 +3,9 @@
  * (pure); `world.ts` renders it through the public engine surface.
  *
  * Query parameters (all optional): `seed=N`, `manual=1` (the sim only advances through
- * `__AURA_SPLAT_RUSH__.stepFrames`), `autostart=1`, `autopilot=1`, `warmup=N` (idle splash frames before
+ * `__AURA_SPLAT_RUSH__.stepFrames`), `autostart=1`, `autoplay=1` (alias `autopilot=1`: hands-free, the computer starts,
+ * steers into its colour's gates and, after a game over, shows the results 3 s and plays again, forever; O toggles it),
+ * `warmup=N` (idle splash frames before
  * `autostart`, default 30 like the capture harness), `dpr=N` (fix the pixel ratio; default: device ratio up to 2,
  * dropping to 1 when the first seconds of play run slower than about 36 fps), `motion=reduced|full` and `symbols=1`
  * (override the stored settings, for captures).
@@ -22,6 +24,7 @@ import { createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { Autopilot } from "./autopilot";
+import { AutoplayLoop } from "./autoplay";
 import { SplatSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { COLORS, IDLE, PHASE_CODE, SplatRushSim, TRACE_COLUMNS, expandScript, parseScript, replay, type Input } from "./sim";
@@ -44,6 +47,7 @@ const config = readQaParams({
   manual: { type: "flag" },
   autostart: { type: "flag" },
   autopilot: { type: "flag" },
+  autoplay: { type: "flag" },
   warmup: { type: "number", default: 30 },
   dpr: { type: "number", default: 0 },
   motion: { type: "string", default: "" },
@@ -104,7 +108,10 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let steps = 0;
-let pilot: Autopilot | null = config.autopilot ? new Autopilot() : null;
+/** `?autoplay=1` (or the older `?autopilot=1`): the looping hands-free player (autoplay.ts). */
+const AUTOPLAY = config.autoplay || config.autopilot;
+const autoplayLoop = (): AutoplayLoop => new AutoplayLoop(() => restart());
+let pilot: Pick<Autopilot, "next" | "observe"> | null = AUTOPLAY ? autoplayLoop() : null;
 let renderFailed = false;
 const pending: Input = { start: false, down: false, up: false, dx: 0 };
 /** `seq` of the next popup the HUD has not shown yet (C2: popups are drained by sequence, never by list index). */
@@ -647,6 +654,12 @@ const KEY_DIR: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1
 const held = new Set<string>();
 addEventListener("keydown", (e) => {
   void sound.unlock();
+  // O: hands-free autoplay on / off (also while it is playing)
+  if (e.code === "KeyO" && !config.manual && !e.repeat) {
+    pilot = pilot ? null : autoplayLoop();
+    if (pilot && paused) setPaused(false);
+    return;
+  }
   if (config.manual || pilot || e.repeat) return;
   if (e.code === "KeyM") { toggleMute(); return; }
   if (e.code === "KeyC") { toggleSetting("symbols"); return; }
@@ -716,7 +729,7 @@ const qa = installQaHooks("splat-rush", {
     nextPopupSeq = 0;
     prevFrame = null;
     lastPhase = "splash";
-    pilot = config.autopilot ? new Autopilot() : null;
+    pilot = AUTOPLAY ? autoplayLoop() : null;
     render();
     updateHud();
   },

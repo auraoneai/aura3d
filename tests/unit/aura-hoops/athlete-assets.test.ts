@@ -199,10 +199,15 @@ function maxAbsXInYBand(positions: readonly number[], yMin: number, yMax: number
 }
 
 describe("Aura Hoops procedural articulated athlete rigs", () => {
-  it("ships zero Meshy .glb files or model entries inside showcase-aura-hoops-3d", () => {
-    expect(findGlbFiles(APP_DIR)).toEqual([]);
+  it("ships zero Meshy .glb files: every GLB is an Idol pass asset (assets/idol, with provenance) and every route model is an Idol key", () => {
+    for (const glb of findGlbFiles(APP_DIR)) {
+      expect(path.relative(APP_DIR, path.dirname(glb))).toBe(path.join("assets", "idol"));
+      expect(path.basename(glb)).toMatch(/^hoopsIdol[A-Za-z]+\.glb$/);
+      expect(statSync(glb.replace(/\.glb$/, ".idol.json")).isFile()).toBe(true);
+    }
     const modelEntries = Object.entries(assets as Record<string, { type?: string }>).filter(([, v]) => v.type === "model");
-    expect(modelEntries).toEqual([]);
+    expect(modelEntries.length).toBeGreaterThan(0);
+    for (const [key] of modelEntries) expect(key).toMatch(/^hoopsIdol/);
   });
 
   for (const [label, id, big, expectedHeight] of [

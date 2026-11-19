@@ -18,7 +18,10 @@ Building or reworking a game? Read [`new-game-checklist.md`](new-game-checklist.
 | You are building | Read |
 | --- | --- |
 | A scene, viewer or prompt-driven scene route | [`prompt-to-3d-workflow.md`](prompt-to-3d-workflow.md), [`art-direction.md`](art-direction.md) |
-| A browser game or port (HUD, touch, audio, replay) | [`build-playbook.md`](build-playbook.md), `docs/api/game-kit.md`, `docs/api/qa-kit.md` |
+| A browser game or port (HUD, touch, audio, replay) | [`build-playbook.md`](build-playbook.md), `docs/api/game-kit.md`, `docs/api/qa-kit.md` (replay, telemetry, virtual gamepads, offline audio, `createAuraTuneOverlay`) |
+| Procedural characters, creatures, hulls; follow-camera clearance | `docs/api/sculpt.md` (`@aura3d/engine/sculpt`), `docs/api/motion-camera-clear.md` (`computeCameraClearance`) |
+| Frame-rate drops, quality stepping, black frames on real GPUs | `docs/api/quality-governor.md` (`RuntimeQualityGovernor`), `docs/api/safety-net.md` (`installSafetyNet`, `createBlackFrameWatch`) |
+| Retargeting mocap or HY-Motion clips onto a rig (5.6.0) | `docs/api/humanoid-motion.md`, `aura3d animation import` |
 | Which template to start from (26 shipped) | [`templates.md`](templates.md) |
 | Models (catalog, your GLB, Meshy) | [`asset-workflow.md`](asset-workflow.md), [`asset-selection.md`](asset-selection.md) |
 | Shipping it | [`verification.md`](verification.md), [`deployment.md`](deployment.md), [`rendering-proof-required.md`](rendering-proof-required.md) |

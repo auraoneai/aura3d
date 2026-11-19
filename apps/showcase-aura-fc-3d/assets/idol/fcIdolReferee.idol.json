@@ -1,0 +1,69 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-fc-3d",
+  "key": "fcIdolReferee",
+  "generatedAt": "2026-11-18T22:29:29.059Z",
+  "generator": "tools/idol/generate.mjs (resumed by the FC/Hoops agent after the 20-min client timeout; same request id, post-processing identical)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "(see generate.mjs buildPrompt)",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0c0-2d28-7df2-b460-2df2e94c189d",
+      "input": {
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 107,
+        "mesh_resolution": 1024,
+        "rig": true,
+        "animations": [
+          "idle"
+        ],
+        "image_url": "(reference still)"
+      },
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 480198,
+        "num_faces": 960396,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 34,
+        "animations": [
+          "idle"
+        ]
+      }
+    }
+  ],
+  "prompt": "Realistic adult male soccer referee, fit athletic build, light olive skin, short greying dark hair, clean-shaven, wearing a plain black short-sleeved referee shirt with a black collar and a small chest pocket, plain black shorts, black knee-high socks, black soccer cleats, bare hands, a black wristwatch",
+  "role": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 0.997 m, 1 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000        5.07x         106      0\n  bind-pose mismatch (SKIN_BIND_MISMATCH): bone_3 40% off-axis\n  ERROR material0 (mesh 0 prim 0): 106 of 30000 triangles stretch past 1.6x their rest edges (worst 5.07x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n  warn  1 bone(s) are not inside the mesh they move: bone_3 (vertices 0.032 m off a 0.078 m bone) (SKIN_BIND_MISMATCH). The mesh was modelled in a different pose than the skeleton assumes (typically mid-stride), so every clip rotates the limbs about joints off the limb. Rebuild the limbs in the skeleton's pose (assets repair-skin --rebuild-limbs) or re-rig.",
+    "repairLog": "skin check still fails after repair: SKIN_STRETCH, SKIN_BIND_MISMATCH\nBind-pose mismatch on bone_3: the mesh was modelled in a different pose than the skeleton assumes. Weight smoothing and triangle cuts only mask it. For a recognised humanoid run repair-skin --rebuild-limbs (rebuilds the legs in the skeleton's pose); otherwise rebuild the limbs in your DCC tool or regenerate and re-rig the model in the pose the skeleton assumes.\nStill failing after smooth-bridges: SKIN_STRETCH, SKIN_BIND_MISMATCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand."
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 2.226,
+    "size": [
+      2.214,
+      2.22,
+      0.35
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-fc-3d/assets/idol/fcIdolReferee.glb",
+  "sizeBytes": 2416988,
+  "preview": "artifacts/idol/aura-fc-3d/fcIdolReferee/views.png",
+  "usd": 0.42,
+  "slimmed": "tools/idol/slim.mjs (normal maps PNG -> JPEG q92)"
+}

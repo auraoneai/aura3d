@@ -37,10 +37,6 @@ export const PRODUCER_OWNERSHIP = Object.freeze({
     "tests/reports/vehicle-wheel-visibility/<asset>.json",
     "tests/reports/vehicle-wheel-visibility/<asset>-angle-<n>.png"
   ],
-  "aura-clash-launch-readiness": [
-    "apps/aura-clash-showcase/launch-evidence/visual-approval.json",
-    "apps/aura-clash-showcase/launch-evidence/first-frame.png"
-  ],
   "showcase-library-screenshots": [
     "tests/reports/showcase-library-screenshots/<route>-desktop.png",
     "tests/reports/showcase-library-screenshots/<route>-mobile.png"

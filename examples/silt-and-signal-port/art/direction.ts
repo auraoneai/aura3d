@@ -44,7 +44,18 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.07, 0.2], fovDeg: [62, 86], mobile: "both" },
-  assets: [],
+  assets: [
+    // Idol wow pass (Nov 2026): image-to-3D GLBs (speridlabs/idol/max, tools/idol/specs/silt-and-signal-port.json) for the
+    // skiff, rider, tow relic, buggy and chapter landmarks; terrain, canal, sky, ring gates and flora stay procedural.
+    { role: "character", assetKey: "duneRiderRig", kit: "K2", maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    ...(["duneSkiffAlt", "duneBuggy"] as const).map((assetKey) => (
+      { role: "vehicle" as const, assetKey, kit: "K2" as const, maxTriangles: 60000, minTriangles: 2000, textureSet: "BC+N+ORM" as const, maxTextureSize: 2048 as const }
+    )),
+    ...(["duneViaduct", "duneGatehouse", "duneCanyonGate", "duneRelayTower", "duneObelisk", "duneMesa", "duneStall", "duneSignalPylon", "duneBannerMast"] as const).map((assetKey) => (
+      { role: "world" as const, assetKey, kit: "K4" as const, maxTriangles: 60000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+    )),
+    { role: "prop", assetKey: "duneTowShell", kit: "K2", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+  ],
   vfx: [
     { event: "board-low-fast", kind: "silt-sand-wake" },
     { event: "board-over-canal", kind: "silt-canal-spray" },

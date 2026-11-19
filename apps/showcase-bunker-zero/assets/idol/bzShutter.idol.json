@@ -1,0 +1,46 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "bunker-zero",
+  "key": "bzShutter",
+  "generatedAt": "2026-11-18T23:36:57.421Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08d-1077-70e3-95c8-7f8b53494320",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0fe-1df7-7400-b241-8ecbb5e5c3e6",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2642156,
+        "num_faces": 5285312,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "subject": "Industrial corrugated steel roller shutter door in a heavy steel frame, flat front face, olive grey paint, hazard-striped bottom rail, grime and rust streaks",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 2.136,
+    "size": [
+      2.14,
+      2.027,
+      0.703
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-bunker-zero/assets/idol/bzShutter.glb",
+  "sizeBytes": 3981420,
+  "preview": "artifacts/idol/bunker-zero/bzShutter/views.png",
+  "usd": 0.37
+}

@@ -62,6 +62,23 @@ Rules that came out of the ports:
   makes extra renders change the game: render once per step in manual mode.
 - Read `?manual=1`, `?warmup=`, `?seed=` through `readQaParams`, not by hand.
 
+Telemetry and harnesses (5.5.5, root `@aura3d/engine`; signatures in
+[the QA kit](https://github.com/auraoneai/aura3d/blob/main/docs/api/qa-kit.md)):
+
+- `installQaTelemetryHooks` is `installQaHooks` plus the `hooks.checkState`,
+  `hooks.measureFrame`, `hooks.telemetry` and `hooks.resetTelemetry` methods:
+  non-finite state paths (`findNonFinitePaths`), GPU-flushed frame time, and a
+  stuck flag when the drawn pixels stay identical while input keeps arriving.
+  `createQaRunMonitor` is the same monitor without the hooks.
+- `installVirtualGamepads()` gives four scripted `"standard"` pads
+  (`hold`, `setAxis`, replay tokens such as `"Pad1A"`) for gamepad specs.
+- `createQaOfflineAudio()` locks an `OfflineAudioContext` to the sim clock and
+  `analyzeQaAudioSamples` measures peak/RMS dBFS, clipped samples, silence and
+  onset counts, so audio specs run headless.
+- Dev-only feel tuning: `createAuraTuneOverlay({ id, schema })` from
+  `@aura3d/engine/devtools` puts tuning constants on live sliders (`?tune`);
+  its `overlay.diffBlock` method prints the changes to paste back into source.
+
 ## Production safety net
 
 For any route you ship, install the safety net and keep `?diag=1` working. It is
@@ -80,7 +97,13 @@ the switches; your game decides what each one changes. A canvas that stays black
 for about 23 samples reloads one rung down (`no-aa`, `no-post`, `aces-tone`,
 `no-env`, `no-shadow`, `low-quality`), logs `SAFETY_BLACK_FRAME`, and the next page
 logs `SAFETY_COMPAT_MODE`. Never replace this with a blanket `qualityRebuild` pin
-that disables post-processing for every player.
+that disables post-processing for every player. `createBlackFrameWatch` is the
+watch inside it, exported for custom wiring.
+
+Frame-rate drops are handled separately: `createAuraApp` runs
+`RuntimeQualityGovernor` by default (5 rungs, no remount) unless a fixed
+`renderer.quality` tier or `renderer.adaptive: false` turns it off
+([quality governor](https://github.com/auraoneai/aura3d/blob/main/docs/api/quality-governor.md)).
 
 ## Sound
 

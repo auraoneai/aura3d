@@ -4,7 +4,8 @@
  * `encounters.ts`, the phase machine is `game.ts`, `world.ts` renders it, `ui.ts` / `audio.ts` are the interface.
  *
  * Query parameters: `manual=1` (the sim advances only through the hooks, and the run starts at once), `menu=1` (show the title
- * even in manual mode), `autostart=1` (skip the title), `chapterStart=<s>` (start the run at distance s).
+ * even in manual mode), `autostart=1` (skip the title), `chapterStart=<s>` (start the run at distance s), `autoplay=1` (alias
+ * `autopilot=1`: the computer plays hands-free and loops run after run, autopilot.ts; the O key toggles it).
  */
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, texture, type AuraApp } from "@aura3d/engine";
@@ -20,12 +21,15 @@ import { Ui } from "./ui";
 import { labAppOptions, readLabFlags } from "../shared/lab-flags";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { buildWorld, type WorldRuntime } from "./world";
+import { createAutopilot } from "./autopilot";
 
 const STEP = 1 / 60;
 const CH = CUMULUS_RIDGE;
 const STORE_KEY = "cloud-runner.v1";
 const params = new URLSearchParams(location.search);
 const manual = params.get("manual") === "1";
+/* `?autoplay=1` / `?autopilot=1`: the computer plays through the normal input path (autopilot.ts); O toggles it */
+const autopilot = createAutopilot(!manual && (params.get("autoplay") === "1" || params.get("autopilot") === "1"));
 const canvas = document.getElementById("world") as HTMLCanvasElement;
 const hudEl = document.getElementById("hud") as HTMLElement | null;
 if (hudEl) hudEl.style.display = "none";
@@ -81,7 +85,7 @@ function currentInput(): StepInput {
   const steer = (held.has("ArrowRight") || held.has("KeyD") ? 1 : 0) - (held.has("ArrowLeft") || held.has("KeyA") ? 1 : 0);
   const input: StepInput = { steer, jump: oneShot.jump, pole: oneShot.pole, glider: oneShot.glider, brake: held.has("ArrowDown") || held.has("KeyS") };
   oneShot = { jump: false, pole: false, glider: false };
-  return input;
+  return autopilot.on ? autopilot.input(game) : input;
 }
 
 addEventListener("keydown", (e) => {
@@ -90,6 +94,7 @@ addEventListener("keydown", (e) => {
   held.add(e.code);
   if (e.repeat) return;
   if (e.code === "KeyM") { toggleSound(); return; }
+  if (e.code === "KeyO") { autopilot.on = !autopilot.on; game.say(autopilot.on ? "Autoplay on (O)" : "Autoplay off (O)", 1600); return; }
   const ph = game.phase;
   if (ph === "menu") { if (e.code === "Space" || e.code === "Enter") startRun(); return; }
   if (ph === "result") { if (e.code === "Enter" || e.code === "Space") { audio.event("ui"); game.retry(); } return; }
@@ -119,11 +124,11 @@ function scheduleLoop(): void {
 }
 
 addEventListener("keyup", (e) => held.delete(e.code));
-addEventListener("blur", () => { held.clear(); game.pause(); });
+addEventListener("blur", () => { held.clear(); if (!autopilot.on) game.pause(); });
 document.addEventListener("visibilitychange", () => {
   if (isDocumentHidden()) {
     held.clear();
-    game.pause();
+    if (!autopilot.on) game.pause();
     stopLoop();
   } else if (ready) {
     last = performance.now();
@@ -195,6 +200,7 @@ function loop(now: number): void {
   const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
   last = now;
   pending = [];
+  if (ready && !manual) autopilot.tick(game, dt);
   if (game.phase !== lastPhase) { lastPhase = game.phase; presenter.reset(); }
   stepper.tick(now);
   if (!manual && ready) {

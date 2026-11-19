@@ -10,6 +10,8 @@ export interface AtmosphereFrameState {
   readonly sky: AuraSkySpec | null;
   readonly fog: AuraHeightFogSpec | null;
   readonly wetness: number;
+  /** The sky node's `captureEnvironment` (false: the sky is never captured into an environment probe). */
+  readonly captureEnvironment?: boolean;
 }
 
 /** §6.6 — per-node live fog state tracked in a WeakMap keyed by node object. */
@@ -313,6 +315,7 @@ interface FogTransition {
 
 export class LiveAtmosphere {
   private sky: AuraSkySpec | null = null;
+  private skyCaptureEnvironment = true;
   private fog: AuraHeightFogSpec | null = null;
   private wetness = 0;
   private readonly listeners = new Set<() => void>();
@@ -578,10 +581,11 @@ export class LiveAtmosphere {
     this.emit();
   }
 
-  setSky(spec: Partial<AuraSkySpec>, _o?: { transitionSeconds?: number }): void {
+  setSky(spec: Partial<AuraSkySpec>, o?: { transitionSeconds?: number; captureEnvironment?: boolean }): void {
     if (this.disposed) return;
     this.authoredMutationRevision++;
     this.sky = spec as AuraSkySpec;
+    this.skyCaptureEnvironment = o?.captureEnvironment !== false;
     this.renderChanged();
     for (const listener of this.skyListeners) listener();
     this.emit();
@@ -592,6 +596,7 @@ export class LiveAtmosphere {
     if (this.disposed || this.sky === null) return;
     this.authoredMutationRevision++;
     this.sky = null;
+    this.skyCaptureEnvironment = true;
     this.renderChanged();
     for (const listener of this.skyListeners) listener();
     this.emit();
@@ -613,7 +618,10 @@ export class LiveAtmosphere {
   }
 
   state(): AtmosphereFrameState {
-    return { sky: this.sky, fog: this.fogTarget(), wetness: this.wetness };
+    return {
+      sky: this.sky, fog: this.fogTarget(), wetness: this.wetness,
+      ...(this.skyCaptureEnvironment ? {} : { captureEnvironment: false })
+    };
   }
 
   /** Internal ingestion guard; scene bookkeeping accounts for its own sky writes. */

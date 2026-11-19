@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "pips-big-leap",
+  "key": "pipStonePillar",
+  "generatedAt": "2026-11-18T23:14:02.926Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/pips-big-leap/pipStonePillar/ref-fetched.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0f0-5ac4-72f2-a1de-e50706ea41eb",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 788936,
+        "num_faces": 1577868,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single tall round carved grey stone column with a square plinth base and a carved capital, patches of green moss and ivy. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 2.99,
+    "size": [
+      0.995,
+      2.98,
+      1.055
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-pips-big-leap/assets/idol/pipStonePillar.glb",
+  "sizeBytes": 789748,
+  "preview": "artifacts/idol/pips-big-leap/pipStonePillar/views.png",
+  "usd": 0.2,
+  "admitRole": "set-dressing",
+  "renormalizedAt": "2026-11-18T23:40:16.308Z"
+}

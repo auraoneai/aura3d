@@ -298,6 +298,48 @@ export function playerMesh(shapeIndex: number): MeshData {
   return filletedConePlayer();
 }
 
+export interface Extents2 { readonly halfWidth: number; readonly bottom: number; readonly top: number }
+
+const holeExtentsCache: Extents2[] = [];
+/**
+ * The see-through opening of `wallCellMesh(shapeIndex)` in the lane frame (x about the lane centre, y above the road),
+ * measured from the same `outlinePoint(shape, t, WALL_HOLE_RADIUS)` outline the cutout tunnel is built from. Everything
+ * else in the wall cell (sill, mullions between lanes, header, outer flanks) is solid; the sim's gate judgement uses
+ * `halfWidth` so the runner only scores when its centre line runs through this opening.
+ */
+export function wallHoleExtents(shapeIndex: number): Extents2 {
+  const hit = holeExtentsCache[shapeIndex];
+  if (hit) return hit;
+  let halfWidth = 0, bottom = Infinity, top = -Infinity;
+  const n = 960;
+  for (let i = 0; i < n; i++) {
+    const [x, y] = outlinePoint(shapeIndex, i / n, WALL_HOLE_RADIUS);
+    halfWidth = Math.max(halfWidth, Math.abs(x));
+    bottom = Math.min(bottom, y);
+    top = Math.max(top, y);
+  }
+  const out = { halfWidth, bottom: WALL_DIMS.openingCenterY + bottom, top: WALL_DIMS.openingCenterY + top };
+  holeExtentsCache[shapeIndex] = out;
+  return out;
+}
+
+const bodyExtentsCache: Extents2[] = [];
+/** The morph body's extents at scale 1 in its node frame (x half-width, y min / max), from `playerMesh`. */
+export function playerBodyExtents(shapeIndex: number): Extents2 {
+  const hit = bodyExtentsCache[shapeIndex];
+  if (hit) return hit;
+  const pos = playerMesh(shapeIndex).positions;
+  let halfWidth = 0, bottom = Infinity, top = -Infinity;
+  for (let k = 0; k < pos.length; k += 3) {
+    halfWidth = Math.max(halfWidth, Math.abs(pos[k]!));
+    bottom = Math.min(bottom, pos[k + 1]!);
+    top = Math.max(top, pos[k + 1]!);
+  }
+  const out = { halfWidth, bottom, top };
+  bodyExtentsCache[shapeIndex] = out;
+  return out;
+}
+
 /**
  * Clockwise perimeter point at fraction `t` (`0..1`) of a circle (`0`), filleted upright square (`1`),
  * or filleted equilateral triangle (`2`) outline of radius `r`, starting at top-centre `(0, +y)`.

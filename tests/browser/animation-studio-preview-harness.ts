@@ -29,7 +29,7 @@ declare global {
   }
 }
 
-const RIG_URL = "/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.d8672924.glb";
+const RIG_URL = "/aura-assets/auraClashPlayerRig.3318d671.glb";
 const CLIP_MAP = { idle: "Idle_Loop", walk: "Walk_Loop", run: "Sprint_Loop" } as const;
 
 function isVec3(v: AnimationValue): v is readonly [number, number, number] {

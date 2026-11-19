@@ -21,15 +21,15 @@ import {
   type Route,
   type Vehicle
 } from "./course";
-import { buildCourse, buildIslands, buildLoops, buildRamps, veilQuad, type MeshData } from "./meshes";
+import { buildCourse, buildIslands, buildIslet, buildLoops, buildRamps, veilQuad, type MeshData } from "./meshes";
 import { applyMat3, axisRotation, basisMatrix, matrixToEulerZYX, multiplyMat3, type Mat3 } from "./orient";
-import { dressingPlan, lehmer } from "./obstacles";
+import { COLONY_STATIONS, dressingPlan, lehmer } from "./obstacles";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
 import type { GhostPose } from "./progress";
 import { atmosphereSpec, earthriseSpec, mineralSpec, pointQuadSpec, pointsSpec, riderShadowSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
 import { EARTHRISE_RADIUS } from "./shaders";
-import { mainFrame, routeFrame, surfaceNoise } from "./track";
+import { drawnSurfaceNoise, mainFrame, routeFrame } from "./track";
 import { Vec3 } from "./vec3";
 import { EARTHRISE_POSITION, LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
 import { RIM, RIM_UNIT, buildCraterRim, rimScatter } from "./art/craterRim";
@@ -38,21 +38,47 @@ import {
   createBatchedCourseGatesNode,
   createBatchedResonanceCrystalsNode,
   createCourseSideRocksInstancedNodes,
-  createDeepSpaceDishNode,
   createGhostRiderNode,
-  createLunarHabitatDomeNode,
   createLunarLanderNode,
   createLunarObservatoryNode,
   createLunarRiderVehicleNode,
   createMeteorRockNode,
-  createPressurizedFuelTankNode,
   createRiderSubPartNode,
   createRimScatterInstancedNodes,
-  createRoverServiceTrailerNode,
-  createSolarArrayNode,
-  createStartFinishGantryNode,
   createTrackBeaconInstancedNodes
 } from "./art/proceduralModels";
+import {
+  GHOST_MATERIAL,
+  HERO_BIKES,
+  IDOL_BIKE_CONE_OFFSET,
+  IDOL_BIKE_WHEEL_OFFSET,
+  RIVAL_BIKES,
+  WHEEL_BLUR_RATE,
+  WHEEL_SPIN_SHOWN_MAX,
+  bikeRiderFrame,
+  createCoveredRiderPartNode,
+  createIdolBikeBodyNode,
+  createIdolBikeWheelNode,
+  createIdolRiderNode,
+  createWheelBlurNode,
+  riderKeyFor,
+  riderScale,
+  riderUrl,
+  createIdolDishNode,
+  createIdolFuelTankNode,
+  createIdolGhostRiderNode,
+  createIdolHabitatNode,
+  createIdolLanderNode,
+  createIdolObservatoryNode,
+  createIdolSolarArrayNode,
+  createIdolStartGantryNode,
+  createIdolTrailerNode,
+  SET_PIECE_ISLETS,
+  type SetPieceKey
+} from "./art/idolModels";
+import { riderNodePosition, riderPose, type RiderKey, type RiderSeatFrame } from "./art/idolRider";
+import type { IdolBikeKey } from "./art/idolFit";
+import { loadIdolHumanoid, type HumanoidDriver } from "../../apps/showcase-port-shared/idol/humanoid";
 import { EXHAUST_FLAME, EXHAUST_SMOKE, ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
 import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import { quadGeometryInput, quadUpdater } from "./point-quads";
@@ -152,6 +178,30 @@ export const TAIL_LIGHTS = 3;
 
 /** SO47-N1: drawn-lean gain (0.24 rad sim lean -> ~25 degrees), landing squash depth, planet spin in rad/s. */
 export const LEAN_GAIN = 1.8;
+/** Drawn bike lean cap (rad, 20 degrees): owner QA Nov 18 saw the bike rolled 30 degrees over with the rider hanging off. */
+export const DRAWN_LEAN_MAX = 0.35;
+export const drawnLean = (lean: number): number => Math.max(-DRAWN_LEAN_MAX, Math.min(DRAWN_LEAN_MAX, lean));
+/** Drawn lean slew limit (rad/s): about 1.15 degrees per 60 Hz frame, so a respawn or landing never snaps the bike's roll. */
+export const DRAWN_LEAN_RATE = 1.2;
+/** Next drawn lean: follows the capped target at most DRAWN_LEAN_RATE * dt per frame (dt 0 = hold). */
+export function slewLean(prev: number, target: number, dt: number): number {
+  const goal = drawnLean(target);
+  const step = DRAWN_LEAN_RATE * Math.max(0, dt);
+  return prev + Math.max(-step, Math.min(step, goal - prev));
+}
+/** Lunar colony outposts: defined with their colliders in obstacles.ts (pass-through QA, Nov 18), re-exported here. */
+export { COLONY_STATIONS };
+/** Idol model of each colony station kind (for its footprint islet). */
+const COLONY_KEYS = { habitat: "cgHabitat", dish: "cgDish", solar: "cgSolarArray", trailer: "cgTrailer", fuel: "cgFuelTank" } as const;
+/** Local turn of the wheel blur disc: the cylinder's +Y axis onto +X, the Idol wheel's axle (then `idolWheel` like the wheel). */
+/** Checkpoint curtain opacity vs the chase eye's signed distance to the curtain plane (m): 0 inside ~2.5 m, 1 beyond 12 m. */
+export const VEIL_FADE_NEAR = 2.5;
+export const VEIL_FADE_FAR = 12;
+export function veilCameraFade(planeDistance: number): number {
+  const t = Math.max(0, Math.min(1, (Math.abs(planeDistance) - VEIL_FADE_NEAR) / (VEIL_FADE_FAR - VEIL_FADE_NEAR)));
+  return t * t * (3 - 2 * t);
+}
+export const BLUR_DISC_AXIS: Mat3 = axisRotation("z", -Math.PI / 2);
 export const LANDING_SQUASH = 0.09;
 const PLANET_SPIN = 0.01;
 
@@ -194,12 +244,17 @@ interface PartSpec {
   readonly offset: readonly [number, number, number];
   /** Local rotation applied after the rider basis. */
   readonly local: Mat3;
+  /** Wheels: the local axis the roll angle turns about (procedural wheels "y", Idol wheels "x"). */
+  readonly spinAxis?: "x" | "y";
 }
 
 interface Riderrig {
   readonly root: string;
   readonly parts: readonly PartSpec[];
 }
+
+/** Idol pass: rig parts the Idol bike+rider body already shows (kept as empty nodes so every rig id still exists). */
+const IDOL_COVERED_PARTS: ReadonlySet<string> = new Set(["fairing", "torso", "visor", "nozzleL", "nozzleR"]);
 
 /** Local yaw that turns each procedural lunar rider vehicle (`-Z` nose -> `+X` rig forward, `+Z` rear bells -> `-X` aft). */
 const MODEL_YAW: Record<Vehicle, Mat3> = { bike: axisRotation("y", -Math.PI / 2), skate: axisRotation("y", -Math.PI / 2) };
@@ -212,7 +267,7 @@ export function riderRig(index: number, vehicle: Vehicle, look: OrbitLook): Ride
   const skateLean = axisRotation("z", -0.22);
   const skateHelmetPitch = axisRotation("z", -0.10);
   const alongForward = axisRotation("z", Math.PI / 2); // cylinder/cone axis +Y -> -X (aft exhaust)
-  const part = (kind: string, offset: readonly [number, number, number], local: Mat3 = IDENTITY): PartSpec => ({ id: `${root}-${kind}`, kind, offset, local });
+  const part = (kind: string, offset: readonly [number, number, number], local: Mat3 = IDENTITY, spinAxis?: "x" | "y"): PartSpec => ({ id: `${root}-${kind}`, kind, offset, local, ...(spinAxis ? { spinAxis } : {}) });
   if (look !== "gouache") {
     return { root, parts: [part("model", [0, 0, 0], MODEL_YAW[vehicle])] };
   }
@@ -233,17 +288,29 @@ export function riderRig(index: number, vehicle: Vehicle, look: OrbitLook): Ride
       ]
     };
   }
+  // Idol pass: the gouache bike is a wheel-less, rider-less Idol body (art/idolModels.ts); its axle hubs sit 0.78 m fore
+  // and aft and its stacked tail pipes higher than the procedural bike's, so the wheels and boost cones follow them. The
+  // Idol wheels have their axle on local X (turned onto the rig's lateral +Z) and roll about it; a translucent blur disc
+  // covers each above WHEEL_BLUR_RATE; `rider` is the rigged Idol racer (offset set at runtime from its hip height).
+  const W = IDOL_BIKE_WHEEL_OFFSET, C = IDOL_BIKE_CONE_OFFSET;
+  const idolWheel = axisRotation("y", -Math.PI / 2);
+  const blurDisc = multiplyMat3(idolWheel, BLUR_DISC_AXIS);
   return {
     root,
     parts: [
       part("model", [0, 0, 0], MODEL_YAW.bike),
       part("fairing", [0.48, 0.79, 0]),
-      part("wheelF", [0.64, 0.315, 0], wheel),
-      part("wheelR", [-0.60, 0.315, 0], wheel),
+      part("wheelF", [W.front, W.y, 0], idolWheel, "x"),
+      part("wheelR", [W.rear, W.y, 0], idolWheel, "x"),
+      // the blur disc is a cylinder (axis +Y): turn its axis onto X first, then onto the lateral axle like the wheel. The
+      // runtime pose replaces the node's authored rotation, so without this the disc lay flat under the bike (GPU QA F2)
+      part("blurF", [W.front, W.y, 0], blurDisc),
+      part("blurR", [W.rear, W.y, 0], blurDisc),
+      part("rider", [0, 0.4, 0], axisRotation("y", Math.PI / 2)),
       part("nozzleL", [-0.64, 0.57, 0.195], alongForward),
       part("nozzleR", [-0.64, 0.57, -0.195], alongForward),
-      part("coneL", [-0.75, 0.57, 0.195], alongForward),
-      part("coneR", [-0.75, 0.57, -0.195], alongForward),
+      part("coneL", [C.forward, C.up, C.side], alongForward),
+      part("coneR", [C.forward, C.up, -C.side], alongForward),
       part("torso", [-0.02, 0.84, 0], bikeLean),
       part("visor", [0.16, 1.03, 0], bikeHelmetPitch)
     ]
@@ -468,14 +535,25 @@ export function buildWorld(options: WorldOptions): World {
     }
   }), { name: "stars-bright", material: spriteMaterial(true) }));
 
+  /* Idol set pieces stand beside the floating ribbon (|lateral| > 11.5 m) with nothing under them: each sits on a
+   * floating regolith islet like the opal islands (render only; colliders and placements unchanged). */
+  const isletMaterial = mineralMaterial(hexLinear("#b9c5e1"), true);
+  const addIslets = (key: SetPieceKey, name: string, position: [number, number, number], rotation: [number, number, number], scale: number, s: number): void => {
+    SET_PIECE_ISLETS[key].forEach((islet, k) => {
+      builder.add(geometry.custom(dynamicFrom(buildIslet(islet.x, islet.z, islet.r, islet.r * 1.6, s, k + name.length), true), {
+        name: `${name}-islet-${k}`, position, rotation, scale, material: isletMaterial, castShadow: false, receiveShadow: true
+      }));
+    });
+  };
+
   /* ---- checkpoints: veils + procedural lattice gate pylons + lintels + start/finish truss gantry ---- */
   if (look === "gouache" && !off.has("lintel")) {
     const sf = mainFrame(72);
-    builder.add(createStartFinishGantryNode({
-      name: "start-finish-gantry",
-      position: [sf.p.x - sf.up.x * 0.1, sf.p.y - sf.up.y * 0.1, sf.p.z - sf.up.z * 0.1],
-      rotation: euler(basisMatrix(sf.tangent, sf.up, sf.side))
-    }));
+    // Idol pass: the image-to-3D gantry replaces the procedural lattice truss (same name, placement and span).
+    const gantryAt: [number, number, number] = [sf.p.x - sf.up.x * 0.1, sf.p.y - sf.up.y * 0.1, sf.p.z - sf.up.z * 0.1];
+    const gantryRot = euler(basisMatrix(sf.tangent, sf.up, sf.side));
+    builder.add(createIdolStartGantryNode({ name: "start-finish-gantry", position: gantryAt, rotation: gantryRot }));
+    addIslets("cgGantry", "start-finish-gantry", gantryAt, gantryRot, 1, 72);
   }
   const gatePlacements: {
     pillarLeftPos: [number, number, number];
@@ -568,9 +646,13 @@ export function buildWorld(options: WorldOptions): World {
     const p = f.p.clone().addScaledVector(f.side, d.lateral).addScaledVector(f.up, d.drop);
     const base = multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("y", d.spin));
     if (d.kind === "lander") {
-      builder.add(createLunarLanderNode({ name: d.name, position: [p.x, p.y, p.z], rotation: euler(base), size: d.size }));
+      const o = { name: d.name, position: [p.x, p.y, p.z] as [number, number, number], rotation: euler(base), size: d.size };
+      builder.add(look === "gouache" ? createIdolLanderNode(o) : createLunarLanderNode(o));
+      if (look === "gouache") addIslets("cgLander", d.name, o.position, o.rotation, d.size, d.s);
     } else if (d.kind === "observatory") {
-      builder.add(createLunarObservatoryNode({ name: d.name, position: [p.x, p.y, p.z], rotation: euler(base), size: d.size }));
+      const o = { name: d.name, position: [p.x, p.y, p.z] as [number, number, number], rotation: euler(base), size: d.size };
+      builder.add(look === "gouache" ? createIdolObservatoryNode(o) : createLunarObservatoryNode(o));
+      if (look === "gouache") addIslets("cgObservatory", d.name, o.position, o.rotation, d.size, d.s);
     } else if (!off.has("rocks")) {
       const item = {
         position: [p.x, p.y, p.z] as [number, number, number],
@@ -587,36 +669,18 @@ export function buildWorld(options: WorldOptions): World {
     if (dressSpires.length > 0) builder.add(sideRockNodes.spiresNode);
   }
   if (look === "gouache" && !off.has("colony")) {
-    const colonyStations: readonly {
-      readonly name: string;
-      readonly kind: "habitat" | "dish" | "solar" | "trailer" | "fuel";
-      readonly s: number;
-      readonly lateral: number;
-      readonly drop: number;
-      readonly yaw: number;
-      readonly scale: number;
-    }[] = [
-      { name: "colony-habitat-grid", kind: "habitat", s: 30, lateral: 23.5, drop: -0.6, yaw: Math.PI * 0.64, scale: 1.05 },
-      { name: "colony-trailer-grid", kind: "trailer", s: 41, lateral: 18.2, drop: -0.35, yaw: 0.18, scale: 1 },
-      { name: "colony-dish-grid", kind: "dish", s: 47, lateral: -21.5, drop: -0.5, yaw: 0.65, scale: 1.05 },
-      { name: "colony-fuel-grid", kind: "fuel", s: 53, lateral: -19.2, drop: -0.45, yaw: -0.25, scale: 1 },
-      { name: "colony-solar-grid", kind: "solar", s: 59, lateral: 22.0, drop: -0.45, yaw: 0.4, scale: 1.08 },
-      { name: "colony-habitat-violet", kind: "habitat", s: 368, lateral: -24.5, drop: -0.7, yaw: -Math.PI * 0.62, scale: 1.15 },
-      { name: "colony-dish-ridge", kind: "dish", s: 642, lateral: 25.0, drop: -0.6, yaw: -0.5, scale: 1.18 },
-      { name: "colony-solar-ridge", kind: "solar", s: 824, lateral: -23.0, drop: -0.5, yaw: -0.35, scale: 1.15 },
-      { name: "colony-fuel-jade", kind: "fuel", s: 1108, lateral: 22.0, drop: -0.5, yaw: 0.52, scale: 1.1 },
-      { name: "colony-trailer-opal", kind: "trailer", s: 1286, lateral: -20.5, drop: -0.4, yaw: -0.28, scale: 1.08 }
-    ];
-    for (const c of colonyStations) {
+    for (const c of COLONY_STATIONS) {
       const f = mainFrame(c.s);
       const p = f.p.clone().addScaledVector(f.side, c.lateral).addScaledVector(f.up, c.drop);
       const rot = euler(multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("y", c.yaw)));
       const opts = { name: c.name, position: [p.x, p.y, p.z] as [number, number, number], rotation: rot, scale: c.scale };
-      if (c.kind === "habitat") builder.add(createLunarHabitatDomeNode(opts));
-      else if (c.kind === "dish") builder.add(createDeepSpaceDishNode(opts));
-      else if (c.kind === "solar") builder.add(createSolarArrayNode(opts));
-      else if (c.kind === "trailer") builder.add(createRoverServiceTrailerNode(opts));
-      else builder.add(createPressurizedFuelTankNode(opts));
+      // Idol pass: image-to-3D colony props (same names, placements and scales as the procedural outposts).
+      if (c.kind === "habitat") builder.add(createIdolHabitatNode(opts));
+      else if (c.kind === "dish") builder.add(createIdolDishNode(opts));
+      else if (c.kind === "solar") builder.add(createIdolSolarArrayNode(opts));
+      else if (c.kind === "trailer") builder.add(createIdolTrailerNode(opts));
+      else builder.add(createIdolFuelTankNode(opts));
+      addIslets(COLONY_KEYS[c.kind], c.name, opts.position, rot, c.scale, c.s);
     }
   }
 
@@ -686,12 +750,28 @@ export function buildWorld(options: WorldOptions): World {
 
   /* ---- riders: multi-material procedural Lunar GP motorcycles/skates + tucked racing rider sub-parts ---- */
   const riders = Array.from({ length: 6 }, (_, i) => riderRig(i, vehicle, look));
+  /** Idol pass: gouache bikes are wheel-less image-to-3D bike+rider bodies on the procedural spinning wheels (art/idolModels.ts). */
+  const idolBikes = vehicle === "bike" && look === "gouache";
+  const idolRiders: { bike: IdolBikeKey; rider: RiderKey }[] = [];
   riders.forEach((rig, i) => {
     const [bodyHex, accentHex] = i === 0 ? [RIDERS[rider]!.color, RIDERS[rider]!.accent] : RIVAL_COLORS[i - 1]!;
     const primaryColor = look === "gouache"
       ? (i === 0 ? riderSuitTint(rider) : GOUACHE_LIVERIES[i - 1]!)
       : bodyHex;
     const suitColor = i === 0 ? "#ebe7de" : mixHex(primaryColor, "#dfe5ee", 0.72);
+    if (idolBikes) {
+      const key = i === 0 ? HERO_BIKES[Math.max(0, Math.min(HERO_BIKES.length - 1, rider))]! : RIVAL_BIKES[i - 1]!;
+      builder.add(createIdolBikeBodyNode({ id: rig.parts[0]!.id, key, castShadow: i === 0 }));
+      idolRiders[i] = { bike: key, rider: riderKeyFor(key) };
+      for (const sub of rig.parts.slice(1)) {
+        if (IDOL_COVERED_PARTS.has(sub.kind)) builder.add(createCoveredRiderPartNode(sub.id));
+        else if (sub.kind === "wheelF" || sub.kind === "wheelR") builder.add(createIdolBikeWheelNode(sub.id));
+        else if (sub.kind === "blurF" || sub.kind === "blurR") builder.add(createWheelBlurNode(sub.id));
+        else if (sub.kind === "rider") builder.add(createIdolRiderNode(sub.id, idolRiders[i]!.rider, { castShadow: i === 0 }));
+        else builder.add(createRiderSubPartNode({ id: sub.id, kind: sub.kind, vehicle, liveryColor: primaryColor, accentColor: accentHex, suitColor, isHero: i === 0 }));
+      }
+      return;
+    }
     builder.add(createLunarRiderVehicleNode({
       id: rig.parts[0]!.id,
       vehicle,
@@ -717,7 +797,8 @@ export function buildWorld(options: WorldOptions): World {
 
   /* ---- time-trial ghost: translucent cyan procedural hologram ---- */
   if (options.ghost) {
-    builder.add(createGhostRiderNode(vehicle));
+    builder.add(idolBikes ? createIdolGhostRiderNode(HERO_BIKES[Math.max(0, Math.min(HERO_BIKES.length - 1, rider))]!, GHOST_MATERIAL) : createGhostRiderNode(vehicle));
+    if (idolBikes) builder.add(createIdolRiderNode("ghost-rider-rider", idolRiders[0]!.rider, { castShadow: false, material: GHOST_MATERIAL }));
   }
 
   /* ---- legacy shadow quads disabled on gouache (replaced by real PCSS key + effects.contactShadows + SSAO) ---- */
@@ -743,7 +824,7 @@ export function buildWorld(options: WorldOptions): World {
   return {
     scene: builder,
     bind(app: AuraApp): WorldRuntime {
-      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, quads: spriteQuads, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high, headlight: look === "gouache" && !off.has("headlight") && !off.has("lights"), riderShadows, dustPlume: dustPlumeEnabled });
+      return bindRuntime(app, { vehicle, riders, idolRiders: idolBikes ? idolRiders : null, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, quads: spriteQuads, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high, headlight: look === "gouache" && !off.has("headlight") && !off.has("lights"), riderShadows, dustPlume: dustPlumeEnabled });
     }
   };
 }
@@ -751,6 +832,8 @@ export function buildWorld(options: WorldOptions): World {
 interface BindInput {
   readonly vehicle: Vehicle;
   readonly riders: readonly Riderrig[];
+  /** Idol bikes: per rider index, its bike and rigged racer keys (null on procedural looks/vehicles). */
+  readonly idolRiders: readonly { readonly bike: IdolBikeKey; readonly rider: RiderKey }[] | null;
   readonly meteors: ReturnType<typeof collectibles>;
   readonly dustBase: readonly Vec3[];
   readonly dustUp: Float32Array;
@@ -776,6 +859,8 @@ interface RiderMotion {
   readonly dt: number;
   readonly time: number;
   readonly menu: boolean;
+  /** Heading offset from the track tangent (rad), for the rider's head turn. */
+  readonly steer?: number;
 }
 
 function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
@@ -797,6 +882,8 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   };
   const gateVeils = GATES.map((_, i) => node(`gate-veil-${i}`));
   const gatePositions = GATES.map((g) => mainFrame(g.s).p);
+  const gateNormals = GATES.map((g) => mainFrame(g.s).tangent);
+  const lastVeilFade = GATES.map(() => 1);
   const gatePulse = GATES.map(() => 0);
   const lastVeilTime = GATES.map(() => -1);
   const lastVeilPulse = GATES.map(() => 0);
@@ -820,11 +907,35 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   let lastSizeKey = "";
   const rebound = { t: 0, x: 0, y: 0, z: 0 };
   let lastCamera: { eye: Vec3; look: Vec3; up: Vec3; fov: number } | null = null;
+  /** Drawn (slew-limited) lean per racer: 0 player, 1..5 rivals. */
+  const shownLean = new Float64Array(6);
+  /** Smoothed chase-camera height (world y of the followed pose); null after a camera reset. */
+  let camY: number | null = null;
+  /** `?qaTrace=1`: per-frame rider root / camera heights to the console for the first 360 racing frames (QA only). */
+  const qaTrace = typeof location !== "undefined" && new URLSearchParams(location.search).get("qaTrace") === "1";
+  let qaTraceFrames = 0;
   const riderAt: Vec3[] = Array.from({ length: 7 }, () => new Vec3()); // 0 player, 1..5 rivals, 6 ghost
   const riderFwd: Vec3[] = Array.from({ length: 7 }, () => new Vec3(1, 0, 0));
   const riderUp: Vec3[] = Array.from({ length: 7 }, () => new Vec3(0, 1, 0));
   const riderShown: boolean[] = Array.from({ length: 6 }, () => true);
   const wheelSpin = new Float32Array(6);
+  /* Idol riders: one humanoid driver per racer GLB (loaded once); a racer stays hidden until its skeleton is read. */
+  const riderDrivers = new Map<RiderKey, HumanoidDriver>();
+  const riderSeat: (RiderSeatFrame | null)[] = (input.idolRiders ?? []).map((r) => (r ? bikeRiderFrame(r.bike) : null));
+  for (const key of new Set((input.idolRiders ?? []).map((r) => r.rider))) {
+    void loadIdolHumanoid(riderUrl(key)).then((d) => { riderDrivers.set(key, d); }, (e: unknown) => console.warn(`[craterline] rider skeleton ${key}`, e));
+  }
+  /** Pose rider `index`'s racer node (rig frame); returns its rig-frame node offset and the extra node scale, or null. */
+  const poseIdolRider = (h: ReturnType<typeof node>, index: number, motion: RiderMotion): { offset: [number, number, number]; scale: number } | null => {
+    const ir = input.idolRiders?.[index], frame = riderSeat[index];
+    const driver = ir ? riderDrivers.get(ir.rider) : undefined;
+    if (!ir || !frame || !driver) return null;
+    const rs = riderScale(ir.rider);
+    const hip = driver.map.hipHeight;
+    h.setAnimationPose?.(driver.pose(riderPose({ lean: motion.lean, steer: motion.steer ?? 0, boosting: motion.boosting, speed: motion.speed, time: motion.time, menu: motion.menu }, hip, rs, frame)) as never);
+    const o = riderNodePosition(hip, rs, frame);
+    return { offset: [o[0], o[1], o[2]], scale: rs };
+  };
   /** SO47-N1 landing squash (vertical scale drop, decays in ~0.3 s; 30% amplitude on reduced motion). */
   let squash = 0;
   let dustPlumeTimer = 0;
@@ -893,7 +1004,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   /** Group pose for a rider standing at (`s`, `lane`) on `route`. */
   const poseAt = (s: number, lane: number, route: Route, height: number, heading: number, lean: number): Pose => {
     const f = routeFrame(s, route);
-    const noise = surfaceNoise(s, trackLane(s, lane, route));
+    const noise = drawnSurfaceNoise(s, trackLane(s, lane, route));
     const position = f.p.clone().addScaledVector(f.side, lane).addScaledVector(f.up, height + noise);
     const forward = f.tangent.clone().multiplyScalar(Math.cos(heading)).addScaledVector(f.side, Math.sin(heading));
     const up = f.up.clone();
@@ -923,7 +1034,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     riderUp[index]!.copy(up);
     if (!input.reducedMotion && motion.dt > 0 && motion.speed > 0.05) {
       const wheelRadius = input.vehicle === "skate" ? 0.14 : 0.315;
-      wheelSpin[index] = (wheelSpin[index]! + (motion.speed * motion.dt) / wheelRadius) % (Math.PI * 2);
+      wheelSpin[index] = (wheelSpin[index]! + Math.min(motion.speed / wheelRadius, WHEEL_SPIN_SHOWN_MAX) * motion.dt) % (Math.PI * 2);
     }
     const spin = wheelSpin[index]!;
     const rigDef = input.riders[index]!;
@@ -933,9 +1044,22 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       let partScale: number | [number, number, number] = scale;
       const h = node(part.id);
 
+      let [ox0, oy0, oz0] = [dx, dy, dz];
       if (part.kind === "wheelF" || part.kind === "wheelR") {
-        // `wheel` maps local +Y -> +Z (right lateral axle); `-spin` rolls the top of the tire forward (+X) cleanly!
-        local = multiplyMat3(local, axisRotation("y", -spin));
+        // `wheel` maps the wheel's local axle (+Y procedural, +X Idol) onto the rig's lateral +Z; `-spin` rolls the top of the tyre forward (+X)
+        local = multiplyMat3(local, axisRotation(part.spinAxis ?? "y", -spin));
+      } else if (part.kind === "blurF" || part.kind === "blurR") {
+        // a translucent radial-blur disc over the rim once spoke steps alias (presentation only)
+        const rate = motion.dt > 0 ? motion.speed / 0.315 : 0;
+        const blur = riderShown[index]! && !input.reducedMotion && !motion.menu && rate > WHEEL_BLUR_RATE;
+        h.setVisible(blur);
+        if (!blur) continue;
+      } else if (part.kind === "rider") {
+        const placed = poseIdolRider(h, index, motion);
+        h.setVisible(Boolean(placed) && riderShown[index]!);
+        if (!placed) continue;
+        [ox0, oy0, oz0] = placed.offset;
+        partScale = scale * placed.scale;
       } else if (part.kind === "coneL" || part.kind === "coneR") {
         const coneVisible = riderShown[index]! && !motion.menu && (motion.speed > 1.5 || motion.boosting);
         h.setVisible(coneVisible);
@@ -946,7 +1070,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
         partScale = [scale * radScale, scale * lenScale, scale * radScale];
       }
 
-      const [ox, oy, oz] = computeRiderPartWorldOffset(base, [dx, dy, dz], scale);
+      const [ox, oy, oz] = computeRiderPartWorldOffset(base, [ox0, oy0, oz0], scale);
       const e = euler(multiplyMat3(base, local));
       h.setPosition(rootX + ox, rootY + oy, rootZ + oz);
       h.setRotation(e[0], e[1], e[2]);
@@ -1032,7 +1156,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     } else {
       const ground = menu ? menuHover(0) : state.air?.height ?? ((groundHeight(state.s, state.lane, state.route, state.vehicle) ?? 0) + (state.route === "main" ? rampHeightAt(state.s, state.lane, state.vehicle) : 0));
       // SO47-N1 (gouache): the drawn rider leans up to ~25 degrees (1.8x the sim's 0.24 rad lean; presentation only).
-      playerPose = poseAt(sForPlayer, menu ? 0 : state.lane, menu ? "main" : state.route, ground, menu ? 0 : state.heading || 0, menu ? 0 : state.lean * (input.look === "gouache" ? LEAN_GAIN : 1));
+      playerPose = poseAt(sForPlayer, menu ? 0 : state.lane, menu ? "main" : state.route, ground, menu ? 0 : state.heading || 0, menu ? 0 : (shownLean[0] = slewLean(shownLean[0]!, state.lean * (input.look === "gouache" ? LEAN_GAIN : 1), dt)));
     }
     let pitch = 0, roll = 0;
     if (!state.flight && !state.loop && !menu) {
@@ -1063,7 +1187,8 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       boosting: !menu && Boolean(state.boosting),
       dt,
       time,
-      menu
+      menu,
+      steer: menu ? 0 : state.heading || 0
     });
     riderGrounded[0] = !state.flight && !state.loop && !state.air;
 
@@ -1081,6 +1206,23 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
         g.setRotation(e[0], e[1], e[2]);
         g.setScale(scale);
       }
+      // the ghost's rigged racer: same seat and pose code as the live riders, under the hologram material
+      if (input.idolRiders) {
+        const gr = node("ghost-rider-rider");
+        const placed = ghost && !menu ? poseIdolRider(gr, 0, { lean: 0, speed: 30, boosting: false, dt, time, menu: false }) : null;
+        gr.setVisible(Boolean(placed));
+        if (ghost && placed) {
+          const pose = poseAt(ghost.s, ghost.lane, ghost.route, ghost.height, 0, 0);
+          const side = new Vec3().crossVectors(pose.forward, pose.up).normalize();
+          const up = new Vec3().crossVectors(side, pose.forward).normalize();
+          const b = basisMatrix(pose.forward, up, side);
+          const [ox, oy, oz] = computeRiderPartWorldOffset(b, placed.offset, scale);
+          const e = euler(multiplyMat3(b, axisRotation("y", Math.PI / 2)));
+          gr.setPosition(pose.position.x + ox, pose.position.y + oy, pose.position.z + oz);
+          gr.setRotation(e[0], e[1], e[2]);
+          gr.setScale(scale * placed.scale);
+        }
+      }
     }
 
     /* rivals */
@@ -1091,7 +1233,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       const s = menu ? 35 + 10 + i * 5 : rival.s;
       const lane = menu ? (i % 3 - 1) * 3 : rival.lane;
       const ground = menu ? menuHover(i + 1) : rival.air?.height ?? (islandHeight(rival.s, rival.route) ?? 0);
-      placeRider(i + 1, poseAt(s, lane, menu ? "main" : rival.route, ground, 0, menu ? 0 : (rival.lean ?? 0) * (input.look === "gouache" ? LEAN_GAIN * 0.85 : 1)), scale, 0, 0, {
+      placeRider(i + 1, poseAt(s, lane, menu ? "main" : rival.route, ground, 0, menu ? 0 : (shownLean[i + 1] = slewLean(shownLean[i + 1]!, (rival.lean ?? 0) * (input.look === "gouache" ? LEAN_GAIN * 0.85 : 1), dt))), scale, 0, 0, {
         lean: menu ? 0 : rival.lean ?? 0,
         speed: menu ? 0 : rival.speed,
         boosting: !menu && Boolean(rival.boosting),
@@ -1137,7 +1279,14 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     // SO47-C1: chase base fov from the look table (gouache 64, original 72) plus the boost/landing kicks and lean roll.
     const kick = feel.update(dt, { boosting: Boolean(state.boosting), lean: state.lean, racing: state.phase === "racing" && !state.flight });
     const params = view === "wide" ? { back: 4.5, height: 4, fov: 82, portraitFov: 82 } : { back: 4.5, height: 3, fov: feel.baseFov, portraitFov: feel.baseFov + 4 };
-    const origin = playerPose.position;
+    // Owner QA (Nov 18, rider "shaking up and down" from the start): the chase camera rode the drawn pose rigidly, surface
+    // ripple included, so every bump moved the whole frame. Its height now follows a critically damped smoothing of the
+    // pose's world y (about 0.1 s; a jump or a drop still reads); flight, loops and the menu keep the exact pose.
+    const rawOrigin = playerPose.position;
+    const smoothCam = !menu && !state.flight && !state.loop;
+    if (!smoothCam || camY === null || dt <= 0 || Math.abs(rawOrigin.y - camY) > 6) camY = rawOrigin.y;
+    else camY += (rawOrigin.y - camY) * (1 - Math.exp(-dt * 10));
+    const origin = smoothCam ? new Vec3(rawOrigin.x, camY, rawOrigin.z) : rawOrigin;
     let eye: Vec3, look: Vec3, fov: number;
     if (menu && aspect < 0.85) {
       // Portrait (SO-5): the menu panel takes the top of the screen, so the camera stands further back and aims above
@@ -1189,6 +1338,10 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     }
     const camRoll = (shake?.roll ?? 0) + kick.roll;
     lastCamera = { eye: eye.clone(), look: look.clone(), up: menu ? frame.up.clone() : cu.clone(), fov };
+    if (qaTrace && !menu && qaTraceFrames < 360) {
+      qaTraceFrames++;
+      console.log(`[qaTrace] t=${time.toFixed(3)} dt=${dt.toFixed(4)} ${state.phase} v=${state.speed.toFixed(2)} root=${riderAt[0]!.y.toFixed(4)} pose=${rawOrigin.y.toFixed(4)} eye=${eye.y.toFixed(4)} look=${look.y.toFixed(4)}`);
+    }
     cameraController.setPose({
       position: [eye.x, eye.y, eye.z],
       target: [look.x, look.y, look.z],
@@ -1257,6 +1410,13 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       if (Math.abs(nextPulse - lastVeilPulse[i]!) > 0.015 || (nextPulse === 0 && lastVeilPulse[i]! !== 0)) {
         lastVeilPulse[i] = nextPulse;
         veil.setUniform?.("veilPulse", nextPulse);
+      }
+      // Owner QA (Nov 18): the chase eye crosses every curtain a beat after the rider, and from ~1 m the streams and
+      // the arched rim filled the frame as giant grey bars. Fade the curtain out as the eye nears its plane.
+      const fade = veilCameraFade(eye.clone().sub(gp).dot(gateNormals[i]!));
+      if (Math.abs(fade - lastVeilFade[i]!) > 0.02 || (fade === 1 && lastVeilFade[i] !== 1) || (fade === 0 && lastVeilFade[i] !== 0)) {
+        lastVeilFade[i] = fade;
+        veil.setUniform?.("veilFade", fade);
       }
     });
 
@@ -1373,7 +1533,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
 
   return {
     update,
-    resetCamera() { rig = null; rebound.t = 0; },
+    resetCamera() { rig = null; rebound.t = 0; camY = null; },
     projectRider(index, aspect) {
       const p = riderAt[index];
       return p ? projectPoint(p, aspect) : null;

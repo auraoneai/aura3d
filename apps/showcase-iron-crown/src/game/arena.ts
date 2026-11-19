@@ -25,7 +25,7 @@ import { prayerFlagNodes } from "./ambientMotion";
 import { crownRuneWardMaterialSpec, dualFlipbookAtlasBurstSpec, parrySlashArcMaterialSpec } from "./dualShaders";
 import { koScorchNode, stageFlareNodes } from "./flareScorch";
 import { createFighterNode, type FighterDef, type FighterPalette, type TypedFighterAssets } from "./fighters";
-import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, RIM_IDS, stageLightNodes, stageLook, stageLookNode, streakLimitFor, weatherParticlesFor, type StageLookRow } from "./look";
+import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, NEUTRAL_BLOOM_TINT, RIM_IDS, stageLightNodes, stageLook, stageLookNode, streakLimitFor, weatherParticlesFor, type StageLookRow } from "./look";
 import { ORIGINAL_LOOKS, ORIGINAL_VIGNETTE, type VenueLookMode } from "./originalLook";
 import { groundDressing, markDeckPracticals, refinedLook, refinedLookOverrides, type RefinedVenueLook } from "./refinedLook";
 import type { IronStage } from "./stages";
@@ -278,7 +278,8 @@ export function arenaWeatherNodes(row: StageLookRow, reducedMotion: boolean, low
   if (!row.weather) return [];
   const [volume, ...streaks] = weather.precipitation({ type: row.weather.type, seed: 0x1c47, streakLimit: streakLimitFor(row, reducedMotion) }).nodes;
   if (!volume) return [...streaks];
-  return [{ ...volume, name: `${row.stage} ${row.weather.type}`, particleCount: weatherParticlesFor(row, reducedMotion, lowTier), color: row.weather.color } as AuraSceneNode, ...streaks];
+  const alpha = row.weather.intensity !== undefined ? { intensity: row.weather.intensity } : {};
+  return [{ ...volume, name: `${row.stage} ${row.weather.type}`, particleCount: weatherParticlesFor(row, reducedMotion, lowTier), color: row.weather.color, ...alpha } as AuraSceneNode, ...streaks];
 }
 
 /**
@@ -353,7 +354,8 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
   }
   for (const side of ["p1", "p2"] as const) {
     const pose = backRimPose(row.backRim, side === "p1" ? o.playerStart[0] : o.rivalStart[0]);
-    const rimTone = side === "p1" ? look.rim.color : "#ffe6be";
+    // Owner neutral-grade pass: one cool-neutral rim on both fighters (p2's warm #ffe6be rim melted into the warm set).
+    const rimTone = look.rim.color;
     lightNodes.push(
       lights
         .spot({ name: `fighter back rim ${side}`, position: pose.position, target: pose.target, angle: row.backRim.angle, penumbra: row.backRim.penumbra, distance: row.backRim.distance, decay: 1.3, intensity: look.rim.intensity, color: rimTone })
@@ -366,7 +368,8 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
     const streakLimit = o.reducedMotion ? Math.floor(look.weather.streakLimit / 2) : look.weather.streakLimit;
     const [volume, ...streaks] = weather.precipitation({ type: look.weather.type, seed: 0x1c47, streakLimit }).nodes;
     const particles = Math.round(look.weather.particles * (o.reducedMotion ? 0.5 : 1) * (o.lowTier ? 0.5 : 1));
-    if (volume) weatherNodes.push({ ...volume, name: `${s.id} ${look.weather.type}`, particleCount: particles, color: look.weather.color } as AuraSceneNode);
+    const alpha = look.weather.intensity !== undefined ? { intensity: look.weather.intensity } : {};
+    if (volume) weatherNodes.push({ ...volume, name: `${s.id} ${look.weather.type}`, particleCount: particles, color: look.weather.color, ...alpha } as AuraSceneNode);
     weatherNodes.push(...streaks);
   }
   return scene()
@@ -384,7 +387,7 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
       effects.ambientOcclusion({ name: "iron crown gtao", intensity: 0.56, radius: 0.5, falloff: 0.6 }).toJSON(),
       ...(o.contactShadows ? [effects.contactShadows({ intensity: look.contact?.intensity ?? 0.85, length: look.contact?.length ?? 0.35 }).toJSON()] : []),
       effects.vignette({ name: "iron crown vignette", intensity: look.vignette, smoothness: 0.65 }).toJSON(),
-      effects.cinematicBloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }).toJSON(),
+      effects.cinematicBloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold, color: NEUTRAL_BLOOM_TINT }).toJSON(),
       ...(look.mirror ? [{ ...ssrNode(), intensity: Math.min(0.16, look.mirror) } as AuraSceneNode] : []),
       ...(look.cones
         ? [

@@ -1340,6 +1340,18 @@ type GroupBuilder = ReturnType<typeof group>;
  * Sculpted Track-Spanning Arched Flux Gates (`x = -5.15 .. +5.15 m` over the `8 m` deck),
  * tiled every `60 m` across `[0, -360]` so `SPAN = 180` wraps seamlessly (`castShadow: false`).
  */
+/**
+ * Trackside hardware placement (shared with tests/unit/polarity-orbs/corridor-clearance.test.ts): every grounded
+ * piece stands outside the deck + rail edge, and the flux-gate arch girder clears the ball overhead.
+ */
+export const CORRIDOR_HARDWARE = {
+  // archRise 6.4 (was 4.65): the apex girder + keystone sat at y 5.2-5.8, exactly where the 5.4 m chase camera flies,
+  // so every gate filled the whole frame for a moment (real-GPU QA, camera inside geometry). Apex underside now ~6.7 m.
+  gate: { spanR: 5.18, springY: 0.85, archRise: 6.4, yShift: -0.12, girderHalf: 0.24, plinthR: 0.68 },
+  bezel: { x: 5.24, profileHalf: 0.26, plinthOffset: 0.68, plinthR: 0.5 },
+  bus: { x: 5.92, toroidR: 0.38 + 0.078, insulatorR: 0.28 }
+} as const;
+
 function buildCorridorArchedFluxGatesNode(groupId: string): AuraNodeBuilder<AuraSceneNode> {
   const built = memoizeGeometry("po:corridor-arched-flux-gates", () => {
     const materials: readonly AuraMaterialSpec[] = [
@@ -1356,9 +1368,7 @@ function buildCorridorArchedFluxGatesNode(groupId: string): AuraNodeBuilder<Aura
 
     // Build one single Arched Flux Gate centered at z = 0
     const singleGateSlots: MultiMatSlot[] = [];
-    const spanR = 5.18;
-    const springY = 0.85;
-    const archRise = 4.65;
+    const { spanR, springY, archRise } = CORRIDOR_HARDWARE.gate;
 
     // Chamfered octagonal girder cross-section
     const girder2D: readonly V2[] = [
@@ -1418,7 +1428,7 @@ function buildCorridorArchedFluxGatesNode(groupId: string): AuraNodeBuilder<Aura
     for (const side of [-1, 1] as const) {
       const px = side * spanR;
       singleGateSlots.push({
-        mesh: transformMesh(machinedOctagonPlinthMesh(0.68, 0.42, 0.05), { pos: [px, 0, 0] }),
+        mesh: transformMesh(machinedOctagonPlinthMesh(CORRIDOR_HARDWARE.gate.plinthR, 0.42, 0.05), { pos: [px, 0, 0] }),
         materialIndex: 0
       });
       singleGateSlots.push({
@@ -1437,7 +1447,7 @@ function buildCorridorArchedFluxGatesNode(groupId: string): AuraNodeBuilder<Aura
       for (const s of singleGateSlots) {
         tiledSlots.push({
           materialIndex: s.materialIndex,
-          mesh: transformMesh(s.mesh, { pos: [0, -0.12, zGate] })
+          mesh: transformMesh(s.mesh, { pos: [0, CORRIDOR_HARDWARE.gate.yShift, zGate] })
         });
       }
     }
@@ -1471,7 +1481,9 @@ function buildCorridorLabInstancedChildren(
   ];
   const steelPedestalAndRim = concatRaw([
     extrudePolygonMesh(bezelProfile, 4.2, 0.03, false),
-    transformMesh(machinedOctagonPlinthMesh(0.5, 0.32, 0.04), { pos: [side * 0.68, -0.26, 0] })
+    transformMesh(machinedOctagonPlinthMesh(CORRIDOR_HARDWARE.bezel.plinthR, 0.32, 0.04), {
+      pos: [side * CORRIDOR_HARDWARE.bezel.plinthOffset, -0.26, 0]
+    })
   ]);
   const bezelSpec = defineSingleSpec(steelPedestalAndRim);
 
@@ -1498,9 +1510,9 @@ function buildCorridorLabInstancedChildren(
 
   for (let i = 0; i < 24; i += 1) {
     const z = -6 - i * 15;
-    bezelTransforms.push({ position: [side * 5.24, 0.34, z] });
-    busTransforms.push({ position: [side * 5.92, 0.42, z] });
-    insulatorTransforms.push({ position: [side * 5.92, 0.26, z] });
+    bezelTransforms.push({ position: [side * CORRIDOR_HARDWARE.bezel.x, 0.34, z] });
+    busTransforms.push({ position: [side * CORRIDOR_HARDWARE.bus.x, 0.42, z] });
+    insulatorTransforms.push({ position: [side * CORRIDOR_HARDWARE.bus.x, 0.26, z] });
     busColors.push(i % 2 === 0 ? copperA : copperB);
     insulatorColors.push(i % 2 === 0 ? ceramicPrimary : ceramicAlt);
   }
@@ -1597,9 +1609,20 @@ export function buildPortalBusbarJunctionNode(
  * mounting all double-span multi-material landmarks + arched flux gates + corridor
  * `instances.custom` hardware batches (`castShadow: false` on all distant/backdrop geometry).
  */
-export function buildBackdropGroupNode(groupSpec: BackdropGroupSpec): GroupBuilder {
-  const assembly = resolveAssemblyForKind(groupSpec.kind, groupSpec.size);
+/**
+ * Idol wow pass: `body` (an `instances.model` of the kind's Idol GLB, fitted to the same grounded max-dimension and
+ * placed with the same transforms) replaces the procedural multi-material body; the corridor lab children stay.
+ */
+export function buildBackdropGroupNode(groupSpec: BackdropGroupSpec, body?: AuraNodeBuilder<AuraSceneNode>): GroupBuilder {
   const children: (AuraSceneNode | AuraNodeBuilder<AuraSceneNode>)[] = [];
+  if (body) {
+    children.push(body);
+    if (groupSpec.kind === "poChargeCoil" || groupSpec.kind === "poMagnet") {
+      children.push(...buildCorridorLabInstancedChildren(groupSpec.id, groupSpec.side));
+    }
+    return group(groupSpec.id, children).runtime({ id: groupSpec.id });
+  }
+  const assembly = resolveAssemblyForKind(groupSpec.kind, groupSpec.size);
 
   const batchedSlots: MultiMatSlot[] = [];
   for (const tr of groupSpec.transforms) {

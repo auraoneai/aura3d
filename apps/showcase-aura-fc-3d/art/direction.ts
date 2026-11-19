@@ -52,8 +52,21 @@ export default defineArtDirection({
     exposureEV: 0.15
   },
   framing: { rig: "follow2d", subjectHeightFraction: [0.08, 0.3], fovDeg: [34, 54], mobile: "both" },
-  // 100% native @aura3d/engine procedural multi-material athletes, keepers, referee, supporters, stadium & props (zero GLBs).
-  assets: [],
+  assets: [
+    // Idol wow pass (Nov 2026): image-to-3D GLBs (speridlabs/idol/max, tools/idol/specs/aura-fc-3d.json). Athletes, keepers,
+    // referee and front-row fans are rigged and driven each frame from the procedural joint pose (src/game/idolBodies.ts);
+    // pitch, goals and nets, stands, crowd, floodlight towers and markers stay procedural. `?idol=off` restores the rigs.
+    ...(["fcIdolHomeA", "fcIdolHomeB", "fcIdolAwayA", "fcIdolAwayB", "fcIdolKeeperHome", "fcIdolKeeperAway", "fcIdolReferee"] as const).map((assetKey) => (
+      { role: "character" as const, assetKey, kit: "K2" as const, maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+    )),
+    ...(["fcIdolFanA", "fcIdolFanB", "fcIdolFanC"] as const).map((assetKey) => (
+      { role: "character" as const, assetKey, kit: "K2" as const, maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N+ORM" as const, maxTextureSize: 512 as const }
+    )),
+    ...(["fcIdolDugout", "fcIdolCrane", "fcIdolTrophy"] as const).map((assetKey) => (
+      { role: "set-dressing" as const, assetKey, kit: "K4" as const, maxTriangles: 40000, textureSet: "BC+N+ORM" as const, maxTextureSize: 512 as const }
+    )),
+    { role: "prop" as const, assetKey: "fcIdolBall", kit: "K2" as const, maxTriangles: 20000, textureSet: "BC+N+ORM" as const, maxTextureSize: 1024 as const }
+  ],
   vfx: [
     { event: "kick", kind: "fc-turf-divot" },
     { event: "tackle", kind: "fc-turf-divot" },

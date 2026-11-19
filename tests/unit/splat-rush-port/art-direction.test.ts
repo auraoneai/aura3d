@@ -6,6 +6,7 @@ import { addBackdrop } from "../../../examples/splat-rush-port/backdrop";
 import { addPickups } from "../../../examples/splat-rush-port/pickups";
 import { LOOKS } from "../../../examples/splat-rush-port/look";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
+import { SPLAT_IDOL_KEYS } from "../../../examples/splat-rush-port/idol";
 
 /** Expected in-play draws of the carnival look (lane report, CR-PF1): measured numbers are phase 2. */
 const CARNIVAL_DRAWS_ESTIMATE = 38;
@@ -23,7 +24,7 @@ function flattenSceneNodes(nodes: readonly Record<string, unknown>[]): Record<st
 }
 
 describe("GU47 WP-26 art direction (splat-rush-port)", () => {
-  it("the carnival scene's procedural multi-material rig passes auditArtDirection and writes the audit record", () => {
+  it("the carnival scene's Idol GLB backdrop and pickups pass auditArtDirection and write the audit record", () => {
     const builder = scene();
     addBackdrop(builder, LOOKS.carnival);
     addPickups(builder);
@@ -48,12 +49,14 @@ describe("GU47 WP-26 art direction (splat-rush-port)", () => {
       lights,
       hasAmbient: lights.some((l) => l.type === "ambient"),
       environment: { kind: env?.environment === "hdri" ? "hdri" : env ? "preset" : "none", background: env?.background === true },
-      models: [],
+      models: models.map((n) => ({ assetKey: String((n.asset as { id?: string } | undefined)?.id ?? ""), triangles: 0, textures: 3, unlit: false, overridesTextures: false })),
       materials,
       drawCalls: CARNIVAL_DRAWS_ESTIMATE
     };
-    expect(models).toHaveLength(0);
-    expect(direction.assets).toEqual([]);
+    expect(models.length).toBeGreaterThan(0);
+    const contracted = new Set(direction.assets.map((a) => a.assetKey));
+    for (const m of models) expect(contracted.has(String((m.asset as { id?: string } | undefined)?.id))).toBe(true);
+    expect([...contracted].sort()).toEqual([...SPLAT_IDOL_KEYS].sort());
     expect(lights.filter((l) => l.shadow)).toHaveLength(1);
     expect(snapshot.environment.kind).toBe("hdri");
     const violations = auditArtDirection(direction, snapshot);

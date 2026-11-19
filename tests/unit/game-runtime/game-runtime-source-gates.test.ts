@@ -1429,36 +1429,9 @@ describe("game runtime source gates", () => {
     ]);
   });
 
-  it("keeps showcase game routes on public genre kits instead of route-local engines", () => {
-    /*
-     * Post-PRD-14 the routes mount through a route-flag dispatcher in
-     * `src/main.ts`: flag off boots `src/legacy/main.ts`, flag on boots
-     * `src/v2/boot.ts`, and shared gameplay lives in `src/gameplay/`. The
-     * kit-usage invariants below therefore read the v2/gameplay sources;
-     * the dispatcher itself must stay a thin dispatcher (no gameplay tokens).
-     *
-     * The skyline-runner and turbo-drift-circuit routes were deleted in the
-     * 4.0.1 release (46bca99f1); their platformer/racing kit coverage lives in
-     * the template and kit cases above. Blockfall is the remaining showcase
-     * game route under this gate.
-     */
-    const blockfallMain = readSource("apps/showcase-blockfall-reactor/src/main.ts");
-    const blockfallBoot = readSource("apps/showcase-blockfall-reactor/src/v2/boot.ts");
-    const blockfallBoard = readSource("apps/showcase-blockfall-reactor/src/gameplay/board-view.ts");
-    const blockfallReadme = readSource("apps/showcase-blockfall-reactor/README.md");
-
-    // Dispatchers resolve the route flag and defer to legacy or v2 — nothing more.
-    expect(blockfallMain).toContain('ROUTE_FLAG = "A3D_QR_ROUTE_BLOCKFALL_REACTOR"');
-    expect(existsSync("apps/showcase-skyline-runner")).toBe(false);
-    expect(existsSync("apps/showcase-turbo-drift-circuit")).toBe(false);
-
-    // Blockfall reactor: public falling-blocks kit drives the gameplay evidence.
-    expect(blockfallBoot).toContain("createGame");
-    expect(blockfallBoard).toContain('gameplayPieceSource: "game.fallingBlocks"');
-    expect(blockfallMain).not.toContain('deterministicModule: "src/rules.ts"');
-    expect(blockfallReadme).toContain("the public `game.fallingBlocks` kit");
-    expect(blockfallReadme).not.toContain("route-local deterministic rules");
-  });
+  // The showcase-route kit gate that read skyline-runner, turbo-drift-circuit (deleted in 4.0.1,
+  // 46bca99f1) and Blockfall Reactor (deleted later) is retired with those apps; platformer, racing
+  // and falling-blocks kit coverage lives in the template and kit cases above.
 
   it("keeps package-smoke and release-gate scripts wired into game runtime readiness", () => {
     const scripts = readPackageJson().scripts ?? {};

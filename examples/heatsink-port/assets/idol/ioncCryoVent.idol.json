@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink-port",
+  "key": "ioncCryoVent",
+  "generatedAt": "2026-11-18T22:09:16.283Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08c-6a4a-7810-95ef-5cf6701d0a90",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1697994,
+        "num_faces": 3399464,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A cluster of glowing mineral chimney vents growing from a low layered basalt rock base: five crooked swept rock chimneys of different heights with frosted icy rims and faint glowing cyan crystals inside their mouths, dark volcanic rock with pale frost crust",
+  "role": "background",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.668,
+    "size": [
+      4.755,
+      4.5,
+      4.674
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/heatsink-port/assets/idol/ioncCryoVent.glb",
+  "sizeBytes": 4401360,
+  "preview": "artifacts/idol/heatsink-port/ioncCryoVent/views.png",
+  "usd": 0.37
+}

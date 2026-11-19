@@ -1,0 +1,70 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-fc-3d",
+  "key": "fcIdolKeeperHome",
+  "generatedAt": "2026-11-18T23:30:58.443Z",
+  "generator": "tools/idol/generate.mjs (resumed by the FC/Hoops agent after the 20-min client timeout; same request id, post-processing identical)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "(see generate.mjs buildPrompt)",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0e4-6244-7512-a27a-44b4f7f65f97",
+      "input": {
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 403,
+        "mesh_resolution": 1024,
+        "rig": true,
+        "animations": [
+          "idle"
+        ],
+        "image_url": "(reference still)"
+      },
+      "usd": 0.25,
+      "meshStats": {
+        "num_vertices": 477862,
+        "num_faces": 955724,
+        "watertight": true
+      },
+      "rig": {
+        "succeeded": true,
+        "num_bones": 34,
+        "animations": [
+          "idle"
+        ]
+      }
+    }
+  ],
+  "prompt": "Realistic adult male professional soccer goalkeeper, tall athletic build, light skin, short dark brown hair, clean-shaven, wearing a mustard-yellow long-sleeved padded goalkeeper jersey with a subtle all-over tonal diagonal stripe pattern front and back, plain black soccer shorts, mustard-yellow knee-high socks, black soccer cleats, large black goalkeeper gloves with white wrist straps",
+  "role": "character",
+  "rig": true,
+  "skin": {
+    "pass": false,
+    "repaired": true,
+    "report": "FAIL  refit  (height 0.999 m, 1 clip(s) x 10 poses)\n  material                                 tris    max stretch   over limit   flaps\n  material0                                30000        3.34x          62      0\n  bind-pose mismatch (SKIN_BIND_MISMATCH): bone_0 49% off-axis, bone_28 41% off-axis\n  ERROR material0 (mesh 0 prim 0): 62 of 30000 triangles stretch past 1.6x their rest edges (worst 3.34x) in the played clips (SKIN_STRETCH). Bridging triangles between parts that move independently, or a mesh bound in a different pose than its skeleton. Run assets repair-skin.\n  warn  2 bone(s) are not inside the mesh they move: bone_0 (vertices 0.03 m off a 0.062 m bone), bone_28 (vertices 0.035 m off a 0.084 m bone) (SKIN_BIND_MISMATCH). The mesh was modelled in a different pose than the skeleton assumes (typically mid-stride), so every clip rotates the limbs about joints off the limb. Rebuild the limbs in the skeleton's pose (assets repair-skin --rebuild-limbs) or re-rig.",
+    "repairLog": "skin check still fails after repair: SKIN_STRETCH, SKIN_BIND_MISMATCH\nBind-pose mismatch on bone_0, bone_28: the mesh was modelled in a different pose than the skeleton assumes. Weight smoothing and triangle cuts only mask it. For a recognised humanoid run repair-skin --rebuild-limbs (rebuilds the legs in the skeleton's pose); otherwise rebuild the limbs in your DCC tool or regenerate and re-rig the model in the pose the skeleton assumes.\nStill failing after smooth-bridges: SKIN_STRETCH, SKIN_BIND_MISMATCH. Cutting stretched triangles opens holes; prefer --rebuild-limbs or re-rigging.\nRe-admit the repaired file with `aura3d assets add` (it gets a new hash); do not edit the manifest by hand."
+  },
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 2.222,
+    "size": [
+      2.169,
+      2.22,
+      0.372
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-fc-3d/assets/idol/fcIdolKeeperHome.glb",
+  "sizeBytes": 2414372,
+  "preview": "artifacts/idol/aura-fc-3d-try/fcIdolKeeperHomeP403/views.png",
+  "usd": 0.42,
+  "note": "re-rolled with an all-over tonal pattern in the subject (new reference still); the plain-kit rolls kept inventing lettering on the shirt back",
+  "slimmed": "tools/idol/slim.mjs (normal maps PNG -> JPEG q92)"
+}

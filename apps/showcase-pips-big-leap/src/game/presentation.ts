@@ -16,6 +16,7 @@ import { createPipVfx, registerPipVfx, type PipEffectsLike, type PipVfxControlle
 import type { PlayerEvent } from "./player.js";
 import type { MoveState, WorldId } from "./types.js";
 import type { BuiltWorld } from "./world.js";
+import { PIP_HERO_SCENE_SCALE, hawkPartNames } from "../art/idolModels.js";
 
 /** The node handle slice the presentation drives. */
 export interface PresentationNode {
@@ -24,6 +25,7 @@ export interface PresentationNode {
   setPosition?(x: number, y: number, z: number): unknown;
   setVisible?(visible: boolean): unknown;
   setLight?(patch: { readonly intensity?: number }, opts?: { readonly transitionSeconds?: number }): void;
+  setAnimation?(animation: { readonly clip: string; readonly loop?: boolean; readonly speed?: number } | undefined): unknown;
 }
 
 export type PresentationNodeLookup = (name: string) => PresentationNode | null;
@@ -108,6 +110,72 @@ export function bannerTilt(time: number, phase: number, motion: number): number 
 
 export function fanYaw(yaw: number, time: number, motion: number): number {
   return yaw + PROP_MOTION.fanSpin * motion * time;
+}
+
+/** Moving-parts pass: Idol windmill sails turn about their axle (rad/s, reduced motion 30%). */
+export const SAIL_SPIN = 0.55;
+export function sailSpin(time: number, phase: number, motion: number): number {
+  return phase + SAIL_SPIN * motion * time;
+}
+
+/** Idol hawks circle their placement (radius 1 m x scale, ~18 s a lap), nose along the circle, with a slow rise and fall. */
+export function hawkGlide(
+  base: readonly [number, number, number], s: number, time: number, phase: number, motion: number
+): { readonly position: [number, number, number]; readonly yaw: number } {
+  const a = phase + time * 0.35 * motion;
+  const r = 1.0 * s;
+  // Counter-clockwise seen from above: velocity (-sin a, 0, cos a); Idol models face +Z, so yaw = atan2(vx, vz).
+  return {
+    position: [base[0] + Math.cos(a) * r, base[1] + Math.sin(time * 0.8 + phase) * 0.18 * s * motion, base[2] + Math.sin(a) * r],
+    yaw: Math.atan2(-Math.sin(a), Math.cos(a))
+  };
+}
+
+/**
+ * Creature motion pass: hawk wings flap in bursts (2.4 Hz for ~1.6 s of every 4 s) and glide with a slight dihedral in
+ * between; the body banks into its left-hand circle. `flap` rotates the right wing pivot about Z (tip up when > 0).
+ */
+export function hawkWings(time: number, phase: number, motion: number): { readonly flap: number; readonly bank: number } {
+  const cycle = ((time + phase) % 4 + 4) % 4;
+  const flapping = cycle < 1.6;
+  const ease = flapping ? Math.sin((cycle / 1.6) * Math.PI) : 0;
+  const flap = (0.12 + (flapping ? 0.62 * ease * Math.sin(time * Math.PI * 2 * 2.4) : 0)) * motion;
+  return { flap, bank: 0.32 * motion };
+}
+
+/**
+ * Rigged Idol villagers (GPU QA: they must visibly walk): idle 1.5 s, walk 1.2 m out along their facing (walk clip),
+ * turn round, walk back, turn (8.1 s loop, phase-shifted per villager). Reduced motion keeps them idling in place.
+ */
+export const VILLAGER_WALK = { idle: 1.5, walk: 2.5, turn: 0.8, distance: 1.2 } as const;
+export function villagerPace(
+  base: readonly [number, number, number], yaw: number, time: number, phase: number, motion: number
+): { readonly position: [number, number, number]; readonly yaw: number; readonly clip: "idle" | "walk" } {
+  if (motion < 1) return { position: [base[0], base[1], base[2]], yaw, clip: "idle" };
+  const { idle, walk, turn, distance } = VILLAGER_WALK;
+  const loop = idle + 2 * walk + 2 * turn;
+  const t = ((time + phase * 2) % loop + loop) % loop;
+  const fx = Math.sin(yaw), fz = Math.cos(yaw);
+  const at = (u: number): [number, number, number] => [base[0] + fx * distance * u, base[1], base[2] + fz * distance * u];
+  if (t < idle) return { position: at(0), yaw, clip: "idle" };
+  let u = t - idle;
+  if (u < walk) return { position: at(u / walk), yaw, clip: "walk" };
+  u -= walk;
+  if (u < turn) return { position: at(1), yaw: yaw + Math.PI * (u / turn), clip: "walk" };
+  u -= turn;
+  if (u < walk) return { position: at(1 - u / walk), yaw: yaw + Math.PI, clip: "walk" };
+  u -= walk;
+  return { position: at(0), yaw: yaw + Math.PI * (1 + u / turn), clip: "walk" };
+}
+
+/** Idol clouds drift side to side (0.7 m x scale) with a gentle bob. */
+export function cloudDrift(
+  base: readonly [number, number, number], s: number, time: number, phase: number, motion: number
+): { readonly position: [number, number, number]; readonly yaw: number } {
+  return {
+    position: [base[0] + Math.sin(time * 0.06 + phase) * 0.7 * s * motion, base[1] + Math.sin(time * 0.35 + phase) * 0.06 * s * motion, base[2]],
+    yaw: 0
+  };
 }
 
 export function padBob(time: number, motion: number): number {
@@ -225,6 +293,8 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
     startScale: number;
     endScale: number;
   }
+  /** Clip each paced villager is playing (setAnimation only on a change). */
+  const villagerClips = new Map<string, string>();
   const flipbookPool: FlipbookSlot[] = [
     ...[0, 1, 2].map((i): FlipbookSlot => ({ kind: "dust", name: dioramaName.flipbookDust(i), active: false, age: 0, life: 0.42, x: 0, y: -120, z: 0, vy: 0.55, startScale: 0.48, endScale: 1.15 })),
     ...[0, 1, 2].map((i): FlipbookSlot => ({ kind: "sparks", name: dioramaName.flipbookSparks(i), active: false, age: 0, life: 0.36, x: 0, y: -120, z: 0, vy: 0.85, startScale: 0.42, endScale: 1.05 }))
@@ -475,12 +545,34 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
       squashT += f.dt;
       heroScaleY = squashScaleY(squashAmp, squashT);
       const xz = squashScaleXZ(heroScaleY);
-      node(options.heroNode)?.setScale([xz, heroScaleY, xz]);
+      // The rigged Idol Pip carries its metre scale on the node (PIP_HERO_SCENE_SCALE); squash multiplies it.
+      node(options.heroNode)?.setScale([xz * PIP_HERO_SCENE_SCALE, heroScaleY * PIP_HERO_SCENE_SCALE, xz * PIP_HERO_SCENE_SCALE]);
       // PBL-AN1: banners sway, updraft fans spin, leaf pads bob (visual only, PRD D8).
       for (const d of built.presentation.animatedDecor) {
         const h = node(d.name);
         if (d.kind === "banner") h?.setRotation?.(0, d.yaw, bannerTilt(f.time, d.phase, scale.motion));
-        else h?.setRotation?.(0, fanYaw(d.yaw, f.time, scale.motion), 0);
+        else if (d.kind === "fan") h?.setRotation?.(0, fanYaw(d.yaw, f.time, scale.motion), 0);
+        else if (d.kind === "sails") h?.setRotation?.(0, 0, sailSpin(f.time, d.phase, scale.motion));
+        else if (d.kind === "villager" && d.base) {
+          const v = villagerPace(d.base, d.yaw, f.time, d.phase, scale.motion);
+          h?.setPosition?.(v.position[0], v.position[1], v.position[2]);
+          h?.setRotation?.(0, v.yaw, 0);
+          if (villagerClips.get(d.name) !== v.clip) {
+            villagerClips.set(d.name, v.clip);
+            h?.setAnimation?.({ clip: v.clip, loop: true, speed: 1 });
+          }
+        } else if (d.base) {
+          const p = d.kind === "hawk" ? hawkGlide(d.base, d.scale ?? 1, f.time, d.phase, scale.motion) : cloudDrift(d.base, d.scale ?? 1, f.time, d.phase, scale.motion);
+          h?.setPosition?.(p.position[0], p.position[1], p.position[2]);
+          h?.setRotation?.(0, d.kind === "hawk" ? p.yaw : d.yaw, 0);
+          if (d.kind === "hawk") {
+            const w = hawkWings(f.time, d.phase, scale.motion);
+            const parts = hawkPartNames(d.name);
+            node(parts.bank)?.setRotation?.(0, 0, w.bank);
+            node(parts.wingR)?.setRotation?.(0, 0, w.flap);
+            node(parts.wingL)?.setRotation?.(0, 0, -w.flap);
+          }
+        }
       }
       const bob = padBob(f.time, scale.motion);
       for (const name of built.presentation.bobNodes) node(name)?.setPosition?.(0, bob, 0);

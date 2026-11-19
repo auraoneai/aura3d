@@ -1,0 +1,12 @@
+{
+  "game": "cumulus-dash",
+  "out": "apps/showcase-cloud-runner-port/src/motion.generated.ts",
+  "clips": [
+    { "key": "Idle", "prompt": "A young child stands relaxed in place, breathing calmly, shifting weight gently from foot to foot, arms loose at the sides, glancing around.", "duration": 4, "loop": true, "seed": 700, "guidance": 5 },
+    { "key": "Run", "prompt": "A young child runs forward fast in a straight line with light springy steps, leaning slightly forward, arms pumping hard.", "duration": 2, "loop": true, "seed": 701, "guidance": 5 },
+    { "key": "Jump", "prompt": "A young child running forward crouches and springs high into the air, tucking both knees up toward the chest at the top of the jump, then lands on both feet and keeps balance.", "duration": 2.2, "loop": false, "seed": 702, "guidance": 5 },
+    { "key": "Surf", "prompt": "A person facing forward rides a moving board in a low surfing crouch, feet apart, knees bent, arms spread wide for balance, swaying gently with small corrections.", "duration": 3, "loop": true, "seed": 703, "guidance": 5 },
+    { "key": "Strike", "prompt": "A person steps forward and throws a fast straight punch with the right fist, then a second fast punch with the left fist, then returns to a ready stance.", "duration": 1.8, "loop": false, "seed": 704, "guidance": 5 },
+    { "key": "Hit", "prompt": "A person is hit hard in the chest, staggers backward two steps with arms flung out, then regains balance and stands.", "duration": 1.8, "loop": false, "seed": 705, "guidance": 5 }
+  ]
+}

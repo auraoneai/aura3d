@@ -4,7 +4,8 @@
  *
  * Timing matches the original: real time feeds an accumulator and the sim advances in 1/120 s steps
  * (`pf(z, 1/120)`), with key presses applied between steps. Query parameters (all optional):
- * `autostart=1`, `autopilot=1` (the capture policy plays the run), `manual=1` (the sim only advances through
+ * `autostart=1`, `autoplay=1` (alias `autopilot=1`: the capture policy plays hands-free, starting by itself and restarting
+ * 3 s after each result, forever; `P` toggles it), `manual=1` (the sim only advances through
  * the hooks), `seed=N` (course seed, default 17), `daily=1` (today's course: the seed is the UTC date as YYYYMMDD),
  * `quality=low`. GU47 (WP-30): `look=evening` (opt in to the GU47 evening that moves with distance; the default, also `look=original`, is the 4.6.2 midday look, PRD D11), `at=<metres>` (boots straight into a run held at that distance through the capture policy; the sim then
  * holds still like `manual=1`, for the district luma targets), `lanterns=1` (opt in to the pooled lantern lights; off since the GU47 phase-2 second pass), `grain=1` (opt in to the film grain), `scarf=0` (no scarf ribbon), `godrays=1` (opt in to the volumetric god rays; off by default since GU47 phase 2: in software WebGL2 the pass
@@ -14,13 +15,13 @@ import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flag
 import { createLoadingProgress } from "../shared/loading-progress";
 import { publishBackendReport } from "../shared/backend-report";
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
-import { DEFAULT_POLICY, policyActions, type PolicyParams } from "./autopilot";
+import { DEFAULT_POLICY, autoplayRequested, createAutoplayLoop, policyActions, type PolicyParams } from "./autopilot";
 import { courseDigest, decodeActionScript, replayScript, runIdle, runPolicy } from "./replay";
 import { GameAudio } from "./audio";
 import { ENEMY_HINT, FORM_SHORT, announcement, districtLabel, resultCopy } from "./labels";
-import { createCameraShake, createHitStop, createImpactFeedback } from "@aura3d/engine/game";
+import { createCameraShake, createHitStop, createImpactFeedback, warmPrograms } from "@aura3d/engine/game";
 import { createImpactRig } from "../../apps/showcase-port-shared/feel";
-import { TIER_FEEDBACK, type DebrisTier } from "./impact";
+import { TIER_FEEDBACK, createImpactThrottle, type DebrisTier, type ImpactKick } from "./impact";
 import {
   DEFAULT_SEED, SIM_STEP, TUNING, dailySeed, applyAction, createState, drainEvents, qaAutopilotActions, snapshot, startRun, stepSim,
   type Action, type EnemyKind, type Form, type SimEvent, type SimState
@@ -40,7 +41,7 @@ const config = {
   seed: (daily ? dailySeed() : num("seed", DEFAULT_SEED)) | 0,
   daily,
   autostart: params.get("autostart") === "1",
-  autopilot: params.get("autopilot") === "1",
+  autopilot: autoplayRequested(params),
   manual: params.get("manual") === "1",
   /** `rules=original` reproduces the original game's obstacle contact (crates vanish, no knock-back); the default is the reworked contact rules. */
   ram: params.get("rules") !== "original",
@@ -97,6 +98,9 @@ let renderTime = 0;
 let frames = 0;
 let simSteps = 0;
 let autopilotOn = config.autopilot;
+/** Hands-free loop (`?autoplay=1`): starts the run itself and restarts after each result; QA stepping (`manual`, `at`) opts out. */
+const autoLoop = config.autopilot && !config.manual && config.at === null;
+const autoRestart = createAutoplayLoop();
 let policy: PolicyParams = DEFAULT_POLICY;
 let pendingEvents: SimEvent[] = [];
 let notice: { title: string; small: string; until: number } | null = null;
@@ -130,6 +134,10 @@ const SFX_FOR_EVENT: Readonly<Record<string, Parameters<GameAudio["play"]>[0]>> 
 };
 const CHARGE_SFX: Readonly<Record<EnemyKind, Parameters<GameAudio["play"]>[0]>> = { scout: "chargeScout", swordsman: "chargeSwordsman", caster: "chargeCaster", heavy: "chargeHeavy" };
 
+/** Throttled impact feel (impact.ts `createImpactThrottle`): frequent hits no longer keep the camera shaking. */
+const impactThrottle = createImpactThrottle();
+function kick(k: ImpactKick): void { const t = impactThrottle(renderTime, k); if (t) impactRig.trigger(t); }
+
 function handle(events: readonly SimEvent[]): void {
   for (const ev of events) {
     pendingEvents.push(ev);
@@ -138,10 +146,11 @@ function handle(events: readonly SimEvent[]): void {
     if (ev.type === "damage") flashHurt();
     if (ev.type === "break") feel("smash", z.speed);
     if (ev.type === "ram") feel(ev.tier as DebrisTier, ev.speed as number);
-    if (ev.type === "deflect" || ev.type === "interrupt" || ev.type === "armorBreak") impactRig.trigger({ freezeSeconds: 0.048, trauma: 0.42, fovKickDeg: 2.6 });
-    else if (ev.type === "kill") impactRig.trigger(ev.heavy ? { freezeSeconds: 0.055, trauma: 0.52, fovKickDeg: 3.2 } : { freezeSeconds: 0.032, trauma: 0.28, fovKickDeg: 1.8 });
-    else if (ev.type === "dash") impactRig.trigger({ freezeSeconds: 0.022, trauma: 0.2, fovKickDeg: 3.4 });
-    else if (ev.type === "cloneStrike" || ev.type === "windImpact") impactRig.trigger({ freezeSeconds: 0.036, trauma: 0.34, fovKickDeg: 2.2 });
+    if (ev.type === "deflect" || ev.type === "interrupt" || ev.type === "armorBreak") kick({ freezeSeconds: 0.048, trauma: 0.42, fovKickDeg: 2.6 });
+    else if (ev.type === "kill") kick(ev.heavy ? { freezeSeconds: 0.055, trauma: 0.52, fovKickDeg: 3.2 } : { trauma: 0.2, fovKickDeg: 1.4 });
+    else if (ev.type === "dash") kick({ trauma: 0.2, fovKickDeg: 3.4 });
+    // clone strikes and gale-star hits are the echo clones' and the star's own rhythm: no camera kick of their own
+    else if (ev.type === "cloneStrike" || ev.type === "windImpact") kick({ fovKickDeg: 0.8 });
     if (ev.type === "pickup") audio.play("pickup", renderTime);
     else if (ev.type === "kill") audio.play(ev.heavy ? "heavyKill" : "kill");
     else { const sfx = SFX_FOR_EVENT[ev.type]; if (sfx) audio.play(sfx); }
@@ -369,6 +378,10 @@ const loop = createFixedStepLoop({
     footsteps();
     charges();
     if (ready && z.phase === "intro" && countdown <= 0) watchFrameTime(dt);
+    if (ready && autopilotOn && !config.manual && config.at === null) {
+      if (z.phase === "intro" && countdown <= 0) begin();
+      else if (autoRestart.tick(z.phase, dt)) begin();
+    }
     // NR-18: the title shot holds on the card and blends onto the chase through the 3-2-1 (null once running).
     runtime?.setIntro(countdown > 0 ? 1 - countdown / COUNTDOWN_SECONDS : z.phase === "intro" ? 0 : null);
     render(dt, !config.manual && z.phase === "running");
@@ -431,6 +444,7 @@ addEventListener("keydown", (e) => {
   audio.unlock();
   if (e.code === "Escape") { setPaused(z.phase === "running"); return; }
   if (e.code === "KeyM") { setMuted(!audio.muted); return; }
+  if (e.code === "KeyP") { autopilotOn = !autopilotOn; say(autopilotOn ? "Autoplay on" : "Autoplay off", autopilotOn ? "the computer runs the gauntlet · P to take over" : "you have the runner", 1.6); return; }
   if (e.code === "Enter" && (z.phase === "intro" || z.phase === "won" || z.phase === "lost")) { startWithCountdown(); return; }
   const a = KEYS[e.code];
   if (a) { e.preventDefault(); act(a); }
@@ -466,13 +480,15 @@ document.addEventListener("visibilitychange", () => {
   }
   loop.resetAccumulator();
   loop.start();
-  if (!config.manual && z.phase !== "paused") audio.release();
+  // hands-free autoplay resumes by itself (a hidden tab paused it); a player's run stays paused until Resume
+  if (autoLoop && z.phase === "paused") setPaused(false);
+  else if (!config.manual && z.phase !== "paused") audio.release();
   if (ready) {
     render(0);
     updateHud();
   }
 });
-addEventListener("blur", () => { if (!config.manual) setPaused(true); });
+addEventListener("blur", () => { if (!config.manual && !autoLoop) setPaused(true); });
 addEventListener("pagehide", () => {
   loop.stop();
   if (!config.manual) { setPaused(true); audio.suspend(); }
@@ -621,6 +637,10 @@ function sizeCanvas(): void {
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
 
+/** The last boot warm-up (`window.__IDOL_WARM__`): programs, HDRI and Idol texture uploads settled before play. */
+let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+if (typeof window !== "undefined") (window as unknown as { __IDOL_WARM__?: () => typeof warmResult }).__IDOL_WARM__ = () => warmResult;
+
 async function boot(): Promise<void> {
   sizeCanvas();
   const status = $("loading-status");
@@ -646,6 +666,13 @@ async function boot(): Promise<void> {
   await app.ready();
   loading.set(0.9);
   runtime = world.bind(app);
+  // Idol wow pass (first-seconds stall): settle every shader program, the HDRI and the Idol GLB texture uploads before
+  // play, so no draw is skipped while a program compiles in the first seconds (lessons-learned R2). `?manual=1` QA keeps
+  // the no-wait boot.
+  if (new URLSearchParams(location.search).get("manual") !== "1") {
+    $("loading-status").textContent = "Painting the village…";
+    warmResult = await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+  }
   ready = true;
   $("loading-status").textContent = config.daily ? `Ready. Daily course for ${config.seed}.` : "Ready.";
   $<HTMLButtonElement>("start").disabled = false;

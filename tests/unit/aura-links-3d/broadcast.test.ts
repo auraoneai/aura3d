@@ -7,7 +7,10 @@ import {
   CUP_CAM_MAX_PUTT_M,
   FLYOVER_SECONDS,
   IMPACT_FOV_KICK_DEG,
+  TRACER_BALL_TOP_MARGIN,
   TRACER_CAM_MIN_CARRY_M,
+  TRACER_GROUND_SHARE,
+  TRACER_MAX_FOV_DEG,
   cupCamPose,
   flyoverAllowed,
   flyoverShots,
@@ -15,6 +18,7 @@ import {
   wantsCupCam,
   wantsTracerCam
 } from "../../../apps/showcase-aura-links-3d/src/game/broadcast";
+import { COURSE_LOOKS, hasBlackSky } from "../../../apps/showcase-aura-links-3d/src/game/lighting";
 import type { CourseId } from "../../../apps/showcase-aura-links-3d/src/game/types";
 
 const IDS = Object.keys(COURSES) as CourseId[];
@@ -94,5 +98,43 @@ describe("Aura Links broadcast camera (GU47 LINKS-12, the signature effect)", ()
       expect(Math.hypot(cup.position[0] - terrain.cup[0], cup.position[2] - terrain.cup[2])).toBeCloseTo(1.7, 6);
     }
     expect(IMPACT_FOV_KICK_DEG).toBe(2);
+  });
+
+  it("black-sky tracer cam (Mare): the horizon stays in the lower frame, the lens widens to keep the ball (no sky-only black frames)", () => {
+    // 2026-11-18 real-GPU sweep: the low-gravity ball pulled the tracer cam up into the airless black sky for seconds
+    const rad = Math.PI / 180;
+    const course = COURSES.mareCourse;
+    expect(hasBlackSky(COURSE_LOOKS.mareCourse)).toBe(true);
+    expect(main).toMatch(/tracerCamPose\(t, broadcastCam\.launch, broadcastCam\.yaw, ball\.pos, \{ keepHorizon: hasBlackSky\(COURSE_LOOKS\[state\.courseId\]\) \}\)/);
+    for (const hole of course.holes) {
+      const terrain = buildHoleTerrain(course, hole);
+      const launch = terrain.tee;
+      const fwd = [Math.sin(terrain.lineYaw), Math.cos(terrain.lineYaw)] as const;
+      // a Mare flight: low gravity, so high over the near fairway (apex up to ~60 m over the first 30-120 m)
+      for (const [along, up] of [[4, 6], [12, 18], [30, 40], [60, 60], [120, 55], [200, 20]] as const) {
+        const ball: [number, number, number] = [launch[0] + fwd[0] * along, launch[1] + up, launch[2] + fwd[1] * along];
+        const pose = tracerCamPose(terrain, launch, terrain.lineYaw, ball, { keepHorizon: true });
+        const label = `hole ${hole.number} ball ${along} m out, ${up} m up`;
+        const dx = pose.target[0] - pose.position[0], dz = pose.target[2] - pose.position[2];
+        const pitch = Math.atan2(pose.target[1] - pose.position[1], Math.hypot(dx, dz));
+        const half = (pose.fov * rad) / 2;
+        // the horizon (pitch 0) sits at least TRACER_GROUND_SHARE of the frame height above the bottom edge
+        const horizonY = -Math.tan(pitch) / Math.tan(half); // -1 bottom .. 1 top
+        expect((horizonY + 1) / 2, label).toBeGreaterThanOrEqual(TRACER_GROUND_SHARE - 1e-6);
+        expect(pose.fov, label).toBeLessThanOrEqual(TRACER_MAX_FOV_DEG);
+        // the lens follows the ball: it stays in frame whenever the widest lens can hold it
+        const bdx = ball[0] - pose.position[0], bdz = ball[2] - pose.position[2];
+        const ballPitch = Math.atan2(ball[1] - pose.position[1], Math.hypot(bdx, bdz));
+        const ballY = Math.tan(ballPitch - pitch) / Math.tan(half);
+        if (pose.fov < TRACER_MAX_FOV_DEG) expect(ballY, label).toBeLessThanOrEqual(1 - 2 * TRACER_BALL_TOP_MARGIN + 1e-6);
+        // the target stays on the ball's bearing
+        expect(Math.abs(Math.atan2(dx, dz) - Math.atan2(bdx, bdz)), label).toBeLessThan(1e-6);
+      }
+    }
+    // the day courses keep the plain tracer (target on the ball)
+    const hole = COURSES.cloudTerrace.holes[0]!;
+    const terrain = buildHoleTerrain(COURSES.cloudTerrace, hole);
+    const ball: [number, number, number] = [terrain.tee[0], terrain.tee[1] + 40, terrain.tee[2] + 30];
+    expect(tracerCamPose(terrain, terrain.tee, terrain.lineYaw, ball, { keepHorizon: hasBlackSky(COURSE_LOOKS.cloudTerrace) }).target).toEqual(ball);
   });
 });

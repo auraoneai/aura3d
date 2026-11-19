@@ -59,8 +59,9 @@ const config = {
   mode: (["cup", "trial", "free"].includes(params.get("mode") ?? "") ? params.get("mode") : "cup") as Mode,
   quality: (params.get("quality") === "low" ? "low" : "high") as "high" | "low",
   laps: params.has("laps") ? Math.max(1, num("laps", 7) | 0) : null,
-  autostart: params.get("autostart") === "1",
-  autopilot: params.get("autopilot") === "1",
+  /** `?autoplay=1` (owner standard, Nov 18) = autostart + autopilot + endless results -> next race loop; `?autopilot=1` stays an alias. */
+  autostart: params.get("autostart") === "1" || params.get("autoplay") === "1",
+  autopilot: params.get("autopilot") === "1" || params.get("autoplay") === "1",
   manual: params.get("manual") === "1",
   touch: params.get("touch") === "1",
   reducedMotion: params.get("motion") === "reduced" || (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches),
@@ -102,6 +103,9 @@ const hitStop = createHitStop();
 const shake = createCameraShake(config.reducedMotion ? { maxOffset: 0, maxRoll: 0 } : { maxOffset: 0.5, maxRoll: 0.05 });
 const impactFeedback = createImpactFeedback({ hitStop, shake, cue: (_name, gain) => sound.cue("hit", gain), fullSpeed: 30, ...(config.reducedMotion ? { hitStopMs: [0, 30] as const } : {}) });
 const visualImpact = createImpactRig({ reducedMotion: config.reducedMotion });
+// Owner QA (Nov 18 22:30, "still bouncy shaking"): camera trauma fired on every gate, boost and small bump, which in
+// autoplay meant near-constant shake that read as the bike bouncing. Shake is now reserved for real crashes (impact >= 12)
+// and a light landing thump; gates and boosts keep only their FOV kick.
 let lastFeelStep = visualImpact.step(0);
 let wasBoosting = false;
 let replaying = false;
@@ -187,6 +191,7 @@ addEventListener("keydown", (e) => {
   if (e.repeat) return;
   if (touchUi.visible() && !config.touch) { touchWanted = false; syncTouch(); }
   if (e.code === "KeyM") { toggleMute(); return; }
+  if (e.code === "KeyP") { autopilotOn = !autopilotOn; heldInput = null; script = []; return; }
   if (e.code === BINDINGS.pause) { pause(); return; }
   if (e.code === BINDINGS.camera) { view = view === "chase" ? "wide" : "chase"; return; }
   if (e.code === "Enter" && race.phase === "menu") { begin(); return; }
@@ -240,10 +245,10 @@ function handleEvents(events: readonly RaceEvent[]): void {
     if (ev.text) { notice = touchWanted ? touchText(ev) : ev.text; noticeTime = 3; }
     runtime?.event(ev);
     if (!replaying) {
-      if (ev.impact !== undefined) visualImpact.trigger({ trauma: Math.min(0.85, ev.impact / 35), fovKickDeg: -2.2 });
-      else if (ev.type === "land") visualImpact.trigger({ freezeSeconds: config.reducedMotion ? 0 : 0.022, trauma: 0.34, fovKickDeg: -1.8 });
+      if (ev.impact !== undefined) visualImpact.trigger({ trauma: ev.impact >= 12 ? Math.min(0.5, (ev.impact - 12) / 40) : 0, fovKickDeg: -2.2 });
+      else if (ev.type === "land") visualImpact.trigger({ freezeSeconds: config.reducedMotion ? 0 : 0.022, trauma: 0.12, fovKickDeg: -1.8 });
       else if (ev.type === "stunt") visualImpact.trigger({ freezeSeconds: config.reducedMotion ? 0 : 0.032, trauma: 0.48, fovKickDeg: 3.2 });
-      else if (ev.type === "gate") visualImpact.trigger({ trauma: 0.14, fovKickDeg: 1.6 });
+      else if (ev.type === "gate") visualImpact.trigger({ trauma: 0, fovKickDeg: 1.6 });
     }
     if (ev.impact !== undefined) {
       if (ev.normal) runtime?.impact(ev.normal);
@@ -442,14 +447,22 @@ function tick(now: number): void {
   loop.tick(now);
   if (!ready) return;
   const nowBoosting = race.phase === "racing" && Boolean(race.boosting);
-  if (nowBoosting && !wasBoosting) visualImpact.trigger({ trauma: 0.18, fovKickDeg: 2.8 });
+  if (nowBoosting && !wasBoosting) visualImpact.trigger({ trauma: 0, fovKickDeg: 2.8 });
   wasBoosting = nowBoosting;
   renderTime += dt;
   sound.update({ speed: race.speed, boosting: Boolean(race.boosting), drafting: Boolean(race.drafting), flight: Boolean(race.flight), racing: race.phase === "racing" }, dt);
   hudTimer += dt;
   if (hudTimer >= 0.05 || lastPhase !== race.phase) { updateHud(hudTimer); hudTimer = 0; }
   render(["paused", "finished", "lost"].includes(race.phase) ? 0 : dt, !config.manual && race.phase === "racing");
+  // Autoplay: show the results ~3.5 s, then start the next race hands-free (never sits on the results / lost card)
+  if (autopilotOn && !config.manual && (race.phase === "finished" || race.phase === "lost")) {
+    autoRestartTime += dt;
+    if (autoRestartTime >= AUTOPLAY_RESULTS_SECONDS) { autoRestartTime = 0; begin(); }
+  } else autoRestartTime = 0;
 }
+/** Seconds the autoplay loop holds the results card before the next race. */
+const AUTOPLAY_RESULTS_SECONDS = 3.5;
+let autoRestartTime = 0;
 
 /* ------------------------------------------------------------------ hooks */
 

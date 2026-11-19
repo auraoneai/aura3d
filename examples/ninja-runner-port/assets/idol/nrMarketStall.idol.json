@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "shadowstep-gauntlet",
+  "key": "nrMarketStall",
+  "generatedAt": "2026-11-18T22:37:41.487Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/shadowstep-gauntlet/nrMarketStall/ref.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "(cached idol-result.json)",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 39,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 2161666,
+        "num_faces": 4324160,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A feudal-era wooden market stall: a low wooden counter piled with woven baskets of vegetables, ceramic jars and rolled cloth bolts, four wooden posts holding a slanted straw-thatch awning with a plain indigo cloth valance, no writing. Photograph of a real handmade miniature in Japanese woodblock-print colours: weathered cedar wood, woven straw, indigo and persimmon cloth, ceramic pots, fine ink-line edging, soft warm golden-hour light. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.89,
+    "size": [
+      1.89,
+      1.836,
+      1.635
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/ninja-runner-port/assets/idol/nrMarketStall.glb",
+  "sizeBytes": 3624896,
+  "preview": "artifacts/idol/shadowstep-gauntlet/nrMarketStall/views.png",
+  "usd": 0.2
+}

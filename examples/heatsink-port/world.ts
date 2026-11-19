@@ -8,7 +8,7 @@ import { createCameraShake } from "@aura3d/engine/game";
 import { camera, cameras, effects, environments, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { CFG } from "./config";
-import { buildArches, buildDividers, buildGantryBanners, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
+import { buildArches, buildDividers, buildGantryBanners, buildMedianCliff, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
 import { PLASMA_ATLAS, SPARKS_ATLAS, beaconSpec, blobSpec, flipbookBurstSpec, hologramBannerSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec } from "./materials";
 import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
 import { districtFog, fogApproach } from "./art/look";
@@ -18,9 +18,10 @@ import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
 import type { Race } from "./race";
-import { barrelModel, droneCanopy, droneFlap, droneHull, droneNozzle, droneRotor, droneTrim, gatePylonNodes, modelSet, sceneryNodes, pickupModel, sentryModel, heavyModel } from "./models";
+import { droneFlap, droneNozzle, droneRotor, modelSet } from "./models";
+import { IDOL_HULL_BELLY_Y, TARGET_FANS, idolBarrel, idolDroneHull, idolGatePylonNodes, idolHeavy, idolPickup, idolSceneryNodes, idolSentry } from "./art/idolModels";
 import { Operation, STRIKE } from "./operation";
-import { stepCraftArticulation, type CraftArticulationState } from "./presentation";
+import { rotorStep, stepCraftArticulation, type CraftArticulationState } from "./presentation";
 import { seededRandom } from "./rng";
 import { pointQuadArrays, quadUpdater } from "./point-quads";
 import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
@@ -59,11 +60,16 @@ interface PartSpec {
 }
 /** the generated hull's camera gimbal (its nose) must point along the track's +X; a +90 degree yaw rendered it backwards, so -90 */
 const HULL_YAW = -Math.PI / 2;
+/** Idol wow pass: the player craft is the Idol GLB hull (art/idolModels.ts); see DRONE_PARTS. */
+const IDOL_CRAFT = true;
 /** Quad-rotor drone in the track frame (x forward, y up, z side): copper body, cyan accents, twin thrusters with plumes. */
+/**
+ * Idol wow pass: one Idol GLB hull (`ioncDrone`, 4.2 m, grounded and facing +Z) replaces the procedural hull, trim and
+ * canopy. The extra half turn maps its +Z nose onto the procedural hull's -Z nose, so HULL_YAW still points it along the
+ * track's +X; the offset drops its grounded base to the procedural belly (0.21 m under the hull origin at y = 0.1).
+ */
 const DRONE_PARTS: readonly PartSpec[] = [
-  { id: "drone-hull", prim: "box", size: 1, offset: [0, 0.1, 0], yaw: HULL_YAW, base: "#000000", glow: "#000000", glowAmt: 0, model: true, procedural: "hull" },
-  { id: "drone-trim", prim: "box", size: 1, offset: [0, 0.1, 0], yaw: HULL_YAW, base: "#000000", glow: "#000000", glowAmt: 0, procedural: "trim" },
-  { id: "drone-canopy", prim: "box", size: 1, offset: [0, 0.1, 0], yaw: HULL_YAW, base: "#000000", glow: "#000000", glowAmt: 0, procedural: "canopy" }
+  { id: "drone-hull", prim: "box", size: 1, offset: [0, 0.1 + IDOL_HULL_BELLY_Y, 0], yaw: HULL_YAW + Math.PI, base: "#000000", glow: "#000000", glowAmt: 0, model: true, procedural: "hull" }
 ];
 
 const STREAKS = 110;
@@ -74,12 +80,22 @@ const BOLT_LENGTH = CFG.weapons.length;
 const BOLT_VISUAL_LENGTH = BOLT_LENGTH * 1.45;
 const BOLT_HALF_WIDTH = 0.52;
 const SPARK_CARDS = 6;
+/** strike-target duct fan spin (rad/s; `rotorStep` keeps each rendered frame's advance alias-free) and the distance along the track within which they are animated */
+const TARGET_FAN_RPM = 70;
+const TARGET_FAN_RANGE = 420;
 /** local-frame (forward x, up y, side z) offsets for twilight craft airbrakes, counter-rotating rotors, nozzles & plumes */
 const FLAP_OFFSETS: readonly (readonly [number, number, number])[] = [[-0.55, 0.42, -0.78], [-0.55, 0.42, 0.78]];
-const NOZZLE_OFFSETS: readonly (readonly [number, number, number])[] = [[-2.05, 0.14, -0.44], [-2.05, 0.14, 0.44]];
-const ROTOR_OFFSETS: readonly (readonly [number, number, number])[] = [[0.92, 0.26, -1.16], [0.92, 0.26, 1.16], [-0.96, 0.26, -1.16], [-0.96, 0.26, 1.16]];
+/* Idol wow pass: the Idol hull's twin tail nozzles, measured from the GLB (tail at -2.10 m, 0.54 m up, 0.27 m apart either side) */
+const NOZZLE_OFFSETS: readonly (readonly [number, number, number])[] = IDOL_CRAFT ? [[-2.08, 0.54, -0.27], [-2.08, 0.54, 0.27]] : [[-2.05, 0.14, -0.44], [-2.05, 0.14, 0.44]];
+/* Idol wow pass: the Idol hull's four bladed rotor ducts, measured from the GLB (0.58 m ahead / 0.95 m behind the hull
+   centre, 1.30 m either side, lip 0.47 m up); the spinning procedural rotors sit inside them at ROTOR_SCALE */
+const ROTOR_OFFSETS: readonly (readonly [number, number, number])[] = IDOL_CRAFT
+  ? [[0.58, 0.47, -1.3], [0.58, 0.47, 1.3], [-0.95, 0.47, -1.3], [-0.95, 0.47, 1.3]]
+  : [[0.92, 0.26, -1.16], [0.92, 0.26, 1.16], [-0.96, 0.26, -1.16], [-0.96, 0.26, 1.16]];
+/** the procedural rotor is 1.12 m across; the Idol ducts' throats are about 0.54 m */
+export const ROTOR_SCALE = IDOL_CRAFT ? 0.48 : 1;
 const ROTOR_DIRS: readonly [1, -1, -1, 1] = [1, -1, -1, 1];
-const PLUME_OFFSETS: readonly (readonly [number, number, number])[] = [[-2.38, 0.14, -0.44], [-2.38, 0.14, 0.44]];
+const PLUME_OFFSETS: readonly (readonly [number, number, number])[] = IDOL_CRAFT ? [[-2.38, 0.54, -0.27], [-2.38, 0.54, 0.27]] : [[-2.38, 0.14, -0.44], [-2.38, 0.14, 0.44]];
 /** chase-camera framing of the art pass (lower and closer than `CFG.camera`, matching the original's frames); the sim never reads it */
 const FRAMING = { dist: 7.6, height: 2.0 };
 /**
@@ -103,7 +119,7 @@ export interface MotionSettings {
 export const REDUCED_FOV_KICK = 6;
 
 /** the custom-shader nodes whose `fogColor` follows the district (IC-06); models and additive strips are not fogged */
-export const DISTRICT_FOG_NODES = ["road", "dividers", "rocks", "plains", "rails", "rail-posts", "arches", "arch-neon", "shards", "crystals", "abyss"] as const;
+export const DISTRICT_FOG_NODES = ["road", "dividers", "median-cliff", "rocks", "plains", "rails", "rail-posts", "arches", "arch-neon", "shards", "crystals", "abyss"] as const;
 /** the QA crop of the drone published to `window.__AURA_QA__.crops` (static: the chase camera keeps the drone there) */
 export const DRONE_CROP = { name: "drone", x: 0.38, y: 0.5, w: 0.24, h: 0.24 } as const;
 
@@ -114,6 +130,12 @@ export interface WorldRuntime {
   setMotion(motion: MotionSettings): void;
   /** Latest rendered camera pose for 2D HUD target-lock projection */
   cameraPose(): CameraPoseInput;
+  /**
+   * boot warm-up only: fire one engine VFX burst (its flash point light included) at the camera's look point, so the
+   * light-count program variants it needs compile before play instead of on the first hit or kill (engine: transient
+   * point lights key programs by light count). False when the look has no engine effects.
+   */
+  warmBurst(kind: "hit" | "kill" | "barrel"): boolean;
   readonly nodeCount: number;
 }
 
@@ -182,7 +204,8 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     .camera(camera.perspective({ position: [0, 40, 0], target: [0, 0, 0], fov: CFG.camera.fovBase, near: 0.3, far: 4200, ...labCameraOptions(readLabFlags(), "reversed") /* A9: reversed depth by default (verified on real GPU); ?depth=standard opts out, ?depth=logarithmic overrides */ }));
 
   b.add(geometry.custom(dynamicFrom(buildRoad(track, high ? 3 : 5)), { name: "road", material: material.custom(roadSpec()) }).runtime({ id: fogTracked("road", "road") }));
-  b.add(geometry.custom(dynamicFrom(buildDividers(track, 3, 3)), { name: "dividers", material: material.custom(solidSpec(hexLinear("#2a2f3f"), hexLinear("#40e0ff"), 0.25)) }).runtime({ id: fogTracked("dividers", "dividers") }));
+  b.add(geometry.custom(dynamicFrom(buildMedianCliff(track, 3, 3)), { name: "median-cliff", material: material.custom(terrainSpec(1e6, [1.05, 1.1, 1.12])) }).runtime({ id: fogTracked("median-cliff", "median-cliff") }));
+  b.add(geometry.custom(dynamicFrom(buildDividers(track, 3, 3, false)), { name: "dividers", material: material.custom(solidSpec(hexLinear("#2a2f3f"), hexLinear("#40e0ff"), 0.25)) }).runtime({ id: fogTracked("dividers", "dividers") }));
   const props = buildProps(track);
   b.add(geometry.custom(dynamicFrom(props.rocks), { name: "rocks", material: material.custom(terrainSpec(snowLine)) }).runtime({ id: fogTracked("rocks", "rocks") }));
   b.add(geometry.custom(dynamicFrom(buildShoulders(track, high ? 6 : 10)), { name: "plains", material: material.custom(terrainSpec(1e6, [1.15, 1.2, 1.2])) }).runtime({ id: fogTracked("plains", "plains") }));
@@ -229,7 +252,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   /* IC-02: moving points for the lit GLBs (twilight only, 1 on Low): controlled exhaust glow and nearest pad / gate pool */
   if (look.glow.points > 0) b.add(lights.point({ name: "drone-glow", position: [0, -500, 0], intensity: 2.1, distance: 11, color: "#40e0ff" }).runtime({ id: "drone-glow" }));
   if (look.glow.points > 1) b.add(lights.point({ name: "pool-glow", position: [0, -500, 0], intensity: 5.5, distance: 18, color: "#ffb02e" }).runtime({ id: "pool-glow" }));
-  for (const n of sceneryNodes(track, undefined, models, false)) b.add(n);
+  for (const n of idolSceneryNodes(track, quality === "low")) b.add(n);
 
   /* checkpoint gates: veil across the road + two pylons */
   track.checkpoints.forEach((s, i) => {
@@ -238,7 +261,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     b.add(geometry.custom(dynamicFrom(veilQuad(track, s, 22)), { name: `gate-veil-${i}`, material: material.custom(veilSpec(color, "gate")), castShadow: false }).runtime({ id: `gate-veil-${i}` }));
   });
 
-  for (const n of gatePylonNodes(track, (fr) => droneEuler(fr, 0, 0, 0), models, false)) b.add(n);
+  for (const n of idolGatePylonNodes(track, (fr) => droneEuler(fr, 0, 0, 0))) b.add(n);
 
   /* boost pads */
   track.boostPads.forEach((p, i) => {
@@ -248,10 +271,10 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   /* pickups and barrels */
   track.pickups.forEach((p, i) => {
     const shield = p.kind === "shield";
-    b.add(pickupModel(i, shield, models).runtime({ id: fogTracked(`pickup-${i}`, `pickup-${i}`) }));
+    b.add(idolPickup(i, shield).runtime({ id: fogTracked(`pickup-${i}`, `pickup-${i}`) }));
   });
   track.barrels.forEach((_, i) => {
-    b.add(barrelModel(i, models, false).runtime({ id: fogTracked(`barrel-${i}`, `barrel-${i}`) }));
+    b.add(idolBarrel(i).runtime({ id: fogTracked(`barrel-${i}`, `barrel-${i}`) }));
     b.add(primitives.torus({ name: `barrel-ring-${i}`, size: [1.62, 0.16, 0.16], material: material.custom(solidSpec(hexLinear("#3a0814"), hexLinear("#ff2a55"), 3.2)), castShadow: false }).runtime({ id: `barrel-ring-${i}` }));
   });
 
@@ -267,10 +290,10 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     const core = material.custom(solidSpec(hexLinear(heavy ? "#5a1414" : "#c82828"), hexLinear("#ff5a3a"), heavy ? 1.8 : 2.5));
     b.add((heavy
       ? look.assets.heavyModel
-        ? heavyModel(t.id, r * 2.35, models, false)
+        ? idolHeavy(t.id)
         : primitives.box({ name: `target-${t.id}`, size: [r * 1.5, r * 1.5, r * 1.5], material: core, castShadow: false })
       : look.assets.sentryModel
-        ? sentryModel(t.id, r * 2.55, models, false)
+        ? idolSentry(t.id)
         : primitives.sphere({ name: `target-${t.id}`, size: r * 2.3, material: core, castShadow: false })).runtime({ id: `target-${t.id}` }));
     b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 2.65, 0.34, 0.34], material: material.custom(solidSpec(hexLinear("#0b2430"), hexLinear(heavy ? "#ff9a2e" : "#40f4ff"), 3.5)), castShadow: false }).runtime({ id: `target-ring-${t.id}` }));
     if (heavy) b.add(primitives.torus({ name: `target-ring2-${t.id}`, size: [r * 2.35, 0.36, 0.36], material: material.custom(solidSpec(hexLinear("#360818"), hexLinear("#ff2a6d"), 3.5)), castShadow: false }).runtime({ id: `target-ring2-${t.id}` }));
@@ -289,9 +312,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
 
   /* player drone + procedural multi-material trim/canopy, vector airbrakes, counter-rotating rotors & twin ion nozzles */
   for (const part of DRONE_PARTS) {
-    if (part.procedural === "trim") { b.add(droneTrim(models).runtime({ id: part.id })); continue; }
-    if (part.procedural === "canopy") { b.add(droneCanopy(models).runtime({ id: part.id })); continue; }
-    if (part.model) { b.add(droneHull(models, look.key.droneCasts).runtime({ id: fogTracked(part.id, part.id) })); continue; }
+    if (part.model) { b.add(idolDroneHull(look.key.droneCasts).runtime({ id: fogTracked(part.id, part.id) })); continue; }
     const extra = part.additive ? { transparent: true, blending: "additive" as const, depthWrite: false } : {};
     const mat = material.custom(solidSpec(hexLinear(part.base), hexLinear(part.glow), part.glowAmt, extra));
     const handle = part.prim === "box"
@@ -303,9 +324,12 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   }
   if (look.wake.enabled) {
     for (let i = 0; i < 2; i++) {
-      b.add(droneFlap(i, models).runtime({ id: `drone-flap-${i}` }));
-      b.add(droneNozzle(i, models).runtime({ id: `drone-nozzle-${i}` }));
+      if (!IDOL_CRAFT) b.add(droneFlap(i, models).runtime({ id: `drone-flap-${i}` }));
+      /* the Idol hull has its own nozzles; the procedural nozzle cans only mount on the procedural hull */
+      if (!IDOL_CRAFT) b.add(droneNozzle(i, models).runtime({ id: `drone-nozzle-${i}` }));
     }
+    /* Idol wow pass: the Idol hull carries its own airbrake fins, so the procedural flaps only mount without it; the
+       spinning procedural rotors sit inside its rotor ducts (ROTOR_OFFSETS, ROTOR_SCALE) */
     for (let i = 0; i < 4; i++) {
       b.add(droneRotor(i, models).runtime({ id: `drone-rotor-${i}` }));
     }
@@ -414,6 +438,8 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   const shake = createCameraShake({ maxOffset: 0.45, maxRoll: 0.016 });
   const impactRig = createImpactRig({ reducedMotion: false });
   const craftArticulation: CraftArticulationState = { rotorAngle: 0, flapPitch: 0, flapRoll: 0 };
+  /* shared spin of the strike targets' duct fans (per-target phase offsets in the update) */
+  let targetFanAngle = 0;
   let prevCrashes = 0;
   let railGrazeCooldown = 0;
   let camHoverGap: number = CFG.vehicle.hover;
@@ -591,9 +617,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         p.steerVal
       );
       for (let i = 0; i < 2; i++) {
-        const fh = node(`drone-flap-${i}`);
-        fh.setVisible(!p.crashed);
-        if (!p.crashed) {
+        const fh = IDOL_CRAFT ? null : node(`drone-flap-${i}`);
+        fh?.setVisible(!p.crashed);
+        if (fh && !p.crashed) {
           const [ox, oy, oz] = FLAP_OFFSETS[i]!;
           fh.setPosition(p.position.x + R[0] * ox + R[1] * oy + R[2] * oz, p.position.y + R[3] * ox + R[4] * oy + R[5] * oz, p.position.z + R[6] * ox + R[7] * oy + R[8] * oz);
           const pitch = art.flapPitch + (i === 0 ? -art.flapRoll : art.flapRoll);
@@ -601,9 +627,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
           const fe = matrixToEulerZYX(multiplyMat3(R, multiplyMat3(axisRotation("z", pitch), axisRotation("x", bank))));
           fh.setRotation(fe[0], fe[1], fe[2]);
         }
-        const nh = node(`drone-nozzle-${i}`);
-        nh.setVisible(!p.crashed);
-        if (!p.crashed) {
+        const nh = IDOL_CRAFT ? null : node(`drone-nozzle-${i}`);
+        nh?.setVisible(!p.crashed);
+        if (nh && !p.crashed) {
           const [nx, ny, nz] = NOZZLE_OFFSETS[i]!;
           nh.setPosition(p.position.x + R[0] * nx + R[1] * ny + R[2] * nz, p.position.y + R[3] * nx + R[4] * ny + R[5] * nz, p.position.z + R[6] * nx + R[7] * ny + R[8] * nz);
           const ne = matrixToEulerZYX(multiplyMat3(R, axisRotation("z", Math.PI / 2)));
@@ -619,6 +645,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
           rh.setPosition(p.position.x + R[0] * rx0 + R[1] * ry0 + R[2] * rz0, p.position.y + R[3] * rx0 + R[4] * ry0 + R[5] * rz0, p.position.z + R[6] * rx0 + R[7] * ry0 + R[8] * rz0);
           const re = matrixToEulerZYX(multiplyMat3(R, axisRotation("y", craftArticulation.rotorAngle * ROTOR_DIRS[i]! + i * 0.785)));
           rh.setRotation(re[0], re[1], re[2]);
+          rh.setScale(ROTOR_SCALE);
         }
       }
       if (p.crashes > prevCrashes) {
@@ -807,6 +834,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     /* strike targets, bolt tracers, hit flashes and bursts */
     {
       const ops = race.ops;
+      targetFanAngle = (targetFanAngle + rotorStep(TARGET_FAN_RPM, dt)) % (Math.PI * 200);
       if (opsSeen > ops.events.length) opsSeen = 0;
       for (; opsSeen < ops.events.length; opsSeen++) {
         const ev = ops.events[opsSeen]!;
@@ -829,6 +857,14 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
           burst(ev.world.x, ev.world.y, ev.world.z, 36, 1, 0.45, 0.12, 22);
           engineBurst(HEATSINK_VFX.kill, ev.world.x, ev.world.y, ev.world.z);
           spawnSparkCard(ev.world.x, ev.world.y, ev.world.z, 0, 2.5, 0, 3.2, 1.0, 0.56, 0.18);
+        } else if (ev.type === "ram") {
+          /* the craft flew into a live target: it shatters around the craft (debris thrown forward with the drone) */
+          if (!motion.reduced) { shake.add(0.7); if (twilight) impactRig.trigger({ trauma: 0.6, fovKickDeg: 3 }); }
+          burst(ev.world.x, ev.world.y, ev.world.z, 84, 1, 0.5, 0.14, 30);
+          engineBurst(HEATSINK_VFX.barrel, ev.world.x, ev.world.y, ev.world.z, 1.3);
+          engineBurst(HEATSINK_VFX.kill, ev.world.x, ev.world.y, ev.world.z, 1.2);
+          spawnSparkCard(ev.world.x, ev.world.y, ev.world.z, dirX * p.v * 0.35, 2.8, dirZ * p.v * 0.35, 4.8, 1.0, 0.58, 0.2);
+          spawnSparkCard(ev.world.x, ev.world.y + 0.6, ev.world.z, dirX * p.v * 0.6, 4, dirZ * p.v * 0.6, 3.4, 1.0, 0.8, 0.4);
         } else if (ev.type === "barrel") {
           if (!motion.reduced) { shake.add(0.8); if (twilight) impactRig.trigger({ trauma: 0.72, fovKickDeg: 3.6 }); }
           burst(ev.world.x, ev.world.y, ev.world.z, 60, 1, 0.6, 0.15, 30);
@@ -854,7 +890,14 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         if (!modelCore) core.setUniform?.("flash", flashAmt);
         if (t.kind === "heavy" && !modelCore) core.setRotation(time * 0.7 + t.id, Math.PI / 4 + time * 0.5, Math.PI / 4);
         /* WP-36 sentry and heavy models: face back down the track toward the oncoming drone, with a slow scan sway */
-        else if (modelCore) { const tf = track.frame(t.s, scratchFrame); core.setRotation(0, Math.atan2(-tf.tx, -tf.tz) + Math.sin(time * 0.9 + t.id) * 0.35, 0); }
+        else if (modelCore) {
+          const tf = track.frame(t.s, scratchFrame);
+          core.setRotation(0, Math.atan2(-tf.tx, -tf.tz) + Math.sin(time * 0.9 + t.id) * 0.35, 0);
+          /* the wingtip duct fans spin (counter-rotating pair); only targets near the drone, the rest are fogged out */
+          if (Math.abs(track.wrapDelta(t.s, p.s)) < TARGET_FAN_RANGE) {
+            for (let j = 0; j < TARGET_FANS; j++) node(`target-${t.id}-fan-${j}`).setRotation(0, (j === 0 ? 1 : -1) * targetFanAngle + t.id * 0.6, 0);
+          }
+        }
         ring.setPosition(t.world.x, t.world.y + bob, t.world.z);
         ring.setRotation(Math.PI / 2 + Math.sin(time + t.id) * 0.32, time * 2.4 + t.id, 0);
         ring.setScale(1 + 0.18 * flashAmt);
@@ -1119,6 +1162,11 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     resetCamera,
     setMotion(m) { motion = m; },
     cameraPose: () => lastCamPose,
+    warmBurst(kind) {
+      if (!twilight || !app.effects) return false;
+      engineBurst(HEATSINK_VFX[kind], lastCamPose.look[0], lastCamPose.look[1], lastCamPose.look[2]);
+      return true;
+    },
     get nodeCount() { return handles.size; }
   };
 }

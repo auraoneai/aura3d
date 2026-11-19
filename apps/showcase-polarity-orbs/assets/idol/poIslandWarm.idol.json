@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "polarity-orbs",
+  "key": "poIslandWarm",
+  "generatedAt": "2026-11-18T23:16:04.466Z",
+  "generator": "tools/idol/generate.mjs (Idol step recovered by polling the original fal request after the client 20-min timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-a62f-7e32-99aa-faef9d702813",
+      "prompt": "A floating rock island: an inverted jagged cone of dark layered slate stone, a flat top with a few small dark pine trees and a cluster of rose-red quartz crystals, a small copper coil pylon at the edge. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f097-c4bc-7431-89f9-d003755c5f7e",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 846302,
+        "num_faces": 1692612,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A floating rock island: an inverted jagged cone of dark layered slate stone, a flat top with a few small dark pine trees and a cluster of rose-red quartz crystals, a small copper coil pylon at the edge. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": 0,
+    "scale": 10.569,
+    "size": [
+      8.886,
+      10.5,
+      9.009
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-polarity-orbs/assets/idol/poIslandWarm.glb",
+  "sizeBytes": 3663724,
+  "preview": "artifacts/idol/polarity-orbs/poIslandWarm/views.png",
+  "usd": 0.37
+}

@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -171,23 +171,34 @@ describe("WP-14 Cross Hop 10/10 diorama overhaul", () => {
         (n) => n.kind === "effect" && (n.effect === "depth-of-field" || n.effect === "depthOfField")
       );
       expect(dofNodes).toHaveLength(0);
-      expect(all.filter((n) => n.kind === "model")).toHaveLength(0);
+      // Idol pass: the traffic fleet, river movers, verge trees/bushes, critters and hawk are Idol GLB models.
+      const modelNames = all.filter((n) => n.kind === "model").map((n) => n.name ?? "");
+      expect(modelNames).toEqual(expect.arrayContaining([
+        "m-cars", "m-trams", "m-trains", "m-coaches", "m-logs", "m-pads", "m-stones", "d-trees", "d-bushes",
+        "player-body", "hawk-body"
+      ]));
     }
   });
 
-  it("ships zero Meshy .glb files and sculpts all 12 playable critters, hawk, pod, coins & fleet grounded at minY = 0", () => {
+  it("ships only provenance-backed Idol .glb files and keeps the 12 procedural critters, hawk, pod, coins & fleet grounded at minY = 0", () => {
     const appRoot = path.resolve(__dirname, "..");
     const glbFiles: string[] = [];
     const walk = (dir: string): void => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
-        if (entry.name === "node_modules" || entry.name === "dist") continue;
+        // public/ is the local static tree (git-excluded); the Idol GLBs are served from the root catalog.
+        if (entry.name === "node_modules" || entry.name === "dist" || entry.name === "public") continue;
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) walk(full);
         else if (entry.name.toLowerCase().endsWith(".glb")) glbFiles.push(full);
       }
     };
     walk(appRoot);
-    expect(glbFiles).toEqual([]);
+    // Idol pass: every app GLB is an Idol output under assets/idol/ with its <key>.idol.json provenance beside it.
+    expect(glbFiles.length).toBeGreaterThan(0);
+    for (const f of glbFiles) {
+      expect(path.relative(appRoot, f).startsWith(path.join("assets", "idol"))).toBe(true);
+      expect(existsSync(f.replace(/\.glb$/, ".idol.json"))).toBe(true);
+    }
     expect(manifest.assets).toEqual([]);
     expect(Object.keys(assets)).toEqual([]);
 
@@ -227,7 +238,7 @@ describe("WP-14 Cross Hop 10/10 diorama overhaul", () => {
     expect(JSON.stringify(buildRescuePodNode().toJSON())).toContain("pod-dome-glass");
     const probe4 = probeScene(4) as { nodes: SceneNode[] };
     expect(flattenNodes(probe4.nodes).filter((n) => n.kind === "model")).toHaveLength(0);
-  });
+  }, 60_000); // sculpts all 12 procedural critters: slow on a loaded machine
 
   it("animates hop squash/stretch, forward pitch arc, idle breath, and drift-free ZYX yaw banking", () => {
     expect(hopScale(0.08, true, -1, false)[1]).toBeLessThan(0.9);

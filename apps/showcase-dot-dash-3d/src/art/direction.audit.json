@@ -1,18 +1,18 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-dot-dash-3d/src/art/direction.ts",
-  "sourceSha256": "215b34a7d2126a86c2eabfd8d0084e0cad45fc96bfd0b53b06e3bb25d243c01c",
+  "sourceSha256": "983ffa409ea76245a500c8825136cc5ace98cb9211d62e7fa5cbc564523684ed",
   "id": "dot-dash-3d",
   "genre": "maze-arcade",
-  "signatureEffect": "Shallow macro depth of field on a lamp-lit circuit board whose copper traces light up along the courier's path.",
+  "signatureEffect": "Neon maze outlines that blink white when a board is cleared, under a gold courier with a glowing trail.",
   "palette": {
     "primary": [
-      "#1f4a38",
-      "#c8743a",
-      "#c9ced6"
+      "#05060c",
+      "#2f6bff",
+      "#fff1cf"
     ],
-    "accent": "#5ff3ff",
-    "reservedObjective": "#ffb23e"
+    "accent": "#ffd21a",
+    "reservedObjective": "#ffe6a8"
   },
   "environment": {
     "hdri": "indoor-workshop",
@@ -22,39 +22,9 @@
   "snapshot": {
     "lights": [
       {
-        "type": "spot",
-        "shadow": true,
-        "intensity": 4700
-      },
-      {
         "type": "directional",
-        "shadow": false,
-        "intensity": 0.25
-      },
-      {
-        "type": "point",
-        "shadow": false,
-        "intensity": 4.2
-      },
-      {
-        "type": "point",
-        "shadow": false,
-        "intensity": 0
-      },
-      {
-        "type": "point",
-        "shadow": false,
-        "intensity": 0
-      },
-      {
-        "type": "point",
-        "shadow": false,
-        "intensity": 0
-      },
-      {
-        "type": "point",
-        "shadow": false,
-        "intensity": 0
+        "shadow": true,
+        "intensity": 1.4
       }
     ],
     "hasAmbient": false,
@@ -65,467 +35,81 @@
     "models": [],
     "materials": [
       {
-        "node": "walnut bench",
-        "practical": false
-      },
-      {
-        "node": "anti-static mat",
-        "practical": false
-      },
-      {
-        "node": "board",
-        "practical": false
-      },
-      {
-        "node": "walls",
-        "practical": false
-      },
-      {
-        "node": "wall-trim",
-        "emissiveIntensity": 0.92,
+        "name": "actor glow disc",
+        "node": "actor glow discs",
+        "emissiveIntensity": 1.2,
         "practical": true
       },
       {
-        "node": "pins",
-        "practical": false
+        "name": "maze neon outline",
+        "node": "maze neon",
+        "emissiveIntensity": 1.15,
+        "practical": true
       },
       {
-        "node": "traces",
-        "practical": false
+        "name": "data pellet",
+        "node": "pellets",
+        "emissiveIntensity": 1.5,
+        "practical": true
       },
       {
-        "node": "traces lit",
+        "name": "power cell",
+        "node": "power cells",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "name": "school target reticle",
+        "node": "school markers",
+        "emissiveIntensity": 0.9,
+        "practical": true
+      },
+      {
+        "name": "relic plinth",
+        "node": "relic plinth",
+        "emissiveIntensity": 0.8,
+        "practical": true
+      },
+      {
+        "name": "courier gold dome",
+        "node": "courier",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "name": "courier visor + nose",
+        "node": "courier visor",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "name": "sentry drone shell",
+        "node": "sentry blitz",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
-        "node": "shards",
-        "emissiveIntensity": 1.55,
+        "name": "sentry drone shell",
+        "node": "sentry sly",
+        "emissiveIntensity": 1.9,
         "practical": true
       },
       {
-        "name": "brushed metal",
-        "node": "cells",
-        "practical": false
-      },
-      {
-        "node": "prisms",
-        "practical": false
-      },
-      {
-        "node": "cell vents",
-        "emissiveIntensity": 2.1,
+        "name": "sentry drone shell",
+        "node": "sentry flick",
+        "emissiveIntensity": 1.9,
         "practical": true
       },
       {
-        "node": "markers",
-        "practical": false
+        "name": "sentry drone shell",
+        "node": "sentry dim",
+        "emissiveIntensity": 1.9,
+        "practical": true
       },
       {
-        "name": "specter soft-satin multi-part eye",
+        "name": "sentry eyes",
         "node": "eyes",
-        "emissiveIntensity": 0.14,
-        "practical": true
-      },
-      {
-        "node": "dress",
-        "practical": false
-      },
-      {
-        "node": "capacitors",
-        "practical": false
-      },
-      {
-        "node": "glow",
-        "emissiveIntensity": 1.65,
-        "practical": true
-      },
-      {
-        "node": "courier-visor",
-        "emissiveIntensity": 2.25,
-        "practical": true
-      },
-      {
-        "node": "courier-halo",
-        "emissiveIntensity": 1.18,
-        "practical": true
-      },
-      {
-        "name": "sentry ectoplasm ghost mantle",
-        "node": "sentry-hunter",
-        "practical": false
-      },
-      {
-        "name": "sentry ectoplasm ghost mantle",
-        "node": "sentry-ambusher",
-        "practical": false
-      },
-      {
-        "name": "sentry ectoplasm ghost mantle",
-        "node": "sentry-drifter",
-        "practical": false
-      },
-      {
-        "name": "sentry ectoplasm ghost mantle",
-        "node": "sentry-skittish",
-        "practical": false
-      },
-      {
-        "name": "sentry expressive multi-part eyes",
-        "node": "sentry-visors",
-        "emissiveIntensity": 0.14,
-        "practical": true
-      },
-      {
-        "node": "sentry-scans",
-        "emissiveIntensity": 0.85,
-        "practical": true
-      },
-      {
-        "node": "nixie-tubes",
-        "practical": false
-      },
-      {
-        "node": "cache-gem",
-        "emissiveIntensity": 0.46,
-        "practical": true
-      },
-      {
-        "name": "courier cyan plasma",
-        "node": "byte",
-        "emissiveIntensity": 2.55,
-        "practical": true
-      },
-      {
-        "name": "courier cyan plasma",
-        "node": "byte-echo",
-        "emissiveIntensity": 2.55,
-        "practical": true
-      },
-      {
-        "name": "courier electric gold shell",
-        "node": "courier-pod-chassis material 0",
-        "emissiveIntensity": 0.24,
-        "practical": true
-      },
-      {
-        "name": "courier burnished amber gold",
-        "node": "courier-pod-chassis material 1",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "name": "anisotropic gold-bronze trim",
-        "node": "courier-pod-chassis material 2",
-        "practical": false
-      },
-      {
-        "name": "courier obsidian contrast cowl",
-        "node": "courier-pod-chassis material 3",
-        "practical": false
-      },
-      {
-        "name": "braided stator damper",
-        "node": "courier-pod-chassis material 4",
-        "practical": false
-      },
-      {
-        "name": "courier cyan plasma",
-        "node": "courier-pod-chassis material 5",
-        "emissiveIntensity": 2.55,
-        "practical": true
-      },
-      {
-        "name": "courier eye catchlight gleam",
-        "node": "courier-pod-chassis material 6",
-        "emissiveIntensity": 2.8,
-        "practical": true
-      },
-      {
-        "name": "courier fluttering energy capelet",
-        "node": "courier-pod-chassis material 7",
-        "emissiveIntensity": 0.38,
-        "practical": true
-      },
-      {
-        "name": "courier soft-satin porcelain eye sclera",
-        "node": "courier-pod-chassis material 8",
-        "emissiveIntensity": 0.22,
-        "practical": true
-      },
-      {
-        "name": "courier soft-satin sapphire cyan iris",
-        "node": "courier-pod-chassis material 9",
-        "emissiveIntensity": 0.62,
-        "practical": true
-      },
-      {
-        "name": "courier soft-satin coral tongue",
-        "node": "courier-pod-chassis material 10",
-        "practical": false
-      },
-      {
-        "name": "optical visor glass",
-        "node": "courier-pod-visor-dome",
-        "practical": false
-      },
-      {
-        "name": "courier electric gold shell",
-        "node": "courier-pod-echo-chassis material 0",
-        "emissiveIntensity": 0.24,
-        "practical": true
-      },
-      {
-        "name": "courier burnished amber gold",
-        "node": "courier-pod-echo-chassis material 1",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "name": "anisotropic gold-bronze trim",
-        "node": "courier-pod-echo-chassis material 2",
-        "practical": false
-      },
-      {
-        "name": "courier obsidian contrast cowl",
-        "node": "courier-pod-echo-chassis material 3",
-        "practical": false
-      },
-      {
-        "name": "braided stator damper",
-        "node": "courier-pod-echo-chassis material 4",
-        "practical": false
-      },
-      {
-        "name": "courier cyan plasma",
-        "node": "courier-pod-echo-chassis material 5",
-        "emissiveIntensity": 2.55,
-        "practical": true
-      },
-      {
-        "name": "courier eye catchlight gleam",
-        "node": "courier-pod-echo-chassis material 6",
-        "emissiveIntensity": 2.8,
-        "practical": true
-      },
-      {
-        "name": "courier fluttering energy capelet",
-        "node": "courier-pod-echo-chassis material 7",
-        "emissiveIntensity": 0.38,
-        "practical": true
-      },
-      {
-        "name": "courier soft-satin porcelain eye sclera",
-        "node": "courier-pod-echo-chassis material 8",
-        "emissiveIntensity": 0.22,
-        "practical": true
-      },
-      {
-        "name": "courier soft-satin sapphire cyan iris",
-        "node": "courier-pod-echo-chassis material 9",
-        "emissiveIntensity": 0.62,
-        "practical": true
-      },
-      {
-        "name": "courier soft-satin coral tongue",
-        "node": "courier-pod-echo-chassis material 10",
-        "practical": false
-      },
-      {
-        "name": "optical visor glass",
-        "node": "courier-pod-echo-visor-dome",
-        "practical": false
-      },
-      {
-        "name": "ruby crystal facet",
-        "node": "gem-cache-ruby-body material 0",
-        "emissiveIntensity": 0.52,
-        "practical": true
-      },
-      {
-        "name": "courier burnished amber gold",
-        "node": "gem-cache-ruby-body material 1",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "name": "ruby crystal fire",
-        "node": "gem-cache-ruby-body material 2",
-        "emissiveIntensity": 1.45,
-        "practical": true
-      },
-      {
-        "name": "ruby crystal glass",
-        "node": "gem-cache-ruby-crown",
-        "emissiveIntensity": 0.24,
-        "practical": true
-      },
-      {
-        "name": "emerald crystal facet",
-        "node": "gem-cache-emerald-body material 0",
-        "emissiveIntensity": 0.52,
-        "practical": true
-      },
-      {
-        "name": "courier burnished amber gold",
-        "node": "gem-cache-emerald-body material 1",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "name": "emerald crystal fire",
-        "node": "gem-cache-emerald-body material 2",
-        "emissiveIntensity": 1.45,
-        "practical": true
-      },
-      {
-        "name": "emerald crystal glass",
-        "node": "gem-cache-emerald-crown",
-        "emissiveIntensity": 0.24,
-        "practical": true
-      },
-      {
-        "name": "sapphire crystal facet",
-        "node": "gem-cache-sapphire-body material 0",
-        "emissiveIntensity": 0.52,
-        "practical": true
-      },
-      {
-        "name": "courier burnished amber gold",
-        "node": "gem-cache-sapphire-body material 1",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "name": "sapphire crystal fire",
-        "node": "gem-cache-sapphire-body material 2",
-        "emissiveIntensity": 1.45,
-        "practical": true
-      },
-      {
-        "name": "sapphire crystal glass",
-        "node": "gem-cache-sapphire-crown",
-        "emissiveIntensity": 0.24,
-        "practical": true
-      },
-      {
-        "name": "amber crystal facet",
-        "node": "gem-cache-amber-body material 0",
-        "emissiveIntensity": 0.52,
-        "practical": true
-      },
-      {
-        "name": "courier burnished amber gold",
-        "node": "gem-cache-amber-body material 1",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "name": "amber crystal fire",
-        "node": "gem-cache-amber-body material 2",
-        "emissiveIntensity": 1.45,
-        "practical": true
-      },
-      {
-        "name": "amber crystal glass",
-        "node": "gem-cache-amber-crown",
-        "emissiveIntensity": 0.24,
-        "practical": true
-      },
-      {
-        "name": "amethyst crystal facet",
-        "node": "gem-cache-amethyst-body material 0",
-        "emissiveIntensity": 0.52,
-        "practical": true
-      },
-      {
-        "name": "courier burnished amber gold",
-        "node": "gem-cache-amethyst-body material 1",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "name": "amethyst crystal fire",
-        "node": "gem-cache-amethyst-body material 2",
-        "emissiveIntensity": 1.45,
-        "practical": true
-      },
-      {
-        "name": "amethyst crystal glass",
-        "node": "gem-cache-amethyst-crown",
-        "emissiveIntensity": 0.24,
-        "practical": true
-      },
-      {
-        "name": "cyan crystal facet",
-        "node": "gem-cache-cyan-body material 0",
-        "emissiveIntensity": 0.52,
-        "practical": true
-      },
-      {
-        "name": "courier burnished amber gold",
-        "node": "gem-cache-cyan-body material 1",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "name": "cyan crystal fire",
-        "node": "gem-cache-cyan-body material 2",
-        "emissiveIntensity": 1.45,
-        "practical": true
-      },
-      {
-        "name": "cyan crystal glass",
-        "node": "gem-cache-cyan-crown",
-        "emissiveIntensity": 0.24,
-        "practical": true
-      },
-      {
-        "name": "coral crystal facet",
-        "node": "gem-cache-coral-body material 0",
-        "emissiveIntensity": 0.52,
-        "practical": true
-      },
-      {
-        "name": "courier burnished amber gold",
-        "node": "gem-cache-coral-body material 1",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "name": "coral crystal fire",
-        "node": "gem-cache-coral-body material 2",
-        "emissiveIntensity": 1.45,
-        "practical": true
-      },
-      {
-        "name": "coral crystal glass",
-        "node": "gem-cache-coral-crown",
-        "emissiveIntensity": 0.24,
-        "practical": true
-      },
-      {
-        "name": "lime crystal facet",
-        "node": "gem-cache-lime-body material 0",
-        "emissiveIntensity": 0.52,
-        "practical": true
-      },
-      {
-        "name": "courier burnished amber gold",
-        "node": "gem-cache-lime-body material 1",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "name": "lime crystal fire",
-        "node": "gem-cache-lime-body material 2",
-        "emissiveIntensity": 1.45,
-        "practical": true
-      },
-      {
-        "name": "lime crystal glass",
-        "node": "gem-cache-lime-crown",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 1.4,
         "practical": true
       },
       {
@@ -610,10 +194,6 @@
         "practical": false
       },
       {
-        "node": "hub-pad",
-        "practical": false
-      },
-      {
         "node": "door",
         "practical": false
       },
@@ -638,66 +218,6 @@
         "practical": false
       },
       {
-        "name": "portal slate ceramic",
-        "node": "warp-arch-0 material 0",
-        "practical": false
-      },
-      {
-        "node": "warp-arch-0 material 1",
-        "practical": false
-      },
-      {
-        "name": "courier cyan plasma",
-        "node": "warp-arch-0 material 2",
-        "emissiveIntensity": 2.55,
-        "practical": true
-      },
-      {
-        "name": "portal slate ceramic",
-        "node": "warp-arch-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "warp-arch-1 material 1",
-        "practical": false
-      },
-      {
-        "name": "courier cyan plasma",
-        "node": "warp-arch-1 material 2",
-        "emissiveIntensity": 2.55,
-        "practical": true
-      },
-      {
-        "name": "portal slate ceramic",
-        "node": "warp-arch-2 material 0",
-        "practical": false
-      },
-      {
-        "node": "warp-arch-2 material 1",
-        "practical": false
-      },
-      {
-        "name": "courier cyan plasma",
-        "node": "warp-arch-2 material 2",
-        "emissiveIntensity": 2.55,
-        "practical": true
-      },
-      {
-        "name": "portal slate ceramic",
-        "node": "warp-arch-3 material 0",
-        "practical": false
-      },
-      {
-        "node": "warp-arch-3 material 1",
-        "practical": false
-      },
-      {
-        "name": "courier cyan plasma",
-        "node": "warp-arch-3 material 2",
-        "emissiveIntensity": 2.55,
-        "practical": true
-      },
-      {
         "node": "spark-burst-0",
         "practical": false
       },
@@ -720,64 +240,6 @@
       {
         "node": "spark-burst-5",
         "practical": false
-      },
-      {
-        "node": "workshop wall",
-        "practical": false
-      },
-      {
-        "node": "pegboard",
-        "practical": false
-      },
-      {
-        "node": "pegboard holes",
-        "practical": false
-      },
-      {
-        "node": "mat grid",
-        "practical": false
-      },
-      {
-        "name": "workbench lamp enamel",
-        "node": "desk-lamp-rig material 0",
-        "practical": false
-      },
-      {
-        "name": "anisotropic gold-bronze trim",
-        "node": "desk-lamp-rig material 1",
-        "practical": false
-      },
-      {
-        "name": "forged gimbal brass",
-        "node": "desk-lamp-rig material 2",
-        "practical": false
-      },
-      {
-        "name": "braided stator damper",
-        "node": "desk-lamp-rig material 3",
-        "practical": false
-      },
-      {
-        "name": "amber beacon plasma",
-        "node": "desk-lamp-rig material 4",
-        "emissiveIntensity": 2.05,
-        "practical": true
-      },
-      {
-        "node": "wall shelf",
-        "practical": false
-      },
-      {
-        "node": "silk title",
-        "practical": false
-      },
-      {
-        "node": "silk refs",
-        "practical": false
-      },
-      {
-        "node": "mounting holes",
-        "practical": false
       }
     ],
     "drawCalls": 0
@@ -785,21 +247,21 @@
   "direction": {
     "id": "dot-dash-3d",
     "genre": "maze-arcade",
-    "fantasy": "Night shift on the workbench: a courier drone races the copper traces of a powered circuit board under one warm desk lamp.",
+    "fantasy": "A glowing courier orb-bot races a neon circuit maze, collecting data pellets while four spinning sentry drones hunt it.",
     "rebuildTier": "S-world",
     "wave": 4,
     "references": [
       {
         "file": "references/references.json#macro-board",
-        "source": "genre comparable: macro product photography of populated circuit boards (glossy solder mask, raised copper, a millimetre-thin focal plane)",
+        "source": "genre comparable: neon vector-outline arcade mazes (thin glowing wall lines on black, no fill)",
         "licence": "reference-only",
-        "why": "Glossy solder mask, copper traces and silver pads read at macro scale while everything off the focal plane melts into blur"
+        "why": "Thin single-colour glowing outlines on black make every corridor readable at a glance and leave the actors the brightest things"
       },
       {
         "file": "references/references.json#lamp-bench",
-        "source": "genre comparable: a night-time electronics workbench lit by one articulated desk lamp (warm cone, dark room, walnut top)",
+        "source": "genre comparable: high-contrast arcade sprite colour coding (one saturated colour per pursuer, white eyes, a shared frightened colour)",
         "licence": "reference-only",
-        "why": "One warm cone of light pools on the board from the left, the bench falls away into warm dark wood and the room stays dark"
+        "why": "Each pursuer is one flat saturated colour with big white eyes looking where it moves; frightened pursuers share one dark blue"
       },
       {
         "file": "references/references.json#maze-chase",
@@ -810,21 +272,21 @@
     ],
     "palette": {
       "primary": [
-        "#1f4a38",
-        "#c8743a",
-        "#c9ced6"
+        "#05060c",
+        "#2f6bff",
+        "#fff1cf"
       ],
-      "accent": "#5ff3ff",
-      "reservedObjective": "#ffb23e"
+      "accent": "#ffd21a",
+      "reservedObjective": "#ffe6a8"
     },
     "lighting": {
       "key": {
-        "type": "spot",
-        "colorTemperatureK": 3000,
+        "type": "directional",
+        "colorTemperatureK": 6500,
         "shadow": true
       },
-      "fill": "ibl+bounce",
-      "practicals": 6,
+      "fill": "ibl",
+      "practicals": 0,
       "environment": {
         "hdri": "indoor-workshop",
         "background": "enclosed"
@@ -834,12 +296,12 @@
     "framing": {
       "rig": "topDown",
       "subjectHeightFraction": [
-        0.025,
+        0.04,
         0.08
       ],
       "fovDeg": [
-        45,
-        52
+        30,
+        40
       ],
       "mobile": "both"
     },
@@ -874,16 +336,8 @@
         "kind": "solder-spark"
       },
       {
-        "event": "board-ready",
-        "kind": "power-up-wave"
-      },
-      {
         "event": "board-clear",
-        "kind": "trace-sweep"
-      },
-      {
-        "event": "lamp-cone",
-        "kind": "dust-motes"
+        "kind": "neon-flash"
       }
     ],
     "audio": [
@@ -928,7 +382,7 @@
         "variants": 1
       }
     ],
-    "signatureEffect": "Shallow macro depth of field on a lamp-lit circuit board whose copper traces light up along the courier's path.",
+    "signatureEffect": "Neon maze outlines that blink white when a board is cleared, under a gold courier with a glowing trail.",
     "criticalCategories": [
       "lighting",
       "material_quality",

@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "heatsink",
+  "key": "tdBarrier",
+  "generatedAt": "2026-11-18T22:09:58.464Z",
+  "generator": "tools/idol/generate.mjs (Idol request recovered after the 20-min client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09b-067d-7e72-aa5d-bc012cf0d1cb",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 804382,
+        "num_faces": 1608772,
+        "watertight": true
+      }
+    }
+  ],
+  "subject": "A heavy steel track crash barrier block: a long low armoured barrier with a sloped front face, bolted steel plates painted with diagonal yellow and black hazard stripes, rubber bumper strip along the top, scuffs, dents and scorch marks",
+  "role": "prop",
+  "rig": false,
+  "normalized": {
+    "yawDeg": -45,
+    "scale": 2.472,
+    "size": [
+      1.057,
+      1.25,
+      3.8
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-heatsink/assets/idol/tdBarrier.glb",
+  "sizeBytes": 2310876,
+  "preview": "artifacts/idol/heatsink/tdBarrier/views.png",
+  "usd": 0.37
+}

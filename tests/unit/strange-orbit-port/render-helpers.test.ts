@@ -187,14 +187,16 @@ describe("motorcycle rigid assembly & wheel spin kinematics", () => {
       const expectedAxle = applyMat3(base, [0, 0, 1]);
       for (let k = 0; k < 16; k++) {
         const spin = (k / 16) * Math.PI * 2;
-        const local = multiplyMat3(wheelF.local, axisRotation("y", -spin));
+        const axis = wheelF.spinAxis ?? "y";
+        const local = multiplyMat3(wheelF.local, axisRotation(axis, -spin));
         const worldMat = eulerZYXToMatrix(matrixToEulerZYX(multiplyMat3(base, local)));
-        const actualAxle = applyMat3(worldMat, [0, 1, 0]);
+        const actualAxle = applyMat3(worldMat, axis === "x" ? [1, 0, 0] : [0, 1, 0]);
         expectNumbersClose(actualAxle, expectedAxle, 10);
       }
-      // Small positive spin moves the top of the tire (wheel local -Z -> rig +Y) forward along pitched +X!
-      const smallSpinLocal = multiplyMat3(wheelF.local, axisRotation("y", -0.25));
-      const tireTopRig = applyMat3(smallSpinLocal, [0, 0, -1]);
+      // Small positive spin moves the top of the tire (procedural wheel local -Z, Idol wheel local +Y -> rig +Y) forward along pitched +X!
+      const axis = wheelF.spinAxis ?? "y";
+      const smallSpinLocal = multiplyMat3(wheelF.local, axisRotation(axis, -0.25));
+      const tireTopRig = applyMat3(smallSpinLocal, axis === "x" ? [0, 1, 0] : [0, 0, -1]);
       expect(tireTopRig[0]).toBeGreaterThan(0.24);
       expect(tireTopRig[1]).toBeGreaterThan(0.95);
       expect(Math.abs(tireTopRig[2])).toBeLessThan(1e-12);

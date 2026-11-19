@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "drift-and-deliver-port",
+  "key": "gcHydrant",
+  "generatedAt": "2026-11-18T23:31:00.664Z",
+  "generator": "tools/idol/generate.mjs (resumed after its 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b7-f15d-78e3-bf90-8b9d52969b2e",
+      "prompt": "A classic cast-iron street fire hydrant painted glossy red with chipped paint, brass caps on the side outlets and a domed top with a pentagonal brass nut. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0eb-5d98-79b0-972b-d48658b6f4a4",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 965554,
+        "num_faces": 1931296,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A classic cast-iron street fire hydrant painted glossy red with chipped paint, brass caps on the side outlets and a domed top with a pentagonal brass nut. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 0.8,
+    "size": [
+      0.45,
+      0.8,
+      0.359
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/drift-and-deliver-port/assets/idol/gcHydrant.glb",
+  "sizeBytes": 704996,
+  "preview": "artifacts/idol/drift-and-deliver-port/gcHydrant/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "texture-jpeg",
+      "maxTexPx": 512,
+      "before": 2810932,
+      "after": 704996
+    }
+  ]
+}

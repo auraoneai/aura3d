@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "saltwind-highway",
+  "key": "swDiner",
+  "generatedAt": "2026-11-18T22:45:08.891Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the client's 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b9-e514-79f1-8e3d-1856278cfc50",
+      "prompt": "A single classic streamline-moderne roadside diner building: a long low single-storey building with rounded ends clad in brushed stainless steel and cream enamel panels, a wrap-around ribbon of large windows, coral-pink and sea-teal neon tube trim lines along the roofline, a small entrance porch with a chrome canopy, and beside it a tall freestanding googie pylon sign with a blank coral and teal neon starburst on top and no lettering. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ba-d6b9-79a3-abc9-8329e92fc0aa",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1174764,
+        "num_faces": 2350080,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single classic streamline-moderne roadside diner building: a long low single-storey building with rounded ends clad in brushed stainless steel and cream enamel panels, a wrap-around ribbon of large windows, coral-pink and sea-teal neon tube trim lines along the roofline, a small entrance porch with a chrome canopy, and beside it a tall freestanding googie pylon sign with a blank coral and teal neon starburst on top and no lettering. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "set-dressing",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 14.146,
+    "size": [
+      16,
+      13.651,
+      15.824
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-roadster-hours-port/assets/idol/swDiner.glb",
+  "sizeBytes": 2177908,
+  "preview": "artifacts/idol/saltwind-highway/swDiner/views.png",
+  "usd": 0.37,
+  "postProcess": "PNG textures re-encoded as JPEG q90 (4:4:4) to fit the per-game byte budget"
+}

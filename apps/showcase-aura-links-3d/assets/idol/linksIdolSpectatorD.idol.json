@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-links-3d",
+  "key": "linksIdolSpectatorD",
+  "generatedAt": "2026-11-18T22:36:19.155Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "source": "artifacts/idol/aura-links-3d/_refs/linksIdolSpectatorD.png"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0cd-cc3b-7ed0-ad60-fd534c3214d6",
+      "input": {
+        "image_url": "(local image)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 433372,
+        "num_faces": 866748,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Single full-body young adult man golf tournament spectator standing relaxed, arms hanging naturally at his sides, darker skin, wearing a plain white polo shirt, khaki shorts, plain navy cap, white sneakers. Front view facing the camera, head to feet in frame with margin, centered. Photoreal studio render, physically based materials, real-world fabric detail, high detail. Even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.719,
+    "size": [
+      0.493,
+      1.72,
+      0.296
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-links-3d/assets/idol/linksIdolSpectatorD.glb",
+  "sizeBytes": 2361932,
+  "preview": "artifacts/idol/aura-links-3d/linksIdolSpectatorD/views.png",
+  "usd": 0.2
+}

@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-links-3d",
+  "key": "linksIdolSpectatorC",
+  "generatedAt": "2026-11-18T21:21:25.443Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f089-3308-7282-b82a-a8bf6a4d951b",
+      "prompt": "Single full-body older adult man golf tournament spectator standing relaxed with his hands clasped in front of him, grey hair, wearing a plain emerald green v-neck sweater over a white collared shirt, charcoal trousers, flat tweed cap, brown leather shoes. Front view facing the camera, head to feet in frame with margin, centered. Photoreal studio render, physically based materials, real-world fabric detail, high detail. Even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08a-d4dd-74c3-b17b-81f3c047e361",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 473966,
+        "num_faces": 947932,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Single full-body older adult man golf tournament spectator standing relaxed with his hands clasped in front of him, grey hair, wearing a plain emerald green v-neck sweater over a white collared shirt, charcoal trousers, flat tweed cap, brown leather shoes. Front view facing the camera, head to feet in frame with margin, centered. Photoreal studio render, physically based materials, real-world fabric detail, high detail. Even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.778,
+    "size": [
+      0.535,
+      1.78,
+      0.37
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-aura-links-3d/assets/idol/linksIdolSpectatorC.glb",
+  "sizeBytes": 2348720,
+  "preview": "artifacts/idol/aura-links-3d/linksIdolSpectatorC/views.png",
+  "usd": 0.37
+}

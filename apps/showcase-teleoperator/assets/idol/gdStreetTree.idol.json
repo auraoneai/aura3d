@@ -1,0 +1,41 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "teleoperator",
+  "key": "gdStreetTree",
+  "generatedAt": "2026-11-18T22:07:22.176Z",
+  "generator": "tools/idol/generate.mjs (finished by resume after its optimise step rejected role set-dressing)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "usd": 0.2
+    }
+  ],
+  "role": "background",
+  "rig": false,
+  "finalGlb": "apps/showcase-teleoperator/assets/idol/gdStreetTree.glb",
+  "usd": 0.37,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 5.557,
+    "size": [
+      5.083,
+      5.6,
+      4.806
+    ],
+    "minY": 0
+  },
+  "renormalized": {
+    "yawDeg": 0,
+    "tex": "1024",
+    "maxVerts": "15000",
+    "baked": true,
+    "reason": "Idol rebuilt the three-quarter reference diagonally; yaw re-fitted to the minimum-area footprint"
+  },
+  "sizeBytes": 2717664
+}

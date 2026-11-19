@@ -14,6 +14,7 @@ import { admitAssetForRole } from "./asset-role-admission.js";
 import { lookHdriWarnings } from "./look-hdri-check.js";
 import { assertStagedGlbFile, captureGlbSource, checkGlbDependencies, referencedGlbResourcePaths, type CapturedGlb } from "./glb-dependency-validation.js";
 import { CERTIFY_CATEGORY_RULES } from "./commands/assets/certifyCategories.js";
+import { withConvertHint } from "./commands/convert/hint.js";
 import { hasStylizedFlatApproval } from "./admission/artDirection.js";
 import { AUDIO_SYNTH_RELEASE_ALLOWLIST, isSynthesizedAudioProvenance } from "./admission/audio.js";
 import { validateCubeLut } from "./admission/cubeLut.js";
@@ -423,8 +424,35 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
   return addAssetPrepared(options, native);
 }
 
-/** Inspect asynchronous formats before publishing any asset, manifest or generated source. */
+/** Inspect asynchronous formats before publishing any asset, manifest or generated source. Non-glTF models get an `assets convert` hint. */
 export async function addAssetAsync(options: AddAssetOptions): Promise<AssetCliResult> {
+  const result = await withConvertHint(options.file, () => addAssetAsyncInspected(options));
+  return withAdmissionThumbnail(options, result);
+}
+
+/**
+ * Replace the admission-time SVG card with a real PNG thumbnail (CPU base-colour preview for glTF/GLB models, a
+ * downscale for PNG/JPEG/WebP textures). Assets with nothing to draw (audio, HDR, volumes, non-glTF models) keep the
+ * labelled card. A render failure never fails the admission: the card stays and the reason is reported.
+ */
+async function withAdmissionThumbnail(options: AddAssetOptions, result: AssetCliResult): Promise<AssetCliResult> {
+  if (!result.ok) return result;
+  const entry = result.manifest.assets.find((asset) => asset.id === options.name);
+  if (!entry || !entry.thumbnailUrl?.endsWith(`${entry.id}.thumb.svg`)) return result;
+  const { canThumbnailAsset, createAssetThumbnails } = await import("./commands/asset-post/thumbnail.js");
+  if (!canThumbnailAsset(entry)) return result;
+  try {
+    const thumbs = await createAssetThumbnails({ projectDir: options.projectDir ?? process.cwd(), assetIds: [entry.id] });
+    if (thumbs.thumbnails.length === 0) {
+      return { ...result, messages: [...result.messages, `Thumbnail: kept the placeholder card (${thumbs.failures.join("; ") || "nothing rendered"}); retry with aura3d assets thumbnail --asset ${entry.id}.`] };
+    }
+    return { ...result, manifest: thumbs.manifest, messages: [...result.messages, `Thumbnail: ${thumbs.thumbnails[0]!.thumbnailUrl} (CPU base-colour preview, not a render).`] };
+  } catch (error) {
+    return { ...result, messages: [...result.messages, `Thumbnail: kept the placeholder card (${(error as Error).message}); retry with aura3d assets thumbnail --asset ${entry.id}.`] };
+  }
+}
+
+async function addAssetAsyncInspected(options: AddAssetOptions): Promise<AssetCliResult> {
   const sourcePath = resolve(options.projectDir ?? process.cwd(), options.file);
   const format = extname(sourcePath).slice(1).toLowerCase();
   if (format === "pvr") {
@@ -852,7 +880,7 @@ function addAssetPrepared(options: AddAssetOptions, native?: PreparedNativeAsset
       else copyFileSync(sourcePath, resolve(projectDir, outputPath));
       copyAssetDependencies(projectDir, sourcePath, outputDir, inspection.dependencies);
     }
-    writeThumbnail(projectDir, outputDir, publicPath, options.name, inspection.bounds);
+    writeAdmissionPlaceholderThumbnail(projectDir, outputDir, publicPath, options.name, inspection.bounds);
     writeAssetManifest(projectDir, manifest);
     writeTypedAssets(projectDir, manifest);
   }
@@ -1539,23 +1567,9 @@ function validateScalarVolumeNamespace(projectDir: string, outputDir: string, as
   if (expected !== outputPath) failures.push(`${asset.id}: scalar-volume namespace does not match its root and dependency bytes.`);
 }
 
-export function createAssetThumbnails(options: { readonly projectDir?: string } = {}): AssetCliResult {
-  const projectDir = resolve(options.projectDir ?? process.cwd());
-  const manifest = readAssetManifest(projectDir);
-  const assets = manifest.assets.map((asset) => ({
-    ...asset,
-    thumbnailUrl: writeThumbnail(projectDir, manifest.outputDir, manifest.assetBasePath, asset.id, asset.bounds)
-  }));
-  const next = sortManifest({ ...manifest, assets });
-  writeAssetManifest(projectDir, next);
-  writeTypedAssets(projectDir, next);
-  return {
-    ok: true,
-    manifestPath: resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST),
-    manifest: next,
-    messages: [`Generated ${next.assets.length} thumbnails.`]
-  };
-}
+// `assets thumbnail` lives in commands/asset-post (real PNG thumbnails from the CPU preview renderer; async).
+export { createAssetThumbnails } from "./commands/asset-post/thumbnail.js";
+export type { AssetThumbnailRecord, AssetThumbnailsResult, CreateAssetThumbnailsOptions } from "./commands/asset-post/thumbnail.js";
 
 export function doctor(options: { readonly projectDir?: string } = {}): AssetValidationResult {
   const validation = validateAssets(options);
@@ -4792,7 +4806,8 @@ function copyAssetDependencies(projectDir: string, sourcePath: string, outputDir
   }
 }
 
-function writeThumbnail(projectDir: string, outputDir: string, publicPath: string, id: string, bounds?: readonly [number, number, number]): string {
+/** Admission placeholder card. `assets add` (addAssetAsync) replaces it with a real PNG when the asset is drawable; sync addAsset keeps it until `aura3d assets thumbnail`. */
+function writeAdmissionPlaceholderThumbnail(projectDir: string, outputDir: string, publicPath: string, id: string, bounds?: readonly [number, number, number]): string {
   const fileName = `${id}.thumb.svg`;
   const outputPath = resolve(projectDir, outputDir, fileName);
   mkdirSync(dirname(outputPath), { recursive: true });

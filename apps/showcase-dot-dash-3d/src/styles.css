@@ -167,7 +167,7 @@ html, body {
 
 .dd-score-chip { border-left-color: var(--dd-cyan); padding-right: 12px; }
 .dd-score-chip .v {
-  font-size: clamp(22px, 1.9vw, 28px);
+  font-size: clamp(26px, 2.4vw, 36px);
   color: #ffffff;
   letter-spacing: 0.025em;
   text-shadow: 0 0 16px rgba(95, 243, 255, 0.28);
@@ -187,10 +187,11 @@ html, body {
 .dd-hi-chip .v { color: var(--dd-gold); }
 .dd-lives {
   font-family: var(--font-ui);
-  color: var(--dd-cyan) !important;
-  letter-spacing: 0.18em;
-  font-size: clamp(14px, 1.15vw, 17px) !important;
-  text-shadow: 0 0 6px rgba(95, 243, 255, 0.8), 0 0 14px rgba(95, 243, 255, 0.35);
+  color: #ffd21a !important;
+  letter-spacing: 0.16em;
+  font-size: clamp(20px, 1.8vw, 26px) !important;
+  line-height: 1 !important;
+  text-shadow: 0 0 6px rgba(255, 210, 26, 0.85), 0 0 16px rgba(255, 196, 0, 0.4);
 }
 
 .dd-orb-chip { align-items: center; border-color: var(--dd-cyan); }
@@ -524,8 +525,8 @@ html, body {
   .dd-chip { padding: 4px 8px; gap: 5px; border-radius: 5px; }
   .dd-chip .k { font-size: 12px; }
   .dd-chip .v { font-size: 14px; }
-  .dd-score-chip .v { font-size: 17px; }
-  .dd-lives { font-size: 13px !important; }
+  .dd-score-chip .v { font-size: 22px; }
+  .dd-lives { font-size: 18px !important; }
   .dd-orb-track, .dd-dash-track { width: 44px; height: 7px; }
   .dd-objective {
     flex-basis: 100%;

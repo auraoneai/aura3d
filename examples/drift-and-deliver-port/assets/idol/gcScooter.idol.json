@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "drift-and-deliver-port",
+  "key": "gcScooter",
+  "generatedAt": "2026-11-18T22:20:22.770Z",
+  "generator": "tools/idol/generate.mjs (optimise/normalise finished by hand: generator passed role set-dressing to assets optimize)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0b8-430e-7b43-833c-3a050fc1ac83",
+      "prompt": "A fictional small step-through delivery motor scooter parked on its stand, seen from the front-left: rounded cream-white body panels with a curved leg shield, round headlamp on the handlebars, black seat, a square orange insulated delivery box mounted on a rear rack, small black tyres. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0ba-35ac-7fc2-b4e1-ba66f6c90370",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 780388,
+        "num_faces": 1560944,
+        "watertight": true
+      }
+    }
+  ],
+  "prompt": "A fictional small step-through delivery motor scooter parked on its stand, seen from the front-left: rounded cream-white body panels with a curved leg shield, round headlamp on the handlebars, black seat, a square orange insulated delivery box mounted on a rear rack, small black tyres. Photoreal studio render, physically based materials, real-world surface detail and wear, high detail. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "prop",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -45,
+    "scale": 1.362,
+    "size": [
+      0.759,
+      1.313,
+      1.8
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/drift-and-deliver-port/assets/idol/gcScooter.glb",
+  "sizeBytes": 841476,
+  "preview": "artifacts/idol/drift-and-deliver-port/gcScooter/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "texture-jpeg",
+      "maxTexPx": 512,
+      "before": 3079628,
+      "after": 841476
+    }
+  ]
+}

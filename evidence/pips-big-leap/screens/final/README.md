@@ -1,80 +1,35 @@
-# Pip's Big Leap: final screens (4.7.4, GU47 phase 6, 2026-11-01)
+# Pip's Big Leap: final screenshots
 
-All 14 frames now show the 4.7.x look. The two results screens and the card were retaken on branch `gu47/g06` at 1e3e2489f
-(the 4.7.2 look, unchanged since 22ae79e75, on the 4.7.3 engine) with `tests/browser/audit-fix/pips-big-leap.spec.ts` on the remote
-ACR runner (crmmeprodacr, headless Chromium, software WebGL2). Runs: `g06p6-r1-1` (grpR1: `1280-06-results`), `g06p6-r1-2`
-(grpR2: `390-06-results`) and `g06p6-r1-3` (grpA card: `card-2x`). Raw frames:
-`evidence/game-upgrades-47/pips-big-leap/p6-r1/pips-big-leap/frames/`.
+Route: `/apps/showcase-pips-big-leap/`
 
-- **Results:** every earlier screens run hit the ACR 3600 s step limit before autoplay reached the Sun-Gate, because the
-  4.7.2 scene renders about 1,084 draw calls and 2.0 M triangles per frame in software GL, and the sim advances at most 0.1 s per
-  rendered frame. The new grpR tests drive the same `?autoplay=1` demo through the QA hook `__AURA_QA__.stepFrames`, which runs the
-  game's own `simStep` (autopilot included) without rendering every step. As soon as the gate completes, the test turns the
-  autopilot off with its own Auto button, then lets the page render 24-40 frames before the shot. The outcome matches the
-  2026-10-29 frames exactly: World 1 cleared in 32.7 s of sim time, 4/6 seeds, 5 acorns, at both sizes.
-- **Results frames:** `1280-06-results` has canvas mean luma 135.9, 56 draw calls and 1.02 M triangles; `390-06-results` has
-  124.8, 58 draw calls and 1.02 M triangles (the panel hides most of the HUD). Blind 3-judge panel against the 2026-10-29 results
-  frames: **3/0/0 in both** (`evidence/game-upgrades-47/pips-big-leap/panels/g06p6res-verdicts.json`).
-- **Card:** `card-2x.jpg` was retaken natively at 1440x900 and matches the phase-4 card (same build look). `card-1x.jpg` is a
-  `sips` downscale. The index posters were rebuilt with `node tools/site/build-card-images.mjs` (only the pips-big-leap posters
-  are committed).
-- The other 10 frames are the phase-4 set below (2026-10-31, the same look). This shows layout, content and look on software GL,
-  not real-GPU look or frame rate.
+Runner: headed Chrome on a real GPU (Apple Metal) via REA `capture_browser_scenario`, production build served from http://127.0.0.1:8790 (2026-11-18).
 
-## Phase 4 set (4.7.2)
-
-Retaken on the phase-4 build (branch `gu47/g06`, 22ae79e75: side key with crisp PCSS shadows, glazed clay slab bodies, glossy
-Pip, stronger contact shadows, no voxel NPCs in the diorama, short controls chips) with `tests/browser/audit-fix/pips-big-leap.spec.ts`
-on the remote ACR runner (crmmeprodacr, headless Chromium, software WebGL2), runs `g06p4-r4-8` (grpA: 1280 title/early/action/modes
-and the 1440x900 card) and `g06p4-r4-9` (grpB: 1280 mid, 390x844 title/early/action/mid/modes). Raw frames:
-`evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/`. Both runs again ended at the ACR step limit before the results
-screens, so `1280-06-results.jpg` and `390-06-results.jpg` are still the 2026-10-29 frames. `card-1x.jpg` is a `sips` downscale of
-`card-2x.jpg`. This shows layout, content and look on software GL, not real-GPU look or frame rate.
-
-## Phase 3 set (4.7.1)
-
-Retaken on the phase-3 build (branch `gu47/g06`, 88891ddb2: per-world look switch, every world in the panel-verified
-felt-and-clay diorama) with `tests/browser/audit-fix/pips-big-leap.spec.ts` on the remote ACR runner (crmmeprodacr, headless
-Chromium, software WebGL2), runs `g06p3-r3-8` (grpA: 1280 title/early/action/modes and the 1440x900 card) and `g06p3-r3-9`
-(grpB: 1280 mid, 390x844 title/early/action/mid/modes). Raw frames: `evidence/game-upgrades-47/pips-big-leap/p3-r3/pips-big-leap/frames/`.
-Both runs hit the ACR step's 3600 s limit after their last needed frame except the results screens, so `1280-06-results.jpg` and
-`390-06-results.jpg` are still the 2026-10-29 (4.5.0, 4.6.2 look) frames below. `card-1x.jpg` is a `sips` downscale of `card-2x.jpg`;
-the index posters were rebuilt with `node tools/site/build-card-images.mjs`. This shows layout, content and look on software GL,
-not real-GPU look or frame rate.
-
-## Previous set (2026-10-29)
-
-
-Route: `apps/showcase-pips-big-leap`. Built from branch `audit-fix/g06` at ed0eea745 (all lane G06 fixes) on the 4.5.0 engine. Replaces the 2026-10-25 set (RH-05); same file names and pixel sizes, plus `1280-06-results.jpg` and `390-06-results.jpg`, which the old set never reached.
-
-**Runner:** remote Azure ACR Task, headless Chromium, software WebGL2 (SwiftShader). This shows layout, content and look on software GL, not real-GPU look or frame rate. Tool: `tests/browser/audit-fix/pips-big-leap.spec.ts`, frames decoded from the run log with `evidence/pips-big-leap/audit-2026-10-29/decode.mjs`. Frames come from the game's own buttons, held keys, a touch tap on the pause button, and `?autoplay=1` for mid and results. The app's own GLBs are served from `apps/showcase-pips-big-leap/public/aura-assets` through `page.route` (the example dev server only serves the root `public/`). Shots are full page (HUD included) and taken after at least a 20 s settle.
-
-`card-1x.jpg` (720x450) is a Lanczos downscale of `card-2x.jpg` (1440x900, captured natively).
-
-| File | Run, target, shot | Canvas mean luma | Draw calls | World / mode | Sim seconds |
-|---|---|---|---|---|---|
-| 1280-01-title.jpg | g06-after2-A d1280 01-title | 165.11 | 782 | w1 quick | 0 |
-| 1280-02-early.jpg | g06-after2-A d1280 02-early | 165.27 | 782 | w1 quick | 0 |
-| 1280-03-action.jpg | g06-after2-A d1280 03-action | 156.32 | 784 | w1 quick | 0.22 |
-| 1280-04-mid.jpg | g06-after2-B a1280 04-mid | 155.89 | 433 | w1 quick | 0.57 |
-| 1280-05-modes.jpg | g06-after2-A d1280 05-modes | 167.77 | 782 | w1 quick | 3.92 |
-| 1280-06-results.jpg | g06-after2-B a1280 06-results | 172.45 | 25 | w1 quick | 32.7 |
-| 390-01-title.jpg | g06-after2-B p390 01-title | 167.21 | 684 | w1 quick | 0 |
-| 390-02-early.jpg | g06-after2-B p390 02-early | 167.22 | 684 | w1 quick | 0 |
-| 390-03-action.jpg | g06-after2-B p390 03-action | 170.08 | 304 | w1 quick | 0.45 |
-| 390-04-mid.jpg | g06-after2-B p390 04-mid | 168.37 | 218 | w1 quick | 1.38 |
-| 390-05-modes.jpg | g06-after2-B p390 05-modes | 157.32 | 298 | w1 quick | 5.92 |
-| 390-06-results.jpg | g06-after2-B p390 06-results | 161.58 | 27 | w1 quick | 32.7 |
-| card-2x.jpg | g06-after2-A c1440 card-2x | 163.42 | 782 | w1 quick | 0 |
-
-## Capture health
-
-- Console errors: one 404, `/apps/common/src/fonts.css` (harness only: the remote build context did not include `apps/common`; the file exists in the repo and the production build bundles it, so Graphik falls back to sans-serif in these frames). No page errors.
-- Render path `hdr-msaa`, bloom fusion `separable`, contact shadows `passExecuted: true` in every shot that reports them.
-- Results reached by autoplay in 32.7 s of sim time at both 1280x720 and 390x844.
+| Viewport | File | State | Meaning |
+|---|---|---|---|
+| 1280x720 | 1280-01-title.jpg | title | world intro card (Starfall Garden, ?world=w6&autoplay=1) |
+| 1280x720 | 1280-02-early.jpg | early | ?autoplay=1, 1.2 s: Pip sets off through Whispering Forest beside a beetle |
+| 1280x720 | 1280-03-action.jpg | action | autoplay hops the forest ledges past the stone pillar (2/6 sun-seeds) |
+| 1280x720 | 1280-04-boss.jpg | boss | Hollow Palace (?world=w5&autoplay=1): Brambleback boss fight banner |
+| 1280x720 | 1280-05-starfall.jpg | starfall | Starfall Garden night world: star dome, aurora, Pip mid-jump |
+| 1280x720 | 1280-06-results.jpg | results | Sun-Gate opened results card (Cloudspan Wharf, ?world=w3&autoplay=1) |
+| 390x844 | 390-01-title.jpg | title | world intro card, portrait |
+| 390x844 | 390-02-early.jpg | early | autoplay setting off in Whispering Forest |
+| 390x844 | 390-03-action.jpg | action | forest ledge beside the stone pillar |
+| 390x844 | 390-04-boss.jpg | boss | Brambleback staggers (Hollow Palace) |
+| 390x844 | 390-05-starfall.jpg | starfall | Starfall Garden with stars and aurora |
+| 390x844 | 390-06-results.jpg | results | Sun-Gate opened results card |
+| 1440x900 | card-2x.jpg | card | Starfall Garden autoplay: Pip mid-jump under the aurora and star dome, seeds and crystal slabs ahead |
+| 720x450 | card-1x.jpg | card | card-2x.jpg downscaled (LANCZOS, q88) |
 
 ## Checked in the frames
 
-- 390x844: the platforms ahead are in view (portrait FOV 67.9 deg, boom 5.6 m) and the 44 px pause button sits at top right.
-- The Studio cape shows on Pip's back while he runs; it no longer covers his face.
-- The sidekick runner is a blocky low-poly character from the shared catalog (`showcaseSidekickRunner`); it is intentional dressing, not a placeholder.
+- Full ?autoplay=1 run W1 -> W6 -> W1 -> W5 on the real GPU (140 frames): every world plays hands-free, results 3 s then next world
+- Starfall world-swap fix: swapping into W6 used to kill the renderer (RENDERER_MOUNT_FAILED, blank for the rest of the session); now W5 -> W6 -> W1 swaps draw (183/159/265 draws, no errors)
+- Hawk wings flap (wingR -0.45..0.68 rad, smooth sinusoid) and hawks circle smoothly (0.02-0.05 m per 88 ms sample)
+- Pip stops against the start-plaza tree collider (x -1.579 = collider edge + Pip half-width)
+- Pip plays idle/run clips and the jump overlay; grounded on every platform in the frames
+
+## Known issues
+
+- Autopilot takes hits and respawns several times in W1 and the W5 boss (loses all hearts once in W5) but always finishes
+- Hawks circle high (y 2.6-5.3) and were not in the default camera's frame in these captures

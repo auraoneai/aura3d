@@ -4,12 +4,10 @@
   "kit": "K2",
   "name": "Neon-night kit",
   "consumers": [
-    "aura-clash-showcase",
     "showcase-courier-rush",
     "showcase-neon-swarm",
     "showcase-rooftop-buckets",
-    "showcase-pulse-tunnel",
-    "showcase-vault-breakers"
+    "showcase-pulse-tunnel"
   ],
   "budget": {
     "summary": "<= 25 MB raw -> <= 8 MB KTX2",

@@ -770,7 +770,9 @@ describe("the repository's retained evidence is provably current", () => {
       routes: readonly unknown[];
     };
     const report = explainStaleness();
-    expect(report.artifacts.length).toBeGreaterThanOrEqual(8);
+    // Five published route-primary routes remain after the Blockfall, Aurora Lander, Vault Breakers and
+    // Bank Shot gates were unpublished with their deleted apps.
+    expect(report.artifacts.length).toBeGreaterThanOrEqual(5);
     expect(report.artifacts.map((artifact) => artifact.artifact)).toEqual(
       routePrimaryProbeExpectedRouteIds(gates.routes)
         .map((id) => `tests/reports/showcase-route-primary-probes/${id}.json`)
@@ -937,7 +939,7 @@ describe("the freshness verdict is itself retained evidence", () => {
 
   it("records a per-artifact verdict with a reasons array, which is the WS6 stale-reason field", () => {
     const report = audit();
-    expect(report.artifacts?.length ?? 0, "must audit a non-trivial artifact set").toBeGreaterThanOrEqual(8);
+    expect(report.artifacts?.length ?? 0, "must audit a non-trivial artifact set").toBeGreaterThanOrEqual(5);
     for (const artifact of report.artifacts ?? []) {
       expect(artifact.artifact, "each entry names its artifact path").toBeTruthy();
       expect(typeof artifact.fresh).toBe("boolean");

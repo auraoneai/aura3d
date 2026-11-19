@@ -1,0 +1,47 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "iron-crown",
+  "key": "icMoTorii",
+  "generatedAt": "2026-11-18T23:05:23.375Z",
+  "generator": "tools/idol/generate.mjs (Idol wait resumed after a client timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f0c8-7fe8-7523-885e-98e915d55dff",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0de-d4bc-7093-b05c-9f0f94b5d405",
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 842610,
+        "num_faces": 1685288,
+        "watertight": true
+      },
+      "rig": null,
+      "note": "post-processed again after the generator's optimise step rejected role set-dressing"
+    }
+  ],
+  "subject": "Traditional vermilion lacquered wooden shrine gate with a black curved top lintel and stone footings, light snow on top",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 3.487,
+    "size": [
+      3.56,
+      3.916,
+      1.245
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-iron-crown/assets/idol/icMoTorii.glb",
+  "sizeBytes": 3061060,
+  "preview": "artifacts/idol/iron-crown/icMoTorii/views.png",
+  "usd": 0.37
+}

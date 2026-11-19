@@ -13,6 +13,9 @@ import {
   type TypedGLBActor
 } from "../../../../packages/engine/src/production-runtime/TypedGLBActor";
 import type { AuraApp, AuraRuntimeNodeHandle } from "../../../../packages/engine/src/agent-api/index";
+import { createAuraRuntimeNodeRegistry } from "../../../../packages/engine/src/agent-api/app/runtimeNodes";
+import { bindActorAnimationContext, createActorAnimationContext } from "../../../../packages/engine/src/agent-api/app/actorAnimationHandle";
+import { model, scene } from "../../../../packages/engine/src";
 
 const GLB_BYTES = new Uint8Array(readFileSync("tests/fixtures/gltf-multipart/body-and-four-wheels.glb"));
 const nativeFetch = globalThis.fetch;
@@ -109,5 +112,32 @@ describe("GU47 E-H GLB part handles", () => {
     actor.dispose();
     expect(liveTypedGLBActor("bus", app)).toBeUndefined();
     expect(part("wheelFrontR")).toBeUndefined();
+  });
+
+  it("a handle read before the app is configured still resolves parts once it is (Cross Hop frozen legs)", async () => {
+    // createAuraApp mounts synchronously (frame pivot checks read every model
+    // handle) before `runtimeNodes.configure({ app })`; the `part` member made
+    // then was bound to no app and answered undefined for every part forever.
+    const asset = { id: "critter-glb", url: "https://assets.invalid/gu47-eh/critter.glb", type: "model", format: "glb" } as const;
+    const registry = createAuraRuntimeNodeRegistry(scene().add(model(asset as never, { name: "critter-body" }).runtime({ id: "critter" })).toJSON());
+    expect(typeof (registry.get("critter") as AuraRuntimeNodeHandle & { part?: unknown }).part).toBe("function"); // pre-configure read
+    // Mirror createAuraApp: the app and its runtime owner share one actor context.
+    const app = {} as AuraApp;
+    const runtimeOwner = {};
+    const context = createActorAnimationContext();
+    bindActorAnimationContext(runtimeOwner, context);
+    bindActorAnimationContext(app, context);
+    registry.configure({ app });
+    const actor = await loadActor("critter", { runtimeOwner });
+    const handle = registry.get("critter")!;
+    const leg = handle.part?.("wheelFrontL");
+    expect(leg).toBe(actor.part("wheelFrontL"));
+    const before = itemFor(actor, "wheelFrontL")!.modelMatrix!;
+    leg!.setRotation(0, Math.PI / 2, 0);
+    const after = itemFor(actor, "wheelFrontL")!.modelMatrix!;
+    expect(before[0]).toBeCloseTo(1, 5);
+    expect(after[0]).toBeCloseTo(0, 5);
+    actor.dispose();
+    expect(handle.part?.("wheelFrontL")).toBeUndefined();
   });
 });

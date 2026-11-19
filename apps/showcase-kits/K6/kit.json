@@ -4,7 +4,6 @@
   "kit": "K6",
   "name": "Character set",
   "consumers": [
-    "aura-clash-showcase",
     "showcase-rooftop-buckets",
     "showcase-gallery-shift",
     "showcase-skyline-runner",

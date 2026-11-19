@@ -28,11 +28,6 @@ const previews = [
     target: "marketing/public/previews/showcase/showcase-digital-twin-ops.png"
   },
   {
-    id: "showcase-blockfall-reactor",
-    source: "tests/reports/showcase-gameplay/showcase-blockfall-reactor-line-clear.png",
-    target: "marketing/public/previews/showcase/showcase-blockfall-reactor.png"
-  },
-  {
     id: "showcase-turbo-drift-circuit",
     source: "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-high-speed-chase.png",
     target: "marketing/public/previews/showcase/showcase-turbo-drift-circuit.png"
@@ -41,11 +36,6 @@ const previews = [
     id: "showcase-skyline-runner",
     source: "tests/reports/showcase-gameplay/showcase-skyline-runner-act-aurora-crown.png",
     target: "marketing/public/previews/showcase/showcase-skyline-runner.png"
-  },
-  {
-    id: "aura-clash-arena",
-    source: "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-special.png",
-    target: "marketing/public/previews/aura-clash-poster.png"
   }
 ];
 

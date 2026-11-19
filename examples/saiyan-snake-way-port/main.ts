@@ -5,7 +5,7 @@
  * when a failed frame ends the session.
  *
  * Query parameters (all optional): `autostart=1` (skip the title and countdown), `manual=1` (the sim
- * only advances through `__AURA_SERPENTINE_SKY_RUN__.stepFrames`), `autopilot=1` (replay `?script=` or nothing).
+ * only advances through `__AURA_SERPENTINE_SKY_RUN__.stepFrames`), `autoplay=1` (alias `autopilot=1`; the computer plays and loops runs forever, O toggles it in play).
  * Keys: A/D or arrows change lane, Space/W jump, S/down slide, Shift toggles surge, E flies (hold
  * W/S/A/D to steer), P/Esc pauses, M mutes, R/Enter restarts from the results screen. Touch: swipe for lanes, tap to
  * jump, swipe down to slide; while flying, hold the left or right half to steer and drag up or down to climb or dive.
@@ -16,12 +16,13 @@
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import "./hud.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
-import { createFixedStepPresenter } from "@aura3d/engine/game";
+import { createFixedStepPresenter, warmPrograms } from "@aura3d/engine/game";
 import {
   RUNGS, STEP, ROAD_LENGTH, KM_TOTAL, createRun, expandScript, qaSnapshot, stepRun, type InputSegment, type RunInput, type RunState
 } from "./sim";
 import { DROWSE_ALERT, daysStatusLabel, drowseCue, finalScore, gapAhead, gustCue, onboardingPrompt } from "./hud";
 import { createRunInput } from "./input";
+import { autoplayRequested, createAutoplay } from "./autoplay";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { createRenderGuard } from "./renderGuard";
@@ -36,7 +37,13 @@ import { serpentCrops } from "./art/crops";
 export const QA_HOOK_NAME = "serpentine-sky-run";
 
 const params = new URLSearchParams(location.search);
-const config = { autostart: params.get("autostart") === "1", manual: params.get("manual") === "1" };
+const config = { autostart: params.get("autostart") === "1" || autoplayRequested(location.search), manual: params.get("manual") === "1" };
+/** Autoplay (`?autoplay=1` / `?autopilot=1`, O toggles it): the computer plays through the normal input path. */
+let autoplayOn = autoplayRequested(location.search);
+const autoplay = createAutoplay();
+/** Seconds the results card has been up (autoplay restarts the run after AUTOPLAY_RESULTS_SECONDS). */
+let resultsT = 0;
+const AUTOPLAY_RESULTS_SECONDS = 3;
 const look = lookParams(location.search);
 const runnerStyles = runnerStylesForLook(look.mode);
 // GU47 SSR-16: the indigo lacquer HUD theme follows the colour script; `?look=original` keeps the old HUD
@@ -143,12 +150,13 @@ function buildRunnerCards(): void {
 /* ------------------------------------------------------------------ input */
 
 const input = createRunInput({ flying: () => state.puff > 0, blocked: () => counting > 0 });
-const GAME_KEYS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space", "KeyA", "KeyD", "KeyW", "KeyS", "ShiftLeft", "ShiftRight", "KeyE", "KeyP", "Escape", "KeyM", "KeyR", "Enter"]);
+const GAME_KEYS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space", "KeyA", "KeyD", "KeyW", "KeyS", "ShiftLeft", "ShiftRight", "KeyE", "KeyP", "Escape", "KeyM", "KeyR", "Enter", "KeyO"]);
 addEventListener("keydown", (e) => {
   if (!GAME_KEYS.has(e.code)) return;
   e.preventDefault();
   sfx.unlock();
   if (e.code === "KeyM") { toggleMute(); return; }
+  if (e.code === "KeyO") { autoplayOn = !autoplayOn; autoplay.reset(); input.clear(); if (autoplayOn && !started) startRun(false); return; }
   if (e.code === "Escape" || e.code === "KeyP") { if (started && !resultsShown && counting <= 0) paused = !paused; return; }
   if (!started && (e.code === "ArrowLeft" || e.code === "KeyA")) { selectRunner(runnerIndex - 1); return; }
   if (!started && (e.code === "ArrowRight" || e.code === "KeyD")) { selectRunner(runnerIndex + 1); return; }
@@ -201,7 +209,8 @@ for (const [id, key] of [["t-surge", "ShiftLeft"], ["t-fly", "KeyE"], ["t-slide"
 }
 
 function takeInput(): RunInput {
-  return input.take();
+  const human = input.take();
+  return autoplayOn ? autoplay.next(state) : human;
 }
 
 /* ------------------------------------------------------------------ mute */
@@ -411,7 +420,9 @@ function tick(now: number): void {
     renderTime += dt;
   } else if (!stepping() && !paused) renderTime += dt;
   if (started && !paused && counting <= 0 && state.phase !== "run" && !config.manual) outroT += dt;
-  if (started && !resultsShown && state.phase !== "run" && outroT > (RESULT_DELAY[state.phase] ?? 1.5)) showResults();
+  if (started && !resultsShown && state.phase !== "run" && outroT > (RESULT_DELAY[state.phase] ?? 1.5)) { showResults(); resultsT = 0; }
+  // autoplay loops forever: the results card shows for ~3 s, then a fresh run starts
+  if (autoplayOn && resultsShown && !config.manual && (resultsT += dt) > AUTOPLAY_RESULTS_SECONDS) startRun(false);
   cues();
   if (stepping()) agePrompt(dt);
   render(dt, stepping());
@@ -429,6 +440,7 @@ function begin(): void {
   counting = 0;
   outroT = 0;
   resultsShown = false;
+  autoplay.reset();
   runtime?.resetCamera();
 }
 
@@ -512,13 +524,17 @@ function sizeCanvas(): void {
   canvas.height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
 }
 
+/** The last boot warm-up (`window.__IDOL_WARM__`): programs, HDRI and Idol texture uploads settled before play. */
+let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+if (typeof window !== "undefined") (window as unknown as { __IDOL_WARM__?: () => typeof warmResult }).__IDOL_WARM__ = () => warmResult;
+
 async function boot(): Promise<void> {
   sizeCanvas();
   /* 5.0 adoption A1: shared loading-progress helper drives the existing loading card (percent text plus a progress bar on the card) */
   const loadingStatus = $("loading-status");
   const loadingLabel = loadingStatus.textContent ?? "";
   const loading = createLoadingProgress({ ...(document.getElementById("loading-bar") ? { element: $("loading-bar") } : {}), onProgress: (fraction) => { loadingStatus.textContent = fraction >= 1 ? loadingLabel : `${loadingLabel} ${Math.round(fraction * 100)}%`; } });
-  const runner = await loading.track(loadRunner(canvas, look.mode), 3);
+  const runner = await loading.track(loadRunner(canvas, look.mode, runnerStyles[runnerIndex]?.id), 3);
   const world = buildWorld({ canvas, runner, look });
   /* lab flags (EXPERIMENTAL, default OFF): ?backend=auto|webgpu and ?gamut=p3 only; worker and depth are not wired (depth: contact shadows require standard depth) */
   // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
@@ -538,6 +554,13 @@ async function boot(): Promise<void> {
   runtime.setReducedMotion(Boolean(reducedMotion?.matches));
   reducedMotion?.addEventListener?.("change", (e) => runtime?.setReducedMotion(e.matches));
   selectRunner(runnerIndex, false);
+  // Idol wow pass (first-seconds stall): settle every shader program, the HDRI and the Idol GLB texture uploads before
+  // play, so no draw is skipped while a program compiles in the first seconds (lessons-learned R2). `?manual=1` QA keeps
+  // the no-wait boot.
+  if (new URLSearchParams(location.search).get("manual") !== "1") {
+    $("loading-status").textContent = "Lacquering the road…";
+    warmResult = await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+  }
   ready = true;
   loading.done();
   $("loading").classList.add("hidden");

@@ -536,6 +536,21 @@ function withStaticLocalTransform<T extends RenderableTransformNode>(node: T, so
   } as T;
 }
 
+/**
+ * True while a resolved node still carries the flattened (parent-composed) TRS of its scene node, i.e. no runtime write
+ * replaced it. Only then is `source local + parentWorld` the same placement as the flattened node.
+ */
+function sameFlattenedTransform(current: RenderableTransformNode, flattened: RenderableTransformNode): boolean {
+  const same = (a: number | readonly number[] | undefined, b: number | readonly number[] | undefined): boolean => {
+    if (a === b) return true;
+    if (a === undefined || b === undefined) return false;
+    if (typeof a === "number" || typeof b === "number") return typeof a === typeof b && a === b;
+    return a.length === b.length && a.every((value, index) => value === b[index]);
+  };
+  return same(current.position, flattened.position) && same(current.rotation, flattened.rotation) &&
+    same(current.scale, flattened.scale) && same(current.quaternion, flattened.quaternion);
+}
+
 /** Compose the source-local pivoted matrix with its parent exactly once. */
 function parentedModelMatrix(
   node: RenderableTransformNode,
@@ -817,14 +832,20 @@ function createProductionRuntimeRendererInputOwned(
         });
       } else {
         const instanceBounds = productionActorModelBounds(currentNode.asset, entry.actor);
+        // An instance's own TRS overrides the node's (`{ ...node, ...instance }`), and the flattened node carries its
+        // ancestors only inside that TRS, so a static (non-runtime) parent group was dropped and the batch drew at the
+        // world origin (wind-swayed Idol trees / banners stacked at the arena centre). Compose the parent explicitly
+        // whenever the node still holds its flattened transform; a top-level node has no static parent and is unchanged.
+        const staticInstanceParent = staticActorParent && (actorPivoted || sameFlattenedTransform(currentNode, entry.node))
+          ? staticActorParent : undefined;
         modelInstanceAttach = {
           instanceTransforms: denseModelMatrices
             ? denseModelInstanceTransforms(entry.node, denseModelMatrices, currentNode, instanceBounds, time,
                 parentedActor ? parentedActor.parentWorldMatrix : staticActorParent && actorPivoted ? staticActorParent.parentWorldMatrix : undefined)
             : parentedActor
             ? parentedModelInstanceTransforms(modelInstances, withParentedLocalTransform(currentNode, parentedActor), instanceBounds, time, parentedActor.parentWorldMatrix)
-            : staticActorParent && actorPivoted
-              ? parentedModelInstanceTransforms(modelInstances, withStaticLocalTransform(currentNode, staticActorParent.source), instanceBounds, time, staticActorParent.parentWorldMatrix)
+            : staticInstanceParent
+              ? parentedModelInstanceTransforms(modelInstances, withStaticLocalTransform(currentNode, staticInstanceParent.source), instanceBounds, time, staticInstanceParent.parentWorldMatrix)
               : prd01ModelInstanceTransforms(modelInstances, currentNode, instanceBounds, time),
           ...(denseModelMatrices && currentState.denseInstanceRgba && currentState.denseInstanceRgba.length === (denseModelMatrices.length / 16) * 4
             ? { instanceColors: currentState.denseInstanceRgba }

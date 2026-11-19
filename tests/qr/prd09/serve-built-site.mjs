@@ -25,7 +25,6 @@ export function startBuiltSiteServer(buildRoot = process.env.QRC_BUILD_DIR ?? pa
   const siteRoot = path.join(buildRoot, "site");
   const fallbackRoots = [
     path.join(repoRoot, "public"),
-    path.join(repoRoot, "apps", "aura-clash-showcase", "public"),
     path.join(repoRoot, "marketing", "public")
   ];
   const tryFile = (root, rel) => {

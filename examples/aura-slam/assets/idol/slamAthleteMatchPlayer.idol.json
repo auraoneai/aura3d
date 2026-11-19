@@ -1,0 +1,50 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "aura-slam",
+  "key": "slamAthleteMatchPlayer",
+  "generatedAt": "2026-11-18T22:07:20.812Z",
+  "generator": "tools/idol/generate.mjs (Idol request resumed after the generator's 20-minute poll timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f089-6b99-7950-9b0e-a46b7df06ccb",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f08c-4ea9-7962-805a-65245b9b6467",
+      "usd": 0.25,
+      "rig": {
+        "succeeded": true,
+        "num_bones": 28,
+        "animations": [
+          "idle"
+        ]
+      }
+    }
+  ],
+  "prompt": "A fit adult male professional tennis player with medium tan skin and short dark brown hair, wearing a plain sky-blue short-sleeve athletic crew-neck shirt, plain dark navy-blue athletic shorts, white crew socks, white tennis shoes and a white wristband, bare head",
+  "role": "character",
+  "rig": true,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.803,
+    "size": [
+      1.732,
+      1.8,
+      0.334
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/aura-slam/assets/idol/slamAthleteMatchPlayer.glb",
+  "sizeBytes": 3275296,
+  "usd": 0.42,
+  "postOptimize": {
+    "tool": "examples/aura-slam/tools/idol-character-pass.mjs",
+    "clips": "dropped (every bone is posed by view/idolHumanoid.ts)",
+    "tex": 1024
+  }
+}

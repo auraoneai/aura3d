@@ -1,0 +1,56 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "pips-big-leap",
+  "key": "pipSunGate",
+  "generatedAt": "2026-11-18T22:22:42.544Z",
+  "generator": "tools/idol/generate.mjs (re-normalised from the saved Idol result: corrected facing / vertex budget)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "A wide storybook portal gateway seen straight from the front: two short stocky carved mossy grey stone pillars standing far apart on square stone plinths, joined by a wide flat semicircular arch of stone blocks on top with a golden sun-ray ornament at the keystone and a little green ivy, the arch opening is very wide and tall, about twice as wide as both pillars together, completely empty so you can see straight through it. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f09b-ec60-77b0-aa3c-0d59a41223d1",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "seed": 7
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 918392,
+        "num_faces": 1836832,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A wide storybook portal gateway seen straight from the front: two short stocky carved mossy grey stone pillars standing far apart on square stone plinths, joined by a wide flat semicircular arch of stone blocks on top with a golden sun-ray ornament at the keystone and a little green ivy, the arch opening is very wide and tall, about twice as wide as both pillars together, completely empty so you can see straight through it. Photograph of a real handmade needle-felted wool and sculpted polymer clay miniature, visible soft wool fibres and fine clay fingerprint texture, warm soft macro lens lighting, storybook craft toy. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 4.455,
+    "size": [
+      4.46,
+      3.31,
+      1.05
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-pips-big-leap/assets/idol/pipSunGate.glb",
+  "sizeBytes": 1421596,
+  "preview": "artifacts/idol/pips-big-leap/pipSunGate/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    "PNG textures (normal map) re-encoded as JPEG q90, 4:4:4; geometry and UVs untouched"
+  ],
+  "admitRole": "set-dressing",
+  "renormalizedAt": "2026-11-18T23:40:33.392Z"
+}

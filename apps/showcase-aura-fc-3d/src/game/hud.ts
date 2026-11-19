@@ -137,6 +137,8 @@ const css = `
 .fc-banner.goal { color: #d8ff3e; font-size: 68px; }
 .fc-banner.warn { color: #ff9a3d; }
 .fc-banner.gold { color: #ffd76a; }
+/* owner QA (390x844): the kickoff banner overflowed both edges ("URORA FC VS MUNICH IRO"): fit the phone width and wrap */
+@media (max-width: 560px) { .fc-banner { font-size: clamp(22px, 7.2vw, 34px); width: 92vw; white-space: normal; line-height: 1.12; } .fc-banner.goal { font-size: clamp(30px, 11vw, 52px); } }
 .fc-so { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 8px); right: 18px; background: rgba(7,16,22,.9);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(216,255,62,.3); border-radius: 10px; padding: 10px 14px; min-width: 210px; }
@@ -222,7 +224,7 @@ const css = `
   .fc-l3 { bottom: 162px; left: 10px; min-width: 0; }
   .fc-l3 b { font-size: 17px; }
   .fc-ticker { bottom: 162px; left: 10px; max-width: 204px; }
-  .fc-banner { font-size: 28px; white-space: nowrap; }
+  .fc-banner { font-size: 28px; white-space: normal; width: 92vw; line-height: 1.12; }
   .fc-banner.goal { font-size: 42px; }
 }
 @media (prefers-reduced-motion: reduce) { .fc-banner, .fc-tick { transition: none; } }

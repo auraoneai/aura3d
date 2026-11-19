@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "slingshot-siege",
+  "key": "siegeBirdTripleBody",
+  "generatedAt": "2026-11-19T01:04:08.118Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f155-18d4-7a22-bff6-d2f81e216106",
+      "prompt": "A small zippy round sky-blue cartoon songbird toy figure standing on two small orange feet, round body with a white belly patch, short pointed yellow-orange beak, big round white eyes with teal irises and cheeky eyebrows, a perky three-feather bright yellow crest on the head, smooth rounded sides with NO wings at all, no arms, nothing on the sides of the body. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f156-0bde-7e50-bc5e-1cee06d3eced",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 814670,
+        "num_faces": 1629336,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A small zippy round sky-blue cartoon songbird toy figure standing on two small orange feet, round body with a white belly patch, short pointed yellow-orange beak, big round white eyes with teal irises and cheeky eyebrows, a perky three-feather bright yellow crest on the head, smooth rounded sides with NO wings at all, no arms, nothing on the sides of the body. Photograph of a real hand-painted wooden toy: carved and lathe-turned hardwood with smooth satin enamel paint, visible wood grain and soft brush strokes, chunky rounded toy proportions, tilt-shift macro product photography, soft warm daylight. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "hero",
+  "admitRole": "hero",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.36,
+    "size": [
+      0.937,
+      1.36,
+      1.072
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-slingshot-siege/assets/idol/siegeBirdTripleBody.glb",
+  "sizeBytes": 1110652,
+  "preview": "artifacts/idol/slingshot-siege/siegeBirdTripleBody/views.png",
+  "usd": 0.37,
+  "postprocess": {
+    "step": "TANGENT dropped (engine derives tangents); PNG normal/ORM and opaque base-colour maps re-encoded as JPEG q90",
+    "bytesBefore": 1326892,
+    "bytesAfter": 1110652
+  }
+}

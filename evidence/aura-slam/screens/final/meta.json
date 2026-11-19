@@ -1,23 +1,11 @@
 {
   "meta": {
     "top-tennis": {
-      "source": "tests/browser/audit-fix/top-tennis.spec.ts",
-      "runs": {
-        "1280": "g01-final2-131920",
-        "390": "g01-final2-131920-390",
-        "card": "g01-final2-131920-misc"
-      },
-      "states": [
-        "01-title",
-        "02-early",
-        "03-action",
-        "04-mid",
-        "05-modes",
-        "06-results"
-      ],
-      "results": "reached (3-0, Auto player, QA-hook steps)",
-      "errors": "none from the game; dev-server 404s for unmapped optional package entry points",
-      "capturedAt": "2026-10-29"
+      "source": "REA capture_browser_scenario, headed Chrome, real GPU (Apple M-series, Metal)",
+      "states": ["title", "early", "action", "rally", "venue-grass", "venue-clay", "results"],
+      "results": "captured: 1280-07-results.jpg / 390-06-results.jpg via ?qaFinish=1 (the computer plays the opening 3-game match through the normal fixed-step loop at boot, unchanged sim; VICTORY 3-0)",
+      "errors": "none (page-errors captured on every run)",
+      "capturedAt": "2026-11-19"
     }
   }
 }

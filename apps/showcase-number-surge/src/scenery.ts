@@ -16,10 +16,10 @@ import {
   buildMergedHighwayPylonSpec,
   buildSkyHoloGlyphSpec,
   buildSynthwaveSkylineSpireSpec,
-  buildTropicalTreasureIslandSpec,
   steppedSkyscraperMeshData
 } from "./art/proceduralModels";
 import { boxMesh } from "./meshes";
+import { assets } from "./aura-assets.route";
 import {
   CRYSTAL_WALL_FRAGMENT_WGSL, DECK_FRAGMENT_WGSL, EDGE_GLOW_FRAGMENT_WGSL, EDGE_GLOW_VERTEX_WGSL, FROSTED_GATE_FRAGMENT_WGSL,
   GLYPH_FRAGMENT_WGSL, GRID_FRAGMENT_WGSL, HALO_FRAGMENT_WGSL, HEX_SHIELD_FRAGMENT_WGSL, MOTE_FRAGMENT_WGSL,
@@ -368,6 +368,12 @@ export const stripSpec = (base: Rgb, glow: number, alpha: number): CustomSpec =>
 });
 
 /* ------------------------------------------------------------ floating islands with glyphs */
+
+/**
+ * The procedural treasure island spanned y = -5.15..2.93 about its origin; the Idol GLB (8.08 m tall) is grounded at
+ * y = 0, so it is lowered by 5.15 (times the instance scale) to keep the same placement.
+ */
+const IDOL_ISLAND_DROP = 5.15;
 
 const ROCK_FRAGMENT = /* glsl */ `
 in vec3 vNormal;
@@ -976,10 +982,11 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
   });
   const skyIslandTransforms: MutableUniformTransform[] = ISLES.map((isle) => {
     const pose = islePose(isle, 0, 0);
+    const scale = Math.max(0.001, pose.fade * isle.r * 0.78);
     return {
-      position: [pose.x, pose.y - isle.r * 1.45, pose.z],
+      position: [pose.x, pose.y - isle.r * 1.45 - IDOL_ISLAND_DROP * scale, pose.z],
       rotation: [0, pose.yaw * 0.5, 0],
-      scale: Math.max(0.001, pose.fade * isle.r * 0.78)
+      scale
     };
   });
 
@@ -1009,9 +1016,10 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
     )
     .add(
       instances
-        .custom(buildTropicalTreasureIslandSpec(), {
+        // Idol wow pass: Idol floating tropical rock island (grounded GLB; the update drops it by IDOL_ISLAND_DROP).
+        .model(assets.nsSkyIsland, {
           name: "scenery-tropical-islands",
-          material: SURGE_MATERIALS.tropicalIslandBatch,
+          scaleMode: "world",
           transforms: skyIslandTransforms,
           castShadow: false,
           receiveShadow: false
@@ -1125,10 +1133,10 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
           t.scale = Math.max(0.001, pose.fade * isle.r * 0.85);
           const ti = skyIslandTransforms[i]!;
           ti.position[0] = pose.x;
-          ti.position[1] = pose.y - isle.r * 1.45;
+          ti.scale = Math.max(0.001, pose.fade * isle.r * 0.78);
+          ti.position[1] = pose.y - isle.r * 1.45 - IDOL_ISLAND_DROP * ti.scale;
           ti.position[2] = pose.z;
           ti.rotation[1] = pose.yaw * 0.5;
-          ti.scale = Math.max(0.001, pose.fade * isle.r * 0.78);
         }
         skyIslandsNode.setInstances(skyIslandTransforms);
         skyGlyphsNode.setInstances(skyGlyphTransforms, skyGlyphColors);

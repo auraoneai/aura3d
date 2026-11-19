@@ -107,7 +107,7 @@
       "label": "Blockfall Reactor",
       "path": "/apps/showcase-blockfall-reactor/",
       "globalName": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "blockfallReactorArenaBackdrop",
@@ -276,7 +276,7 @@
       "label": "Aurora Lander",
       "path": "/apps/showcase-aurora-lander/",
       "globalName": "__AURA3D_SHOWCASE_AURORA_LANDER__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "auroraLanderProbe",
@@ -512,7 +512,7 @@
       "label": "Vault Breakers",
       "path": "/apps/showcase-vault-breakers/",
       "globalName": "__AURA3D_SHOWCASE_VAULT_BREAKERS__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "vaultBreakersTable",
@@ -757,7 +757,7 @@
       "label": "Bank Shot",
       "path": "/apps/showcase-bank-shot/",
       "globalName": "__AURA3D_SHOWCASE_BANK_SHOT__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "bankShotTable",

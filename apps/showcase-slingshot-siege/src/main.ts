@@ -32,7 +32,11 @@ import {
   type PoolSlot
 } from "./game/layout";
 import { CHAPTERS, isLevelUnlocked, levelById, LEVELS, type LevelSpec } from "./game/levels";
-import { SiegeSim, type VisualUpdate } from "./game/sim";
+import { SiegeSim, linearSpeed2, onLand, type VisualUpdate } from "./game/sim";
+import { DECOR_COLLIDERS, FLAG_MAST } from "./game/decorLayout";
+import {
+  PULL_MAX, SLING_REST, createAutopilot, launchVelocity, pouchAt, solveDraw, type AimSolution
+} from "./game/autopilot";
 import {
   ALL_FAR_PIECES, ammoGullLook, barrelNodeId, bladeNodeId, blastNodeId, blockLook, blockNodeId, buildScene,
   cliffRockMaterial, crateNodeId, debrisLook, debrisNodeId, dotNodeId, farPieceNodeId, gullPartId, millHubNodeId, millPoleNodeId,
@@ -53,7 +57,8 @@ import {
 } from "./game/presentation";
 import { createImpactRig } from "../../showcase-port-shared/feel";
 import { installBlackFrameGuard } from "@aura3d/debug";
-import { createFixedStepPresenter, installGameBeacon } from "@aura3d/engine/game";
+import { createFixedStepPresenter, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
+import { BIRD_NODES, WINDMILL_SAILS_ID, birdFlapAngle, birdWingIds, birdWingPoses, raiderWobble, windmillSailPose } from "./art/idolModels";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 sanitizeRenderParams();
@@ -63,7 +68,8 @@ installBlackFrameGuard();
 
 const params = new URLSearchParams(location.search);
 const DEMO = params.get("demo") === "1" || params.get("demo") === "true";
-let autoPlay = params.get("autoplay") === "1" || DEMO;
+// `?autoplay=1` (alias `?autopilot=1`): the computer plays hands-free and loops the campaign; O toggles it in play.
+let autoPlay = params.get("autoplay") === "1" || params.get("autopilot") === "1" || DEMO;
 let appReady = false;
 const SEED = (Number(params.get("seed")) || 0x51e9e) >>> 0;
 const START_LEVEL = Math.min(Math.max(0, Number(params.get("level")) || 0), LEVELS.length - 1);
@@ -276,7 +282,8 @@ function flushPendingLooks(): void {
 
 // ------------------------------------------------------------------- sim --
 
-const sim = new SiegeSim({ level: levelById(START_LEVEL), seed: SEED });
+// The GU47 / Idol stage's solid decor is solid in the sim too (./game/decorLayout.ts); the original look draws other decor.
+const sim = new SiegeSim({ level: levelById(START_LEVEL), seed: SEED, decor: ORIGINAL_LOOK ? [] : DECOR_COLLIDERS });
 sim.slowmoEnabled = !REDUCED;
 const FIXED_DT = 1 / 60;
 let simAccum = 0;
@@ -410,6 +417,8 @@ let activeLookRow = chapterLook(chapter.id);
 let shotsUsed = 0;
 let levelScore = 0;
 let resultOpen = false;
+/** The open result card is a clear (autoplay: Next) rather than a fail (autoplay: Try Again once). */
+let resultWon = false;
 let mode: ModeId = "siege";
 let paused = false;
 let muted = audio.muted;
@@ -667,7 +676,17 @@ function updateCamera(dt: number, elapsed: number): void {
   if (bossToppleTimer > 0 && !REDUCED) {
     bossToppleTimer = Math.max(0, bossToppleTimer - dt);
   }
-  if (camState === "follow" && proj && !proj.dead) {
+  // The camera follows a live shot while it is over the island; a spent bird (down and slow) or a shot heading out
+  // over the sea is left to finish on its own while the camera holds on the fort (real-GPU audit: the camera trailed
+  // a bird rolling back along the ground, then an egg shell flying out over open water, for seconds).
+  const followable = !!proj && !proj.dead &&
+    !(sim.projectileDowned(proj) && linearSpeed2(proj.body) < 1.5) &&
+    (onLand(proj.body.position[0], proj.body.position[2]) || proj.body.position[0] < 0);
+  if (camState === "follow" && !followable && !(bossToppleTimer > 0)) {
+    // No followable shot: hold where the camera is until the shot settles.
+    dp = camPos;
+    dtg = camTgt;
+  } else if (camState === "follow" && proj && followable) {
     const p = proj.body.position;
     const v = proj.body.velocity;
     const apexLift = Math.max(0, Math.min(2.2, p[1] * 0.35));
@@ -748,18 +767,10 @@ function updateCamera(dt: number, elapsed: number): void {
 
 // ------------------------------------------------------------------ aim --
 
-const SLING_REST: readonly [number, number, number] = [-7.4, 1.68, 0];
 /** Fork prong tips (world) — the band anchors. The prongs themselves never move. */
 const FORK_TIPS: readonly (readonly [number, number, number])[] = [[-7.79, 1.89, -0.22], [-7.79, 1.89, 0.22]];
-/** Aim pivot in the fork gap: launch direction runs pouch → pivot, so the shot
- *  leaves along the line the stretched bands actually describe. */
-const LAUNCH_PIVOT: readonly [number, number, number] = [-7.1, 1.98, 0];
-const PULL_POWER = 7.5; // world launch speed per unit of draw (full draw = 12.75)
-const PULL_MAX = 1.7; // full-draw distance in world units
-/** Extra fork-plane dip at full draw — a real slingshot pouch sags as it goes back. */
-const DRAW_SAG = 0.16;
-/** The pouch never drops below the knoll collider top (0.6) + projectile radius. */
-const POUCH_FLOOR_Y = 1.0;
+// SLING_REST, LAUNCH_PIVOT, PULL_POWER, PULL_MAX, DRAW_SAG, POUCH_FLOOR_Y and the launch solver live in
+// ./game/autopilot.ts, shared with the headless autoplay test.
 /** Unstretched band length (fork tip → seated pouch) — the taper reference. */
 const BAND_REST_LEN = 0.47;
 /** Snap-back spring: critically-under-damped decay — crosses rest at ~130ms,
@@ -795,31 +806,6 @@ function clampPull(x: number, y: number): [number, number] {
   const len = Math.hypot(px, py);
   if (len > PULL_MAX) return [px * (PULL_MAX / len), py * (PULL_MAX / len)];
   return [px, py];
-}
-
-/** Pouch world pose for a draw — pulls back and dips below the fork plane. */
-function pouchAt(px: number, py: number): [number, number, number] {
-  const t = Math.min(1, Math.hypot(px, py) / PULL_MAX);
-  const sag = -DRAW_SAG * Math.pow(t, 1.3);
-  return [SLING_REST[0] + px, Math.max(POUCH_FLOOR_Y, SLING_REST[1] + py + sag), 0];
-}
-
-interface AimSolution {
-  readonly drawT: number;
-  readonly pouch: readonly [number, number, number];
-  readonly dir: readonly [number, number, number];
-  readonly speed: number;
-}
-
-/** The one launch solver: the trajectory preview, the fired shot, and the
- *  evidence beacon all read from here so arc and flight can never diverge. */
-function solveDraw(px: number, py: number): AimSolution {
-  const pouch = pouchAt(px, py);
-  const drawT = Math.min(1, Math.hypot(px, py) / PULL_MAX);
-  const dx = LAUNCH_PIVOT[0] - pouch[0];
-  const dy = LAUNCH_PIVOT[1] - pouch[1];
-  const dl = Math.hypot(dx, dy) || 1;
-  return { drawT, pouch, dir: [dx / dl, dy / dl, 0], speed: drawT * PULL_MAX * PULL_POWER };
 }
 
 function aimSolution(): AimSolution {
@@ -960,6 +946,13 @@ function capturePointer(ev: PointerEvent): void {
 const heldKeys = new Set<string>();
 const justPressedKeys = new Set<string>();
 window.addEventListener("keydown", (ev) => {
+  if (ev.code === "KeyO" && !ev.repeat && !(ev.target instanceof HTMLInputElement)) {
+    autoPlay = !autoPlay;
+    finishIntro(true);
+    if (!autoPlay) { aim.state = "idle"; aim.pullX = 0; aim.pullY = 0; }
+    hud.toast(autoPlay ? "AUTOPLAY ON" : "AUTOPLAY OFF");
+    return;
+  }
   autoPlay = false;
   finishIntro(true);
   // A key press is a user gesture too: keyboard-only players get sound (and the wind loop).
@@ -1034,7 +1027,7 @@ function fireShot(): void {
     return;
   }
   const sol = aimSolution();
-  const v: [number, number, number] = [sol.dir[0] * sol.speed, sol.dir[1] * sol.speed, 0];
+  const v = launchVelocity(sol);
   if (sol.speed > 0.5 && sim.launch(ammo, sol.pouch, v)) {
     shotsUsed += 1;
     camState = "follow";
@@ -1134,13 +1127,15 @@ function syncGull(g: number): void {
   const idleBob = rec.alive ? Math.sin(elapsed * 2.8 + g * 1.3) * 0.035 : 0;
   const idleYaw = rec.alive ? Math.sin(elapsed * 1.9 + g * 0.9) * 0.08 : 0;
   const re = raiderPoseEulerZYX(rot, -Math.PI * 0.45 + idleYaw);
+  // Creature pass: living raiders waddle and breathe (presentation only).
+  const wob = rec.alive && !REDUCED ? raiderWobble(elapsed, g) : { roll: 0, breathe: 1 };
   for (const spec of GULL_PARTS) {
     const h = node(gullPartId(g, spec.part));
     if (!h) continue;
     const off = rotQ(rot, spec.off);
     h.setPosition(pos[0] + off[0], pos[1] + off[1] - sink + idleBob, pos[2] + off[2]);
-    h.setRotation(re[0], re[1], re[2]);
-    if (!hopping) h.setScale([spec.base[0] * sxz, spec.base[1] * sy, spec.base[2] * sxz]);
+    h.setRotation(re[0], re[1], re[2] + wob.roll);
+    if (!hopping) h.setScale([spec.base[0] * sxz, spec.base[1] * sy * wob.breathe, spec.base[2] * sxz]);
     h.setVisible(rec.alive ? true : !hidden);
   }
 }
@@ -1224,7 +1219,38 @@ function syncSling(dt: number): void {
   }
 }
 
+/**
+ * Creature pass: every bird body's two wing nodes follow its shoulders each frame. Shots in flight flap, perched and
+ * loaded birds keep their wings tucked with a small twitch, and the waiting birds bob on the deck (presentation only).
+ */
+const waitBase = new Map<string, readonly [number, number, number]>();
+/** Projectile nodes whose bird is down (hit something): wings folded, no flapping (filled by syncVisuals). */
+const downedBirds = new Set<string>();
+function syncBirdWings(): void {
+  // Reduced motion keeps the wings attached but still (tucked, no bob).
+  let k = 0;
+  for (const [id, ammo] of BIRD_NODES) {
+    k += 1;
+    const body = node(id) as unknown as { position: readonly number[]; rotation: readonly number[]; scale: number | readonly number[]; visible: boolean; setPosition(x: number, y: number, z: number): unknown } | undefined;
+    if (!body) continue;
+    if (id.startsWith("ammo-wait-") && !REDUCED) {
+      if (!waitBase.has(id)) waitBase.set(id, [body.position[0]!, body.position[1]!, body.position[2]!]);
+      const b = waitBase.get(id)!;
+      body.setPosition(b[0], b[1] + Math.abs(Math.sin(elapsed * 2.6 + k)) * 0.035, b[2]);
+    }
+    const flying = id.startsWith("v-proj-") && body.visible && !downedBirds.has(id);
+    const wings = birdWingPoses(ammo, body, REDUCED ? (flying ? 0.15 : -1.25) : birdFlapAngle(elapsed, flying, k * 0.9));
+    birdWingIds(id).forEach((wid, i) => {
+      const w = node(wid);
+      if (!w) return;
+      const p = wings[i]!;
+      w.setPosition(p.position[0], p.position[1], p.position[2]).setRotation(p.rotation[0], p.rotation[1], p.rotation[2]).setScale(p.scale).setVisible(body.visible);
+    });
+  }
+}
+
 function syncVisuals(): void {
+  downedBirds.clear();
   for (const u of sim.forEachVisual()) {
     if (u.id.startsWith("piece-visual-")) {
       const idx = Number(u.id.slice(13));
@@ -1239,6 +1265,7 @@ function syncVisuals(): void {
       if (u.visible) {
         const projRec = sim.projectileList()[rawIdx];
         const h = node(pid);
+        if (projRec && sim.projectileDowned(projRec)) downedBirds.add(pid);
         if (h && projRec) {
           const fe = flightPoseEulerZYX(projRec.body.velocity);
           h.setPosition(u.position[0], u.position[1], u.position[2]);
@@ -1313,8 +1340,7 @@ function watchSplashes(): void {
       burst(SIEGE_VFX.seaSplash, [p[0], SEA_LEVEL, p[2]], scale);
     }
   };
-  const proj = sim.activeProjectile();
-  if (proj && !proj.dead) check(proj.body.id, proj.body.position as AuraVec3, 1);
+  // Shots, blocks and gulls splash from the sim's own "sea-splash" event (they sink there); debris splashes here.
   for (const d of sim.debrisList()) if (d.active) check(d.body.id, d.body.position as AuraVec3, 0.5);
 }
 
@@ -1539,6 +1565,11 @@ function consumeEvents(): void {
         if (!REDUCED) hud.toast("SLOW-MO FINISH", "gold");
         break;
       }
+      case "sea-splash": {
+        // Past the shoreline there is no ground in the sim: the shot, block or gull sinks here.
+        burst(SIEGE_VFX.seaSplash, ev.at, ev.what === "projectile" ? 1 : 0.8);
+        break;
+      }
     }
   }
 }
@@ -1556,6 +1587,7 @@ function endLevel(won: boolean): void {
   // Trajectory Range shots are free practice: no result card, no stars, no unlocks.
   if (mode === "range") return;
   resultOpen = true;
+  resultWon = won;
   camState = "result";
   let bonus = 0;
   if (won) {
@@ -1580,88 +1612,38 @@ function endLevel(won: boolean): void {
 
 // -------------------------------------------------------------- demo ----
 
-const demo = { phase: "wait" as "wait" | "draw" | "hold" | "fly" | "settle", t: 0, shots: 0, pull: [-1.3, -0.9] as [number, number] };
-
-/** Auto-aim: bisect the draw length whose ballistic arc (same solver as the
- *  preview) lands on the target structure. Deterministic — no randomness. */
-function demoAimAt(target: readonly [number, number]): void {
-  const g = Math.max(1, Math.abs(sim.level.gravity?.[1] ?? 9.81));
-  const phi = 0.72; // pull angle below horizontal → ~45° launch arc
-  const land = (len: number): number => {
-    const s = solveDraw(-Math.cos(phi) * len, -Math.sin(phi) * len);
-    const vx = s.dir[0] * s.speed;
-    const vy = s.dir[1] * s.speed;
-    const t = (vy + Math.sqrt(Math.max(0, vy * vy + 2 * g * (s.pouch[1] - target[1])))) / g;
-    return s.pouch[0] + vx * t;
-  };
-  let hi = PULL_MAX;
-  if (land(hi) >= target[0]) {
-    let lo = 0.3;
-    for (let i = 0; i < 22; i += 1) {
-      const mid = (lo + hi) / 2;
-      if (land(mid) < target[0]) lo = mid; else hi = mid;
-    }
+/** Autoplay driver (./game/autopilot.ts): aims, draws, releases and fires powers through the normal input path. */
+const demo = createAutopilot();
+const demoHooks = {
+  canAim,
+  resultOpen: () => resultOpen,
+  resultWon: () => resultWon,
+  currentAmmo,
+  shotActive: () => sim.isShotActive(),
+  abilityUsed: () => sim.activeProjectile()?.abilityUsed ?? true,
+  setDraw: (px: number, py: number) => {
+    aim.pullX = px;
+    aim.pullY = py;
+    aim.state = "dragging";
+    camState = "aim";
+  },
+  release: () => {
+    fireShot();
+    aim.state = "idle";
+  },
+  ability: fireAbility,
+  nextLevel: () => {
+    const nxt = (level.id + 1) % LEVELS.length;
+    realLevelId = nxt;
+    loadLevel(nxt, { announce: false });
+  },
+  retryLevel: () => {
+    loadLevel(level.id, { announce: false });
   }
-  demo.pull = [-Math.cos(phi) * hi, -Math.sin(phi) * hi];
-}
+};
 
 function demoTick(dt: number): void {
-  demo.t += dt;
-  if (resultOpen) {
-    if (demo.t > 2.0) {
-      demo.t = 0;
-      const nxt = (level.id + 1) % LEVELS.length;
-      realLevelId = nxt;
-      loadLevel(nxt, { announce: false });
-    }
-    return;
-  }
-  switch (demo.phase) {
-    case "wait": {
-      if (demo.t > 0.35 && canAim()) {
-        // auto-aim at the first live gull, else any standing piece, else the fort
-        const gull = sim.gullList().find((gm) => gm.alive);
-        const piece = sim.pieceList().find((p) => p.alive);
-        const at = gull?.body.position ?? piece?.body.position ?? [7.2, 1, 0];
-        demoAimAt([at[0], at[1]]);
-        demo.phase = "draw";
-        demo.t = 0;
-      }
-      break;
-    }
-    case "draw": {
-      // visible ~1s draw: the pouch pulls back-and-down with the preview arc growing
-      const k = Math.min(1, demo.t / 1.0);
-      const ramp = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
-      aim.pullX = demo.pull[0] * ramp;
-      aim.pullY = demo.pull[1] * ramp;
-      aim.state = "dragging";
-      camState = "aim";
-      if (demo.t >= 1.0) { demo.phase = "hold"; demo.t = 0; }
-      break;
-    }
-    case "hold": {
-      // ~0.5s hold at full draw — meter full, arc steady, tiny sway for life
-      const wob = 1 + Math.sin(demo.t * 9) * 0.02;
-      aim.pullX = demo.pull[0] * wob;
-      aim.pullY = demo.pull[1] * wob;
-      aim.state = "dragging";
-      if (demo.t >= 0.5) {
-        fireShot();
-        aim.state = "idle";
-        demo.phase = "fly";
-        demo.t = 0;
-      }
-      break;
-    }
-    case "fly":
-      if (demo.t > 1.05 && sim.activeProjectile() && !sim.activeProjectile()!.abilityUsed) fireAbility();
-      if (!sim.isShotActive() && demo.t > 0.4) { demo.phase = "wait"; demo.t = 0; demo.shots += 1; }
-      if (demo.t > 9) { demo.phase = "wait"; demo.t = 0; demo.shots += 1; }
-      break;
-    default:
-      demo.phase = "wait"; demo.t = 0;
-  }
+  demo.tick(dt, sim, demoHooks);
 }
 
 // --------------------------------------------------------------- evidence --
@@ -1703,6 +1685,13 @@ function evidence(): Record<string, unknown> {
     })(),
     abilityReady: sim.isShotActive() && !!sim.activeProjectile() && !sim.activeProjectile()!.abilityUsed,
     gulls: { alive: sim.gullsAlive(), total: sim.gullList().length },
+    // The live shot (capture tooling: follow, sea splash, spent-bird rest): position, linear speed, down after a hit.
+    projectile: (() => {
+      const p = sim.activeProjectile();
+      if (!p) return null;
+      const q = p.body.position;
+      return { at: [Number(q[0].toFixed(2)), Number(q[1].toFixed(2)), Number(q[2].toFixed(2))], speed: Number(Math.sqrt(linearSpeed2(p.body)).toFixed(2)), downed: sim.projectileDowned(p) };
+    })(),
     pieces: { alive: sim.piecesAlive(), total: sim.pieceList().length },
     windmills: sim.windmillList().map((w) => ({ broken: w.broken })),
     bodies: sim.totalBodyCount(),
@@ -1864,7 +1853,13 @@ gameApp.onFrame(({ dt }) => {
     // or touching the simulation. The cloth asset/clip is still a separate need.
     if (!ORIGINAL_LOOK && !REDUCED) {
       const yaw = 0.16 * Math.sin(elapsed * 1.7) + 0.04 * Math.sin(elapsed * 3.1);
-      node(PROP_IDS.flag)?.setPosition(7.2 + 0.54 * Math.cos(yaw), 5.15, -0.6 - 0.54 * Math.sin(yaw)).setRotation(0, yaw, 0);
+      node(PROP_IDS.flag)?.setPosition(FLAG_MAST.x + 0.54 * Math.cos(yaw), 5.15, FLAG_MAST.z - 0.54 * Math.sin(yaw)).setRotation(0, yaw, 0);
+    }
+    syncBirdWings();
+    // Idol moving parts: the island windmill's sail cross turns about its axle with game time (presentation only).
+    if (!ORIGINAL_LOOK && !REDUCED) {
+      const sails = windmillSailPose(elapsed);
+      node(WINDMILL_SAILS_ID)?.setPosition(sails.position[0], sails.position[1], sails.position[2]).setRotation(sails.rotation[0], sails.rotation[1], sails.rotation[2]);
     }
     updateCamera(dt, elapsed);
     refreshVp();
@@ -1876,6 +1871,13 @@ gameApp.onFrame(({ dt }) => {
     if (frames % 60 === 0) console.error("[slingshot-siege]", err);
   }
 });
+
+/** The boot warm-up (`window.__SS_WARM__`): programs, HDRI and Idol texture upgrades settled before play. */
+let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+(window as unknown as { __SS_WARM__?: () => typeof warmResult }).__SS_WARM__ = () => warmResult;
+/** Boot timeline (ms since navigation) for load-time audits: entry evaluated, renderer mounted, warm-up done. */
+const bootTimeline: { entry: number; rendererReady: number | null; warmDone: number | null } = { entry: Math.round(performance.now()), rendererReady: null, warmDone: null };
+(window as unknown as { __SS_BOOT__?: () => typeof bootTimeline }).__SS_BOOT__ = () => bootTimeline;
 
 // render-error / device-loss surface
 {
@@ -1892,7 +1894,16 @@ gameApp.onFrame(({ dt }) => {
     app.onDeviceRestored(() => hide());
   } catch { /* optional */ }
   if (app.deviceLost?.()) show("The WebGL context was lost during startup.");
-  void loading.track(app.ready(), 1, "renderer").then(() => {
+  // Idol wow pass (FIRST-SECONDS): every Idol GLB the game uses (birds, raiders, slingshot, landmarks and all six far
+  // islands, inactive chapters parked hidden) is mounted with the boot scene, so no chapter switch brings in a new
+  // model. Their 1K texture upgrades and program variants are settled here, before the frame loop runs game logic
+  // (appReady) and before the loading veil lifts, so no draw is skipped in the first seconds of the first shot.
+  const warmed = loading.track(app.ready(), 1, "renderer").then(async () => {
+    bootTimeline.rendererReady = Math.round(performance.now());
+    warmResult = await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
+    bootTimeline.warmDone = Math.round(performance.now());
+  });
+  void warmed.then(() => {
     appReady = true;
     loading.done("ready");
     window.clearInterval(loadingCreep);
@@ -1923,8 +1934,8 @@ installGameBeacon({ route: "showcase-slingshot-siege" }).publishEvidence({
 });
 w.__SS_STATE__ = () => evidence();
 w.__SS_PUMP__ = (n = 60) => { for (let i = 0; i < n; i += 1) app.advance(1 / 60); return evidence(); };
-w.__SS_FIRE__ = (ammo: AmmoId | undefined = currentAmmo() ?? undefined) => {
-  if (ammo) sim.launch(ammo, [-7.4, 1.8, 0], [9.5, 7.5, 0]);
+w.__SS_FIRE__ = (ammo: AmmoId | undefined = currentAmmo() ?? undefined, origin: [number, number, number] = [-7.4, 1.8, 0], velocity: [number, number, number] = [9.5, 7.5, 0]) => {
+  if (ammo && sim.launch(ammo, origin, velocity)) camState = "follow";
   return evidence();
 };
 w.__SS_DEBUG__ = {
@@ -1940,6 +1951,8 @@ w.__SS_DEBUG__ = {
     return out;
   },
   project(p: [number, number, number]) { refreshVp(); return projectWorld(p); },
+  /** Live piece centres and half heights (beach-rest audits: a block on the sand sits one half extent above it). */
+  pieces() { return sim.pieceList().filter((p) => p.alive).map((p) => ({ at: p.body.position.map((v) => Number(v.toFixed(3))), hy: p.spec.hy })); },
   /** GU47 phase 7: visible blocks per instanced family (solid-block rows; empty on the GLB-block night row). */
   liveBlocks() { return BLOCK_POOL?.liveCounts() ?? {}; }
 };

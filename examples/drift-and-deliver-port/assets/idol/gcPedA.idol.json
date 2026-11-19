@@ -1,0 +1,62 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "drift-and-deliver-port",
+  "key": "gcPedA",
+  "generatedAt": "2026-11-18T23:19:20.112Z",
+  "generator": "tools/idol/generate.mjs (resumed after its 20-min queue timeout)",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "prompt": "Single full-body adult man pedestrian walking mid-stride, front view facing the camera, wearing a mustard-yellow casual jacket over a white t-shirt, dark grey trousers and brown leather shoes, short dark hair, arms swinging naturally at his sides. Photoreal studio photograph, real fabric folds and stitching, high detail. Head to feet in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere.",
+      "usd": 0.17,
+      "note": "reference completed in generate.mjs run"
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f0a5-98b4-7960-a04c-c278ad336ca0",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 489766,
+        "num_faces": 979528,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "Single full-body adult man pedestrian walking mid-stride, front view facing the camera, wearing a mustard-yellow casual jacket over a white t-shirt, dark grey trousers and brown leather shoes, short dark hair, arms swinging naturally at his sides. Photoreal studio photograph, real fabric folds and stitching, high detail. Head to feet in frame with margin, centered, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks anywhere.",
+  "role": "background",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.72,
+    "size": [
+      0.644,
+      1.72,
+      1.147
+    ],
+    "minY": 0
+  },
+  "finalGlb": "examples/drift-and-deliver-port/assets/idol/gcPedA.glb",
+  "sizeBytes": 509388,
+  "preview": "artifacts/idol/drift-and-deliver-port/gcPedA/views.png",
+  "usd": 0.37,
+  "postprocess": [
+    {
+      "step": "texture-jpeg",
+      "maxTexPx": 512,
+      "before": 1839512,
+      "after": 509388
+    }
+  ]
+}

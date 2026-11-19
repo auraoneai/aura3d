@@ -112,8 +112,8 @@ describe("aura-diamond look plan", () => {
     }
   });
 
-  it("draws the analytic sky on Harbor, Canyon and Lunar and lets that sky replace the drawn HDRI (DIA-E2)", () => {
-    expect(PARK_ORDER.filter((p) => lookPlan(p, "gu47", "high").sky !== null)).toEqual(["sandlot", "canyon", "lunar"]);
+  it("draws the analytic sky on Harbor, Midtown, Canyon and Lunar and lets that sky replace the drawn HDRI (DIA-E2)", () => {
+    expect(PARK_ORDER.filter((p) => lookPlan(p, "gu47", "high").sky !== null)).toEqual(["sandlot", "skyline", "canyon", "lunar"]);
     expect(lookPlan("sandlot", "gu47", "high").sky?.model).toBe("preetham");
     const lunar = lookPlan("lunar", "gu47", "high");
     expect(lunar.sky).toMatchObject({ model: "gradient", stars: { count: 1800 } });
@@ -203,5 +203,30 @@ describe("aura-diamond GU47 HUD (DIA-H1)", () => {
     expect(/barlow/i.test(html)).toBe(false);
     const tick = /\.tick\s*\{[^}]*font-size:\s*([\d.]+)px/.exec(html);
     expect(Number(tick?.[1])).toBeGreaterThanOrEqual(12);
+  });
+});
+
+describe("aura-diamond Midtown floodlit field (owner: pastel, washed-out turf)", () => {
+  const hexChroma = (hex: string): number => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    return Math.max(r, g, b) - Math.min(r, g, b);
+  };
+  it("keeps the night exposure in the range of the other night parks so the grass stays green and the clay reads", () => {
+    const sky = PARK_LOOKS.skyline;
+    // GPU-measured (REA, 1280x720): field-region mean HSV S 0.10 at 2^1.0 x 2.4 = 4.8x; 0.45 at 2^0.3 x 2.0 = 2.5x.
+    const gain = 2 ** sky.exposureEv * sky.post.exposure;
+    expect(gain).toBeLessThanOrEqual(2.6);
+    for (const p of ["dome", "lunar"] as const) expect(gain).toBeLessThanOrEqual(2 * 2 ** PARK_LOOKS[p].exposureEv * PARK_LOOKS[p].post.exposure);
+    // A bright blue IBL fill flattened the field to lavender clay and teal grass; the floodlit key does the lighting.
+    expect(sky.hdri.intensity).toBeLessThanOrEqual(0.8);
+  });
+  it("lights the field with a near-white floodlight key from the camera side, not a blue backlight", () => {
+    const sun = PARK_LOOKS.skyline.sun;
+    expect(hexChroma(sun.color)).toBeLessThanOrEqual(24);
+    expect(sun.colorTemperatureK).toBeGreaterThanOrEqual(5000);
+    expect(sun.colorTemperatureK).toBeLessThanOrEqual(7000);
+    // Azimuth 20-60 is the broadcast-camera side (art/look.ts canyon note): faces lit, shadows fall away from the lens.
+    expect(sun.azimuthDeg).toBeGreaterThanOrEqual(0);
+    expect(sun.azimuthDeg).toBeLessThanOrEqual(60);
   });
 });

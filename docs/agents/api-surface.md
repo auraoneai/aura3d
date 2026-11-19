@@ -6,7 +6,7 @@ Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first. Importable is 
 
 - **`docs/api/root-exports.md`**: every value export of `@aura3d/engine`, generated from `packages/engine/src/public/index.ts`, with kind, area, namespace members and a DEPRECATED section. This is the source of truth for names. Regenerate with `node tools/docs/gen-root-exports.mjs --write`; `node tools/docs/check-root-exports.mjs` fails when it is stale.
 - `docs/api/public-api.md`: exhaustive declaration dump for all packages. Do not read it whole (about 40k tokens). Its `@aura3d/engine` section lists a legacy entry file, not the root.
-- Topic docs: `docs/api/game-kit.md`, `qa-kit.md`, `model-loader.md`, `scatter-merge.md`, `toon.md`, `skinned-actors.md`, `safety-net.md`, `shader-diagnostics.md`.
+- Topic docs: `docs/api/game-kit.md`, `qa-kit.md`, `model-loader.md`, `scatter-merge.md`, `toon.md`, `skinned-actors.md`, `safety-net.md`, `shader-diagnostics.md`, `sculpt.md`, `quality-governor.md`, `motion-camera-clear.md`, `humanoid-motion.md`.
 
 Rule: if a name is not in `root-exports.md` as live, do not import it from `@aura3d/engine`.
 
@@ -37,9 +37,9 @@ React apps use `@aura3d/react` around the same root API.
 | Look | `material`, `lights`, `environments`, `looks`, `effects`, `postPresets`, `shadows`, `camera`, `cameras` |
 | Many objects | `instances`, `batched`, `distanceLod`, `planScatterInstances` |
 | Input and UI | `interactions`, `ui`, `labels`, `raycast`, `raycastFirst`, `bindGameTouchControls` |
-| Motion | `AnimationController`, `cloneSkinned`, `characters`, `timeline`, `physics` |
+| Motion | `AnimationController`, `cloneSkinned`, `characters`, `timeline`, `physics`, `computeCameraClearance` (follow-camera clearance, 5.5.6) |
 | Games | `game`, `games`, `racketSports`, `arcadeKart`, `carSoccer`, `gameFeel`, `createGameAudio`, `createVehicleChassis`, `createCombatAi`; the real HUD/touch/session kit is `@aura3d/engine/game` |
-| QA and replay | `installQaHooks`, `readQaParams`, `createFixedStepLoop`, `createCountedRng` |
+| QA and replay | `installQaHooks`, `readQaParams`, `createFixedStepLoop`, `createCountedRng`; telemetry (5.5.5): `installQaTelemetryHooks`, `createQaRunMonitor`, `findNonFinitePaths`, `hashQaPixels`, `installVirtualGamepads`, `createQaOfflineAudio`, `analyzeQaAudioSamples` |
 
 `app.diagnostics().fps` is the average over the frames presented in the last second, rounded to 0.01; renders issued in one task (a loop of `app.step()` calls) count as one frame. On software GL it reads well below 1. `app.screenshot()` is synchronous and re-renders before it reads; an app with `frameMode: "async"` uses `await app.screenshotAsync()`, which waits for the in-flight frame first (`screenshot()` during an async frame warns `SCREENSHOT_DURING_ASYNC_FRAME`).
 | Typed assets | `defineAuraAssets`, `defineModelAssets` |
@@ -94,7 +94,7 @@ Use `physics.world(...)`, `physics.body(...)`, `physics.box(...)`, `physics.sphe
 
 ## Subpaths
 
-`@aura3d/engine/game` (game kit), `/devtools`, `/renderer`, `/animation-studio`, `/lanes`, `/contracts`, `/advanced-runtime`, `/production-runtime` (deprecated for game code: use the root exports `attachRootRenderSource` and `TypedGLBActor`).
+`@aura3d/engine/game` (game kit), `/devtools` (evidence helpers and the dev-only `createAuraTuneOverlay` feel-tuning panel), `/sculpt` (5.5.6 procedural sculpting kernel, `docs/api/sculpt.md`), `/renderer`, `/animation-studio`, `/lanes`, `/contracts`, `/advanced-runtime`, `/production-runtime` (deprecated for game code: use the root exports `attachRootRenderSource` and `TypedGLBActor`).
 
 The source entry `@aura3d/engine/geometry-tools` exposes opt-in mesh modifiers,
 attribute interleaving, vertex remapping and welding, topology conversion, morph

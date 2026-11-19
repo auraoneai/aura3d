@@ -62,9 +62,7 @@ const PILOTS = [
   "showcase-skyline-runner",
   "showcase-mech-hangar",
   "showcase-courier-rush",
-  "showcase-vault-breakers",
   "showcase-gravity-post",
-  "showcase-bank-shot",
 ];
 const TIERS = ["low", "medium", "high", "ultra"];
 

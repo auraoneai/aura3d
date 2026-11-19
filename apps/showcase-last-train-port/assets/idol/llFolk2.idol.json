@@ -1,0 +1,54 @@
+{
+  "schema": "aura3d.idol-provenance/1",
+  "game": "last-train-port",
+  "key": "llFolk2",
+  "generatedAt": "2026-11-18T21:23:52.568Z",
+  "generator": "tools/idol/generate.mjs",
+  "terms": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+  "steps": [
+    {
+      "step": "reference",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f08b-7177-7aa3-b23c-5c4d5a40956a",
+      "prompt": "A single standing older woman, early-1900s seaside town, full body head to feet, standing upright facing forward, a wicker basket of bread on one arm, mustard-yellow wool coat, cream shawl, dark headscarf, long dark skirt, dark boots. Photograph of a real museum-quality hand-built scale model with model-railway diorama craftsmanship: real enamel paint, polished brass, varnished wood, plaster stucco, slate and terracotta materials, crisp clean edges, very light weathering, warm saturated colours, soft macro studio lighting, no base, no plinth, no display stand. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+      "usd": 0.17
+    },
+    {
+      "step": "idol",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f095-91d4-7901-8382-8d175e2a4158",
+      "input": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 7,
+        "mesh_resolution": 1024
+      },
+      "usd": 0.2,
+      "meshStats": {
+        "num_vertices": 1142198,
+        "num_faces": 2284540,
+        "watertight": true
+      },
+      "rig": null
+    }
+  ],
+  "prompt": "A single standing older woman, early-1900s seaside town, full body head to feet, standing upright facing forward, a wicker basket of bread on one arm, mustard-yellow wool coat, cream shawl, dark headscarf, long dark skirt, dark boots. Photograph of a real museum-quality hand-built scale model with model-railway diorama craftsmanship: real enamel paint, polished brass, varnished wood, plaster stucco, slate and terracotta materials, crisp clean edges, very light weathering, warm saturated colours, soft macro studio lighting, no base, no plinth, no display stand. Single isolated object, the entire object in frame with margin, centered, three-quarter front view from slightly above, even soft studio lighting, no cast shadow, plain light-grey seamless background. No text, no logos, no lettering, no numbers, no brand marks, no emblems anywhere on the object.",
+  "role": "character",
+  "rig": false,
+  "skin": null,
+  "normalized": {
+    "yawDeg": -90,
+    "scale": 1.71,
+    "size": [
+      0.764,
+      1.71,
+      0.572
+    ],
+    "minY": 0
+  },
+  "finalGlb": "apps/showcase-last-train-port/assets/idol/llFolk2.glb",
+  "sizeBytes": 3458588,
+  "preview": "artifacts/idol/last-train-port/llFolk2/views.png",
+  "usd": 0.37
+}

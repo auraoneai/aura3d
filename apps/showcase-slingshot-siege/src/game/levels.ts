@@ -12,6 +12,8 @@
  */
 import type { AmmoId } from "./ammo";
 import type { SiegeMaterialId } from "./materials";
+import { DECOR_COLLIDERS } from "./decorLayout";
+import { groundTopAt } from "./ground";
 
 export interface PieceSpec {
   readonly x: number;
@@ -109,8 +111,11 @@ function wall(
         x: cx + Math.cos(yaw) * lx,
         y: 0.14 + r * 0.3,
         z: cz + Math.sin(yaw) * lx,
-        hx: seg / 2 + 0.01, hy: 0.14, hz: 0.16,
-        material: mat, yaw
+        hx: seg / 2 - 0.005, hy: 0.14, hz: 0.16,
+        // The segments run along (cos yaw, sin yaw) in x/z; the engine's +Y yaw turns a box's local +x to
+        // (cos, -sin), so the box takes the opposite yaw to lie along its own wall line (with +yaw the blocks were
+        // turned across the line and their corners overlapped, which blew angled walls apart on load).
+        material: mat, ...(yaw !== 0 ? { yaw: -yaw } : {})
       });
     }
   }
@@ -158,11 +163,14 @@ function barrelAt(x: number, z: number, out: PieceSpec[] = []): PieceSpec[] {
 
 /** Tall keep: two legs + a lintel, optionally a flag pole socket. */
 function keep(cx: number, cz: number, height: number, mat: SiegeMaterialId, out: PieceSpec[] = []): PieceSpec[] {
-  const legTop = height;
-  tower(cx - 0.55, cz, 1, Math.ceil(legTop / 0.46), { w: 0.5, h: 0.46, d: 0.5 }, mat, out);
-  tower(cx + 0.55, cz, 1, Math.ceil(legTop / 0.46), { w: 0.5, h: 0.46, d: 0.5 }, mat, out);
+  const rows = Math.ceil(height / 0.46);
+  tower(cx - 0.55, cz, 1, rows, { w: 0.5, h: 0.46, d: 0.5 }, mat, out);
+  tower(cx + 0.55, cz, 1, rows, { w: 0.5, h: 0.46, d: 0.5 }, mat, out);
+  // The plank rests on the legs' real top (rows of 0.46 m + 0.015 m joints), not on the nominal `height`: the
+  // rounded-up legs stood up to 0.36 m into the plank and the overlap blew the keep apart on load.
+  const legTop = rows * 0.46 + (rows - 1) * 0.015;
   out.push({
-    x: cx, y: legTop + 0.12, z: cz,
+    x: cx, y: legTop + 0.122, z: cz,
     hx: 0.95, hy: 0.12, hz: 0.5, material: mat, visual: "plank"
   });
   return out;
@@ -210,6 +218,8 @@ interface LevelDraft {
 }
 
 function finalize(chapter: number, slot: number, draft: LevelDraft): LevelSpec {
+  const settled = settleLayout(draft.pieces, draft.gulls);
+  draft = { ...draft, pieces: settled.pieces, gulls: settled.gulls };
   const gullScore = draft.gulls.length * 1000;
   const pieceScore = draft.pieces.reduce((sum, p) => {
     const values: Record<SiegeMaterialId, number> = { wood: 40, stone: 90, glass: 60, ice: 80, obsidian: 140 };
@@ -232,6 +242,165 @@ function finalize(chapter: number, slot: number, draft: LevelDraft): LevelSpec {
     par: draft.par ?? draft.ammo.length,
     ...(chapter === 5 ? { gravity: [0, -3.4, 0] as const, timeScale: 0.85 } : {})
   };
+}
+
+// ------------------------------------------------------------ layout settle --
+//
+// Stability pass (real-GPU audit 2026-11-19: forts collapsed on their own on load). The recipes place blocks by
+// formula and some placements interpenetrated: lintels sunk 1-5 cm into tower tops, crates and barrels dropped inside
+// wall rows, two walls laid over each other, gulls embedded in blocks. Rapier resolves an overlap with a violent
+// separation impulse, which read as a hit, broke pieces and toppled the fort before the first shot. Every level now
+// goes through `settleLayout`, so each piece spawns resting on what is under it and nothing overlaps
+// (tests/unit/slingshot-siege/fort-stability.test.ts).
+
+/** World half extents of a piece (yaw about +Y included). */
+function extents(p: PieceSpec): [number, number, number] {
+  const c = Math.abs(Math.cos(p.yaw ?? 0));
+  const sn = Math.abs(Math.sin(p.yaw ?? 0));
+  return [c * p.hx + sn * p.hz, p.hy, sn * p.hx + c * p.hz];
+}
+
+/** Separating-axis overlap depth of two pieces' x/z footprints (> 0 = overlap by that much on the shallowest axis). */
+export function footprintOverlap(a: PieceSpec, b: PieceSpec): number {
+  const axes = (yaw: number): [number, number][] => [[Math.cos(yaw), -Math.sin(yaw)], [Math.sin(yaw), Math.cos(yaw)]];
+  const A = axes(a.yaw ?? 0), B = axes(b.yaw ?? 0);
+  const r = (p: PieceSpec, X: [number, number][], ax: [number, number]): number =>
+    Math.abs(X[0]![0] * ax[0] + X[0]![1] * ax[1]) * p.hx + Math.abs(X[1]![0] * ax[0] + X[1]![1] * ax[1]) * p.hz;
+  let depth = Infinity;
+  for (const ax of [...A, ...B]) {
+    const d = Math.abs((a.x - b.x) * ax[0] + (a.z - b.z) * ax[1]);
+    depth = Math.min(depth, r(a, A, ax) + r(b, B, ax) - d);
+  }
+  return depth;
+}
+
+/** Vertical overlap of two pieces (> 0 = their height spans overlap by that much). */
+function spanOverlap(a: PieceSpec, b: PieceSpec): number {
+  return Math.min(a.y + a.hy, b.y + b.hy) - Math.max(a.y - a.hy, b.y - b.hy);
+}
+
+/** 3D overlap depth of two pieces (> 0 = they interpenetrate). */
+export function pieceOverlap(a: PieceSpec, b: PieceSpec): number {
+  return Math.min(footprintOverlap(a, b), spanOverlap(a, b));
+}
+
+const GULL_R = 0.26;
+/** Clearance (m) every fort piece keeps from the static decor colliders (tests/unit/slingshot-siege/decor-pass-through.test.ts). */
+export const DECOR_CLEARANCE = 0.15;
+const DECOR_BOXES: readonly PieceSpec[] = DECOR_COLLIDERS.map((d) => ({
+  x: d.center[0], y: d.center[1], z: d.center[2], hx: d.half[0], hy: d.half[1], hz: d.half[2], yaw: d.yaw, material: "stone"
+}));
+
+/** Distance from a gull centre to a piece's box (yaw included). */
+function gullDistance(g: { x: number; y: number; z: number }, p: PieceSpec): number {
+  const yaw = p.yaw ?? 0;
+  const dx = g.x - p.x, dz = g.z - p.z;
+  // Into the piece's own frame (engine yaw: local +x -> world (cos, -sin)).
+  const lx = Math.cos(yaw) * dx - Math.sin(yaw) * dz;
+  const lz = Math.sin(yaw) * dx + Math.cos(yaw) * dz;
+  const ox = Math.max(0, Math.abs(lx) - p.hx), oy = Math.max(0, Math.abs(g.y - p.y) - p.hy), oz = Math.max(0, Math.abs(lz) - p.hz);
+  return Math.hypot(ox, oy, oz);
+}
+
+/** True when (x, z) lies inside a piece's footprint shrunk by `inset`. */
+function footprintContains(p: PieceSpec, x: number, z: number, inset = 0): boolean {
+  const yaw = p.yaw ?? 0;
+  const dx = x - p.x, dz = z - p.z;
+  const lx = Math.cos(yaw) * dx - Math.sin(yaw) * dz;
+  const lz = Math.sin(yaw) * dx + Math.cos(yaw) * dz;
+  return Math.abs(lx) <= p.hx - inset && Math.abs(lz) <= p.hz - inset;
+}
+
+/**
+ * Resolve a recipe's raw placements into a layout that stands still on load:
+ *  1. side conflicts (two pieces at the same height interpenetrating: a crate inside a wall row, two walls laid over
+ *     each other) move the later piece the shortest way out along z then x (up to 1.2 m), or drop it;
+ *  2. every piece, lowest first, rests exactly on the highest piece under its footprint (or the ground), 2 mm clear;
+ *  3. every gull rests at the free height nearest its authored one: on the ground or on a piece top under its centre.
+ */
+/** Highest sim ground top under a piece's footprint (corners, edge midpoints and centre); 0 off the ground table. */
+function groundUnder(p: PieceSpec): number {
+  const [ex, , ez] = extents(p);
+  let top: number | null = null;
+  for (const fx of [-1, 0, 1]) {
+    for (const fz of [-1, 0, 1]) {
+      const y = groundTopAt(p.x + fx * ex, p.z + fz * ez);
+      if (y !== null && (top === null || y > top)) top = y;
+    }
+  }
+  return top ?? 0;
+}
+export function settleLayout(rawPieces: readonly PieceSpec[], rawGulls: readonly GullSpec[]): { pieces: PieceSpec[]; gulls: GullSpec[] } {
+  // 1. Side conflicts. A vertical overlap of up to 6 cm is a stacking slip (fixed by the rest pass), not a conflict.
+  //    A moved piece must also keep `DECOR_CLEARANCE` from every static decor collider.
+  const kept: PieceSpec[] = [];
+  const sideConflict = (p: PieceSpec): boolean =>
+    kept.some((q) => footprintOverlap(p, q) > 0.004 && spanOverlap(p, q) > 0.06) ||
+    DECOR_BOXES.some((d) => footprintOverlap(p, d) > -DECOR_CLEARANCE && spanOverlap(p, d) > -DECOR_CLEARANCE);
+  for (const raw of rawPieces) {
+    if (!sideConflict(raw)) { kept.push(raw); continue; }
+    let moved: PieceSpec | null = null;
+    for (let step = 1; step <= 24 && !moved; step += 1) {
+      for (const [ax, sign] of [["z", 1], ["z", -1], ["x", 1], ["x", -1]] as const) {
+        const cand = { ...raw, [ax]: raw[ax] + sign * step * 0.05 };
+        if (!sideConflict(cand)) { moved = cand; break; }
+      }
+    }
+    if (moved) kept.push(moved);
+  }
+
+  // 2. Rest pass, lowest bottom first: a piece rests on the pieces under it (lower centre, footprints overlapping),
+  //    or on the island ground: the highest ground point under its footprint (the beach right of the turf lip slopes
+  //    down to the sea, so the far end of the Gull Keep / Moon Roost walls steps down onto the sand instead of
+  //    hanging ~0.2 m above it).
+  const order = kept.map((p, i) => i).sort((a, b) => (kept[a]!.y - kept[a]!.hy) - (kept[b]!.y - kept[b]!.hy) || a - b);
+  const placed: (PieceSpec | null)[] = kept.map(() => null);
+  for (const i of order) {
+    const p = kept[i]!;
+    let support = groundUnder(p);
+    for (const j of order) {
+      const q = placed[j];
+      if (!q || j === i) continue;
+      if (kept[j]!.y >= p.y - 0.02) continue;
+      if (footprintOverlap(p, q) <= 0.02) continue;
+      support = Math.max(support, q.y + q.hy);
+    }
+    placed[i] = { ...p, y: Math.round((support + p.hy + 0.002) * 10000) / 10000 };
+  }
+  const pieces = placed as PieceSpec[];
+
+  // 3. Gulls: candidate rest heights are the ground and every piece top under the gull's centre.
+  //    A perched gull stays on the structure whenever a piece top is free.
+  //    With no free height over its spot (wedged between blocks), the gull moves to the nearest free spot, 5 cm steps.
+  const gulls = rawGulls.map((g) => {
+    const restAt = (x: number, z: number): number | undefined => {
+      const ground = GULL_R + 0.003;
+      // A top supports the gull when its centre is well inside that piece's footprint, or over the joint between
+      // two pieces whose tops are level (a perch on a two-column tower sits over the 1.5 cm gap).
+      const tops: number[] = [];
+      for (const p of pieces) {
+        const top = p.y + p.hy;
+        const inside = footprintContains(p, x, z, 0.03);
+        const bridged = footprintContains(p, x, z, -0.05) &&
+          pieces.some((q) => q !== p && Math.abs(q.y + q.hy - top) < 0.01 && footprintContains(q, x, z, -0.05));
+        if (inside || bridged) tops.push(top + GULL_R + 0.003);
+      }
+      const isFree = (y: number): boolean => pieces.every((p) => gullDistance({ x, y, z }, p) >= GULL_R - 0.001);
+      const nearest = (ys: number[]): number | undefined => ys.filter(isFree).sort((a, b) => Math.abs(a - g.y) - Math.abs(b - g.y))[0];
+      return g.perch === "perched" ? nearest(tops) ?? nearest([ground]) : nearest([ground, ...tops]);
+    };
+    for (let ring = 0; ring <= 30; ring += 1) {
+      const n = ring === 0 ? 1 : 8 * ring;
+      for (let k = 0; k < n; k += 1) {
+        const a = (k / n) * Math.PI * 2;
+        const x = g.x + Math.cos(a) * ring * 0.05, z = g.z + Math.sin(a) * ring * 0.05;
+        const y = restAt(x, z);
+        if (y !== undefined) return { ...g, x: Math.round(x * 10000) / 10000, y: Math.round(y * 10000) / 10000, z: Math.round(z * 10000) / 10000 };
+      }
+    }
+    return { ...g };
+  });
+  return { pieces, gulls };
 }
 
 const F = 7.2; // fortress center x

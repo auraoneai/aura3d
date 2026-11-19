@@ -1,6 +1,6 @@
 # Verification
 
-Version: 5.5.6
+Version: 5.6.0
 
 What to run before calling work done, in order of cost. Claim labels and what each claim needs are in [claims-and-boundaries.md](claims-and-boundaries.md) and [rendering-proof-required.md](rendering-proof-required.md). If a gate cannot run, label the work `blocked` or `prototype` and name the gate; never substitute a weaker check.
 
@@ -53,6 +53,8 @@ Test the **production build**, not the dev server: assert a non-blank canvas, `d
 
 Drive games and simulations through `installQaHooks` (`window.__AURA_<NAME>__`: `ready`, `state`, `stepFrames`, `reset`, `replay`, `frame`, `pixels`, `diagnostics`). `state()` is plain data. Use `createFixedStepLoop` with `manual: true` for captures and replays, and `createCountedRng` so a replay can assert the exact draw count (`docs/api/qa-kit.md`).
 
+For long or unattended runs, `installQaTelemetryHooks` adds `checkState()` (`NaN`/`Infinity` paths via `findNonFinitePaths`), `measureFrame()` (GPU-flushed frame time and a `hashQaPixels` digest) and `telemetry()` (step vs frame timing, stuck detection: the frame hash stops changing while input keeps arriving). Gamepad specs use `installVirtualGamepads`; audio specs render through `createQaOfflineAudio` and judge levels with `analyzeQaAudioSamples` (5.5.5, all root `@aura3d/engine`).
+
 Record a scripted input run from the reference build in at least two independent sessions, derive the tolerance from their spread, and replay it as a unit test. Pure ports compare bit for bit or within 1e-6; say which.
 
 ## 4. Visual review
@@ -65,6 +67,16 @@ Record a scripted input run from the reference build in at least two independent
 ## 5. Real hardware
 
 Software GL (SwiftShader) proves correctness and draw-call counts, not real-GPU behavior or frame rate. Install the safety net (`docs/api/safety-net.md`) and ask for a real-device `?diag=1` screenshot before claiming a page works on GPUs. Label software-only runs "software GL".
+
+Reports from saved evidence (flags in `docs/api/cli-reference.md`):
+
+- `aura3d perf-report --route <id> --telemetry <telemetry.json>` builds a route performance report from rAF intervals.
+- `aura3d core inspect-programs --diagnostics <path>` reads the compiled-program cache from a saved `app.diagnostics()` JSON.
+- `aura3d vfx validate-atlas <atlas.json>` checks a flipbook atlas against the frame-grid contract.
+- `aura3d assets bind-game-route-evidence --route <id> --category racing|platformer --assets <id,id> --screenshot <png> --geometry-report <json> --composition-report <json> --visual-review <json>` binds route evidence to game assets.
+- `aura3d prd08 motion-report --report <report.json>` renders a motion-scene capture report and fails on incomplete evidence.
+
+`aura3d animation plan|preview|render|package|review|verify` forward to a project's `episode:<verb>` npm script and exit 1 when it is missing; the `animation-studio` template uses `aura3d animation scene <verb>` instead.
 
 ## 6. Parity against an original game
 
