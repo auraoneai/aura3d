@@ -20,6 +20,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { withSocialCard } from "./social-cards.mjs";
 import { interactiveExamples } from "./interactive-examples.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -211,7 +212,7 @@ for (const route of routes) {
     for (const problem of audit(html, route)) failures.push(`${route.file}: ${problem}`);
     continue;
   }
-  const next = normalizeHead(html, route);
+  const next = withSocialCard(normalizeHead(html, route));
   if (next !== html) {
     writeFileSync(file, next, "utf8");
     changed += 1;

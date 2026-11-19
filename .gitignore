@@ -544,3 +544,7 @@ motion-studio/**/node_modules/
 
 # Idol (fal.ai) raw downloads; provenance lives next to each admitted GLB as <key>.idol.json
 artifacts/idol/**
+
+# Branded share artwork is a shipped input to the marketing build.
+!/marketing/public/previews/social/**/*.jpg
+!/marketing/public/previews/social/*.jpg

@@ -12,6 +12,7 @@
  * Run from the repo root:  node marketing/scripts/gen-migration-doc.mjs           (write)
  *                          node marketing/scripts/gen-migration-doc.mjs --check   (fail if stale)
  */
+import { withSocialCard } from "../../tools/site/social-cards.mjs";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -196,10 +197,6 @@ function render() {
   replaceOnce(/<meta property="og:title" content="[^"]*" \/>/, `<meta property="og:title" content="${escapeHtml(title)}" />`);
   replaceOnce(/<meta property="og:description" content="[^"]*" \/>/, `<meta property="og:description" content="${escapeHtml(description)}" />`);
   replaceOnce(/<meta property="og:url" content="[^"]*" \/>/, `<meta property="og:url" content="${canonical}" />`);
-  for (const [attribute, key] of [["property", "og:image"], ["name", "twitter:image"]]) {
-    replaceOnce(new RegExp(`<meta ${attribute}="${key}" content="[^"]*" />`),
-      `<meta ${attribute}="${key}" content="${ORIGIN}/previews/docs/migration/4-to-5.jpg?v=5.6.0" />`);
-  }
   replaceOnce(/<meta name="twitter:title" content="[^"]*" \/>/, `<meta name="twitter:title" content="${escapeHtml(title)}" />`);
   replaceOnce(/<meta name="twitter:description" content="[^"]*" \/>/, `<meta name="twitter:description" content="${escapeHtml(description)}" />`);
   replaceOnce(
@@ -211,7 +208,6 @@ function render() {
       description,
       softwareVersion: version,
       url: canonical,
-      image: `${ORIGIN}/previews/docs/migration/4-to-5.jpg?v=5.6.0`,
       publisher: { "@type": "Organization", name: "Aura3D" }
     })}</script>`
   );
@@ -275,7 +271,7 @@ ${body}
   return `${head.replace(/^(<!doctype html>\n)/i, `$1${notice}\n`)}${main}${footer}`;
 }
 
-const html = render();
+const html = withSocialCard(render());
 if (CHECK) {
   if (!existsSync(OUTPUT) || readFileSync(OUTPUT, "utf8") !== html) {
     console.error(`gen-migration-doc: ${OUTPUT} is stale; run node marketing/scripts/gen-migration-doc.mjs`);

@@ -3,6 +3,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { withSocialCard } from "./social-cards.mjs";
 import { gameGuidePath } from "./game-guide.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -28,6 +29,7 @@ const nav = `<a class="skip" href="#main">Skip to content</a>
 const footer = `<footer class="wrap footer"><a class="brand" href="/"><img src="/store-assets/brand/aura3d-logo.svg" alt="Aura3D" width="104" height="26"></a><a href="${gallery}">Games</a><a href="/docs/">Documentation</a><a href="https://github.com/auraoneai/aura3d">GitHub</a></footer>`;
 
 function write(relative, contents) {
+  contents = withSocialCard(contents);
   const file = join(root, relative);
   if (existsSync(file) && readFileSync(file, "utf8") === contents) return;
   if (check) throw new Error(`Stale ${relative}. Run node tools/site/gen-showcase-index.mjs`);
