@@ -706,6 +706,10 @@ export function emitMigratedSource(source: string): MigrateResult {
     });
   }
 
+  // Rewrites that span several lines (a multi-line `new THREE.Vector3(\n…)`
+  // collapsing to one line) move every later line; comments are keyed by the
+  // original line, so map them before splicing.
+  let toEmittedLine = emittedLineMap(source, rewrites);
   let code = source;
   // Longest-match first so an outer construct (`new UnrealBloomPass(new
   // THREE.Vector2(...), …)`) rewrites before the nested `new THREE.Vector2`
@@ -727,8 +731,16 @@ export function emitMigratedSource(source: string): MigrateResult {
   // three/app method folds — only when a renderer construct was seen so
   // non-three `.render(`/`.setSize(` calls are never touched.
   if (sawRenderer) {
+    // Report the folded renderer calls: the codemod comments them out, so the
+    // row names the construct and the action that restores its effect.
+    source.split("\n").forEach((text, index) => {
+      for (const m of text.matchAll(RENDERER_FOLD_CALL)) {
+        const action = RENDERER_FOLD_ACTIONS[m[2]!]!;
+        rows.push({ construct: `${m[1]}.${m[2]}(${m[3]})`, line: index + 1, mapping: "approximate", note: action });
+      }
+    });
     code = code.replace(/([A-Za-z_$][\w$]*)\.setSize\([^;\n]*\)/g, `/* a3d: $1.setSize(...) — the app owns canvas sizing (createAuraApp resize option) */`);
-    code = code.replace(/([A-Za-z_$][\w$]*)\.setPixelRatio\([^;\n]*\)/g, `/* a3d: $1.setPixelRatio(...) — app.setPixelRatio lands with lane L7 (SH-05) */`);
+    code = code.replace(/([A-Za-z_$][\w$]*)\.setPixelRatio\([^;\n]*\)/g, `/* a3d: $1.setPixelRatio(...) — pass the ratio as createAuraApp({ pixelRatio }) (it wins over the default min(devicePixelRatio, tier cap 2) on mount and resize) or call app.setPixelRatio(ratio) */`);
     code = code.replace(/([A-Za-z_$][\w$]*)\.setClearColor\([^;\n]*\)/g, `/* a3d: $1.setClearColor(...) — app.setClearColor lands with lane L7 (SH-05); clear colour comes from scene().background */`);
     code = code.replace(/([A-Za-z_$][\w$]*)\.setAnimationLoop\(/g, `$1.onFrame(`);
     code = code.replace(/([A-Za-z_$][\w$]*)\.render\([^;\n]*\)/g, `/* a3d: $1.render(...) — createAuraApp renders its scene every frame; manual stepping is app.step(dt) */`);
@@ -745,6 +757,8 @@ export function emitMigratedSource(source: string): MigrateResult {
       .map(([from, names]) => `import { ${[...names].sort().join(", ")} } from "${from}";`)
       .join("\n");
     code = `${statements}\n${code}`;
+    const before = toEmittedLine, prefix = importGroups.length;
+    toEmittedLine = (line) => before(line) + prefix;
   }
   if (importGroups.length > 0 || constructs.some((x) => x.construct === "import")) {
     let rootImportWritten = hasThreeImportStatement ? false : true;
@@ -815,7 +829,12 @@ export function emitMigratedSource(source: string): MigrateResult {
 
   // splice comments (bottom-up so line numbers stay valid)
   const codeLines = code.split("\n");
-  for (const [line, texts] of [...comments.entries()].sort((a, b) => b[0] - a[0])) {
+  const placed = new Map<number, string[]>();
+  for (const [line, texts] of comments) {
+    const at = toEmittedLine(line);
+    placed.set(at, [...(placed.get(at) ?? []), ...texts]);
+  }
+  for (const [line, texts] of [...placed.entries()].sort((a, b) => b[0] - a[0])) {
     const at = Math.min(line, codeLines.length);
     codeLines.splice(Math.max(0, at - 1), 0, ...texts);
   }
@@ -823,6 +842,40 @@ export function emitMigratedSource(source: string): MigrateResult {
 
   rows.sort((a, b) => a.line - b.line);
   return { code, rows, rewrittenConstructs: rewritten };
+}
+
+const RENDERER_FOLD_CALL = /([A-Za-z_$][\w$]*)\.(setPixelRatio|setSize|setClearColor)\(([^;\n]*)\)/g;
+const RENDERER_FOLD_ACTIONS: Readonly<Record<string, string>> = {
+  setPixelRatio: "commented out — pass the same ratio as createAuraApp({ pixelRatio }) (explicit wins over the default min(devicePixelRatio, tier cap 2), on mount and on parent resize) or call app.setPixelRatio(ratio); a dropped cap changes the backing-store size.",
+  setSize: "commented out — the app sizes the canvas to its parent (createAuraApp resize option); size the parent element instead.",
+  setClearColor: "commented out — set the clear colour with scene({ background }) or app.setClearColor(color, alpha)."
+};
+
+/**
+ * Original line -> emitted line after the string rewrites. A line inside a
+ * multi-line rewrite maps to the rewrite's first line.
+ */
+function emittedLineMap(source: string, rewrites: readonly { readonly match: string; readonly replacement: string }[]): (line: number) => number {
+  const spans: { readonly start: number; readonly end: number; readonly startLine: number; readonly endLine: number; readonly delta: number }[] = [];
+  const lineAt = (offset: number): number => source.slice(0, offset).split("\n").length;
+  for (const { match, replacement } of [...rewrites].sort((a, b) => b.match.length - a.match.length)) {
+    if (match === "") continue;
+    const delta = replacement.split("\n").length - match.split("\n").length;
+    for (let at = source.indexOf(match); at >= 0; at = source.indexOf(match, at + match.length)) {
+      const end = at + match.length;
+      // Nested inside (or overlapping) a longer rewrite that is applied first.
+      if (spans.some((span) => at < span.end && end > span.start)) continue;
+      spans.push({ start: at, end, startLine: lineAt(at), endLine: lineAt(end), delta });
+    }
+  }
+  return (line) => {
+    let mapped = line;
+    for (const span of spans) {
+      if (span.delta === 0 || line <= span.startLine) continue;
+      mapped += line > span.endLine ? span.delta : span.startLine - line;
+    }
+    return mapped;
+  };
 }
 
 function rowFor(c: ThreeConstruct, mapping: ThreeMapping | undefined): MigrateRow {
