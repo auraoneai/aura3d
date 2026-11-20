@@ -4,8 +4,10 @@
 // launcher stages with). The ACR source pass (tools/remote-acr/run-source5.sh)
 // ships the staged files without `.git`, plus `.native-source-manifest.json`
 // (tools/remote-acr/source5-manifest.mjs): its `files`, `administrativeFiles`
-// and `stagedExcludedPaths` together are exactly the staged files, so without
-// Git history that manifest is the candidate's file list. The legacy
+// and `stagedExcludedPaths` together are exactly the candidate's files, so without
+// Git history that manifest is the candidate's file list. Like `git ls-files`, it
+// includes the `unstaged` root evidence media the launcher did not upload, so
+// callers that read bytes must tolerate their absence. The legacy
 // `shasum` list tools/remote-acr/.source5-manifest.txt is still read when present.
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';

@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { gitSourceInputDigest, sourceIdentity, stagedSourceIdentity } from '../../../tools/release/source-identity.mjs';
-import { buildSource5Manifest, SOURCE5_MANIFEST_NAME, writeSource5Manifest } from '../../../tools/remote-acr/source5-manifest.mjs';
+import { buildSource5Manifest, commitBlobIds, selectUnstagedSources, SOURCE5_MANIFEST_NAME, writeSource5Manifest } from '../../../tools/remote-acr/source5-manifest.mjs';
 import { readSource5Manifest } from '../../../tools/remote-acr/source5-files.mjs';
 import { CONSUMER_INDEX_NAME, consumerPartDir, planArchives, shardDownloadDir, shardIndexName, stageArtifacts, stageConsumers, verifyDownloadedArtifacts, verifyDownloadedConsumerParts, verifyDownloadedConsumers, verifyDownloadedExamples } from '../../../tools/remote-acr/source5-artifacts.mjs';
 import { exampleShardRecord, exampleShardReportName } from '../../../tools/agent-examples/shard.mjs';
@@ -33,6 +33,24 @@ function candidate() {
   put(root, 'tests/reports/final/kept.json', '{}\n');
   put(root, 'BUNDLE_SIZES.md', '# sizes\n');
   symlinkSync('src/index.ts', join(root, 'packages/engine/entry.ts'));
+  git(root, 'init', '-q');
+  git(root, '-c', 'user.email=t@example.com', '-c', 'user.name=t', 'add', '-A');
+  git(root, '-c', 'user.email=t@example.com', '-c', 'user.name=t', '-c', 'commit.gpgsign=false', 'commit', '-qm', 'fixture');
+  return { root, commit: git(root, 'rev-parse', 'HEAD'), tree: git(root, 'rev-parse', 'HEAD^{tree}'), paths: git(root, 'ls-files', '-z').split('\0').filter(Boolean) };
+}
+/** The candidate plus root evidence: unread frames, read screens and receipts, a frame named by tools/, and evidence data. */
+function evidenceCandidate() {
+  const root = temp('repo');
+  put(root, 'package.json', '{"name":"fixture"}\n');
+  put(root, 'pnpm-lock.yaml', "lockfileVersion: '9.0'\n");
+  put(root, 'packages/engine/src/index.ts', 'export const x = 1;\n');
+  put(root, 'evidence/run-1/frames/a.png', Buffer.from('\x89PNG unread frame a'));
+  put(root, 'evidence/run-1/frames/b.webp', Buffer.from('RIFF unread frame b'));
+  put(root, 'evidence/run-1/report.json', '{"frames":["frames/a.png"]}\n');
+  put(root, 'evidence/game/screens/final/card.jpg', Buffer.from('listed by gen-game-inventory'));
+  put(root, 'evidence/receipts/cap/frames/4.0.0.png', Buffer.from('re-hashed by receipts/check'));
+  put(root, 'evidence/run-1/frames/baseline.jpg', Buffer.from('sha-pinned baseline'));
+  put(root, 'tools/visual/plan.json', '{"baseline":"evidence/run-1/frames/baseline.jpg"}\n');
   git(root, 'init', '-q');
   git(root, '-c', 'user.email=t@example.com', '-c', 'user.name=t', 'add', '-A');
   git(root, '-c', 'user.email=t@example.com', '-c', 'user.name=t', '-c', 'commit.gpgsign=false', 'commit', '-qm', 'fixture');
@@ -73,6 +91,72 @@ describe('source5 staged manifest (AURA3D_SOURCE_MANIFEST)', () => {
     const run = spawnSync(process.execPath, [join(REPO, 'tools/remote-acr/source5-manifest.mjs'), 'write', ctx, list, commit, tree], { encoding: 'utf8' });
     expect(run.status, run.stderr).toBe(0);
     expect(JSON.parse(readFileSync(join(ctx, SOURCE5_MANIFEST_NAME), 'utf8')).origin).toEqual({ commit, tree });
+  });
+
+  it('leaves unread root evidence media out of the context without changing the identity', () => {
+    const { root, commit, tree, paths } = evidenceCandidate();
+    const unstaged = selectUnstagedSources({ root, paths, treeBlobs: commitBlobIds(root, commit) });
+    // Screens, receipts, a frame named under tools/ and evidence data stay staged.
+    expect(unstaged.map((entry) => entry.path)).toEqual(['evidence/run-1/frames/a.png', 'evidence/run-1/frames/b.webp']);
+    for (const entry of unstaged) expect(entry.gitBlob).toBe(git(root, 'rev-parse', `${commit}:${entry.path}`));
+    const skip = new Set(unstaged.map((entry) => entry.path));
+    const ctx = stage(root, paths.filter((path) => !skip.has(path)));
+    const { manifest, identity } = writeSource5Manifest({ root: ctx, paths, commit, tree, unstaged, sourceRoot: root });
+    // Every candidate file stays in `files`; the two frames are only declared unstaged.
+    expect(manifest.files.map((f: { path: string }) => f.path)).toEqual([...paths].sort());
+    expect(manifest.unstaged.files).toEqual(unstaged);
+    expect(existsSync(join(ctx, 'evidence/run-1/frames/a.png'))).toBe(false);
+    // Same identity as the full Git checkout: the freeze binding (bindSourceIdentityToCommit) is unchanged.
+    const fromGit = sourceIdentity(root, null);
+    expect(identity.inputDigest).toBe(gitSourceInputDigest(root));
+    expect(identity.fingerprint).toBe(fromGit.fingerprint);
+    expect(manifest.unstaged.fingerprint).toBe(fromGit.fingerprint);
+    // Same inputDigest and fingerprint as a manifest of the full context.
+    const fullCtx = stage(root, paths);
+    const full = writeSource5Manifest({ root: fullCtx, paths, commit, tree });
+    expect(full.manifest.unstaged).toBeUndefined();
+    expect({ inputDigest: identity.inputDigest, fingerprint: identity.fingerprint }).toEqual({ inputDigest: full.identity.inputDigest, fingerprint: full.identity.fingerprint });
+    // Without Git the candidate file list still includes the unstaged files (as `git ls-files` does).
+    expect(readSource5Manifest(ctx)).toEqual([...paths].sort());
+  });
+
+  it('stages modified or untracked evidence media and refuses an unstaged file that is staged or changed', () => {
+    const { root, commit, tree, paths } = evidenceCandidate();
+    put(root, 'evidence/run-1/frames/a.png', 'edited after commit');
+    put(root, 'evidence/run-2/new.png', 'untracked');
+    const all = [...paths, 'evidence/run-2/new.png'];
+    expect(selectUnstagedSources({ root, paths: all, treeBlobs: commitBlobIds(root, commit) }).map((entry) => entry.path)).toEqual(['evidence/run-1/frames/b.webp']);
+    git(root, 'checkout', '--', 'evidence/run-1/frames/a.png');
+    const unstaged = selectUnstagedSources({ root, paths, treeBlobs: commitBlobIds(root, commit) });
+    expect(() => buildSource5Manifest({ root: stage(root, paths), paths, commit, tree, unstaged, sourceRoot: root })).toThrow(/present in the staged context/);
+    const ctx = stage(root, paths.filter((path) => !unstaged.some((entry) => entry.path === path)));
+    expect(() => buildSource5Manifest({ root: ctx, paths, commit, tree, unstaged })).toThrow(/need the checkout/);
+    expect(() => buildSource5Manifest({ root: ctx, paths, commit, tree, unstaged: [{ path: 'packages/engine/src/index.ts', gitBlob: '0'.repeat(40) }], sourceRoot: root })).toThrow(/Not an unstageable/);
+    put(root, 'evidence/run-1/frames/a.png', 'edited after selection');
+    expect(() => buildSource5Manifest({ root: ctx, paths, commit, tree, unstaged, sourceRoot: root })).toThrow(/differs from its commit blob/);
+  });
+
+  it('runs select and write as the launcher does', () => {
+    const { root, commit, tree, paths } = evidenceCandidate();
+    const dir = temp('lists'), all = join(dir, 'all'), list = join(dir, 'list'), unstagedFile = join(dir, 'unstaged.json');
+    writeFileSync(all, paths.join('\0') + '\0');
+    const cli = (...args: string[]) => spawnSync(process.execPath, [join(REPO, 'tools/remote-acr/source5-manifest.mjs'), ...args], { encoding: 'utf8', cwd: root });
+    const select = cli('select', root, all, commit, list, unstagedFile);
+    expect(select.status, select.stderr).toBe(0);
+    const staged = readFileSync(list, 'utf8').split('\0').filter(Boolean);
+    expect(staged).toEqual(paths.filter((path) => !/frames\/[ab]\./.test(path)));
+    const ctx = stage(root, staged);
+    const write = cli('write', ctx, all, commit, tree, unstagedFile, root);
+    expect(write.status, write.stderr).toBe(0);
+    expect(write.stdout).toContain('(2 unstaged)');
+    const manifest = JSON.parse(readFileSync(join(ctx, SOURCE5_MANIFEST_NAME), 'utf8'));
+    expect(stagedSourceIdentity(ctx, SOURCE5_MANIFEST_NAME).fingerprint).toBe(sourceIdentity(root, null).fingerprint);
+    expect(manifest.unstaged.files.map((entry: { path: string }) => entry.path)).toEqual(['evidence/run-1/frames/a.png', 'evidence/run-1/frames/b.webp']);
+    // SOURCE5_STAGE_ALL=1 stages everything.
+    const everything = spawnSync(process.execPath, [join(REPO, 'tools/remote-acr/source5-manifest.mjs'), 'select', root, all, commit, list, unstagedFile], { encoding: 'utf8', env: { ...process.env, SOURCE5_STAGE_ALL: '1' } });
+    expect(everything.status, everything.stderr).toBe(0);
+    expect(readFileSync(list, 'utf8').split('\0').filter(Boolean)).toEqual(paths);
+    expect(JSON.parse(readFileSync(unstagedFile, 'utf8'))).toEqual([]);
   });
 
   it('refuses inputs the validator would reject', () => {

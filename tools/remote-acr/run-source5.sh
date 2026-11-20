@@ -112,7 +112,7 @@ cleanup() {
   if [ "$PUSHED" = 1 ] && [ "$KEEP_IMAGE" != 1 ]; then
     "$AZ_WRAPPER" acr repository delete -n "$ACR_NAME" --image "$IMAGE_REPO:$IMAGE_TAG" --yes -o none || { echo "image cleanup FAILED: $IMAGE_REPO:$IMAGE_TAG" >&2; rc=1; }
   fi
-  rm -rf "$CTX" "$CTX.list"
+  rm -rf "$CTX" "$CTX.all" "$CTX.list" "$CTX.unstaged.json"
   exit "$rc"
 }
 trap cleanup EXIT INT TERM
@@ -128,11 +128,15 @@ TREE="$(git rev-parse "$COMMIT^{tree}")"
 { git ls-files -z --cached --others --exclude-standard \
     | grep -zv -e '^tests/reports/' -e '/node_modules/' -e '^node_modules/'
   git ls-files -z --cached -- tests/reports; } \
-  > "$CTX.list"
+  > "$CTX.all"
+# Root evidence screenshots/frames/videos that no stage reads (~0.8 GB) are not uploaded: they stay
+# in the manifest's `files` with their Git blob ids under `unstaged` (source5-manifest.mjs select;
+# SOURCE5_STAGE_ALL=1 uploads everything).
+node tools/remote-acr/source5-manifest.mjs select "$REPO_ROOT" "$CTX.all" "$COMMIT" "$CTX.list" "$CTX.unstaged.json"
 rsync -a --from0 --files-from="$CTX.list" ./ "$CTX/"
 # JSON manifest in the exact stagedSourceIdentity schema (publish-all --pack-only
 # and every AURA3D_SOURCE_MANIFEST consumer), verified here before any build.
-node tools/remote-acr/source5-manifest.mjs write "$CTX" "$CTX.list" "$COMMIT" "$TREE"
+node tools/remote-acr/source5-manifest.mjs write "$CTX" "$CTX.all" "$COMMIT" "$TREE" "$CTX.unstaged.json" "$REPO_ROOT"
 cp "$CTX/.native-source-manifest.json" "$OUT_DIR/source-manifest.json"
 # `az acr build` silently drops every file named .gitignore ("default ignore rules").
 # They are part of the source identity, so ship them as .gitignore.a3d-staged; the

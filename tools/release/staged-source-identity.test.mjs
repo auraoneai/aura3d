@@ -5,7 +5,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSyn
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { bindSourceIdentityToCommit, isSourceInput, sourceManifestInputDigest, stagedSourceIdentity } from './source-identity.mjs';
+import { bindSourceIdentityToCommit, gitBlobId, isSourceInput, isUnstageableSource, sourceInputFingerprint, sourceManifestInputDigest, stagedSourceIdentity } from './source-identity.mjs';
 import { loadValidatedReleasePlan } from './exact-release-plan.mjs';
 import { publicPackageNames } from './release-inventory.mjs';
 
@@ -79,6 +79,49 @@ test('rejects symlink escapes, including links through another symlink', () => {
     f.manifest.files.find(entry => entry.path === path).sha256 = hash('redirect/missing');
     f.manifest.inputDigest = sourceManifestInputDigest(f.manifest.files); f.save();
     assert.throws(() => stagedSourceIdentity(f.root, '.native-source-manifest.json'), /symlink escapes/);
+  } finally { f.remove(); }
+});
+
+test('accepts absent unstaged evidence media bound by digest, blob and host fingerprint, and nothing else', () => {
+  const f = fixture();
+  const manifestPath = '.native-source-manifest.json';
+  try {
+    const shot = 'evidence/run-1/frame.png', bytes = Buffer.from('\x89PNG frame bytes');
+    mkdirSync(join(f.root, 'evidence/run-1'), { recursive: true });
+    writeFileSync(join(f.root, shot), bytes);
+    f.manifest.files.unshift({ path: shot, sha256: hash(bytes), mode: '100644', type: 'file' });
+    f.manifest.inputDigest = sourceManifestInputDigest(f.manifest.files);
+    const full = stagedSourceIdentity((f.save(), f.root), manifestPath);
+    const fingerprint = sourceInputFingerprint(f.manifest.files.map(entry => entry.path), () => f.root);
+    assert.equal(fingerprint, full.fingerprint);
+    f.manifest.unstaged = { files: [{ path: shot, gitBlob: gitBlobId(bytes) }], fingerprint }; f.save();
+    // Present: bytes, blob and the recorded fingerprint are all re-checked.
+    assert.deepEqual({ ...stagedSourceIdentity(f.root, manifestPath), manifestSha256: null }, { ...full, manifestSha256: null });
+    // Absent: identity unchanged (same inputDigest and fingerprint as the full context).
+    rmSync(join(f.root, shot));
+    const partial = stagedSourceIdentity(f.root, manifestPath);
+    assert.equal(partial.inputDigest, full.inputDigest);
+    assert.equal(partial.fingerprint, full.fingerprint);
+    // A present file must still match its blob; a complete context must reproduce the fingerprint.
+    writeFileSync(join(f.root, shot), bytes);
+    f.manifest.unstaged.files[0].gitBlob = '0'.repeat(40); f.save();
+    assert.throws(() => stagedSourceIdentity(f.root, manifestPath), /blob mismatch/);
+    f.manifest.unstaged.files[0].gitBlob = gitBlobId(bytes); f.manifest.unstaged.fingerprint = '0'.repeat(64); f.save();
+    assert.throws(() => stagedSourceIdentity(f.root, manifestPath), /fingerprint mismatch/);
+    f.manifest.unstaged.fingerprint = fingerprint;
+    // Only declared root evidence media may be absent: code stays mandatory, undeclared paths are refused.
+    assert.equal(isUnstageableSource('src/input.ts'), false);
+    assert.equal(isUnstageableSource('apps/demo/evidence/shot.png'), false);
+    f.manifest.unstaged.files = [{ path: 'src/input.ts', gitBlob: '1'.repeat(40) }]; f.save();
+    assert.throws(() => stagedSourceIdentity(f.root, manifestPath), /Invalid or duplicate unstaged source path: src\/input.ts/);
+    f.manifest.unstaged.files = [{ path: 'evidence/other.png', gitBlob: '1'.repeat(40) }]; f.save();
+    assert.throws(() => stagedSourceIdentity(f.root, manifestPath), /unstaged source path: evidence\/other.png/);
+    f.manifest.unstaged.files = []; f.save();
+    assert.throws(() => stagedSourceIdentity(f.root, manifestPath), /Invalid unstaged source entries/);
+    f.manifest.unstaged.files = [{ path: shot, gitBlob: gitBlobId(bytes) }]; f.save();
+    rmSync(join(f.root, shot));
+    rmSync(join(f.root, 'src', 'input.ts'));
+    assert.throws(() => stagedSourceIdentity(f.root, manifestPath), /missing staged source src\/input.ts/);
   } finally { f.remove(); }
 });
 

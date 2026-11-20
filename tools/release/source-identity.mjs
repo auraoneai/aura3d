@@ -28,6 +28,13 @@ export const isSourceInput = path => {
     || /\.(?:pem|p12|pfx|key)$/i.test(name)) return false;
   return true;
 };
+// Root evidence screenshots, frames and videos are the only source inputs the ACR source pass
+// (tools/remote-acr/run-source5.sh) may leave out of its build context; the launcher still stages
+// the ones a stage reads (tools/remote-acr/source5-manifest.mjs `selectUnstagedSources`). A staged
+// manifest keeps them in `files` (so inputDigest and the freeze binding are unchanged) and names
+// them in `unstaged.files` with their Git blob ids. Code, configs and data are always staged.
+const UNSTAGEABLE_SOURCE = /^evidence\/.+\.(?:png|jpe?g|webp|gif|mp4|webm)$/i;
+export const isUnstageableSource = path => isSourceInput(path) && UNSTAGEABLE_SOURCE.test(path);
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const gitAt = root => (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).trim();
 const modeOf = stat => stat.isSymbolicLink() ? '120000' : stat.isFile() ? ((stat.mode & 0o111) ? '100755' : '100644') : null;
@@ -71,11 +78,33 @@ function assertBoundedSymlinkTarget(root, absolute, target) {
   }
   throw new Error(`Source symlink cycle: ${relative(root, absolute)}`);
 }
-function fingerprint(root, paths) {
+function fingerprint(root, paths, rootOf = () => root) {
   const hash = createHash('sha256');
-  for (const path of [...paths].sort()) hash.update(path).update('\0').update(bytesForPath(root, path).fingerprintBytes).update('\0');
+  for (const path of [...paths].sort()) hash.update(path).update('\0').update(bytesForPath(rootOf(path), path).fingerprintBytes).update('\0');
   return hash.digest('hex');
 }
+/** The identity byte fingerprint of `paths`, reading each path under `rootOf(path)` (e.g. staged context or full checkout). */
+export const sourceInputFingerprint = (paths, rootOf) => fingerprint(null, paths, rootOf);
+/** Git blob id of `bytes` (`git hash-object`), SHA-1 or SHA-256 by the length of the repository's object ids. */
+export const gitBlobId = (bytes, objectIdLength = 40) => createHash(objectIdLength === 64 ? 'sha256' : 'sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
+// `unstaged` of a staged manifest: path -> Git blob id, validated against `files` and origin.
+function unstagedSources(manifest) {
+  if (manifest.unstaged === undefined) return new Map();
+  const { files, fingerprint: recorded } = manifest.unstaged ?? {};
+  if (!Array.isArray(files) || files.length === 0 || !/^[a-f0-9]{64}$/.test(recorded ?? '')) throw new Error('Invalid unstaged source entries');
+  const declared = new Map(manifest.files.map(entry => [entry?.path, entry]));
+  const unstaged = new Map();
+  let previous = '';
+  for (const entry of files) {
+    const { path, gitBlob } = entry ?? {};
+    if (!isUnstageableSource(path) || declared.get(path)?.type !== 'file' || (previous && path <= previous)
+      || typeof gitBlob !== 'string' || gitBlob.length !== manifest.origin.tree.length || !/^[a-f0-9]+$/.test(gitBlob)) throw new Error(`Invalid or duplicate unstaged source path: ${path}`);
+    previous = path;
+    unstaged.set(path, gitBlob);
+  }
+  return unstaged;
+}
+const present = (root, path) => { try { lstatSync(resolve(root, path)); return true; } catch (error) { if (error?.code === 'ENOENT') return false; throw error; } };
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
   if (value && typeof value === 'object') return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`;
@@ -93,7 +122,13 @@ function walk(root, dir = root, found = []) {
   return found;
 }
 
-/** Verify the source-job manifest and all bytes, without relying on a .git directory. */
+/**
+ * Verify the source-job manifest and all bytes, without relying on a .git directory.
+ * Entries named in `unstaged.files` (root evidence media the launcher left out) may be absent:
+ * they stay bound by their `files` sha256 (inputDigest) and Git blob id (origin tree), and the
+ * identity fingerprint is the host's `unstaged.fingerprint` over every file. When they are all
+ * present, their bytes and that fingerprint are re-checked here as well.
+ */
 export function stagedSourceIdentity(root, manifestPath) {
   root = resolve(root);
   const manifestBytes = readFileSync(resolve(root, manifestPath));
@@ -101,6 +136,8 @@ export function stagedSourceIdentity(root, manifestPath) {
   if (manifest.schema !== 'aura3d.native-source-manifest/1' || !/^[a-f0-9]{40}(?:[a-f0-9]{24})?$/.test(manifest.origin?.commit ?? '') || !/^[a-f0-9]{40}(?:[a-f0-9]{24})?$/.test(manifest.origin?.tree ?? '') || !Array.isArray(manifest.files) || manifest.files.length === 0) throw new Error('Invalid staged source manifest');
   const administrative = manifest.administrativeFiles ?? [];
   if (!Array.isArray(administrative)) throw new Error('Invalid administrative source entries');
+  const unstaged = unstagedSources(manifest);
+  let absent = 0;
   const seen = new Set();
   for (const [entries, permitted] of [[manifest.files, isSourceInput], [administrative, isAdministrativeSource]]) {
     let previous = '';
@@ -109,9 +146,11 @@ export function stagedSourceIdentity(root, manifestPath) {
       if (!permitted(path) || (previous && path <= previous) || seen.has(path) || !/^[a-f0-9]{64}$/.test(expected ?? '')) throw new Error(`Invalid or duplicate staged source path: ${path}`);
       previous = path;
       seen.add(path);
+      if (entries === manifest.files && unstaged.has(path) && !present(root, path)) { absent++; continue; }
       let actual;
       try { actual = bytesForPath(root, path); } catch (error) { throw new Error(`Invalid or missing staged source ${path}: ${error.message}`); }
       if (type !== actual.type || mode !== actual.mode || expected !== sha256(actual.bytes)) throw new Error(`Staged source bytes or mode mismatch: ${path}`);
+      if (entries === manifest.files && unstaged.has(path) && unstaged.get(path) !== gitBlobId(actual.bytes, manifest.origin.tree.length)) throw new Error(`Unstaged source blob mismatch: ${path}`);
     }
   }
   const undeclared = walk(root).filter(path => !seen.has(path));
@@ -120,7 +159,9 @@ export function stagedSourceIdentity(root, manifestPath) {
   if (inputDigest !== manifest.inputDigest) throw new Error('Staged source manifest input digest mismatch');
   const lockEntry = manifest.files.find(entry => entry.path === 'pnpm-lock.yaml');
   if (!lockEntry || lockEntry.sha256 !== manifest.lockfileSha256) throw new Error('Staged lockfile identity mismatch');
-  return { commit: manifest.origin.commit, tree: manifest.origin.tree, lockfileSha256: lockEntry.sha256, fingerprint: fingerprint(root, manifest.files.map(entry => entry.path)), inputDigest, manifestSha256: sha256(manifestBytes) };
+  const sourceFingerprint = absent ? manifest.unstaged.fingerprint : fingerprint(root, manifest.files.map(entry => entry.path));
+  if (unstaged.size && !absent && sourceFingerprint !== manifest.unstaged.fingerprint) throw new Error('Unstaged source fingerprint mismatch');
+  return { commit: manifest.origin.commit, tree: manifest.origin.tree, lockfileSha256: lockEntry.sha256, fingerprint: sourceFingerprint, inputDigest, manifestSha256: sha256(manifestBytes) };
 }
 
 function gitSourceIdentity(root) {
