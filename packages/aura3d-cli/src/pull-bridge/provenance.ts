@@ -13,18 +13,16 @@ import type { CliAssetSearchProfile } from "./types.js";
 import { isPositiveVector3 } from "./vector3.js";
 
 /**
- * Structural triangle floors mirrored from the Meshy admission profiles.
- *
- * `meshy/admission.ts` enforces a 1,000-triangle floor for vehicles and a
- * 3,000-triangle floor for humanoids; the role-admission hero floor is 3,000.
- * The same measured-and-below-floor classes are blocked here pre-download so a
+ * Structural triangle floors: 1,000 triangles for vehicles and 3,000 for
+ * humanoids (the role-admission hero floor is also 3,000).
+ * Measured-and-below-floor candidates are blocked here pre-download so a
  * no-key resolve refuses a distant-prop shell (e.g. the 792-triangle body
  * shell) without spending a download on it. A missing triangle count never
  * blocks: absent metadata is unproven, not unfit.
  */
 export const PROVENANCE_VEHICLE_MIN_TRIANGLES = 1_000;
 export const PROVENANCE_HUMANOID_MIN_TRIANGLES = 3_000;
-/** Bounds aspect ratio above this is degenerate (mirrors Meshy `bounds-degeneracy`). */
+/** Bounds aspect ratio above this is degenerate (a stray-geometry or export-scale defect). */
 export const PROVENANCE_MAX_BOUNDS_ASPECT_RATIO = 1_000;
 
 function catalogTriangles(asset: AuraCanonicalAsset): number | undefined {
@@ -106,7 +104,7 @@ export function createPostDownloadCandidateBlockingWarnings(
   if (inspection.warnings.some((warning) => warning.includes("invisible or unreadable"))) {
     warnings.push("downloaded file contains invisible or unreadable materials");
   }
-  // Mirror the Meshy triangle floor post-download: a catalog count that looked
+  // Apply the triangle floor again post-download: a catalog count that looked
   // fine (or was absent) still refuses when the role needs a hero subject and
   // the measured catalog count is a shell. Profile-aware so an explicit
   // character profile enforces the humanoid floor even when the catalog left

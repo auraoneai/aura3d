@@ -41,7 +41,6 @@ aura3d assets generate --name key --renormalize [--size ...] [--front ...] [--ya
   <out-dir>/<key>.glb + <key>.idol.json, admitted as quality "candidate" with the fal licence (skip with --no-admit).
   Key: FAL_KEY env, --key-file, ~/.config/aura3d/fal.env, ~/.config/auraone/fal.env (never printed). Every submit is ledgered
   to <work>/ledger.jsonl; a rerun resumes pending requests instead of paying twice. --dry-run prints the estimate only.
-  --provider meshy points at the existing Meshy flow (assets resolve --allow meshy / assets import-meshy).
   Spec: { "game": "<slug>", "outDir": "assets/idol", "items": [ { "key": "hero", "subject": "...", "kind": "character", "rig": true, "size": { "height": 1.8 } } ] }`;
 
 export const ANIMATION_GENERATE_USAGE = `aura3d animation generate "<prompt>" --onto rigged.glb --out hero.glb [--name Clip] [--duration 2] [--seed 7] [--guidance 5] [--loop] [--window a,b] [--keep-turn] [--fbx] [--keep-base-animations] [--force] [--dry-run] [--work ${DEFAULT_WORK}] [--game slug] [--key-file file] [--json]
@@ -130,13 +129,7 @@ export async function assetsGenerateVerb(argv: readonly string[], rawIo: Generat
   }
   const problems = [...args.errors];
   const provider = args.values.get("--provider") ?? "idol";
-  if (provider === "meshy") {
-    io.stderr("assets generate --provider meshy is not a lane of this command: Meshy runs through the existing flow.");
-    io.stderr("  aura3d assets resolve \"<need>\" --name key --allow meshy [--dry-run]   (catalog first, Meshy only when allowed)");
-    io.stderr("  aura3d assets import-meshy <download-dir> --name key ...               (admit a finished Meshy download)");
-    return 2;
-  }
-  if (provider !== "idol") problems.push(`--provider ${provider} is not supported (use idol, or meshy for the existing Meshy flow)`);
+  if (provider !== "idol") problems.push(`--provider ${provider} is not supported (the only provider is idol)`);
   if (args.positionals.length > 1) problems.push(`expected one quoted prompt, got ${args.positionals.length} words (quote the prompt)`);
   const specPath = args.values.get("--spec");
   const renormalize = args.flags.has("--renormalize");

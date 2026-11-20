@@ -1,10 +1,9 @@
 /**
- * Asset tooling commands: `assets merge-clips`, `meshy ledger`. (`assets optimize --file` extends the prd05 verb and
- * `assets import-meshy --into` extends the built-in import in cli.ts; both reuse the modules in this folder.)
+ * Asset tooling commands: `assets merge-clips`, `assets export`. (`assets optimize --file` extends the prd05 verb and
+ * reuses the modules in this folder.)
  */
 
 import { registerCliCommand } from "../../contracts/commands.js";
-import { meshyLedgerCommand } from "../meshyLedger.js";
 import { mergeClipsUsage, mergeGlbClips, parseClipSpec } from "./mergeClips.js";
 import { exportAssetsVerb, exportAssetsUsage } from "./export.js";
 
@@ -17,7 +16,7 @@ function flag(argv: readonly string[], name: string): string | undefined {
 registerCliCommand({
   name: "assets merge-clips",
   owner: "assets-tooling",
-  summary: "Merge Meshy animate-task clips into one rigged GLB, by node name.",
+  summary: "Merge per-clip animation GLBs into one rigged GLB, by node name.",
   usage: mergeClipsUsage(),
   run: async (argv, io) => {
     const base = flag(argv, "--base");
@@ -52,14 +51,6 @@ registerCliCommand({
   summary: "Export an Aura interchange scene with a loss report.",
   usage: exportAssetsUsage(),
   run: exportAssetsVerb
-});
-
-registerCliCommand({
-  name: "meshy ledger",
-  owner: "assets-tooling",
-  summary: "Credit ledger for paid Meshy generation: tracks spend (uncapped by default), opt-in caps, dry run, Prism reconcile, safe settlement.",
-  usage: "aura3d meshy ledger status|reserve|settle|reconcile|baseline|config|list [--ledger path] [--global-cap N] [--game-cap N] [--dry-run] [--apply] [--pool-json file] [--error-text text] [--game tag] [--op op] [--cap N] [--est N] [--rid id] [--status s] [--exit-code N] [--task-id id] [--task-status s] [--actual N] [--note text]",
-  run: (argv, io) => meshyLedgerCommand(argv, io)
 });
 
 export {};

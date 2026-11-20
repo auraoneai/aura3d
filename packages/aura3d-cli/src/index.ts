@@ -211,10 +211,9 @@ export type {
   GameGeometryCertificationResult,
   ReadRenderedProbeMetadataOptions
 } from "./asset-core-types.js";
-export { importMeshyAsset } from "./meshy/import.js";
-export { createMeshyAdmissionReport, inferMeshyAssetProfile, inspectMeshyTextureDimensions } from "./meshy/admission.js";
-export type { MeshyAdmissionCheck, MeshyAdmissionReport, MeshyAdmissionVerdict, MeshyAssetProfile } from "./meshy/admission.js";
-export type { ImportMeshyOptions, ImportMeshyResult } from "./meshy/import.js";
+/** @deprecated Meshy support was removed in 5.7.0; these exports remain as throwing stubs until the next major. */
+export { importMeshyAsset, createMeshyAdmissionReport, inferMeshyAssetProfile, inspectMeshyTextureDimensions } from "./removed-meshy.js";
+export type { ImportMeshyOptions, ImportMeshyResult, MeshyAdmissionCheck, MeshyAdmissionReport, MeshyAdmissionVerdict, MeshyAssetProfile } from "./removed-meshy.js";
 export type {
   AssetInspectionReport,
   AuraCliAnimationClipInspection,

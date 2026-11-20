@@ -83,11 +83,10 @@ describe("assets generate: CLI surface", () => {
     expect(readdirSync(project)).toEqual([]);
   });
 
-  test("--provider meshy only points at the existing Meshy flow", async () => {
+  test("--provider accepts only idol", async () => {
     const cap = capture(tmp());
-    expect(await assetsGenerateVerb(["a lamp", "--name", "lamp", "--provider", "meshy"], cap.io, { env: {} })).toBe(2);
-    expect(cap.err.join("\n")).toMatch(/assets resolve .*--allow meshy/);
-    expect(cap.err.join("\n")).toMatch(/assets import-meshy/);
+    expect(await assetsGenerateVerb(["a lamp", "--name", "lamp", "--provider", "other"], cap.io, { env: {} })).toBe(2);
+    expect(cap.err.join("\n")).toMatch(/--provider other is not supported \(the only provider is idol\)/);
   });
 
   test("--dry-run prints the cost estimate, makes no call and needs no key", async () => {

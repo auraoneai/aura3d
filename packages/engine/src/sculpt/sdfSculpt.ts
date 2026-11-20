@@ -293,7 +293,7 @@ export function sdfTaperedCapsule(p: V3, a: V3, b: V3, ra: number, rb: number): 
 /**
  * Extracts a smooth, watertight, closed 2-manifold organic mesh from an implicit SDF (`evaluate(x, y, z) < 0` inside)
  * using dual Surface-Nets + volume-preserving Taubin fairing + analytic SDF gradient normals.
- * Ideal for Meshy-grade unified creature/mascot bodies where head, brow sockets, torso, and haunches blend seamlessly.
+ * Ideal for unified creature/mascot bodies where head, brow sockets, torso, and haunches blend seamlessly.
  */
 export function sculptOrganicSdfMesh(opts: {
   readonly boundsMin: V3;

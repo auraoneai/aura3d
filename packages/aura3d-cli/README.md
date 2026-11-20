@@ -86,32 +86,13 @@ GLB clips or HY-Motion `motion.json` onto a rigged GLB as real glTF clips and
 fails on limb flips, a frozen T-pose or skin damage (known defects go in
 `aura.skin-allow.json`; `--strict` fails on any unlisted skin error).
 
-## Import A Meshy Candidate
-
-**Capability label:** CLI asset pipeline
-
-Meshy generation runs through the pinned official Meshy CLI. After a completed run is downloaded locally, admit a selected GLB through Aura3D:
-
-```bash
-npx @aura3d/cli@latest assets import-meshy artifacts/meshy/arena-relic/ \
-  --name arenaRelic \
-  --quality candidate \
-  --role prop \
-  --profile prop \
-  --rights-evidence artifacts/meshy/arena-relic/rights.json
-```
-
-The import reuses the normal Aura3D add, inspect, hash, manifest, and type-generation path and prints the generated `assets.arenaRelic` key plus the next validation steps. It records supplied rights evidence and generates typed `model(assets.arenaRelic)` keys for `@aura3d/engine`.
-
-See the [Meshy CLI guide](https://github.com/auraoneai/aura3d/blob/main/docs/meshy-cli.md).
-
 ## Command Shortlist
 
 ```bash
 npx @aura3d/cli@latest assets add ./model.glb --name model
 npx @aura3d/cli@latest assets search "studio robot" --json
 npx @aura3d/cli@latest assets resolve "studio robot" --name robot
-npx @aura3d/cli@latest assets import-meshy artifacts/meshy/arena-relic/ --name arenaRelic --quality candidate --role prop --profile prop --rights-evidence artifacts/meshy/arena-relic/rights.json
+npx @aura3d/cli@latest assets convert ./chair.fbx --out chair.glb
 npx @aura3d/cli@latest assets inspect ./model.glb --animation --humanoid
 npx @aura3d/cli@latest assets validate --source --release
 npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset fighter

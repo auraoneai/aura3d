@@ -22,16 +22,16 @@ import { readFileSync } from "node:fs";
 
 const PROFILE = "general";
 
-/** Names that existed when 5.6.0 shipped A6: they must never silently disappear from the catalog. */
+/** Names that existed when 5.6.0 shipped A6: they must never silently disappear from the catalog (5.7.0 removed two provider-specific asset commands deliberately). */
 const KNOWN_COMMANDS = [
   "animation inspect-clips", "animation package", "animation plan", "animation preview", "animation render", "animation review",
   "animation scene", "animation validate-hero", "animation verify", "assets add", "assets admit", "assets assemble-character",
-  "assets bake-impostor", "assets bind-game-route-evidence", "assets certify-game-geometry", "assets export", "assets import-meshy",
+  "assets bake-impostor", "assets bind-game-route-evidence", "assets certify-game-geometry", "assets export",
   "assets inspect", "assets library", "assets list", "assets lookdev", "assets merge-clips", "assets optimize", "assets prune",
   "assets repair-skin", "assets resolve", "assets review", "assets scan", "assets search", "assets serve", "assets thumbnail",
   "assets typegen", "assets validate", "assets validate-animation", "assets validate-animation-studio", "assets validate-game",
   "check-deploy", "codemod", "core inspect-programs", "doctor", "environments bake", "evidence judge", "examples", "help",
-  "import-three", "info", "init", "look capture", "look judge", "look lint", "look rubric", "meshy ledger", "migrate lighting",
+  "import-three", "info", "init", "look capture", "look judge", "look lint", "look rubric", "migrate lighting",
   "migrate three", "perf gate", "perf-report", "prd08 motion-report", "render", "sfx admit", "validate", "verify", "vfx validate-atlas"
 ];
 

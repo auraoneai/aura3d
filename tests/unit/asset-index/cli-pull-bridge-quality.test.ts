@@ -21,7 +21,7 @@ import {
 } from "../../../packages/aura3d-cli/src/pull-bridge";
 
 /**
- * ASSET-QUALITY BUILD: no-Meshy-key bad-hero gap.
+ * ASSET-QUALITY BUILD: open-source bad-hero gap.
  *
  * A 792-triangle body shell with no wheels modelled (the `showcaseCityVehicle`
  * class) must refuse -- pre-download, post-download, and at role admission --
@@ -180,7 +180,7 @@ describe("rankForProfile with query-role inference", () => {
   });
 });
 
-describe("pre-download provenance quality (Meshy mirror)", () => {
+describe("pre-download provenance quality (triangle floors)", () => {
   const shell = () =>
     asset({
       id: "catalog:shell",
@@ -260,7 +260,7 @@ describe("pre-download provenance quality (Meshy mirror)", () => {
   });
 });
 
-describe("post-download provenance quality (Meshy mirror)", () => {
+describe("post-download provenance quality (triangle floors)", () => {
   it("refuses the 792-triangle shell post-download", () => {
     const warnings = createPostDownloadCandidateBlockingWarnings(
       asset({

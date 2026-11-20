@@ -1,6 +1,6 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import {
   analyzeSkin, SKIN_BIND_MISMATCH, SKIN_FLAP, SKIN_STRETCH, SKIN_WEIGHT_SUM
@@ -11,7 +11,6 @@ import { rebuildLimbs, RebuildLimbsUnsupported } from "../../../../packages/aura
 import { repairSkin } from "../../../../packages/aura3d-cli/src/skin/repair";
 import { buildRiggedGlb, buildStaticGlb } from "./rigged-fixture";
 
-const root = resolve(__dirname, "../../../..");
 const tmp = mkdtempSync(join(tmpdir(), "aura3d-skin-"));
 afterAll(() => rmSync(tmp, { recursive: true, force: true }));
 const glb = (opts?: Parameters<typeof buildRiggedGlb>[0]) => parseGlb(buildRiggedGlb(opts));
@@ -131,43 +130,6 @@ describe("aura.skin-allow.json", () => {
     expect(allowed.allowReason).toMatch(/F11/);
     const project = checkProjectSkins(dir, { file: "bad.glb" });
     expect(project.ok).toBe(false); // id is the file stem "bad", not "hero"
-  });
-});
-
-// The Aura FC athletes are the regression: the rebuilt ones ship, the pre-rebuild one tore at the hips.
-function shippedGlb(slug: string): string | null {
-  const text = readFileSync(resolve(root, "apps/showcase-aura-fc-3d/src/aura-assets-v2.ts"), "utf8");
-  // invariant: source must keep `url: "/aura-assets/….glb"` beside each FC athlete slug — the skin regression finds the shipped striker/keeper GLBs instead of silently skipping
-  const match = new RegExp(`${slug}[\\s\\S]{0,260}?url: "(/aura-assets/[^"]+\\.glb)"`).exec(text);
-  const file = match ? resolve(root, "public", match[1]!.replace(/^\//, "")) : null;
-  return file && existsSync(file) && readFileSync(file).subarray(0, 4).toString() === "glTF" ? file : null;
-}
-const prerebuild = resolve(root, "tests/fixtures/skin/fc-striker-prerebuild.glb");
-const prerebuildReal = existsSync(prerebuild) && readFileSync(prerebuild).subarray(0, 4).toString() === "glTF";
-
-describe("Aura FC athlete regression", () => {
-  for (const slug of ["fcSoccerStrikerMeshy", "fcGoalkeeperMeshy"]) {
-    const file = shippedGlb(slug);
-    it.skipIf(!file)(`the shipped ${slug} passes the skin check`, () => {
-      const report = analyzeSkin(parseGlb(readFileSync(file!)), { samples: 8 });
-      expect(report.failures).toEqual([]);
-      expect(report.ok).toBe(true);
-    });
-  }
-
-  it.skipIf(!prerebuildReal)("the pre-rebuild striker (git history, skin and shorts meshes) fails with SKIN_STRETCH and SKIN_FLAP", () => {
-    const report = analyzeSkin(parseGlb(readFileSync(prerebuild)), { samples: 8 });
-    expect(report.ok).toBe(false);
-    expect(report.reasonCodes).toEqual(expect.arrayContaining([SKIN_STRETCH, SKIN_FLAP]));
-    expect(report.materials["fcSoccerStrikerMeshyAthlete-skin"]!.maxStretch).toBeGreaterThan(4);
-  });
-
-  it.skipIf(!prerebuildReal)("repair-skin --rebuild-limbs turns the pre-rebuild striker into one that passes", () => {
-    const dir = mkdtempSync(join(tmp, "fc-"));
-    const result = runRepairSkin(dir, prerebuild, { rebuildLimbs: true, cutStretch: 1.6, materialMap: { skin: /skin/i, shorts: /shorts/i, socks: /socks/i, boots: /dark/i }, out: join(dir, "fixed.glb") });
-    expect(result.ok).toBe(true);
-    expect(analyzeSkin(parseGlb(readFileSync(join(dir, "fixed.glb"))), { samples: 8 }).ok).toBe(true);
-    expect(readdirSync(dir)).toContain("fixed.glb");
   });
 });
 

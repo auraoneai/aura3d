@@ -246,7 +246,7 @@ export function scatterInArea(options: AuraScatterInAreaOptions): AuraScatterPoi
 
 /**
  * Radius LOD: split placements into bands by XZ distance from `origin`. `radii` ascend; the result has
- * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced Meshy models), the last is beyond every radius
+ * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced GLB models), the last is beyond every radius
  * (e.g. the cheap procedural fallback). Order inside each band is preserved.
  */
 export function splitScatterByDistance(points: readonly AuraScatterPoint[], origin: readonly [number, number], radii: readonly number[]): AuraScatterPoint[][] {

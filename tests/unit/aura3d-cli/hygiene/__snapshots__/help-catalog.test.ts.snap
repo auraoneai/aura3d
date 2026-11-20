@@ -128,27 +128,6 @@ exports[`help --json catalog > built-in entries match the snapshot (registry ent
   },
   {
     "flags": [
-      "--allowed-root",
-      "--file",
-      "--into",
-      "--keep-temp",
-      "--name",
-      "--overwrite",
-      "--prefix",
-      "--profile",
-      "--quality",
-      "--rights-evidence",
-      "--role",
-      "--shared-manifest",
-      "--source-entry",
-      "--thumbnail",
-    ],
-    "monorepoOnly": undefined,
-    "name": "assets import-meshy",
-    "summary": "Admit a downloaded Meshy result as a candidate asset (isolated by default inside the Aura3D monorepo).",
-  },
-  {
-    "flags": [
       "--animation",
       "--humanoid",
       "--license",
@@ -189,9 +168,7 @@ exports[`help --json catalog > built-in entries match the snapshot (registry ent
   },
   {
     "flags": [
-      "--allow",
       "--animated",
-      "--budget",
       "--candidate-id",
       "--dry-run",
       "--index",
@@ -204,7 +181,7 @@ exports[`help --json catalog > built-in entries match the snapshot (registry ent
     ],
     "monorepoOnly": undefined,
     "name": "assets resolve",
-    "summary": "Resolve a need through the ladder (project asset, open source, Meshy opt-in, procedural recipe) or pull a known candidate.",
+    "summary": "Resolve a need through the ladder (project asset, open source, procedural recipe) or pull a known candidate.",
   },
   {
     "flags": [],

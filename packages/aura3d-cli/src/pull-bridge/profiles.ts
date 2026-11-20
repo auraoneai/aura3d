@@ -20,7 +20,7 @@ const {
 /**
  * Triangle budgets applied to inferred character/vehicle queries.
  *
- * These mirror the Meshy admission maxima (humanoid 150k, vehicle 250k): a
+ * Humanoids cap at 150k triangles and vehicles at 250k: a
  * general-profile query that reads as a character or vehicle stops defaulting
  * to an unbounded `general` fetch and resolves under the same budget the
  * quality gates enforce downstream. Explicit caller values always win.

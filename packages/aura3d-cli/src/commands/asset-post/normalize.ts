@@ -66,7 +66,7 @@ export function normalizeUsage(): string {
     "  Turns the model so its front faces +Z (+Y up), scales it to the size target, centres it in X/Z and grounds it at y = 0.",
     "  Static meshes get the transform baked into their vertices; skinned meshes keep one `auraRoot` wrapper node.",
     "  Records asset.extras.aura3d = { orientation: { forwardAxis: \"+z\", upAxis: \"+y\" }, grounded: true }.",
-    "  --front      axis the model currently faces (default +z = no turn; Idol/Meshy humanoids usually face +x or +z)",
+    "  --front      axis the model currently faces (default +z = no turn; Idol humanoids usually face +x or +z)",
     "  --keep-scale write scale 1 and report sceneScale (use for rigged files whose skin checks must see rest-length bones)"
   ].join("\n");
 }

@@ -3872,11 +3872,6 @@
           "typeOnly": false
         },
         {
-          "file": "apps/showcase-meshy-relic-pilot/src/aura-assets.ts",
-          "owner": "??",
-          "typeOnly": false
-        },
-        {
           "file": "examples/neon-corridor-strike/src/aura-assets.ts",
           "owner": "??",
           "typeOnly": false
@@ -3956,11 +3951,6 @@
       "consumers": [
         {
           "file": "apps/aura-clash-showcase/src/aura-assets.ts",
-          "owner": "??",
-          "typeOnly": false
-        },
-        {
-          "file": "apps/showcase-meshy-relic-pilot/src/aura-assets.ts",
           "owner": "??",
           "typeOnly": false
         },
@@ -10412,11 +10402,6 @@
           "typeOnly": false
         },
         {
-          "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
-          "owner": "??",
-          "typeOnly": false
-        },
-        {
           "file": "apps/showcase-vault-breakers/src/main.ts",
           "owner": "??",
           "typeOnly": false
@@ -13782,11 +13767,6 @@
         },
         {
           "file": "apps/showcase-asset-audition/src/main.ts",
-          "owner": "??",
-          "typeOnly": false
-        },
-        {
-          "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
           "owner": "??",
           "typeOnly": false
         },
@@ -17938,11 +17918,6 @@
           "typeOnly": false
         },
         {
-          "file": "apps/showcase-meshy-relic-pilot/src/aura-assets.ts",
-          "owner": "??",
-          "typeOnly": false
-        },
-        {
           "file": "apps/showcase-gravity-post/scripts/freight-district-preview/main.ts",
           "owner": "??",
           "typeOnly": false
@@ -20778,11 +20753,6 @@
         },
         {
           "file": "apps/common/src/rapier-physics-proof.ts",
-          "owner": "??",
-          "typeOnly": false
-        },
-        {
-          "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
           "owner": "??",
           "typeOnly": false
         },
@@ -26762,11 +26732,6 @@
           "typeOnly": false
         },
         {
-          "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
-          "owner": "??",
-          "typeOnly": false
-        },
-        {
           "file": "apps/showcase-vault-breakers/src/environment.ts",
           "owner": "??",
           "typeOnly": false
@@ -27867,11 +27832,6 @@
           "typeOnly": false
         },
         {
-          "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
-          "owner": "??",
-          "typeOnly": false
-        },
-        {
           "file": "apps/showcase-vault-breakers/src/environment.ts",
           "owner": "??",
           "typeOnly": false
@@ -28718,11 +28678,6 @@
         },
         {
           "file": "apps/showcase-asset-audition/src/main.ts",
-          "owner": "??",
-          "typeOnly": false
-        },
-        {
-          "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
           "owner": "??",
           "typeOnly": false
         },
@@ -30621,11 +30576,6 @@
         },
         {
           "file": "apps/showcase-asset-audition/src/main.ts",
-          "owner": "??",
-          "typeOnly": false
-        },
-        {
-          "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
           "owner": "??",
           "typeOnly": false
         },
@@ -34244,11 +34194,6 @@
         },
         {
           "file": "apps/showcase-asset-audition/src/main.ts",
-          "owner": "??",
-          "typeOnly": false
-        },
-        {
-          "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
           "owner": "??",
           "typeOnly": false
         },

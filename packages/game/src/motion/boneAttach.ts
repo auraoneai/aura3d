@@ -19,7 +19,7 @@ const ROLE_PARTS: Readonly<Record<BoneRole, { readonly side: Side; readonly part
   hips: { side: "none", part: "hips" }, spine: { side: "none", part: "spine" }, head: { side: "none", part: "head" }
 };
 
-/** Normalised synonyms per part (lowercase, no punctuation). Mixamo, Meshy, Rigify, Unreal, glTF Avatar (VRM, Ready Player Me), 3ds Max Biped. */
+/** Normalised synonyms per part (lowercase, no punctuation). Mixamo, Rigify, Unreal, glTF Avatar (VRM, Ready Player Me), 3ds Max Biped. */
 const PART_WORDS: Readonly<Record<Part, readonly string[]>> = {
   hand: ["hand"],
   forearm: ["forearm", "lowerarm", "lowarm"],

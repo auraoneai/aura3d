@@ -4,7 +4,7 @@
 open, licence-clear model, texture and HDRI sources, plus verified auto-pull
 candidate resolution for Aura3D. There is no hosted catalog: the CLI's
 `aura3d assets resolve` uses these adapters as one rung of its build-time
-ladder (project asset, open source, Meshy, primitives recipe).
+ladder (project asset, open source, primitives recipe).
 
 ## Public API
 

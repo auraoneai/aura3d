@@ -1,7 +1,7 @@
 /**
  * `aura3d assets merge-clips --base rigged.glb --out hero.glb run=animation_run.glb idle=animation_idle.glb ...`
  *
- * Meshy rigging returns one rigged GLB, and every `animate` task returns a separate GLB that carries one clip on the
+ * Auto-rigging services commonly return one rigged GLB, plus one GLB per animation that carries one clip on the
  * same skeleton. This copies each source clip onto the base rig by node name and writes ONE GLB with every named clip,
  * ready for AnimationController / cloneSkinned. Source clips that match no node of the base rig are rejected loudly
  * instead of producing a silent T-pose.
@@ -15,12 +15,12 @@ import { encodeTexturesKeepingPbrLossless } from "./textureEncode.js";
 export interface MergeClipInput {
   /** Clip name written to the output GLB (and used by the game: run, idle, jump...). */
   readonly name: string;
-  /** A GLB file, or a Meshy download directory containing animation_glb.glb. */
+  /** A GLB file, or a download directory containing animation_glb.glb. */
   readonly file: string;
 }
 
 export interface MergeClipsOptions {
-  /** Rigged GLB, or a Meshy rig download directory containing rigged_character_glb.glb. */
+  /** Rigged GLB, or a rig download directory containing rigged_character_glb.glb. */
   readonly base: string;
   readonly output: string;
   readonly clips: readonly MergeClipInput[];
@@ -49,7 +49,7 @@ export interface MergeClipsResult {
 
 export function parseClipSpec(spec: string): MergeClipInput {
   const index = spec.indexOf("=");
-  if (index <= 0 || index === spec.length - 1) throw new Error(`Clip spec "${spec}" must look like name=file.glb (or name=meshy-download-dir).`);
+  if (index <= 0 || index === spec.length - 1) throw new Error(`Clip spec "${spec}" must look like name=file.glb (or name=download-dir).`);
   const name = spec.slice(0, index);
   if (!/^[A-Za-z][A-Za-z0-9_-]*$/.test(name)) throw new Error(`Clip name "${name}" must start with a letter and use letters, digits, "-" or "_".`);
   return { name, file: spec.slice(index + 1) };

@@ -1,5 +1,4 @@
-import { existsSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { group, material, primitives } from "@aura3d/engine";
 import type { AuraCliAssetEntry, AuraCliAssetManifest } from "../../../packages/aura3d-cli/src/asset-core-types.js";
@@ -13,7 +12,6 @@ import {
   pickRecipe,
   proceduralRecipe,
   runResolveLadder,
-  type MeshyRunner,
 } from "../../../packages/aura3d-cli/src/resolve-ladder.js";
 
 function manifest(assets: Partial<AuraCliAssetEntry>[] = []): AuraCliAssetManifest {
@@ -67,7 +65,7 @@ describe("head noun matching", () => {
 });
 
 describe("rung 1: project assets", () => {
-  it("uses an admitted asset that matches the noun and spends nothing", async () => {
+  it("uses an admitted asset that matches the noun", async () => {
     const report = await runResolveLadder({
       need: "street lamp",
       readManifest: () => manifest([{ id: "streetLamp", source: "assets/street_lamp_01.glb" }]),
@@ -77,7 +75,6 @@ describe("rung 1: project assets", () => {
     });
     expect(report.chosen).toBe("project");
     expect(report.projectAsset?.id).toBe("streetLamp");
-    expect(report.costCredits).toBe(0);
   });
 
   it("ignores an admitted texture when a model is needed", async () => {
@@ -176,56 +173,15 @@ describe("rung 2: open sources", () => {
   });
 });
 
-describe("rung 3: Meshy", () => {
-  it("is skipped without --allow meshy and says the estimate", async () => {
+describe("removed rungs", () => {
+  it("has no generation rung: an unmatched prop goes straight to procedural", async () => {
     const report = await runResolveLadder({ need: "dragon statue", readManifest: () => manifest(), searchFn: noSearch });
-    expect(report.skipped.find((skip) => skip.rung === "meshy")?.reason).toBe("needs --allow meshy (estimate 30 credits)");
+    expect(report.skipped.map((skip) => skip.rung)).toEqual(["project", "open-source"]);
     expect(report.chosen).toBe("procedural");
-  });
-
-  it("is skipped when the budget is below the estimate", async () => {
-    const report = await runResolveLadder({ need: "dragon statue", allowMeshy: true, budget: 10, readManifest: () => manifest(), searchFn: noSearch });
-    expect(report.skipped.find((skip) => skip.rung === "meshy")?.reason).toContain("below the 30-credit estimate");
-  });
-
-  it("runs the configured generator and reports the cost when it produces a GLB", async () => {
-    const runner: MeshyRunner = ({ outDir, prompt }) => {
-      expect(prompt).toContain("no logos");
-      writeFileSync(join(outDir, "model.glb"), "glb");
-      return { ok: true, message: "generated" };
-    };
-    const report = await runResolveLadder({ need: "dragon statue", allowMeshy: true, budget: 60, readManifest: () => manifest(), searchFn: noSearch, meshyRunner: runner });
-    expect(report.chosen).toBe("meshy");
-    expect(report.costCredits).toBe(30);
-    expect(report.meshy?.ran).toBe(true);
-    expect(report.meshy?.commands.join(" ")).toContain("aura3d assets import-meshy");
-  });
-
-  it("falls through to procedural when the generator fails, with the plan printed", async () => {
-    const report = await runResolveLadder({
-      need: "dragon statue",
-      allowMeshy: true,
-      budget: 60,
-      readManifest: () => manifest(),
-      searchFn: noSearch,
-      meshyRunner: () => ({ ok: false, message: "AURA3D_MESHY_CMD is not set" }),
-    });
-    expect(report.chosen).toBe("procedural");
-    expect(report.messages.join("\n")).toContain("Meshy plan (not run)");
-  });
-
-  it("charges characters for rigging and one animation", async () => {
-    const report = await runResolveLadder({ need: "knight", role: "character", allowMeshy: true, budget: 30, readManifest: () => manifest(), searchFn: noSearch });
-    expect(report.skipped.find((skip) => skip.rung === "meshy")?.reason).toContain("38-credit estimate");
-  });
-
-  it("never offers Meshy for an HDRI", async () => {
-    const report = await runResolveLadder({ need: "sunset sky", role: "hdri", allowMeshy: true, budget: 100, readManifest: () => manifest(), searchFn: noSearch });
-    expect(report.skipped.find((skip) => skip.rung === "meshy")?.reason).toContain("does not generate HDRIs");
   });
 });
 
-describe("rung 4: procedural recipes", () => {
+describe("rung 3: procedural recipes", () => {
   it("maps nouns and aliases to recipes", () => {
     expect(pickRecipe("wooden barrel")).toBe("barrel");
     expect(pickRecipe("street light")).toBe("lamp");
@@ -256,7 +212,7 @@ describe("rung 4: procedural recipes", () => {
     const report = await runResolveLadder({ need: "knight", role: "character", readManifest: () => manifest(), searchFn: noSearch });
     expect(report.ok).toBe(false);
     expect(report.chosen).toBe("none");
-    expect(report.messages.join("\n")).toContain("--allow meshy");
+    expect(report.messages.join("\n")).toContain("aura3d assets add");
   });
 
   it("marks an unmatched prop recipe as a placeholder", () => {

@@ -57,8 +57,7 @@ const HELP_WRITERS: readonly (readonly string[])[] = [
   ["init", "--agent", "all", "--help"],
   ["animation", "scene", "new", "--help"],
   ["codemod", "renderer-imports", "src/**/*.ts", "--write", "--help"],
-  ["assets", "repair-skin", "x.glb", "--help"],
-  ["meshy", "ledger", "reserve", "--help"]
+  ["assets", "repair-skin", "x.glb", "--help"]
 ];
 
 let project: string;

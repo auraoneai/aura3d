@@ -3,16 +3,11 @@
  *
  * Rungs, in order: (1) an asset already admitted in this project, (2) a directly
  * downloadable, licence-clear model, texture or HDRI from open sources (Khronos samples,
- * Poly Haven, ambientCG, the jsDelivr CC0 mirror), (3) Meshy generation from a text
- * prompt, only with `--allow meshy` and a budget that covers the estimate, (4) a
- * procedural recipe the agent pastes into its scene (primitives, built in code like
- * three.js geometry). Nothing is fetched or generated at runtime: every rung that
- * produces a file goes through admission (sha256, provenance, licence) and typegen.
+ * Poly Haven, ambientCG, the jsDelivr CC0 mirror), (3) a procedural recipe the agent
+ * pastes into its scene (primitives, built in code like three.js geometry). Nothing is
+ * fetched at runtime: every rung that produces a file goes through admission (sha256,
+ * provenance, licence) and typegen.
  */
-import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { readAssetManifest } from "./asset-manifest.js";
 import type { AuraCliAssetEntry, AuraCliAssetManifest } from "./asset-core-types.js";
 import { runResolve, type ResolveReport } from "./pull-bridge.js";
@@ -20,19 +15,9 @@ import { runSearch, type SearchCandidateLine, type SearchReport } from "./pull-b
 import type { CliAssetSearchProfile, CliResolveConstraints } from "./pull-bridge/types.js";
 
 export type LadderRole = "hero" | "prop" | "background" | "character" | "texture" | "hdri";
-export type LadderRung = "project" | "open-source" | "meshy" | "procedural" | "none";
+export type LadderRung = "project" | "open-source" | "procedural" | "none";
 
 export const LADDER_ROLES: readonly LadderRole[] = ["hero", "prop", "background", "character", "texture", "hdri"];
-
-/** Meshy credits per role: preview 20 + refine 10; characters add rig 5 + one animation 3. */
-export const MESHY_CREDIT_ESTIMATE: Readonly<Record<LadderRole, number>> = {
-  hero: 30,
-  prop: 30,
-  background: 30,
-  character: 38,
-  texture: 10,
-  hdri: 0,
-};
 
 /** Triangle budgets per role (docs/agents/asset-workflow.md). */
 export const ROLE_TRIANGLE_BUDGET: Readonly<Record<LadderRole, number | undefined>> = {
@@ -57,18 +42,15 @@ export interface LadderReport {
   readonly chosen: LadderRung;
   readonly reason: string;
   readonly skipped: readonly LadderSkip[];
-  readonly costCredits: number;
   readonly dryRun: boolean;
   readonly name: string;
   /** Rung 1: the admitted entry to use as `assets.<id>`. */
   readonly projectAsset?: { readonly id: string; readonly url: string; readonly sizeBytes: number };
   /** Rung 2: the chosen open-source candidate (with triangles and size when the source reports them). */
   readonly candidate?: SearchCandidateLine;
-  /** Rung 2/3: the admission result when a file was produced. */
+  /** Rung 2: the admission result when a file was produced. */
   readonly resolve?: ResolveReport;
-  /** Rung 3: the prompt and the commands to run (or that were run). */
-  readonly meshy?: { readonly prompt: string; readonly estimateCredits: number; readonly commands: readonly string[]; readonly ran: boolean };
-  /** Rung 4: a paste-ready procedural snippet. */
+  /** Rung 3: a paste-ready procedural snippet. */
   readonly procedural?: { readonly recipe: string; readonly snippet: string };
   readonly messages: readonly string[];
   readonly warnings: readonly string[];
@@ -78,29 +60,14 @@ export interface LadderOptions {
   readonly need: string;
   readonly name?: string;
   readonly role?: LadderRole;
-  readonly budget?: number;
-  readonly allowMeshy?: boolean;
   readonly dryRun?: boolean;
   readonly projectDir?: string;
-  readonly env?: NodeJS.ProcessEnv;
   readonly constraints?: CliResolveConstraints;
   /** Test seams. */
   readonly readManifest?: (projectDir: string) => AuraCliAssetManifest;
   readonly searchFn?: typeof runSearch;
   readonly resolveFn?: typeof runResolve;
-  readonly meshyRunner?: MeshyRunner;
 }
-
-/**
- * Runs a configured Meshy generator. The default reads `AURA3D_MESHY_CMD`: an executable that
- * accepts `--prompt <text> --out <dir> --budget <credits>`, generates through the team's
- * credentialed path (for example Kiro Prism with ledger caps) and writes a GLB plus its
- * metadata and rights evidence into `<dir>`. The CLI never handles Meshy credentials itself.
- */
-export type MeshyRunner = (input: { readonly prompt: string; readonly outDir: string; readonly budget: number; readonly env: NodeJS.ProcessEnv }) => {
-  readonly ok: boolean;
-  readonly message: string;
-};
 
 const STOP_WORDS = new Set([
   "a", "an", "the", "of", "for", "with", "and", "or", "in", "on", "to", "my", "some",
@@ -204,30 +171,10 @@ export function describeCandidate(candidate: SearchCandidateLine): string {
   return `${candidate.title} (${candidate.id}, ${candidate.license}, ${triangles}, ${formatSize(candidate.sizeBytes)})`;
 }
 
-const defaultMeshyRunner: MeshyRunner = ({ prompt, outDir, budget, env }) => {
-  const command = env["AURA3D_MESHY_CMD"];
-  if (!command) {
-    return { ok: false, message: "AURA3D_MESHY_CMD is not set: run the printed Meshy commands yourself, then `aura3d assets import-meshy`." };
-  }
-  // No shell: the prompt is passed as a single argument, never interpolated into a command line.
-  const run = spawnSync(command, ["--prompt", prompt, "--out", outDir, "--budget", String(budget)], { env, encoding: "utf8" });
-  if (run.status !== 0) return { ok: false, message: `${command} exited ${String(run.status)}: ${(run.stderr || run.stdout || "").trim().slice(0, 400)}` };
-  return { ok: true, message: (run.stdout || "").trim().slice(0, 400) };
-};
-
-export function meshyPrompt(need: string, role: LadderRole): string {
-  const base = need.trim();
-  const style = "stylised, clean topology, game-ready, matte flat colours, no text, no logos, no brand marks";
-  if (role === "character") return `${base}, single humanoid character in A-pose, full body, ${style}`;
-  if (role === "texture") return `${base}, seamless tileable surface`;
-  return `${base}, single solid closed object, ${style}`;
-}
-
 export async function runResolveLadder(options: LadderOptions): Promise<LadderReport> {
   const need = options.need.trim();
-  if (!need) throw new Error('Usage: aura3d assets resolve "<need>" [--name <id>] [--role hero|prop|background|character|texture|hdri] [--budget credits] [--allow meshy] [--dry-run]');
+  if (!need) throw new Error('Usage: aura3d assets resolve "<need>" [--name <id>] [--role hero|prop|background|character|texture|hdri] [--dry-run]');
   const projectDir = options.projectDir ?? process.cwd();
-  const env = options.env ?? process.env;
   const role: LadderRole = options.role ?? "prop";
   const name = options.name ?? camelName(need);
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) throw new Error(`Aura3D resolve failed: --name must be a valid identifier (got "${name}").`);
@@ -249,7 +196,7 @@ export async function runResolveLadder(options: LadderOptions): Promise<LadderRe
   });
   if (local) {
     messages.push(`Use the admitted asset: model(assets.${local.id}) (${formatSize(local.sizeBytes)}, ${local.hash}).`);
-    return { ...base, ok: true, chosen: "project", reason: `"${local.id}" is already admitted in this project and matches "${noun}".`, costCredits: 0, projectAsset: { id: local.id, url: local.url, sizeBytes: local.sizeBytes } };
+    return { ...base, ok: true, chosen: "project", reason: `"${local.id}" is already admitted in this project and matches "${noun}".`, projectAsset: { id: local.id, url: local.url, sizeBytes: local.sizeBytes } };
   }
   skipped.push({ rung: "project", reason: noun === undefined ? "the need has no noun to match" : `no admitted asset matches "${noun}"` });
 
@@ -284,13 +231,13 @@ export async function runResolveLadder(options: LadderOptions): Promise<LadderRe
     messages.push(`Open source: ${describeCandidate(candidate)}.`);
     if (dryRun) {
       messages.push(`Dry run: would admit it as assets.${name} with sha256, provenance and licence.`);
-      return { ...base, ok: true, chosen: "open-source", reason: `licence-clear match for "${noun ?? need}" from ${candidate.source}`, costCredits: 0, candidate };
+      return { ...base, ok: true, chosen: "open-source", reason: `licence-clear match for "${noun ?? need}" from ${candidate.source}`, candidate };
     }
     const resolved = await (options.resolveFn ?? runResolve)({ query, name, projectDir, candidateId: candidate.id, constraints: { ...options.constraints, profile: options.constraints?.profile ?? profileFor(role) } });
     for (const message of resolved.messages) messages.push(message);
     for (const warning of resolved.warnings) warnings.push(warning);
     if (resolved.ok) {
-      return { ...base, ok: true, chosen: "open-source", reason: `licence-clear match for "${noun ?? need}" from ${candidate.source}`, costCredits: 0, candidate, resolve: resolved };
+      return { ...base, ok: true, chosen: "open-source", reason: `licence-clear match for "${noun ?? need}" from ${candidate.source}`, candidate, resolve: resolved };
     }
     skipped.push({ rung: "open-source", reason: `admission of ${candidate.id} failed` });
   } else {
@@ -298,52 +245,20 @@ export async function runResolveLadder(options: LadderOptions): Promise<LadderRe
     skipped.push({ rung: "open-source", reason: `no licence-clear, downloadable match for "${noun ?? need}"${detail}` });
   }
 
-  // Rung 3: Meshy, only when allowed and within budget.
-  const estimate = MESHY_CREDIT_ESTIMATE[role];
-  const prompt = meshyPrompt(need, role);
-  if (role === "hdri") {
-    skipped.push({ rung: "meshy", reason: "Meshy does not generate HDRIs" });
-  } else if (!options.allowMeshy) {
-    skipped.push({ rung: "meshy", reason: `needs --allow meshy (estimate ${estimate} credits)` });
-  } else if ((options.budget ?? 0) < estimate) {
-    skipped.push({ rung: "meshy", reason: `--budget ${options.budget ?? 0} is below the ${estimate}-credit estimate` });
-  } else {
-    const outDir = mkdtempSync(join(tmpdir(), "aura3d-meshy-"));
-    const commands = [
-      `<your Meshy generator> --prompt ${JSON.stringify(prompt)} --out ${outDir} --budget ${estimate}`,
-      `aura3d assets import-meshy --input ${outDir} --name ${name} --role ${role === "character" ? "character" : "prop"}`,
-      "aura3d assets validate && aura3d assets typegen",
-    ];
-    if (dryRun) {
-      messages.push(`Dry run: would generate with Meshy for about ${estimate} credits.`);
-      return { ...base, ok: true, chosen: "meshy", reason: `no project or open-source match; Meshy allowed within budget`, costCredits: 0, meshy: { prompt, estimateCredits: estimate, commands, ran: false } };
-    }
-    const runner = options.meshyRunner ?? defaultMeshyRunner;
-    const ran = runner({ prompt, outDir, budget: estimate, env });
-    messages.push(ran.message);
-    const produced = existsSync(outDir) && readdirSync(outDir).some((file) => /\.glb$/i.test(file));
-    if (ran.ok && produced) {
-      messages.push(`Generated into ${outDir}. Admit it: ${commands[1]}, then ${commands[2]}.`);
-      return { ...base, ok: true, chosen: "meshy", reason: "no project or open-source match; generated with Meshy within budget", costCredits: estimate, meshy: { prompt, estimateCredits: estimate, commands: commands.slice(1), ran: true } };
-    }
-    skipped.push({ rung: "meshy", reason: ran.ok ? "the generator produced no GLB" : ran.message });
-    messages.push(`Meshy plan (not run): ${commands.join("  then  ")}`);
-  }
-
-  // Rung 4: procedural recipe for props; characters, textures and HDRIs have none.
+  // Rung 3: procedural recipe for props; characters, textures and HDRIs have none.
   if (role === "character" || role === "texture" || role === "hdri") {
     skipped.push({ rung: "procedural", reason: `no procedural recipe for a ${role}` });
     messages.push(role === "character"
-      ? "No character found. Generate one with --allow meshy --budget 40, or admit a licensed file with `aura3d assets add`."
+      ? "No character found. Admit a GLB you already have with `aura3d assets add`, or generate one with `aura3d assets generate`."
       : `No ${role} found. Admit a licensed file with \`aura3d assets add --type ${role === "hdri" ? "environment" : "texture"}\`.`);
-    return { ...base, ok: false, chosen: "none", reason: `nothing in the project or open sources, Meshy not run, and no procedural recipe for a ${role}`, costCredits: 0 };
+    return { ...base, ok: false, chosen: "none", reason: `nothing in the project or open sources, and no procedural recipe for a ${role}` };
   }
   const procedural = proceduralRecipe(need, name);
   if (pickRecipeOrUndefined(need) === undefined) {
-    messages.push(`No recipe for a ${noun ?? "need like this"}: the box below is a placeholder. For the real thing run with --allow meshy --budget ${estimate || 30}, or admit a licensed file with \`aura3d assets add\`.`);
+    messages.push(`No recipe for a ${noun ?? "need like this"}: the box below is a placeholder. For the real thing admit a GLB you already have with \`aura3d assets add\`, or generate one with \`aura3d assets generate\`.`);
   }
   messages.push(`Build it in code (${procedural.recipe} recipe): paste the snippet and add \`${name}\` to your scene.`);
-  return { ...base, ok: true, chosen: "procedural", reason: "no admitted, open-source or generated asset; build from primitives", costCredits: 0, procedural };
+  return { ...base, ok: true, chosen: "procedural", reason: "no admitted or open-source asset; build from primitives", procedural };
 }
 
 interface RecipePart {
@@ -468,7 +383,7 @@ export function printLadderReport(report: LadderReport, print: (line: string) =>
   print(`Need: "${report.need}" (role ${report.role}${report.headNoun ? `, matching "${report.headNoun}"` : ""})`);
   print(`Chosen: ${report.chosen}: ${report.reason}`);
   for (const skip of report.skipped) print(`  skipped ${skip.rung}: ${skip.reason}`);
-  print(`Cost: ${report.costCredits} credits${report.dryRun ? " (dry run)" : ""}`);
+  if (report.dryRun) print("Dry run: nothing was admitted.");
   for (const message of report.messages) print(message);
   if (report.procedural) print(`\n${report.procedural.snippet}`);
   for (const warning of report.warnings) print(`warning: ${warning}`);

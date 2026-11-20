@@ -220,7 +220,7 @@ const LEG_NAMES: { up: RegExp; low: RegExp; foot: RegExp }[] = [
 ];
 
 export interface HumanoidLegs { readonly up: number; readonly knee: number; readonly foot: number }
-/** Recognises Meshy/Mixamo/VRM-style leg bone names; returns null when the rig is not a recognised humanoid. */
+/** Recognises Mixamo/VRM-style leg bone names; returns null when the rig is not a recognised humanoid. */
 export function findHumanoidLegs(hierarchy: Hierarchy): HumanoidLegs[] | null {
   const legs: HumanoidLegs[] = [];
   for (const spec of LEG_NAMES) {

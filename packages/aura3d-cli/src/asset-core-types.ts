@@ -208,7 +208,7 @@ export interface AuraCliResolveCandidateProvenance {
 }
 
 export interface AuraCliGeneratedAssetProvenance {
-  readonly provider: "meshy" | string;
+  readonly provider: string;
   readonly providerCli?: string;
   readonly taskId?: string;
   readonly parentTaskIds?: readonly string[];

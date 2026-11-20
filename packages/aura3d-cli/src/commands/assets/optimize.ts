@@ -5,7 +5,7 @@
  * budgeted simplify, prune, texture downscale (colour/occlusion -> jpeg; normal and metallicRoughness never jpeg, see
  * ./textureEncode.ts) and a stable vertex order. Geometry
  * stays float32 by default: meshopt quantisation moves scale into a node transform, which skews the grounding and
- * bounds checks `assets import-meshy` runs, so `meshopt: true` is for static background props you will not measure.
+ * bounds checks admission runs, so `meshopt: true` is for static background props you will not measure.
  *
  * GU47 E-A HDRI delivery: `aura3d assets optimize --file in.hdr --out out_1k.hdr --hdri 1k|2k [--rgb9e5-cube]` writes
  * a box-downsized Radiance `.hdr` and, with `--rgb9e5-cube`, a KTX2 RGB9E5 radiance cube next to it (`optimizeHdriFile`).
@@ -20,7 +20,7 @@ import { encodeTexturesKeepingPbrLossless, type LosslessTextureRecord } from "./
 
 export type OptimizeRole = "hero" | "vehicle" | "character" | "prop" | "background";
 
-/** Vertex and texture budgets by role (Meshy meshes weld to roughly half as many vertices as triangles). */
+/** Vertex and texture budgets by role (generated meshes typically weld to roughly half as many vertices as triangles). */
 export const OPTIMIZE_BUDGETS: Readonly<Record<OptimizeRole, { readonly maxVerts: number; readonly tex: number }>> = {
   hero: { maxVerts: 40000, tex: 2048 },
   vehicle: { maxVerts: 40000, tex: 2048 },

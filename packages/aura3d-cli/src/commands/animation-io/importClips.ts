@@ -297,7 +297,7 @@ export async function importClipsOntoRig(opts: ImportClipsOntoRigOptions): Promi
   let target: GlbData;
   try { target = readGlbFile(onto); } catch (error) { throw new AnimationImportError("ANIMATION_IMPORT_TARGET", `--onto ${opts.onto}: ${error instanceof Error ? error.message : String(error)}`); }
   if ((target.json.buffers ?? []).some((b, i) => i === 0 && b.uri)) throw new AnimationImportError("ANIMATION_IMPORT_TARGET", `--onto ${opts.onto}: buffer 0 is external; embed it first (aura3d assets optimize --file).`);
-  if (!target.json.skins?.length) throw new AnimationImportError("ANIMATION_IMPORT_TARGET", `--onto ${opts.onto}: the GLB has no skin. Rig it first (aura3d assets generate --rig, or a Meshy/Mixamo rig).`);
+  if (!target.json.skins?.length) throw new AnimationImportError("ANIMATION_IMPORT_TARGET", `--onto ${opts.onto}: the GLB has no skin. Rig it first (aura3d assets generate --rig, or a Mixamo rig).`);
   const targetSk = readGltfSkeleton(target);
   const tFacing = opts.targetFacing && opts.targetFacing !== "auto" ? { facing: opts.targetFacing, method: "explicit" } : detectHumanoidFacing(targetSk.skeleton);
   const driverOpts = { facing: tFacing.facing, ...(maps.target ? { roles: maps.target } : {}), ...(opts.flipThresholdDeg ? { flipThresholdDeg: opts.flipThresholdDeg } : {}) };

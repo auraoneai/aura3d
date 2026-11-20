@@ -11,7 +11,6 @@ import {
   initAgentFiles,
   initAgentSetup,
   inspectAsset,
-  importMeshyAsset,
   listAssets,
   scanAssets,
   validateAnimationAssets,
@@ -47,7 +46,6 @@ import { runResolve, runSearch } from "./pull-bridge.js";
 import { LADDER_ROLES, printLadderReport, runResolveLadder, type LadderRole } from "./resolve-ladder.js";
 import { cliCommandFor, type AuraCliCommand } from "./contracts/commands.js";
 import "./commands/registry.js";
-import { importMeshyIsolated, importMeshyIsolatedUsage, isAuraMonorepoRoot } from "./commands/assets/importMeshy.js";
 import { CERTIFY_CATEGORY_USAGE, isCertifyCategory } from "./commands/assets/certifyCategories.js";
 import { ALL_SKIN_CODES, checkAssetSkin, checkProjectSkins, formatProjectSkinReport, parseMaterialMap, readSkinAllowlist, resolveAssetFile, runRepairSkin, SKIN_HELP, type SkinCliOptions } from "./skin/command.js";
 import type { SkinCode } from "./skin/analysis.js";
@@ -149,59 +147,7 @@ async function main(): Promise<void> {
         audio: readAudioMetadata()
       }));
     } else if (action === "import-meshy") {
-      // Inside the Aura3D monorepo a plain import rewrites shared root manifests, so it runs isolated by default.
-      const isolatedInto = readOption("--into");
-      if (isolatedInto !== undefined || (isAuraMonorepoRoot(process.cwd()) && !hasFlag("--shared-manifest"))) {
-        const downloadDir = args[2];
-        const prefix = readOption("--prefix");
-        const roleName = readOption("--name");
-        if (!downloadDir || !isolatedInto || !prefix || !roleName) {
-          throw new Error(`import-meshy runs in an isolated project here, so shared manifests are never touched: ${importMeshyIsolatedUsage()}  (pass --shared-manifest to write the project's own aura.assets.json deliberately).`);
-        }
-        const isolatedProfile = readOption("--profile");
-        if (isolatedProfile && !["prop", "environment", "vehicle", "humanoid"].includes(isolatedProfile)) {
-          throw new Error(`Unsupported Meshy --profile value "${isolatedProfile}". Use prop, environment, vehicle, or humanoid.`);
-        }
-        const isolated = importMeshyIsolated({
-          input: downloadDir,
-          into: isolatedInto,
-          prefix,
-          name: roleName,
-          rightsEvidence: readOption("--rights-evidence"),
-          file: readOption("--file"),
-          thumbnail: readOption("--thumbnail"),
-          quality: readAssetQuality(),
-          role: readAssetRole(),
-          profile: isolatedProfile as "prop" | "environment" | "vehicle" | "humanoid" | undefined,
-          overwrite: hasFlag("--overwrite"),
-          keepTemp: hasFlag("--keep-temp")
-        });
-        console.log(JSON.stringify(isolated, null, 2));
-        if (!isolated.ok) process.exitCode = 1;
-        return;
-      }
-      const input = args[2];
-      const name = readOption("--name");
-      const rightsEvidence = readOption("--rights-evidence");
-      if (!input || !name || !rightsEvidence) {
-        throw new Error("Usage: aura3d assets import-meshy <output-dir> --name <typedKey> --rights-evidence <rights.json> [--file model.glb] [--thumbnail thumbnail.png] [--profile prop|environment|vehicle|humanoid] [--allowed-root artifacts/meshy] [--quality candidate] [--role prop]");
-      }
-      const meshyProfile = readOption("--profile");
-      if (meshyProfile && !["prop", "environment", "vehicle", "humanoid"].includes(meshyProfile)) {
-        throw new Error(`Unsupported Meshy --profile value "${meshyProfile}". Use prop, environment, vehicle, or humanoid.`);
-      }
-      print(importMeshyAsset({
-        input,
-        name,
-        rightsEvidence,
-        file: readOption("--file"),
-        thumbnail: readOption("--thumbnail"),
-        allowedRoot: readOption("--allowed-root"),
-        sourceEntry: readOption("--source-entry"),
-        quality: readAssetQuality(),
-        role: readAssetRole(),
-        profile: meshyProfile as "prop" | "environment" | "vehicle" | "humanoid" | undefined
-      }));
+      throw new Error("aura3d assets import-meshy was removed in 5.7.0 (Meshy support is no longer part of Aura3D). Admit a GLB you already have with `aura3d assets add <file.glb> --name <key> ...` (or `aura3d assets convert` for other formats).");
     } else if (action === "scan") {
       print(scanAssets({ directory: args[2] ?? "assets" }));
     } else if (action === "bind-game-route-evidence") {
@@ -401,23 +347,19 @@ async function main(): Promise<void> {
         if (!report.ok) process.exitCode = 1;
         return;
       }
-      // The build-time ladder: project asset, open source, Meshy (opt-in), procedural recipe.
-      if (!query || query.startsWith("--")) throw new Error('Usage: aura3d assets resolve "<need>" [--name <id>] [--role hero|prop|background|character|texture|hdri] [--budget credits] [--allow meshy] [--dry-run] [--json]');
+      // The build-time ladder: project asset, open source, procedural recipe.
+      if (!query || query.startsWith("--")) throw new Error('Usage: aura3d assets resolve "<need>" [--name <id>] [--role hero|prop|background|character|texture|hdri] [--dry-run] [--json]');
+      if (readOption("--allow") !== undefined || readOption("--budget") !== undefined) {
+        throw new Error("Aura3D resolve failed: --allow and --budget were removed in 5.7.0 with Meshy support. The ladder checks project assets, open sources and procedural recipes; admit a GLB you already have with `aura3d assets add`, or generate one with `aura3d assets generate`.");
+      }
       const roleOption = readOption("--role");
       if (roleOption !== undefined && !(LADDER_ROLES as readonly string[]).includes(roleOption)) {
         throw new Error(`Aura3D resolve failed: --role must be one of ${LADDER_ROLES.join(", ")} (got "${roleOption}").`);
-      }
-      const budgetOption = readOption("--budget");
-      const budget = budgetOption === undefined ? undefined : Number(budgetOption);
-      if (budget !== undefined && (!Number.isFinite(budget) || budget < 0)) {
-        throw new Error(`Aura3D resolve failed: --budget must be a non-negative number of credits (got "${budgetOption}").`);
       }
       const report = await runResolveLadder({
         need: query,
         ...(name === undefined ? {} : { name }),
         ...(roleOption === undefined ? {} : { role: roleOption as LadderRole }),
-        ...(budget === undefined ? {} : { budget }),
-        allowMeshy: readOption("--allow") === "meshy",
         dryRun: hasFlag("--dry-run"),
         constraints: readResolveConstraints(),
       });

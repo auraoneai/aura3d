@@ -1,5 +1,4 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
@@ -64,26 +63,5 @@ describe("repair-skin --refit-skeleton", () => {
     const missing = runRepairSkin(tmp, "legs.glb", { keepClips: ["Nope"] });
     expect(missing.ok).toBe(false);
     expect(missing.messages[0]).toContain("Nope");
-  });
-});
-
-const shipped: Array<[string, string[]]> = [
-  ["bunkerGuardMeshy", ["Idle_Loop", "Walk_Loop"]],
-  ["bunkerGunnerMeshy", ["Idle_Loop", "Walk_Loop"]],
-  ["bunkerWardenMeshy", ["Idle_Loop", "Walk_Loop"]],
-  ["bunkerHoundMeshy", ["Idle_Loop", "Walk_Loop"]],
-  ["gullsiegeHeroGullMeshy", ["Load", "Ready", "Idle_Loop", "Jump_Loop"]],
-  ["gullsiegeRaiderBossMeshy", ["Idle_Loop", "Contest"]]
-];
-describe("shipped rigs repaired with --refit-skeleton (Bunker Zero and Slingshot Siege)", () => {
-  const root = resolve(__dirname, "../../../..");
-  const manifest = JSON.parse(readFileSync(join(root, "aura.assets.json"), "utf8")) as { assets: Array<{ id: string; outputPath: string }> };
-  it.each(shipped)("%s passes the skin check through the clips its game plays", (id, clips) => {
-    const entry = manifest.assets.find((a) => a.id === id)!;
-    const g = parseGlb(readFileSync(join(root, entry.outputPath)));
-    expect(g.json.animations?.map((a) => a.name).sort()).toEqual([...clips].sort());
-    const report = analyzeSkin(g);
-    expect(report.findings.filter((f) => f.severity === "error")).toEqual([]);
-    expect(report.ok).toBe(true);
   });
 });

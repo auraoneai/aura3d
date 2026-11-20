@@ -59,11 +59,11 @@ export const POST_V2_DEFAULT_FILES = [
   "templates/**"
 ];
 
-/** §10: the 10 non-game `apps/showcase-*` apps are out of scope — listed "not migrated". */
+/** §10: the non-game `apps/showcase-*` apps are out of scope — listed "not migrated". */
 export const POST_V2_NOT_MIGRATED = [
   "showcase-asset-audition", "showcase-cinematic-architecture", "showcase-data-galaxy",
   "showcase-digital-twin-ops", "showcase-index", "showcase-material-asset-inspector",
-  "showcase-meshy-relic-pilot", "showcase-product-configurator", "showcase-smart-city-control",
+  "showcase-product-configurator", "showcase-smart-city-control",
   "showcase-webgpu-particle-lab"
 ];
 

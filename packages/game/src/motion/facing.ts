@@ -1,5 +1,5 @@
 // Orient an actor toward a target without guessing which way its model faces.
-// Model forward axes are not standardised (Meshy GLBs face +Z, hand-built rigs often face -Z), so every
+// Model forward axes are not standardised (many generated GLBs face +Z, hand-built rigs often face -Z), so every
 // model states its forward axis once and this helper derives the node yaw from it.
 
 export type ForwardAxis = "+z" | "-z" | "+x" | "-x";
