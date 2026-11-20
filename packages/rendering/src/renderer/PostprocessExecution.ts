@@ -120,6 +120,7 @@ export function guardRendererPostprocessPlan(
 /* v2 module warm cache — the sync `render()` route cannot `import()`; the
  * first flag-on frame fires it, later frames run the real S1–S12 stages. */
 let postV2Modules: typeof import("../post/v2Entry") | undefined;
+const TRANSPARENT_PREMULTIPLIED = Object.freeze([0, 0, 0, 0] as const);
 
 /** A signal frame must not race the deferred v2 HDR stage driver. */
 export function postV2ModulesAvailable(): boolean {
@@ -1067,6 +1068,19 @@ export class RendererPostprocessPipeline {
     const pipeline = postprocess.pipeline as PostPipelineOptions;
     warmPostV2Modules();
     v2Modules = v2Modules ?? postV2Modules;
+    const host = webgl2DeviceHost(this.host.device);
+    if (!v2Modules && host && postprocessPreservesAlpha(postprocess)) {
+      // 5.7.1: an alpha-preserving request can only present through the v2 OutputPass route, which needs the deferred
+      // module bag (target leases, the FXAA/S12 tail). A sync frame that runs before the import resolves used to fall
+      // through to the fused present and throw POSTPROCESS_OUTPUT_POLICY_UNAVAILABLE, failing the mount whenever the
+      // first frame won the race (load-timing dependent). That frame now presents transparent and the next frame after
+      // the import takes the OutputPass route. Opaque output never reaches this branch.
+      this.host.device.setRenderTarget(outputTarget ?? null);
+      this.host.device.clear(TRANSPARENT_PREMULTIPLIED);
+      recordPostSkipped("POSTPROCESS_ALPHA_OUTPUT_DEFERRED:v2-modules-loading", token);
+      setPostGraphV2Outcome("v2-modules-loading", token);
+      return true;
+    }
     // Without the deferred module bag the seam runs the fused present only:
     // no v2 stage (and no C-13 custom pass) executes this frame.
     const outcome = v2Modules ? "v2" : "v2-modules-loading";
@@ -1079,7 +1093,7 @@ export class RendererPostprocessPipeline {
     const temporal =
       (postprocess.taa as { temporal?: TemporalGpuBindings } | undefined)?.temporal ??
       (postprocess.motionBlur as { temporal?: TemporalGpuBindings } | undefined)?.temporal;
-    executePostGraphWebGL2(webgl2DeviceHost(this.host.device), current, {
+    executePostGraphWebGL2(host, current, {
       pipeline,
       passes: descriptors,
       ...(v2Modules ? { v2: v2Modules } : {}),

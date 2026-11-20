@@ -65,7 +65,7 @@ import type { Prd07MountAuthority } from "../vfx/bridge.js";
 import type { TypedGLBActorOptions } from "../../production-runtime/TypedGLBActor.js";
 import type { ProjectedSpotResource as RendererProjectedSpotResource } from "@aura3d/rendering";
 import { disposePrd02Probes, restartPrd02PartialProbeCaptures, prd02BeforeFrame, prd02BeforeFrameAsync, withPrd02ProbeFrameLock, type Prd02ProbeCaptureRenderer } from "@aura3d/rendering";
-import { rendererQrFlags, setDirectMultiscatterModel, setNeutralToneCurve, setRendererQrFlags } from "@aura3d/rendering";
+import { postV2ModulesReady, rendererQrFlags, setDirectMultiscatterModel, setNeutralToneCurve, setRendererQrFlags } from "@aura3d/rendering";
 import { isPlainDefaultOutput, usesKhronosNeutral } from "../looks/plainLook.js";
 import { assertPrd07RendererLeaseAvailable, assertPrd07RendererOperation, beginPrd07RendererOperation, bindPrd07RendererAuthority,
   endPrd07RendererOperation, withBorrowedPrd07RendererOperation, withPrd07RendererCanvasLock,
@@ -1148,7 +1148,15 @@ export async function createProductionRuntimeSceneRenderer(
       for (const diagnostic of unsupportedLightModulationDegradations(flattened, { deferPhotometricProfiles: photometricProfileAdmissionEnabled, deferProjectedSpotImages: projectedSpotImageAdmissionEnabled })) sceneCompileCtx.degrade(diagnostic);
     }
     markTiming("a3d:mount:compile-scene:start");
+    // 5.7.1: an alpha-preserving WebGL2 canvas presents only through the v2 OutputPass route, which needs the deferred
+    // `post/v2Entry` bag. `createPrd03PostSurface` starts that import at mount without waiting; when the first frame won
+    // the race the frame could not present. Wait for it (alongside the scene compile) so the first frame after mount is
+    // a real one. A failed import is not a mount failure: the renderer presents transparent until a retry lands.
+    const alphaPostModules = outputPolicy.alphaMode !== "opaque" && backendSelection.active === "webgl2" && flags.on("A3D_QR_POST")
+      ? postV2ModulesReady().catch(() => undefined)
+      : undefined;
     const compiledScene = await compileScene(snapshot, sceneCompileCtx);
+    if (alphaPostModules) await alphaPostModules;
     markTiming("a3d:mount:compile-scene:resolved");
     const compiled = asRuntimeCompiled(compiledScene);
     activeCompiled = compiled;
