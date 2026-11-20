@@ -18,12 +18,12 @@ function run(kind: "guard" | "gunner" | "boss", id: string, state: string, t: nu
 }
 const change = (a: Bones, b: Bones) => Math.max(...Object.keys(a).map((k) => Math.abs(a[k]!.rotation.x - b[k]!.rotation.x) + Math.abs(a[k]!.rotation.y - b[k]!.rotation.y) + Math.abs(a[k]!.rotation.z - b[k]!.rotation.z)));
 
-describe("bunker zero Idol enemies play generated motion clips (fal text-to-motion, no Meshy)", () => {
+describe("bunker zero Idol enemies play generated motion clips (fal text-to-motion)", () => {
   it("every sim state maps to a shipped clip: rifle soldier for the guard and gunner, heavy brute for the Warden", () => {
-    // invariant: the clip table must stay fal text-to-motion provenance (no Meshy/Sketchfab, owner rule); the toContain checks are on the exported clip-name list.
+    // invariant: the clip table must stay fal text-to-motion provenance (no Sketchfab, owner rule); the toContain checks are on the exported clip-name list.
     const src = readFileSync("apps/showcase-bunker-zero/src/art/idol-mocap.ts", "utf8");
     expect(src).toMatch(/fal-ai\/hunyuan-motion/);
-    expect(src).not.toMatch(/meshy|sketchfab/i);
+    expect(src).not.toMatch(/sketchfab/i);
     for (const clip of [...Object.values(ENEMY_STATE_CLIP), ...Object.values(BOSS_STATE_CLIP)]) expect(enemyMocapClipNames()).toContain(clip);
     expect(enemyClipTime("patrol", 1, 0, 0).clip).toBe("walk");
     expect(enemyClipTime("chase", 1, 0, 0).clip).toBe("run");

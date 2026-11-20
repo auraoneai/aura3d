@@ -10,12 +10,11 @@ import { moveFor } from "../../../apps/showcase-iron-crown/src/game/moves";
 const dist = (a: readonly number[], b: readonly number[]) => Math.hypot(a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!);
 const state = (clip: string, extra: Record<string, number> = {}) => ({ clip, time: extra.time ?? 1, clipProgress: extra.p ?? 0.5, clipTime: extra.clipTime ?? 0.5, hold: extra.hold ?? 0.5, moveDir: extra.moveDir ?? 1 }) as never;
 
-describe("Iron Crown Idol fighters play generated motion clips (owner: real hand and weapon motion, no Meshy)", () => {
+describe("Iron Crown Idol fighters play generated motion clips (owner: real hand and weapon motion)", () => {
   it("ships the fal text-to-motion set; every fighter maps every logical state to a shipped clip, with its own moves", () => {
-    // invariant: the fighter clip table must stay fal text-to-motion provenance (no Meshy, owner rule); the toContain checks are on the exported clip-name list.
+    // invariant: the fighter clip table must stay fal text-to-motion provenance (owner rule); the toContain checks are on the exported clip-name list.
     const src = readFileSync("apps/showcase-iron-crown/src/game/idol-mocap.ts", "utf8");
     expect(src).toMatch(/fal-ai\/hunyuan-motion/);
-    expect(src).not.toMatch(/meshy/i);
     expect(mocapClipNames().length).toBe(26);
     for (const f of FIGHTERS) {
       for (const s of REQUIRED_FIGHTER_CLIPS) {

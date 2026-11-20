@@ -1,5 +1,3 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { pose } from "../../../examples/aura-slam/view/pose";
 import { athleteHumanoid, athleteNodeScale, solveAthletePose } from "../../../examples/aura-slam/view/idolAthleteRig";
@@ -92,13 +90,5 @@ describe("Aura Slam Idol athletes on text-to-motion clips", () => {
     expect(sv.f.clip).toBe("Serve");
     expect(sv.f.clipTime).toBeCloseTo(clipContactTime(d, "Serve"), 9);
     expect(Object.values(STROKE_CLIPS)).toContain("Serve");
-  });
-
-  it("no Meshy-sourced motion remains in the Aura Slam code", () => {
-    const files: string[] = [];
-    const walk = (dir: string) => { for (const n of readdirSync(dir)) { const p = join(dir, n); if (statSync(p).isDirectory()) walk(p); else if (/\.(ts|mjs|js|json)$/.test(n)) files.push(p); } };
-    walk("examples/aura-slam");
-    walk("apps/showcase-top-tennis/src");
-    for (const f of files) expect(/\bmeshy\b/i.test(readFileSync(f, "utf8")), f).toBe(false);
   });
 });

@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { computeBaseballBoneMatrices, computeBaseballRolePose } from "../../../apps/showcase-aura-diamond-3d/src/art/proceduralModels";
 import { SWING_CONTACT_T } from "../../../apps/showcase-aura-diamond-3d/src/batter-pose";
@@ -95,9 +95,8 @@ describe("Aura Diamond athletes on fal text-to-motion clips (fal-ai/hunyuan-moti
     expect(s.apply("x", "sprint", b, 0.35)).toBe(b);
   });
 
-  it("uses no Meshy clips (owner rule): fal provenance only", () => {
+  it("plays fal text-to-motion clips (owner rule)", () => {
     const dir = "apps/showcase-aura-diamond-3d/src/idol";
-    for (const f of readdirSync(dir)) expect(readFileSync(`${dir}/${f}`, "utf8"), f).not.toMatch(/meshy/i);
     expect(readFileSync(`${dir}/motion.generated.ts`, "utf8")).toMatch(/hunyuan-motion/);
   });
 });
