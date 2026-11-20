@@ -8,7 +8,7 @@ Play browser games made with Aura3D, explore the TypeScript behind their worlds,
 
 - Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits
 - Website: https://aura3d.auraone.ai
-- Current release: Aura3D 5.7.0 (per the repo manifest — the same source the build's version guard uses)
+- Current release: Aura3D 5.7.1 (per the repo manifest — the same source the build's version guard uses)
 - Docs: https://aura3d.auraone.ai/docs/api
 - Showcase gallery: https://aura3d.auraone.ai/apps/showcase-index/ (30 playable games; add `?autoplay=1` to any game URL and the computer plays it)
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
@@ -26,7 +26,7 @@ Play browser games made with Aura3D, explore the TypeScript behind their worlds,
 - [Aura3D TypeScript scene API](https://aura3d.auraone.ai/docs/api): Import the scene, camera, materials, and interactions you need. The engine mounts them together and owns the frame loop.
 - [Import and validate a 3D model with Aura3D](https://aura3d.auraone.ai/docs/assets): Register a GLB or glTF file once. The CLI records its source and generates a TypeScript name you can use in your scene.
 - [Aura3D vs. Three.js: a complete engine vs a rendering library](https://aura3d.auraone.ai/docs/aura3d-vs-threejs): Aura3D ships the renderer, typed assets, AI generation, game kit and deploy checks that three.js leaves to you. A lit, framed product in 10 lines against 38.
-- [Aura3D capabilities and proof](https://aura3d.auraone.ai/docs/claims): What Aura3D 5.7.0 ships: the typed browser 3D workflow, the renderer, the asset pipeline and AI generation, the game stack, and the proof behind each.
+- [Aura3D capabilities and proof](https://aura3d.auraone.ai/docs/claims): What Aura3D 5.7.1 ships: the typed browser 3D workflow, the renderer, the asset pipeline and AI generation, the game stack, and the proof behind each.
 - [Build an Aura3D scene with Claude](https://aura3d.auraone.ai/docs/claude): Give Claude the project context, a working starter, and one visible change to make. Review the result in the browser.
 - [Use Cursor with an Aura3D project](https://aura3d.auraone.ai/docs/cursor): Open the scaffolded project in Cursor. Follow a typed asset from its manifest to the scene, then make one change you can see.
 - [Deploy an Aura3D app to a static host](https://aura3d.auraone.ai/docs/deployment): Build your static files, validate the asset manifest, and check the distribution folder before uploading it to your host.

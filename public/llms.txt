@@ -1,6 +1,6 @@
 # Aura3D
 
-> Aura3D 5.7.0: the complete TypeScript engine for browser games and 3D apps. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed assets, AI generation, checks and deploy gates. Built for AI coding agents. Site: https://aura3d.auraone.ai
+> Aura3D 5.7.1: the complete TypeScript engine for browser games and 3D apps. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed assets, AI generation, checks and deploy gates. Built for AI coding agents. Site: https://aura3d.auraone.ai
 
 ## Explore Aura3D
 
