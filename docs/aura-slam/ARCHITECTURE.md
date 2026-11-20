@@ -1,5 +1,7 @@
 # Aura Slam 3D: native Aura3D port, architecture and module contract
 
+> Historical design record (2026-10-23): Aura Slam 3D shipped from `apps/showcase-top-tennis` with the contract in `examples/aura-slam/contract/`; the planned `apps/showcase-aura-slam` folder was never kept.
+
 Status: 2026-10-23, written by the `slam-architect` lane. Contract code: `examples/aura-slam/contract/` (types plus tiny pure helpers, typechecks standalone; import from `./contract`).
 
 ## 1. What we are converting

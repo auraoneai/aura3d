@@ -1157,7 +1157,7 @@ export function optimizeAssets(options: { readonly ids?: readonly string[]; read
 
 Semantics:
 - Derived files are content-addressed: `public/aura-assets/<id>.<derivedHash8>.glb`.
-- `aura.assets.json` is a generated file. It changes only through `aura3d assets …` commands (§4.3 generated-file
+- `aura.assets.json` is a generated file. It changes only through the `aura3d assets` subcommands (§4.3 generated-file
   rule).
 - Admission gates are pure functions over glTF JSON.
 

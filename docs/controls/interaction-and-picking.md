@@ -130,7 +130,6 @@ This split matters for product and advanced-gallery routes: annotation hotspots 
 
 - Product configurator and product-studio workflows use controls for camera framing, inspection, and variant interactions.
 - Advanced gallery routes use route-specific controls, reset/capture buttons, camera presets, and runtime stats.
-- Three-compat routes use controls evidence through `three-compat:controls`.
 - Editor/runtime surfaces use picking and transform controls through `@aura3d/editor-runtime`.
 
 ## Verification
@@ -148,18 +147,10 @@ Focused coverage lives in:
 - `tests/unit/input/native-orbit-controls.test.ts`
 - `tests/unit/rendering/native-interactive-cubes.test.ts`
 - `tests/unit/rendering/native-interactive-points.test.ts`
-- `tests/unit/controls/three-compat-controls.test.ts`
-- `tests/browser/threejs-parity-orbit-controls.spec.ts`
 - `tests/browser/threejs-parity-transform-controls.spec.ts`
 - `tests/browser/input-browser.spec.ts`
-- `tests/browser/current-routes-parity-evidence.spec.ts`
 
-Useful commands:
-
-```sh
-pnpm three-compat:controls
-pnpm renderer:controls-picking-xr-context
-```
+Run the specs above remotely (`tools/remote-acr/run.sh` with `SPECS=...`); the unit tests run with `pnpm exec vitest run tests/unit/controls`. (The `three-compat:controls` and `renderer:controls-picking-xr-context` scripts and the three-compat controls test were removed with `@aura3d/three-compat`.)
 
 ## Current Limits
 

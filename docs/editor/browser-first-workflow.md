@@ -4,10 +4,9 @@ The editor workflow is browser-first and package-backed, but it is not documente
 
 ## Current Code
 
-- `packages/editor-runtime/src/index.ts`
-- `packages/editor/src/index.ts`
-- `tests/browser/editor-*.spec.ts`
-- `tests/unit/tools/editor*`
+- `packages/editor-runtime/src/index.ts` (the editor app, `apps/editor`, was deleted in 5.7.0; the runtime package remains)
+- `tests/browser/editor-*.spec.ts` (they mount `tests/browser/editor-browser-harness.html`)
+- `tests/unit/editor/`
 
 ## Workflow
 

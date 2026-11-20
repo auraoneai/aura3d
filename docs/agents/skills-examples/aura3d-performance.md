@@ -1,5 +1,7 @@
 # Worked example: aura3d-performance
 
+> Historical worked example from 4.0.0 (2026-09-25); the numbers and package names are as of that run.
+
 Date: 2026-09-25. Run inside the Aura3D monorepo with the local CLI build and
 the built engine dist (4.0.0). Lightweight commands only; no bundle-size
 regeneration, profiling, or browser runs locally.
@@ -37,7 +39,7 @@ any optimization.
 4. Read `BUNDLE_SIZES.md` (not regenerated): `mini-game starter app before user
    assets` is 213,946 gzip bytes against a 250,000 budget (pass); the
    `@aura3d/engine` compatibility root is 575,343 gzip bytes and informational.
-   This is why the skill steers new apps to `@aura3d/lean` entries.
+   (Historical: in 4.0.0 this was why the skill steered new apps to `@aura3d/lean`; that package is retired and new apps use `@aura3d/engine`.)
 
 ## Not run locally (remote evidence)
 

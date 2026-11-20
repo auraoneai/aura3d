@@ -8,7 +8,7 @@ Measured with `docs/audit/scripts/{links,snippets,tokens}.mjs` (tokens: o200k_ba
 | Absolute `/Users/...` paths in md | 32 | 0 |
 | Skill checker (`tools/agent-skills/check.ts`) | failing (3 skills over 150 lines, craft-ratio, stale mirrors) | ok, 0 failures |
 | Nonexistent import paths in docs | 4 | 2 (both in a historical worked example, now bannered) |
-| Nonexistent CLI commands flagged | 16 | 2 (`aura3d evidence judge` exists in `packages/aura3d-cli/src/commands/evidence`, so that one is a checker false positive; `aura3d new game` is planned and is labelled as such) |
+| Nonexistent CLI commands flagged | 16 | 2 (`aura3d evidence judge` exists in `packages/aura3d-cli/src/commands/evidence`, so that one is a checker false positive; a `new game` command is planned, not implemented, and is labelled as such) |
 | Documented pnpm scripts that do not exist | 23 | 21 |
 | Root names taught but not exported | 1 | 1 (`animation` in the character-animation skill, untouched here) |
 | Markdown files, all tracked | 808 | 814 (lanes added pages; 28 archived files stay tracked) |
