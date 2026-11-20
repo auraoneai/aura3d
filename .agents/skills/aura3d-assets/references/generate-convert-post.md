@@ -74,10 +74,43 @@ npx @aura3d/cli@latest assets slim hero.glb rover.n.glb --quality 92
   bones). The orientation is recorded in `asset.extras.aura3d`.
 - `assets slim` re-encodes PNG normal maps (or `--slots normal,occlusion`) as
   JPEG; files usually shrink 40 to 60 percent. It rewrites in place unless
-  `--out` is given and never writes a result that is not smaller.
+  `--out` is given and never writes a result that is not smaller. JPEG normal
+  maps are fine on rough, matte or small-on-screen props and wrong on glossy or
+  mirror surfaces (car paint, glass, chrome, lacquer, polished products): the
+  block and chroma loss shows as dents, banding and wavy reflections. Skip
+  `assets slim` for any model whose visible surfaces have roughness under about
+  0.4. `assets generate` (and `--renormalize`) runs the same slim step on every
+  result, so for a glossy generated hero rebuild from the raw download under
+  `.aura3d/fal/<game>/<key>/` with `assets optimize` (resizes normal maps but
+  keeps their format) and `assets normalize` (leaves textures alone) and do not
+  slim. A normal map the generator delivered as JPEG is not repaired by
+  re-encoding: lower `normalScale` or drop it where the surface is smooth.
 - `assets optimize --file in.glb --out out.glb --role prop` is the polygon and
   texture budget pass; `assets optimize --file in.hdr --out out_1k.hdr --hdri 1k`
   downsizes an HDRI.
+
+## Generated PBR maps are not trustworthy as delivered
+
+AI image-to-3D models (Hunyuan 3D, Idol, Meshy) ship one material whose maps
+guess at physics. The Vesper GT car (Hunyuan 3D v3.1 Pro on fal) arrived with
+metalness median 0.77 (the painted body shaded as bare metal), roughness median
+0.17 (near mirror) and a JPEG normal map tilting 7 degrees median and 14 at p90
+on panels that should be 0 to 2: blotchy white sheen, melted reflections,
+dented panels. After every generated model:
+
+1. Inspect the statistics per material region: decode the
+   `metallicRoughnessTexture` (G = roughness, B = metalness) and the normal map
+   (n = 2c - 1, tilt = acos(n.z)); record median and p90.
+2. Painted bodies are dielectric (metalness about 0) with a clearcoat
+   (`material.carPaint`, or `material.physical` with `clearcoat`).
+3. Split body paint, glass, chrome or machined metal, and tyres or rubber into
+   separate materials; one map set rarely serves all four.
+4. Keep normal maps lossless (PNG); never `assets slim` this model. A normal
+   map that arrived as JPEG stays damaged after re-encoding: see step 5.
+5. Lower `normalScale` on reconstructed meshes (start near 0.3 on smooth
+   panels) or drop the map where the surface should be smooth.
+6. Judge glossy surfaces on a real GPU under the shipping look before shipping;
+   the CPU preview below shows base colour only.
 
 ## Previews and thumbnails (CPU base-colour, not renders)
 

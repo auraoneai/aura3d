@@ -108,5 +108,25 @@ directly only for build-time tooling; ship baked GLB clips, not runtime retarget
 - `createHumanoidDriver(skeleton)` poses a rig from canonical frames;
   `bakeHumanoidFramesToGltf(name, target, frames, fps)` writes the glTF channels.
 
+## Play canonical clips at runtime: `createHumanoidAnimator` (5.7.0)
+
+Games that drive a rig from canonical `HumanoidClip`s (from `animation generate`,
+`animation import` or `encodeHumanoidClip`) use the library player from
+`@aura3d/engine/animation`, the one the Idol showcase games used. Never write a
+per-game motion player, cross-fader or clip clock.
+
+- `createHumanoidAnimator(clips)`, one per body (alias `createMotionAnimator`):
+  `anim.update(dt, { clip, time?, rate?, loop?, mirror?, fade? })` or
+  `anim.update(dt, { pose, key?, fade? })` returns the pose for `driver.pose(...)`,
+  then `handle.setAnimationPose(...)`. A source change cross-fades over `fade`
+  seconds (default 0.18); root motion is never applied; `dt` is real frame time.
+- `humanoidLocomotionTime(clip, metres, hipHeight)` drives clip time by distance
+  so planted feet do not slide; `humanoidLocomotionRate`, `humanoidEventTime`
+  (lands a key frame such as a kick on the game event) and `humanoidAirTime`
+  (lines a captured jump up with a ballistic one) time the rest.
+- `loadIdolHumanoid(url)` builds and caches the rig's `HumanoidDriver`;
+  `mirrorHumanoidPose`, `blendHumanoidPoses` and `layerHumanoidPose` mix poses
+  (for example an aim layer on the `ARM_ROLES` over a run).
+
 Signatures and the full export list:
 [humanoid motion](https://github.com/auraoneai/aura3d/blob/main/docs/api/humanoid-motion.md).

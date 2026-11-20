@@ -22,6 +22,7 @@ Building or reworking a game? Read [`new-game-checklist.md`](new-game-checklist.
 | Procedural characters, creatures, hulls; follow-camera clearance | `docs/api/sculpt.md` (`@aura3d/engine/sculpt`), `docs/api/motion-camera-clear.md` (`computeCameraClearance`) |
 | Frame-rate drops, quality stepping, black frames on real GPUs | `docs/api/quality-governor.md` (`RuntimeQualityGovernor`), `docs/api/safety-net.md` (`installSafetyNet`, `createBlackFrameWatch`) |
 | Retargeting mocap or HY-Motion clips onto a rig (5.6.0) | `docs/api/humanoid-motion.md`, `aura3d animation import` |
+| Game kits to use instead of hand-rolling (5.7.0): autoplay, render interpolation, humanoid clip player, hit feel, VFX sheets, painted sky, soft or boxed sun shadows, transparent canvas | [`recipes.md`](recipes.md) recipe 18, [`new-game-checklist.md`](new-game-checklist.md) section 1, `docs/api/game-autoplay.md`, `motion-snapshot-interpolator.md`, `humanoid-motion.md`, `game-feel.md`, `game-vfx-sheets.md`, `sky-gradient.md`, `shadow-softness.md`, `transparent-canvas.md` |
 | A lifelike model or motion clip nothing in the catalog covers (5.6.0, paid fal.ai) | [`asset-workflow.md`](asset-workflow.md) section 4: `aura3d assets generate` (Idol), `aura3d animation generate` (HY-Motion) |
 | An FBX, OBJ, USD, PLY, STL or BVH file to bring in | `aura3d assets convert`, then `assets normalize` and `assets add` ([`asset-workflow.md`](asset-workflow.md) section 3) |
 | Which template to start from (26 shipped) | [`templates.md`](templates.md) |

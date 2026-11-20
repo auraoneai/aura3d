@@ -17,6 +17,12 @@ store, a fixed-step loop, QA hooks or a synth. Every name here is verified again
 | Rebindable keys with validation and persistence | `createBindingStore` (private `@aura3d/game` today; publishing through the game kit is the follow-up) | in-repo only |
 | Racket and ball sports | `game.racketSports()`: `ballFlight`, `scoring`, `athleteRig` | `@aura3d/engine` |
 | A black-frame safety net and a GPU diagnostics panel | `installSafetyNet` | `@aura3d/debug` |
+| `?autoplay=1` flag and the results-hold-then-restart loop (5.7.0) | `readAutoplayFlag`, `createAutoplayHarness` | `@aura3d/engine/game` |
+| Draw a fixed-step sim between steps, with a snap rule (5.7.0) | `createSnapshotInterpolator`, `mixNumber`, `mixVec3` | `@aura3d/engine/game` |
+| Hit-stop, camera trauma, FOV kick, zero-asset cues, screen flash, score popups, seeded RNG (5.7.0) | `createImpactRig`, `createProceduralSfx`, `ScreenFx`, `drainPopups`, `GameRng` | `@aura3d/engine/game` |
+| Flipbook VFX sheets and grading LUTs with no image files (5.7.0) | `createFlipbookAtlas`, `createGradingLut` | `@aura3d/engine/game` |
+| Humanoid clip playback with cross-fades and distance-driven feet (5.7.0) | `createHumanoidAnimator`, `humanoidLocomotionTime` | `@aura3d/engine/animation` |
+| A painted game sky; a soft or arena-fixed sun shadow (5.7.0) | `sky.gradient({ mid, haze, sun: { glow } })`, key `shadow: { softness, fit }` | `@aura3d/engine` |
 
 `createGame` from `@aura3d/engine` throws `AuraGameMigrationError` (`CREATE_GAME_ROOT_UNAVAILABLE_V1`) before mounting anything.
 The real kit is the `@aura3d/engine/game` entry, and importing it turns the `game`
@@ -78,6 +84,37 @@ Telemetry and harnesses (5.5.5, root `@aura3d/engine`; signatures in
 - Dev-only feel tuning: `createAuraTuneOverlay({ id, schema })` from
   `@aura3d/engine/devtools` puts tuning constants on live sliders (`?tune`);
   its `overlay.diffBlock` method prints the changes to paste back into source.
+
+## Autoplay, interpolation and feel (5.7.0)
+
+The 30 live games each carried their own copy of these; the copies are now library
+calls and every live game uses them. Use them instead of writing your own.
+
+```ts
+import { createFixedStepLoop } from "@aura3d/engine";
+import { createAutoplayHarness, createImpactRig, createSnapshotInterpolator, GameRng, mixNumber, readAutoplayFlag } from "@aura3d/engine/game";
+
+const rng = new GameRng(seed);                          // the sim's only randomness
+const rig = createImpactRig();                          // hit-stop + trauma on REAL frame time
+const autopilot = readAutoplayFlag(location.search);    // ?autoplay=1, ?autopilot=1, ?demo
+const autoplay = createAutoplayHarness({ bot: { step: () => botInput(sim) }, isFinished: () => sim.over, restartDelay: 3, onRestart: restart });
+const presenter = createSnapshotInterpolator({
+  snapshot: () => ({ x: sim.x }),
+  blend: (a, b, t) => ({ x: mixNumber(a.x, b.x, t) }),
+  snap: { distance: 5, position: (s) => s.x }           // a teleport shows the new step
+});
+const loop = createFixedStepLoop({
+  step: (dt) => { sim.advance(autopilot ? autoplay.step(dt)! : keys(), rng); presenter.afterStep(); },
+  render: (frame) => { const f = rig.step(frame); if (autopilot) autoplay.tick(frame); draw(presenter.present(loop, true), f); }
+});
+```
+
+- Every game supports `?autoplay=1`; the bot stays game code and feeds the same
+  input path as the keys. Fold `autoplay.diag()` into the QA hook state.
+- `rig.trigger({ freezeSeconds, trauma, fovKickDeg })` on a hit; the freeze always
+  ends because the rig counts real time (lessons-learned M2).
+- Sound: `createProceduralSfx().play("impact", strength)` for zero-asset cues next
+  to `createCueBank`; flashes through `ScreenFx` with `flashStrength` (reduced motion caps it).
 
 ## Production safety net
 

@@ -25,8 +25,12 @@ lists the look and light values it used and has a retained real-GPU frame.
 1. `scene().add(looks.preset("<id from the recipe row>"))` first, then typed assets, then gameplay/props.
 2. `createAuraApp(el, { scene, ...looks.appOptions("<id>") })`.
 3. Camera from the recipe row (rig + fov + subject frame %). For a still subject hit the frame % with `.camera(camera.auto({ subject: "<name>", fill: 0.6 }))`, never a hand-placed camera; gameplay uses the genre rig. The camera state is applied to the camera, not to evidence objects.
-4. Ground contact: full-strength key shadow (the look's key, or `lights.key({ target })` when lighting by hand) on a ground plane, plus a contact detail at the subject's feet. A shadow edge that reads too hard: widen its penumbra with the key's `shadow: { softness: 2 }` (shadow-map texels; default 1, `0` is hard).
-5. HUD lives in DOM/CSS, never in the 3D scene. No debug overlay in shipped frames.
+4. Ground contact: full-strength key shadow (the look's key, or `lights.key({ target })` when lighting by hand) on a ground plane, plus a contact detail at the subject's feet. A shadow edge that reads too hard: widen its penumbra with the key's `shadow: { softness: 2 }` (shadow-map texels; default 1, `0` is hard). A shadow whose softness shifts as the camera reframes an arena: pin the map to the arena with `shadow: { fit: { center, extent } }` (5.7.0).
+5. HUD lives in DOM/CSS, never in the 3D scene. No debug overlay in shipped frames. HUD words that name a colour or shape describe the graded frame, not the authored hex ("amber gate" must look amber).
+6. Silhouette and contrast: the hero separates from the set by value. A dark hero on a dark set gets a rim or back light or a lighter accent; judge a back-view frame at gameplay distance.
+7. Painted game sky: `sky.gradient({ horizon, mid, zenith, haze, sun: { glow } })` (5.7.0 stylised profile: bands, sharpenable horizon, haze veil, sun glow and painted disc). Write a custom dome only for clouds, stars, aurora or planets.
+8. Glossy generated models (cars, products): the delivered PBR maps are not a look. Paint is dielectric (metalness about 0) with a clearcoat (`material.carPaint`); body, glass, chrome and tyres each get their own material; normal maps stay lossless PNG (never `assets slim` a glossy or mirror surface); lower `normalScale` on reconstructed meshes; judge reflections on a real GPU under the look.
+9. Transparent canvas (a scene over the page or a poster cut-out): `output: { alphaMode: "premultiplied", inputAlphaMode: "premultiplied" }` with no backdrop and a `material.shadow` catcher; never key a matte out of a coloured render.
 
 ## The 15 looks
 
@@ -68,6 +72,9 @@ Hard checklist (all must hold before claiming done):
 - Subject fills its genre frame % (see `references/look-recipes.md`)
 - No pure-primary primitives as the subject
 - Characters animated through the animation controller
+- Hero silhouette reads in a back-view frame (rim, back light or lighter accent)
+- HUD colour words match the graded frame
+- Glossy surfaces: dielectric paint with clearcoat, split materials, PNG normal maps, real-GPU reflections
 - HUD in DOM, not in-world
 - No debug overlay
 - `aura3d look lint` clean of error-severity codes

@@ -1,6 +1,6 @@
 # Build a game with Aura3D
 
-Version: 5.6.0 (kits: 4.1.0 and later). One page, one path: a complete, mobile-friendly, testable browser game from the library kits, with nothing for you to invent. Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first.
+Version: 5.7.0 (kits: 4.1.0 and later). One page, one path: a complete, mobile-friendly, testable browser game from the library kits, with nothing for you to invent. Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first.
 
 Every snippet below is a file in `docs/agents/samples/coin-dash/`, type-checked against the repository source (`tsc -p docs/agents/samples/coin-dash/tsconfig.json`, strict, `@aura3d/engine`, `@aura3d/engine/game`, `@aura3d/debug`). Run the verification steps in section 8 on your route before you publish claims about it.
 
@@ -336,5 +336,8 @@ Use the motion kit from `@aura3d/engine/game` instead of hand-rolling per game:
 | enemies, NPCs and opponents that face their target (per-model forward axis, turn rate, proof) | `faceTowards`, `yawToFace`, `facingError` | [motion-facing](../api/motion-facing.md) |
 | a follow camera that clips into walls, trunks or roofs | `computeCameraClearance` (root `@aura3d/engine`, 5.5.6) | [motion-camera-clear](../api/motion-camera-clear.md) |
 | a rig with no clips, or mocap / text-to-motion clips | `aura3d animation import` / `animation generate` (`@aura3d/animation` humanoid module, 5.6.0) | [humanoid-motion](../api/humanoid-motion.md) |
+| play canonical humanoid clips (cross-fades, mirrored clips, distance-driven feet) | `createHumanoidAnimator`, `humanoidLocomotionTime` (`@aura3d/engine/animation`, 5.7.0) | [humanoid-motion](../api/humanoid-motion.md) |
+| hit-stop, camera trauma and FOV kick on real time; zero-asset SFX; screen flash; popups; seeded RNG | `createImpactRig`, `createProceduralSfx`, `ScreenFx`, `drainPopups`, `GameRng` (5.7.0) | [game-feel](../api/game-feel.md) |
+| flipbook VFX sheets and grading LUTs with no image files | `createFlipbookAtlas`, `createGradingLut` (5.7.0) | [game-vfx-sheets](../api/game-vfx-sheets.md) |
 
 A game with a fixed-step simulation must draw between the last two steps, or it stands still on every second frame on a 120 Hz display. Put `presenter.afterStep()` in the step callback, draw `presenter.present(loop, live)`, and add a unit test that drives the real simulation through `runMotionGate` at 60, 120 and 144 Hz.

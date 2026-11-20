@@ -52,6 +52,24 @@ Docs that name CLI commands or flags: `node tools/docs/gen-cli-reference.mjs --v
 Skill edits go in `packages/aura3d-cli/skills/`, then `pnpm skills:sync` and `pnpm check:skills`.
 Full release qualification (`pnpm check:release`) needs a candidate plan and is run by maintainers.
 
+Before any remote release run (`tools/remote-acr/run.sh` release or ACR pass), run the full sharded
+typecheck (`pnpm typecheck`) and the unit suites of every package you touched locally. Focused tests
+alone let about 25 integration failures through to a 5.7.0 remote run (lessons-learned B12).
+
+### Imports in library kits and camera helpers
+
+- New `@aura3d/game` kits (`packages/game/src/**`) import engine pieces from the
+  `@aura3d/engine/v5/internal` leaf bridge (`packages/engine/src/public/v5-internal.ts`; add the leaf
+  export there if it is missing), never from the `@aura3d/engine` root. The root reaches the eager
+  legacy physics backend through `agent-api/nodes/physics.ts`, which breaks the physics-free game entry
+  (`tests/unit/physics/native-physics-entry-graph.test.ts`, `native-v5-entry.test.ts`,
+  `native-entry-game-binding.test.ts`).
+- Engine helpers used by camera rigs (`camera/subject.ts`, `camera/extension.ts` and anything they
+  import) never import `app/runtimeNodes.ts`, `sceneGraph.ts` or the compiler; use a type-only leaf
+  such as `app/parentedWorldPose.ts`. One such import took the PRD-08 "everything" bundle fixture from
+  24 KB to 72.5 KB gzip and failed the no-cycles gate (`tests/qr/prd08/unit/bundle.test.ts`).
+- After adding a kit or touching a camera helper, run those four tests (lessons-learned B13).
+
 For asset-backed public examples, run:
 
 ```sh

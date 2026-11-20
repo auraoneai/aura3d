@@ -15,7 +15,7 @@ benchmark mode) are in [boundaries](../aura3d-core/references/boundaries.md).
 A character reads through its silhouette and rim: `character-showcase` (or the
 genre recipe's look) supplies the 3/4-front key plus rim that makes locomotion,
 poses and morphs visible. Judge animation under that look — a clip that reads
-in flat light can vanish inside night-city shadow pools or golden-hour haze.
+in flat light can vanish inside night-city shadow pools or golden-hour haze. A dark character on a dark set needs a rim or back light or a lighter accent; judge a back-view frame at gameplay distance.
 
 ## Establish the contract
 
@@ -32,7 +32,8 @@ in flat light can vanish inside night-city shadow pools or golden-hour haze.
    or make them from text with `animation generate`
    ([import and generate](references/import-and-generate.md); its engine is the
    5.6.0 `@aura3d/animation` humanoid module: `smplMotionToClip`,
-   `skeletalMotionToFrames`, `mapHumanoid`, `createHumanoidDriver`).
+   `skeletalMotionToFrames`, `mapHumanoid`, `createHumanoidDriver`). Play
+   canonical humanoid clips with `createHumanoidAnimator` (5.7.0, below).
 3. Inspect the rig and record the real names:
 
    ```bash
@@ -92,6 +93,8 @@ in flat light can vanish inside night-city shadow pools or golden-hour haze.
    });
    ```
 
+   Canonical `HumanoidClip`s (from `animation generate` / `import`) play
+   through `createHumanoidAnimator(clips)` from `@aura3d/engine/animation`, one per body: cross-fades, mirrored clips, code poses, and `humanoidLocomotionTime` for distance-driven clip time so feet never slide. Never hand-roll a motion player, cross-fader or clip clock ([import and generate](references/import-and-generate.md)).
 4. Clip-local gameplay events (event names such as "hitbox.open", "sfx", "vfx",
    "camera.impulse", "caption", "viseme") go through the controller's event subscription. Bridge
    them into public systems such as `game.combatWorld`; never call private

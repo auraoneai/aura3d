@@ -8,7 +8,7 @@ Play browser games made with Aura3D, explore the TypeScript behind their worlds,
 
 - Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits
 - Website: https://aura3d.auraone.ai
-- Current release: Aura3D 5.6.0 (per the repo manifest — the same source the build's version guard uses)
+- Current release: Aura3D 5.7.0 (per the repo manifest — the same source the build's version guard uses)
 - Docs: https://aura3d.auraone.ai/docs/api
 - Showcase gallery: https://aura3d.auraone.ai/apps/showcase-index/ (30 playable games; add `?autoplay=1` to any game URL and the computer plays it)
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
@@ -26,7 +26,7 @@ Play browser games made with Aura3D, explore the TypeScript behind their worlds,
 - [Aura3D TypeScript scene API](https://aura3d.auraone.ai/docs/api): Import the scene, camera, materials, and interactions you need. The engine mounts them together and owns the frame loop.
 - [Import and validate a 3D model with Aura3D](https://aura3d.auraone.ai/docs/assets): Register a GLB or glTF file once. The CLI records its source and generates a TypeScript name you can use in your scene.
 - [Aura3D vs. Three.js: a complete engine vs a rendering library](https://aura3d.auraone.ai/docs/aura3d-vs-threejs): Aura3D ships the renderer, typed assets, AI generation, game kit and deploy checks that three.js leaves to you. A lit, framed product in 10 lines against 38.
-- [Aura3D capabilities and proof](https://aura3d.auraone.ai/docs/claims): What Aura3D 5.6.0 ships: the typed browser 3D workflow, the renderer, the asset pipeline and AI generation, the game stack, and the proof behind each.
+- [Aura3D capabilities and proof](https://aura3d.auraone.ai/docs/claims): What Aura3D 5.7.0 ships: the typed browser 3D workflow, the renderer, the asset pipeline and AI generation, the game stack, and the proof behind each.
 - [Build an Aura3D scene with Claude](https://aura3d.auraone.ai/docs/claude): Give Claude the project context, a working starter, and one visible change to make. Review the result in the browser.
 - [Use Cursor with an Aura3D project](https://aura3d.auraone.ai/docs/cursor): Open the scaffolded project in Cursor. Follow a typed asset from its manifest to the scene, then make one change you can see.
 - [Deploy an Aura3D app to a static host](https://aura3d.auraone.ai/docs/deployment): Build your static files, validate the asset manifest, and check the distribution folder before uploading it to your host.
@@ -120,7 +120,7 @@ Aura3D is a complete engine with its own renderer: you describe a scene as typed
 | `Scene` + `PerspectiveCamera` + `WebGLRenderer` + `setAnimationLoop` | `scene({ background }).camera(camera.perspective({ position, target, fov }))` then `createAuraApp("#app", { scene })`; per frame `app.onFrame((f) => ...)` with `f.dt`; `app.ready().then(...)` (never a top-level `await`) | No renderer, resize or loop code. Mount target is a `<canvas>` or a sized wrapper. |
 | `new Mesh(geometry, material)` | `primitives.box({ name, size: [w, h, d], material: material.pbr({ color }) })` (also `sphere`, `plane`, `cylinder`, `capsule`, `cone`, `torus`, `torusKnot`, `lathe`, `extrude`, `tube`) | Primitives are unit shapes scaled by `size`. `sphere` size is the **diameter**; `plane` is `[w, 1, d]` and lies in XZ. Unknown option keys are reported, not ignored. |
 | `mesh.position.set(...)`, `rotation`, `scale` | Build time: `.position(x, y, z).rotate(x, y, z).scale(2)`. Runtime: `.runtime({ id, mutable: true })`, then `app.nodes.require(id).setPosition(x, y, z)`, `.setRotation`, `.setScale` | A node you move later needs `runtime({ id, mutable: true })`. Handles have `set*`, not `.position.x`. Vectors are tuples, not `Vector3`. |
-| `Group` / `Object3D` hierarchy, bones as groups | `group("arm", [children], { position }).runtime({ id, mutable: true })` | Children use local transforms; a group's origin is its pivot. |
+| `Group` / `Object3D` hierarchy, bones as groups | `group("arm", [children], { position }).runtime({ id, mutable: true })` | Children use local transforms; a group's origin is its pivot. Since 5.7.0 model and primitive handles inside a group are parent-local too (5.6 took world coordinates: convert such code or make the node top-level); world reads use `getWorldPosition()`. |
 | `BufferGeometry` + `setAttribute` + `setIndex` | `geometry.custom(geometry.define({ positions, normals, uvs, colors, indices, bounds }), { name, material })` | Typed arrays in; `bounds` required; `colors` are per-vertex RGBA. `geometry.dynamic` for geometry you rewrite. |
 | `MeshStandardMaterial` | `material.pbr({ color, roughness, metallic, emissive, opacity })` | Also `physical` (clearcoat), `emissive`, `toon`, `matcap`. Colour is a CSS string. |
 | `ShaderMaterial` | `material.custom({ glsl: { vertex, fragment }, uniforms: { t: { type: "f32", value: 0 } } })`; `handle.setUniform("t", v)` | GLSL 3.00 (`in`/`out`, write `outColor`). Prelude names: `position`, `normal`, `uv`, `modelViewProjectionMatrix`, `modelMatrix`, `cameraPosition`, `uTime` (wall-clock seconds; advances only while the app redraws every frame: give the node `.runtime({ id, mutable: true })` or register `app.onFrame(...)`, else a static scene draws once and `uTime` looks frozen). Node/TSL: `material.node`. |
@@ -242,11 +242,24 @@ URLs or ids — every model comes from a generated `assets.<key>`:
   character|creature|vehicle|object [--rig --animations idle,walk,run]
   --dry-run` prints the fal.ai cost (reference still $0.17, skipped with
   `--image`; Idol mesh $0.20, $0.25 rigged); the paid run refits the skin,
-  optimises, faces +Z, grounds, scales, slims normal maps and admits a
+  optimises, faces +Z, grounds, scales, slims normal maps (JPEG) and admits a
   `candidate` with `<key>.idol.json` provenance. `assets normalize` (facing,
   size, grounding), `assets slim` (JPEG normal maps) and `assets preview`
   (CPU base-colour preview sheet, not a render) work on any GLB;
   `assets thumbnail` writes manifest PNG thumbnails the same way.
+- Generated PBR maps are not trustworthy as delivered (lessons-learned A11,
+  A12). A Hunyuan 3D car arrived as one material with metalness median 0.77,
+  roughness 0.17 and a JPEG normal map tilting 7 degrees on panels that should
+  be smooth: blotchy sheen, wavy reflections, dented paint. After generating,
+  inspect metalness, roughness and normal-tilt statistics; make painted bodies
+  dielectric (metalness about 0) with a clearcoat; split body, glass, chrome
+  and tyres into separate materials; keep normal maps lossless PNG; lower
+  `normalScale` on reconstructed meshes; judge glossy surfaces on a real GPU.
+  Never run `assets slim` on glossy or mirror models (it writes JPEG normal
+  maps); rebuild a glossy generated hero from the raw download with
+  `assets optimize` and `assets normalize`, which do not re-encode normal maps
+  (a normal map the generator delivered as JPEG stays damaged: lower
+  `normalScale` or drop it on smooth surfaces).
 - Motion: `animation import <file.bvh|.fbx|.glb|motion.json> --onto rig.glb
   --out hero.glb` retargets clips onto a humanoid rig as real glTF clips and
   fails on limb flips, a frozen T-pose or skin damage (known defects go in
@@ -278,7 +291,7 @@ Mandatory 3D game & scene anti-failure guardrails:
    - Drive rigged humanoid and creature GLBs (`skins > 0`) via `handle.setAnimation({ clip, loop: true, speed })` (or `AnimationController`) synchronized to locomotion (`idle`, `walk`, `run`, `attack`, `swing`), and articulate multi-part procedural characters/machines (`group` joints, rotors, wings, suspension, turrets) every frame under the key light and shadow instead of sliding rigid statues across the floor.
 2. Boot sequence gate (`app.ready().then(...)`, never a module top-level `await`) & default manual control (`autopilot = false` on Frame 1):
    - Gate Frame 1 on `app.ready().then(...)` (a module top-level `await app.ready()` deadlocks a production build: black page) before fading out `#boot-gate` (`opacity: 0; pointer-events: none` then remove) and starting the gameplay simulation loop so lighting, shadow, and GLB silhouettes never pop in mid-frame.
-   - Default `autopilot` / AI demo mode to `false` (immediate manual control on Frame 1 once `#boot-gate` clears); enable AI autopilot only when `?autoplay=1` or `?demo=1` is present in the URL or when the user clicks the HUD `Auto` toggle button, and yield back to manual control on keyboard (`keydown`), pointer, touch, or gamepad input.
+   - Default `autopilot` / AI demo mode to `false` (immediate manual control on Frame 1 once `#boot-gate` clears); every game supports `?autoplay=1`: read the flag with `readAutoplayFlag(location.search)` (accepts `autoplay`, `autopilot`, `demo`) and run the bot and the results-hold-then-restart loop on `createAutoplayHarness` from `@aura3d/engine/game` (never a hand-written flag reader or restart timer); the HUD `Auto` toggle flips `harness.enabled`, and manual input (keyboard, pointer, touch, gamepad) takes control back.
    - Keep mode, stage, camera, `Auto`, and roster selectors in a compact, non-blocking top HUD bar that preserves camera framing, and always call `button.blur()` after button clicks so `Space` or `Enter` gameplay keys never re-trigger focused HUD buttons.
 3. Always optimize Meshy 3D GLBs before admission (`aura3d assets optimize --file in.glb --out out.glb --role <role>`):
    - Raw Meshy exports often contain `200,000–1,750,000` vertices and `20–65 MB` of uncompressed 4K PNG textures, which stall main-thread glTF parsing and exhaust GPU memory when multiple models load in one scene.
@@ -308,7 +321,9 @@ Kits (build the shell from these, do not hand-roll it):
 - Wide gamut: `outputColorSpace: "display-p3"` in the renderer `output` options is a request; on the v2 post chain WebGPU negotiates Display-P3 or falls back to sRGB without throwing (5.5.4), and the renderer diagnostic report gives the active `outputColorSpace`. Claim P3 only from a real-device capture.
 - Procedural sculpting: `@aura3d/engine/sculpt` (5.5.6) builds smooth organic meshes (`sculptOrganicSdfMesh`, `sculptStylizedHeadMesh`, `sculptSdfLimbChainMesh`, `sculptCurvedHairLockMesh`, `taubinSmoothMesh`, `assembleMultiMaterialNode`) for `geometry.define` / `geometry.multiMaterial`; bake once at load. New in 5.6.0: `sculptHairMassMesh`, `sminCubic`, `smaxCubic`. Details: `docs/api/sculpt.md`.
 - Follow cameras: `computeCameraClearance(target, desired, obstacles, options?, out?)` from `@aura3d/engine` (5.5.6) pulls the camera in or lifts it over circle/box obstacles each frame. Details: `docs/api/motion-camera-clear.md`.
-- Humanoid motion (5.6.0): `@aura3d/animation` exports `smplMotionToClip`, `skeletalMotionToFrames`, `mapHumanoid`, `createHumanoidDriver`, `detectHumanoidFacing` and `bakeHumanoidFramesToGltf`, the engine behind `aura3d animation import`. Details: `docs/api/humanoid-motion.md`.
+- Humanoid motion (5.6.0): `@aura3d/animation` exports `smplMotionToClip`, `skeletalMotionToFrames`, `mapHumanoid`, `createHumanoidDriver`, `detectHumanoidFacing` and `bakeHumanoidFramesToGltf`, the engine behind `aura3d animation import`. Since 5.7.0 play the clips with `createHumanoidAnimator` from `@aura3d/engine/animation` (cross-fades, mirrored clips, code poses; `humanoidLocomotionTime` drives clip time by distance so planted feet do not slide), never a per-game motion player. Details: `docs/api/humanoid-motion.md`.
+- Game kits from the 30 live games (5.7.0, `@aura3d/engine/game`; use them, never hand-roll them): `readAutoplayFlag` + `createAutoplayHarness` (`?autoplay=1`, `docs/api/game-autoplay.md`); `createSnapshotInterpolator`, `mixNumber`, `mixVec3` (fixed-step render interpolation with a declared snap rule, `docs/api/motion-snapshot-interpolator.md`); `createImpactRig` (hit-stop, camera trauma, FOV kick on real frame time), `createProceduralSfx` (zero-asset cues), `ScreenFx`, `drainPopups`, `GameRng` (seeded counted RNG) (`docs/api/game-feel.md`); `createFlipbookAtlas` and `createGradingLut` (procedural flipbook VFX sheets and grading LUTs, `docs/api/game-vfx-sheets.md`). Recipe 18 in `docs/agents/recipes.md` wires them together.
+- Look kits (5.7.0): `sky.gradient` stylised profile (`mid` bands, `horizonHeight`, `haze`, sun `glow` lobes and painted disc) is the painted game sky; write a custom dome only for clouds, stars or planets (`docs/api/sky-gradient.md`). Sun `shadow.softness` is the penumbra in shadow-map texels (`0` hard, `1` default, `2`-`4` soft; three.js `shadow.radius`) and `shadow.fit: { center, extent, depth }` pins the shadow map to a fixed box so texel size does not change with framing (`docs/api/shadow-softness.md`). A transparent canvas is `output: { alphaMode: "premultiplied", inputAlphaMode: "premultiplied" }` with no backdrop: it clears transparent, keeps the opaque frame's colours and keeps partial alpha on edges and `material.shadow` shadows (`docs/api/transparent-canvas.md`); never extract a matte from a coloured render.
 - `material.custom` shaders: `#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<a3d_shadow>` (sun shadows: `receiveShadow: true` on the spec, then multiply the lit term by `a3dSunShadowAuto(worldPos, normal)`), `<colorspace_decode>`; custom shaders write linear light, so use `a3dSrgbToLinear` with `toneMapping: "none"` for authored colours, and keep `pow`, `normalize`, `sqrt` and divides NaN-safe (Apple GPUs return NaN where software renderers do not).
 - Production checks that CI missed: the bridge refuses http(s) or unhashed model URLs and then draws nothing; instanced and batched meshes honour texture maps; empty instance arrays are no-ops; real-GPU checks confirm what software-GL passes show. Docs: `docs/api/game-kit.md`, `qa-kit.md`, `quality-governor.md`, `safety-net.md`, `sculpt.md`, `humanoid-motion.md`, `audio-synth.md`, `model-loader.md`, `glsl-chunks.md`, `scatter-merge.md`, `cli-asset-tools.md`; pitfalls: `aura3d-core/references/pitfalls.md`.
 

@@ -17,7 +17,8 @@ Read `docs/agents/build-a-game.md` (one page, type-checked sample) and
 `docs/api/game-cheatsheet.md`. Build the route from the library shell
 (`createGame` from `@aura3d/engine/game`, `createFixedStepLoop`,
 `installQaHooks`, `defineModelAssets`, `installSafetyNet`); do not hand-roll a
-HUD, touch layer, loop, QA hooks, synth or black-frame guard. Verify remotely
+HUD, touch layer, loop, QA hooks, synth, black-frame guard, autoplay, render
+interpolation, hit feel, VFX sheet or painted sky (5.7.0 kits below). Verify remotely
 only (`tools/remote-acr/run.sh`): software WebGL2 is correctness and draw-call
 evidence, never GPU performance evidence.
 
@@ -99,13 +100,14 @@ Pick the genre's recipe row before adding props: [genre looks](references/genre-
    app.ready()`: a production build deadlocks and the page stays black) before fading `#boot-gate` (`opacity: 0;
    pointer-events: none` then remove) and starting simulation so lighting,
    shadow, and GLB silhouettes never pop in. Default `autopilot` to `false`
-   (immediate manual control on Frame 1) unless `?autoplay=1` or `?demo=1` is in
-   the URL or the user clicks the HUD `Auto` toggle button (`button.blur()` so
+   (immediate manual control on Frame 1). Every game supports `?autoplay=1`: read it with `readAutoplayFlag(location.search)`
+   (also `?autopilot`, `?demo`) and run the bot plus the results-hold-then-restart loop on `createAutoplayHarness`
+   (`@aura3d/engine/game`; never a hand-written flag reader or restart timer); the HUD `Auto` button toggles it (`button.blur()` so
    `Space`/`Enter` never re-trigger focused HUD controls), and wire HUD/events
    through `game.eventLog` and `game.hud.*` in a compact top bar.
 6. Reset without tearing down the scene: mutate runtime node handles
    (`app.nodes.require(...)`) instead of calling `app.setScene()` on same-stage
-   (`stageId` / `worldId`) restarts so shadow and postprocess grade never drop.
+   (`stageId` / `worldId`) restarts so shadow and postprocess grade never drop. Since 5.7.0 a model or primitive handle inside a `group(...)` is parent-local (5.6 took world coordinates): feed a rider its seat offset, convert 5.6 world values or make the node top-level.
 7. Genre gates (plan for 60 seconds of meaningful play): [genre gates](references/genre-gates.md).
 8. `npx @aura3d/cli@latest assets validate --no-placeholders --require-license`
    and `assets validate-game`; racing/platformer also
@@ -115,7 +117,7 @@ Pick the genre's recipe row before adding props: [genre looks](references/genre-
 10. Build the shell from the kits, not by hand: `@aura3d/engine/game` (HUD, touch,
     session, sound), `installQaHooks` + `createFixedStepLoop` for deterministic
     replay, `createCueBank` for sound, `installSafetyNet` for `?diag=1` and
-    black-frame self-heal — [kits and hooks](references/kits-and-hooks.md).
+    black-frame self-heal; 5.7.0 adds `createSnapshotInterpolator` (draw between steps), `createImpactRig`, `createProceduralSfx`, `ScreenFx`, `GameRng` (hit feel, seeded sim), `createFlipbookAtlas`, `createGradingLut` (VFX sheets, colour grade), `createHumanoidAnimator` (humanoid clips) and a painted `sky.gradient` with a soft key `shadow: { softness: 2 }` — [kits and hooks](references/kits-and-hooks.md).
 
 ## Look-dev loop
 
