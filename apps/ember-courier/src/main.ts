@@ -136,7 +136,7 @@ async function openDeck() {
     const goal=relays[state.relays];
     if(state.gameState==="running" && goal!==undefined) {
       const delta=state.player.z-goal;
-      const message=Math.abs(delta)<1.55 && Math.abs(x)<1.65 ? "Dash now." : delta < -1.5 ? "Turn back to the amber gate." : "Dash through the amber gate.";
+      const message=Math.abs(delta)<1.55 && Math.abs(x)<1.65 ? "Dash now." : delta < -1.5 ? "Turn back to the gate." : "Dash through the next gate.";
       const distance=Math.ceil(Math.hypot(x,delta))+" m";
       if(element("distance").textContent!==distance) element("distance").textContent=distance;
       if(element("prompt").textContent!==message) element("prompt").textContent=message;
