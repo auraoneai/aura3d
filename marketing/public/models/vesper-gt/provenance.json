@@ -22,8 +22,8 @@
   "requestId": "01a1f55f-2f39-7091-aa25-28a3e1678689",
   "estimatedGenerationUsd": 0.525,
   "rawSha256": "55c17a4896018bcc191d72506ff5640166e13ca9640662ed1eeed6129951206b",
-  "artifactSha256": "119f6976583ba6053dfe778762b1b06c27233a72d5fa91743ef389a38e291cf1",
-  "artifactBytes": 9155476,
+  "artifactSha256": "9358bab1416189ab937484fab7b9953cc625e202e19ff6a244c4f65714ae841f",
+  "artifactBytes": 10406372,
   "artifact": "marketing/public/models/vesper-gt/coupe.glb",
   "triangles": 145874,
   "vertices": 118267,
@@ -48,7 +48,7 @@
     "Removed generated pseudo lettering at rear, neutralized rear plate pad and badge",
     "Clamped out-of-range glTF specularColorFactor to 1"
   ],
-  "evidence": "The car was reviewed in native-size 1905 by 1200 Apple M4 Max browser renders with the production Aura3D 5.6.0 runtime. The fixed daylight wheel and front-three-quarter views isolate the material change under the previous studio setup. Full reconstruction from the original verified generation reproduced the distributed GLB byte for byte.",
+  "evidence": "Rebuilt offline from the byte-verified original generation with tools/vesper-gt/surfaces.py; two runs produced the same bytes and the recorded attribute, oriented triangle and scene transform hashes. The glossy clearcoat, machined alloy and smoked glass values have not yet been reviewed in a real-GPU render.",
   "sourceImageRequestId": "01a1f551-ee8a-7bf1-8984-ff75bdae8709",
   "rawArtifact": {
     "download": "https://v3b.fal.media/files/b/0ab32209/twPZLwLi0vF9w9IrzmYOK_model.glb",
@@ -75,6 +75,7 @@
     "command": "pnpm exec tsx --tsconfig tsconfig.base.json tools/vesper-gt/rebuild-hunyuan.mts RAW.glb OUTPUT.glb",
     "workingDirectory": "Repository root",
     "verification": "Local offline reconstruction from original provider output matched artifactSha256 exactly",
+    "python": "3.14.7",
     "pythonPackages": {
       "Pillow": "12.3.0",
       "numpy": "2.2.6",
@@ -82,8 +83,8 @@
     },
     "nodePackages": "Repository lockfile"
   },
-  "sha256": "119f6976583ba6053dfe778762b1b06c27233a72d5fa91743ef389a38e291cf1",
-  "bytes": 9155476,
+  "sha256": "9358bab1416189ab937484fab7b9953cc625e202e19ff6a244c4f65714ae841f",
+  "bytes": 10406372,
   "creator": "AuraOne",
   "model": "coupe.glb",
   "materialRepair": {
@@ -97,10 +98,10 @@
       "orientedTriangleMultiset": "96489357dcde5fc76cdfee55b04806a6fe609559e0817a80ad9c2adb21b66d8a",
       "sceneTransforms": "f3852b11316f38336cb565bbc57394cf34bc57a06ca80c3144a323300cb0794f"
     },
-    "method": "Partition oriented triangles by measured spatial region and UV color. Oxblood paint uses a satin dielectric base and a restrained clearcoat. Compress photographed hardware highlights into a bounded graphite albedo, preserve lamp optics on separate padded atlas islands, and use lossless curated normals only on rim and rubber. Hold mesh attributes, topology, transforms and dimensions invariant.",
+    "method": "Partition oriented triangles by measured spatial region and UV color. Oxblood paint is a dielectric pigment (metal 0, roughness 0.38, default specular) under a full smooth clearcoat (factor 1, roughness 0.05) with no normal texture on base or coat. Wheels are fully metallic machined aluminum (roughness 0.2, normal scale 0.04) on a separate lossless silver reflectance texture that keeps brake recesses dark. Smoked glass is glossy (roughness 0.07, default specular). Compress photographed hardware highlights into a bounded graphite albedo for tires and trim, preserve lamp optics on separate padded atlas islands, and use lossless curated normals only on rim and rubber. Hold mesh attributes, topology, transforms and dimensions invariant.",
     "surfaceTriangles": {
-      "Oxblood | satin dielectric paint": 38680,
-      "Wheel alloy | brushed graphite aluminum": 43877,
+      "Oxblood | clearcoated gloss paint": 38680,
+      "Wheel alloy | polished machined aluminum": 43877,
       "Tire | vulcanized rubber": 19439,
       "Canopy | smoked laminated glass": 9136,
       "Trim | graphite composite": 32719,

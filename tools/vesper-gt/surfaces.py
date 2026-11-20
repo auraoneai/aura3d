@@ -137,14 +137,16 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
     color = image_for(doc, data, 0)
     labels = material_regions(pos, uv, faces, color)
     surfaces = {
+        # Gloss comes from a full, smooth clearcoat over a dielectric pigment, never from metal.
+        # Neither the base nor the coat carries a normal texture, so coat highlights stay clean.
         "paint": material(
-            "Oxblood | satin dielectric paint", 0, 0.52, coat=(0.075, 0.47)
+            "Oxblood | clearcoated gloss paint", 0, 0.38, coat=(1.0, 0.05)
         ),
         "alloy": material(
-            "Wheel alloy | brushed graphite aluminum", 0.76, 0.52, normal=0.09
+            "Wheel alloy | polished machined aluminum", 1.0, 0.20, normal=0.04
         ),
         "rubber": material("Tire | vulcanized rubber", 0, 0.84, normal=0.22),
-        "glass": material("Canopy | smoked laminated glass", 0, 0.30),
+        "glass": material("Canopy | smoked laminated glass", 0, 0.07),
         "trim": material("Trim | graphite composite", 0.055, 0.67),
         "headlamp": material(
             "Headlamp | amber LED lens", 0, 0.20, emissive=[1, 0.72, 0.36]
@@ -153,18 +155,14 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
             "Taillamp | ruby lens", 0, 0.22, emissive=[0.48, 0.04, 0.025]
         ),
     }
-    # The bright studio environment requires a restrained dielectric base lobe beneath the lacquer.
-    surfaces["paint"]["extensions"]["KHR_materials_specular"] = {
-        "specularFactor": 0.095
-    }
+    # Paint and glass keep the default dielectric reflectance (specularFactor 1), so the
+    # pigment base and the smoked glazing both reflect the studio like real lacquer and glass.
     surfaces["paint"]["pbrMetallicRoughness"]["baseColorFactor"] = [0.59, 0.39, 0.41, 1]
     glazing = surfaces["glass"]["pbrMetallicRoughness"]
     glazing.pop("baseColorTexture")
     glazing["baseColorFactor"] = [0.0030, 0.0042, 0.0052, 1]
-    surfaces["glass"]["extensions"] = {
-        "KHR_materials_specular": {"specularFactor": 0.095}
-    }
-    for name, factor in [("alloy", 0.32), ("rubber", 0.17), ("trim", 0.115)]:
+    # A fully metallic alloy ignores KHR_materials_specular; only the dielectrics carry it.
+    for name, factor in [("rubber", 0.17), ("trim", 0.115)]:
         surfaces[name]["extensions"] = {
             "KHR_materials_specular": {"specularFactor": factor}
         }
@@ -178,7 +176,11 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
     graphite = np.interp(
         luminance, [0, 12, 36, 75, 135, 200, 255], [6, 8, 15, 32, 48, 58, 65]
     )
-    metal = np.stack([graphite * 0.94, graphite * 0.98, graphite], axis=2)
+    # Python 3.14 with NumPy 2.2 turns `local * scalar` into an in-place multiply, so the
+    # shipped graphite is (0.94, 0.94 * 0.98, 0.94) of this curve. Spell that out with ufunc
+    # calls, which are never elided, so any NumPy build reproduces the tire and trim albedo.
+    graphite = np.multiply(graphite, 0.94)
+    metal = np.stack([graphite, np.multiply(graphite, 0.98), graphite], axis=2)
     pigment = np.clip((r - np.maximum(g, b) - 5) / 24, 0, 1)
     paint = np.stack(
         [
@@ -203,6 +205,22 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
     for name in ["headlamp", "taillamp"]:
         surfaces[name]["pbrMetallicRoughness"]["baseColorTexture"] = {"index": 2}
         surfaces[name]["emissiveTexture"] = {"index": 2}
+    # Machined rims get their own bright aluminium reflectance texture. Rubber and trim share
+    # alloy island edges in the atlas, so they keep sampling the graphite substrate. Compress the
+    # photographed spoke streaks into a narrow silver band and keep dark brake recesses dark.
+    # Pad islands with mapped texels and fill the rest with the median silver for clean mips.
+    alloy_mask = np.zeros(color.shape[:2], dtype=np.uint8)
+    for triangle in faces[labels == "alloy"]:
+        pixels = np.rint(uv[triangle] * shape).astype(np.int32)
+        cv2.fillConvexPoly(alloy_mask, pixels, 255)
+    alloy_mask = cv2.dilate(alloy_mask, np.ones((9, 9), np.uint8)) > 0
+    silver = np.interp(
+        luminance, [0, 12, 36, 75, 135, 200, 255], [22, 30, 72, 150, 196, 212, 222]
+    )
+    fill = float(np.median(silver[alloy_mask]))
+    silver = np.where(alloy_mask, silver, fill)
+    machined = np.rint(silver[:, :, None] * [0.975, 0.988, 1.0]).astype(np.uint8)
+    surfaces["alloy"]["pbrMetallicRoughness"]["baseColorTexture"] = {"index": 3}
     # Use the optimizer's lossless normal source for tires and alloys only. Filter high-frequency
     # reconstruction noise and renormalize before encoding at full resolution without JPEG.
     normal_idx = src["materials"][0]["normalTexture"]["index"]
@@ -248,9 +266,10 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
             ("Vesper surface color", graded),
             ("Tire and alloy detail normals", normal),
             ("Original amber and ruby optics", optics),
+            ("Machined alloy reflectance", machined),
         ]
     ]
-    doc["textures"] = [{"source": i, "sampler": 0} for i in range(3)]
+    doc["textures"] = [{"source": i, "sampler": 0} for i in range(4)]
     doc["materials"] = list(surfaces.values())
     doc["extensionsUsed"] = ["KHR_materials_clearcoat", "KHR_materials_specular"]
     groups = []
