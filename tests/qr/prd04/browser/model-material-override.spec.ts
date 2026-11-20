@@ -1,7 +1,7 @@
 /**
  * PRD-04 §16.1 S3 — model material override.
  *
- * Subjects: `prd04-tinted-hero` (Meshy courierVanMeshyV2Decimated, color
+ * Subjects: `prd04-tinted-hero` (Idol gcVanCream, color
  * "#e85d75") and `prd04-damaged-helmet` (Khronos DamagedHelmet).
  * Gates:
  *   - white tint masked SSIM >= 0.999 vs untinted Aura (override = multiply, not glow)

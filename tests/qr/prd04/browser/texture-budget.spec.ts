@@ -1,9 +1,9 @@
 /**
  * PRD-04 §16.1 S9 — texture budget (C-27).
  *
- * Subject: the Meshy hero (`courierVanMeshyV2Decimated`, `public/aura-assets/`),
- * the heaviest textured GLB in the shipped set, rendered through
- * `prd04-assets` at the Medium C-27 policy.
+ * Subject: `fixtures/asset-corpus/texture-budget-4k.glb`, a synthetic box with
+ * five 4096x4096 maps (about 426 MiB of RGBA8 with mips uncapped), rendered
+ * through `prd04-assets` at the Medium C-27 policy.
  * Gates:
  *   - `textureBytes` <= 256 MiB under `textureBudget=268435456`
  *   - every downscaled texture's `to` dimension <= 2048 (maxTextureSize)
@@ -17,7 +17,7 @@ import { resolve } from "node:path";
 import { startPrd04DevServer as startExampleDevServer, type ExampleDevServer } from "../dev-server";
 import { loadProbe, type Prd04ProbePayload } from "./probe";
 
-const HERO = "/aura-assets/courierVanMeshyV2Decimated.6f509ab0.glb";
+const HERO = "/fixtures/asset-corpus/texture-budget-4k.glb";
 const MIB = 1024 * 1024;
 
 const url = (flags: string, budget?: number, maxDim?: number) =>
@@ -42,7 +42,7 @@ test.describe("PRD-04 S9 texture budget", () => {
     await server.close();
   });
 
-  test("Meshy hero at Medium: ledger <= 256 MiB, dims <= 2048, no context loss", async ({ page }) => {
+  test("4K-map subject at Medium: ledger <= 256 MiB, dims <= 2048, no context loss", async ({ page }) => {
     const uncapped = await loadProbe(page, `${server.origin}${url("materials")}`);
     const uncappedBytes = (uncapped.extra ?? {}).textureBytes as number;
     expect(uncappedBytes, "uncapped ledger populated").toBeGreaterThan(0);
@@ -62,7 +62,7 @@ test.describe("PRD-04 S9 texture budget", () => {
     expect(contextLost, "no context loss after render").toBe(false);
 
     // P-35: restored PRD control — "budget disabled exceeds 256 MiB". The
-    // uncapped ledger of the heaviest shipped asset must clear the Medium
+    // uncapped ledger of the 4K-map subject must clear the Medium
     // budget, proving the medium assertions above are not vacuous.
     expect(uncappedBytes, "control (budget disabled) exceeds 256 MiB").toBeGreaterThan(256 * MIB);
 

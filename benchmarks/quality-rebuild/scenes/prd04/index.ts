@@ -245,9 +245,9 @@ export const prd04SceneSpecs: Record<string, Prd04SceneSpec> = {
       {
         kind: "model",
         name: "tinted-van",
-        asset: "courierVanMeshyV2Decimated",
+        asset: "gcVanCream",
         position: [-0.35, -0.45, 0],
-        scale: 1.5,
+        scale: 0.59,
         tint: { color: "#e85d75" },
         castShadow: false,
         receiveShadow: false
@@ -255,9 +255,9 @@ export const prd04SceneSpecs: Record<string, Prd04SceneSpec> = {
       {
         kind: "model",
         name: "reference-aircraft",
-        asset: "patrolAircraftMeshy",
+        asset: "tdDroneRazor",
         position: [1.35, -0.3, -1.4],
-        scale: 1.1,
+        scale: 0.54,
         castShadow: false,
         receiveShadow: false
       }

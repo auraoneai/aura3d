@@ -25,8 +25,8 @@ export type Prd04ModelAssetId =
   | "damagedHelmet"
   | "damagedHelmetUastc"
   | "damagedHelmetEtc1s"
-  | "courierVanMeshyV2Decimated"
-  | "patrolAircraftMeshy";
+  | "gcVanCream"
+  | "tdDroneRazor";
 
 export type Prd04TextureAssetId = "metalPlates013";
 
@@ -184,25 +184,25 @@ export const prd04ModelAssets: Readonly<Record<Prd04ModelAssetId, Prd04AssetEntr
     provenance:
       "DamagedHelmet with every image re-encoded to KTX2/ETC1S: `npx --package @gltf-transform/cli@4.5.1 gltf-transform etc1s damaged-helmet.glb damaged-helmet-etc1s.glb --quality 128`, toktx v4.4.0 (KTX-Software 4.4.0). Informational variant."
   },
-  courierVanMeshyV2Decimated: {
-    id: "courierVanMeshyV2Decimated",
-    repoPath: "public/aura-assets/courierVanMeshyV2Decimated.6f509ab0.glb",
-    url: `${base}courierVanMeshyV2Decimated.6f509ab0.glb`,
-    sha256: "sha256-e390e2814f66cdf3af6ff9f2cc7994494fc775842d9413ae45996326ba2c7064",
+  gcVanCream: {
+    id: "gcVanCream",
+    repoPath: "public/aura-assets/gcVanCream.0c064fc3.glb",
+    url: `${base}gcVanCream.0c064fc3.glb`,
+    sha256: "sha256-0c064fc3f14f8b0f511d1ee1e3ed9266edfdb615d376e560fcbaa71fcb597eae",
     lfs: true,
-    worldSize: [1.904, 0.941, 0.998],
+    worldSize: [2.096, 1.914, 4.86],
     gltfExtensions: [],
-    provenance: "Generated courier van, Aura3D typed catalog (public/aura-assets). S3 tinted-hero subject."
+    provenance: "Generated delivery van (Idol on fal.ai), Aura3D typed catalog (public/aura-assets). S3 tinted-hero subject."
   },
-  patrolAircraftMeshy: {
-    id: "patrolAircraftMeshy",
-    repoPath: "public/aura-assets/patrolAircraftMeshy.183e83f8.glb",
-    url: `${base}patrolAircraftMeshy.183e83f8.glb`,
-    sha256: "sha256-e0f931d27982646b0049adf2c05b9978e277c31ed19179881925c899fe017986",
+  tdDroneRazor: {
+    id: "tdDroneRazor",
+    repoPath: "public/aura-assets/tdDroneRazor.e12b940f.glb",
+    url: `${base}tdDroneRazor.e12b940f.glb`,
+    sha256: "sha256-e12b940f94168eabfd332f0339762b28d47118a4ee1c6d77745cab1484a63676",
     lfs: true,
-    worldSize: [1.535, 0.409, 1.902],
+    worldSize: [3.045, 0.896, 3.85],
     gltfExtensions: [],
-    provenance: "Generated patrol aircraft, Aura3D typed catalog (public/aura-assets). Hero-material subject."
+    provenance: "Generated drone (Idol on fal.ai), Aura3D typed catalog (public/aura-assets). Hero-material reference subject."
   }
 };
 
