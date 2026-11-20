@@ -18,7 +18,7 @@ const docFrames = {
 const sceneLabels = { "ember-courier": "Character game", "vesper-gt": "Automotive studio", "relay-workcell": "Robotics simulation" };
 const sceneSubjects = {
   "ember-courier": "an armored courier in a night-shift port",
-  "vesper-gt": "an oxblood grand touring coupe with a satin finish in a photography studio",
+  "vesper-gt": "a gloss oxblood grand touring coupe in a photography studio",
   "relay-workcell": "an industrial robot transferring a part",
 };
 const frame = (slug) => join(sitePublic, "previews/showcase-index", slug + ".webp");
@@ -30,7 +30,7 @@ export const cards = [
   { route: "/", file: "marketing/index.html", layout: "home", title: "Build playable 3D worlds.", label: "TypeScript 3D engine",
     output: brandPath + "og-1200x630.png", twitter: brandPath + "twitter-1200x630.png",
     frames: ["ember-courier", "vesper-gt", "relay-workcell"].map(sceneImage),
-    alt: "Aura3D scenes showing an armored courier, the satin oxblood Vesper GT and a six-axis industrial robot." },
+    alt: "Aura3D scenes showing an armored courier, the gloss oxblood Vesper GT and a six-axis industrial robot." },
   { route: "/apps/showcase-index/", file: "apps/showcase-index/index.html", layout: "play", title: "The games", label: "Playable collection",
     output: "/previews/social/games.jpg", frame: frame("top-tennis@2x"), alt: "Aura3D game gallery featuring two Aura Slam players on a grass court." },
   ...interactiveExamples.map(({ slug, title }) => ({
