@@ -33,7 +33,7 @@ try {
   });
   await slimGlb(normalized, { projectDir });
   const materialsScript = join(dirname(fileURLToPath(import.meta.url)), 'hunyuan-materials.py');
-  const run = spawnSync('python3', [materialsScript, normalized, output], { stdio: 'inherit' });
+  const run = spawnSync('python3', [materialsScript, normalized, optimized, join(scratch, 'selected.glb'), output], { stdio: 'inherit' });
   if (run.error) throw run.error;
   if (run.status !== 0) throw new Error('Vesper material curation failed');
   console.log(digest(output), output);

@@ -5,9 +5,9 @@
 ## Explore Aura3D
 
 - [Start a TypeScript project](https://aura3d.auraone.ai/docs/agent-quickstart) with a working scene and development server.
-- [Ember Courier](https://aura3d.auraone.ai/apps/ember-courier/). Guide an armored courier between three relay beacons.
-- [Vesper GT](https://aura3d.auraone.ai/apps/vesper-gt/). Orbit a garnet grand tourer and compare studio lighting.
-- [Relay Workcell](https://aura3d.auraone.ai/apps/relay-workcell/). Follow an industrial robot through a pick-and-place cycle.
+- [Ember Courier](https://aura3d.auraone.ai/apps/ember-courier/). Playable courier character.
+- [Vesper GT](https://aura3d.auraone.ai/apps/vesper-gt/). Grand tourer in a lighting studio.
+- [Relay Workcell](https://aura3d.auraone.ai/apps/relay-workcell/). Robot pick-and-place cycle.
 - [Explore the games](https://aura3d.auraone.ai/apps/showcase-index/). Each guide links the game, its source and a starter.
 - [Inspect the examples](https://aura3d.auraone.ai/docs/#examples): model lighting and materials.
 - [Compare Aura3D and Three.js](https://aura3d.auraone.ai/docs/aura3d-vs-threejs): scene setup, assets, deployment.
