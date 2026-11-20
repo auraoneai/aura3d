@@ -17,11 +17,34 @@ const state = {
 Object.assign(window, { __auraShowcase: state });
 if (new URLSearchParams(location.search).get("chrome") === "hidden") document.documentElement.dataset.chrome = "hidden";
 
+function showRetry(message: string) {
+  const retry = document.createElement("a");
+  retry.href = location.href;
+  retry.textContent = "Reload studio";
+  retry.addEventListener("click", event => {
+    event.preventDefault();
+    location.reload();
+  });
+  statusLine.replaceChildren(message + " ", retry);
+}
+
+function watchOpening() {
+  return window.setTimeout(() => {
+    if (state.status === "loading") {
+      state.status = "waiting";
+      showRetry("The interactive view is taking longer to load.");
+    }
+  }, 15_000);
+}
+
+let openingTimer = watchOpening();
+
 function fail(error: unknown) {
+  clearTimeout(openingTimer);
   state.error = error instanceof Error ? error.message : String(error);
   state.status = "error";
   delete document.body.dataset.sceneReady;
-  statusLine.textContent = "Showing a captured studio view. The interactive view is unavailable.";
+  showRetry("The interactive view could not open.");
   buttons.forEach(button => { button.disabled = true; });
 }
 
@@ -93,11 +116,15 @@ async function openStudio() {
     nextSample = time + 0.2;
     const diagnostics = app.diagnostics();
     if (diagnostics.errors.length) { fail(diagnostics.errors.join(" · ")); return; }
-    if (diagnostics.drawCalls < 1 || !diagnostics.assets.some(asset => asset.url === assets.coupe.url && asset.status === "ready")) return;
+    // Diagnostics redact URL queries. The manifest ID and digest identify the actual loaded coupe.
+    const coupe = diagnostics.assets.find(asset => asset.id === assets.coupe.id && asset.hash === assets.coupe.hash);
+    if (coupe?.status === "error") { fail(coupe.message ?? "The coupe could not load."); return; }
+    if (diagnostics.drawCalls < 1 || coupe?.status !== "ready") return;
     state.renderer = diagnostics.backend;
     state.drawCalls = diagnostics.drawCalls;
     state.triangles = diagnostics.triangles ?? 0;
-    if (state.status === "loading") {
+    if (state.status !== "running") {
+      clearTimeout(openingTimer);
       state.status = "running";
       document.body.dataset.sceneReady = "true";
       statusLine.textContent = "";
@@ -105,9 +132,15 @@ async function openStudio() {
     }
   });
   app.onDeviceLost(() => fail("Graphics device lost."));
-  app.onDeviceRestored(() => { state.status = "loading"; state.error = ""; });
+  app.onDeviceRestored(() => {
+    state.status = "loading";
+    state.error = "";
+    statusLine.textContent = "Restoring studio…";
+    clearTimeout(openingTimer);
+    openingTimer = watchOpening();
+  });
   window.addEventListener("pagehide", event => {
-    if (!event.persisted) { resize.disconnect(); app.dispose(); }
+    if (!event.persisted) { clearTimeout(openingTimer); resize.disconnect(); app.dispose(); }
   });
   await app.readyStrict({ stage: "first-frame" });
   firstFrame = true;

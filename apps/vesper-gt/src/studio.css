@@ -29,6 +29,7 @@ h1 i { font-weight: 400; padding-right: .12em; }
 #help span { color: #9e9c98; margin: 0 6px; }
 body[data-scene-ready] #help { display: block; }
 #status:empty { display: none; }
+#status a { pointer-events: auto; text-decoration: underline; text-underline-offset: 3px; }
 .controls { padding: 18px var(--inset) 24px; display: flex; align-items: center; gap: clamp(20px, 4vw, 78px); border-top: 1px solid #414142; }
 fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 legend { padding: 0; margin-bottom: 6px; font-size: 12px; color: #c3bfb9; }
