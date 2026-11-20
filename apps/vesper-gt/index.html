@@ -4,18 +4,18 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#18191a">
   <title>Vesper GT — Aura3D Automotive Studio</title>
-  <meta name="description" content="Orbit the Vesper GT, an original garnet grand touring coupe. Inspect its front wheel, change the studio light and download the model or explore the Aura3D scene source.">
+  <meta name="description" content="Orbit the Vesper GT, an original grand touring coupe in satin oxblood. Inspect its front wheel, change the studio light and download the model or explore the Aura3D scene source.">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <link rel="canonical" href="https://aura3d.auraone.ai/apps/vesper-gt/">
   <meta property="og:site_name" content="Aura3D"><meta property="og:type" content="website">
   <meta property="og:title" content="Vesper GT — Aura3D Automotive Studio">
-  <meta property="og:description" content="Explore an original garnet grand touring coupe under changing studio lights.">
+  <meta property="og:description" content="Explore an original grand touring coupe in satin oxblood under changing studio lights.">
   <meta property="og:url" content="https://aura3d.auraone.ai/apps/vesper-gt/">
 
-  <meta property="og:image" content="https://aura3d.auraone.ai/previews/social/examples/vesper-gt.jpg?v=72c08441ba81" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" /><meta property="og:image:type" content="image/jpeg" /><meta property="og:image:alt" content="Vesper GT in Aura3D, showing a garnet grand touring coupe in a photography studio." /><meta name="twitter:image" content="https://aura3d.auraone.ai/previews/social/examples/vesper-gt.jpg?v=72c08441ba81" /><meta name="twitter:image:alt" content="Vesper GT in Aura3D, showing a garnet grand touring coupe in a photography studio." /><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Vesper GT — Aura3D Automotive Studio">
-  <meta name="twitter:description" content="Explore an original garnet grand touring coupe under changing studio lights.">
+  <meta property="og:image" content="https://aura3d.auraone.ai/previews/social/examples/vesper-gt.jpg?v=88be4e39fce8" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" /><meta property="og:image:type" content="image/jpeg" /><meta property="og:image:alt" content="Vesper GT in Aura3D, showing an oxblood grand touring coupe with a satin finish in a photography studio." /><meta name="twitter:image" content="https://aura3d.auraone.ai/previews/social/examples/vesper-gt.jpg?v=88be4e39fce8" /><meta name="twitter:image:alt" content="Vesper GT in Aura3D, showing an oxblood grand touring coupe with a satin finish in a photography studio." /><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Vesper GT — Aura3D Automotive Studio">
+  <meta name="twitter:description" content="Explore an original grand touring coupe in satin oxblood under changing studio lights.">
 
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Vesper GT","url":"https://aura3d.auraone.ai/apps/vesper-gt/","applicationCategory":"MultimediaApplication","operatingSystem":"Web","inLanguage":"en","isAccessibleForFree":true,"publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"description":"Orbit the Vesper GT, an original garnet grand touring coupe. Inspect its front wheel, change the studio light and download the model or explore the Aura3D scene source.","image":"https://aura3d.auraone.ai/previews/social/examples/vesper-gt.jpg?v=72c08441ba81"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Vesper GT","url":"https://aura3d.auraone.ai/apps/vesper-gt/","applicationCategory":"MultimediaApplication","operatingSystem":"Web","inLanguage":"en","isAccessibleForFree":true,"publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"description":"Orbit the Vesper GT, an original grand touring coupe in satin oxblood. Inspect its front wheel, change the studio light and download the model or explore the Aura3D scene source.","image":"https://aura3d.auraone.ai/previews/social/examples/vesper-gt.jpg?v=88be4e39fce8"}</script>
   <link rel="icon" href="/favicon.svg?v=2e3f768c44d3"><link rel="stylesheet" href="/fonts/local.css?v=678426714795">
   <link rel="stylesheet" href="./src/studio.css">
 </head>
@@ -24,7 +24,10 @@
   <main>
     <section class="room" aria-label="Interactive automotive studio">
       <canvas id="viewport" tabindex="0" aria-label="Orbit the Vesper GT" aria-describedby="help"></canvas>
-      <img class="poster" src="/previews/showcase-index/vesper-gt.webp?v=b329910f03b6" alt="The garnet Vesper GT coupe in the photography studio">
+      <picture class="poster">
+        <source media="(max-aspect-ratio: 4/5)" srcset="/previews/showcase/vesper-gt-opening-mobile.webp?v=4380364c40e3" width="683" height="812">
+        <img src="/previews/showcase/vesper-gt-opening.webp?v=1399a4734a52" width="3334" height="1794" fetchpriority="high" alt="The satin oxblood Vesper GT in the daylight studio">
+      </picture>
       <div class="title"><p>Automotive studio</p><h1>Vesper <i>GT</i></h1></div>
       <p id="help">Drag to orbit <span aria-hidden="true">/</span> Arrow keys to rotate</p>
       <p id="status" role="status">Opening studio…</p>
