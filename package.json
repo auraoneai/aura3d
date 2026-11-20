@@ -404,7 +404,8 @@
     "./dist/rendering/program/ProgramGenerator.js",
     "./examples/**",
     "./apps/**",
-    "./templates/**"
+    "./templates/**",
+    "./dist/engine/agent-api/app/runtimeNodes.js"
   ],
   "description": "Build AI-authored browser 3D apps with TypeScript, typed GLB/glTF assets, Vite templates, scene kits, diagnostics, screenshots, and deploy checks.",
   "keywords": [

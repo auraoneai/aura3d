@@ -51,17 +51,17 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/debug/helpers` | `5.7.0` | `./dist/helpers.d.ts` | 40 |
 | `@aura3d/ecs` | `5.7.0` | `./dist/index.d.ts` | 76 |
 | `@aura3d/editor-runtime` | `5.7.0` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.7.0` | `./dist/engine/public/index.d.ts` | 11312 |
+| `@aura3d/engine` | `5.7.0` | `./dist/engine/public/index.d.ts` | 11314 |
 | `@aura3d/engine/animation` | `5.7.0` | `./dist/animation/index.d.ts` | 460 |
 | `@aura3d/engine/assets` | `5.7.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
 | `@aura3d/engine/audio` | `5.7.0` | `./dist/audio/index.d.ts` | 310 |
 | `@aura3d/engine/controls` | `5.7.0` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.7.0` | `./dist/engine/public/devtools.d.ts` | 10981 |
+| `@aura3d/engine/devtools` | `5.7.0` | `./dist/engine/public/devtools.d.ts` | 10983 |
 | `@aura3d/engine/ecs` | `5.7.0` | `./dist/ecs/index.d.ts` | 76 |
 | `@aura3d/engine/editor-runtime` | `5.7.0` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.7.0` | `./dist/game/index.d.ts` | 11789 |
+| `@aura3d/engine/game` | `5.7.0` | `./dist/game/index.d.ts` | 11794 |
 | `@aura3d/engine/game/art` | `5.7.0` | `./dist/game/art/index.d.ts` | 339 |
-| `@aura3d/engine/game/capture` | `5.7.0` | `./dist/game/capture/index.d.ts` | 11261 |
+| `@aura3d/engine/game/capture` | `5.7.0` | `./dist/game/capture/index.d.ts` | 11263 |
 | `@aura3d/engine/game/styles.css` | `5.7.0` | `non-code or disabled export` | 0 |
 | `@aura3d/engine/game/util` | `5.7.0` | `./dist/game/util/index.d.ts` | 2 |
 | `@aura3d/engine/geometry-tools` | `5.7.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
@@ -73,17 +73,17 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/engine/physics/solverless` | `5.7.0` | `./dist/physics/solverless.d.ts` | 134 |
 | `@aura3d/engine/physics/world` | `5.7.0` | `./dist/physics/world.d.ts` | 16 |
 | `@aura3d/engine/procedural` | `5.7.0` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.7.0` | `./dist/engine/public/renderer.d.ts` | 11238 |
+| `@aura3d/engine/renderer` | `5.7.0` | `./dist/engine/public/renderer.d.ts` | 11240 |
 | `@aura3d/engine/scatter` | `5.7.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
 | `@aura3d/engine/scene` | `5.7.0` | `./dist/scene/index.d.ts` | 139 |
 | `@aura3d/engine/scene/math` | `5.7.0` | `./dist/scene/MathTypes.d.ts` | 36 |
 | `@aura3d/engine/scripting` | `5.7.0` | `./dist/scripting/index.d.ts` | 203 |
 | `@aura3d/engine/sculpt` | `5.7.0` | `./dist/engine/public/sculpt.d.ts` | 82 |
 | `@aura3d/engine/shader-graph-runtime` | `5.7.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
-| `@aura3d/engine/v5` | `5.7.0` | `./dist/engine/public/v5.d.ts` | 8720 |
+| `@aura3d/engine/v5` | `5.7.0` | `./dist/engine/public/v5.d.ts` | 8723 |
 | `@aura3d/engine/v5/context` | `5.7.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.7.0` | `./dist/game/v5.d.ts` | 11785 |
-| `@aura3d/engine/v5/internal` | `5.7.0` | `./dist/engine/public/v5-internal.d.ts` | 435 |
+| `@aura3d/engine/v5/game` | `5.7.0` | `./dist/game/v5.d.ts` | 11790 |
+| `@aura3d/engine/v5/internal` | `5.7.0` | `./dist/engine/public/v5-internal.d.ts` | 449 |
 | `@aura3d/engine/v5/math/hull` | `5.7.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
 | `@aura3d/engine/worker` | `5.7.0` | `./dist/engine/public/worker.d.ts` | 88 |
 | `@aura3d/engine/workflows` | `5.7.0` | `./dist/workflows/index.d.ts` | 89 |
@@ -8760,7 +8760,7 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 ## @aura3d/assets
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -14485,7 +14485,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/assets/browser
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -19188,7 +19188,7 @@ export declare class GLTFSharedTextureCache {
 ## @aura3d/assets/exporters
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -20097,7 +20097,7 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 ## @aura3d/assets/gltf-runtime
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -22532,7 +22532,7 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 ## @aura3d/assets/importers
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -24292,7 +24292,7 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 ## @aura3d/assets/vite
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -24578,7 +24578,7 @@ export {};
 ## @aura3d/assets/vite-client
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -37420,7 +37420,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -37678,6 +37678,7 @@ export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
 export type { AuraGameWorkerOptions } from "./publishedUnion.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -51339,12 +51340,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -92453,6 +92454,7 @@ export { collectAtmosphereSection, collectEffectsSection } from "./vfx/diagnosti
 export { createAppEffects, createEffectsExtension, prd07SystemFor, registerPrd07System } from "./vfx/effects-api.js";
 export { registerPrd07LookLintRules } from "./vfx/lookLint.js";
 export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions } from "../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../contracts/atmosphere.js";
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
@@ -125530,7 +125532,7 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 ## @aura3d/engine/animation
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -129109,7 +129111,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/engine/assets
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -134835,7 +134837,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/engine/audio
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -137501,7 +137503,7 @@ export interface SynthVoice {
 ## @aura3d/engine/controls
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -139303,7 +139305,7 @@ export declare class FirstPersonControls {
 ## @aura3d/engine/devtools
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -139605,6 +139607,7 @@ export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
 export type { AuraGameWorkerOptions } from "./publishedUnion.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -153266,12 +153269,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -194380,6 +194383,7 @@ export { collectAtmosphereSection, collectEffectsSection } from "./vfx/diagnosti
 export { createAppEffects, createEffectsExtension, prd07SystemFor, registerPrd07System } from "./vfx/effects-api.js";
 export { registerPrd07LookLintRules } from "./vfx/lookLint.js";
 export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions } from "../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../contracts/atmosphere.js";
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
@@ -224760,7 +224764,7 @@ export declare const sky: {
 ## @aura3d/engine/ecs
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -225427,7 +225431,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/engine/editor-runtime
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -228009,7 +228013,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine/game
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -268309,6 +268313,7 @@ export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
 export type { AuraGameWorkerOptions } from "./publishedUnion.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -281970,12 +281975,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -290478,6 +290483,7 @@ export { collectAtmosphereSection, collectEffectsSection } from "./vfx/diagnosti
 export { createAppEffects, createEffectsExtension, prd07SystemFor, registerPrd07System } from "./vfx/effects-api.js";
 export { registerPrd07LookLintRules } from "./vfx/lookLint.js";
 export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions } from "../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../contracts/atmosphere.js";
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
@@ -316906,7 +316912,7 @@ export declare class GameRng {
  * work identically headless, in a worker, on WebGPU and on WebGL2 with no image assets. Extracted from the 30 live
  * games' shared VFX pack (`apps/showcase-port-shared/vfx-pack.ts`) in 5.7.0.
  */
-import { texture } from "../../engine/index.js";
+import { texture } from "../../engine/public/v5-internal.js";
 /** The procedural flipbook looks: radial `sparks`, a soft `dust` puff, a lobed `ink` splat, a swirling `plasma` ball, a 6-ray `muzzle` flash and an expanding `ripple` ring. */
 export type FlipbookKind = "sparks" | "dust" | "ink" | "plasma" | "muzzle" | "ripple";
 /** A flipbook sheet for `effects.flipbook({ texture, spriteColumns: columns, spriteRows: rows })`. */
@@ -317030,6 +317036,8 @@ export { scene } from "../agent-api/nodes/scene.js";
 export { bindFeelSound } from "../agent-api/feel/bindFeelSound.js";
 export { createFixedStepLoop } from "../qa/fixedStepLoop.js";
 export { createGameAudio } from "../game/GameAudio.js";
+export { createCountedRng } from "../qa/countedRng.js";
+export { texture } from "../agent-api/nodes/texture.js";
 export type { QrFlagInput } from "../contracts/flags.js";
 export type { AuraTimeController } from "../contracts/time.js";
 export type { CaptureContext, CreateGameOptions, Game, GameBeacon, GameFxLayer, GameScenario, GameSession, GameSessionState, GameShell, Hud, PauseReason, TouchControls, TransitionSpec } from "../contracts/game.js";
@@ -317038,6 +317046,7 @@ export type { AuraSceneSnapshot } from "../agent-api/nodes/types.js";
 export type { AuraSceneBuilder } from "../agent-api/nodes/scene.js";
 export type { GameAppRuntime } from "../agent-api/GameAppRuntime.js";
 export type { GameAudio, GameAudioOptions } from "../game/GameAudio.js";
+export type { QaCountedRng } from "../qa/countedRng.js";
 //# sourceMappingURL=v5-internal.d.ts.map
 ```
 
@@ -318752,7 +318761,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/game/art
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -322024,7 +322033,7 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 ## @aura3d/engine/game/capture
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -362106,6 +362115,7 @@ export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
 export type { AuraGameWorkerOptions } from "./publishedUnion.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -375767,12 +375777,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -384275,6 +384285,7 @@ export { collectAtmosphereSection, collectEffectsSection } from "./vfx/diagnosti
 export { createAppEffects, createEffectsExtension, prd07SystemFor, registerPrd07System } from "./vfx/effects-api.js";
 export { registerPrd07LookLintRules } from "./vfx/lookLint.js";
 export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions } from "../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../contracts/atmosphere.js";
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
@@ -408938,7 +408949,7 @@ export {};
 ## @aura3d/engine/game/styles.css
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -408949,7 +408960,7 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 ## @aura3d/engine/game/util
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -408975,7 +408986,7 @@ export declare function nowSeconds(): number;
 ## @aura3d/engine/geometry-tools
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -409702,7 +409713,7 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 ## @aura3d/engine/input
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -410943,7 +410954,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/engine/lighting
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -411582,7 +411593,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/engine/math
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -413572,7 +413583,7 @@ export declare class NURBSVolume {
 ## @aura3d/engine/media-node
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -414197,7 +414208,7 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 ## @aura3d/engine/physics
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -416869,7 +416880,7 @@ export {};
 ## @aura3d/engine/physics/solverless
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -418121,7 +418132,7 @@ export declare class PhysicsWorld {
 ## @aura3d/engine/physics/world
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -418384,7 +418395,7 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 ## @aura3d/engine/procedural
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -418681,7 +418692,7 @@ export declare function assertInt(value: number, name: string, min: number): voi
 ## @aura3d/engine/renderer
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -452626,6 +452637,7 @@ export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
 export type { AuraGameWorkerOptions } from "./publishedUnion.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -466287,12 +466299,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -474795,6 +474807,7 @@ export { collectAtmosphereSection, collectEffectsSection } from "./vfx/diagnosti
 export { createAppEffects, createEffectsExtension, prd07SystemFor, registerPrd07System } from "./vfx/effects-api.js";
 export { registerPrd07LookLintRules } from "./vfx/lookLint.js";
 export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions } from "../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../contracts/atmosphere.js";
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
@@ -506064,7 +506077,7 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 ## @aura3d/engine/scatter
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -506197,7 +506210,7 @@ export {};
 ## @aura3d/engine/scene
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -507322,7 +507335,7 @@ export {};
 ## @aura3d/engine/scene/math
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -507406,7 +507419,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/engine/scripting
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -508586,7 +508599,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/engine/sculpt
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -509134,7 +509147,7 @@ export declare function sculptPaintedLimbChain(chain: SdfLimbChain, hexByTag: Re
 ## @aura3d/engine/shader-graph-runtime
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -513448,7 +513461,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/engine/v5
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -514564,12 +514577,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -583825,6 +583838,8 @@ export { scene } from "../agent-api/nodes/scene.js";
 export { bindFeelSound } from "../agent-api/feel/bindFeelSound.js";
 export { createFixedStepLoop } from "../qa/fixedStepLoop.js";
 export { createGameAudio } from "../game/GameAudio.js";
+export { createCountedRng } from "../qa/countedRng.js";
+export { texture } from "../agent-api/nodes/texture.js";
 export type { QrFlagInput } from "../contracts/flags.js";
 export type { AuraTimeController } from "../contracts/time.js";
 export type { CaptureContext, CreateGameOptions, Game, GameBeacon, GameFxLayer, GameScenario, GameSession, GameSessionState, GameShell, Hud, PauseReason, TouchControls, TransitionSpec } from "../contracts/game.js";
@@ -583833,6 +583848,7 @@ export type { AuraSceneSnapshot } from "../agent-api/nodes/types.js";
 export type { AuraSceneBuilder } from "../agent-api/nodes/scene.js";
 export type { GameAppRuntime } from "../agent-api/GameAppRuntime.js";
 export type { GameAudio, GameAudioOptions } from "../game/GameAudio.js";
+export type { QaCountedRng } from "../qa/countedRng.js";
 //# sourceMappingURL=v5-internal.d.ts.map
 ```
 
@@ -583881,7 +583897,7 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 ## @aura3d/engine/v5/context
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -584127,7 +584143,7 @@ export { createGameAppWithPhysicsWorldAccess };
 ## @aura3d/engine/v5/game
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -624298,6 +624314,7 @@ export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
 export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
 export type { AuraGameWorkerOptions } from "./publishedUnion.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
@@ -637959,12 +637976,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -646467,6 +646484,7 @@ export { collectAtmosphereSection, collectEffectsSection } from "./vfx/diagnosti
 export { createAppEffects, createEffectsExtension, prd07SystemFor, registerPrd07System } from "./vfx/effects-api.js";
 export { registerPrd07LookLintRules } from "./vfx/lookLint.js";
 export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions } from "../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../contracts/atmosphere.js";
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
 export type { AuraHdriId } from "../contracts/looks.js";
@@ -672996,7 +673014,7 @@ export declare class GameRng {
  * work identically headless, in a worker, on WebGPU and on WebGL2 with no image assets. Extracted from the 30 live
  * games' shared VFX pack (`apps/showcase-port-shared/vfx-pack.ts`) in 5.7.0.
  */
-import { texture } from "../../engine/index.js";
+import { texture } from "../../engine/public/v5-internal.js";
 /** The procedural flipbook looks: radial `sparks`, a soft `dust` puff, a lobed `ink` splat, a swirling `plasma` ball, a 6-ray `muzzle` flash and an expanding `ripple` ring. */
 export type FlipbookKind = "sparks" | "dust" | "ink" | "plasma" | "muzzle" | "ripple";
 /** A flipbook sheet for `effects.flipbook({ texture, spriteColumns: columns, spriteRows: rows })`. */
@@ -673120,6 +673138,8 @@ export { scene } from "../agent-api/nodes/scene.js";
 export { bindFeelSound } from "../agent-api/feel/bindFeelSound.js";
 export { createFixedStepLoop } from "../qa/fixedStepLoop.js";
 export { createGameAudio } from "../game/GameAudio.js";
+export { createCountedRng } from "../qa/countedRng.js";
+export { texture } from "../agent-api/nodes/texture.js";
 export type { QrFlagInput } from "../contracts/flags.js";
 export type { AuraTimeController } from "../contracts/time.js";
 export type { CaptureContext, CreateGameOptions, Game, GameBeacon, GameFxLayer, GameScenario, GameSession, GameSessionState, GameShell, Hud, PauseReason, TouchControls, TransitionSpec } from "../contracts/game.js";
@@ -673128,6 +673148,7 @@ export type { AuraSceneSnapshot } from "../agent-api/nodes/types.js";
 export type { AuraSceneBuilder } from "../agent-api/nodes/scene.js";
 export type { GameAppRuntime } from "../agent-api/GameAppRuntime.js";
 export type { GameAudio, GameAudioOptions } from "../game/GameAudio.js";
+export type { QaCountedRng } from "../qa/countedRng.js";
 //# sourceMappingURL=v5-internal.d.ts.map
 ```
 
@@ -674842,7 +674863,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/v5/internal
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -674875,6 +674896,8 @@ export { scene } from "../agent-api/nodes/scene.js";
 export { bindFeelSound } from "../agent-api/feel/bindFeelSound.js";
 export { createFixedStepLoop } from "../qa/fixedStepLoop.js";
 export { createGameAudio } from "../game/GameAudio.js";
+export { createCountedRng } from "../qa/countedRng.js";
+export { texture } from "../agent-api/nodes/texture.js";
 export type { QrFlagInput } from "../contracts/flags.js";
 export type { AuraTimeController } from "../contracts/time.js";
 export type { CaptureContext, CreateGameOptions, Game, GameBeacon, GameFxLayer, GameScenario, GameSession, GameSessionState, GameShell, Hud, PauseReason, TouchControls, TransitionSpec } from "../contracts/game.js";
@@ -674883,6 +674906,7 @@ export type { AuraSceneSnapshot } from "../agent-api/nodes/types.js";
 export type { AuraSceneBuilder } from "../agent-api/nodes/scene.js";
 export type { GameAppRuntime } from "../agent-api/GameAppRuntime.js";
 export type { GameAudio, GameAudioOptions } from "../game/GameAudio.js";
+export type { QaCountedRng } from "../qa/countedRng.js";
 //# sourceMappingURL=v5-internal.d.ts.map
 ```
 
@@ -675919,6 +675943,223 @@ export interface GameAudio<TCue extends string = string> {
  */
 export declare function createGameAudio<TCue extends string>(options: GameAudioOptions<TCue>): GameAudio<TCue>;
 //# sourceMappingURL=GameAudio.d.ts.map
+```
+
+### `./dist/engine/qa/countedRng.d.ts`
+
+```ts
+/** Seeded random stream (mulberry32) that counts its draws, so replays can assert the exact draw count. */
+export interface QaCountedRng {
+    readonly seed: number;
+    /** Number of draws taken since the last `reset`. */
+    readonly count: number;
+    /** Alias of `count`: draws taken since the last `reset`. */
+    readonly draws: number;
+    /** Uniform float in [0, 1). */
+    next(): number;
+    /** Uniform float in [min, max). */
+    range(min: number, max: number): number;
+    /** Integer in [min, maxExclusive). */
+    int(min: number, maxExclusive: number): number;
+    /** Restart the stream (optionally with a new seed) and zero the draw counter. */
+    reset(seed?: number): void;
+}
+export declare function createCountedRng(seed?: number): QaCountedRng;
+//# sourceMappingURL=countedRng.d.ts.map
+```
+
+### `./dist/engine/agent-api/nodes/texture.d.ts`
+
+```ts
+/**
+ * threejs-parity §6 Lane L4 (docs/workflows/threejs-parity-gaps.md):
+ * ST-01 `texture.*` factories, ST-02 handle semantics (three's `Texture`
+ * field surface), ST-03 runtime upload (revision-driven), ST-07 real
+ * `texture.load` over `@aura3d/assets`.
+ *
+ * Every factory returns a `TextureHandle` — an `AuraTextureRef` — wrapping a
+ * live `R/Texture.ts` `Texture`. Material texture slots accept the handle
+ * through the frozen `AuraMaterialTextureInput` union; `AA/compiler/
+ * textures.ts` resolves it to `{ texture, sampler, transform }` bindings.
+ *
+ * Defaults follow three's per-kind conventions: `flipY`/`generateMipmaps`/
+ * color space mirror `THREE.Texture`, `CanvasTexture`, `VideoTexture`,
+ * `DataTexture`, `CompressedTexture`, `DepthTexture`, `CubeTexture` and
+ * `TextureLoader` output respectively.
+ */
+import { Texture, type TextureCubeFace, type TextureMipUpdateOptions, type TexturePixelData } from "../../../rendering/index.js";
+import { AssetManager } from "../../../assets/browser-index.js";
+import { type AuraNativeTextureLoadOptions, type NativeTextureConversionLimits } from "./loadNativeTexture.js";
+import type { AuraAssetRef, AuraTextureCanvasOptions, AuraTextureColorSpace, AuraTextureCompressedOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureDataOptions, AuraTextureDepthOptions, AuraTextureLoadOptions, AuraTextureMagFilter, AuraTextureMinFilter, AuraTextureRef, AuraTextureVideoOptions, AuraTextureWrapMode } from "./types.js";
+/** Raw, layer-contiguous RGBA volume pixels. Volume depth halves with each mip. */
+export interface AuraTexture3DOptions {
+    readonly width: number;
+    readonly height: number;
+    readonly depth: number;
+    readonly format?: "rgba8" | "rgba16f" | "rgba32f" | "r32f";
+    readonly data?: TexturePixelData;
+    readonly mipmaps?: readonly {
+        readonly width: number;
+        readonly height: number;
+        readonly depth?: number;
+        readonly data: TexturePixelData;
+    }[];
+    readonly mipLevelCount?: number;
+    readonly colorSpace?: AuraTextureColorSpace;
+}
+/** A device storage texture can also be sampled and copied after synchronization. */
+export interface AuraTextureStorageOptions {
+    readonly width: number;
+    readonly height: number;
+    readonly dimension?: "2d" | "2d-array" | "3d";
+    /** Layer count for arrays, volume depth for 3D; omit for 2D. */
+    readonly depth?: number;
+    readonly format?: "rgba8" | "rgba16f" | "rgba32f" | "r32f";
+    readonly mipLevelCount?: number;
+}
+export interface AuraTextureCompressedCubeOptions {
+    readonly format: string;
+    readonly colorSpace?: AuraTextureColorSpace;
+    readonly faces: readonly {
+        readonly face: TextureCubeFace;
+        readonly mipmaps: readonly {
+            readonly width: number;
+            readonly height: number;
+            readonly data: Uint8Array;
+        }[];
+    }[];
+}
+/** Structural input accepted from `@aura3d/assets/importers` NativeImageAsset. */
+export interface NativeImageTextureSource {
+    readonly format: string;
+    readonly width: number;
+    readonly height: number;
+    readonly colorSpace: "srgb" | "linear";
+    readonly levels: readonly {
+        readonly width: number;
+        readonly height: number;
+        readonly encoding: string;
+        readonly data: Uint8Array | Uint16Array | Float32Array;
+    }[];
+    readonly metadata: Readonly<Record<string, unknown>>;
+    readonly diagnostics: readonly string[];
+}
+/** Distinguish an unbacked reference from a handle whose owned texture was disposed. */
+export declare function auraTextureRefBackingStatus(ref: AuraTextureRef): "missing" | "disposed" | "live";
+/** Internal bridge (compiler/textures.ts): the live `Texture` behind a ref. */
+export declare function auraTextureRefTexture(ref: AuraTextureRef | null | undefined): Texture | null;
+/**
+ * ST-02: live handle for a user-created texture — three's `Texture` field
+ * surface (`wrapS/T`, `repeat`, `offset`, `rotation`, `center`, filters,
+ * `anisotropy`, `generateMipmaps`, `colorSpace`, `flipY`, `needsUpdate`,
+ * `dispose`). `AuraTextureRef` (frozen, `nodes/types.ts`) is what material
+ * texture slots and `AuraUniformValue` accept.
+ *
+ * Upload-facing fields (`colorSpace`, `flipY`, `generateMipmaps`,
+ * `needsUpdate`) write through to the backing `Texture` and mark it dirty;
+ * sampling/transform fields are compiled into the slot's sampler and
+ * `AuraTextureTransform` by `resolveAuraTextureRef`.
+ */
+export declare class TextureHandle implements AuraTextureRef {
+    readonly kind: "aura-texture-ref";
+    readonly id: string;
+    wrapS: AuraTextureWrapMode;
+    wrapT: AuraTextureWrapMode;
+    repeat: readonly [number, number];
+    offset: readonly [number, number];
+    rotation: number;
+    center: readonly [number, number];
+    anisotropy: number;
+    minFilter: AuraTextureMinFilter;
+    magFilter: AuraTextureMagFilter;
+    /** The backing device texture — do not mutate it from user code. */
+    readonly texture: Texture;
+    /** Source and backend caveats for adapters that preserve imported assets. */
+    readonly diagnostics: readonly string[];
+    constructor(texture: Texture, defaults?: {
+        readonly wrapS?: AuraTextureWrapMode;
+        readonly wrapT?: AuraTextureWrapMode;
+        readonly anisotropy?: number;
+        readonly minFilter?: AuraTextureMinFilter;
+        readonly magFilter?: AuraTextureMagFilter;
+        readonly diagnostics?: readonly string[];
+    });
+    get colorSpace(): AuraTextureColorSpace;
+    set colorSpace(value: AuraTextureColorSpace);
+    get flipY(): boolean;
+    set flipY(value: boolean);
+    get generateMipmaps(): boolean;
+    set generateMipmaps(value: boolean);
+    /**
+     * ST-03: set after mutating pixels/source. Bumps the device revision
+     * exactly once per dirty cycle; the device clears it once the revision
+     * has been uploaded.
+     */
+    get needsUpdate(): boolean;
+    set needsUpdate(value: boolean);
+    /** Replace a mip or a CPU-retained 3D region without regenerating other levels. */
+    updateMip(level: number, data: TexturePixelData, options?: TextureMipUpdateOptions): void;
+    dispose(): void;
+}
+/** Test hook: replace the shared manager (custom loaders/baseUrl). */
+export declare function setTextureAssetManager(manager: AssetManager | null): void;
+/**
+ * ST-01: the `texture.*` namespace. Every factory returns a live
+ * `TextureHandle`; `load` is the async three `TextureLoader` parity path.
+ */
+export declare const texture: {
+    /**
+     * `new THREE.DataTexture(data, width, height)` — raw pixel data. `format`
+     * accepts the frozen option strings; `rgb8`/`r8` expand to RGBA8 (the
+     * device's supported format family).
+     */
+    data(options: AuraTextureDataOptions): TextureHandle;
+    /**
+     * `new THREE.CanvasTexture(canvas)` — a live 2D canvas. `needsUpdate`
+     * re-uploads on the next bind (ST-03).
+     */
+    canvas(options: AuraTextureCanvasOptions): TextureHandle;
+    /**
+     * `new THREE.VideoTexture(video)` — per-frame upload: the device polls the
+     * source each bind and re-uploads when `currentTime` advanced (ST-03). Like
+     * three's VideoTexture, mipmaps are off and filtering is linear.
+     */
+    video(options: AuraTextureVideoOptions): TextureHandle;
+    /** `new THREE.CompressedTexture(mipmaps, w, h, format)` — device-ready blocks. */
+    compressed(options: AuraTextureCompressedOptions): TextureHandle;
+    /** Create a sampleable texture from the public NativeImageAsset importer result. */
+    fromNativeImage(asset: NativeImageTextureSource, limits?: NativeTextureConversionLimits): TextureHandle;
+    /**
+     * Load an admitted native image container into a caller-owned handle.
+     * The current route accepts bounded PVR texture assets and verifies the
+     * declared digest before decoding; unsupported variants fail explicitly.
+     */
+    loadNativeAsset(asset: AuraAssetRef<"texture">, options?: AuraNativeTextureLoadOptions): Promise<TextureHandle>;
+    /** `new THREE.DepthTexture(w, h)` — a depth24 attachment texture. */
+    depth(options: AuraTextureDepthOptions): TextureHandle;
+    /**
+     * `new THREE.CubeTexture(images)` — six faces in WebGPU/cube order
+     * px, nx, py, ny, pz, nz. Each face is a typed pixel array (square size
+     * inferred), `{ width, height, data, format? }`, or an image source
+     * (canvas/ImageBitmap/image — read back through a 2D canvas).
+     */
+    cube(facesOrOptions: readonly unknown[] | AuraTextureCubeOptions): TextureHandle;
+    /** `new THREE.DataArrayTexture(data, w, h, depth)` — layer-stacked 2D data. */
+    dataArray(options: AuraTextureDataArrayOptions): TextureHandle;
+    /** A sampleable RGBA volume, including independently updatable mip levels. */
+    data3d(options: AuraTexture3DOptions): TextureHandle;
+    /** Allocate a linear storage texture; unsupported devices report a capability error on use. */
+    storage(options: AuraTextureStorageOptions): TextureHandle;
+    /** Six independently addressable block-compressed faces and their mip chains. */
+    compressedCube(options: AuraTextureCompressedCubeOptions): TextureHandle;
+    /**
+     * `new THREE.TextureLoader().load(url)` — real async decode over
+     * `@aura3d/assets` (`ImageLoader` → `TextureLoader`). Progress/error events
+     * flow to `createAuraApp({ onAssetProgress, onAssetError })` (ST-06).
+     */
+    load(url: string, options?: AuraTextureLoadOptions): Promise<TextureHandle>;
+};
+//# sourceMappingURL=texture.d.ts.map
 ```
 
 ### `./dist/engine/contracts/game.d.ts`
@@ -680191,7 +680432,7 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 ## @aura3d/engine/v5/math/hull
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -680379,7 +680620,7 @@ export declare class ConvexHull {
 ## @aura3d/engine/worker
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -681113,7 +681354,7 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 ## @aura3d/engine/workflows
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
 
 ### Export conditions
 
@@ -691063,7 +691304,7 @@ export {};
 ## @aura3d/rendering
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -723679,7 +723920,7 @@ export declare function registerBatchedDrawShader(): void;
 ## @aura3d/rendering/contracts
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725287,7 +725528,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/atmosphere
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725332,7 +725573,7 @@ export {};
 ## @aura3d/rendering/contracts/blend
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725377,7 +725618,7 @@ export declare function renderStateKey(state: RenderCommandState): number;
 ## @aura3d/rendering/contracts/core
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725447,7 +725688,7 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 ## @aura3d/rendering/contracts/deform
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725500,7 +725741,7 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 ## @aura3d/rendering/contracts/device
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725586,7 +725827,7 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 ## @aura3d/rendering/contracts/environment
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725656,7 +725897,7 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 ## @aura3d/rendering/contracts/flags.state
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725686,7 +725927,7 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 ## @aura3d/rendering/contracts/frameGraph
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725830,7 +726071,7 @@ export {};
 ## @aura3d/rendering/contracts/frameUniforms
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725888,7 +726129,7 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 ## @aura3d/rendering/contracts/geometry
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725936,7 +726177,7 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 ## @aura3d/rendering/contracts/index
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -727544,7 +727785,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/materialLobes
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -727604,7 +727845,7 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 ## @aura3d/rendering/contracts/output
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -727695,7 +727936,7 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 ## @aura3d/rendering/contracts/particles
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -727752,7 +727993,7 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 ## @aura3d/rendering/contracts/post
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -727860,7 +728101,7 @@ export interface PostPipelineOptions {
 ## @aura3d/rendering/contracts/program
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728066,7 +728307,7 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 ## @aura3d/rendering/contracts/quality
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728195,7 +728436,7 @@ export declare class StubQualityController implements AuraQualityController {
 ## @aura3d/rendering/contracts/rendererFactory
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728255,7 +728496,7 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 ## @aura3d/rendering/contracts/renderItem
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728373,7 +728614,7 @@ export interface RenderItem {
 ## @aura3d/rendering/contracts/renderSource
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728469,7 +728710,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/sampling
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728530,7 +728771,7 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 ## @aura3d/rendering/contracts/shadows
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728606,7 +728847,7 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 ## @aura3d/rendering/contracts/structuralMemo
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728645,7 +728886,7 @@ export declare class StructuralMemo<V> {
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728678,7 +728919,7 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 ## @aura3d/rendering/contracts/textureFormats
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728711,7 +728952,7 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 ## @aura3d/rendering/contracts/velocity
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728783,7 +729024,7 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 ## @aura3d/rendering/extension-scalar-atlas
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728824,7 +729065,7 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 ## @aura3d/rendering/lanes
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -736128,7 +736369,7 @@ export {};
 ## @aura3d/rendering/lighting
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -736767,7 +737008,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/rendering/production-runtime
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -740296,7 +740537,7 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 ## @aura3d/rendering/reference
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -741029,7 +741270,7 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 ## @aura3d/rendering/reflection-surfaces
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -741164,7 +741405,7 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 ## @aura3d/rendering/shader-graph
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -741407,7 +741648,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/rendering/volumetrics
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -741963,7 +742204,7 @@ export {};
 ## @aura3d/rendering/webgpu
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -744975,7 +745216,7 @@ export declare class GaussianSplatRenderer {
 ## @aura3d/rendering/world
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 

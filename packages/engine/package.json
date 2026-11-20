@@ -93,7 +93,9 @@
     "./dist/agent-api/nodes/instancedMesh.js",
     "./dist/agent-api/nodes/batched.js",
     "./dist/agent-api/compiler/lines.js",
-    "./dist/agent-api/camera/rigs/*.js"
+    "./dist/agent-api/camera/rigs/*.js",
+    "./src/agent-api/app/runtimeNodes.ts",
+    "./dist/agent-api/app/runtimeNodes.js"
   ],
   "peerDependencies": {
     "@aura3d/navigation-recast": "workspace:*"
