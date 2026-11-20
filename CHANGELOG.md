@@ -1,10 +1,10 @@
 # Changelog
 
-Version: 5.7.0
+Version: 5.7.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## 5.7.1 (unreleased)
+## 5.7.1 (2026-11-19)
 
 A patch release: two WebGL2 renderer fixes. No public API change.
 
