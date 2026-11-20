@@ -62,7 +62,7 @@ export function fanColors(park: ParkSpec, seats: readonly FanSeat[]): { readonly
 }
 
 /**
- * GU47 wave 1 (DIA-A2): which seats take the second Meshy seated fan (`ballpark_fanB`, cap, tee and shorts) instead of
+ * GU47 wave 1 (DIA-A2): which seats take the second seated fan model (`ballpark_fanB`, cap, tee and shorts) instead of
  * `ballpark_fanA`: about half of them, seeded per park on its own generator so the two meshes mix without stripes and
  * the shirt colours (`fanColors`) stay exactly as they were.
  */

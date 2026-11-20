@@ -147,7 +147,7 @@ test.describe("roadster-hours-port (Phase B)", () => {
     await api((a) => a.renderNow());
     const gl = await page.evaluate(() => ({ ...(window as unknown as { __glCounts: Record<string, number> }).__glCounts }));
     console.log("ROADSTER_HOURS_GL_FRAME", JSON.stringify(gl));
-    // Every vehicle is a batched instance: generated (Meshy) models in one textured batched mesh per model, baked cars per material
+    // Every vehicle is a batched instance: generated models in one textured batched mesh per model, baked cars per material
     // group, box rigs in their own meshes, so the multi-draw bounds apply to all of them.
     const batchedSlots = vehicles;
     // Multi-draw packs several geometries into one call: a lone shared box geometry (the rigs) is drawn as one instanced call instead.

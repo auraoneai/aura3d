@@ -37,7 +37,7 @@ import {
   sampleToyboxWorld
 } from "./look";
 import {
-  MESHY_PIECES,
+  BACKDROP_PIECES,
   PILLAR_COUNT,
   PILLAR_SPACING,
   SCENERY,
@@ -48,7 +48,7 @@ import {
   hydroGlowSpec,
   mergedCloudSeaGeometry,
   mergedParallaxLayersGeometry,
-  meshyPose,
+  backdropPose,
   morphPlasmaSpec,
   ringSpec,
   sceneryProgramSpecs,
@@ -422,8 +422,8 @@ export function buildWorld(options: WorldOptions): World {
       receiveShadow: false
     })
   );
-  MESHY_PIECES.forEach((p, idx) => {
-    const pose = meshyPose(p, 0, false);
+  BACKDROP_PIECES.forEach((p, idx) => {
+    const pose = backdropPose(p, 0, false);
     // Idol wow pass: Idol toy castle islands (three colourways) and block towers, normalised to IDOL_LANDMARK_DIM
     // and rescaled to the piece's max dimension, grounded like the procedural assemblies they replace.
     const landmark = idolLandmarkNode(p.id, p.kind, p.size, idx);
@@ -536,8 +536,8 @@ export function buildWorld(options: WorldOptions): World {
           const h = node(`pillar-${i}`).setVisible(visible);
           if (visible) h.setPosition(0, 0, z);
         }
-        for (const piece of MESHY_PIECES) {
-          const pose = meshyPose(piece, elapsedNow, reducedNow);
+        for (const piece of BACKDROP_PIECES) {
+          const pose = backdropPose(piece, elapsedNow, reducedNow);
           const visible = pose.scale > 0.04 && pose.z > -205 && pose.z < 26;
           const h = node(piece.id).setVisible(visible);
           if (visible) h.setPosition(pose.x, pose.y, pose.z).setRotation(0, pose.yaw, 0).setScale(pose.scale);

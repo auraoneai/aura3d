@@ -34,7 +34,7 @@ import { dualEnergyFieldSpec } from "../../showcase-port-shared/dual-shaders";
 import { WGSL_CLIP, WGSL_MATH, wgslStage } from "../../showcase-port-shared/wgsl-twins";
 
 export const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
-/** GD-16 waiting passenger (Meshy rigged): node id, the one clip it ships and its kerb facing (toward the avenue and the approaching car). */
+/** GD-16 waiting passenger (rigged): node id, the one clip it ships and its kerb facing (toward the avenue and the approaching car). */
 export const PASSENGER_NODE = "taxi-passenger";
 export const PASSENGER_CLIP = "wave";
 export const PASSENGER_YAW = -0.55;
@@ -344,10 +344,10 @@ export const POD_MATERIALS: CarOverrides = [
   { target: ["veh-trim", "veh-cabin"], color: "#14171c", colorMode: "replace", roughness: 0.38, metallic: 0.2 }
 ];
 /**
- * GU47 phase 4: the player pod wears the WP-36 Meshy livery (one textured PBR material with its own metal/roughness
+ * GU47 phase 4: the player pod wears its textured livery (one textured PBR material with its own metal/roughness
  * maps), so no colour replace: only a clearcoat layer so the sky's HDRI reads on the body.
  */
-// Round 4: the r3 judge read the livery as "flat matte white": roughness 0.28 / metallic 0.25 over the Meshy maps.
+// Round 4: the r3 judge read the livery as "flat matte white": roughness 0.28 / metallic 0.25 over the livery maps.
 export const POD_LIVERY: CarOverrides = [{ roughness: 0.28, metallic: 0.25, clearcoat: 1, clearcoatRoughness: 0.14 }];
 export const MUTED_CLEARCOAT: CarOverrides = [{ clearcoat: 0.45, clearcoatRoughness: 0.3, roughness: 0.48 }];
 export const TRUCK_STEEL: CarOverrides = [{ color: "#cbd5e1", colorMode: "multiply", metallic: 0.8, roughness: 0.22, clearcoat: 0.3, clearcoatRoughness: 0.2 }];

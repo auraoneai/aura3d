@@ -15,84 +15,79 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.fcMatchBallMeshy",
+      "typedRef": "assets.fcIdolBall",
       "quality": "production",
       "role": "primaryBall"
     },
     {
-      "typedRef": "assets.fcSoccerStrikerMeshy",
+      "typedRef": "assets.fcIdolHomeA",
       "quality": "production",
       "role": "primaryCharacter"
     },
     {
-      "typedRef": "assets.fcGoalkeeperMeshy",
+      "typedRef": "assets.fcIdolHomeB",
       "quality": "production",
       "role": "primaryCharacter"
     },
     {
-      "typedRef": "assets.fcSoccerGoalNetMeshy",
+      "typedRef": "assets.fcIdolAwayA",
       "quality": "production",
-      "role": "setDressing"
+      "role": "primaryCharacter"
     },
     {
-      "typedRef": "assets.fcFloodlightPylonMeshy",
+      "typedRef": "assets.fcIdolAwayB",
+      "quality": "production",
+      "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.fcIdolKeeperHome",
+      "quality": "production",
+      "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.fcIdolKeeperAway",
+      "quality": "production",
+      "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.fcIdolReferee",
+      "quality": "production",
+      "role": "primaryCharacter"
+    },
+    {
+      "typedRef": "assets.fcIdolFanA",
       "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.fcScoreboardGantryMeshy",
+      "typedRef": "assets.fcIdolFanB",
       "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.fcHeroTrophyMeshy",
+      "typedRef": "assets.fcIdolFanC",
       "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.fcGlacierDomeMeshy",
+      "typedRef": "assets.fcIdolTrophy",
       "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.fcTeamBench",
+      "typedRef": "assets.fcIdolCrane",
       "quality": "candidate",
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.fcStandModuleMeshy",
-      "quality": "candidate",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.fcPlayerTunnelMeshy",
-      "quality": "candidate",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.fcPitchFanAMeshy",
-      "quality": "candidate",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.fcPitchFanBMeshy",
-      "quality": "candidate",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.fcPitchFanCMeshy",
-      "quality": "candidate",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.fcBallCrate",
+      "typedRef": "assets.fcIdolDugout",
       "quality": "candidate",
       "role": "setDressing"
     }
   ],
-  "assetHonesty": "Match ball, 8 outfield soccer strikers (fcSoccerStrikerMeshy), 2 goalkeepers (fcGoalkeeperMeshy), both 3D goal frames & nets (fcSoccerGoalNetMeshy), touchline referee, floodlight pylons, scoreboard gantry, championship trophy, glacier dome and stadium stand module are 3D Meshy GLBs; the sideline team benches and ball crate are CC0 Poly Haven GLBs.",
+  "assetHonesty": "Match ball, home and away outfield players, both goalkeepers, the referee, the front-row fans, championship trophy, camera crane and dugout are Idol-generated GLBs (fal image-to-3D, typed keys fcIdol*, provenance in assets/idol/); the stadium bowl, goal frames and nets, floodlight pylons, scoreboard gantry and stands are procedural @aura3d/engine geometry.",
   "qualityGate": {
     "status": "reviewed",
-    "note": "Remote headless capture (i-087c92ec3af45d0d1, 2026-10-17): route-ready=ready, evidence ready=true, framesRendered=120, mode=quick/play; screenshots show live 5v5 3D gameplay with 3D Meshy soccer strikers, goalkeepers, goal nets, scorebug, radar, and AI/user play."
+    "note": "Remote headless capture (i-087c92ec3af45d0d1, 2026-10-17): route-ready=ready, evidence ready=true, framesRendered=120, mode=quick/play; screenshots show live 5v5 3D gameplay with 3D soccer players, goalkeepers, goal nets, scorebug, radar, and AI/user play."
   }
 }

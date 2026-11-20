@@ -1,5 +1,5 @@
 /**
- * Generated-motion enemy animation for the Idol guard, gunner and Warden (owner: "real motion, not frozen"; no Meshy).
+ * Generated-motion enemy animation for the Idol guard, gunner and Warden (owner: "real motion, not frozen").
  *
  * Clips (idol-mocap.ts): fal.ai text-to-motion (fal-ai/hunyuan-motion through tools/idol/motion.mjs, spec
  * tools/idol/motion-specs/bunker-zero.json, baked by apps/showcase-iron-crown/scripts/bake-idol-motion.mjs): a rifle

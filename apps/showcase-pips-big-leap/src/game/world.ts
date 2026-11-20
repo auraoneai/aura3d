@@ -758,7 +758,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     }
   }
 
-  // WP-06 (diorama): procedural multi-material woodland assemblies replace all 26 static Meshy
+  // WP-06 (diorama): procedural multi-material woodland assemblies replace all 26 static clay
   // & borrowed sci-fi/FPS props; `?look=original` keeps its original model nodes unchanged.
   const staticDecorPlacements: StaticDecorPlacement[] = [];
 

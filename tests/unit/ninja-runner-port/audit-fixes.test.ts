@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { CAMERA_CLEARANCE, buildScenery, cameraGap, type ModelSink } from "../../../examples/ninja-runner-port/scenery";
-import { MESHY_MANIFEST } from "../../../examples/ninja-runner-port/assets/meshy/manifest";
+import { PROP_MANIFEST } from "../../../examples/ninja-runner-port/assets/props/manifest";
 import { ENEMIES, TUNING, createState, dailySeed, generateEntities, isEnemy, startRun, stepSim, SIM_STEP } from "../../../examples/ninja-runner-port/sim";
 import { ENEMY_HINT, OBJECTIVE } from "../../../examples/ninja-runner-port/labels";
 import { GameAudio } from "../../../examples/ninja-runner-port/audio";
@@ -105,7 +105,7 @@ describe("ninja-runner-port audit fixes", () => {
     let checked = 0;
     for (const [id, list] of Object.entries(sink)) {
       if (id === "gate" || id === "ridge") continue;
-      for (const p of list) { checked++; expect(cameraGap(p, MESHY_MANIFEST[id]!.size).gap, `${id} at ${p.position.map((v) => v.toFixed(1))}`).toBeGreaterThanOrEqual(CAMERA_CLEARANCE); }
+      for (const p of list) { checked++; expect(cameraGap(p, PROP_MANIFEST[id]!.size).gap, `${id} at ${p.position.map((v) => v.toFixed(1))}`).toBeGreaterThanOrEqual(CAMERA_CLEARANCE); }
     }
     expect(checked).toBeGreaterThan(1000);
   }, 30_000);

@@ -243,7 +243,7 @@ test.describe("strange-orbit-port (Phase A)", () => {
       expect(Math.abs(entry.s - want.s)).toBeLessThan(1e-5);
     });
   });
-  test("skate mode: Meshy skater renders and the race starts", async ({ page }) => {
+  test("skate mode: the skater renders and the race starts", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });

@@ -14,11 +14,11 @@ const APP = path.resolve("apps/showcase-iron-crown");
 const manifest = JSON.parse(readFileSync(path.join(APP, "aura.assets.json"), "utf8"));
 const entries: Array<{ id: string; format: string; source: string; url: string; hash: string; sizeBytes: number }> = manifest.assets ?? manifest;
 
-describe("iron crown fighter restyle & zero-Meshy procedural rigs", () => {
+describe("iron crown fighter restyle & procedural rigs", () => {
   it("ships zero .glb files in public/aura-assets and aura.assets.json, keeping only verified LUT/texture hashes", () => {
     expect(entries.filter((e) => e.format === "glb")).toHaveLength(0);
     const assetFiles = readdirSync(path.join(APP, "public/aura-assets"));
-    expect(assetFiles.filter((f) => f.endsWith(".glb") || f.includes("meshy-candidate"))).toEqual([]);
+    expect(assetFiles.filter((f) => f.endsWith(".glb"))).toEqual([]);
     for (const entry of entries) {
       const file = path.join(APP, entry.source);
       const buf = readFileSync(file);

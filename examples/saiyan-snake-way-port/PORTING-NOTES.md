@@ -9,7 +9,7 @@
 > `tools/idol/specs/serpentine-sky-run.json`, files in `apps/showcase-serpentine-sky-run-port/assets/idol/`). Render layer only:
 > same ids, sizes, pivots and pools, so the simulation and the replay are untouched. `?idol=0` restores the procedural kit below.
 
-> **5.5.6 Update (2026-11-12):** All external and Meshy `.glb` models (`runner.glb`, `runner-script.glb`, and Meshy props) documented below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files) and crisp sky/horizon fog.
+> **5.5.6 Update (2026-11-12):** All external and generated `.glb` models (`runner.glb`, `runner-script.glb`, and the generated props) documented below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files) and crisp sky/horizon fog.
 
 Aura3D port of the Crayon game "Serpentine Sky Run" (PRD Phase C / R-25 capture work), shown publicly as
 "Serpentine Sky Run". The simulation uses this game's own names and strings (the borrowed lore was renamed at the source;
@@ -27,7 +27,7 @@ page's importmap, so the module is one 513,393-byte file of game code with minif
 | `road.ts` | The snake's path (the original's `XA`/`ZA`/`At` frame integration) and the ribbon mesh. |
 | `world.ts`, `materials.ts`, `shaders.ts` | Rendering on the public `@aura3d/engine` surface only: road ribbon, ray-marched cloud deck and starry sky dome, aura shell, rigged runner, multi-part props, post stack, chase camera. |
 | `hero.ts` | The procedural runner: a primitive figure posed from run, jump, slide, flight and dive states. It is the fallback when the rigged model cannot load, and its pose also anchors the aura, sparks and bursts. Pure maths, unit tested. |
-| `assets/runner{,-script}.glb`, `models.ts` | The rigged runner variants and Meshy props (see the Meshy art pass section below and `assets/ATTRIBUTION.md`), declared as hashed same-origin refs and driven through `cloneSkinned` / `TypedGLBActor`. |
+| `assets/runner{,-script}.glb`, `models.ts` | The rigged runner variants and generated props (see the generated-model art pass section below), declared as hashed same-origin refs and driven through `cloneSkinned` / `TypedGLBActor`. |
 | `styles.ts` | Three runner looks for the select card (colours only; the run is identical). |
 | `sfx.ts` | Synthesised one-shot sound effects (Web Audio, no asset files, no continuous bed). |
 | `main.ts`, `index.html` | Boot, fixed-step loop, HUD, title with runner select, countdown, pause, results, best score and distance, mute button, capture hooks (`window.__AURA_SERPENTINE_SKY_RUN__`, first error in `window.__AURA_SERPENTINE_SKY_RUN_ERROR__`). |
@@ -88,11 +88,11 @@ Not ported (the original continues past these):
 
 | Area | Original | Port |
 | --- | --- | --- |
-| Assets | GLB avatars (hero, ogres, minions) animated with `SkeletonUtils` | The runner is a Meshy rigged humanoid (see the Meshy art pass) with Run_Loop, Idle_Loop, Jump_Loop, Slide_Loop, Flight_Loop, Dive_Loop and Hit_React clips and a body pitch for flight and fall; hazards, the feast, lanterns and islands are Meshy models; orbs, souls, power-ups, sparks, bursts and streaks are engine primitives (`ENTITY_PARTS` in `world.ts`) |
+| Assets | GLB avatars (hero, ogres, minions) animated with `SkeletonUtils` | The runner is a generated rigged humanoid (see the generated-model art pass) with Run_Loop, Idle_Loop, Jump_Loop, Slide_Loop, Flight_Loop, Dive_Loop and Hit_React clips and a body pitch for flight and fall; hazards, the feast, lanterns and islands are generated models; orbs, souls, power-ups, sparks, bursts and streaks are engine primitives (`ENTITY_PARTS` in `world.ts`) |
 | Sky and clouds | Violet gradient with white star points over a ray-marched golden cloud deck | The same idea in this port's own shader: gradient, ~2 px star points, and a 22-step front-to-back march through a lobed height field with a sun-shadow tap, fine grain and a lavender horizon haze. No sun disc, wisps or puffs (the original has none) |
 | Aura | Two `ShaderMaterial` shells | The same blade-tier fragment maths on two cylinders; uniform `time` is `auraTime` (a uniform named `time` lowers to the engine's reserved `u_time`); the shell now tilts with the body in flight |
 | Road | Toon-shaded scale texture | Ring ribbon with a plate/bevel pattern that fades with screen-space derivatives, faint pearl sheen and lavender feather streaks on the flanks; a missing plate leaves a hole one sample wider than the original's `gap` window |
-| Lighting | `MeshToonMaterial` + directional/hemisphere/point lights | Custom materials are unlit: the toon ramp, hemisphere tint, rim light and linear fog (430..1010 to the measured `#f2c6de`) are evaluated inline. The PBR runner and Meshy props get the hemisphere, the sun and `environments.neutral` (added for 4.5.0, which no longer gives a lights-only scene an implicit environment) |
+| Lighting | `MeshToonMaterial` + directional/hemisphere/point lights | Custom materials are unlit: the toon ramp, hemisphere tint, rim light and linear fog (430..1010 to the measured `#f2c6de`) are evaluated inline. The PBR runner and generated props get the hemisphere, the sun and `environments.neutral` (added for 4.5.0, which no longer gives a lights-only scene an implicit environment) |
 | Post | Speed-line streak pass; the look spec records no composer | A faint bloom and FXAA from `effects.*`; world-fixed streak nodes only while surging or flying |
 | Camera | fov 62, pitch about -0.11 rad, close behind the runner | Same fov; chase offset 7 m back and 3.4 m up (was 10 / 4.2), look-ahead 12 m, so the runner fills about 40% of the frame height as in the reference |
 | HUD | Portrait card with segmented bars, km progress bar, days and score cards, pause button, stage title in a display face | Same layout with generic art (no portrait, no display face): labelled spark and strain bars, a drowse meter in the Drowse stage, Vital Seed and staff charges, progress bar with a best-distance marker, days and score cards, pause and mute buttons, stage banner, gust and gap warnings, first-run prompts. Days left pay a bonus when the runner reaches the tail |
@@ -116,23 +116,20 @@ Notes for authors of `material.custom` shaders:
 - `TypedGLBActor.setTint` multiplies the model's base colour, so it cannot recolour a green outfit to orange; an emissive wash only approximates it.
 - `handle.setScale` takes one number or one `[x, y, z]` array, not three arguments.
 
-## Meshy art pass (2026-10-23)
+## Generated-model art pass (2026-10-23, removed in 5.5.6)
 
-Generated through Kiro Prism from original text prompts (never from images of the original; no franchise names in prompts), admitted with
-`aura3d assets import-meshy` in an isolated temp project (`validate --require-license`: no failures) and shipped under `assets/` (provenance:
-`assets/ATTRIBUTION.md`, `assets/provenance/*.rights.json|meta.json`). Loaded in `models.ts` with a same-origin pathname + sha256, the only form the
-production bridge accepts.
+Text-to-3D models from original text prompts (never from images of the original; no franchise names in prompts), loaded in `models.ts` with a
+same-origin pathname + sha256, the only form the production bridge accepts. The files and their generation records were deleted in 5.5.6; this
+section records how they were wired.
 
-- **Runner** (`runner-script.glb`, 4.1 MB; exact original `runner.glb`, 4.7 MB; 20k vertices): text-to-3D A-pose, remeshed to 12k triangles (5 credits), rigged (5), plus six animation actions
-  (3 each). The rig returns a skeleton of 24 joints with a basic run clip; the other clips are separate GLBs, merged into one file by a small
+- **Runner** (`runner-script.glb`, 4.1 MB; exact original `runner.glb`, 4.7 MB; 20k vertices): text-to-3D A-pose, remeshed to 12k triangles, rigged, plus six animation actions. The rig returns a skeleton of 24 joints with a basic run clip; the other clips are separate GLBs, merged into one file by a small
   gltf-transform script (same joint names, 66 channels each). Clip mapping in `world.ts`: run, idle, jump (`Regular_Jump`), slide (`slide_light`),
   flight (`Leap_of_Faith`; the library has no flying clip, the world's pitch does the rest), dive and hit. It still goes through `cloneSkinned` and
   falls back to the procedural figure.
 - **Entities as one model each** (pool sizes shrank to keep draw calls down: arch 8, barrier 16, oni 12, sweeper 6, feast 6): gate, barrier, ogre, cart, feast.
   The simulation never reads pool sizes (a full pool only hides the farthest props).
 - **Decor**: ten roadside lantern posts recycled in pairs along the verge and six drifting floating islands.
-- Not used: `crystal.glb` (generated, 30 credits, not admitted).
-- Meshy facts worth knowing: `make` is 30 credits (20 preview + 10 refine); the rigged GLB is 21 MB raw (1024 px textures bring it to 4.6 MB with
+- Facts worth knowing: the rigged GLB was 21 MB raw (1024 px textures brought it to 4.6 MB with
   all clips); text-to-3D output comes back with 0.2-4 M vertices, so every static prop needs `optimize.mjs` (a second pass for the island).
 
 ## Prop optimisation (2026-10-29, audit row C8)

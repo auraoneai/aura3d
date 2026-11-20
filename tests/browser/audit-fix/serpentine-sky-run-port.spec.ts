@@ -3,7 +3,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
 
 /**
  * Audit lane G17 (Serpentine Sky Run): steady-state in-run capture for LIGHT-01 (neutral-room IBL on the PBR runner and
- * the Meshy props), C1 (one GL error froze the renderer) and C2 (QA hook name). Remote only (tools/remote-acr/run.sh);
+ * the model props), C1 (one GL error froze the renderer) and C2 (QA hook name). Remote only (tools/remote-acr/run.sh);
  * the ACR run has no artifact egress, so output goes to the log:
  *   SSR_META <json>                         luma stats (whole frame, thirds, runner crop, verge crops) + hook and engine state
  *   SSR_JPG  <variant> <shot> <i>/<n> <b64> canvas-only JPEG, chunked

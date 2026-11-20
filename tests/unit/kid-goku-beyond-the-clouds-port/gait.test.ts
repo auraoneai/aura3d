@@ -49,7 +49,7 @@ describe("Cumulus Dash planted-foot gait", () => {
     }
   });
 
-  it("uses each side's own bone lengths (the Meshy skeleton is not symmetric) and never asks a leg to overreach", () => {
+  it("uses each side's own bone lengths (the hero skeleton is not symmetric) and never asks a leg to overreach", () => {
     expect(LEG_LENGTHS.left.thigh).not.toBeCloseTo(LEG_LENGTHS.right.thigh, 3);
     expect(LEG_REACH).toBeCloseTo(Math.min(LEG_LENGTHS.left.thigh + LEG_LENGTHS.left.shin, LEG_LENGTHS.right.thigh + LEG_LENGTHS.right.shin), 9);
     for (const v of SPEEDS) {

@@ -6591,7 +6591,7 @@ export interface GladiatorPositionalPalette {
 }
 
 /**
- * Build a smooth, Meshy-grade, multi-material, anatomically articulated character rig
+ * Build a smooth, high-fidelity, multi-material, anatomically articulated character rig
  * across all 6 Iron Crown roster archetypes (`kenji`, `volt`, `boulder`, `seraph`, `jinx`, `sovereign`).
  * Grounded cleanly at `y = 0` and hierarchically rigged across all 14 `GLADIATOR_JOINT_SUFFIXES`.
  * Supports both the `GladiatorRigOptions` object signature and the positional

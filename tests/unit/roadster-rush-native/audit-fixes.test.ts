@@ -79,7 +79,7 @@ describe("Apex Overdrive audit fixes (simulation side)", () => {
     expect(music).toEqual([null, "run"]);
   });
 
-  it("the baked Meshy traffic gets no half turn, the fallback models do (RR-3, lesson M15)", () => {
+  it("-z-facing traffic gets no half turn, +z-facing models do (RR-3, lesson M15)", () => {
     expect(trafficYawOffset(true)).toBe(0);
     expect(trafficYawOffset(false)).toBeCloseTo(Math.PI, 12);
   });

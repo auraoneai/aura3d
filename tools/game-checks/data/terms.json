@@ -145,7 +145,7 @@
     ]
   },
   "assetOwners": {
-    "note": "GU47 D2 (borrowed-asset, prop-exclusivity). prefixes: camel-case asset id prefix -> owner (live game slug, or the app that made the asset); the longest prefix wins and must end at a camel-case boundary. Ids no prefix matches belong to the one app whose own aura.assets.json lists them, else to the app their root-manifest source sits in. A new game prefix (aura3d assets import-meshy --prefix <game>) gets a row here. generic: engine sample assets any game may use.",
+    "note": "GU47 D2 (borrowed-asset, prop-exclusivity). prefixes: camel-case asset id prefix -> owner (live game slug, or the app that made the asset); the longest prefix wins and must end at a camel-case boundary. Ids no prefix matches belong to the one app whose own aura.assets.json lists them, else to the app their root-manifest source sits in. A new game prefix gets a row here. generic: engine sample assets any game may use.",
     "prefixes": {
       "auraSlam": "top-tennis",
       "tennis": "top-tennis",

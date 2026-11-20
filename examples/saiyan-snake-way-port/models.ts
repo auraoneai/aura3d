@@ -6,7 +6,7 @@ import type { LookMode } from "./art/colorScript";
 const LICENSE = "Procedural @aura3d/engine multi-material geometry (examples/saiyan-snake-way-port/art/proceduralModels.ts)";
 const proc = (key: string, sha256: string) => ({ url: `/procedural/serpentine/${key}`, sha256 });
 
-export const MESHY = defineModelAssets({
+export const PROP_MODELS = defineModelAssets({
   gate: proc("gate", "sha256-f7f33f94d0ff7d3b2943d6571cea389d74952b60a4f9c6df651635626fec768a"),
   barrier: proc("barrier", "sha256-1abcb50e0356ee708a5db10e4b8dc64f876089ddc634dce8a8786e044273db40"),
   ogre: proc("ogre", "sha256-67e9ae1a89bdc48a0b6a28a535421071bca767930d317381c67cc2aaaf3ec519"),
@@ -35,10 +35,10 @@ export function runnerModelForLook(mode: LookMode) {
   return RUNNER_MODELS[mode];
 }
 
-export type MeshyKey = keyof typeof MESHY;
+export type PropModelKey = keyof typeof PROP_MODELS;
 
 /** Procedural multi-material entity pools (`art/proceduralModels.ts`): pooled slot count, target height (m), baseY and yaw offset. */
-export const ENTITY_MODELS: Readonly<Record<string, { readonly key: MeshyKey; readonly pool: number; readonly height: number; readonly baseY: number; readonly yaw: number }>> = {
+export const ENTITY_MODELS: Readonly<Record<string, { readonly key: PropModelKey; readonly pool: number; readonly height: number; readonly baseY: number; readonly yaw: number }>> = {
   arch: { key: "gate", pool: 8, height: 4.6, baseY: 2.2, yaw: 0 },
   barrier: { key: "barrier", pool: 16, height: 2.5, baseY: 1.1, yaw: 0 },
   oni: { key: "ogre", pool: 12, height: 3.4, baseY: 1.5, yaw: 0 },
@@ -53,7 +53,7 @@ export const ISLAND_COUNT = 6;
  * second pagoda island (`?look=original` keeps six original islands). `targetHeight` is the model height in metres before the
  * per-slot `1 + (i % 3) * 0.35` scale the original islands already used.
  */
-export const ISLAND_VARIANTS: readonly { readonly key: MeshyKey; readonly targetHeight: number }[] = [
+export const ISLAND_VARIANTS: readonly { readonly key: PropModelKey; readonly targetHeight: number }[] = [
   { key: "spireC", targetHeight: 22 },
   { key: "spireB", targetHeight: 15 },
   { key: "spireA", targetHeight: 14 }

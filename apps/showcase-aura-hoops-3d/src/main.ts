@@ -841,7 +841,7 @@ function buildBallNodes(): any[] {
   return nodes;
 }
 
-/** Clean ground readability rings & shadow for one 3D Meshy athlete (no primitive body/shoe capsules). */
+/** Clean ground readability rings & shadow for one 3D athlete (no primitive body/shoe capsules). */
 function buildAthleteAccessories(id: string, team: TeamId, kit: Kit): any[] {
   // Team ring in the kit colour, with a shape cue that does not depend on colour: home stands on a round ring, away on a
   // square one (a four-segment torus), so the sides read apart for colour-blind players too.
@@ -1219,7 +1219,7 @@ let waverNodes: AnyHandle[] = [];
 
 const ROSTER_IDS = ["p0", "p1", "p2", "p3", "p4", "a0", "a1", "a2", "a3", "a4"] as const;
 const lastClipByActor = new Map<string, string>();
-/** Meshy-07: the seated live fans fist-pump (`sitPump`) for this long after any make, then go back to their idle loop. */
+/** The seated live fans fist-pump (`sitPump`) for this long after any make, then go back to their idle loop. */
 const LIVE_FAN_CHEER_SECONDS = 2.6;
 let liveFansCheerUntil = -1;
 const liveFanClip = new Map<string, string>();

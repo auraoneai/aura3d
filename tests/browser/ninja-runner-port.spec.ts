@@ -218,7 +218,7 @@ test.describe("ninja-runner-port (Phase C)", () => {
 
     writeFileSync(resolve(`${REPORT_ROOT}/ninja-runner-port.json`), `${JSON.stringify({
       schema: "a3d-ninja-runner-port-report/1",
-      claimBoundary: "Proves the Aura3D port boots on WebGL2, renders its world and thirteen independent skinned actors, plays movement/combat/clones/Sage/Beast/win/restart/loss, and that its fixed-step simulation reproduces the original's recorded 106 s run event-for-event. It does not claim pixel parity: the characters and the village kit are generated models (Meshy text-to-3D, own prompts) and the ground, sky, water and effects are procedural.",
+      claimBoundary: "Proves the Aura3D port boots on WebGL2, renders its world and thirteen independent skinned actors, plays movement/combat/clones/Sage/Beast/win/restart/loss, and that its fixed-step simulation reproduces the original's recorded 106 s run event-for-event. It does not claim pixel parity: the characters and the village kit are generated models (Idol image-to-3D from our own reference images, procedural under ?idol=0) and the ground, sky, water and effects are procedural.",
       replay: { steps: replayed.steps, kills: replayed.kills, score: replayed.score, eventsEqual, maxDelta },
       actors: { distinct: probe.distinct, shared },
       finish: { s: end.s, kills: end.kills, score: end.score }

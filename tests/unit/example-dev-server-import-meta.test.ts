@@ -19,7 +19,7 @@ describe("example dev server: import.meta.url in bundled app entries", () => {
     // Same shape as apps/showcase-ninja-runner-port/src/main.ts importing examples/ninja-runner-port/models.ts.
     mkdirSync(join(root, "examples", "ninja"), { recursive: true });
     mkdirSync(join(root, "apps", "showcase-ninja", "src"), { recursive: true });
-    writeFileSync(join(root, "examples", "ninja", "models.ts"), 'export const hero: string = new URL("./assets/meshy/hero.glb", import.meta.url).href;\n');
+    writeFileSync(join(root, "examples", "ninja", "models.ts"), 'export const hero: string = new URL("./assets/models/hero.glb", import.meta.url).href;\n');
     writeFileSync(join(root, "apps", "showcase-ninja", "src", "main.ts"), 'import { hero } from "../../../examples/ninja/models";\n(globalThis as { heroUrl?: string }).heroUrl = hero;\n');
     const server = await startExampleDevServer(root);
     try {
@@ -28,7 +28,7 @@ describe("example dev server: import.meta.url in bundled app entries", () => {
       expect(body).not.toContain("import.meta.url");
       // Evaluate the URL the browser would compute from the page origin.
       const base = new URL("/examples/ninja/models.ts", server.origin).href;
-      expect(new URL("./assets/meshy/hero.glb", base).pathname).toBe("/examples/ninja/assets/meshy/hero.glb");
+      expect(new URL("./assets/models/hero.glb", base).pathname).toBe("/examples/ninja/assets/models/hero.glb");
     } finally {
       await server.close();
     }

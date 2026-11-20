@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 const ROOT = path.resolve(__dirname, "../../..");
 const read = (rel: string) => readFileSync(path.join(ROOT, rel), "utf8");
-const MAX_DETAIL = 6; // see soft-cabinet.test.ts: photographs score ~17, softened textures ~3
+const MAX_DETAIL = 6; // mean abs difference vs a 48x48 copy: photographs score ~17, softened textures ~3
 
 // Face-scan athletes (photographic skin, jerseys with numbers) that used to be served from /aura-assets. Their original
 // file hashes must never come back; their replacements keep only the colour layout of the atlas.

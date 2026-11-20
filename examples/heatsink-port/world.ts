@@ -228,7 +228,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   /* the earlier black sky was the draw-skip on unused declared uniforms (fixed in 4.0.7); the dome is back-culled again */
   b.add(primitives.sphere({ ...noCast, name: "sky", size: 3000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
 
-  /* the Meshy models are lit surfaces: a sky fill and the key; the custom (unlit) road/sky/neon shaders evaluate their own `lit()` */
+  /* the models are lit surfaces: a sky fill and the key; the custom (unlit) road/sky/neon shaders evaluate their own `lit()` */
   b.add(lights.hemisphere({ name: "sky-fill", skyColor: look.hemisphere.sky, groundColor: look.hemisphere.ground, intensity: look.hemisphere.intensity }));
   /*
    * LIGHT-01 / IC-04: the lit models need an image-based light (4.5.0 gives none to a scene with authored lights and no

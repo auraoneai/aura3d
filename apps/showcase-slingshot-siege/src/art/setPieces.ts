@@ -1,7 +1,7 @@
 /**
  * Slingshot Siege far set pieces (presentation only: no collider, nothing feeds the sim, never in the flight lane).
  *
- * Idol wow pass (2026-11): the GU47 WP-36 Meshy GLBs these placements were authored for (sling_seaStackIsland and the
+ * Idol wow pass (2026-11): the GU47 WP-36 GLBs these placements were authored for (sling_seaStackIsland and the
  * five wave-2 pieces, plus the phase-7 baked rock/tree sets) were never in the working tree, so the stage drew
  * procedural stand-ins. Each placement now draws an Idol image-to-3D toy-diorama island (speridlabs/idol/max, admitted
  * through tools/idol/admit.sh as `assets.siegeFar*`; spec tools/idol/specs/slingshot-siege.json). The GLBs are grounded

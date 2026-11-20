@@ -1,18 +1,18 @@
 import { existsSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { MESHY_MANIFEST } from "../../../examples/ninja-runner-port/assets/meshy/manifest";
+import { PROP_MANIFEST } from "../../../examples/ninja-runner-port/assets/props/manifest";
 import { buildProceduralActorNodes, buildSculptedActorNodes, createProceduralActorAssets } from "../../../examples/ninja-runner-port/art/proceduralActors";
-import { CHARACTER_URLS, EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, SLOT_MODEL } from "../../../examples/ninja-runner-port/models";
+import { CHARACTER_URLS, EVENING_SLOT_MODEL, EVENING_ENEMY_CLIPS, SLOT_MODEL } from "../../../examples/ninja-runner-port/models";
 import { buildScenery, type ModelSink } from "../../../examples/ninja-runner-port/scenery";
 
 describe("procedural Sengoku character & prop assets", () => {
   it("ships zero .glb files under examples/ninja-runner-port/assets/ and keeps manifest budgets finite", () => {
-    for (const sub of ["examples/ninja-runner-port/assets/meshy", "examples/ninja-runner-port/assets/models"]) {
+    for (const sub of ["examples/ninja-runner-port/assets/props", "examples/ninja-runner-port/assets/models"]) {
       if (!existsSync(sub)) continue;
       const glbs = readdirSync(sub).filter((f) => f.endsWith(".glb"));
       expect(glbs, sub).toEqual([]);
     }
-    const total = Object.values(MESHY_MANIFEST).reduce((n, m) => n + m.bytes, 0);
+    const total = Object.values(PROP_MANIFEST).reduce((n, m) => n + m.bytes, 0);
     expect(total).toBeLessThan(32 * 1024 * 1024);
   });
 
@@ -30,8 +30,8 @@ describe("procedural Sengoku character & prop assets", () => {
     expect(EVENING_SLOT_MODEL.slice(13)).toEqual(["caster", "caster", "caster", "scout", "scout", "scout"]);
     expect(SLOT_MODEL).not.toContain("caster");
     expect(SLOT_MODEL).not.toContain("scout");
-    expect(MESHY07_ENEMY_CLIPS.caster).toEqual({ attack: "cast", death: "death" });
-    expect(MESHY07_ENEMY_CLIPS.scout).toEqual({ attack: "throw", death: "death" });
+    expect(EVENING_ENEMY_CLIPS.caster).toEqual({ attack: "cast", death: "death" });
+    expect(EVENING_ENEMY_CLIPS.scout).toEqual({ attack: "throw", death: "death" });
   });
 
   it("builds articulated multi-material procedural rigs with canonical clips and bone transforms", () => {

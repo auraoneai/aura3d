@@ -22,7 +22,7 @@
   "evidence": "28 state fields match at every step of a 1,500-step run, including the random-draw count.",
   "limits": [
     "Synth audio and the DOM flash, vignette and burst reveal are ported; the original's platform SDKs are not.",
-    "Independent reconstruction of the mechanics with procedural toon art and Meshy-generated backdrop and pickup models; not a pixel-parity or 1:1 port.",
+    "Independent reconstruction of the mechanics with procedural toon art and Idol image-to-3D backdrop and pickup models; not a pixel-parity or 1:1 port.",
     "Two presentation changes from the original: a restart re-centres steering (C4), and a gate row between two lanes resolves against the nearest gate only (C16). The recorded reference never reaches either case, so the replay still matches.",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],

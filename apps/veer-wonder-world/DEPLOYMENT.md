@@ -145,7 +145,7 @@ All of these come first:
 
 - external privacy and legal review for children's privacy rules (for example COPPA);
 - a trademark search for "Wonder World" and the six character names;
-- a legal check of the Meshy and ElevenLabs terms for public redistribution;
+- a legal check of the ElevenLabs terms for public redistribution;
 - every free-tier or unknown-tier audio file re-rendered on a paid tier;
 - a human speech-language pathologist and caregiver review before any educational wording;
 - physical-device evidence (iPad and iPhone Safari, Android Chrome, desktop Chrome);

@@ -166,10 +166,10 @@ export function assignPickupSlots<P extends PickupLike>(pickups: readonly P[], p
 }
 
 /**
- * Yaw added to a traffic vehicle's simulated heading so its front points along its travel direction (-z). The baked Meshy
- * set is front toward -z (meshy-vehicles.ts), so it needs none; the `?models=0` showcase models face +z and turn half a
- * circle. Audit RR-3: the Meshy traffic used to get the half turn too and drove backwards (lesson M15).
+ * Yaw added to a traffic vehicle's simulated heading so its front points along its travel direction (-z). A model whose
+ * front already faces -z (the procedural hulls) needs none; models that face +z (the Idol fleet, the `?models=0` showcase
+ * models) turn half a circle. Audit RR-3: -z traffic used to get the half turn too and drove backwards (lesson M15).
  */
-export function trafficYawOffset(meshyModels: boolean): number {
-  return meshyModels ? 0 : Math.PI;
+export function trafficYawOffset(frontFacesNegZ: boolean): number {
+  return frontFacesNegZ ? 0 : Math.PI;
 }

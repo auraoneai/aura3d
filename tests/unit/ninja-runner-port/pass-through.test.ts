@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { COURSE_LENGTH, groundFrame, laneOffset } from "../../../examples/ninja-runner-port/course";
 import { surfaceY } from "../../../examples/ninja-runner-port/meshes";
-import { MESHY_MANIFEST } from "../../../examples/ninja-runner-port/assets/meshy/manifest";
+import { PROP_MANIFEST } from "../../../examples/ninja-runner-port/assets/props/manifest";
 import { buildProceduralCourseAccents, buildScenery, type ModelPlacement, type ModelSink } from "../../../examples/ninja-runner-port/scenery";
 import { IDOL_BARRIER_SCALE, IDOL_PROP_KEYS, idolAsset, idolPropTransform } from "../../../examples/ninja-runner-port/art/idolScenery";
 import { BEAM_DRAWN, BEAM_SCALE_X, BEAM_AUTHORED_WIDTH, HAZARD_HIT } from "../../../examples/ninja-runner-port/hazards";
@@ -81,7 +81,7 @@ function drawn(id: string, p: ModelPlacement): { hx: number; hz: number; h: numb
     const s = t.scale as readonly number[];
     return { hx: (b[0]! * s[0]!) / 2, hz: (b[2]! * s[2]!) / 2, h: b[1]! * s[1]!, base: t.position as [number, number, number] };
   }
-  const m = (MESHY_MANIFEST as Record<string, { size: readonly number[] }>)[id]!.size;
+  const m = (PROP_MANIFEST as Record<string, { size: readonly number[] }>)[id]!.size;
   return { hx: (m[0]! * p.scale[0]) / 2, hz: (m[2]! * p.scale[2]) / 2, h: m[1]! * p.scale[1], base: p.position };
 }
 

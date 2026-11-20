@@ -1,7 +1,7 @@
 /**
- * H47-A1 (GU47 wave 2): the spectators. Two Meshy standing fans (`blacktopFanB`, `blacktopFanC`; the arms-out T-pose
+ * H47-A1 (GU47 wave 2): the spectators. Two standing fan models (`blacktopFanB`, `blacktopFanC`; the arms-out T-pose
  * fans A and D are not used) stand on the grounded bleachers of every court, one instanced draw per fan model, so the
- * standing crowd is at most 2 draws; six seated, animated fans (Meshy-07) add one skinned draw each. Layout is pure and deterministic (a local LCG: no RNG draw from the sim or cosmetic
+ * standing crowd is at most 2 draws; six seated, animated fans add one skinned draw each. Layout is pure and deterministic (a local LCG: no RNG draw from the sim or cosmetic
  * streams), nothing collides, and only the new look mounts it (`?look=original` keeps the 4.6 bleachers empty).
  */
 import { instances, type AuraAssetRef, type AuraColor, type AuraCustomGeometrySpec, type AuraMaterialSpec, type AuraNodeBuilder, type AuraSceneNode, type AuraVec3 } from "@aura3d/engine";
@@ -23,7 +23,7 @@ const SLOT_PITCH = 0.95;
 /** Empty slots (spread by the LCG), so the crowd has gaps: 150 - 8 = 142 fans per court. */
 const EMPTY_SLOTS = 8;
 /**
- * Meshy-07: seated, skinned fans (blacktopFanA/C/DPoses, clips sitClap / sitCheer / sitPump) in the front row of the
+ * Seated, skinned fans (blacktopFanA/C/DPoses, clips sitClap / sitCheer / sitPump) in the front row of the
  * far stand and the left stand, the two the chase and shot cameras face. Their slots are left empty in the standing
  * crowd. Slots 4-5 of the far stand sit behind the backboard, so they are not used.
  */

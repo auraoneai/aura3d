@@ -5,7 +5,7 @@ import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direc
 import { PHASES } from "../../../examples/drift-and-deliver-port/phases";
 import { SODIUM_POOL } from "../../../examples/drift-and-deliver-port/lamps";
 
-// WP-22 procedural overhaul: zero static single-mesh Meshy GLBs mounted in the shift scene (`models: []`).
+// WP-22 procedural overhaul: zero static single-mesh GLBs mounted in the shift scene (`models: []`).
 const snapshot: ArtDirectionSnapshot = {
   lights: [
     { type: "directional", shadow: true, intensity: PHASES[0]!.key.intensity },

@@ -1,7 +1,7 @@
 /**
  * Procedural multi-material 3D art assembly for Aura Hoops 3D (WP-07).
  *
- * Replaces all 22 static clay Meshy prop/backdrop GLBs and raw primitive placeholders
+ * Replaces all 22 static clay prop/backdrop GLBs and raw primitive placeholders
  * with true curved/compound sculptural geometry built exclusively via `@aura3d/engine`
  * and `proceduralKernel.ts` (zero `three` imports; WebGPU + WebGL2 dual-backend clean).
  */

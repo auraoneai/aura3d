@@ -2,7 +2,7 @@
  * WP-09 — Aura FC 3D (`apps/showcase-aura-fc-3d`)
  * Procedural Multi-Material Stadium, Goal, Broadcast & 6-Venue Architectural Art Library.
  *
- * Replaces all 10 static Meshy/CC0 prop & stadium GLBs and raw primitive placeholders
+ * Replaces all 10 static prop & stadium GLBs and raw primitive placeholders
  * with true curved, multi-material `@aura3d/engine` 5.5.1 assemblies built via
  * `proceduralKernel.ts` (zero `three` imports; WebGPU + WebGL2 dual-backend clean)
  * while preserving all 5 rigged `skins=1` athlete & supporter GLBs.
@@ -2270,7 +2270,7 @@ export function buildVenueBackdropNodes(venue: VenueId, accentHex: string): Aura
 
 /* ========================================================================== */
 /* Section 9 — Sculpted Multi-Material Articulated Footballer, Keeper,        */
-/*             Referee & Front-Row Supporter Rigs (Zero Meshy GLBs)           */
+/*             Referee & Front-Row Supporter Rigs (Zero External GLBs)        */
 /* ========================================================================== */
 
 export const FOOTBALLER_CANONICAL_HEIGHT = 1.891;

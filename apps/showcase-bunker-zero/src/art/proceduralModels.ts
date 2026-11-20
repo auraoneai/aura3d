@@ -1,7 +1,7 @@
 /**
  * Bunker Zero — 100% Native `@aura3d/engine` Multi-Material Procedural 3D Craft (`WP-11`).
  *
- * Replaces all static Meshy clay GLBs and Lego primitive placeholders with sculpted,
+ * Replaces all static clay GLBs and Lego primitive placeholders with sculpted,
  * bevelled, multi-material `@aura3d/engine` assemblies built on `proceduralKernel.ts`
  * (`loftSectionsMesh`, `latheMesh`, `tubeSweepMesh`, `extrudePolygonMesh`, `bevelBoxMesh`,
  * `latticeTrussMesh`, `mergeRawMeshes`, `buildGroupedGeometrySpec`, `assembleMultiMaterialNode`).
@@ -2237,7 +2237,7 @@ function getUnifiedSoldierHeadUnitMesh(): RawMesh {
 }
 
 /**
- * Sculpted Meshy-grade organic human soldier head (`sculptOrganicSdfMesh` `[26, 30, 28]` preserving exact analytic SDF normals +
+ * Sculpted high-fidelity organic human soldier head (`sculptOrganicSdfMesh` `[26, 30, 28]` preserving exact analytic SDF normals +
  * curved `tubeSweepMesh` C-helix ears, `detail=3` smooth sclera/iris/catchlight spheres, `sculptCurvedHairLockMesh` brows & optional eyepatch/chinstrap).
  */
 function buildHumanSoldierHeadSlots(opts: HumanHeadBuildOpts): MultiMatSlot[] {
@@ -2944,7 +2944,7 @@ function buildRoboHoundRigNodes(
     BZ_PROC_MATERIALS.brassStudio,  // 4 forged brass leash D-ring & strap buckles
     BZ_PROC_MATERIALS.tritiumGreen  // 5 tiny practical K9 IR strobe / GPS tracker pip
   ], () => {
-    // Seamless Meshy-grade SDF Doberman torso, deep thoracic brisket, athletic loin, haunches & arched neck (`analyticNormals: true`)
+    // Seamless high-fidelity SDF Doberman torso, deep thoracic brisket, athletic loin, haunches & arched neck (`analyticNormals: true`)
     const canineBodySdf = sculptOrganicSdfMesh({
       boundsMin: [-0.18, -0.20, -0.39],
       boundsMax: [0.18, 0.25, 0.45],

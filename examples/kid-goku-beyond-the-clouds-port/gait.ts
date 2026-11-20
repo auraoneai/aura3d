@@ -58,7 +58,7 @@ const NAMES = {
 export const HERO_TARGET_HEIGHT = 1.5;
 export const UNIT = HERO_RIG.armatureScale * (HERO_TARGET_HEIGHT / HERO_RIG.meshHeight);
 const rigT = (n: keyof typeof HERO_RIG.nodes): V3 => HERO_RIG.nodes[n].t as unknown as V3;
-/** The Meshy skeleton is not symmetric (left and right leg lengths differ by about 1 cm at the hero's size), so every solve uses its own side's bone lengths. */
+/** The hero rig's skeleton is not symmetric (left and right leg lengths differ by about 1 cm at the hero's size), so every solve uses its own side's bone lengths. */
 export const LEG_LENGTHS: Readonly<Record<"left" | "right", { readonly thigh: number; readonly shin: number }>> = {
   left: { thigh: vlen(rigT("LeftLeg")) * UNIT, shin: vlen(rigT("LeftFoot")) * UNIT },
   right: { thigh: vlen(rigT("RightLeg")) * UNIT, shin: vlen(rigT("RightFoot")) * UNIT }

@@ -714,7 +714,7 @@ function computeAutopilotInput(
 
 // -------------------------------------------------------------- clip state
 
-/** Boss phase → Meshy clip (idle/chase/telegraph/staggered/down). */
+/** Boss phase → animation clip (idle/chase/telegraph/staggered/down). */
 const BOSS_CLIP_FOR: Record<BossPhase, { clip: string; loop?: boolean }> = {
   dormant: { clip: BOSS_CLIPS.idle },
   roll: { clip: BOSS_CLIPS.walk },

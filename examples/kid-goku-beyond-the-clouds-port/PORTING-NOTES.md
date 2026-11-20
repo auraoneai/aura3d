@@ -5,7 +5,7 @@
 
 > **Idol pass (2026-11-18):** `idol.ts` mounts image-to-3D Idol GLBs (spec `tools/idol/specs/cumulus-dash.json`) for the hero (rigged, posed every frame from `computeSkyKidHeroPose` through `art/idolHero.ts`), cloud steed, pterosaurs, storm tyrant, hermit cottage, gate pillars, boulders, roasts and the roadside trees and outcrops; `?idol=0` restores the procedural kit below.
 
-> **5.5.6 Update (2026-11-12):** All external and Meshy `.glb` models documented in historical passes below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files).
+> **5.5.6 Update (2026-11-12):** All external and generated `.glb` models documented in historical passes below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files).
 
 Crayon game #11 (`https://app.usecrayon.ai/play/3a9001a5-28fa-4ae0-ba5c-3b068d1912a4`, "Unofficial fan game"). Captured with
 `tools/crayon-probe/capture-module.ts`; source fixtures under `tests/fixtures/crayon/kid-goku-beyond-the-clouds/` (untrusted data,
@@ -37,7 +37,7 @@ The simulation (`sim.ts`, `chapter.ts`) is unchanged for the verified first 800 
   the finale, results and persistence. Additive sim exports: `rescue`, `knockOff`, `startJanken`, `tickJanken`, `jankenAllowed`, `collectOrb`.
 - Render: `world.ts` (+ `terrain.ts`, `props.ts`, `creatures.ts`, `mesh.ts`, `shaders.ts`, `materials.ts`, `fx.ts`): lit sandstone canyon and
   rolling meadows lofted from the course data, textured PBR track and grass (CC0 ambientCG, regraded), banded cliff walls, merged foliage,
-  mesas and cloud banks, valley forest, a sky dome with lit cumulus and hazy ridges, a rigged Meshy-generated hero kid (clip-driven), the sky cloud,
+  mesas and cloud banks, valley forest, a sky dome with lit cumulus and hazy ridges, a rigged generated hero kid (clip-driven), the sky cloud,
   star orbs, pterosaur and tyrant lizard, boulders, warning decals, pooled glow/dust particles, bloom + grade + vignette.
 - `ui.ts`, `audio.ts`: DOM title, HUD, prompts, duel banner, pause, results, touch controls; procedural Web Audio (no samples).
 - Persistence: best score and sound setting in `localStorage` (`cloud-runner.v1`).

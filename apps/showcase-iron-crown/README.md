@@ -136,8 +136,8 @@ three.js, GLTFLoader, or hand-rolled GL.
   (the `materialOverrides` field is declared on `AuraModelOptions` but not
   lowered by `model()`); tinting therefore re-mounts the model via
   `setScene` when a palette is applied.
-- **Legacy Meshy clip map.** `FIGHTER_CLIP_MAP` / `REQUIRED_FIGHTER_ASSETS` in
-  `src/game/fighters.ts` describe the pre-5.6.0 Meshy rigs (one shared 14-clip
+- **Legacy clip map.** `FIGHTER_CLIP_MAP` / `REQUIRED_FIGHTER_ASSETS` in
+  `src/game/fighters.ts` describe the pre-5.6.0 fighter rigs (one shared 14-clip
   set, retargeted by `tools/iron-crown-clips/retarget-clips.mjs`). They are
   still validated at boot (`FIGHTER_CLIP_MISSING`), but the fighters on screen
   are the Idol models described under Roster.

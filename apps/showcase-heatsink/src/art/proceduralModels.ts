@@ -3,7 +3,7 @@
  * and horizon skyline sculpting library for Thermal Drift (`apps/showcase-heatsink`, `WP-03`).
  *
  * Built exclusively on `showcase-port-shared/proceduralKernel` + `@aura3d/engine` 5.5.1 with:
- * - Zero `three` imports and zero static Meshy `.glb` mounts.
+ * - Zero `three` imports and zero static `.glb` mounts.
  * - Smooth-normal multi-station `loftSectionsMesh` fuselages, `latheMesh` hyperboloid cooling towers,
  *   Cowper stoves, cryo vessels & vector nozzles, `latticeTrussMesh` foundry gantries & cranes,
  *   `tubeSweepMesh` plasma/slag conduits & ring-wings, `archwayVoussoirSlots` thermal arches,

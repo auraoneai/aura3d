@@ -32,12 +32,12 @@ const smoothstep = (t: number): number => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 
  * The grip itself (two-bone IK for both arms, the elbow orbit and    *
  * forearm twist that roll the bat onto the wanted direction, the     *
  * top hand on the handle) is the library's `solveTwoHandGrip`; this  *
- * file holds what is specific to this game: the diamondAthlete bind  *
+ * file holds what is specific to this game: the batter rig's bind    *
  * measurements, the stance and swing keyframes and the contact       *
  * search. The bat follows the solver (`objectRot`, `palm`).          *
  * ================================================================== */
 
-/** diamondAthlete bind skeleton, actor-local (+x = character's LEFT, +z = toward the pitcher). */
+/** Batter bind skeleton, actor-local (+x = character's LEFT, +z = toward the pitcher). */
 export const RIG = {
   chestBind: [0, 0.3973, 0] as Vec3,
   /** Shoulder offsets from the Chest bone (bind local translations). */

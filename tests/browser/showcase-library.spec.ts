@@ -893,7 +893,7 @@ test.describe("showcase library", () => {
     expect(skylineIdle.animation?.activeClip, "Skyline should publish the idle embedded GLB motion state").toBe("idle");
     expect(skylineIdle.animation?.runtimeClip, "Skyline should claim runtime playback of the embedded idle clip").toBe("idle");
     expect(skylineIdle.animation?.missingClips ?? [], "Skyline embedded motion state map should resolve").toEqual([]);
-    // The Meshy hero card ships no embedded clips (0 animations in the GLB;
+    // The hero card ships no embedded clips (0 animations in the GLB;
     // the retired 25-name list described a legacy binding the shipped card
     // never contained). The route publishes the honest empty embedded list,
     // the kit resolves zero missing, and visible motion stays procedural.

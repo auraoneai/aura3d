@@ -3,8 +3,6 @@
  * town set pieces are Idol GLBs (`idolModels.ts`); terrain, track, flora and the procedural fallbacks live in
  * `art/proceduralModels.ts` and `world.ts`.
  */
-export const MESHY_ENABLED = false;
-
 export const MODEL_HALF = { tram: [0.951, 0.58, 0.335], pax: 0.951, house: 0.951 } as const;
 
 export const TRAM = {

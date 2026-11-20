@@ -1,5 +1,5 @@
 /**
- * 100% procedural multi-material builders for Cumulus Dash (zero Meshy / external GLB dependencies).
+ * 100% procedural multi-material builders for Cumulus Dash (zero external GLB dependencies).
  */
 export {
   HERO_PART_IDS,

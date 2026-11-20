@@ -84,11 +84,11 @@ Simulation untouched (reference replay still exact). Added, all presentation-onl
 
 Frame comparison and blind judge: `tools/crayon-capture/splat-rush-frames.ts` (original, remote), `tests/browser/splat-rush-frames.spec.ts` (port, remote), `tools/crayon-capture/splat-rush-judge.ts`; results in `evidence/splat-rush-port/`.
 
-## Meshy model pass (2026-10-23)
+## Generated-model pass (2026-10-23, removed in 5.5.6)
 
-Presentation only; `sim.ts` and the reference replay are untouched. Seven Meshy text-to-3D models (prompts, task ids, sizes in
-`assets/ATTRIBUTION.md`; rights basis in `assets/provenance/*.rights.json`), generated through Kiro Prism, optimised to ~10-26k
-vertices and 1024 px textures, admitted with `assets import-meshy` and wired through same-origin pathnames + sha256 (`models.ts`).
+Presentation only; `sim.ts` and the reference replay are untouched. Seven text-to-3D models from our own prompts, optimised to ~10-26k
+vertices and 1024 px textures and wired through same-origin pathnames + sha256 (`models.ts`). The files and their generation records
+were deleted in 5.5.6 (procedural kit, then the Idol pass); this section records what they changed.
 
 - `backdrop.ts`: 12 floating islands (tree, tower) and hot-air balloons drift past both sides of the road at 0.55x the road's scroll
   speed, follow its curve, and scale in/out at the far/near ends. Placement is a pure function of the sim's `distance` and

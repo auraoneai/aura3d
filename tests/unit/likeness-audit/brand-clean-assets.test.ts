@@ -6,20 +6,17 @@ import { describe, expect, it } from "vitest";
 const ROOT = path.resolve(__dirname, "../../..");
 const read = (rel: string) => readFileSync(path.join(ROOT, rel), "utf8");
 
-// Circuits, the formula car and two Meshy rooftop models whose textures carried real marks, replaced by cleaned files. Teleoperator vehicles (replaced by original generic models) and the rooftop and sports athletes (flat or softened faces) are covered by teleop-vehicles, teleop-robotaxi-flat, photo-textures and clean-athletes.
+// Circuits and the formula car whose textures carried real marks, replaced by cleaned files. The rooftop athletes (flat or softened faces) are covered by photo-textures.
 const CLEAN: Record<string, string> = {
   showcaseCcByFormulaOpponent: "showcaseCcByFormulaOpponentClean",
   showcaseTsukubaCircuit: "showcaseTsukubaCircuitClean",
-  turboTsukubaVisualTrack: "turboTsukubaVisualTrackClean",
-  rooftopDefenderMeshy: "rooftopDefenderMeshyClean",
-  rooftopShooterMeshyV1: "rooftopShooterMeshyV1Clean"
+  turboTsukubaVisualTrack: "turboTsukubaVisualTrackClean"
 };
 const REMOVED = [
   "teleopWaymoHero.6d2a9bfb", "teleopWaymoTraffic.f476abe7", "teleopCorvette.e7009c34", "teleopCybercab.08358a58",
   "showcaseCcByFormulaOpponent.5dba5c01", "showcaseTsukubaCircuit.8c139a57", "turboTsukubaVisualTrack.ab53a493",
   "rooftopAthleteDefender.c0947539", "rooftopAthleteShooter.49b62313", "rooftopShooter.49b62313", "rooftopDefender.6c43f9e1",
-  "rooftopDefender.c0947539", "rooftopLayupScorer.03a093f2", "rooftopLayupScorer.6201dc87", "rooftopShooter.fd853001",
-  "rooftopDefenderMeshy.c53681c7", "rooftopShooterMeshyV1.ed5a33b3"
+  "rooftopDefender.c0947539", "rooftopLayupScorer.03a093f2", "rooftopLayupScorer.6201dc87", "rooftopShooter.fd853001"
 ];
 const TS_MANIFESTS = [
   "src/aura-assets.ts",
@@ -36,7 +33,7 @@ function entry(text: string, key: string): { url: string; hash: string; sizeByte
   return { url: /url: "([^"]+)"/.exec(block)![1]!, hash: /hash: "([^"]+)"/.exec(block)![1]!, sizeBytes: size ? Number(size[1]) : undefined };
 }
 
-describe("brand-cleaned vehicle, circuit and rooftop assets", () => {
+describe("brand-cleaned vehicle and circuit assets", () => {
   for (const [key, stem] of Object.entries(CLEAN)) {
     it(`${key}: every manifest entry names the cleaned file, with a matching hash and size`, () => {
       let seen = 0;

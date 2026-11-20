@@ -47,7 +47,7 @@ export const PIECES: readonly Piece[] = (() => {
 })();
 
 /**
- * Neutral-room IBL for the Meshy GLBs (LIGHT-01). Since 4.5.0 a scene with only authored lights gets no implicit
+ * Neutral-room IBL for the backdrop and pickup models (LIGHT-01). Since 4.5.0 a scene with only authored lights gets no implicit
  * environment, so the islands, balloons and gems lost about half their luma (gem-double is mostly metal and needs the
  * reflections). 0.8 is calibrated at the evidence "roll" state against `evidence/splat-rush-port/screens/final/card@2x.jpg`
  * with the hemisphere contributing next to the environment and applied per normal (LIGHT-05/08): GLB-region luma

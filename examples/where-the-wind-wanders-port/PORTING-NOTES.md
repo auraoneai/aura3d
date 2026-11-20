@@ -83,15 +83,15 @@ skip the whole draw: `MaterialBinding.bind` compares `requiredAttributes` (every
 attributes. The traveller was invisible until the unused `sway`/`phase` attributes were dropped from its mesh and shader.
 `toGeometryInput` in `meshkit.ts` now emits only the attributes a program reads.
 
-## Meshy model pass (2026-10-23)
+## Generated-model pass (2026-10-23, removed in 5.5.6)
 
-Ten Meshy-generated models (text prompts only, through Kiro Prism; prompts, ops, sizes and rights basis in `assets/ATTRIBUTION.md`, task ids in `assets/provenance/`) replace the procedural stand-ins: the traveller (rigged, Idle/Walk/Run merged from the rig's own clips, driven by the sim's walk/hop state), two cottages, 535 instanced pines, 127 instanced round trees, garden shrubs, two standing-stone landmarks, the bell frame, the three letters, the epilogue boat and the wisp. `models.ts` is the model layer (`model-assets.ts` is generated: same-origin pathnames + sha256, as the production bridge requires); `scenery.ts` records placements instead of building the replaced geometry (`buildScenery(seed, replace)`), and `buildWorld({ models: false })` restores the all-procedural scene. The simulation is untouched (54 unit tests, replay worst delta 7.0e-10, remote spec 2/2).
+Ten generated text-to-3D models (our own prompts only) replaced the procedural stand-ins; the files and their generation records were deleted in 5.5.6, and this section records what they changed: the traveller (rigged, Idle/Walk/Run merged from the rig's own clips, driven by the sim's walk/hop state), two cottages, 535 instanced pines, 127 instanced round trees, garden shrubs, two standing-stone landmarks, the bell frame, the three letters, the epilogue boat and the wisp. `models.ts` is the model layer (`model-assets.ts` is generated: same-origin pathnames + sha256, as the production bridge requires); `scenery.ts` records placements instead of building the replaced geometry (`buildScenery(seed, replace)`), and `buildWorld({ models: false })` restores the all-procedural scene. The simulation is untouched (54 unit tests, replay worst delta 7.0e-10, remote spec 2/2).
 
 Kept procedural on purpose: the windmill (its animated sails), jetty (tied to the simulation's walkable gaps), terrain, foliage cards, water, sky. Generated but unused: jetty, windmill, post lantern. Trees are static (the procedural trees swayed in the wind).
 
-Cost: 362 credits of the 800 cap (ledger tag `wind`), including the probe clips. Asset weight 15.7 MB (hero 3.97 MB, cottage 2.70 MB, the rest 0.8-1.7 MB each). Draw calls 30 (was about 23); triangles roughly 1.2 M, mostly the instanced trees. Software GL takes about 4.8 s per frame (was 2.7 s): not a GPU number.
+Asset weight 15.7 MB (hero 3.97 MB, cottage 2.70 MB, the rest 0.8-1.7 MB each). Draw calls 30 (was about 23); triangles roughly 1.2 M, mostly the instanced trees. Software GL takes about 4.8 s per frame (was 2.7 s): not a GPU number.
 
-Blind judge (model, not a human; seed 20261023, 4 states x 12 passes): the original is still picked 48/48. Structural distance to the original (4 frames), art-pass -> Meshy: luma JSD 0.060 -> 0.051, RGB JSD 0.554 -> 0.495, palette distance 0.113 -> 0.114, edge-density ratio 0.53 -> 0.75, luma mean delta 2.6 -> -3.6. Before/after sheets: `evidence/where-the-wind-wanders-port/compare-meshy-*.jpg` (frames `meshy-before/`, `meshy-after/`).
+Blind judge (model, not a human; seed 20261023, 4 states x 12 passes): the original is still picked 48/48. Structural distance to the original (4 frames), art-pass -> generated models: luma JSD 0.060 -> 0.051, RGB JSD 0.554 -> 0.495, palette distance 0.113 -> 0.114, edge-density ratio 0.53 -> 0.75, luma mean delta 2.6 -> -3.6.
 
 Remaining differences: the traveller is dark and realistic next to the painted scene, static trees, no painted texture detail on the new models, the wisp reads pink rather than violet, fewer hills.
 

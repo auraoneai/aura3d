@@ -21,7 +21,7 @@
   "limits": [
     "Seven chapters. Chapter 0 uses the original's measured floor and 1400 colliders; chapters 1-6 use this game's own terrain as the floor and colliders built from their scattered props, not the original's (never captured).",
     "No voiced scenes, creatures, exploration or field notes; herd objectives are plain ring routes.",
-    "Procedural and CC0/Meshy art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Procedural, CC0 and Idol image-to-3D art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
     "Verified in remote software WebGL2 (SwiftShader) only, not on a hardware GPU or a real phone."
   ],
   "checks": [

@@ -233,7 +233,7 @@ export function buildUmpireHighChairNodes(): AuraSceneNode[] {
   ];
 }
 
-function maxMeshY(mesh: RawMesh): number {
+function meshMaxY(mesh: RawMesh): number {
   let maxY = -Infinity;
   for (let i = 1; i < mesh.positions.length; i += 3) {
     if (mesh.positions[i]! > maxY) maxY = mesh.positions[i]!;
@@ -247,7 +247,7 @@ export function buildUmpireOfficialNodes(original: boolean): AuraSceneNode[] {
   const folkUpperMeshes = articulatedFolkSlots({
     height: 1.66, coatMat: 0, trimMat: 1, skinMat: 2, hairHatMat: 3, trouserMat: 4, wearingHat: false, seed: 9
   })
-    .filter((s) => s.materialIndex !== 4 && s.materialIndex !== 3 && maxMeshY(s.mesh) < 1.34 * folkScale)
+    .filter((s) => s.materialIndex !== 4 && s.materialIndex !== 3 && meshMaxY(s.mesh) < 1.34 * folkScale)
     .map((s) => transformMesh(s.mesh, { pos: [0, -0.62 * folkScale, 0] }));
   // Relaxed resting hand on the scorer's lap (SDF palm + fused curled fingers + thumb) replacing the old bevelled box block.
   const umpireHand = (side: -1 | 1): RawMesh => sculptOrganicSdfMesh({

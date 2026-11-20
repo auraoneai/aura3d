@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-slingshot-siege/src/art/direction.ts",
-  "sourceSha256": "d9bad522a1084bc435ed929f6a13fd783c5126e91c308c806df25dea70515b37",
+  "sourceSha256": "79f7691af341b550d3dc92aeceb6157ea9a76c5828e85c353dd70a277ecbcdb5",
   "id": "showcase-slingshot-siege",
   "genre": "golf-physics",
   "signatureEffect": "Tilt-shift miniature focus band that keeps the toy fort crisp over a real sea horizon, through six times of one seaside day.",
@@ -1135,78 +1135,6 @@
       "mobile": "both"
     },
     "assets": [
-      {
-        "role": "hero",
-        "assetKey": "gullsiegeHeroGullMeshy",
-        "maxTriangles": 150000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "enemy",
-        "assetKey": "gullsiegeRaiderBossMeshy",
-        "maxTriangles": 150000,
-        "minTriangles": 2000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "gullsiegeCatapultMeshy",
-        "maxTriangles": 150000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "gullsiegeBridgeMeshy",
-        "maxTriangles": 150000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "gullsiegeCrateMeshy",
-        "maxTriangles": 150000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "gullsiegeBarrelMeshy",
-        "maxTriangles": 150000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "prop",
-        "assetKey": "gullsiegePlanksMeshy",
-        "maxTriangles": 150000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "gullsiegeWatchtowerMeshy",
-        "maxTriangles": 150000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "gullsiegeGatehouseMeshy",
-        "maxTriangles": 150000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "gullsiegeWindmillMeshy",
-        "maxTriangles": 150000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
       {
         "role": "backdrop",
         "assetKey": "propRockA",

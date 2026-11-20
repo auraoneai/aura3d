@@ -1669,7 +1669,7 @@ function buildCompiledBirdAsset(ammo: AmmoId): {
     // 2 = deep obsidian pupils, inner mouth, angled battle brows & tail fan (`clearcoat: 0`)
     // 3 = crest / helmet accent (matte forgedIron or blazing emissive)
 
-    // 1. Unified Meshy-grade SDF plump cartoon bird body, puffed cheeks, orbital sockets & rump (`analyticNormals: true`)
+    // 1. Unified high-detail SDF plump cartoon bird body, puffed cheeks, orbital sockets & rump (`analyticNormals: true`)
     const isSpeedster = ammo === "ember";
     const wS = spec.bodyWidth;
     const hS = spec.bodyHeight;
@@ -2113,7 +2113,7 @@ function buildCompiledRaiderAsset(rank: number): {
 
     const skinParts: RawMesh[] = [];
 
-    // 1. Unified Meshy-grade SDF pear-jowled goblin-boar body, chubby cheeks, brow & upturned snout (`analyticNormals: true`)
+    // 1. Unified high-detail SDF pear-jowled goblin-boar body, chubby cheeks, brow & upturned snout (`analyticNormals: true`)
     const scaleBody = isKing ? 1.12 : isKnight ? 1.04 : 0.98;
     const raiderBodySdf = sculptOrganicSdfMesh({
       boundsMin: [-0.82 * scaleBody, -0.06, -0.78 * scaleBody],

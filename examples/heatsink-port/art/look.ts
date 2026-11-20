@@ -66,7 +66,7 @@ export interface HeatsinkLookRow {
    * core. 1 / 1 / 0 / 0 / 0.6 / 0 under `original` (today's value for value).
    */
   readonly shade: { readonly sunGain: number; readonly ambientGain: number; readonly glassShadow: number; readonly hazeSun: Rgb; readonly blob: number; readonly blobCore: number; readonly neonReflect: number; /** contact shadow drawn inside the road shader under the drone (0 = none) */ readonly contact: number };
-  /** WP-36 Meshy assets swapped in (presentation only; collision unchanged) */
+  /** WP-36 target models swapped in (presentation only; collision unchanged) */
   readonly assets: { readonly sentryModel: boolean; readonly heavyModel: boolean };
   /** fog: the base haze colour and how far each district's HUD colour pulls it (IC-06) */
   readonly fog: { readonly color: Rgb; readonly hex: string; readonly near: number; readonly far: number; readonly districtMix: number; readonly districtMetres: number };

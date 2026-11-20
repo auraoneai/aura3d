@@ -31,7 +31,7 @@ export function tramBob(seconds: number, speed: number, reducedMotion = false): 
 }
 
 /**
- * Seated bench posture in tram-local space: drops the Meshy passenger silhouette onto the teak bench (`y = 1.24 m` vs 1.61 m
+ * Seated bench posture in tram-local space: drops the passenger silhouette onto the teak bench (`y = 1.24 m` vs 1.61 m
  * standing height), pivots counter-lean from the hip instead of the ankles, and adds subtle temperament-specific breathing /
  * window-gaze yaw so riders read as seated commuters rather than standing statues.
  */

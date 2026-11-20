@@ -1,7 +1,7 @@
 /**
  * Procedural multi-material 3D vehicle & architectural sculpting library for Apex Overdrive (`apps/showcase-roadster-rush`).
  *
- * Replaces all 31 static Meshy clay GLB mounts and raw primitive "Lego" stacks with curved surface-of-revolution,
+ * Replaces all 31 static clay GLB mounts and raw primitive "Lego" stacks with curved surface-of-revolution,
  * multi-station lofted fuselage, swept tubular, extruded polygon, open 4-chord lattice truss, forged 5-spoke wheel,
  * and stratified coastal mountain meshes built purely from `showcase-port-shared/proceduralKernel` + `@aura3d/engine`.
  *

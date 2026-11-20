@@ -1,7 +1,7 @@
 /**
  * WP-25 — Lamplight Line Multi-Material Procedural 3D Art Kit.
  *
- * Replaces all 14 static Meshy clay GLBs with sculpted multi-material geometry built
+ * Replaces all 14 static clay-model GLBs with sculpted multi-material geometry built
  * exclusively from `apps/showcase-port-shared/proceduralKernel.ts` and `@aura3d/engine`
  * 5.5.1 surface presets (with paired WGSL twins for `material.strata` and `material.lightBeam`).
  * Zero `three` imports.

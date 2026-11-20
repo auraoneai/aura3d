@@ -37,15 +37,15 @@ export const MODELS = defineModelAssets({
   ruinArch: entry("ruin-arch", "sha256-c0abd976ddbdf2e301c4d8400a03c9ade7c3cfb5cf52f85a00e87a6055283b21"),
   pickupRepair: entry("pickup-repair", "sha256-884e0b311177e6c45e7fad2c6af7c10d0b4ee748478daee41bb454954f5d9b27"),
   ruinMonolith: entry("ruin-monolith", "sha256-49711ae57d13f48205f007592c7f755e43363629633e379d1bd791401104c8e8"),
-  /* GU47 WP-36 (IC-13): the sentry target, admitted with `aura3d assets import-meshy` (provenance/heatsink_port_ionSentryDrone.*) */
+  /* GU47 WP-36 (IC-13): the sentry target */
   ionSentryDrone: entry("heatsink_port_ionSentryDrone", "sha256-7af110b660a44dac0e457b86e4eac10a4b47620743a3ba5d79aea07dde3c3f44"),
-  /* GU47 wave 2 (IC-13): the heavy target, admitted with `aura3d assets import-meshy` (provenance/heatsink_port_ionHeavyDrone.*) */
+  /* GU47 wave 2 (IC-13): the heavy target */
   ionHeavyDrone: entry("heatsink_port_ionHeavyDrone", "sha256-d1ef5d347eb44725b7b21a87c21faad8e1529e83792369efd9436f9976c6c346")
 }, { license: LICENSE, queryParam: null }).refs;
 
 /**
- * The low-quality set (HP-12), built from MODELS by `assets/provenance/make-lite.mjs`: 512 px maps (a quarter of the
- * texture memory) and the drone at 15k triangles instead of 55.7k. Same bounds, same materials. Used when the game runs
+ * The low-quality set (HP-12): lighter geometry than MODELS (originally 512 px maps, a quarter of the
+ * texture memory, and the drone at 15k triangles instead of 55.7k). Same bounds, same materials. Used when the game runs
  * at `quality: "low"`, which coarse-pointer devices get by default.
  */
 export const MODELS_LITE = defineModelAssets({

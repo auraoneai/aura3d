@@ -4,8 +4,7 @@
  * seeded rejection sampler so every build and every chapter gets the same layout, and kept at least 1.2 m clear of
  * the flight lane (sling to fort along z = 0) and of the authored props. Presentation only: nothing collides.
  *
- * The kinds are instanced primitives as stand-ins until lane WP-36 delivers the dressing GLBs (asset need
- * `gullsiegeBeachDressingMeshy`, see the lane report); the transforms are what those models will reuse.
+ * The kinds are instanced primitives; the transforms are what any future dressing models will reuse.
  */
 
 export type DressingKind = "grass" | "shell" | "driftwood" | "ropePost" | "lobsterPot";

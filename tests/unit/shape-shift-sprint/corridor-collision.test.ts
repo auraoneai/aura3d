@@ -14,7 +14,7 @@ import {
   wallCellMesh,
   wallHoleExtents
 } from "../../../apps/showcase-shape-shift-sprint/src/meshes";
-import { MESHY_PIECES, PIECES, islandMesh, puffMesh } from "../../../apps/showcase-shape-shift-sprint/src/scenery";
+import { BACKDROP_PIECES, PIECES, islandMesh, puffMesh } from "../../../apps/showcase-shape-shift-sprint/src/scenery";
 import { SCROLL_BOUNDS, gateDive, gateFitScale, nearestLaneIndex, wallRetractY } from "../../../apps/showcase-shape-shift-sprint/src/world";
 import {
   buildBridgeViaductStationNode,
@@ -191,7 +191,7 @@ describe("shape shift sprint: no decor stands in the runner's corridor", () => {
       expect(Math.abs(p.x) - meshRadiusXZ(m.positions) * p.scale, p.id).toBeGreaterThan(limit);
     }
     // Idol landmark castles and towers (size = max dimension, so half of it bounds the footprint).
-    for (const p of MESHY_PIECES) expect(Math.abs(p.x) - p.size / 2, p.id).toBeGreaterThan(limit);
+    for (const p of BACKDROP_PIECES) expect(Math.abs(p.x) - p.size / 2, p.id).toBeGreaterThan(limit);
     // Instanced horizon pylons and floating prism clusters.
     for (const node of [buildHorizonStadiumPylonsNode(), buildFloatingPrismClustersNode()]) {
       const json = node.toJSON() as unknown as JsonNode;

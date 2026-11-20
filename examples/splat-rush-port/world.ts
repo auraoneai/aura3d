@@ -965,7 +965,7 @@ export function buildWorld(options: WorldOptions): World {
   if (finishArches) builder.add(idolInstancedNode("finish-arches", "splatFinishArch", FINISH_ARCH_MAX, { cast: true, receive: true }));
   if (trackSweepers) builder.add(idolInstancedNode("track-sweepers", "splatSweeperBot", SWEEPER_MAX, { cast: true, receive: true }));
 
-  /* power-ups: Meshy toy models, one pool per type (pickups.ts) */
+  /* power-ups: toy models, one pool per type (pickups.ts) */
   addPickups(builder);
 
   /* splatters: sculpted 3D ink-hazard puddles in carnival; original flat blob + two satellite droplets in original */

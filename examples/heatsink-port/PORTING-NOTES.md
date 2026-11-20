@@ -54,7 +54,7 @@ Rendering and presentation only; the simulation, reference replay and unit tests
 
 - Assets are procedural: the original's GLB drone, bone arch, ringed-planet textures, props and foliage are not reproduced
   (no alien plants, cliff buildings or ruins). A licensed catalog drone exists (`library:quaternius-flying-gun-drone`, CC0) but it is
-  a gun robot, not a quad-rotor, so it was not used. Meshy generation was not attempted.
+  a gun robot, not a quad-rotor, so it was not used.
 - Time Trial only, Vesper Heights only. Rivals, AI, items, weapons, menus, garage, audio, ghost and the minimap are not ported.
   The original's Grand Circuit map (the only one with rain) is not ported, so the "rain" frames of the Phase B exit do not exist.
   No title/start, pause or results screens, no audio.
@@ -70,9 +70,9 @@ Rendering and presentation only; the simulation, reference replay and unit tests
 (`tests/browser/heatsink-port.spec.ts` via `tools/remote-acr/run.sh`); the blind comparison is `tools/crayon-capture/heatsink-judge.ts`.
 No engine changes were needed for the port itself.
 
-## Meshy art pass (2026-10-23)
+## Generated-model art pass (2026-10-23, removed in 5.5.6)
 
-Nine generated models (see `assets/ATTRIBUTION.md` for prompts, task ids, sizes and the rights basis; ledger tag `heatsink`, 260 credits recorded of the 800 cap) replace the primitive stand-ins:
+Nine generated text-to-3D models replaced the primitive stand-ins. The files and their generation records were deleted in 5.5.6 (procedural kit, then the Idol pass); this section records what they changed:
 
 - **Player drone**: a generated quad-rotor body (`drone2.glb`, ~40k vertices) replaces the 23-primitive craft. Its camera gimbal is the nose and must point along the track's +X; a +90 degree yaw rendered the drone backwards in the first capture, so `HULL_YAW = -pi/2`. The generated rotor blades are static (no spin, no rear exhaust sticks or glow spheres any more; the exhaust point particles remain). A first wedge-shaped hover-craft candidate was discarded after the design judge pointed out the original's vehicle is a quad-rotor.
 - **Checkpoint gates**: one instanced pylon model (`gate-pylons`, two per checkpoint) instead of cylinders; the veil quads stay procedural.
@@ -81,8 +81,6 @@ Nine generated models (see `assets/ATTRIBUTION.md` for prompts, task ids, sizes 
 - The models are lit PBR surfaces, so the world now has a cool hemisphere fill and a warm key light; the custom road/sky/neon shaders ignore both. Models load through the production-safe path (same-origin pathname + sha256).
 
 **Terrain-over-the-road at step 4500, found and fixed.** The track crosses over itself near s ~ 980: the upper stretch's wide shoulder skirts (`buildShoulders`) hung ~30 m above the lower road and filled the top of the frame like a ceiling. `buildShoulders` now leaves out any quad that sits more than 6 m above another stretch of road within 55 m (spatial hash over the road samples, own +-150 m excluded). A geometry probe finds no overhead terrain triangles at that spot afterwards, and the step-4500 frame shows the open canyon.
-
-**Capture spec**: `tests/browser/heatsink-port-meshy.spec.ts` is the Phase B spec with 8 frame steps and a 10-frame camera lead; under SwiftShader the 16-step, 30-frame version now exceeds its 25-minute timeout because the lit scene is heavier.
 
 **Public packages only.** `track.ts` imports `CatmullRomCurve3` and `Vector3` from `@aura3d/math`. That is a published, documented package (`docs/api/public-api.md`, `## @aura3d/math`), not an internal or deprecated path, and the `@aura3d/engine` root has no spline class, so the import stays. The port imports nothing from `@aura3d/engine/production-runtime`, `/rendering` or other deprecated subpaths.
 
@@ -109,7 +107,7 @@ These supersede the strike-layer numbers above where they differ. Rows refer to 
 - **Touch (HP-03)**: on coarse pointers (or `?touch=1`) the page shows steer, brake, fire, boost, drift and overdrive buttons bound through `bindGameTouchControls` (synthetic key events on the same key map), the drone throttles by itself, and pointercancel releases a held button.
 - **Pause and errors (HP-05, HP-07)**: Esc or the corner button opens a pause panel; blur and a hidden tab pause a race; a paused race freezes render time. `tick` schedules the next frame first and catches render errors into an error panel with a restart; a restart clears every dynamic buffer.
 - **HUD (HP-06, HP-15)**: HULL pips (3 crashes are survived; the 4th is a DNF) replace TAKEDOWNS, TIME carries the best lap, the kills block reads KILLS / RACE, the gun meter reads LOCKED while overheated, and a crash writes its reason and the crashes left for 1.5 s.
-- **Quality (HP-12)**: coarse-pointer devices default to the low tier, which loads `assets/models-lite/` (512 px maps, a quarter of the texture memory; drone 15k triangles instead of 55.7k; built by `assets/provenance/make-lite.mjs`). A frame-time governor lowers the pixel-ratio cap when frames average over 25 ms.
+- **Quality (HP-12)**: coarse-pointer devices default to the low tier, which loads `assets/models-lite/` (512 px maps, a quarter of the texture memory; drone 15k triangles instead of 55.7k). A frame-time governor lowers the pixel-ratio cap when frames average over 25 ms.
 - **Motion and keys (HP-13)**: `prefers-reduced-motion` (or the menu toggle, saved in localStorage) removes camera shake, caps the speed FOV kick at 6 degrees and halves the speed streaks. Every action can be rebound from the menu; Esc, Enter and M are reserved.
 - **Sound (HP-16)**: race cues (countdown, GO, checkpoint, lap, boost pad, pickup, crash, DNF) and a quiet engine voice (two detuned saws through a low-pass, 70 to 210 Hz with speed, silent when stopped or paused) next to the strike cues; a menu button mutes.
 - **Look (HP-08, HP-17, HP-19)**: a soft blob on the road under the drone, wider and fainter with height. Heavies have a cube core and a second ring; every damaged target shows a health ring. Bloom is intensity 0.6, threshold 1.0, no deprecated `radius`.

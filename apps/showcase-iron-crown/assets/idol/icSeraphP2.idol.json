@@ -47,7 +47,7 @@
         "clips": "fal text-to-motion clips (tools/idol/motion-specs/iron-crown.json) baked from the shipped pose code",
         "command": "aura3d assets repair-skin --keep-clips <those clips> --refit-skeleton --normalize --prune-distant --smooth-bridges --smooth-threshold 1.25 --smooth-rounds 12 --smooth-rings 6 --cut-stretch 4 (from the unrepaired Idol GLB)",
         "note": "Skeleton unchanged (refit moved 0 joints); weights smoothed, triangles past 4x removed. Only the idle clip is stored; the game drives the bones from code.",
-        "beforeRepairMeshyClips": {
+        "beforeRepairLegacyClips": {
           "max": "4.61x",
           "over": "1402/30000"
         },

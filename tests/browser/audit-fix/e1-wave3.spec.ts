@@ -74,7 +74,7 @@ test.describe("e1 wave 3 @e1w3", () => {
   test("roadster-hours-port grows from 1280x720 to 1440x900 after load", async ({ page }) => {
     page.on("pageerror", (e) => log(`E1W3_ERR pageerror ${e.message.slice(0, 300)}`));
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(`${server.origin}/examples/roadster-hours-port/?manual=1&meshy=0&level=0`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/roadster-hours-port/?manual=1&level=0`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => Boolean((window as unknown as { __AURA_ROADSTER_HOURS__?: Hooks }).__AURA_ROADSTER_HOURS__?.ready), undefined, { timeout: 900_000, polling: 1000 });
     await api(page, "begin");
     await api(page, "setAutopilot", true);

@@ -20,74 +20,32 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.gullsiegeHeroGullMeshy",
-      "hash": "sha256-652151c13f51d2d5f75175048fc16c8bac28a3b503d025dda267385b3819b2f2",
-      "quality": "production",
+      "typedRef": "assets.siegeBirdPebbleBody",
+      "hash": "sha256-03e2d89cd170db19570f7561799f9a70cc6c62525f549cc7b5c5a11f3dc4971a",
+      "quality": "candidate",
       "role": "primaryCharacter",
-      "generator": "meshy"
+      "generator": "idol"
     },
     {
-      "typedRef": "assets.gullsiegeRaiderBossMeshy",
-      "hash": "sha256-6646b5b03e8eb2218b7dbd4beb125591610c59579d7254fb4a8c664632336dd1",
-      "quality": "production",
+      "typedRef": "assets.siegeRaiderKing",
+      "hash": "sha256-202dca75284b6c2fbe88b697d4a31f36448d2dfd3dbd4e5f38ae78b5bf4a6c22",
+      "quality": "candidate",
       "role": "primaryCharacter",
-      "generator": "meshy"
+      "generator": "idol"
     },
     {
-      "typedRef": "assets.gullsiegeCatapultMeshy",
-      "hash": "sha256-d6a372044f3b2eb835eb22d39d13cb7c497a1972a6e4344279e89a631b25786c",
+      "typedRef": "assets.siegeSlingshotBase",
+      "hash": "sha256-96ea2387ef6cf6d17cb3dc3f5f64971d0b4dc02684937560438b0f9cdcc8eecc",
       "quality": "candidate",
       "role": "primaryProp",
-      "generator": "meshy"
+      "generator": "idol"
     },
     {
-      "typedRef": "assets.gullsiegeWatchtowerMeshy",
-      "hash": "sha256-546ee76181e8a93ce5188f010381d6f70e403e06263a0e87384aa7b53c0373c9",
+      "typedRef": "assets.siegeStoneBridge",
+      "hash": "sha256-faa86d1870503a1847d91cdc342ec58c3959417ed059a3bc13edfb24de2b355d",
       "quality": "candidate",
       "role": "prop",
-      "generator": "meshy"
-    },
-    {
-      "typedRef": "assets.gullsiegeBridgeMeshy",
-      "hash": "sha256-40b2195ae794b435730fbf35d82a4e1ddcb2209c18913d53fe33c7d9591bd6c1",
-      "quality": "candidate",
-      "role": "prop",
-      "generator": "meshy"
-    },
-    {
-      "typedRef": "assets.gullsiegeCrateMeshy",
-      "hash": "sha256-d802d835fa66b9e9a9806db3cdb38ace6345ca439fedfd0f3629a5e673c8f54a",
-      "quality": "candidate",
-      "role": "prop",
-      "generator": "meshy"
-    },
-    {
-      "typedRef": "assets.gullsiegeBarrelMeshy",
-      "hash": "sha256-240ded9ac549995a79837fe97e82469f62c0e5d8040cce53b93559de6783a12e",
-      "quality": "candidate",
-      "role": "prop",
-      "generator": "meshy"
-    },
-    {
-      "typedRef": "assets.gullsiegePlanksMeshy",
-      "hash": "sha256-1075e2d6057ae36b2f18bae60daa21db310ad50cbdfeb982c59b04c38232b68a",
-      "quality": "candidate",
-      "role": "prop",
-      "generator": "meshy"
-    },
-    {
-      "typedRef": "assets.gullsiegeGatehouseMeshy",
-      "hash": "sha256-c54a43ad9312f2cd66b17f53bc6a3dd6a215d4a6c9111a3d8a9ce65132413845",
-      "quality": "candidate",
-      "role": "prop",
-      "generator": "meshy"
-    },
-    {
-      "typedRef": "assets.gullsiegeWindmillMeshy",
-      "hash": "sha256-f4ebca18e7a000a7da11a30415ccebfbf0abced29e7e9aa36ac27426c0ce1841",
-      "quality": "candidate",
-      "role": "prop",
-      "generator": "meshy"
+      "generator": "idol"
     }
   ],
   "audioAssets": [
@@ -179,7 +137,7 @@
   "qualityGate": {
     "status": "showcase-ready",
     "independentHumanVisualReview": false,
-    "notes": "Bespoke 3D Meshy Hero Gull (gullsiegeHeroGullMeshy) and Raider Boss (gullsiegeRaiderBossMeshy) character models + 3D Meshy fortress pieces and siege architecture."
+    "notes": "Hand-painted wooden-toy Idol character models (hero birds, raider king, knights and grunts) plus Idol fortress pieces, slingshot and siege architecture."
   },
   "prototypeAreas": [
     "Trajectory preview is analytic (no collision sampling)",

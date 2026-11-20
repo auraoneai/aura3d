@@ -14,8 +14,7 @@ const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.
 
 // The facade keeps `backdrop`/NPC refs in the shared repo catalog, whose
 // `/aura-assets/<name>.<hash>.glb` files live in the root `public/` tree —
-// not this app's own `public/aura-assets/` (which holds only the six
-// Meshy-imported GLBs). Fall back to the shared tree on a miss so the app
+// not this app's own `public/` tree. Fall back to the shared tree on a miss so the app
 // resolves them under its own dev/preview server too (same trick as
 // apps/asset-lookdev's /assets middleware, scoped to /aura-assets).
 const contentTypes: Record<string, string> = {
@@ -72,7 +71,7 @@ export default defineConfig({
   resolve: { ...rootConfig.resolve, alias: baseAlias },
   optimizeDeps: rootConfig.optimizeDeps,
   worker: { format: "es" },
-  // App-local public tree: the Meshy-imported catalog lives under
+  // App-local public tree: app-local catalog files live under
   // public/aura-assets (aura.assets.json outputDir), and public/packs is a
   // symlink into the shared SFX pack so /packs/game-sfx-core keeps resolving.
   publicDir: path.resolve(appDir, "public"),

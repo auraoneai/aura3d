@@ -198,7 +198,7 @@ const apps = [
     primaryAssetStatus: "typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "Endless lane hopper — four-direction hops across roads, tram lines, rivers, rails, and lava; six remixed themes, twelve unlockable Meshy critters, idle-hawk pressure, coin and rescue-pod economy. Timing School, World Tour, Player Studio, and Critterdex."
+    notes: "Endless lane hopper — four-direction hops across roads, tram lines, rivers, rails, and lava; six remixed themes, twelve unlockable critters, idle-hawk pressure, coin and rescue-pod economy. Timing School, World Tour, Player Studio, and Critterdex."
   },
   {
     id: "showcase-strange-orbit-port",

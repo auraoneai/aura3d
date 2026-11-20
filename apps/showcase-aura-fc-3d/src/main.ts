@@ -1025,8 +1025,7 @@ function boot(): void {
         touch: touchControls?.evidence?.() ?? null,
         audio: (audio as any)?.evidence ?? null,
         eventLog: eventLog.snapshot(),
-        meshyAssets: [],
-        // Meshy-07 (FC47-AN1): the clip each mounted front-row fan plays (idle; cheer / pump during a goal)
+        // FC47-AN1: the clip each mounted front-row fan plays (idle; cheer / pump during a goal)
         pitchFanClips: [...(world?.fanClips ?? [])],
         modes: ["quick", "demo", "shootout", "touch", "circuit", "studio"],
         venues: VENUE_ORDER,

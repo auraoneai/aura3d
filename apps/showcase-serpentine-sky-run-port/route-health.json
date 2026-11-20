@@ -22,7 +22,7 @@
   "evidence": "183 recorded snapshots match within 1e-6 over a 5,433-step run.",
   "limits": [
     "Outbound run only: the return leg, the phase after a fall and the later phases of the original are not ported.",
-    "Meshy-generated runner and props over custom toon-shaded road and sky; an independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Idol image-to-3D runner and props over custom toon-shaded road and sky; an independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
     "Has a title with runner select, countdown, pause, results, best score and synthesised sound effects.",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],

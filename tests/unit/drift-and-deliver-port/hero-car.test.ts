@@ -170,7 +170,7 @@ describe("harbor drift procedural multi-material hero car & 7-class harbor fleet
     expect(dropoffKioskPose({ x: 30, z: 120 }).x).toBeCloseTo(38.6, 2);
   });
 
-  it("mounts zero Meshy GLBs across look.ts, props.ts, main.ts, models.ts, and aura-assets.ts", () => {
+  it("mounts zero legacy text-to-3D GLBs across look.ts, props.ts, main.ts, models.ts, and aura-assets.ts", () => {
     for (const file of ["look.ts", "props.ts", "main.ts", "models.ts"]) {
       const src = readFileSync(resolve(portDir, file), "utf8");
       expect(src).not.toMatch(/\binstances\.model\s*\(/);

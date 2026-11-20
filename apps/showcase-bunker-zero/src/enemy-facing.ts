@@ -2,7 +2,7 @@ import { faceTowards, facingError, type ForwardAxis } from "@aura3d/engine/game"
 import type { EnemyKind } from "./sim";
 
 /**
- * Which local axis of each enemy GLB points out of its face. The Meshy models are the glTF default (+Z); the sim's `facing`
+ * Which local axis of each enemy GLB points out of its face. The enemy models use the glTF default (+Z); the sim's `facing`
  * is a compass yaw where 0 looks down -Z, so the sim yaw cannot be handed to a node unchanged. Measured from the shipped files
  * by tests/unit/bunker-zero/enemy-facing.test.ts.
  */

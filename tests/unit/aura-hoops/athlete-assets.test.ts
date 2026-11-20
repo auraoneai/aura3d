@@ -199,7 +199,7 @@ function maxAbsXInYBand(positions: readonly number[], yMin: number, yMax: number
 }
 
 describe("Aura Hoops procedural articulated athlete rigs", () => {
-  it("ships zero Meshy .glb files: every GLB is an Idol pass asset (assets/idol, with provenance) and every route model is an Idol key", () => {
+  it("ships only Idol .glb files: every GLB is an Idol pass asset (assets/idol, with provenance) and every route model is an Idol key", () => {
     for (const glb of findGlbFiles(APP_DIR)) {
       expect(path.relative(APP_DIR, path.dirname(glb))).toBe(path.join("assets", "idol"));
       expect(path.basename(glb)).toMatch(/^hoopsIdol[A-Za-z]+\.glb$/);

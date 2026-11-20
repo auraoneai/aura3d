@@ -1,7 +1,7 @@
 /**
  * WP-24 — Shadowstep Gauntlet (`ninja-runner-port`) Procedural Multi-Material 3D Art Kit.
  *
- * Replaces all static district & set-piece Meshy GLBs with sculpted multi-material Sengoku
+ * Replaces all static district & set-piece GLBs with sculpted multi-material Sengoku
  * dusk architecture, foliage, watermill engineering, hazards, weapons, and pickups built
  * exclusively from `apps/showcase-port-shared/proceduralKernel.ts` and `@aura3d/engine`.
  * Keeps the 6 `skins=1` rigged ninja/rival skeletons intact with upgraded shinobi cloth
@@ -50,7 +50,7 @@ import {
   type V3,
   type V4
 } from "../../../apps/showcase-port-shared/proceduralKernel";
-import { MESHY_MANIFEST, type PropId } from "../assets/meshy/manifest";
+import { PROP_MANIFEST, type PropId } from "../assets/props/manifest";
 import type { CharacterId } from "../models";
 import type { CourseAccents, ModelPlacement, ModelSink } from "../scenery";
 import { IDOL_SCENERY, buildIdolWaterWheelRotor } from "./idolScenery";
@@ -1008,7 +1008,7 @@ export interface PropMatPart {
 
 /**
  * Rigidly normalizes all material sub-parts of a procedural prop to exact `targetSize` (`[wx, wy, wz]`)
- * so every joint/eave stays aligned while matching `MESHY_MANIFEST[id].size` and `cameraGap` clearances.
+ * so every joint/eave stays aligned while matching `PROP_MANIFEST[id].size` and `cameraGap` clearances.
  * - `"ground"`: base anchored slightly into terrain (`y in [-0.05*wy, +0.95*wy]`) so sloped streets never float.
  * - `"center"`: centered vertically (`y in [-0.5*wy, +0.5*wy]`) for rock/cliff landforms (`fallsCliff`).
  */
@@ -1418,7 +1418,7 @@ export function getNormalizedPropParts(id: PropId): readonly PropMatPart[] {
   let cached = PROP_PART_CACHE.get(id);
   if (!cached) {
     const raw = buildDistrictPropRawParts(id);
-    const sz = MESHY_MANIFEST[id].size;
+    const sz = PROP_MANIFEST[id].size;
     cached = normalizePropParts(raw.parts, [sz[0], sz[1], sz[2]], raw.anchor);
     PROP_PART_CACHE.set(id, cached);
   }
@@ -1681,7 +1681,7 @@ export function buildProceduralDistrictBatches(
   };
 
   for (const [id, list] of Object.entries(modelSink)) {
-    if (!list || list.length === 0 || !(id in MESHY_MANIFEST)) continue;
+    if (!list || list.length === 0 || !(id in PROP_MANIFEST)) continue;
     const propId = id as PropId;
     const shadow = options.castShadow && SHADOW_PROP_IDS.has(propId);
     emitParts(`proc-${propId}`, getNormalizedPropParts(propId), list, shadow);

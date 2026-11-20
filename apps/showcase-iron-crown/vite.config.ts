@@ -52,7 +52,7 @@ export default defineConfig({
   resolve: { ...rootConfig.resolve, alias: baseAlias },
   worker: { format: "es", plugins: () => [createSourceWorkerEntryPlugin()] },
   optimizeDeps: rootConfig.optimizeDeps,
-  // App-local public tree: the Meshy-imported catalog lives under
+  // App-local public tree: the app catalog lives under
   // public/aura-assets (aura.assets.json outputDir), and public/packs is a
   // symlink into the shared SFX pack so /packs/game-sfx-core keeps resolving.
   publicDir: path.resolve(appDir, "public"),

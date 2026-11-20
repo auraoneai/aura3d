@@ -442,7 +442,7 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         contents: `(() => { const style = document.createElement("style"); style.setAttribute("data-aura3d-dev-css", ${JSON.stringify(relative(root, args.path))}); style.textContent = ${JSON.stringify(readFileSync(args.path, "utf8"))}; document.head.appendChild(style); })();`,
       }));
       // A bundle gives every module the entry's import.meta.url, so an example mounted by an app
-      // (`new URL("./assets/meshy/x.glb", import.meta.url)` in examples/ninja-runner-port) resolved under
+      // (`new URL("./assets/models/x.glb", import.meta.url)` in examples/ninja-runner-port) resolved under
       // /apps/<app>/src/ and 404ed. Vite resolves those URLs against the module's own file; do the same here.
       build.onLoad({ filter: /\.(m?js|tsx?)$/ }, (args) => {
         const candidatePackage = installedPackageForFile(args.path);

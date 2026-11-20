@@ -320,8 +320,6 @@
    "id": "ruinMonolith"
   }
  },
- "kid-goku MESHY": {},
- "last-train MESHY_ASSETS": {},
  "ninja-runner PROP_ASSETS": {
   "boulder": {
    "type": "model",
@@ -511,7 +509,7 @@
    "id": "tower"
   }
  },
- "saiyan-snake-way MESHY": {
+ "saiyan-snake-way PROP_MODELS": {
   "barrier": {
    "type": "model",
    "format": "glb",
@@ -634,7 +632,6 @@
    "id": "spireC"
   }
  },
- "strange-orbit MESHY": {},
  "where-the-wind-wanders MODEL_ASSETS": {},
  "silt-and-signal assets": {
   "bricksColor": {

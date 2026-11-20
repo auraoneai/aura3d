@@ -753,9 +753,9 @@ export function pieceZ(p: ScenePiece, t: number): number {
   return ((((p.z0 + t * DRIFT_SPEED * k) % span) + span) % span) + far;
 }
 
-/* ------------------------------------------------------------------ Meshy backdrop dressing */
+/* ------------------------------------------------------------------ landmark backdrop dressing */
 
-export interface MeshyPiece {
+export interface BackdropPiece {
   readonly id: string;
   readonly kind: "toyCastleIsland" | "toyBlockTower";
   readonly layer: 0 | 1;
@@ -770,17 +770,17 @@ export interface MeshyPiece {
   readonly bob: number;
 }
 
-export const MESHY_PIECES: readonly MeshyPiece[] = [
-  { id: "meshy-castle-0", kind: "toyCastleIsland", layer: 0, x: -25, y: -1.2, z0: 34, size: 9.5, yaw: 0.6, spin: 0.05, bob: 0.4 },
-  { id: "meshy-castle-1", kind: "toyCastleIsland", layer: 0, x: 26, y: -0.6, z0: 99, size: 10, yaw: -0.9, spin: -0.04, bob: 0.4 },
-  { id: "meshy-castle-2", kind: "toyCastleIsland", layer: 0, x: -27, y: -0.2, z0: 162, size: 10.5, yaw: 2.2, spin: 0.05, bob: 0.4 },
-  { id: "meshy-tower-0", kind: "toyBlockTower", layer: 1, x: 40, y: -8, z0: 22, size: 26, yaw: 0.4, spin: 0, bob: 0 },
-  { id: "meshy-tower-1", kind: "toyBlockTower", layer: 1, x: -44, y: -7, z0: 104, size: 28, yaw: -0.5, spin: 0, bob: 0 },
-  { id: "meshy-tower-2", kind: "toyBlockTower", layer: 1, x: 47, y: -9, z0: 181, size: 24, yaw: 1.1, spin: 0, bob: 0 }
+export const BACKDROP_PIECES: readonly BackdropPiece[] = [
+  { id: "backdrop-castle-0", kind: "toyCastleIsland", layer: 0, x: -25, y: -1.2, z0: 34, size: 9.5, yaw: 0.6, spin: 0.05, bob: 0.4 },
+  { id: "backdrop-castle-1", kind: "toyCastleIsland", layer: 0, x: 26, y: -0.6, z0: 99, size: 10, yaw: -0.9, spin: -0.04, bob: 0.4 },
+  { id: "backdrop-castle-2", kind: "toyCastleIsland", layer: 0, x: -27, y: -0.2, z0: 162, size: 10.5, yaw: 2.2, spin: 0.05, bob: 0.4 },
+  { id: "backdrop-tower-0", kind: "toyBlockTower", layer: 1, x: 40, y: -8, z0: 22, size: 26, yaw: 0.4, spin: 0, bob: 0 },
+  { id: "backdrop-tower-1", kind: "toyBlockTower", layer: 1, x: -44, y: -7, z0: 104, size: 28, yaw: -0.5, spin: 0, bob: 0 },
+  { id: "backdrop-tower-2", kind: "toyBlockTower", layer: 1, x: 47, y: -9, z0: 181, size: 24, yaw: 1.1, spin: 0, bob: 0 }
 ];
 
-/** Pose of a Meshy piece at clock `t`: same wrap and far-end grow-in as the GPU drift program, CPU side. */
-export function meshyPose(p: MeshyPiece, t: number, reduced: boolean) {
+/** Pose of a landmark piece at clock `t`: same wrap and far-end grow-in as the GPU drift program, CPU side. */
+export function backdropPose(p: BackdropPiece, t: number, reduced: boolean) {
   const { k, span, near } = LAYERS[p.layer];
   const far = near - span;
   const z = ((((p.z0 + t * DRIFT_SPEED * k) % span) + span) % span) + far;

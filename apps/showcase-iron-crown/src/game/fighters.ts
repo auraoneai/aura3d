@@ -10,12 +10,12 @@ import { buildIdolFighterNode, idolFightersEnabled } from "./idolFighters";
 /**
  * IRON CROWN roster.
  *
- * All six fighters mount bespoke Meshy-generated rigs imported into the
- * app-local catalog (assets.ironcrown<Name>) — no borrowed library rigs.
- * Every GLB ships the identical 14-clip set (Idle, Walk_Fight_Forward,
+ * Every fighter shares one logical clip vocabulary (catalog keys
+ * assets.ironcrown<Name>) — no borrowed library rigs.
+ * The roster uses the identical 14-clip set (Idle, Walk_Fight_Forward,
  * Walk_Fight_Back, Left_Jab_from_Guard, Right_Uppercut_from_Guard,
  * Triple_Combo_Attack, Block1, Hit_Reaction, Dead, Regular_Jump, plus the
- * IC-12 Meshy animate clips Combat_Stance, CrouchLookAroundBow,
+ * IC-12 clips Combat_Stance, CrouchLookAroundBow,
  * Over_Shoulder_Throw, Victory_Fist_Pump), so one shared clip map resolves
  * every logical state.
  *
@@ -28,7 +28,7 @@ import { buildIdolFighterNode, idolFightersEnabled } from "./idolFighters";
 
 export type FighterId = "kenji" | "volt" | "boulder" | "seraph" | "jinx" | "sovereign";
 
-/** Typed catalog keys of the bespoke Meshy fighter rigs (see aura.assets.json). */
+/** Logical catalog keys of the six fighter rigs. */
 export type FighterAssetKey =
   | "ironcrownKenji"
   | "ironcrownVolt"
@@ -39,7 +39,7 @@ export type FighterAssetKey =
 
 export type TypedFighterAssets = Partial<Record<string, AuraAssetRef<"model">>>;
 
-/** Fighter id → catalog key, same order as the Meshy artifact slugs. */
+/** Fighter id → catalog key, in roster order. */
 export const FIGHTER_ASSETS: Record<FighterId, FighterAssetKey> = {
   kenji: "ironcrownKenji",
   volt: "ironcrownVolt",
@@ -101,12 +101,11 @@ interface AuraClipMapEntry {
 
 /**
  * Best embedded clip per logical state, shared across the roster because
- * every bespoke Meshy rig ships the identical 14-clip set. `standIn: true`
+ * every fighter rig carries the identical 14-clip set. `standIn: true`
  * marks the one state whose clip was made for something else: dash plays the
  * forward fight walk at double speed.
  *
- * IC-12: idle, crouch, throw and win have their own Meshy animate clips
- * (action ids 89, 258, 421, 403; aura-evidence/meshy/ironcrown*.ic12-clips.json).
+ * IC-12: idle, crouch, throw and win have their own clips.
  * Block1 is guard only. Over_Shoulder_Throw is trimmed to its grab-lift-toss
  * window (2.5 s), played at THROW_CLIP_SPEED so it fits the 0.62 s throw hold.
  */
@@ -188,7 +187,7 @@ export interface FighterDef {
   readonly title: string;
   readonly archetype: string;
   readonly bio: string;
-  /** Catalog key of this fighter's bespoke Meshy rig. */
+  /** Catalog key of this fighter's rig. */
   readonly asset: FighterAssetKey;
   readonly scale: number;
   readonly palette: FighterPalette;
@@ -346,7 +345,7 @@ const CLIP_DURATION: Partial<Record<FighterClip, number>> = {
   win: 1
 };
 
-/** Only genuine locomotion loops — the Meshy clip set has no loopable jump/dash/guard variants. */
+/** Only genuine locomotion loops — the clip set has no loopable jump/dash/guard variants. */
 const LOOPING_CLIPS: ReadonlySet<FighterClip> = new Set(["idle", "walk"]);
 const ATTACK_CLIPS: ReadonlySet<FighterClip> = new Set(["light", "heavy", "special", "throw"]);
 

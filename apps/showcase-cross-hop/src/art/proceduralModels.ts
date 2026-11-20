@@ -4,7 +4,7 @@
  * Sculpted exclusively through `@aura3d/engine` + `showcase-port-shared/proceduralKernel` smooth-normal
  * primitives (`loftSectionsMesh`, `latheMesh`, `tubeSweepMesh`, `extrudePolygonMesh`,
  * `wheelAssemblySlots`, `icosphereSmoothMesh`, `icosphereFacetMesh`, `layeredCanopyMesh`,
- * `bevelBoxMesh`, `assembleMultiMaterialNode`) — zero Meshy `.glb` dependencies.
+ * `bevelBoxMesh`, `assembleMultiMaterialNode`) — zero external `.glb` dependencies.
  */
 import {
   game,
@@ -3437,7 +3437,7 @@ function paintFrogAmphibianSkin(mesh: RawMesh, aoStrength = 0.08): RawMesh {
         )
       );
 
-      // Warm sunlit olive-lime crown, brow ridges & muscular thigh crests (matches Meshy reference palette!)
+      // Warm sunlit olive-lime crown, brow ridges & muscular thigh crests (matches the reference palette!)
       const sunTop = Math.max(0, Math.min(1, ny * 0.54 + (y - 0.16) * 1.05));
       let col = lerpRgba(cOliveEmerald, cSunLime, sunTop * 0.84);
 
@@ -3598,7 +3598,7 @@ function evalFrogSkinPoint(uIn: number, phi: number, profile: FrogAnatomyProfile
 }
 
 /**
- * Evaluates a continuous, Meshy-grade implicit SDF (`< 0` inside) for our athletic poised tree-frog (`+Z` forward, `+Y` up):
+ * Evaluates a continuous, high-fidelity implicit SDF (`< 0` inside) for our athletic poised tree-frog (`+Z` forward, `+Y` up):
  * unified urostyle rump -> leaned amphibian torso & soft belly -> shoulder girdle -> broad smiling frog cranium ->
  * integrated supraorbital brow hoods & orbital sockets -> muscular Z-folded thighs/calves & bowed forelimbs (`sminPoly`).
  */
@@ -3616,7 +3616,7 @@ function evalUnifiedFrogSdf(
   const hF = profile.headFlare ?? 1.12;
   const browScale = (profile.eyeDomeAmp ?? 0.132) / 0.132;
 
-  // 1. Sleek, athletic 42-deg forward-poised Meshy tree-frog spine (`old_meshy_card_2x.jpg` silhouette!):
+  // 1. Sleek, athletic 42-deg forward-poised tree-frog spine (reference-card silhouette!):
   // compact tapered urostyle pelvis -> lean athletic ribcage -> distinct narrower cervical neck waist!
   const rump = sdfEllipsoid([x, y, z], [0, 0.178, -0.128], [0.098 * wS, 0.104, 0.112]);
   const midTorso = sdfEllipsoid([x, y, z], [0, 0.284, -0.014], [0.126 * wS, 0.124, 0.146]);
@@ -4550,7 +4550,7 @@ function buildFrogHeroRecipe(
     ? (m: RawMesh) => shadeSmoothOrganicColors(m, undefined, 0.09)
     : (m: RawMesh) => paintTangerineWebbedFoot(m, 0.07);
 
-  // Sleek Meshy-grade hybrid sculpt:
+  // Sleek high-fidelity hybrid sculpt:
   // 1) Glass-smooth Newton-projected + tangentially-relaxed analytic-normal SDF head, brow hoods, tapered neck & poised torso,
   // 2) Crisply articulated Loop-subdivided muscular Z-folded thighs, calves & bowed forelimbs with clean silhouette negative space!
   // Limbs are smooth-unioned (`sminPoly`) into the same SDF manifold: filleted hips & shoulders, no tube-into-torso crease

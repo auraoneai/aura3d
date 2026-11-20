@@ -359,7 +359,7 @@ export interface DioramaBase {
 }
 
 /**
- * GU47 wave 2 (PBL-E1): a generated Meshy base island that tiles the plinth top. The
+ * GU47 wave 2 (PBL-E1): a generated base island model that tiles the plinth top. The
  * tile is stretched over the course footprint (X to the plinth width, Z to the same
  * scale) and squashed in Y so its toadstools and reeds stay below the course floor.
  */
@@ -407,7 +407,7 @@ export function baseTileTransforms(spec: WorldSpec, tile: BaseTile, depth: numbe
 /**
  * The closed diorama: a felt-topped clay plinth under the whole course with a darker
  * skirt, plus seeded felt mounds along both flanks. The base only receives shadows
- * (4 draws, under the PRD's +6). With a Meshy `tile` the mounds give way to one instanced
+ * (4 draws, under the PRD's +6). With a model `tile` the mounds give way to one instanced
  * draw of base tiles (the flat felt stays as the filler between and under them), so the
  * draw count is unchanged.
  */

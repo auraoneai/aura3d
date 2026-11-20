@@ -27,7 +27,7 @@ const makeActor = (bones: readonly string[]) => {
 };
 
 describe("bone resolution and attach", () => {
-  it("resolves roles across Mixamo, Blender and Meshy names", () => {
+  it("resolves roles across Mixamo, Blender and Unreal names", () => {
     expect(resolveBone(["mixamorig:RightHand", "mixamorig:LeftHand"], "rightHand")).toBe("mixamorig:RightHand");
     expect(resolveBone(["Hand.R", "Hand.L"], "rightHand")).toBe("Hand.R");
     expect(resolveBone(["hand_l", "hand_r"], "leftHand")).toBe("hand_l");
@@ -81,7 +81,7 @@ describe("bone naming styles", () => {
   const styles: Array<[string, readonly string[], Record<string, string>]> = [
     ["Mixamo", ["mixamorig:Hips", "mixamorig:RightHand", "mixamorig:RightForeArm", "mixamorig:RightArm", "mixamorig:RightUpLeg", "mixamorig:RightLeg", "mixamorig:RightFoot"],
       { rightHand: "mixamorig:RightHand", rightForearm: "mixamorig:RightForeArm", rightUpperArm: "mixamorig:RightArm", rightThigh: "mixamorig:RightUpLeg", rightShin: "mixamorig:RightLeg", rightFoot: "mixamorig:RightFoot", hips: "mixamorig:Hips" }],
-    ["Meshy / glTF Avatar (VRM, Ready Player Me)", ["Hips", "RightHand", "RightForeArm", "RightArm", "RightUpLeg", "RightLeg", "RightFoot"],
+    ["glTF Avatar (VRM, Ready Player Me)", ["Hips", "RightHand", "RightForeArm", "RightArm", "RightUpLeg", "RightLeg", "RightFoot"],
       { rightHand: "RightHand", rightForearm: "RightForeArm", rightUpperArm: "RightArm", rightThigh: "RightUpLeg", rightShin: "RightLeg", rightFoot: "RightFoot", hips: "Hips" }],
     ["lower-case forearm spellings", ["right_forearm", "R_Forearm", "RightForearm"],
       { rightForearm: "right_forearm" }],

@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
 
 /**
  * Iron Crown IC-12 capture: idle, crouch and throw for two fighter pairs in the Combo Lab (dummy stance panel), before
- * (origin/main, idle and crouch on Block1, throw on Triple_Combo_Attack) and after (new Meshy clips). Remote only:
+ * (origin/main, idle and crouch on Block1, throw on Triple_Combo_Attack) and after (new IC-12 clips). Remote only:
  * tools/remote-acr/run.sh. Output goes to the log:
  *   GL_META <json>                         canvas luma, game state, live bone positions (socket) per shot
  *   GL_JPG  <target> <shot> <i>/<n> <b64>  JPEG, chunked

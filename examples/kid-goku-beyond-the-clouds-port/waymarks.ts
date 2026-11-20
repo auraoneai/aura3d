@@ -1,7 +1,7 @@
 /**
  * GU47 WP-35 CD-20 (partial): waymarks along the ridge, merged into one mesh (one draw): stacked sandstone cairns on the
  * road shoulders every ~140 m and a pair of cord poles with cloth strips at each gorge the staff spans. The wind-carved
- * arches and the Meshy cord pole are WP-36 assets; these procedural pieces stand in until then. Sage moss pads with pale
+ * arches and the modelled cord pole are WP-36 assets; these procedural pieces stand in until then. Sage moss pads with pale
  * flowers fill the shoulder hollows where rain water stands (same draw). Pure geometry.
  */
 import type { Chapter } from "./chapter";

@@ -2,7 +2,7 @@
  * Beat Hopper (`WP-18`) — Native `@aura3d/engine` 5.5.1 Procedural Multi-Material
  * Festival Concert Stage, Synthwave Architecture & Articulated Skater-Bot Library.
  *
- * Replaces all static Meshy `.glb` mounts (`bhSpeakerStack`, `bhSpeakerStackB`, `bhTurntable`)
+ * Replaces all static `.glb` mounts (`bhSpeakerStack`, `bhSpeakerStackB`, `bhTurntable`)
  * and stacked-box programmer-art placeholders with curved, multi-part, multi-material 3D
  * geometry built on `showcase-port-shared/proceduralKernel` (zero `three` imports):
  *   - Curved J-hang concert line-array speaker towers (`loftSectionsMesh` waveguides +

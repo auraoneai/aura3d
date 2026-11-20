@@ -3,13 +3,13 @@
  * stone lanterns, pines and maples, the evening set-pieces (castle pagoda, shrine gate, water wheel) and the katana /
  * kanabo weapons are high-detail Idol GLBs: hand-built painted wood, clay-tile and stone miniatures in the woodblock
  * palette. Placement stays in `scenery.ts` / `setpieces.ts`; each Idol model is fitted to the footprint the procedural
- * prop was normalised to (`MESHY_MANIFEST` size, base 5% under the placement like `normalizePropParts`), with the
+ * prop was normalised to (`PROP_MANIFEST` size, base 5% under the placement like `normalizePropParts`), with the
  * per-axis stretch held within +-28% of uniform so the carved detail keeps its proportions. `?idol=0` restores the
  * procedural batches.
  */
 import { group, instances, model, type AuraAssetRef, type AuraNodeBuilder, type AuraSceneNode, type AuraTransformSpec } from "@aura3d/engine";
 import { IDOL_ASSETS } from "../../../apps/showcase-ninja-runner-port/src/idol-assets";
-import { MESHY_MANIFEST, type PropId } from "../assets/meshy/manifest";
+import { PROP_MANIFEST, type PropId } from "../assets/props/manifest";
 import type { ModelPlacement, ModelSink } from "../scenery";
 import { IDOL_ACTORS } from "./idolActors";
 import { qFromTo, qRot, qToEngineEuler, type V3 } from "./idolRig";
@@ -45,7 +45,7 @@ export const IDOL_PROP_SINK = 0.06;
 export const BUILDING_IDS: ReadonlySet<IdolPropId> = new Set(["houseA", "houseB", "houseC", "houseD", "teahouse", "tower", "marketStall"]);
 /** Instance transform fitting the Idol model to the procedural prop's normalised footprint. */
 export function idolPropTransform(id: IdolPropId, p: ModelPlacement): AuraTransformSpec {
-  const m = MESHY_MANIFEST[id].size;
+  const m = PROP_MANIFEST[id].size;
   const b = boundsOf(IDOL_PROP_KEYS[id]);
   let sx = (p.scale[0] * m[0]) / b[0], sy = (p.scale[1] * m[1]) / b[1], sz = (p.scale[2] * m[2]) / b[2];
   // Buildings keep their carved proportions within +-10% (at +-28% the rooftop district's houses were drawn up to 1.64x
@@ -54,7 +54,7 @@ export function idolPropTransform(id: IdolPropId, p: ModelPlacement): AuraTransf
   const g = Math.cbrt(sx * sy * sz), lo = g * (1 - k), hi = g * (1 + k);
   sx = Math.min(hi, Math.max(lo, sx)); sy = Math.min(hi, Math.max(lo, sy)); sz = Math.min(hi, Math.max(lo, sz));
   return {
-    // Idol GLBs are grounded at their lowest vertex (no Meshy-style 5% padding under the base): a fixed 0.06 m sink
+    // Idol GLBs are grounded at their lowest vertex (no 5% padding under the base like the size table assumes): a fixed 0.06 m sink
     // under the placement height (scenery.ts already sinks 0.15-0.2 m below the lowest ground under the footprint), which scenery.ts already takes at the lowest ground under the footprint.
     position: [p.position[0], p.position[1] - IDOL_PROP_SINK, p.position[2]],
     rotation: [0, p.yaw, 0],

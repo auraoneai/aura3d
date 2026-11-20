@@ -169,8 +169,8 @@ describe("post-v2 default file list (§10)", () => {
     expect(POST_V2_DEFAULT_FILES).toContain("templates/**");
   });
 
-  it("no non-game showcase is listed; the 10 exclusions surface as not migrated", () => {
-    expect(POST_V2_NOT_MIGRATED).toHaveLength(10);
+  it("no non-game showcase is listed; the 9 exclusions surface as not migrated", () => {
+    expect(POST_V2_NOT_MIGRATED).toHaveLength(9);
     for (const id of POST_V2_NOT_MIGRATED) {
       expect(POST_V2_DEFAULT_FILES.some((f) => f.includes(`apps/${id}/`))).toBe(false);
     }

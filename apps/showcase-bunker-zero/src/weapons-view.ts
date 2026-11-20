@@ -24,7 +24,7 @@ export function weaponHudLabel(id: WeaponId): string {
   return WEAPONS[id].name;
 }
 
-/** Yaw added to each viewmodel so every muzzle points away from the player. Meshy models do not agree on which end is the muzzle. */
+/** Yaw added to each viewmodel so every muzzle points away from the player. The source models do not agree on which end is the muzzle. */
 export const VIEWMODEL_YAW_OFFSET: Record<WeaponId, number> = {
   knife: 0,
   pistol: Math.PI,

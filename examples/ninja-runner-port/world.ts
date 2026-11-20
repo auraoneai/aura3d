@@ -1,7 +1,7 @@
 /**
  * Shadowstep Gauntlet world on the public `@aura3d/engine` surface. The ground is lit PBR (one mesh per biome and surface);
- * the village, rooftops, crossing, forest and valley are instanced scenery: procedural PBR layers plus generated Meshy
- * models (`scenery.ts`, `models.ts`). Lighting is the engine's neutral-room environment (the authored HDRI node does not
+ * the village, rooftops, crossing, forest and valley are instanced scenery: procedural PBR layers plus Idol
+ * models (`scenery.ts`, `art/idolScenery.ts`). Lighting is the engine's neutral-room environment (the authored HDRI node does not
  * load, see `buildWorld`) with the hemisphere "sky fill" counted as ambient, a sun with two shadow cascades (`?shadow=0`
  * turns them off) and a cool rim light, with exponential fog, ambient
  * occlusion (high quality only), bloom, a colour grade, a vignette and FXAA. The sky, river, falls, spirit flames, spiral
@@ -23,7 +23,7 @@ import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
 import type { ImpactRig } from "../../apps/showcase-port-shared/feel";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
-import { EVENING_SLOT_MODEL, MESHY07_ENEMY_CLIPS, SLOT_MODEL, type CharacterId } from "./models";
+import { EVENING_SLOT_MODEL, EVENING_ENEMY_CLIPS, SLOT_MODEL, type CharacterId } from "./models";
 import { buildProceduralActorNodes, createProceduralActorAssets, syncProceduralActorSceneNodes } from "./art/proceduralActors";
 import { eveningSetPieces, shrineCentre } from "./setpieces";
 import { BEAM_SCALE_X } from "./hazards";
@@ -61,12 +61,12 @@ const ENEMY_SLOTS = [4, 5, 6, 7, 8, 9, 10, 11] as const;
 const SAGE = 12;
 const BRUTE_SLOTS = [10, 11] as const;
 const SOLDIER_SLOTS = [4, 5, 6, 7, 8, 9] as const;
-/** GU47 meshy07: evening-only robed-caster and scout slots (`EVENING_SLOT_MODEL`); the enemy window stays at eight. */
+/** GU47 evening: evening-only robed-caster and scout slots (`EVENING_SLOT_MODEL`); the enemy window stays at eight. */
 const CASTER_SLOTS = [13, 14, 15] as const;
 const SCOUT_SLOTS = [16, 17, 18] as const;
 const EVENING_ENEMY_SLOTS = [...ENEMY_SLOTS, ...CASTER_SLOTS, ...SCOUT_SLOTS] as const;
-/** True when the actors were loaded with the meshy07 enemy slots (evening look). */
-const hasMeshy07Slots = (count: number): boolean => count >= EVENING_SLOT_MODEL.length;
+/** True when the actors were loaded with the evening enemy slots (evening look). */
+const hasEveningSlots = (count: number): boolean => count >= EVENING_SLOT_MODEL.length;
 const BONES = { handR: "RightHand", foreR: "RightForeArm", handL: "LeftHand" } as const;
 const PARTICLES = 480;
 /** NR-17 cross-fade time between looping hero clips (s). */
@@ -81,7 +81,7 @@ const FLIPBOOK_POOL = 4;
 const PICKUP_PROP_POOL = 6;
 const TOWN_FLOOR_Y = 3.2;
 
-/** Canonical clip names: every character GLB is merged with these names (see tools/crayon-capture/ninja-runner-meshy-merge.mjs). */
+/** Canonical clip names shared by every character rig. */
 const CLIPS = {
   run: "run", jump: "jump", idle: "idle", slide: "slide", punch: "punch", jab: "jab", sword: "sword",
   block: "block", hit: "hit", death: "death"
@@ -226,13 +226,13 @@ const ENEMY_TINT: Record<EnemyKind, readonly [number, number, number, number]> =
 const enemyTint = (base: readonly [number, number, number, number]): Tint => ({ base, emissive: [0, 0, 0], strength: 0, roughness: 0.9, metallic: 0.2 });
 
 /**
- * The two meshy07 enemy rigs (owl caster, fox scout) show their own authored texture colours: a plain white base multiply with no
+ * The two evening enemy rigs (owl caster, fox scout) show their own authored texture colours: a plain white base multiply with no
  * glow. An earlier pass multiplied them by a violet and a russet tint, which painted each one a single flat colour and hid the
  * texture (the owner saw solid purple enemies). The bleaching those tints were meant to fix came from `TypedGLBActor.setTint`
  * defaulting to a white emissive glow, which `enemyTint` already switches off. The 4.6.2 soldier, brute and sage atlases keep the
  * mild `ENEMY_TINT`.
  */
-const MESHY07_TINT: Partial<Record<CharacterId, readonly [number, number, number, number]>> = {
+const EVENING_ENEMY_TINT: Partial<Record<CharacterId, readonly [number, number, number, number]>> = {
   caster: [1, 1, 1, 1],
   scout: [1, 1, 1, 1]
 };
@@ -541,7 +541,7 @@ export function buildWorld(options: WorldOptions): World {
   for (let i = 0; i < SHURIKEN_POOL; i++) builder.add(buildShurikenStarNode(i));
   builder.add(primitives.sphere({ name: "aura", size: 1, material: material.custom(auraSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "aura" }));
 
-  const enemySlotCount = hasMeshy07Slots(options.actors.actors.length) ? EVENING_ENEMY_SLOTS.length : ENEMY_SLOTS.length;
+  const enemySlotCount = hasEveningSlots(options.actors.actors.length) ? EVENING_ENEMY_SLOTS.length : ENEMY_SLOTS.length;
   for (let i = 0; i < enemySlotCount; i++) {
     builder.add((IDOL_SCENERY ? buildIdolWeaponNode("nrKatana", `blade-${i}`) : null) ?? buildKatanaWeaponNode(`blade-${i}`));
     builder.add((IDOL_SCENERY ? buildIdolWeaponNode("nrKanabo", `club-${i}`) : null) ?? buildKanaboWeaponNode(`club-${i}`));
@@ -657,7 +657,7 @@ export function godRaysAt(s: number): boolean {
   return (s >= 470 && s < 1120) || (s >= 1510 && s < 1700);
 }
 
-/** Upper-spine joint the scarf anchors to (Meshy rigs name it Spine02). */
+/** Upper-spine joint the scarf anchors to (the rigs name it Spine02). */
 const SCARF_BONES = ["Spine02", "Spine01", "Spine"] as const;
 
 function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly SpiritPickup[], lanternSpots: readonly LanternSpot[], slashBatch: Batch): WorldRuntime {
@@ -666,8 +666,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
   const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
   const { actors, slotDurations, slotClips, slotModels } = options.actors;
-  const meshy07 = hasMeshy07Slots(actors.length);
-  const enemySlots: readonly number[] = meshy07 ? EVENING_ENEMY_SLOTS : ENEMY_SLOTS;
+  const eveningSlots = hasEveningSlots(actors.length);
+  const enemySlots: readonly number[] = eveningSlots ? EVENING_ENEMY_SLOTS : ENEMY_SLOTS;
   const clipLength = (clip: string, slot: number = HERO): number => slotDurations[slot]?.[clip] ?? options.actors.clipDuration;
   const has = (clip: string, slot: number = HERO): string => {
     const list = slotClips[slot]!;
@@ -1101,8 +1101,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       const assigned = new Set(slotEntity.values());
       for (const e of windowList) {
         if (assigned.has(e.id)) continue;
-        // GU47 meshy07 (evening): owl casters and fox scouts take their own rig when one is free, else a soldier slot.
-        const own: readonly number[] = !meshy07 ? [] : e.type === "caster" ? CASTER_SLOTS : e.type === "scout" ? SCOUT_SLOTS : [];
+        // GU47 evening: owl casters and fox scouts take their own rig when one is free, else a soldier slot.
+        const own: readonly number[] = !eveningSlots ? [] : e.type === "caster" ? CASTER_SLOTS : e.type === "scout" ? SCOUT_SLOTS : [];
         const free = own.find((sl) => !slotEntity.has(sl)) ?? (e.type === "heavy" ? BRUTE_SLOTS : SOLDIER_SLOTS).find((sl) => !slotEntity.has(sl));
         if (free !== undefined) { slotEntity.set(free, e.id); assigned.add(e.id); tints[free] = ""; }
       }
@@ -1114,8 +1114,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         const dead = !e.alive;
         const pop = dead ? Math.max(0, 1 - (state.time - e.defeatedAt) / 0.45) : 1;
         let ea: Anim;
-        // GU47 meshy07: the caster and scout rigs carry their own cast/throw and death clips.
-        const rigClips = MESHY07_ENEMY_CLIPS[slotModels[slot]!];
+        // GU47 evening: the caster and scout rigs carry their own cast/throw and death clips.
+        const rigClips = EVENING_ENEMY_CLIPS[slotModels[slot]!];
         const attackClip = rigClips?.attack ?? ENEMY_ATTACK_CLIP[kind];
         if (dead && rigClips) ea = { clip: rigClips.death, t: Math.min(clipLength(rigClips.death, slot) * 0.98, ((state.time - e.defeatedAt) / 0.45) * clipLength(rigClips.death, slot) * 0.7) };
         else if (dead) ea = { clip: CLIPS.hit, t: Math.min(clipLength(CLIPS.hit, slot), (state.time - e.defeatedAt) * 0.75) };
@@ -1126,7 +1126,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
           ea = { clip: attackClip, t: Math.max(0, Math.min(0.98, p)) * clipLength(has(attackClip, slot), slot) };
         } else if (e.stagger > 0) ea = { clip: CLIPS.hit, t: 0.1 };
         else ea = e.approachSpeed > 0 ? { clip: CLIPS.run, rate: 1.25 } : { clip: CLIPS.idle, rate: 0.9 };
-        const rigTint = MESHY07_TINT[slotModels[slot]!];
+        const rigTint = EVENING_ENEMY_TINT[slotModels[slot]!];
         setTint(slot, rigTint ? `${kind}-rig` : kind, enemyTint(rigTint ?? ENEMY_TINT[kind]));
         place(slot, { s: e.s, x: e.lane * laneOffset(e.s), y: e.y + (dead ? (1 - pop) * 1.6 : 0) }, Math.PI, (kind === "heavy" ? 1.3 : 1) * (0.4 + 0.6 * pop), ea, dt, pop > 0.02);
         hideWeapons(w);

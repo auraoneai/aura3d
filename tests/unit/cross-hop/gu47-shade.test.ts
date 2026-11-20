@@ -1,4 +1,4 @@
-// GU47 phase 4 (4.7.2): sun-cast shadow decals, glossy vivid surfaces and the Meshy coin (presentation only).
+// GU47 phase 4 (4.7.2): sun-cast shadow decals, glossy vivid surfaces and the sculpted star coin (presentation only).
 import { describe, expect, it } from "vitest";
 import { ORIGINAL_SUN, SHADOW_REACH_MAX, VIVID_LOOKS, sunShadowFootprint } from "../../../apps/showcase-cross-hop/src/game/look";
 import { buildScene, setLookMode } from "../../../apps/showcase-cross-hop/src/game/core";

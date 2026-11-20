@@ -10,10 +10,9 @@ describe("grid dispatch per-app asset manifest (RH-06, C6, 100% @aura3d/engine p
   it("does not import the root asset catalog", () => {
     for (const file of ["main.ts", "scene.ts", "sim.ts", "aura-assets.ts"]) expect(appSrc(file)).not.toMatch(/src\/aura-assets["']/);
   });
-  it("ships zero GLB or Meshy model entries (all vehicles, landmarks, buildings, and commuters are @aura3d/engine procedural)", () => {
+  it("ships zero GLB model entries (all vehicles, landmarks, buildings, and commuters are @aura3d/engine procedural)", () => {
     expect(Object.keys(assets)).toHaveLength(0);
     expect(Object.keys(CATALOG_IDS)).toHaveLength(0);
-    expect(existsSync(join(root, "apps/showcase-teleoperator/public/aura-assets/meshy"))).toBe(false);
     for (const file of ["main.ts", "scene.ts", "aura-assets.ts", "art/proceduralModels.ts"]) {
       expect(appSrc(file), file).not.toMatch(/\.glb\b/);
     }

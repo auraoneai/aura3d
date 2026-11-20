@@ -3,7 +3,7 @@
  * townhouse row). Three tower variants (slab, stepped, twin-blade) rise from the haze floor 28 m below the deck to tops 20-95 m
  * above it, on world-anchored rows both sides of the skyway. Each variant is one instanced box node with a curtain-wall
  * shader (mullion grid in metres, sky reflection, sun-side glint, lit windows toward night), so the whole skyline is 3 draws.
- * The Meshy glass tower kit (WP-36, with its far LOD and impostor beyond 220 m) drops in per variant through `TOWER_VARIANTS`.
+ * `TOWER_VARIANTS` names the three variants; the layout picks one per tower slot.
  */
 import type { material } from "@aura3d/engine";
 import { HAZE_FLOOR_Y } from "../art/ground";

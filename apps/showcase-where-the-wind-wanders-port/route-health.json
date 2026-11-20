@@ -22,7 +22,7 @@
   "evidence": "Worst trajectory delta 7.0e-10 units over all 2,098 steps in Node and in the live page.",
   "limits": [
     "Meadow walk: three letters, the bell, a journal, synthesised audio, and a boat epilogue to Stillwater Isle that is a camera voyage only (the island is not walkable; boat, island and bench modes are not ported).",
-    "Art: 11 Meshy GLB models (8.4 MB after compression) over procedural terrain, foliage, sky and water; an independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Art: Idol image-to-3D GLB models over procedural terrain, foliage, sky and water; an independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],
   "checks": [

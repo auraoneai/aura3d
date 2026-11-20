@@ -129,7 +129,7 @@ Page switches:
 
 ## Assets and audio
 
-**Sculpted procedural rigs and data-driven cast.** All 73 stage assets (`MODEL_KEYS` in `tools/wonder-assets.json`) are original multi-lobe sculpted procedural `@aura3d/engine` rigs in `src/scenes/procedural-rigs/` — the app ships zero external `.glb` files (replacing the retired prototype Meshy GLB pipeline):
+**Sculpted procedural rigs and data-driven cast.** All 73 stage assets (`MODEL_KEYS` in `tools/wonder-assets.json`) are original multi-lobe sculpted procedural `@aura3d/engine` rigs in `src/scenes/procedural-rigs/` — the app ships zero external `.glb` files:
 
 1. **Data-driven cast (`src/characters/sheets/*.json`).** Each of the 7 recurring cast characters (`momo`, `lulu`, `sheru`, `gogo`, `lumi`, `peeko`, `tiko`) has a structured JSON character sheet defining display metadata, home world, palette colour, ElevenLabs voice config (`null` for `sheru`), banter role/catchphrases/foils/banned behaviours, and rig traits. `node tools/gen-cast.mjs` validates every sheet and generates `src/characters/generated-cast.ts` (wired through `src/characters/character-registry.ts`).
 2. **Procedural stage rigs (`src/scenes/procedural-rigs/`).** Cast rigs (`cast-rigs.ts`, `tiko-rig.ts`), animal rigs, props, and world landmarks are built from organic lathes, curved limbs, and material crafts (`plush`, `felt`, `wood`, `clay`, `lacquer`) with articulated sub-parts (`jaw` / `beakLower`, `eyelidL` / `eyelidR`, `cheekPuff`, limbs, wheels, wings, tails) driven deterministically by `src/scenes/articulated-actors.ts`.

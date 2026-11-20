@@ -4,7 +4,7 @@
  * (`art/proceduralActors.ts`, `art/proceduralModels.ts`) with zero `.glb` dependencies.
  */
 import { defineModelAssets } from "@aura3d/engine";
-import { MESHY_MANIFEST, type PropId } from "./assets/meshy/manifest";
+import { PROP_MANIFEST, type PropId } from "./assets/props/manifest";
 
 export type CharacterId = "hero" | "soldier" | "brute" | "sage" | "caster" | "scout";
 
@@ -25,14 +25,14 @@ export const SLOT_MODEL: readonly CharacterId[] = ["hero", "hero", "hero", "hero
  */
 export const EVENING_SLOT_MODEL: readonly CharacterId[] = [...SLOT_MODEL, "caster", "caster", "caster", "scout", "scout", "scout"];
 /** Attack and death clips of the caster & scout procedural rigs. */
-export const MESHY07_ENEMY_CLIPS: Readonly<Partial<Record<CharacterId, { readonly attack: string; readonly death: string }>>> = {
+export const EVENING_ENEMY_CLIPS: Readonly<Partial<Record<CharacterId, { readonly attack: string; readonly death: string }>>> = {
   caster: { attack: "cast", death: "death" },
   scout: { attack: "throw", death: "death" }
 };
 
 const LICENSE = "Aura3D procedural multi-material geometry (@aura3d/engine), CC0 / MIT";
 const url = (id: PropId): string => `/procedural/ninja/prop/${id}`;
-const entry = (id: PropId) => ({ url: url(id), sha256: MESHY_MANIFEST[id].sha256 });
+const entry = (id: PropId) => ({ url: url(id), sha256: PROP_MANIFEST[id].sha256 });
 
 export const PROP_ASSETS = defineModelAssets({
   houseA: entry("houseA"),

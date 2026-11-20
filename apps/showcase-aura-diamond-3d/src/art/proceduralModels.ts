@@ -1,7 +1,7 @@
 /**
  * Procedural multi-material 3D art assembly for Aura Diamond 3D (WP-08).
  *
- * Replaces all 26 static Meshy ballpark, equipment, crowd-prop, and venue-horizon GLBs
+ * Replaces all 26 static ballpark, equipment, crowd-prop, and venue-horizon GLBs
  * as well as raw box/cylinder placeholders with curved, multi-material sculptural
  * assemblies authored exclusively with `@aura3d/engine` and `proceduralKernel.ts`
  * (zero `three` imports; WebGPU + WebGL2 dual-backend clean).

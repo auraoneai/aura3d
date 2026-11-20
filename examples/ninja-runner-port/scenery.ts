@@ -9,7 +9,7 @@ import { COURSE_LENGTH, GAPS, biomeAt, gapAt, groundFrame, laneOffset, pathWidth
 import { surfaceY } from "./meshes";
 import { seededRandom } from "./sim";
 import { trs } from "./shapes";
-import { MESHY_MANIFEST } from "./assets/meshy/manifest";
+import { PROP_MANIFEST } from "./assets/props/manifest";
 
 /** A generated-model instance (position of the model's base centre, yaw, per-axis scale applied to the model's own units). */
 export interface ModelPlacement { readonly position: [number, number, number]; readonly yaw: number; readonly scale: [number, number, number]; readonly tint?: string }
@@ -131,7 +131,7 @@ function clearCameraPath(models: ModelSink): void {
   const grid = cameraEyeGrid();
   for (const [id, list] of Object.entries(models)) {
     if (CLEARANCE_EXEMPT.has(id)) continue;
-    const size = MESHY_MANIFEST[id]!.size;
+    const size = PROP_MANIFEST[id]!.size;
     for (let i = 0; i < list.length; i++) {
       let p = list[i]!;
       for (let pass = 0; pass < 10; pass++) {
@@ -184,9 +184,9 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   const pick = <T,>(r: () => number, list: readonly T[]): T => list[Math.floor(r() * list.length) % list.length]!;
   /** Add one generated-model instance whose base sits at world (x, y, z); `height`/`width`/`depth` are the wanted world sizes. */
   const mput = (id: string, x: number, y: number, z: number, yaw: number, width: number, height: number, depth: number, tint?: string): void => {
-    const m = MESHY_MANIFEST[id]!;
+    const m = PROP_MANIFEST[id]!;
     let sx = width / m.size[0], sy = height / m.size[1], sz = depth / m.size[2];
-    /* Meshy models keep their own proportions: a request that would stretch one axis more than ~1.6x against another (a 6 x 10 m footprint on a nearly square house) smears the texture and tears the facets, so the per-axis scale stays within +-28% of the uniform scale. */
+    /* Models keep their own proportions: a request that would stretch one axis more than ~1.6x against another (a 6 x 10 m footprint on a nearly square house) smears the texture and tears the facets, so the per-axis scale stays within +-28% of the uniform scale. */
     const g = Math.cbrt(sx * sy * sz), lo = g * 0.78, hi = g * 1.28;
     sx = Math.min(hi, Math.max(lo, sx)); sy = Math.min(hi, Math.max(lo, sy)); sz = Math.min(hi, Math.max(lo, sz));
     const p: ModelPlacement = { position: [x, y, z], yaw: yaw + (MODEL_FRONT_YAW[id] ?? 0), scale: [sx, sy, sz], ...(tint ? { tint } : {}) };
@@ -195,14 +195,14 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   };
   /** Uniform-by-height placement (`wk` widens or narrows the plan) for props that keep their authored proportions. */
   const mputH = (id: string, x: number, y: number, z: number, yaw: number, height: number, wk = 1, tint?: string): void => {
-    const k = height / MESHY_MANIFEST[id]!.size[1];
+    const k = height / PROP_MANIFEST[id]!.size[1];
     const p: ModelPlacement = { position: [x, y, z], yaw: yaw + (MODEL_FRONT_YAW[id] ?? 0), scale: [k * wk, k, k * wk], ...(tint ? { tint } : {}) };
     (models![id] ??= []).push(p);
     note(p);
   };
   /** Free per-axis placement for landforms that may be stretched (distant ridges). */
   const mputFree = (id: string, x: number, y: number, z: number, yaw: number, width: number, height: number, depth: number, tint?: string): void => {
-    const m = MESHY_MANIFEST[id]!;
+    const m = PROP_MANIFEST[id]!;
     (models![id] ??= []).push({ position: [x, y, z], yaw, scale: [width / m.size[0], height / m.size[1], depth / m.size[2]], ...(tint ? { tint } : {}) });
   };
   /** World position of a point given in a box's local frame (+x across the route away from the right-hand side, +z forward). */
@@ -295,7 +295,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   const lanternPost = (d: number, side: -1 | 1): void => {
     const c = at(d, side * (pathWidth(d) / 2 + 0.55));
     const ly = footY(d, side * (pathWidth(d) / 2 + 0.55), 0.45) - 0.05;
-    if (models) { const k = 3.9 / MESHY_MANIFEST.lantern!.size[1]; mput("lantern", c.x, ly, c.z, c.yaw, MESHY_MANIFEST.lantern!.size[0] * k, 3.9, MESHY_MANIFEST.lantern!.size[2] * k); return; }
+    if (models) { const k = 3.9 / PROP_MANIFEST.lantern!.size[1]; mput("lantern", c.x, ly, c.z, c.yaw, PROP_MANIFEST.lantern!.size[0] * k, 3.9, PROP_MANIFEST.lantern!.size[2] * k); return; }
     put("posts", c.x, c.y, c.z, 0, 0.07, 3, 0.07, "#3a3028");
     put("lanterns", c.x, c.y + 3.15, c.z, 0, 0.3, 0.4, 0.3, "#ffb25a");
     put("cones", c.x, c.y + 3.45, c.z, 0, 0.45, 0.32, 0.45, "#2b2420");
@@ -316,7 +316,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   };
 
   const tree = (x: number, y: number, z: number, h: number, crown: string, r: () => number): void => {
-    if (models) { const m = MESHY_MANIFEST.oak!, k = h / m.size[1], wk = 0.9 + r() * 0.3; mput("oak", x, y - 0.2, z, r() * 6, m.size[0] * k * wk, h, m.size[2] * k * wk, crown); return; }
+    if (models) { const m = PROP_MANIFEST.oak!, k = h / m.size[1], wk = 0.9 + r() * 0.3; mput("oak", x, y - 0.2, z, r() * 6, m.size[0] * k * wk, h, m.size[2] * k * wk, crown); return; }
     put("trunks", x, y - 0.2, z, 0, 0.22 + h * 0.03, h * 0.62, 0.22 + h * 0.03, "#5a4332");
     const cr = h * 0.34;
     put("crowns", x, y + h * 0.66, z, 0, cr, cr * 0.85, cr, crown);
@@ -325,7 +325,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   };
 
   const pine = (x: number, y: number, z: number, h: number, r: () => number): void => {
-    if (models) { const wk = 0.85 + r() * 0.35, m = MESHY_MANIFEST.pine!; mput("pine", x, y - 0.15, z, r() * 6, m.size[0] * (h / m.size[1]) * wk, h, m.size[2] * (h / m.size[1]) * wk); return; }
+    if (models) { const wk = 0.85 + r() * 0.35, m = PROP_MANIFEST.pine!; mput("pine", x, y - 0.15, z, r() * 6, m.size[0] * (h / m.size[1]) * wk, h, m.size[2] * (h / m.size[1]) * wk); return; }
     const tw = 0.45 + h * 0.04;
     put("trunks", x, y - 0.6, z, 0, tw, h * 0.7, tw, "#4a3a2a");
     const tone = pick(r, PINES);
@@ -722,7 +722,7 @@ export function buildProceduralCourseAccents(clearing?: { readonly x: number; re
       const lat = side * (pathWidth(d) * 0.5 + 6.8 + roofSakuraRng() * 4.8);
       const c = at(d, lat);
       const h = 8.8 + roofSakuraRng() * 3.8;
-      const m = MESHY_MANIFEST.oak!;
+      const m = PROP_MANIFEST.oak!;
       const k = h / m.size[1];
       const wk = 0.94 + roofSakuraRng() * 0.22;
       // Courtyard trees stand on the town floor (y 3.2) between the rooftop rows, not hanging at roof level: the tree

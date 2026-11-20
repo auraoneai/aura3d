@@ -4,7 +4,7 @@
 > play; final screenshots in `evidence/silt-and-signal-port/screens/final`). The Idol pass replaced the most-seen procedural models with fal Idol
 > image-to-3D GLBs (spec `tools/idol/specs/silt-and-signal-port.json`, files and `*.idol.json` provenance in `examples/silt-and-signal-port/assets/idol/`). The 5.5.6 "`0` `.glb` files" note below predates that pass and is historical.
 
-> **5.5.6 Update (2026-11-12):** All external and Meshy `.glb` models documented in historical passes below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files) and crisp non-hazy distance fog.
+> **5.5.6 Update (2026-11-12):** All external and generated `.glb` models documented in historical passes below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files) and crisp non-hazy distance fog.
 
 Source of truth: the captured bundle under `tests/fixtures/crayon/silt-and-signal/` (`PROVENANCE.md`; the logic
 excerpts in `logic-extract.js`, the chapter data in `chapters.json`). The captured code is untrusted third-party
@@ -55,7 +55,7 @@ from its model bounds. A push out of a collider re-applies the floor clamp, and 
   `AnimationController` (idle, drive, interact-right while holding, emote-yes on ring or objective).
 - **Look**: output tone mapping `none` at exposure 0.65 (the original renders with no tone mapping; 0.65 brings this PBR rig's mean luma near the original's frames), and a cel pass (`effects.toon`: 5-step luma banding mixed 75% plus a Sobel outline) over the final image, `?toon=0` turns it off. This approximates the original's `MeshToonMaterial` 4-step look in screen space; materials stay PBR. Chapter 0's sky and fog use colours measured from the original's frames (dusk plaza), not the palette's day blues.
 - **Rings**: the active ring is the library objective marker (cyan; red while a timed gate is shut); waiting rings are one
-  instanced pool of Meshy stone rings. Bloom (threshold 1.0) gives the emissive parts their glow.
+  instanced pool of generated stone rings. Bloom (threshold 1.0) gives the emissive parts their glow.
 - **Sky dome** is a faithful port of the original's shader; **canal water** is a flowing custom shader (fresnel, glint, foam).
 - Models and textures are CC0 (`assets/ATTRIBUTION.md`); nothing from the original's art, audio or text is reused. Chapter names,
   objective titles and scene captions are written for this port (`copy.ts`).
@@ -104,9 +104,9 @@ Coarse-pointer screens use a 2048 sun shadow map instead of 4096.
 `mode()`, `setMode(m)`, `info()`.
 Query: `?chapter=0..6&objective=N&autopilot=1&manual=1&start=1`.
 
-## Meshy art pass (2026-10-23)
+## Generated-model art pass (2026-10-23, removed in 5.5.6)
 
-Generated through Kiro Prism from original text prompts (no image-to-3D, no original names); credits spent for this game: **453** (ledger tag `silt`, cap 800). Rights basis and task ids: `assets/ATTRIBUTION.md` and `assets/provenance/*.rights.json`. Admitted in an isolated temp project (`assets import-meshy` + `validate --require-license`, `failures: []`), then hard-simplified (meshopt simplify, 1024 px textures) so the whole port stays under 20 MB.
+Text-to-3D models from original text prompts (no image-to-3D, no original names), validated with `validate --require-license` (`failures: []`), then hard-simplified (meshopt simplify, 1024 px textures) so the whole port stayed under 20 MB. The files and their generation records were deleted in 5.5.6; this section records how they were used.
 
 | Model | Role | Prompt gist |
 | --- | --- | --- |
@@ -123,4 +123,4 @@ Generated through Kiro Prism from original text prompts (no image-to-3D, no orig
 | banner.glb | eight route banners | tall pole, tattered teal and ochre banner |
 | stall.glb | two plaza market stalls | canvas-roofed stall with crates and jars |
 
-Rings: the waiting rings are lit stone models; the active ring gets a thin emissive torus and a thin emissive beam (solid lit meshes, no alpha blending or custom shader), because the owner reported on a real GPU that the previous additive-shader rings did not appear. Thrusters are emissive spheres for the same reason. Rejected/unused: a first ring-gate prompt that produced towers (kept only as the canyon-gate landmark), a cactus (60k triangles after simplify), a footbridge (Prism returned quota_exhausted). Not done: rigged villagers (static A-pose NPCs looked wrong), chapters 1-6 landmarks (landmarks are chapter 0 only).
+Rings: the waiting rings are lit stone models; the active ring gets a thin emissive torus and a thin emissive beam (solid lit meshes, no alpha blending or custom shader), because the owner reported on a real GPU that the previous additive-shader rings did not appear. Thrusters are emissive spheres for the same reason. Rejected/unused: a first ring-gate prompt that produced towers (kept only as the canyon-gate landmark), a cactus (60k triangles after simplify), a footbridge (generation failed). Not done: rigged villagers (static A-pose NPCs looked wrong), chapters 1-6 landmarks (landmarks are chapter 0 only).

@@ -13,11 +13,8 @@ const TABLES: ReadonlyArray<readonly [string, () => Promise<Record<string, unkno
   ["splat-rush MODELS", async () => (await import("../../../examples/splat-rush-port/models")).MODELS],
   ["drift-and-deliver MODEL_ASSETS", async () => (await import("../../../examples/drift-and-deliver-port/models")).MODEL_ASSETS],
   ["heatsink MODELS", async () => (await import("../../../examples/heatsink-port/models")).MODELS],
-  ["kid-goku MESHY", async () => ({})],
-  ["last-train MESHY_ASSETS", async () => ({})],
   ["ninja-runner PROP_ASSETS", async () => (await import("../../../examples/ninja-runner-port/models")).PROP_ASSETS],
-  ["saiyan-snake-way MESHY", async () => (await import("../../../examples/saiyan-snake-way-port/models")).MESHY],
-  ["strange-orbit MESHY", async () => ({})],
+  ["saiyan-snake-way PROP_MODELS", async () => (await import("../../../examples/saiyan-snake-way-port/models")).PROP_MODELS],
   ["where-the-wind-wanders MODEL_ASSETS", async () => (await import("../../../examples/where-the-wind-wanders-port/model-assets")).MODEL_ASSETS],
   ["silt-and-signal assets", async () => (await import("../../../examples/silt-and-signal-port/assets")).assets]
 ];

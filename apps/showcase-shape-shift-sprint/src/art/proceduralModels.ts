@@ -2,7 +2,7 @@
  * WP-14 — Shape Shift Sprint (`apps/showcase-shape-shift-sprint`)
  * 100% Native `@aura3d/engine` 5.5.1 Sculpted Multi-Material Procedural 3D Art Library.
  *
- * Replaces every static Meshy clay `.glb` landmark (`toyCastleIsland`, `toyBlockTower`) and upgrades
+ * Replaces every static clay `.glb` landmark (`toyCastleIsland`, `toyBlockTower`) and upgrades
  * the Toybox Skyway corridor with curved, multi-part, multi-material `@aura3d/engine` assemblies
  * (`geometry.define`, `geometry.multiMaterial`, `instances.custom`, zero `three` imports):
  * - Multi-lobe morph player forms (`player-0..2`) within the pinned `1.1 m` gameplay envelope,
@@ -2335,7 +2335,7 @@ export function buildShapeGatePortalNode(id: string, variant = 0): GroupNodeBuil
 
 
 // ---------------------------------------------------------------------------
-// 3. Floating Storybook Castle Sky-Island (`meshy-castle-0..2`)
+// 3. Floating Storybook Castle Sky-Island (`backdrop-castle-0..2`)
 // ---------------------------------------------------------------------------
 
 function curvedTreeSlots(
@@ -2533,7 +2533,7 @@ export function buildToyCastleIslandNode(
 }
 
 // ---------------------------------------------------------------------------
-// 4. Architectural Toy-Block Spire & Polyhedral Gyro Tower (`meshy-tower-0..2`)
+// 4. Architectural Toy-Block Spire & Polyhedral Gyro Tower (`backdrop-tower-0..2`)
 // ---------------------------------------------------------------------------
 
 export function buildToyBlockTowerNode(

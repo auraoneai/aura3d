@@ -13,7 +13,7 @@ describe("saiyan-snake-way-port world", () => {
     expect(world.scene).toBeDefined();
     expect(typeof world.bind).toBe("function");
   });
-  it("mounts sculpted multi-material landmarks, zero static Meshy model nodes, and zero WebGPU custom-shader gaps", () => {
+  it("mounts sculpted multi-material landmarks, zero static legacy model nodes, and zero WebGPU custom-shader gaps", () => {
     for (const mode of ["script", "original"] as const) {
       const json = (buildWorld({ look: { mode, pinnedStage: null } }).scene as unknown as {
         toJSON(): { nodes: { kind?: string; name?: string }[]; effects?: { kind?: string; name?: string }[] };

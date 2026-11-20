@@ -40,24 +40,24 @@ vertex colours; facade wall colours are baked into one texture per colour for th
 Simulation is untouched: `sim.ts`, `world.ts`, `chase.ts` and `headlights.ts` are byte-identical to the verified versions
 and the four scenario hashes, 225 blocks, 174 pickups and 84 traffic cars still hold.
 
-## Generated models (Meshy, Oct 2026)
+## Generated models (Oct 2026, removed in 5.5.6)
 
-The player car, the traffic and the near-field street furniture are generated 3D models (Meshy text-to-3D through Kiro Prism, original
-text prompts, no image-to-3D and nothing from the original game): `assets/models/*.glb`, listed with prompts, task ids, triangle counts and
-rights basis in `assets/ATTRIBUTION.md`; Meshy task records are in `assets/provenance/`. `models.ts` pins each GLB by sha256 (same-origin
-pathname URLs, which the production bridge requires) and `tests/unit/drift-and-deliver-port/models.test.ts` checks every hash, the size
+The player car, the traffic and the near-field street furniture were generated 3D models (text-to-3D from original
+text prompts, no image-to-3D and nothing from the original game): `assets/models/*.glb`. Those files and their generation records were
+deleted in 5.5.6; this section records how they were wired. `models.ts` pinned each GLB by sha256 (same-origin
+pathname URLs, which the production bridge requires) and `tests/unit/drift-and-deliver-port/models.test.ts` checked every hash, the size
 budget and the placement plan.
 
 - **Player**: a teal compact courier hatchback (37.5k triangles, one closed solid shell, regenerated 2026-10-25), the only car that casts shadows. **Traffic**: sedan, hatchback, taxi-style van and box truck
   (6-9k triangles each; kinds cycle exactly as the old shells did: `i % 4`), drawn as one `instances.model` node per kind (4 nodes for
   84 cars, was 84 `model()` nodes) and moved each frame with `setInstances`.
   The car GLBs are baked (vertex rotation + lift, `tools/crayon-capture/drift-and-deliver-bake-cars.mjs`) to face +z with the lowest point at
-  y = 0, so a runtime `setPosition/setRotation` is all the sim state needs. Meshy bakes the wheels into the body, so wheels do not spin.
+  y = 0, so a runtime `setPosition/setRotation` is all the sim state needs. The generator baked the wheels into the body, so wheels did not spin.
 - **Near-field props** (`props.ts`, instanced with `instances.model`, one draw per kind): lamps within 180 m of the start, signals 170 m,
   trees and palms 230 m, hydrants 190 m, 24 bus shelters, a clock tower in the nearest plaza at least 80 m away, a lighthouse on the harbour
   edge and rooftop water tanks on every sixth tall building. Beyond those radii the merged low-poly props of `city.ts` remain (the
   procedural props skip exactly the placements the models replace), which bounds the triangle count; the swap is not blended.
-- **Tree and palm** were remeshed by Meshy (3.5k and 3k target) because the leaf geometry cannot be simplified locally.
+- **Tree and palm** were remeshed by the generator (3.5k and 3k target) because the leaf geometry cannot be simplified locally.
 - `?models=0` restores the code-built shells and props (diagnostics, and the fallback if the GLBs ever fail to load).
 - Not done: animated pedestrians (276 static code-built pedestrians remain; the unused rigged walker GLB was deleted on 2026-10-29),
   per-instance paint variety on the traffic (the colour is baked into each model's texture), spinning wheels.

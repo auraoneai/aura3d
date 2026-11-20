@@ -10,10 +10,10 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
  * The simulation runs under `?manual=1`, so states are reached with `stepSteps` and are the same on both builds.
  *
  * Tests:
- *   `screens`  real Meshy models, waits for the texture upgrade, then the evidence screens (same names and sizes as
+ *   `screens`  the generated models, waits for the texture upgrade, then the evidence screens (same names and sizes as
  *              evidence/roadster-hours-port/screens/final) and steady-state luma at mid-drive (three shots, judge the later two);
  *              C1 (one R tap) and C3 (lighthouse/town node list) probes.
- *   `render`   `?meshy=0` (no texture wait): default quality against `?aura3d-render=production` on Sunbreak Coast and Halo Skyway
+ *   `render`   no texture wait: default quality against `?aura3d-render=production` on Sunbreak Coast and Halo Skyway
  *              at the same sim state (RP-05 bloom fusion), three shots each.
  *   `touch`    390x844 touch device (`hasTouch`, `isMobile`): touch controls present, throttle drives the car, recover is one tap.
  */
@@ -201,7 +201,7 @@ test.describe("roadster-hours-port audit fix (G22)", () => {
         page.on("pageerror", (e) => log(`RH_ERR pageerror ${e.message.slice(0, 300)}`));
         await page.setViewportSize({ width: 1280, height: 720 });
         const q = mode === "production" ? "&aura3d-render=production" : "";
-        await page.goto(`${server.origin}/examples/roadster-hours-port/?manual=1&meshy=0&level=${level}${q}`, { waitUntil: "domcontentloaded" });
+        await page.goto(`${server.origin}/examples/roadster-hours-port/?manual=1&level=${level}${q}`, { waitUntil: "domcontentloaded" });
         await waitReady(page);
         await beginAndStep(page, 330 + 900);
         for (const [i, wait] of [[0, 0], [1, 15_000], [2, 15_000]] as const) {
@@ -216,7 +216,7 @@ test.describe("roadster-hours-port audit fix (G22)", () => {
   test("finish fanfare and next route in place", async ({ page }) => {
     page.on("pageerror", (e) => log(`RH_ERR pageerror ${e.message.slice(0, 300)}`));
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(`${server.origin}/examples/roadster-hours-port/?manual=1&meshy=0&level=0`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/roadster-hours-port/?manual=1&level=0`, { waitUntil: "domcontentloaded" });
     await waitReady(page);
     await beginAndStep(page, 0);
     for (let i = 0; i < 40; i++) {
@@ -244,7 +244,7 @@ test.describe("roadster-hours-port audit fix (G22)", () => {
     test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
     test("touch controls drive the car", async ({ page }) => {
       page.on("pageerror", (e) => log(`RH_ERR pageerror ${e.message.slice(0, 300)}`));
-      await page.goto(`${server.origin}/examples/roadster-hours-port/?manual=1&meshy=0&level=0`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${server.origin}/examples/roadster-hours-port/?manual=1&level=0`, { waitUntil: "domcontentloaded" });
       await waitReady(page);
       const media = await page.evaluate(() => ({ coarse: matchMedia("(pointer: coarse)").matches, bodyClass: document.body.className }));
       await beginAndStep(page, 330);

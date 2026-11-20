@@ -2,7 +2,7 @@
  * WP-06 — Pip's Big Leap (`apps/showcase-pips-big-leap`)
  * Procedural Multi-Material Storybook Woodland & Diorama Art Library.
  *
- * Replaces all 26 static Meshy clay props, borrowed sci-fi/FPS assets, and raw box/sphere/cone
+ * Replaces all 26 static clay props, borrowed sci-fi/FPS assets, and raw box/sphere/cone
  * primitives in the diorama look with curved, multi-material `@aura3d/engine` assemblies while
  * preserving the 3 rigged character GLBs (`pip`, `boss`, `beetle`) and 100% of gameplay physics.
  */
@@ -2391,7 +2391,7 @@ export function buildDioramaStaticDecorNodes(
   return out;
 }
 
-/** Single-prop procedural woodland decor node (`?look=original` fallback so zero Meshy GLBs are ever mounted). */
+/** Single-prop procedural woodland decor node (`?look=original` fallback so zero static prop GLBs are ever mounted). */
 export function buildSingleDecorPropNode(
   name: string,
   kind: StaticDecorKind,
@@ -2487,7 +2487,7 @@ function snapMeshMaxY(mesh: ProceduralMesh, targetMaxY: number): ProceduralMesh 
 }
 
 /**
- * Sculpted, organically textured glossy chestnut-brown acorn cap dome matching the Meshy Pip hero:
+ * Sculpted, organically textured glossy chestnut-brown acorn cap dome matching the Pip hero model:
  * plump rolled lower rim + soft overlapping bark-scale & radial cupule lobes faired with Taubin smoothing.
  */
 function sculptTexturedAcornCapDomeMesh(): ProceduralMesh {

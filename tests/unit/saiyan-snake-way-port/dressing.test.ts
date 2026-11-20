@@ -3,7 +3,7 @@ import { ISLAND_BANDS } from "../../../examples/saiyan-snake-way-port/world";
 import { ISLAND_COUNT } from "../../../examples/saiyan-snake-way-port/models";
 
 describe("serpentine-sky-run island parallax bands (SSR-11)", () => {
-  it("adds a mid and a far band beyond the near Meshy islands, one instanced draw each", () => {
+  it("adds a mid and a far band beyond the near model islands, one instanced draw each", () => {
     expect(ISLAND_BANDS.map((b) => b.id)).toEqual(["islands-mid", "islands-far"]);
     expect(ISLAND_COUNT + ISLAND_BANDS.reduce((n, b) => n + b.count, 0)).toBeGreaterThanOrEqual(12 * 2);
     // bands sit progressively farther out and foggier (silhouette layers)

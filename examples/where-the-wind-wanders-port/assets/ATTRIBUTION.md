@@ -2,7 +2,7 @@
 
 ## 3D Characters, Architecture & Sanctuary Scenery (100% Procedural `@aura3d/engine`)
 
-All characters, architecture, flora, and interactive props in `The Bellkeeper's Walk` are sculpted procedurally in code using `@aura3d/engine` multi-material assemblies (`art/proceduralModels.ts` on `apps/showcase-port-shared/proceduralKernel.ts`) — zero external `.glb` or Meshy 3D files are shipped:
+All characters, architecture, flora, and interactive props in `The Bellkeeper's Walk` are sculpted procedurally in code using `@aura3d/engine` multi-material assemblies (`art/proceduralModels.ts` on `apps/showcase-port-shared/proceduralKernel.ts`). Since the Idol wow pass the most-seen of them are drawn as Idol GLBs generated through fal from our own reference images (`art/idolModels.ts`; files and `*.idol.json` provenance in `assets/idol/`), and `?idol=0` keeps the procedural set described here:
 
 - **Bellkeeper Wanderer (`hero`)**: Articulated multi-material `@aura3d/engine` character hierarchy (`latheMesh` woven reed/straw conical traveller hat with indigo hatband and braided chin cord, `icosphereSmoothMesh` serene head, `loftSectionsMesh` layered sage/slate/ochre woven wind-cloak & tunic, leather cross-body courier satchel, `tubeSweepMesh` carved wooden sanctuary staff with suspended gleaming brass chime bell and crimson/gold wind-ribbons, wrapped calf gaiters, and grounded leather boots).
 - **Highland Sanctuary & Village (`belltower`, `belltower-bell`, `cottage`, `windmill`, `packhorse-bridge`, `wayside-shrine`)**: Multi-material ashlar masonry, limewash plaster, mortised oak timber, thatch/slate roofs, mullion glass, and patinated bronze sanctuary bell.

@@ -13,7 +13,7 @@ const ORIGINAL_SHA = "5e8a08af3b60c2a36aed4b0d3197c2d1846cf7cfc26a1322d366232cc0
 const SCRIPT_SHA = "7a1ea836817674f965fe1e42691acb15a51e6812d5519a441fd841584c5c3f7b";
 
 describe("Serpentine procedural sky-runner & original look parity", () => {
-  it("ships zero static Meshy GLB files on disk and builds sculpted geometry for every runner part", () => {
+  it("ships zero static runner GLB files in the example and builds sculpted geometry for every runner part", () => {
     const assetsDir = resolve("examples/saiyan-snake-way-port/assets");
     const glbs = existsSync(assetsDir) ? readdirSync(assetsDir).filter((f) => f.endsWith(".glb")) : [];
     expect(glbs).toEqual([]);

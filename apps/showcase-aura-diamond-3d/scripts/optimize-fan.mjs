@@ -1,4 +1,4 @@
-// GU47 WP-36 (DIA-A2): the seated-fan Meshy row, simplified for ~600 instanced fans in the stands.
+// GU47 WP-36 (DIA-A2): simplifies a seated-fan model for ~600 instanced fans in the stands.
 // node apps/showcase-aura-diamond-3d/scripts/optimize-fan.mjs <in.glb> <outDir> <baseName> [ratio] [error]
 import { NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";

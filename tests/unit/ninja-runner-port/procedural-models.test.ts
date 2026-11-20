@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import direction from "../../../examples/ninja-runner-port/art/direction";
-import { MESHY_MANIFEST, type PropId } from "../../../examples/ninja-runner-port/assets/meshy/manifest";
+import { PROP_MANIFEST, type PropId } from "../../../examples/ninja-runner-port/assets/props/manifest";
 import {
   INST_SENGOKU_MATERIALS,
   SENGOKU_MATERIALS,
@@ -98,7 +98,7 @@ describe("WP-24 Shadowstep Gauntlet procedural multi-material overhaul", () => {
           if (z > maxZ) maxZ = z;
         }
       }
-      const target = MESHY_MANIFEST[id].size;
+      const target = PROP_MANIFEST[id].size;
       expect(maxX - minX, `${id} width`).toBeCloseTo(target[0], 2);
       expect(maxY - minY, `${id} height`).toBeCloseTo(target[1], 2);
       expect(maxZ - minZ, `${id} depth`).toBeCloseTo(target[2], 2);

@@ -156,7 +156,7 @@ export const BACKDROP_PIECES: readonly BackdropPiece[] = (() => {
     const island = ISLANDS.has(kind);
     const pylon = PYLONS.has(kind);
     return {
-      id: `meshy-${i}`,
+      id: `backdrop-piece-${i}`,
       kind,
       side,
       offset: pylon ? 7.6 + ((i * 3) % 3) * 0.9 : (island ? 18 : 13) + ((i * 7) % 4) * 2.2,

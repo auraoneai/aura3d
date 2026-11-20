@@ -914,7 +914,7 @@ export const STAND_MODULE_SCALE = 10.5;
 const PLAYER_TUNNEL_DEPTH = 5.1;
 const PLAYER_TUNNEL_X = -13;
 /**
- * Meshy-07 (FC47-AN1): six rigged fans (three Meshy models, two each, 5k triangles, one skinned draw apiece) standing
+ * FC47-AN1: six rigged fans (three fan models, two each) standing
  * at the far rail just behind the sponsor hoardings, where the broadcast frame sees them over the boards. They idle
  * and, while the crowd cheers (goal phase, won final), alternate the cheer and fist-pump clips along the row. They are
  * mounted visible at full scale and never hidden (a skinned model created hidden may never draw once shown); venues
@@ -1139,7 +1139,7 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
     );
   }
 
-  /* ---- Meshy-07 (FC47-AN1): rigged front-row fans at the far rail (bowl venues; the original look keeps 4.6.2) ---- */
+  /* ---- FC47-AN1: rigged front-row fans at the far rail (bowl venues; the original look keeps 4.6.2) ---- */
   if (v.standCount > 0 && (mode ?? fcLookMode(v.id)) !== "original") nodes.push(...pitchFanNodes());
 
   /* ---- Floodlight towers: one real flood, a light-pool batch for the rest, cones (FC47-L2, S2) ---- */

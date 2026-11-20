@@ -118,7 +118,7 @@ interface PartSpec {
   readonly shape: Shape;
   readonly size?: number | readonly [number, number, number];
   readonly cone?: { readonly radius: number; readonly height: number };
-  /** Shape "model": the Meshy asset key (see models.ts); `size` is unused. */
+  /** Shape "model": the `PROP_MODELS` key (see models.ts); `size` is unused. */
   readonly model?: string;
   readonly mat: string;
   /** Offset in the entity frame (x right, y up, z back along the road). */
@@ -193,7 +193,7 @@ export const FLAG_DRAW_SLOTS = VERGE_POSTS * VERGE_PIECES + GATE_SLOTS * GATE_PI
  */
 export const SERPENT_HEAD = { cycle: 1400, ahead: 1050, lateral: 150, height: 130, rise: -12, yawDeg: 45 } as const;
 /**
- * GU47 SSR-11: island parallax bands beyond the six near Meshy islands. Each band is one instanced draw of inverted spire
+ * GU47 SSR-11: island parallax bands beyond the six near model islands. Each band is one instanced draw of inverted spire
  * cones recycled along the road: `count` islands every `spacing` m, `lateral` m out, `up` m above the road, `fog` the
  * minimum fog (far band reads as a silhouette layer).
  */
@@ -203,7 +203,7 @@ export const ISLAND_BANDS = [
 ] as const;
 /**
  * GU47 phase 2: the spire bands stay unbuilt. In the captures the 7-sided cones read as flat pink/violet placeholder
- * triangles hanging over the cloud sea (the 4.6.2 frame showed only the Meshy islands, which read better).
+ * triangles hanging over the cloud sea (the 4.6.2 frame showed only the model islands, which read better).
  */
 export const SPIRE_BANDS_SHOWN = false;
 /**
@@ -250,7 +250,7 @@ function frameBasis(frame: RoadFrame, yawOffset = 0): M3 {
 /** Local ZYX Euler (R = Rz·Ry·Rx) as a matrix. */
 const eulerMatrix = (e: LV3): M3 => mul(rz(e[2]), mul(ry(e[1]), rx(e[0])));
 
-/** Meshy humanoid (see assets/ATTRIBUTION.md): faces +Z; clips are listed in `CLIP`. */
+/** Rigged runner humanoid: faces +Z; clips are listed in `CLIP`. */
 const RIG_SCALE = 1.8;
 const CLIP = { run: "Run_Loop", air: "Jump_Loop", fly: "Flight_Loop", dive: "Dive_Loop", slide: "Slide_Loop", idle: "Idle_Loop", hit: "Hit_React" } as const;
 
@@ -393,7 +393,7 @@ export interface World {
 }
 
 /**
- * Neutral-room IBL for the PBR runner and the Meshy props (LIGHT-01). Since 4.5.0 a lights-only scene gets no implicit
+ * Neutral-room IBL for the PBR runner and the model props (LIGHT-01). Since 4.5.0 a lights-only scene gets no implicit
  * environment, so without this node the runner and props lost the neutral-room probe they had on 4.3.7 (diffuse and
  * specular 1). The custom road, sky and figure materials are unlit and ignore it. Calibrated with the hemisphere on
  * (it contributes next to an environment, per normal, since lane E2's LIGHT-05/08) against v4.3.7 at the same game state:

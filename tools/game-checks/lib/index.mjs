@@ -291,7 +291,7 @@ function checkDeployableAssets({ game, src, root }) {
     for (let i = 0; i < lines.length; i++) {
       for (const m of lines[i].matchAll(/["'`](\/aura-assets\/[A-Za-z0-9_.@-]+\.(?:glb|gltf|ktx2|mp3|ogg|wav|hdr|bin))["'`]/g)) {
         const url = m[1];
-        if (seen.has(url) || /\.meshy-candidate\./.test(url)) continue;
+        if (seen.has(url)) continue;
         seen.add(url);
         const name = url.replace("/aura-assets/", "");
         const onDisk = existsSync(join(root, "public", "aura-assets", name)) || existsSync(join(routeLocal, name));
@@ -422,36 +422,6 @@ function checkCounts({ root, inventory }) {
     });
   }
   return out;
-}
-
-// Reads the same ledger `aura3d meshy ledger` writes (AURA3D_MESHY_LEDGER, else ~/.aura3d/meshy-ledger.jsonl), merged per
-// reservation id exactly like the CLI: latest record wins, failed counts 0, otherwise actual ?? est. Baseline/config records never count.
-function readLedgerByTag(file) {
-  const byRid = new Map();
-  for (const line of readFileSync(file, "utf8").split("\n")) {
-    if (!line.trim()) continue;
-    try { const r = JSON.parse(line); if (!r.kind && r.rid) byRid.set(r.rid, { ...(byRid.get(r.rid) ?? {}), ...r }); } catch { /* skip a torn line */ }
-  }
-  const byTag = {};
-  for (const r of byRid.values()) {
-    const tag = r.game ?? r.tag;
-    if (!tag || tag === "unattributed") continue;
-    byTag[tag] = (byTag[tag] ?? 0) + (r.status === "failed" ? 0 : Number(r.actual ?? r.est ?? 0));
-  }
-  return byTag;
-}
-
-// Information only: Meshy spend is uncapped by owner decision (2026-10-25), so this never warns. It lists the credits per tag
-// from the ledger `aura3d meshy ledger` writes so the numbers stay visible (AURA3D_MESHY_LEDGER, else ~/.aura3d/meshy-ledger.jsonl).
-function checkMeshyCap({ env }) {
-  const explicit = env.AURA3D_MESHY_LEDGER ?? env.MESHY_LEDGER;
-  const home = env.HOME ?? process.env.HOME ?? "";
-  const ledger = explicit ?? join(home, ".aura3d", "meshy-ledger.jsonl");
-  if (!existsSync(ledger)) return [finding("meshy-cap", "info", null, ledger, 0, "no Meshy ledger found; route paid Meshy calls through `aura3d meshy ledger reserve` to keep credits visible (spend is uncapped)")];
-  const byTag = readLedgerByTag(ledger);
-  const list = Object.entries(byTag).sort((a, b) => b[1] - a[1]).map(([tag, spent]) => `${tag} ${spent}`).join(", ");
-  const total = Object.values(byTag).reduce((sum, v) => sum + v, 0);
-  return [finding("meshy-cap", "info", null, ledger, 0, `Meshy credits per tag, tracked for visibility (spend is uncapped by owner decision 2026-10-25): ${list || "none"}; ${total} attributed in total`)];
 }
 
 // Rigged characters a game ships must pass `aura3d assets validate --skin` (stretched triangles, flaps, bad weights). Known defects that
@@ -758,7 +728,7 @@ function checkAppCatalog({ game, root }) {
 export const GU47_CHECK_SEVERITY = "warn";
 /**
  * Per-check severity. The WP-38 gate flips a check to "error" once every live game passes it, so a check that waits on
- * an outside dependency (borrowed-asset and prop-exclusivity wait on the WP-36 Meshy batch) does not hold the others back.
+ * an outside dependency (borrowed-asset and prop-exclusivity wait on a replacement asset batch) does not hold the others back.
  */
 export const GU47_SEVERITY_BY_CHECK = Object.freeze({
   // 4.7.6: every live game passes these two, so a regression now fails the gate.
@@ -1210,7 +1180,7 @@ export const GAME_CHECKS = {
   "no-removed-5-0-apis": checkNoRemoved50Apis,
   autoplay: checkAutoplay
 };
-export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
+export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, skin: checkSkin };
 
 /**
  * Run checks. options: { root, slugs?: string[] | "all", only?: string[], global?: boolean, env? }

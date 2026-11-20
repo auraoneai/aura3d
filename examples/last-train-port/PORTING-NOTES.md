@@ -4,7 +4,7 @@
 > play; final screenshots in `evidence/last-train-port/screens/final`). The Idol pass replaced the most-seen procedural models with fal Idol
 > image-to-3D GLBs (spec `tools/idol/specs/last-train-port.json`, files and `*.idol.json` provenance in `apps/showcase-last-train-port/assets/idol/`). The 5.5.6 "`0` `.glb` files" note below predates that pass and is historical.
 
-> **5.5.6 Update (2026-11-12):** All external CC0 and Meshy `.glb` models (`assets/meshy/*` and landmark `.glb`s) documented below were deleted and replaced with 100% native `@aura3d/engine` procedural geometry (`0` `.glb` files), including an enclosed glazed coastal electric interurban railcar, rear-chase track-ahead camera, and crisp coastal fog without DoF or sun-flare wash.
+> **5.5.6 Update (2026-11-12):** All external CC0 and generated `.glb` models (the generated set and the landmark `.glb`s) documented below were deleted and replaced with 100% native `@aura3d/engine` procedural geometry (`0` `.glb` files), including an enclosed glazed coastal electric interurban railcar, rear-chase track-ahead camera, and crisp coastal fog without DoF or sun-flare wash.
 
 Aura3D port of the Crayon game "Last Train to the Sea" (PRD §7.2 Phase D, task R-20).
 Source: the captured game module (`tests/fixtures/crayon/last-train/PROVENANCE.md`; untrusted data, read as text only,
@@ -20,8 +20,8 @@ never executed outside the capture browser). Only the simulation-core regions th
 | `data/route.json`, `data/tables.json` | Measurements taken from the original's own functions: the six legs sampled every 2 m (position, curvature, grade, vertical curvature, bank), constants, difficulty table, towns and sky palettes, station passenger tables, driving gates. |
 | `world.ts`, `townkit.ts`, `shaders.ts`, `materials.ts`, `orient.ts` | Rendering on the public `@aura3d/engine` surface only. `townkit.ts` builds the merged town meshes (metric-UV facades, gable and pyramid roofs, clock tower, stone arch, cobbled plaza) and paints their canvas textures. |
 | `audio.ts` | Synthesised sound on the shared `AudioContextManager`: wind and rail rumble that follow speed, wheel clacks at the joint spacing, flange squeal, rain hiss, a slow pad, one cue per event (`diffCues` is pure and unit tested). |
-| `models.ts` | Declares the Meshy-generated models (same-origin pathnames + sha256) and the tram placement constants. `?procedural=1` falls back to the code-built stand-ins. |
-| `assets/` | Two CC0 Kenney tower GLBs (landmarks), a CC0 sky HDRI and 12 Meshy models in `assets/meshy/` with `assets/provenance/*` (rights and task metadata), about 19 MB in total, with `ATTRIBUTION.md`. |
+| `models.ts` | Declared the generated models (same-origin pathnames + sha256); now only the tram placement constants. `?procedural=1` falls back to the code-built stand-ins. |
+| `assets/` | Two CC0 Kenney tower GLBs (landmarks), a CC0 sky HDRI and 12 generated models with their rights and task metadata (all deleted in 5.5.6), about 19 MB in total, with `ATTRIBUTION.md`. |
 | `main.ts`, `index.html` | Boot, fixed-step loop, input, HUD, capture hooks. |
 
 Run it: open `/examples/last-train-port/` on the example dev server. Query parameters are listed at the top of `main.ts`.
@@ -109,13 +109,13 @@ Run `last-train-h-20261023T065059Z` (`evidence/last-train-port/`): three circuit
   state size only, because its headless stepping never renders; JS heap moves with garbage collection and is recorded, not asserted.
 - The remote runner is software WebGL2 (SwiftShader), not a hardware GPU.
 
-## Meshy art pass (2026-10-23)
+## Generated-model art pass (2026-10-23, removed in 5.5.6)
 
-Twelve text-to-3D models (preview + refine, PBR 2k) generated through Kiro Prism on the AuraOne Meshy account from original prompts only (no image-to-3D, no names or art from the original), optimised with meshopt and 512 to 2048 px textures, admitted in an isolated project with `aura3d assets import-meshy` and validated (`failures: []`; the orientation-metadata warning is expected). Prompts, preview and refine task ids are in `assets/ATTRIBUTION.md`; credits used are in the shared ledger (`/tmp/meshy/ledger.jsonl`, 340 credits for the first twelve models and one retry of the sleeper whose first version came with a chair).
+Twelve text-to-3D models (PBR 2k) from original prompts only (no image-to-3D, no names or art from the original), optimised with meshopt and 512 to 2048 px textures and validated (`failures: []`; the orientation-metadata warning is expected). The files and their generation records were deleted in 5.5.6; this section records how they were used.
 
 | Role | Model | Where it is used |
 | --- | --- | --- |
-| Tram | `meshy/tram.glb` (open-sided seaside tram, 4.2 MB, about 47k vertices) | One node `tram-body`, stretched to the sim's 10.4 m length and posed from the runtime like the old merged groups (model X maps to tram +Z) |
+| Tram | `tram.glb` (open-sided seaside tram, 4.2 MB, about 47k vertices) | One node `tram-body`, stretched to the sim's 10.4 m length and posed from the runtime like the old merged groups (model X maps to tram +Z) |
 | Passengers | four standing figures (`pax-easy`, `pax-sightseer`, `pax-rushed`, `pax-sleeper2`), about 0.5 to 0.9 MB each | One per temperament at each of the 12 seats' positions inside the tram, facing the aisle; five of the same figures also stand on each platform in place of capsule folk |
 | Townhouses | `house-cream`, `house-ochre`, `house-blue` | Six per town in reserved windows of the two inner rows (the procedural facade rows skip those windows), front facing the track |
 | Landmarks | `clock-tower`, `lighthouse` | The clock tower replaces the stone box, pyramid roof and canvas clock faces at the same spot in every town; a lighthouse stands at the far edge of towns 1 and 4 |
@@ -123,9 +123,9 @@ Twelve text-to-3D models (preview + refine, PBR 2k) generated through Kiro Prism
 
 Notes for the next agent:
 
-- Meshy's `--pose a-pose` forces an A-pose, so the passengers **stand** with open arms in the aisle rather than sit; the sitting-pose wording in the prompt was ignored (the first sleeper even came with a chair, hence the retry). Rigging and a seated animation clip would be the proper fix; the animate action ids were not available, so it was not attempted.
+- The generator's A-pose option forced an A-pose, so the passengers **stand** with open arms in the aisle rather than sit; the sitting-pose wording in the prompt was ignored (the first sleeper even came with a chair, hence the retry). Rigging and a seated animation clip would be the proper fix; the animate action ids were not available, so it was not attempted.
 - The tram admitted with the `vehicle` profile fails the `vehicle-parts` check (no separate wheels) while `assets validate` reports `failures: []`; it is admitted as a `prop` instead.
 - An empty `instances` array on a primitive makes every render throw (`Instance transforms must contain one or more mat4 values`) and blanks the whole canvas; removing the cylinder posts without removing the node produced a fully black frame. `posts` is now only added when it has instances (an engine-level guard that skips empty instanced nodes would be a good follow-up).
 - Draw calls: 111 to 187 per frame on the capture route (software GL, view dependent) against 137 before; the new models are single-material, one draw each.
-- **Memory (engine finding):** repeated `model()` nodes do not share GPU resources: every node of the same GLB uploads its own textures and buffers (the gauge counts 401 textures and 330 buffers, `approximateGpuMemoryBytes` about 610 MB on the software-GL gauge, up from about 221 MB before the Meshy models and 790 MB before the repeated models' textures were cut to 256 px). The 48 hidden passenger nodes, 30 platform figures, 36 houses and 24 crate/lamp nodes are the repeats. A public way to instance a GLB (or to share textures between nodes that point at one asset) would remove most of it; until then keep repeated models small. The memory check in `tests/browser/last-train-port.spec.ts` now compares the next day loop against the night loop (the first night loop moved the gauge by about 10%) instead of against loop 1.
+- **Memory (engine finding):** repeated `model()` nodes do not share GPU resources: every node of the same GLB uploads its own textures and buffers (the gauge counts 401 textures and 330 buffers, `approximateGpuMemoryBytes` about 610 MB on the software-GL gauge, up from about 221 MB before the generated models and 790 MB before the repeated models' textures were cut to 256 px). The 48 hidden passenger nodes, 30 platform figures, 36 houses and 24 crate/lamp nodes are the repeats. A public way to instance a GLB (or to share textures between nodes that point at one asset) would remove most of it; until then keep repeated models small. The memory check in `tests/browser/last-train-port.spec.ts` now compares the next day loop against the night loop (the first night loop moved the gauge by about 10%) instead of against loop 1.
 - Judge (model, not a human; seed 20261023, 48 trials, docked frames): the original was identified 48 of 48 times before and after this pass; "same game" 0 of 48. The first pair's luma JSD went 0.148 to 0.190 and RGB JSD 0.627 to 0.563, and the port is darker than the original (mean luma delta -45): raising exposure is the cheapest next step.

@@ -1,7 +1,7 @@
 /**
  * WP-21 — Serpentine Sky Run Multi-Material Procedural 3D Art Kit.
  *
- * Replaces all 11 static Meshy clay props and sky landmarks with sculpted multi-material
+ * Replaces all 11 static clay-model props and sky landmarks with sculpted multi-material
  * geometry built exclusively from `apps/showcase-port-shared/proceduralKernel.ts` and
  * `@aura3d/engine` physical surface presets (with a paired WGSL twin for `material.strata`).
  * Zero `three` imports; rigged runner skeletons remain untouched.
