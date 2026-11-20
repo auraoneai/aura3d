@@ -78,11 +78,17 @@ test("audit the interactive production showcases", async ({ page }, testInfo) =>
         const button = page.locator(`button[data-view="${value}"]`);
         await button.click();
         await expect(button).toHaveAttribute("aria-pressed", "true");
+        await expect.poll(() => page.evaluate(() =>
+          (window as Window & { __auraShowcase?: { camera: { view: string } } }).__auraShowcase?.camera.view
+        )).toBe(value);
       }
       for (const value of ["tungsten", "daylight"]) {
         const button = page.locator(`button[data-light="${value}"]`);
         await button.click();
         await expect(button).toHaveAttribute("aria-pressed", "true");
+        await expect.poll(() => page.evaluate(() =>
+          (window as Window & { __auraShowcase?: { light: string } }).__auraShowcase?.light
+        )).toBe(value);
       }
     }
     const bodyText = await page.locator("body").innerText().catch(() => "");
