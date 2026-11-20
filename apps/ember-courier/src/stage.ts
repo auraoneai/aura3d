@@ -15,6 +15,7 @@ const glow = (color: string, intensity = 1.4) => material.emissive({ color, emis
 const surfaces = {
   frame: steel("#152e38"), floor: steel("#233a46", 0.43), ledge: steel("#364d56"), black: steel("#0d1d26"),
   crane: steel("#72412f"), stripe: steel("#996531"), roof: steel("#223a43"),
+  gateAmber: material.emissive({ color:"#9b3905", emissive:"#ff5406", emissiveIntensity:0.72 }),
   sodium: glow("#ffab56"), ice: glow("#94dfec", 0.94), darkWindow: glow("#426979", 0.20),
   red: glow("#ef5d3d"), distant: material.pbr({color:"#112431",roughness:0.94,metalness:0.05})
 };
@@ -28,6 +29,12 @@ export function buildStage() {
     .add(lights.directional({ position: [4, 3.5, -4], target: [0, 1, 0], color: "#ff9d5c", intensity: 1.54 }))
     .add(lights.point({ name:"dispatch booth key",position:[-1.65,2.65,2.2],color:"#b4e1ff",intensity:2.4,distance:5.5 }))
     .add(lights.point({name:"courier shoulder kicker",position:[1.65,2.2,-0.9],color:"#ff9451",intensity:2.7,distance:4.5}))
+    // This narrow port-side wash follows the courier. It catches the outside of the helmet,
+    // backpack ribs and calf armour while leaving the terminal beyond its range unlit.
+    .add(lights.spot({name:"courier port rim",position:[-1.25,2.45,0.85],target:[0,1.08,0],
+      angle:0.53,penumbra:0.63,distance:3.8,color:"#9bdcff",intensity:11,shadow:false})
+      .runtime(game.runtimeNode("courier-rim")))
+    .add(effects.contactShadows({length:0.21,thickness:0.08,steps:8,intensity:0.58,lights:"sun"}))
     .add(effects.fog({ name: "salt haze", mode: "linear", color: "#1a303e", near: 13, far: 88, maxOpacity: 0.72, affectsBackground: false }))
     .add(effects.cinematicBloom({ name: "halation on port signals", intensity: 0.11, threshold: 1.15, radius: 2 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
@@ -116,19 +123,17 @@ export function buildStage() {
       plate("black",side*1.94,0.16,z,0.68,0.32,1.03);
       plate("stripe",side*1.94,0.34,z,0.52,0.09,0.88);
       plate("frame",side*1.94,1.56,z,0.26,2.39,0.41);
-      plate("sodium",side*1.78,1.55,z,0.065,2.11,0.43);
+      plate("gateAmber",side*1.78,1.55,z,0.065,2.11,0.43);
       plate("crane",side*1.62,2.95,z,0.23,1,0.4,-side*-0.71);
-      plate("sodium",side*1.5,2.94,z+0.21,0.085,0.88,0.025,-side*-0.71);
+      plate("gateAmber",side*1.5,2.94,z+0.21,0.085,0.88,0.025,-side*-0.71);
     }
     plate("frame",0,3.28,z,2.78,0.25,0.42);
-    for(let j=0;j<=index;j++) plate("sodium",(j-index/2)*0.23,3.28,z+0.225,0.11,0.14,0.035);
+    for(let j=0;j<=index;j++) plate("gateAmber",(j-index/2)*0.23,3.28,z+0.225,0.11,0.14,0.035);
     for(let j=0;j<7;j++) plate("stripe",(j-3)*0.49,0.02,z,0.29,0.018,0.18,0,0.43);
     stage.add(primitives.box({ name: "relay confirmation "+index,size:[1.86,0.065,0.43],material:surfaces.ice })
       .position(0,3.11,z).runtime(game.runtimeNode("confirmed-"+index)));
   }
   for(const [key,transforms] of batches)
     stage.add(instances.box({ name:"terminal "+key, material:surfaces[key], transforms, castShadow:key==="crane"||key==="frame",receiveShadow:true }));
-  stage.add(primitives.cylinder({name:"boot contact shadow",size:[0.73,0.008,0.45],params:{radialSegments:40},material:material.pbr({color:"#1e3035",metalness:0,roughness:0.97}),castShadow:false})
-    .position(0,0.015,0).runtime(game.runtimeNode("contact")));
   return stage;
 }

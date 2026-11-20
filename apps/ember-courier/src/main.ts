@@ -33,7 +33,8 @@ async function openDeck() {
   });
   const app = game.app;
   const courier = app.nodes.require("courier");
-  const contact = app.nodes.require("contact");
+  const rim = app.nodes.require("courier-rim");
+  rim.setLight?.({ direction: [0.613, -0.672, -0.417] });
   const signals = relays.map((_,i) => app.nodes.require("confirmed-"+i));
   const controller = createAnimationController({
     id:"courier-locomotion", clipRegistry: assets.courier, requiredClips:["idle","walk","run"], suppressRootMotion:true
@@ -119,7 +120,9 @@ async function openDeck() {
   function pose(dt: number) {
     const {x,y,z}=state.player;
     courier.setPosition(x,y,z).setRotation(0,facing,0);
-    contact.setPosition(x,0.015,z).setRotation(0,facing,0);
+    // Pose the wash in chase-camera space as the courier travels and changes facing.
+    const chase = state.gameState !== "portrait" || params.get("shot") === "rear";
+    rim.setPosition(x-1.25, chase ? 2.45 : 12, z+0.85);
     const targetMix = state.gameState === "portrait" ? 0 : 1;
     cameraMix += (targetMix-cameraMix)*(reduced.matches ? 1 : 1-Math.exp(-dt*4.8));
     const narrow = viewport.clientWidth<viewport.clientHeight*0.95;
