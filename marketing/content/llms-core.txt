@@ -18,7 +18,7 @@
 ## Read first
 
 1. From three.js: `docs/agents/threejs-to-aura3d.md` maps each idiom (type-checked). Do not port renderer, resize, loop or disposal code; `createAuraApp` owns them.
-2. Two 3D modeling paths (never single-mesh Meshy clay or 1-box programmer art):
+2. Two 3D modeling paths (never single-mesh clay blobs or 1-box programmer art):
    - Clean, UV'd or rigged GLBs via `model(assets.x)` from the project or open CC0/CC-BY sources.
    - Multi-part, multi-material procedural sculpting in `@aura3d/engine`: compose `primitives.extrude|lathe|tube|roundedBox|polyhedron`, `geometry.define|applyMatrix4|merge|multiMaterial` and `instances.custom` across 3 to 8 physical materials (`material.carPaint`, `lacquer`, `brushedMetal`, `ceramic`, `studioGlass`, `fabric`, `physical`) so bevels and seams catch IBL and key-light speculars. Complete procedural scenes: `docs/agents/recipes.md` recipes 8 to 15.
    - Organic characters, creatures and hulls: `@aura3d/engine/sculpt`: SDF bodies (`sculptOrganicSdfMesh`), limbs (`sculptSdfLimbChainMesh`), heads, hair and garments for `geometry.multiMaterial` (`docs/api/sculpt.md`). Bake once at load, never per frame.
@@ -102,7 +102,7 @@ Pick the look first, then tune:
 Do not invent asset paths, URLs or ids; every model is a generated `assets.<key>`.
 
 - `npx @aura3d/cli@latest assets search "<object>"` lists licence-tagged open candidates; `assets resolve "<object>" --name <n>` types the top match; `assets add ./model.glb --name <n>` adds a file (then read `src/aura-assets.ts`).
-- No match: prefer a multi-part procedural model (Fast path, `@aura3d/engine/sculpt`); Meshy (`meshy-cli` skill) only on request.
+- No match: prefer a multi-part procedural model (Fast path, `@aura3d/engine/sculpt`).
 - `assets convert in.fbx --out out.glb` (FBX, OBJ, USD, BVH and more; losses reported). `assets generate "<subject>" --name <k> --kind character --rig --dry-run` prints the fal.ai cost; the paid run admits a `candidate`. `assets normalize` (facing/size), `assets slim` (JPEG normals; glossy ones stay PNG), `assets preview`/`assets thumbnail` (CPU base-colour PNGs).
 - Never trust generated PBR maps (`PBR_*` warnings); split body, glass, chrome and tyres; keep normals PNG; lower `normalScale`; judge gloss on a real GPU.
 - Material values: car paint = dielectric + clearcoat 1.0 (rough ~0.05), chrome = metal 1 rough ≤0.08; never fix sheen by lowering specular; run `assets inspect --pbr`.

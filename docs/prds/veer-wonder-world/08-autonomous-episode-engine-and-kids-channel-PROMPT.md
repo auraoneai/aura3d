@@ -56,7 +56,7 @@ Do not change app code while writing this plan. Code work starts after the owner
 
 Line counts per speaker, from the episode files: Momo carries most stories (up to 26 lines in `momo-bubble-universe.ts`). Lulu leads music, Lumi leads letters/numbers/shapes, and Peeko leads hiding and location words. **Banter today is mostly a host speaking to the viewer, with little character-to-character exchange.** That gap matters for the "addictive banter" goal (see §5.3).
 
-Characters are **100% procedural** (`src/scenes/procedural-rigs/cast-rigs.ts`, `src/scenes/articulated-actors.ts`). They have expressive mouths driven by a noise-gated ~3.8 Hz articulation curve. An optional AuraVoice viseme bridge exists (`articulated-actors.ts:2252+`) but is not wired to the recorded lines. Note: `README.md` and `02` §1 are out of date. They still describe Meshy GLBs and "no mouth morphs, never lip sync". Fix those docs in the build phase.
+Characters are **100% procedural** (`src/scenes/procedural-rigs/cast-rigs.ts`, `src/scenes/articulated-actors.ts`). They have expressive mouths driven by a noise-gated ~3.8 Hz articulation curve. An optional AuraVoice viseme bridge exists (`articulated-actors.ts:2252+`) but is not wired to the recorded lines. Note: `README.md` and `02` §1 are out of date. They still describe generated GLBs and "no mouth morphs, never lip sync". Fix those docs in the build phase.
 
 ### 2.2 Worlds (`src/types.ts:15`)
 

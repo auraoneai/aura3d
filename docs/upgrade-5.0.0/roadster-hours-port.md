@@ -4,7 +4,7 @@ Source: plan section 5.22 of `docs/project/5.0-games-and-examples-upgrade-plan.m
 
 ## Plan facts
 
-- Legacy: **82 custom hits** (largest: `world.ts` 27, `materials.ts` 13, 13 `glsl:`, `art/post.ts` shaderPass), `scatterTransform` x5 + `scatter` x15, `geometry.dynamic` x10, vfx burst/trail, `pixelRatio` x6; Meshy sedan/bus assets with provenance (`assets/provenance/saltwind*Salt.meta.json`, touched in `ccdc9cfe7`).
+- Legacy: **82 custom hits** (largest: `world.ts` 27, `materials.ts` 13, 13 `glsl:`, `art/post.ts` shaderPass), `scatterTransform` x5 + `scatter` x15, `geometry.dynamic` x10, vfx burst/trail, `pixelRatio` x6; generated sedan/bus assets with provenance (`assets/provenance/saltwind*Salt.meta.json`, touched in `ccdc9cfe7`).
 - Effort and risk: S wave 1, L for A4. Visual risk: HIGH.
 
 ## Checklist
@@ -19,7 +19,7 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A8 per-slot custom shader on the vehicles (skipped: not applicable. Vehicles are baked CC0 groups (`cars.ts`, paint/trim/glass/head/tail) or Meshy meshes drawn through `batched.mesh` with one material per group, not imported GLB slots, so there is no slot to override)
+- [ ] A8 per-slot custom shader on the vehicles (skipped: not applicable. Vehicles are baked CC0 groups (`cars.ts`, paint/trim/glass/head/tail) or generated meshes drawn through `batched.mesh` with one material per group, not imported GLB slots, so there is no slot to override)
 - [ ] A12 scatter via root planner (skipped: the game's own seeded placement lists feed 3D (x,y,z) near/far hysteresis in `world.ts`; `splitScatterByDistance` is XZ-only banding with no hysteresis, so swapping it changes which instances flip LOD and re-uploads per frame. No visible gain)
 - [ ] A4 portable materials (skipped: not one of the three designated pilots; the 82 GLSL hits stay, route is WebGL2-only for custom surfaces; `?backend=auto` RENDERER_MOUNT_FAILED recorded as engine issue)
 - [x] A9 camera depth (EXPERIMENTAL, lab flag, default off): `?depth=reversed|logarithmic` now reaches `camera.perspective({ depth })` (`far: 7000` highway); real-GPU frame `after-depth-reversed.png` renders with no new console errors; default frame unchanged

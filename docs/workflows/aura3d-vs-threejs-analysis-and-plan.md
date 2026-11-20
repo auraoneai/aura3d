@@ -26,7 +26,7 @@ Measure: **time-to-first-playable (TTFP)** and **glue lines** (lines that are no
 
 ### Pillar B: Agent-native authoring (AI writes it, and it works first time)
 
-What exists: `llms.txt`, boundary and claims docs, 24 mirrored skills with a gate, typed declarative scene API, codemod from three.js, evidence and review loop, catalog of 652 assets, Meshy pipeline with caps and provenance.
+What exists: `llms.txt`, boundary and claims docs, 24 mirrored skills with a gate, typed declarative scene API, codemod from three.js, evidence and review loop, catalog of 652 assets, a generated-asset pipeline with provenance.
 
 The superiority claim to earn: a coding agent working only from `llms.txt` and types produces a correct scene on the first try more often with Aura3D than with three.js. Today the only trial (RESULTS section 13) favoured three.js, mainly because of a build failure and two silent no-ops. Those are fixable, and fixing them turns this pillar into a measured win. This is the biggest differentiator for 2026 developers: most of them now build with agents.
 
@@ -68,11 +68,11 @@ Exit criterion for this layer: an independent agent can `npm create aura3d`, bui
 
 Ordered by developer pull per unit effort. All reuse existing code (promotion survey `/tmp/promote-candidates.md` and the 4.1.x kits).
 
-1. **One-command game from a prompt.** A proposed `new game "<prompt>"` CLI command (never built) would select a genre kit, scaffold typed assets (catalog, then Meshy through Kiro Prism with a credit cap and provenance), wire HUD, touch, audio, replay and `check-deploy`, run the look-dev loop and report evidence. Builds on `create-aura3d`, `scene kits`, `meshy-cli`, `aura3d-evidence-review`. This is the demo that no other engine can match.
+1. **One-command game from a prompt.** A proposed `new game "<prompt>"` CLI command (never built) would select a genre kit, scaffold typed assets (catalog first, generation with provenance only where it lacks one), wire HUD, touch, audio, replay and `check-deploy`, run the look-dev loop and report evidence. Builds on `create-aura3d`, `scene kits`, `aura3d-assets`, `aura3d-evidence-review`. This is the demo that no other engine can match.
 2. **Live playground with agent mode.** Browser editor on aura3d.auraone.ai: edit scene source, hot reload, one-click share, "fix with agent" using `llms.txt` plus diagnostics. Lowers the first-hour cost to zero install.
 3. **Showcase as proof.** The 15 index games plus 11 ports become the front door: each page shows source size, bundle size, draw calls, evidence badge (replay and render gate status) and a "view source" link. Honest per-game disclosure text already exists; add metrics automatically from `evidence/`.
 4. **Fault-injection and safety page.** A public page that breaks a scene on purpose (black frame, bad shader, bad asset) and shows Aura3D reporting or healing it, with the same fault in raw three.js beside it. Turns Pillar C into a visible, shareable demo.
-5. **Art quality by default.** Genre look recipes, neutral and studio environments that need no fetch, Meshy-ready asset slots, and the look-dev loop as a single command. The visual quality program (quality rebuild autopsy) already found most of the render defects; the remaining step is making the default look good with zero tuning (exposure parity, post chain fixed).
+5. **Art quality by default.** Genre look recipes, neutral and studio environments that need no fetch, typed asset slots, and the look-dev loop as a single command. The visual quality program (quality rebuild autopsy) already found most of the render defects; the remaining step is making the default look good with zero tuning (exposure parity, post chain fixed).
 6. **Migration that sells itself.** `aura3d migrate three` already classifies 245 rows (21 exact, 174 approximate, 47 none, 3 pending). Raise exact coverage on the most common 40 three.js APIs, ship a side-by-side "your scene before and after" report with line and bundle deltas. Never claim drop-in.
 7. **Game kit as a first-class product.** Publish and document `@aura3d/engine/game` (HUD widgets, touch, juice, session, accessibility) with a gallery. Developers choose engines for the batteries; this is the largest battery set in web 3D.
 8. **Capability fill that removes objections.** `effects.toon`, Matcap and Lambert materials, camera rigs, more TSL names, `MeshSurfaceSampler` equivalent. Each closes a row in the matrix where three.js is currently better, and each is a one-package job.
@@ -143,7 +143,7 @@ Ordered by developer pull per unit effort. All reuse existing code (promotion su
 - **WP-6 Fault-injection suite and safety demo.** Five faults (black frame, bad shader, missing/unvetted asset, NaN uniform, empty instances); same fault in raw three.js for the comparison page; a new `showcase-safety` app (not yet created).
 - **WP-7 Real-GPU lane.** Hardware runner under the serverless-first policy, or the owner's M4 Max checklist (Drift world, Silt rings, Last Train Enter/E/W, native Tennis); record under `evidence/real-gpu/`.
 - **WP-8 Independent authoring trial.** Fresh agent, no repo context, `llms.txt` plus types only, five scenes in both libraries; replaces RESULTS section 13; repeat after WP-1 and WP-2.
-- **WP-9 One-command game.** A proposed `new game` command (not built); TTFP measurement on three prompts; Meshy through Kiro Prism with cap and provenance.
+- **WP-9 One-command game.** A proposed `new game` command (not built); TTFP measurement on three prompts; generated assets with provenance.
 - **WP-10 Showcase and playground.** Metrics and evidence badges on the index; playground MVP with share links.
 - **WP-11 Capability fill.** Status: `effects.toon` landed (`09a29e514`); camera rig, objective marker and minimap in flight; judge CLI landed (`2c2218d71`). Remaining: `effects.toon`, Matcap, Lambert, camera rigs, TSL names, surface sampler; one package per row, each with docs, codemod row and test.
 - **WP-12 Evidence on every game.** Replay gate plus render gate plus `check-deploy` for all 15 index games, following the Aura Slam recipe (`docs/aura-slam/ARCHITECTURE.md`).
@@ -170,7 +170,7 @@ Ordered by developer pull per unit effort. All reuse existing code (promotion su
 
 Where three.js wins today (measured, software GL): bundle 7.7x to 8.7x smaller, 2 vs 26 requests, faster first frame in four of five scenes, lower frame cost, fewer draws and programs, stock build works, broader materials, post, TSL (about 638 vs 62 names), WebGPU, WebXR and loaders, far larger ecosystem (about 15.2M vs about 391 weekly downloads, snapshot).
 
-Where Aura3D wins today (measured or counted): fewer scene lines in four of five scenes, one import vs up to eight, fewer API symbols in every scene, bloom, shadow, instancing, fixed-step, QA hooks and shader pass in one call, asset provenance, self-heal, agent docs and skills, catalog, Meshy pipeline, codemod, shipped games with evidence.
+Where Aura3D wins today (measured or counted): fewer scene lines in four of five scenes, one import vs up to eight, fewer API symbols in every scene, bloom, shadow, instancing, fixed-step, QA hooks and shader pass in one call, asset provenance, self-heal, agent docs and skills, catalog, generated-asset pipeline, codemod, shipped games with evidence.
 
 Ties: PBR, lights, primitives, instancing, helpers; water scene picture identical; replay hashes identical.
 

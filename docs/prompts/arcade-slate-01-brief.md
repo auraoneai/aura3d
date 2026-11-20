@@ -32,7 +32,7 @@ Mechanics are not ownable. Expression is. Do **not** reproduce, trace, port, or 
 
 Specifically for the two roadster references: no Tesla name or mark, no Roadster name, no Roadster silhouette, no real-world photography, no reference to any real reveal event or spec sheet. Design an original vehicle and an original world. If a shape reads as "that car," change the shape.
 
-Every asset comes from the Aura3D catalog, is generated bespoke via Meshy, or is authored in-repo. No scraped files.
+Every asset comes from the Aura3D catalog, is your own licensed GLB, or is authored in-repo. No scraped files.
 
 ## 3. The three games
 
@@ -76,12 +76,12 @@ Follow the Aura3D agent guide (`llms.txt`) and its mandatory game guardrails. No
 2. **Look first.** Every scene opens with a `looks.preset(...)` and spreads `...looks.appOptions(id)`. No hand-wired ambient-only lighting, no `pixelRatio` / `qualityProfile` / `replaceTextures` overrides, no solid-void background.
 3. **Boot gate.** Frame 1 waits on `await app.ready()`, then fades `#boot-gate` and starts the loop. No pop-in.
 4. **Manual control by default.** `autopilot = false` on Frame 1. Autoplay only behind `?autoplay=1` or an explicit HUD toggle, and it yields to any real input.
-5. **Assets through the pipeline.** `npx @aura3d/cli@latest assets search "<phrase>"` → `assets resolve "<phrase>" --name <key>` → typed `assets.<key>` with a valid 64-char `sha256-` hash. Bespoke models go through Meshy, then decimate to ≤ 20,000 vertices and ≤ 2 MB with textures ≤ 1024², then `aura3d assets import-meshy`. No raw URLs, no `GLTFLoader`, no `three` imports.
+5. **Assets through the pipeline.** `npx @aura3d/cli@latest assets search "<phrase>"` → `assets resolve "<phrase>" --name <key>` → typed `assets.<key>` with a valid 64-char `sha256-` hash. Bespoke models are decimated to ≤ 20,000 vertices and ≤ 2 MB with textures ≤ 1024², then admitted with `aura3d assets add`. No raw URLs, no `GLTFLoader`, no `three` imports.
 6. **Restart by mutation.** Reset rounds, waves, and runs through runtime node handles (`app.nodes.require(...)`). Never call `app.setScene()` to restart on the same stage.
 7. **Frame the world.** `100vw × 100vh` fixed canvas, ground apron deep enough that the bottom third of the viewport is never clear-color black.
 8. **Fast-action exposure.** Pass `{ fogDensityScale: 0, exposureEv: -0.1 }` to `looks.preset(...)` plus `qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }` unless distance haze is deliberately wanted.
 9. **Input parity.** Keyboard and touch both work, both remappable in a controls panel. Blur buttons after click so `Space`/`Enter` never re-trigger focused HUD.
-10. **Audio.** Ships with each game — music plus at least six distinct effects. Catalog, Meshy-generated, or procedurally synthesized. Nothing ripped.
+10. **Audio.** Ships with each game — music plus at least six distinct effects. Catalog, licensed, or procedurally synthesized. Nothing ripped.
 
 ## 5. Build order
 

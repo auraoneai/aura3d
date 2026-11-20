@@ -77,7 +77,7 @@ A game publishes named crop rects for the steady-state capture in either place:
 
 ## Asset ownership for borrowed-asset / prop-exclusivity (game lanes and WP-36)
 
-`tools/game-checks/data/terms.json` `assetOwners.prefixes` maps a camel-case asset-id prefix to its owner (live slug, or the app that made it); the longest prefix wins at a camel-case boundary. Ids no prefix matches belong to the one app whose own `aura.assets.json` lists them, else to the app their root-manifest `source` sits in. `borrowed-asset` warns when a game references another owner's key; `prop-exclusivity` warns when two live games reference the same unowned, non-generic key (`assetOwners.generic`: `prop`, `helper`, `robotcand`, `animationPointer`). Escape hatch on the line: `// borrowed-asset: ok` / `// prop-exclusivity: ok`. New Meshy keys must start with the owning game's prefix (`ironCrown`, `pips`, `fc`, `links`, `bz`, `auraSlam`, ...; `aura3d assets import-meshy --prefix <game>`); a game that needs a new prefix lists it as a handoff to E-I. Today (base data): 107 borrowed keys in 13 games (Iron Crown 25, Pip's Big Leap 23, Links 20, FC 18, ...) and 4 shared keys.
+`tools/game-checks/data/terms.json` `assetOwners.prefixes` maps a camel-case asset-id prefix to its owner (live slug, or the app that made it); the longest prefix wins at a camel-case boundary. Ids no prefix matches belong to the one app whose own `aura.assets.json` lists them, else to the app their root-manifest `source` sits in. `borrowed-asset` warns when a game references another owner's key; `prop-exclusivity` warns when two live games reference the same unowned, non-generic key (`assetOwners.generic`: `prop`, `helper`, `robotcand`, `animationPointer`). Escape hatch on the line: `// borrowed-asset: ok` / `// prop-exclusivity: ok`. New generation keys must start with the owning game's prefix (`ironCrown`, `pips`, `fc`, `links`, `bz`, `auraSlam`, ...); a game that needs a new prefix lists it as a handoff to E-I. Today (base data): 107 borrowed keys in 13 games (Iron Crown 25, Pip's Big Leap 23, Links 20, FC 18, ...) and 4 shared keys.
 
 ## Luma bands (game lanes, phase 2)
 
@@ -102,7 +102,7 @@ No handoff to E-I from E-C, E-D, E-E, E-G, E-H or E-J (re-checked before finishi
 | WP-38 | `tools/game-checks/lib/index.mjs:GU47_CHECK_SEVERITY` | `"warn"` -> `"error"` at the 4.7.0 release gate | PRD 7.3 (`run.mjs --all --strict` with the checks at error) |
 | G03, G11, G16, G17, G18, G20, G21, G23 | their app / example boot code | implement the NEW variant params in the table above (`?circuit=`, `?floor=`, `?look=`, `?stage=`, `?at=`, `?band=`, `?found=`) | the 59 GU47 luma targets drive them |
 | all game lanes | `apps/<app>/art/direction.ts` + test | follow the compliance recipe; commit `art/direction.audit.json` | `art-direction` and `look-identity` read it |
-| WP-36 | Meshy admissions | key new assets with the owning game's prefix from `assetOwners.prefixes` | otherwise `borrowed-asset` / `prop-exclusivity` flag them |
+| WP-36 | asset admissions | key new assets with the owning game's prefix from `assetOwners.prefixes` | otherwise `borrowed-asset` / `prop-exclusivity` flag them |
 
 ## CHANGELOG text (WP-38)
 

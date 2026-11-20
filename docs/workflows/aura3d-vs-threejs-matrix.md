@@ -66,8 +66,8 @@ Status: v3, 2026-10-25 (4.2.0 candidate on `game-rework`; rows say which version
 | 28 | glTF/GLB loading | `GLTFLoader` (+ Draco, KTX2, Meshopt) | Typed `model(assets.x)`; raw string URLs rejected by boundary test | Aura3D better (safety) | `tests/unit/agent-api/public-example-boundary.test.ts` | verified in code |
 | 29 | Other formats (FBX, OBJ, USD, 3DS, Collada, etc.) | Many loaders in addons | Excluded by design (parity doc section 4) | three.js better | `three/examples/jsm/loaders`; parity doc exclusions | doc claim only |
 | 30 | Asset provenance and integrity | None | Production bridge needs same-origin URL + sha256 + provenance, else draws nothing | Aura3D only | production bridge rules; `assets validate` | verified in code |
-| 31 | Getting assets for a need | None (bring your own files or write geometry) | No catalog. `aura3d assets resolve "<need>"` picks, at build time, an admitted project asset, a licence-clear open-source file (Poly Haven, ambientCG, Khronos samples, a CC0 mirror), Meshy generation (opt-in, budgeted) or a primitives recipe | Aura3D only | `packages/aura3d-cli/src/resolve-ladder.ts`, `tests/unit/aura3d-cli/resolve-ladder.test.ts`; 10 real needs: 7 open-source, 2 recipes, 1 none (`docs/audit/asset-catalog-claim.md`) | verified in code |
-| 32 | AI asset generation pipeline | None | Meshy through Kiro Prism with ledger caps, isolated admission and attribution records | Aura3D only | `meshy-cli` skill; `/tmp/meshy` ledger (not in repo) | doc claim only |
+| 31 | Getting assets for a need | None (bring your own files or write geometry) | No catalog. `aura3d assets resolve "<need>"` picks, at build time, an admitted project asset, a licence-clear open-source file (Poly Haven, ambientCG, Khronos samples, a CC0 mirror) or a primitives recipe | Aura3D only | `packages/aura3d-cli/src/resolve-ladder.ts`, `tests/unit/aura3d-cli/resolve-ladder.test.ts`; 10 real needs: 7 open-source, 2 recipes, 1 none (`docs/audit/asset-catalog-claim.md`) | verified in code |
+| 32 | AI asset generation pipeline | None | `aura3d assets generate` (fal.ai, 5.6.0): dry-run cost, spend ledger in `.aura3d/fal/ledger.jsonl`, optimise, normalise and admit with licence and provenance | Aura3D only | `packages/aura3d-cli/src/commands/generate/`, `tests/unit/aura3d-cli/generate/` | verified in code |
 | 33 | Skeletal animation | `AnimationMixer`, clips, `SkeletonUtils` | `AnimationController`, `cloneSkinned`, clip events, morph/viseme state | tie | skill `aura3d-character-animation` | doc claim only |
 | 34 | Positional/spatial audio | `Audio`, `PositionalAudio`, `AudioListener` | `@aura3d/audio` mixer, `AudioContextManager`, game sound engine | tie | `packages/audio` | doc claim only |
 | 35 | Procedural audio cue kit | None | `createCueBank`, `midiToHz`, `melody`, gesture unlock | Aura3D only | promoted from 9 games (promote candidates #4) | verified in code |
@@ -99,7 +99,7 @@ Status: v3, 2026-10-25 (4.2.0 candidate on `game-rework`; rows say which version
 | 51 | Test baseline | Large upstream suite | 2,080 unit tests pass across 212 of 215 test files on the 4.2.0 candidate; 6 failures in 3 files (among them three `aura3d-cli` asset-screening and two `game-runtime` contract tests) also fail on clean `main` | three.js better | integration run on `game-rework` (`06cf4f7eb`) | verified (run) |
 | 52 | Real-GPU verification | Upstream CI plus massive field use | Software WebGL2 only; three real-device checks came from the owner's M4 Max | three.js better | evidence folders; parity doc | doc claim only |
 | 53 | Bugs found on real hardware during this program | n/a | NaN from `pow(negative)` on Apple GPUs, empty-instance throws, white instanced textures, silent shader failures, black-frame guard misfire (fixed in 4.1.2) | three.js better | changelog 4.0.8 to 4.1.2 | doc claim only |
-| 54 | Provenance/legal posture for assets and claims | Not applicable | Claim labels, boundary doc, text-only Meshy prompts | Aura3D better | `docs/agents/claims-and-boundaries.md` | doc claim only |
+| 54 | Provenance/legal posture for assets and claims | Not applicable | Claim labels, boundary doc, text-only generation prompts | Aura3D better | `docs/agents/claims-and-boundaries.md` | doc claim only |
 
 ### 1.7 Added or measured since the 4.1.2 matrix
 
@@ -153,9 +153,9 @@ Separated into genuinely unique and convenience wrappers over things three.js ca
 - `check-deploy` and route-health collection for shipped routes.
 - Runtime safety net: black-frame self-heal with quality ladder and `?diag=1` panel.
 - Deterministic game QA hooks and fixed-step replay used by 11 ports.
-- Meshy admission pipeline with ledger caps and attribution records.
+- Paid model generation (`aura3d assets generate`) with a spend ledger, licence and provenance records.
 - three.js to Aura3D codemod with an honest exact/approximate/none classification.
-- `aura3d assets resolve`: build-time asset ladder (project, open CC0 sources, Meshy, primitives recipe).
+- `aura3d assets resolve`: build-time asset ladder (project, open CC0 sources, primitives recipe).
 
 ### 4.2 Convenience wrappers (three.js can do it, with more code)
 
@@ -177,7 +177,7 @@ Separated into genuinely unique and convenience wrappers over things three.js ca
 ## 6. What the shipped games and the Aura Slam conversion prove, and do not
 
 **Proves (as far as the evidence in the repo goes):**
-- Aura3D can express a wide range of browser games: the 15 index games and 11 renamed Crayon-style games (the live count is generated from `docs/workflows/game-inventory.json`), on the 4.x lineage with Meshy art and no host engine pins. Each has an evidence folder and screenshots under `evidence/<game>/screens/`.
+- Aura3D can express a wide range of browser games: the 15 index games and 11 renamed Crayon-style games (the live count is generated from `docs/workflows/game-inventory.json`), on the 4.x lineage with generated-model art and no host engine pins. Each has an evidence folder and screenshots under `evidence/<game>/screens/`.
 - A real, complex game (Aura Slam) can be reproduced on Aura3D modules with a simulation bit-identical in differential tests against the original scripts and pose output pixel-identical (`evidence/aura-slam/`).
 - Deterministic replay of simulation state to within tolerance (for example the HEATSINK port at 1e-6).
 - Live-site smoke runs for the 4.1.x deployments (`evidence/live-410`, `live-411`, `live-412`, `live-413`), all on software GL.

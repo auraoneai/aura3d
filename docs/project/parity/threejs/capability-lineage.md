@@ -31,8 +31,8 @@ risk, or installed-consumer ergonomics.
 
 | Status | Rows |
 | --- | ---: |
-| exceed | 2 |
-| parity | 33 |
+| exceed | 0 |
+| parity | 35 |
 | parity-unproven | 21 |
 | gap | 1 |
 | **total** | **57** |
@@ -41,22 +41,20 @@ risk, or installed-consumer ergonomics.
 
 | Category | exceed | parity | unproven | gap | total |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| core rendering | 1 | 15 | 3 | 0 | 19 |
+| core rendering | 0 | 16 | 3 | 0 | 19 |
 | ecosystem helpers | 0 | 7 | 4 | 1 | 12 |
 | physics | 0 | 3 | 7 | 0 | 10 |
 | game systems | 0 | 3 | 4 | 0 | 7 |
 | application workflows | 0 | 3 | 3 | 0 | 6 |
-| developer tooling | 1 | 2 | 0 | 0 | 3 |
+| developer tooling | 0 | 3 | 0 | 0 | 3 |
 
 ## Where Aura3D genuinely exceeds in this historical inventory
 
-2 rows survive the implementation, consumer, evidence, and lineage rules.
+0 rows survive the implementation, consumer, evidence, and lineage rules.
 These are bounded workflow or integration results, not a universal renderer verdict.
 
 | Capability | Why it exceeds | Evidence |
 | --- | --- | --- |
-| scene graph | Declarative scene builder with typed nodes; no manual add/remove bookkeeping. | `tests/reports/showcase-interaction-audit` |
-| interaction testing | Route-health snapshots plus a reusable interaction-audit harness that discovers and operates controls. | `tests/reports/showcase-interaction-audit` |
 
 ## Remaining gaps and unproven rows
 
@@ -103,16 +101,16 @@ These are bounded workflow or integration results, not a universal renderer verd
 
 | Capability | Three.js ecosystem | Aura3D | Integrated | Consumers | Status | Production-path test | Notes |
 | --- | --- | --- | --- | ---: | --- | --- | --- |
-| scene graph | THREE.Scene + Object3D | `scene`, `group` | yes | 39 | **exceed** | `tests/browser/agent-api-visual-smoke.spec.ts` | Declarative scene builder with typed nodes; no manual add/remove bookkeeping. |
+| scene graph | THREE.Scene + Object3D | `scene`, `group` | yes | 39 | parity | `tests/browser/agent-api-visual-smoke.spec.ts` | Declarative scene builder with typed nodes; no manual add/remove bookkeeping. |
 | cameras | PerspectiveCamera / OrthographicCamera | `camera` | yes | 41 | parity | `tests/browser/createAuraApp-camera-frame-asset.spec.ts` | Orthographic is now genuinely covered: camera.orthographic()/camera.isometric() on the root API, computeOrthographicCameraFrame/computeOrthographicCameraView in rendering, and RenderSource.cameraProjection for auto-framing. Before this the row claimed OrthographicCamera while the root API exposed perspective modes only and auto-framing could build a perspective frustum only. |
 | renderer configuration | WebGLRenderer options | `createAuraApp` | yes | 30 | parity | `tests/browser/production-runtime-webgl2-real-renderer.spec.ts` | Renderer selection, pixel ratio and resize handled by the app; no renderer lifecycle code in routes. |
-| geometry primitives | BoxGeometry, SphereGeometry, TorusGeometry, ... | `primitives` | yes | 32 | parity | `tests/browser/multipart-primitive-draw.spec.ts` | Local axis conventions now documented via AURA_PRIMITIVE_AXES after the flattened-torus defect. |
+| geometry primitives | BoxGeometry, SphereGeometry, TorusGeometry, ... | `primitives` | yes | 31 | parity | `tests/browser/multipart-primitive-draw.spec.ts` | Local axis conventions now documented via AURA_PRIMITIVE_AXES after the flattened-torus defect. |
 | materials | MeshStandardMaterial / MeshPhysicalMaterial | `material` | yes | 42 | parity | `tests/browser/createAuraApp-material-pbr-contract.spec.ts` | Named material presets (clearcoatPaint, brushedMetal, clearGlass) rather than raw parameter sets. |
 | custom shaders | ShaderMaterial / RawShaderMaterial | `ShaderLibrary`, `ShaderModule` | no | 0 | parity-unproven | `tests/browser/renderer-extension-escape-hatch.spec.ts` | Available through @aura3d/rendering (ShaderLibrary/ShaderModule) and three-compat, not the root safe API. |
 | lights | Directional/Point/Spot/RectArea lights | `lights` | yes | 38 | parity | `tests/browser/rect-area-light.spec.ts` |  |
 | shadows | shadowMap + per-light shadow config | `createProductionRuntimeShadowOptions` | yes | 35 | parity | `tests/browser/createAuraApp-shadow-contract.spec.ts` |  |
 | environment maps / IBL | PMREMGenerator + RGBELoader | `environments` | yes | 24 | parity | `tests/browser/external-parity-ibl-evidence.spec.ts` | Named environment presets; no PMREM setup in user code. |
-| postprocessing | EffectComposer + pass chain | `effects` | yes | 37 | parity | `tests/browser/createAuraApp-postprocess-contract.spec.ts` | Effects declared as scene nodes; no composer or pass ordering in user code. |
+| postprocessing | EffectComposer + pass chain | `effects` | yes | 35 | parity | `tests/browser/createAuraApp-postprocess-contract.spec.ts` | Effects declared as scene nodes; no composer or pass ordering in user code. |
 | tone mapping / colour management | renderer.toneMapping + outputColorSpace | `applyExternalParityToneMappingPreset`, `createExternalParityToneMappingPolicy` | yes | 36 | parity | `tests/browser/exposure-calibration.spec.ts` | Bounded feature parity: public route configuration drives the production tone-mapping/color-space path and retained browser evidence proves pixel-backed output. The current comparison retains visible material/highlight differences, so identical pixels or universal visual parity are not claimed. |
 | instancing | InstancedMesh | `InstancedMesh` | no | 0 | parity-unproven | `tests/browser/root-geometry-instancing-lod-text.spec.ts` | Rendering-internal; not surfaced through the root safe API. |
 | skinned animation | SkinnedMesh + AnimationMixer | `AnimationMixer`, `AnimationController` | yes | 12 | parity | `tests/browser/createAuraApp-animation-bridge-contract.spec.ts` |  |
@@ -132,7 +130,7 @@ These are bounded workflow or integration results, not a universal renderer verd
 | bounds fitting / object centering | Box3.setFromObject + manual camera math, or drei Bounds | `placedBoundsFromAsset`, `groundedRenderedAssetPlacement`, `focusCameraIntent` | yes | 0 | parity-unproven | `tests/browser/createAuraApp-model-sizing.spec.ts` | Asset-relative anchoring derives placement and framing from typed asset bounds. |
 | HTML / world labels | CSS2DRenderer or drei Html | `labels`, `createWorldLabelLayer`, `projectWorldLabels` | yes | 13 | parity | `tests/browser/label-occlusion.spec.ts` | Was a gap: labels reached the scene graph but were only drawn in the canvas2d fallback. Now a real world-anchored layer in the production path. |
 | selection outlines / focus feedback | OutlinePass, or hand-built indicator geometry | `focusObject`, `focusSemanticRegion` | yes | 0 | parity-unproven | `tests/browser/native-outline-pixel.spec.ts` | Was the flattened-bar defect: every route built its own indicator. Now one system with per-result invariants. |
-| glTF loading | GLTFLoader + DRACO/KTX2 setup | `model`, `GLTFLoader` | yes | 50 | parity | `tests/browser/external-parity-gltf-visual-corpus.spec.ts` | Typed asset references with provenance; no loader configuration or URL strings in routes. |
+| glTF loading | GLTFLoader + DRACO/KTX2 setup | `model`, `GLTFLoader` | yes | 49 | parity | `tests/browser/external-parity-gltf-visual-corpus.spec.ts` | Typed asset references with provenance; no loader configuration or URL strings in routes. |
 | environment / staging presets | drei Environment + Stage | `environments`, `prefabs` | yes | 24 | parity | `tests/browser/environment-background.spec.ts` |  |
 | contact shadows | drei ContactShadows | `contactOcclusion`, `contactShadows` | yes | 31 | parity | `tests/browser/runtime-parity-contact-shadow-parity.spec.ts` | Bounded receiver-contact approximation plus renderer-owned directional shadow map only; not full screen-space, ray-traced, or general drei ContactShadows parity. |
 | performance monitor | stats.js | `createDiagnosticsOverlay`, `AuraDiagnostics` | yes | 24 | parity | `tests/browser/rendering-debug-timing.spec.ts` | Diagnostics overlay reports backend, draw calls, renderer features and now placed labels. |
@@ -183,7 +181,7 @@ These are bounded workflow or integration results, not a universal renderer verd
 | Capability | Three.js ecosystem | Aura3D | Integrated | Consumers | Status | Production-path test | Notes |
 | --- | --- | --- | --- | ---: | --- | --- | --- |
 | asset pipeline / provenance | manual asset management | `assets`, `createAssetProvenance` | yes | 50 | parity | `tests/browser/createAuraApp-asset-probe.spec.ts` | Typed asset map with hashes and license provenance generated by the CLI. |
-| interaction testing | hand-written Playwright per project | `createAuraRouteHealthSnapshot` | yes | 16 | **exceed** | `tests/browser/showcase-route-interaction-audit.spec.ts` | Route-health snapshots plus a reusable interaction-audit harness that discovers and operates controls. |
+| interaction testing | hand-written Playwright per project | `createAuraRouteHealthSnapshot` | yes | 16 | parity | `tests/browser/showcase-route-interaction-audit.spec.ts` | Route-health snapshots plus a reusable interaction-audit harness that discovers and operates controls. |
 | runtime invariant reporting | no standard solution | `checkSpatialInvariants`, `validatePlatformerMotion`, `validateCombatFrameData` | yes | 1 | parity | `tests/browser/clean-room-projects.spec.ts` | Geometric and gameplay correctness published as machine-checkable reports. |
 
 ## Claim boundary

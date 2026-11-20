@@ -230,11 +230,9 @@ rules.label(state.points[0], state.points[1]); // "0" / "15" / "30" / "40" / "AD
 | Command | What it does |
 | --- | --- |
 | `aura3d assets optimize --file in.glb --out out.glb --role hero\|vehicle\|character\|prop\|background` | Role-based vertex and texture budgets. |
-| `aura3d assets merge-clips --base rig --out file.glb name=clip ...` | Merge Meshy animation clips onto one rig by node name; rejects a foreign skeleton. |
-| `aura3d assets import-meshy <dir> --into <assets-dir> --prefix <game> --name <role>` | Isolated admission in a temporary project; shared manifest files are never touched. |
-| `aura3d meshy ledger status\|reserve\|settle\|reconcile\|list` | Credit ledger with per-game and global caps under a lock. |
+| `aura3d assets merge-clips --base rig --out file.glb name=clip ...` | Merge per-clip GLBs onto one rig by node name; rejects a foreign skeleton. |
 
-Inside the Aura3D monorepo, `import-meshy` now runs isolated by default (`--shared-manifest` opts out), because several agents or games writing `aura.assets.json` and `src/aura-assets.ts` at once is a race. The ledger keeps a rate-limited or timed-out call as `unconfirmed` and keeps counting it, because the task usually finishes and is charged. These tools call no Meshy API and handle no credential. Reference: [`docs/api/cli-asset-tools.md`](../../api/cli-asset-tools.md).
+Reference: [`docs/api/cli-asset-tools.md`](../../api/cli-asset-tools.md).
 
 ## Engine fixes you will notice
 

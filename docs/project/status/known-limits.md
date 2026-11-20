@@ -80,10 +80,10 @@ candidate. Final release claims require regeneration and source-bound receipts.
 
 ## Asset Limits
 
-- The CLI asset workflow provides typed references and metadata, and creates
-  new models and motion through `assets generate` and `animation generate`
-  (paid fal.ai) and Meshy import. Generated and found assets go through the
-  same inspection and review before release.
+- The CLI asset workflow provides typed references and metadata, admits your
+  own GLBs through `assets add`, and creates new models and motion through
+  `assets generate` and `animation generate` (paid fal.ai). Generated, added and
+  found assets go through the same inspection and review before release.
 - Catalog search finds candidates; visual quality, rig quality, scale
   suitability, license readiness, and gameplay readiness are confirmed by
   inspection and review.

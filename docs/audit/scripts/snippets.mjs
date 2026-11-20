@@ -19,7 +19,7 @@ for(const line of idx.split("\n")){
   var lines_prev=line;
 }
 const rootNames=new Set([...live,...dep]);
-const cli=new Set(["assets add","assets admit","assets import-meshy","assets optimize","assets merge-clips","assets scan","assets inspect","assets validate","assets validate-game","assets validate-animation-studio","assets validate-animation","assets assemble-character","assets list","assets typegen","assets bind-game-route-evidence","assets certify-game-geometry","assets thumbnail","assets search","assets resolve","assets review","assets lookdev","assets library","assets prune","assets bake-impostor","assets serve","meshy ledger","animation plan","animation preview","animation render","animation package","animation review","animation verify","animation scene","animation inspect-clips","animation validate-hero","doctor","check-deploy","init","codemod","migrate three","migrate lighting","vfx validate-atlas","core inspect-programs","core-v2","environments bake","sfx admit","look capture","look judge","look rubric","look lint","perf gate"]);
+const cli=new Set(["assets add","assets admit","assets optimize","assets merge-clips","assets scan","assets inspect","assets validate","assets validate-game","assets validate-animation-studio","assets validate-animation","assets assemble-character","assets list","assets typegen","assets bind-game-route-evidence","assets certify-game-geometry","assets thumbnail","assets search","assets resolve","assets review","assets lookdev","assets library","assets prune","assets bake-impostor","assets serve","animation plan","animation preview","animation render","animation package","animation review","animation verify","animation scene","animation inspect-clips","animation validate-hero","doctor","check-deploy","init","codemod","migrate three","migrate lighting","vfx validate-atlas","core inspect-programs","core-v2","environments bake","sfx admit","look capture","look judge","look rubric","look lint","perf gate"]);
 const cliTop=new Set([...cli].map(c=>c.split(" ")[0]));
 const scripts=new Set(Object.keys(root.scripts||{}));
 const anyScripts=new Set();
@@ -35,7 +35,7 @@ for(const f of files){
         const two=m[2]?`${m[1]} ${m[2]}`:m[1];
         const ok=cli.has(two)||(cliTop.has(m[1])&&!m[2])||(m[2]===undefined&&cli.has(m[1]))||([...cli].some(c=>c.startsWith(m[1]+" "))&&(!m[2]||!/^[a-z]/.test(m[2])||false));
         let okv=cli.has(two)||cli.has(m[1]);
-        if(!okv && ["assets","animation","meshy","migrate","core","environments","sfx","vfx"].includes(m[1]) && !m[2]) okv=true;
+        if(!okv && ["assets","animation","migrate","core","environments","sfx","vfx"].includes(m[1]) && !m[2]) okv=true;
         results.push({file:f,kind:"cli",snippet:`aura3d ${two}`,ok:okv});
       }
       for(const m of line.matchAll(/import\s+(?:type\s+)?(?:\{([^}]*)\}|\*\s+as\s+\w+|\w+)\s+from\s+["'](@aura3d\/[a-z0-9-]+(?:\/[A-Za-z0-9/._-]+)?|create-aura3d)["']/g)){

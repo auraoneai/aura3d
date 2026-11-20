@@ -1966,7 +1966,6 @@ editor
 examples
 guides
 index.md
-meshy-cli.md
 migration
 migration-4.0.md
 physics

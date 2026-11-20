@@ -22,7 +22,7 @@ Measured with `docs/audit/scripts/{links,snippets,tokens}.mjs` (tokens: o200k_ba
 - `primitives.mesh` (does not exist) replaced by `geometry.custom` in the llms-full source, the browser-game skill and both troubleshooting pages.
 - `docs/quickstart.md` and `docs/agent-quickstart.md` are redirects to `docs/agents/agent-quickstart.md`.
 - Links to the retired never-lists point at `claims-and-boundaries.md`; the stub files stay because `tools/agent-docs` requires them.
-- Three oversize skills (`aura3d-assets`, `aura3d-browser-game`, `meshy-cli`) moved their tables and long examples into `references/` files; genre recipes and composition rules were added to `aura3d-browser-game/references/genre-looks.md` (this also satisfies the craft-ratio gate).
+- Oversize skills (`aura3d-assets`, `aura3d-browser-game`) moved their tables and long examples into `references/` files; genre recipes and composition rules were added to `aura3d-browser-game/references/genre-looks.md` (this also satisfies the craft-ratio gate).
 - Skill mirrors (`.cursor`, `.claude`, `.agents`, `packages/create-aura3d/skills`) synced; llms files regenerated with `marketing/scripts/gen-seo.mjs`.
 - 28 history-only documents moved to `docs/archive/` (index in `docs/archive/README.md`); links to them repaired.
 - `benchmark-recipes.md` imports now use the `@aura3d/engine` root (`sceneKits.particleFountain`, `sceneKits.humanoidWalk`).

@@ -101,16 +101,12 @@ Game use is narrow: nearly every game uses only `bloom` + `vignette` + `colorGra
 
 ### 7.1 Catalog search and resolve
 - `aura3d assets search <query> [--profile] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]` (`packages/aura3d-cli/src/cli.ts:313-321`; help `cli-help.ts:64`).
-- `aura3d assets resolve "<need>" [--name] [--role hero|prop|background|character|texture|hdri] [--budget credits] [--allow meshy] [--dry-run]` runs the ladder: project asset, open source, Meshy (opt-in with `--allow meshy`), procedural recipe (`cli.ts:349-371`; roles `resolve-ladder.ts:25`). Direct pull of a known candidate with `--index N` / `--candidate-id ID` (`cli.ts:326-347`).
+- `aura3d assets resolve "<need>" [--name] [--role hero|prop|background|character|texture|hdri] [--dry-run]` runs the ladder: project asset, open source, procedural recipe (`cli.ts:349-371`; roles `resolve-ladder.ts:25`). Direct pull of a known candidate with `--index N` / `--candidate-id ID` (`cli.ts:326-347`).
 - Source adapters (`packages/asset-index/src/adapters/`): `aura-library`, `khronos`, `poly-haven` (models, HDRIs, textures, `poly-haven.ts:12-29,76`), `ambientcg` (CC0 PBR materials), `poly-pizza`, `sketchfab`, `os3a`, `jsdelivr-mirror`, `marketplace`; registered in `packages/asset-index/src/index.ts:95-118`.
 - Stale doc: `skills/aura3d-materials-environments/SKILL.md` says "the asset index has no texture or HDRI adapter"; Poly Haven textures/HDRIs and ambientCG materials are now adapters, and `resolve --role texture|hdri` exists. Update the skill in 4.7.0.
 
-### 7.2 Meshy (owner rule: spend uncapped)
-- Pinned official CLI `meshy` 0.2.0 (`skills/meshy-cli/SKILL.md`, Establish step 1). Operations: `meshy make "<prompt>"` (text-to-3d preview+refine = 30 credits), `text-to-3d create --pose-mode a-pose|t-pose --texture-resolution 2k`, `retexture create` (10; keep `--enable-original-uv true --enable-pbr true`), `remesh create --target-polycount N` (5), `rigging create --height-meters M` (5), `animate create --rig-task-id --action-id N` (3), `convert`, `resize`. Credentials only from env (`MESHY_API_KEY`, `MESHY_BASE_URL_V1/V2` -> Kiro Prism).
-- Ledger: `aura3d meshy ledger status|reserve|settle|reconcile|baseline|list`; caps opt-in, default uncapped (`cli-help.ts:45-46`, `commands/assets/index.ts:49`).
-- Admission: `aura3d assets import-meshy <dir> --into examples/<game>/assets --prefix <game> --name <role> --rights-evidence rights.json --profile prop|environment|vehicle|humanoid` (isolated monorepo mode, `cli-help.ts:42-43`; `cli.ts:111`). Imports default to `--quality candidate`. Profile budgets `packages/aura3d-cli/src/meshy/admission.ts:36-39`: prop 100k tris / 8 tex / 4096 px; environment 500k / 16 / 8192; vehicle 250k / 12 / 4096 (min 1k); humanoid 150k / 12 / 4096 (min 3k).
-- Post: `aura3d assets optimize --file in.glb --out out.glb --role … [--meshopt] [--tex N]` (run on every Meshy GLB), `aura3d assets merge-clips --base rigged.glb --out hero.glb run=… idle=…` (one rig, many clips).
-- Rules that bind the PRD: text prompts only, generic descriptions, never from another game's screenshots, never a named brand/character (`meshy-cli/SKILL.md`, Safety). Meshy is already used heavily by cross-hop (77 JSON files mention meshy), bunker-zero (25), roadster-rush (21), iron-crown (19), pips-big-leap (14); the sports games, heatsink, dot-dash, blockfall, vault-breakers, aurora-lander and bank-shot have 0-1.
+### 7.2 Optimize and clips
+- Post: `aura3d assets optimize --file in.glb --out out.glb --role … [--meshopt] [--tex N]` (run on every new GLB), `aura3d assets merge-clips --base rigged.glb --out hero.glb run=… idle=…` (one rig, many clips).
 
 ### 7.3 Inspect, validate, certify, thumbnail
 - `assets inspect <glb> [--animation] [--humanoid] [--skeleton] [--morphs] [--license]` (`cli.ts:197`).

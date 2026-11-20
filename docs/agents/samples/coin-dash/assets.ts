@@ -8,5 +8,5 @@ export const assets = defineModelAssets(
       sizeBytes: 1_200_000
     }
   },
-  { license: "Own text prompt, generated with Meshy through Kiro Prism, 2026-10-24" }
+  { license: "Own work, CC0-1.0, 2026-10-24" }
 );

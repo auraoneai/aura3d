@@ -192,7 +192,7 @@ export const prd04ModelAssets: Readonly<Record<Prd04ModelAssetId, Prd04AssetEntr
     lfs: true,
     worldSize: [1.904, 0.941, 0.998],
     gltfExtensions: [],
-    provenance: "Meshy-authored courier van, Aura3D typed catalog (public/aura-assets). S3 tinted-hero subject."
+    provenance: "Generated courier van, Aura3D typed catalog (public/aura-assets). S3 tinted-hero subject."
   },
   patrolAircraftMeshy: {
     id: "patrolAircraftMeshy",
@@ -202,7 +202,7 @@ export const prd04ModelAssets: Readonly<Record<Prd04ModelAssetId, Prd04AssetEntr
     lfs: true,
     worldSize: [1.535, 0.409, 1.902],
     gltfExtensions: [],
-    provenance: "Meshy-authored patrol aircraft, Aura3D typed catalog (public/aura-assets). Hero-material subject."
+    provenance: "Generated patrol aircraft, Aura3D typed catalog (public/aura-assets). Hero-material subject."
   }
 };
 

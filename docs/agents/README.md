@@ -26,7 +26,7 @@ Building or reworking a game? Read [`new-game-checklist.md`](new-game-checklist.
 | A lifelike model or motion clip nothing in the catalog covers (5.6.0, paid fal.ai) | [`asset-workflow.md`](asset-workflow.md) section 4: `aura3d assets generate` (Idol), `aura3d animation generate` (HY-Motion) |
 | An FBX, OBJ, USD, PLY, STL or BVH file to bring in | `aura3d assets convert`, then `assets normalize` and `assets add` ([`asset-workflow.md`](asset-workflow.md) section 3) |
 | Which template to start from (26 shipped) | [`templates.md`](templates.md) |
-| Models (catalog, your GLB, fal.ai generation, Meshy on request) | [`asset-workflow.md`](asset-workflow.md), [`asset-selection.md`](asset-selection.md) |
+| Models (catalog, your GLB, fal.ai generation) | [`asset-workflow.md`](asset-workflow.md), [`asset-selection.md`](asset-selection.md) |
 | Shipping it | [`verification.md`](verification.md), [`deployment.md`](deployment.md), [`rendering-proof-required.md`](rendering-proof-required.md); in this monorepo [`shipping-and-deploy.md`](shipping-and-deploy.md) (site-only lane, batched npm releases) |
 | One-command check of a project (typecheck, assets, lint, build, render in Chrome, inspect; one JSON report) | [`verify-loop.md`](verify-loop.md) (`aura3d verify --json`, `--explain <code>`) |
 | Procedural three.js content (a scene factory, animated rig, simple shaders) carried as a typed asset plus editable source | [`three-bridge.md`](three-bridge.md) (`aura3d import-three`) |
@@ -49,7 +49,6 @@ Skills hold the procedures; load one when its signal matches (canonical sources 
 | Materials, textures, HDRI, sky, weather, water, `material.custom` | `aura3d-materials-environments` |
 | Flipbook VFX sheets, HUD icons | `aura3d-game-art` |
 | Restyling a finished mesh | `aura3d-retexture` |
-| Paid Meshy generation | `meshy-cli` |
 | Slow or heavy routes, bundle size | `aura3d-performance` |
 
 A listed skill that is not installed is a gap to report, not permission to improvise its procedure.

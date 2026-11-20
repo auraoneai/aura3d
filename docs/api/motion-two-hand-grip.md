@@ -18,7 +18,7 @@ actor.setAnimationPose({ bones: twoHandGripBonesForEngine(pose.bones), mode: "ov
 object.setPosition(...pose.palm).setRotation(...gripQToEulerZYX(pose.objectRot)); // the engine's node order is ZYX
 ```
 
-- **Calibrate the grip point against the drawn hand.** `palmR`/`palmL` are points in forearm bone space. Measure them from the CPU-skinned hand vertices (`handCentroid`), not from the bind-pose centroid: on a Meshy-bound athlete the posed hand sat about 5 cm nearer the elbow than the bind centroid because the hand weights blend with neighbouring joints.
+- **Calibrate the grip point against the drawn hand.** `palmR`/`palmL` are points in forearm bone space. Measure them from the CPU-skinned hand vertices (`handCentroid`), not from the bind-pose centroid: on an auto-rigged athlete the posed hand sat about 5 cm nearer the elbow than the bind centroid because the hand weights blend with neighbouring joints.
 - **Rotation order.** Route nodes use ZYX. Applying XYZ angles tilts the object the wrong way (the first Diamond calibration did). `gripQToEulerZYX` and `gripQToEulerXYZ` are both exported.
 - **Reach.** Targets past the arm's reach are clamped by `solveGripTwoBone`; aim the grip point inside it or the palm misses the handle (`flexR`/`flexL` report elbow flexion: keep it between about 20 and 160 degrees).
 - **Hand-off.** `step(target, release)` with `release` 0 to 1 lets the top hand go and relax toward `relaxedTopHand` (a one-handed finish, a golf follow-through); the bottom hand does not move.

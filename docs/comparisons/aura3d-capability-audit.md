@@ -62,10 +62,9 @@ Promotion rule (PRD decision 6): a row becomes `shipped` only with (a) a pixel r
 | Capability | Label | Code | Evidence | Proof |
 |---|---|---|---|---|
 | `assets add`, `assets typegen` (manifest + `src/aura-assets.ts`) | shipped | `asset-manifest.ts`, `cli.ts` | Template `aura.assets.json` and generated `src/aura-assets.ts`; tagline-check | cli: tests/unit/aura3d-cli/assets.test.ts, tests/unit/aura3d-cli/asset-manifest-schema.test.ts |
-| `assets search`, `assets resolve` (project, open sources, Meshy, primitives) | shipped | `resolve-ladder.ts` | There is no hosted catalog (`docs/audit/asset-catalog-claim.md`) | cli: tests/unit/aura3d-cli/resolve-ladder.test.ts |
+| `assets search`, `assets resolve` (project, open sources, procedural recipes) | shipped | `resolve-ladder.ts` | There is no hosted catalog (`docs/audit/asset-catalog-claim.md`) | cli: tests/unit/aura3d-cli/resolve-ladder.test.ts |
 | `assets inspect`, `optimize`, `merge-clips`, `thumbnail`, `repair-skin` | shipped | `cli-help.ts`, `commands/assets/` | `aura3d --help`. Skin-weight sums within 5% of 1 are a debug-level note, not a warning | cli: tests/unit/aura3d-cli/asset-inspection-animation.test.ts, tests/unit/aura3d-cli/skin/skin-validate.test.ts |
 | `assets validate --release`, licence and provenance gates | shipped | `asset-source-validation.ts`, `index.ts` | — | cli: tests/unit/aura3d-cli/asset-provenance-license-coherence.test.ts |
-| `assets import-meshy` and `meshy ledger` | shipped | `meshy/`, `commands/meshyLedger.ts` | `meshy-cli` skill; local candidate ingestion only | cli: tests/unit/aura3d-cli/meshy-import.test.ts |
 | `check-deploy --dist [--release]` | shipped (static checks) | `index.ts:1097` | Checks hashed assets, unreferenced files and validation; it does not load routes or read the console | cli: tests/unit/aura3d-cli/deployment.test.ts |
 | `doctor` | shipped | `index.ts` (manifest checks); `doctor --look` forwards to `look lint` | `cli.ts:390` | cli: tests/unit/cli/look-lint.test.ts |
 | `look capture`, `look judge`, `look lint`, `look rubric`, `evidence judge` | shipped | `commands/` registry | `aura3d --help` lane commands | cli: tests/unit/cli/look-capture.test.ts, tests/unit/cli/look-judge.test.ts, tests/unit/aura3d-cli/judge/evidence-judge.test.ts |

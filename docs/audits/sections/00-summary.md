@@ -24,7 +24,7 @@ RH-01 is listed with no severity because the owner withdrew it. Of the 551 done 
 
 - **RH-13 (release audit)**, P3: owner action: deleting other people's remote branches and worktrees and moving local `main`; read-only counts and steps in 8f7f440e2 (`evidence/audit-fix/e5/rh13-branches.md`)
 - **IC-07 (Iron Crown)**, P2: needs a real-GPU check (`?vfx=on&vfxdebug=1`); the remote runner is software GL, so the override stays; owner runs `tools/real-gpu/run.sh`
-- **IC-12 (Iron Crown)**, P3: needs new Meshy `animate` clips; no Meshy credentials in the lane environment and agents may not log in (owner action)
+- **IC-12 (Iron Crown)**, P3: needs new fighting-idle, crouch and throw clips (owner action)
 - **LIVE-1 (Aura Diamond 3D)**, P2: needs a 15-minute real-GPU session; the software-GL runner cannot reproduce a renderer crash (park-switch heap measured at 468 MB, no page errors)
 - **SO-6 (Craterline GP)**, P2: the sentence is in the E5-owned `evidence/exposure-parity/README.md:42`, which still does not name Craterline GP or Ion Circuit; the handoff from G15 has not been applied
 - **P-3 (Serpentine Sky Run)**, P3: the fix asks for a real-GPU re-judge first and the lane has only software GL; on software GL the runner crop is back at the 4.3.7 contrast (193.4 against 206.0)
@@ -80,7 +80,7 @@ These rows count as done; the part named in the Status cell is still open (mostl
 | 13 | Glint Courier | dot-dash-3d | degraded | 1 | 3 | 8 | 4 | Game-over card is never hidden; next run plays under it (hud.ts:255) |
 | 14 | Cross Hop | cross-hop | degraded | 0 | 6 | 12 | 9 | Run coins never reset, so each death re-banks the session's coins (core.ts:206-220) |
 | 15 | Craterline GP | strange-orbit-port | degraded | 0 | 1 | 5 | 11 | No touch or pointer controls (main.ts:123-136) |
-| 16 | Chroma Roll | splat-rush-port | degraded | 0 | 3 | 8 | 7 | 4.5.0 regression: Meshy GLBs 39-50% darker after IBL loss (backdrop.ts:49-52) |
+| 16 | Chroma Roll | splat-rush-port | degraded | 0 | 3 | 8 | 7 | 4.5.0 regression: GLBs 39-50% darker after IBL loss (backdrop.ts:49-52) |
 | 17 | Serpentine Sky Run | serpentine-sky-run-port | degraded | 0 | 2 | 7 | 8 | One GL error (0x502) latches renderFailed and freezes the session (main.ts:247-249) |
 | 18 | Gridlock Courier | drift-and-deliver-port | degraded | 0 | 3 | 4 | 7 | No touch controls (main.ts:324-337) |
 | 19 | Ion Circuit | heatsink-port | degraded | 0 | 3 | 8 | 8 | GO banner never clears and hides the objective line (race.ts:97-103) |

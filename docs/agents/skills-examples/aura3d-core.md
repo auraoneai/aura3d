@@ -19,7 +19,6 @@ Aura3D CLI
 
 Commands:
   aura3d assets add ./model.glb --name robot [--type model|texture|environment|audio|navigation] ...
-  aura3d assets import-meshy artifacts/meshy/run --name assetKey --rights-evidence artifacts/meshy/run/rights.json ...
 ```
 
 The same help lists `init --agent all` and no `--skills` flag, so the skill

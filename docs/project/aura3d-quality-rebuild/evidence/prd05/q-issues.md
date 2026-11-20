@@ -81,8 +81,7 @@ Meanwhile: lane workflows capture their own scenes.
 ## Q-13-1 → lane 13 (C-40) — #454
 
 Rewrite `packages/aura3d-cli/skills/{aura3d-assets/SKILL.md:109,
-meshy-cli/SKILL.md:56-66, aura3d-performance/SKILL.md,
-aura3d-materials-environments/SKILL.md:9-10}` from facts F-05-01..06
+aura3d-performance/SKILL.md, aura3d-materials-environments/SKILL.md:9-10}` from facts F-05-01..06
 (published `proposed` in CONTRACTS.md Appendix B), then `pnpm skills:sync` /
 `pnpm check:skills`.
 

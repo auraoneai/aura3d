@@ -97,7 +97,7 @@ app = createAuraApp(canvas, {
 - **AO, depth of field, god rays, TAA, motion blur, auto exposure float targets (change 9):** none of these effects is in the scene.
 - **Animation and physics (change 10):** the game calls `hero.play(...)` only (`models.ts:79`). The changes are to `playLayer` masks, `addClipsFrom` and the retarget worker, none of which it calls. The diff of `actorAnimationHandle.ts` touches only those two methods. There is no physics.
 - **Math and animation fixes (change 11):** the example imports nothing from `@aura3d/math` and does not use `Clock`, `AnimationClip`, `ShapeGeometry` or `SphericalHarmonics3`. Its geometry is built by its own `meshkit.ts`.
-- **Scene kits and built-in humanoid provenance (change 12):** no scene kit is used. The hero is a Meshy GLB (`assets/models/hero.glb`), not the built-in humanoid.
+- **Scene kits and built-in humanoid provenance (change 12):** no scene kit is used. The hero is a GLB (`assets/models/hero.glb`), not the built-in humanoid.
 - **Per-frame cost changes (change 13):** these do not change what is drawn. `getError` is now sampled by default, but the engine switches it to every frame for render-source (evidence/QA) runs, strict apps, and any page loaded with `?diag=1` (`packages/engine/src/agent-api/compiler/renderer.ts:107-110`). That switch is made by the engine from the URL and does not depend on the game's diag panel (`apps/showcase-port-shared/diag.ts`), which only reads `drawCalls`, `backend` and tier fields from the page hook. Frame-time numbers may differ, especially with `?diag=1`.
 - **Package version pins (change 14):** already done. `apps/showcase-where-the-wind-wanders-port/package.json` is `4.5.0`.
 

@@ -11,14 +11,14 @@ Owner decisions already recorded: ship everything as 4.2.0; deprecate every prio
 - Motion kit in `@aura3d/engine/game`: `attachToBone`, locomotion, foot-slide meter, impact response, pose smoothing, double-frame detector, render presenter (`loop.alpha`, `createFixedStepPresenter`, `runMotionGate`), `createGameBeacon`/`installGameBeacon`, `warmPrograms`.
 - Library promotions: `effects.toon`, `cameras.chase`, `prefabs.objectiveMarker`, compass and canvas minimap, `aura3d evidence judge`, counted RNG.
 - Engine fixes: attachments read the final pose, canvas backing size follows the authored size (2x crop), neutral environment embedded (no fetch), `createParentFit`, `onFrame` error boundary, `material.custom` precision fix.
-- `aura3d assets resolve "<need>"` (project asset, open CC0 source, Meshy opt-in with budget, procedural recipe) replaces the hosted index. `aura3d look capture` defaults to a remote runner.
+- `aura3d assets resolve "<need>"` (project asset, open CC0 source, procedural recipe) replaces the hosted index. `aura3d look capture` defaults to a remote runner.
 - Games: physics, animation, objectives and presentation fixes across the index games and renamed ports; new names; likeness and brand cleanup; shared quick bar; 26 live games from the generated inventory.
 - Docs: agent fast path, recipes, lessons-learned, new-game checklist, game checks runner (`node tools/game-checks/run.mjs --all`), honest three.js comparison.
 
 ## 1. Preconditions (all must hold)
 
 1. No agent is still pushing to `game-rework` (`git log origin/game-rework --since="30 minutes ago"` is empty).
-2. `node tools/game-checks/run.mjs --all` reports 0 errors (the Meshy per-game cap warnings are known).
+2. `node tools/game-checks/run.mjs --all` reports 0 errors (the per-game asset cap warnings are known).
 3. Gates on the merged tree: `tsc -p tsconfig.build.json`, `verify-exports`, `verify-imports`, `public-api-contract`, `public-surface-diff`, `check:skills`, `node tools/docs/check-root-exports.mjs`, docs links and snippets, `public-example-boundary`, likeness-audit tests, kit and game unit tests, Aura Slam G1 and G3 (remote), consumer build smoke on the packed tarballs (remote; `evidence/stock-build/`), `marketing/scripts/check-site.mjs`, `check-version.mjs`. Compare any failure against a clean `origin/main` baseline.
 4. Preview deploy of the branch passes the remote check of all live games (0 console errors, hero frame non-black).
 
@@ -111,4 +111,4 @@ Run the live smoke over every game in `docs/workflows/game-inventory.json` (remo
 
 - Refresh `docs/workflows/aura3d-vs-threejs-matrix.md` rows and the scorecard from the live numbers.
 - Re-run the 26-game scan and the likeness audit over the final assets.
-- Open follow-ups: owner decisions on the `LICENSE` file and the Graphik font redistribution; art passes (Shadowstep Gauntlet houses, Teleoperator silhouettes, Duneglide slabs, Iron Crown roster faces); the Gridlock road flip; Meshy per-game cap enforcement in the helper.
+- Open follow-ups: owner decisions on the `LICENSE` file and the Graphik font redistribution; art passes (Shadowstep Gauntlet houses, Teleoperator silhouettes, Duneglide slabs, Iron Crown roster faces); the Gridlock road flip.

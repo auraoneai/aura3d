@@ -2,7 +2,7 @@
 
 `import { faceTowards, yawToFace, facingError, visualHeading, wrapAngle } from "@aura3d/engine/game"`
 
-Model forward axes are not standardised. Meshy GLBs look down +Z (the glTF default); hand-built rigs and compass-yaw simulations often treat -Z as forward. Hand a sim yaw to `node.setRotation` without saying which axis the model faces and the actor looks away from the target (the Bunker Zero defect: every enemy drawn with its back to the player). State the forward axis once per model and let the helper derive the yaw.
+Model forward axes are not standardised. Many generated GLBs look down +Z (the glTF default); hand-built rigs and compass-yaw simulations often treat -Z as forward. Hand a sim yaw to `node.setRotation` without saying which axis the model faces and the actor looks away from the target (the Bunker Zero defect: every enemy drawn with its back to the player). State the forward axis once per model and let the helper derive the yaw.
 
 ```ts
 import { faceTowards, facingError } from "@aura3d/engine/game";

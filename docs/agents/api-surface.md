@@ -78,7 +78,7 @@ Root `createAuraApp` claims are backed by a browser test through `@aura3d/engine
 - `sceneKits.*(...).toAppOptions()` is the preferred route for benchmark-style prompts: `physicsPlayground`, `particleFountain`, `solarSystem`, `neonTunnel`, `dataViz`, `miniGolf`, `materialLab`, `cityBlock`, `humanoidWalk`, `productViewer`.
 - Verify a kit's returned nodes, app options and browser pixels before a public claim about the feature in its name; when a kit uses primitives, declarative effects or simulated behaviour, describe it that way.
 - `prefabs.*` are lower-level pieces for custom composition (`particleFountain`, `cityBlock`, `materialSwatches`, `productViewer`, `physicsRamp`, `physicsPlayground`, `solarSystem`, `dataBars3D`, `neonTunnel`, `miniGolfHole`, `lowPolyHumanoid`).
-- Primitives are for set dressing, ground and court surfaces, debug and collision guides, HUD anchors and abstract visualisation. Never build the main character, vehicle, product or hero environment from primitives; use a real GLB (`model(assets.x)` or Meshy through `aura3d assets import-meshy`).
+- Primitives are for set dressing, ground and court surfaces, debug and collision guides, HUD anchors and abstract visualisation. Never build the main character, vehicle, product or hero environment from primitives; use a real GLB admitted as a typed asset (`model(assets.x)`).
 - `primitives.box/sphere/plane/cylinder/capsule/torus` reject a `params` key the kind does not use (`invalid-primitive-params`). See `troubleshooting.md`.
 
 ## Physics

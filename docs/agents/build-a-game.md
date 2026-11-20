@@ -101,7 +101,7 @@ export function createDash(seed: number): Dash {
 
 ## 3. Typed assets
 
-Every character, vehicle, creature and landmark is a GLB admitted through the asset pipeline, never a primitive and never a raw URL (`tests/unit/agent-api/public-example-boundary.test.ts` enforces it for public examples). Get GLBs from the catalog (`aura3d assets search`), your own files (`aura3d assets add`, or `aura3d assets convert` first for FBX, OBJ or USD), paid fal.ai generation (`aura3d assets generate`, with clips from `aura3d animation generate`; `docs/agents/asset-workflow.md` section 4) or, on request, Meshy (`meshy-cli` skill). `defineModelAssets` validates the sha256 and URL, and `?models=0` falls back to your stand-in. See `docs/api/model-loader.md`.
+Every character, vehicle, creature and landmark is a GLB admitted through the asset pipeline, never a primitive and never a raw URL (`tests/unit/agent-api/public-example-boundary.test.ts` enforces it for public examples). Get GLBs from the catalog (`aura3d assets search`), your own files (`aura3d assets add`, or `aura3d assets convert` first for FBX, OBJ or USD), or paid fal.ai generation (`aura3d assets generate`, with clips from `aura3d animation generate`; `docs/agents/asset-workflow.md` section 4). `defineModelAssets` validates the sha256 and URL, and `?models=0` falls back to your stand-in. See `docs/api/model-loader.md`.
 
 ```ts
 // assets.ts
@@ -115,7 +115,7 @@ export const assets = defineModelAssets(
       sizeBytes: 1_200_000
     }
   },
-  { license: "Own text prompt, generated with Meshy through Kiro Prism, 2026-10-24" }
+  { license: "Own work, CC0-1.0, 2026-10-24" }
 );
 ```
 

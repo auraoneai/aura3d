@@ -27,14 +27,14 @@ superiority, universal engine replacement, or unverified hardware claim is made.
   aliases have been consolidated into `@aura3d/engine`. See
   [`docs/migration-4.0.md`](../migration-4.0.md) for the complete migration table.
 
-### 2. All 19 Showcase Games Upgraded with Custom Meshy 3D PBR Assets and Gameplay Mechanics
+### 2. All 19 Showcase Games Upgraded with Custom 3D PBR Assets and Gameplay Mechanics
 
-- **Custom Meshy 3D PBR hero assets:** All 19 showcase game routes (`Turbo Drift
+- **Custom 3D PBR hero assets:** All 19 showcase game routes (`Turbo Drift
   Circuit`, `Skyline Runner`, `Blockfall Reactor`, `Neon Swarm`, `Aurora
   Lander`, `Bank Shot`, `Deep Recovery`, `Gallery Shift`, `Gravity Post`,
   `Patrol Wing`, `Rooftop Buckets`, `Siege Golf`, `Vault Breakers`, `Courier
   Rush`, `Pulse Tunnel`, `Mech Hangar`, `Aura Clash`, `Neon Corridor Strike`,
-  and `Meshy Relic Pilot`) are equipped with custom Meshy-generated 3D PBR hero
+  and `Relic Pilot`) are equipped with custom 3D PBR hero
   vehicles, rigged characters, and environment props registered through
   `aura.assets.json` with SHA-256 provenance.
 - **Upgraded gameplay mechanics:** Showcase game routes feature deterministic

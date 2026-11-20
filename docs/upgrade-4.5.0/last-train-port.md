@@ -22,7 +22,7 @@
   - Pylons: about 136. Masts: about 84.
   - Trees: at most 22 per town across 6 towns, so at most 132.
   - Shadow casters among them: tree canopies, tree pines, platform canopies. All are well under 1,024.
-- Meshy GLB models (`models.ts`) and `geometry.custom` meshes; node motion goes through `.runtime({ id })` handles.
+- GLB models (`models.ts`) and `geometry.custom` meshes; node motion goes through `.runtime({ id })` handles.
 - Canvas read-back code in the QA hooks (`main.ts`):
   - `pixels()` at lines 274-283: `drawImage(canvas)` then `getImageData`.
   - `frame()` at lines 315-321: calls `render()`, then `drawImage(canvas)` and `toDataURL` (line 320).
@@ -92,7 +92,7 @@
 - `effects.contactShadows` (change 8): not used.
 - Animation and physics (change 10): no clips, layers, masks, `addClipsFrom` or physics. (`physics` in `sim.ts:15` is a data field name for route data.)
 - Math/animation (change 11): no `Clock`, `AnimationClip`, `ShapeGeometry` or `SphericalHarmonics3`. The loop uses `createFixedStepLoop`.
-- Scene kits (change 12): none used. The built-in humanoid GLB is not used; the game's GLBs are its own Meshy assets (`models.ts`).
+- Scene kits (change 12): none used. The built-in humanoid GLB is not used; the game's GLBs are its own assets (`models.ts`).
 - Per-frame cost (change 13): `getError` is now sampled; nothing in the game depends on it. No code change needed.
 - Package versions (change 14): `apps/showcase-last-train-port/package.json` is already at `4.5.0` (commit `19d133584`).
 - Hemisphere lights and look-preset fills (change 3): no hemisphere lights, no look presets.

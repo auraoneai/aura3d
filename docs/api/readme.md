@@ -46,7 +46,7 @@ Use these labels in API docs and examples:
 | [`skinned-actors.md`](skinned-actors.md) | `attachRootRenderSource` and `TypedGLBActor`: draw `cloneSkinned` actors in the app render loop from the root export. | `@aura3d/engine` |
 | [`ball-flight.md`](ball-flight.md) | Exact event-time ball flight for racket sports. | `game.racketSports().ballFlight` |
 | [`racket-athlete-rig.md`](racket-athlete-rig.md) | Procedural racket-sport athlete: locomotion solver and limb posing. | `game.racketSports().athleteRig` |
-| [`cli-asset-tools.md`](cli-asset-tools.md) | `assets optimize`, `assets merge-clips`, isolated `assets import-meshy`, `meshy ledger`; since 5.6.0 also `assets convert`, `generate`, `normalize`, `slim`, `preview`, `thumbnail` and `animation import` / `generate`. | `@aura3d/cli` |
+| [`cli-asset-tools.md`](cli-asset-tools.md) | `assets optimize`, `assets merge-clips`, `assets validate --skin`, `assets repair-skin`; since 5.6.0 also `assets convert`, `generate`, `normalize`, `slim`, `preview`, `thumbnail` and `animation import` / `generate`. | `@aura3d/cli` |
 
 ## Topic pages added in 5.5
 

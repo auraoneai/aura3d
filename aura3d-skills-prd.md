@@ -10,7 +10,7 @@ Revision 2 changes: this PRD originally selected skills by asking which `scenari
 
 ## 1. Problem
 
-Aura3D agents already have prose guidance (`llms.txt` at 303 lines, 21 files in `docs/agents/`, `docs/animation-studio/*`, `docs/guides/build-a-browser-game.md`), but only one load-on-demand procedural skill, `.cursor/skills/meshy-cli/SKILL.md`. Three consequences follow:
+Aura3D agents already have prose guidance (`llms.txt` at 303 lines, 21 files in `docs/agents/`, `docs/animation-studio/*`, `docs/guides/build-a-browser-game.md`), but only one load-on-demand procedural skill, for a third-party asset generator. Three consequences follow:
 
 1. Agents must read about 4,000 lines of docs to reach the right procedure. The rules that matter most, like catalog-first, typed assets, claim labels, the silent-render rule, and evidence before claims, are spread across a dozen files.
 2. Multi-step workflows that exist in code have no procedure. Examples are the Scene-Tool CLI director loop (`animation-scene new|cast|set|block|camera|shot|dialogue|retime|validate|render`), fighting-character certification, racing and platformer geometry binding, and three.js migration through `@aura3d/three-compat`.
@@ -31,7 +31,7 @@ Non-goals:
 - Becoming a Scenario client. No `https://mcp.scenario.com/mcp` dependency in the engine, CLI, templates, or release gates.
 - AI video or audio generation inside Aura3D.
 - New runtime packages. Skills orchestrate existing CLI commands, kits, prefabs, validators, and evidence tools. A missing capability becomes a labeled gap or a roadmap item, not a workaround inside a skill.
-- Replacing the federated catalog (`@aura3d/asset-index`) or the Meshy pipeline (`docs/meshy-cli.md`).
+- Replacing the federated catalog (`@aura3d/asset-index`).
 - Bulk `npx skills add scenario-labs/skills --skill "*"` into this repo.
 
 ## 3. Current-state inventory (verified in-repo on 2026-09-25)
@@ -40,20 +40,17 @@ Non-goals:
 
 | Path | What it is |
 | --- | --- |
-| `.cursor/skills/meshy-cli/SKILL.md` | The only skill. Pointer style: require the `@meshy-ai/cli@0.2.0` pin, read `--help`, dry-run, explicit approval, `--max-credits`, `--async` and resume, download to `artifacts/meshy/<asset>/`, admit through the Aura3D import path. Defers to `docs/meshy-cli.md`. |
 | `.cursor/rules/` | Empty. |
 | `.claude/` | Empty. No `.agents/` or `.codex/` directory. |
 | `packages/aura3d-cli/src/index.ts` `initAgentFiles` / `genericAgentText` | `aura3d init --agent claude\|cursor\|copilot\|generic\|all` writes one generic instruction file per client. No skills are written. The file references `./llms.txt` and `./docs/agents/README.md`, which scaffolded projects do not contain. |
 | `packages/create-aura3d/package.json` `files` | Ships `dist` plus template directories. Templates contain no agent instructions or skills. |
 | `tools/agent-docs/index.ts` (`pnpm check:agent-docs`) | Gates `llms.txt`, `public/llms.txt`, and 11 `docs/agents/*` files. It does not know about skills. |
-| `cli-configs/install-meshy-mcp.sh`, `meshy-mcp-keychain-launcher`, `setup-meshy.sh`, `meshy-agent` | Pinned Meshy MCP (`@meshy-ai/meshy-mcp-server@0.5.1`) install and keychain launcher. |
 
 ### 3.2 CLI surface skills must target (`packages/aura3d-cli/src/cli-help.ts`)
 
 - `assets search <query> [--profile …] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]`
 - `assets resolve <query> --name <n> [--profile …] [--index N] [--candidate-id ID]`
 - `assets add <file> --name <n> [--type model|texture|environment|audio|navigation] [--license …] [--source-page …] [--author …] [--quality ungraded|blocked|prototype|candidate|release] [--role character|vehicle|world|environment|track|product|weapon|prop|set-dressing|debug|abstract|unknown] [--rendered-probe-json …] [--orientation-json …]`
-- `assets import-meshy <dir> --name <n> --rights-evidence <json> [--profile prop|environment|vehicle|humanoid] [--quality candidate]` (local-only, never certifies release)
 - `assets scan`, `assets list`, `assets typegen`, `assets thumbnail`
 - `assets inspect <glb> [--animation] [--humanoid] [--skeleton] [--morphs] [--license]`
 - `assets validate [--asset id|--no-assets] [--source [src]] [--release] [--no-placeholders] [--require-license] [--provenance evidence.json]`
@@ -109,11 +106,10 @@ Asset-authoring gaps (the original PRD's scope):
 9. Materials, textures, and environments beyond built-in presets.
 10. VFX flipbook sheets and HUD icons for games.
 11. Restyling a finished mesh without touching geometry.
-12. Deeper Meshy decision guidance (retexture, remesh, rig, animate, polycount budgets).
 
 Distribution gap:
 
-13. Skills never ship to scaffolded projects, and the generated instruction files reference files that are not there.
+12. Skills never ship to scaffolded projects, and the generated instruction files reference files that are not there.
 
 ## 4. Decision framework
 
@@ -144,8 +140,8 @@ Scenario entries are then mapped onto that catalog: PORT when the pattern improv
 | --- | --- | --- | --- | --- |
 | C1 | `aura3d-core` | Starting any Aura3D task, or before writing public examples or claims | Orientation plus shared `references/boundaries.md`: three.js to Aura3D mapping, claim labels, forbidden patterns, which skill to load next, and benchmark versus normal mode | `llms.txt`, `claims-and-boundaries.md`, `no-hackjob-rules.md`, `anti-hallucination-rules.md` |
 | C2 | `aura3d-scene-authoring` | Turning a prompt into a scene or route | Pick template, then scene kit, then prefab, with primitives last. Write `definePromptPlan`, run `compilePromptPlan`, and fix `repairHints` before rendering with `promptPlanToScene`. Pick the look from built-in `environments`, `sky`, `lights`, `material`, and `effects` before any external asset. Hand off to C4 for review. | `build-playbook.md`, `prompt-to-3d-workflow.md`, `benchmark-recipes.md`, scene-kit selection table in `llms.txt` |
-| C3 | `aura3d-assets` | A prompt names a real object, or the user brings a GLB | `assets search`, then `resolve --name` for auto-pullable candidates, or `add`, then `inspect`, `validate --source`, `typegen`, and use `model(assets.x)`. Covers `--type`, `--role`, `--quality`, provenance flags, profiles, and the rule that marketplace and deep-link results are user-handled. When no clean candidate exists, stop and report the rejection reasons, then offer the Meshy fallback (P1). This replaces Scenario's core-loop skill with the correct backend. | `asset-workflow.md`, `asset-selection.md`, CLI help |
-| C4 | `aura3d-evidence-review` | Before calling anything done, public, or shippable, or when comparing candidate assets | Route-health, desktop and mobile screenshots with pixel checks, verified `visualQA` helpers, `compilePromptPlan` repair hints, the L0 to L4 cinematic ladder, claim label selection, `assets validate --release`, and `check-deploy`. Critique loop (from Scenario's review group): pre-registered rubric, batched pass/warn/fail verdicts, cheapest targeted fix, round cap of 3. Bake-offs compare catalog and Meshy candidates on one brief. Benchmark mode stops after build. Includes thumbnail and poster capture via `assets thumbnail` and screenshot specs, absorbing the useful part of the old `aura3d-formats`. | `verification.md`, `rendering-proof-required.md`, `cinematic-scene-quality.md`, `deployment.md`, `verify:claims` |
+| C3 | `aura3d-assets` | A prompt names a real object, or the user brings a GLB | `assets search`, then `resolve --name` for auto-pullable candidates, or `add`, then `inspect`, `validate --source`, `typegen`, and use `model(assets.x)`. Covers `--type`, `--role`, `--quality`, provenance flags, profiles, and the rule that marketplace and deep-link results are user-handled. When no clean candidate exists, stop and report the rejection reasons, then offer `assets generate` or a procedural build. This replaces Scenario's core-loop skill with the correct backend. | `asset-workflow.md`, `asset-selection.md`, CLI help |
+| C4 | `aura3d-evidence-review` | Before calling anything done, public, or shippable, or when comparing candidate assets | Route-health, desktop and mobile screenshots with pixel checks, verified `visualQA` helpers, `compilePromptPlan` repair hints, the L0 to L4 cinematic ladder, claim label selection, `assets validate --release`, and `check-deploy`. Critique loop (from Scenario's review group): pre-registered rubric, batched pass/warn/fail verdicts, cheapest targeted fix, round cap of 3. Bake-offs compare catalog and generated candidates on one brief. Benchmark mode stops after build. Includes thumbnail and poster capture via `assets thumbnail` and screenshot specs, absorbing the useful part of the old `aura3d-formats`. | `verification.md`, `rendering-proof-required.md`, `cinematic-scene-quality.md`, `deployment.md`, `verify:claims` |
 
 ### 6.2 Domain skills
 
@@ -160,7 +156,6 @@ Scenario entries are then mapped onto that catalog: PORT when the pattern improv
 
 | ID | Skill | Change from revision 1 | Procedure |
 | --- | --- | --- | --- |
-| P1 | `meshy-cli` (extend) | Kept | Add a decision tree for when to retexture, remesh, rig, or animate, versus rejecting. Add texture precedence, per-`--profile` polycount traps, and the rig handoff to D2 (`validate-animation`). Keep the pin, dry-run, approval, and `--max-credits` controls. Do not copy upstream Meshy skill text. |
 | P2 | `aura3d-materials-environments` | Merges `aura3d-textures` and `aura3d-skyboxes`. Order changed to built-ins first. | 1. Built-ins: `material.*`, `MaterialPresets`, `PBRMaterialLibrary`, `GameReadyMaterialLibrary`, `environments.*`, `sky.dayNight`, `weather`, and `water`. 2. A licensed local or Poly Haven HDRI or texture admitted with `assets add --type environment|texture` plus license and provenance flags. 3. A generated plate (optional section 7.2 image skill), treated as a candidate. Checks: `validateGameReadyMaterialPreset`, `verifyThreeCompatHdriFile` and environment diagnostics, a 2:1 equirect with a left and right seam check, a tiling screenshot with no visible seam, KTX2 guidance from `texture-compression.md`, and `material.visualQA`. Reject missing roughness or metalness where the role expects PBR. |
 | P3 | `aura3d-game-art` | Replaces `aura3d-game-assets` and targets real consumers | Flipbook VFX sheets for the `flipbook-sprite` effect (columns and rows must match, frame inventory, transparent background, and fail-loud UV validation). HUD icons and UI sprites (DOM and CSS are allowed for UI only). Style-consistent batches. Tilesets are dropped: no 2D tile runtime consumes them, so 3D levels use D1 and C3. Every file lands as a typed asset, or the route is labeled `prototype`. |
 | P4 | `aura3d-retexture` | Renamed from `aura3d-retexture-views`. Orbit views cut. | Restyle a finished mesh while keeping geometry untouched. Compare pre and post bounds and position-accessor hashes from `assets inspect`. Map one material family to one map set. Capture a matched before and after screenshot filmstrip. Orbit views are not needed because the engine renders any camera angle from the real mesh through `camera.*`. Generating fake angles from a 2D concept conflicts with the rendering-proof rule. |
@@ -184,13 +179,12 @@ Scenario entries are then mapped onto that catalog: PORT when the pattern improv
 
 ## 7. `scenario-labs/skills` verdicts
 
-Source groups (repo README, fetched 2026-09-26): getting started (`scenario`); direction (`scenario-inspiration`); images (`scenario-image`, `-product-shots`, `-brand-kit`, `-image-editing`, `-text-overlay`, `-storyboards`); game art (`-game-assets`, `-sprite-animation`, `-textures`, `-skyboxes`, `-3d`, `-patina-retexture`, `-orbit-views`); video and audio (`-video`, `-video-editing`, `-seedance-music-video`, `-seedance-storyboard`, `-video-ads`, `-ugc`, `-fan-cam`, `-audio`, `-video-assembly`, `-caption-studio`); consistency (`-consistency`, `-identity-library`, `-model-training`); review (`-asset-analysis`, `-quality-gate`, `-refine-loop`, `-model-comparison`); formats (`-formats`); workflows (`-workflows`, `-workflow-authoring`); troubleshooting (`-moderation`, `-report`); admin (`-team-admin`, `-admin-analytics`); image families (8), video families (10), audio families (4), and 3D families (`meshy`, `rodin`, `sparc3d`, `3d-worlds`). MIT license. Installed with `npx skills add scenario-labs/skills --skill "<name>"`.
+Source groups (repo README, fetched 2026-09-26): getting started (`scenario`); direction (`scenario-inspiration`); images (`scenario-image`, `-product-shots`, `-brand-kit`, `-image-editing`, `-text-overlay`, `-storyboards`); game art (`-game-assets`, `-sprite-animation`, `-textures`, `-skyboxes`, `-3d`, `-patina-retexture`, `-orbit-views`); video and audio (`-video`, `-video-editing`, `-seedance-music-video`, `-seedance-storyboard`, `-video-ads`, `-ugc`, `-fan-cam`, `-audio`, `-video-assembly`, `-caption-studio`); consistency (`-consistency`, `-identity-library`, `-model-training`); review (`-asset-analysis`, `-quality-gate`, `-refine-loop`, `-model-comparison`); formats (`-formats`); workflows (`-workflows`, `-workflow-authoring`); troubleshooting (`-moderation`, `-report`); admin (`-team-admin`, `-admin-analytics`); image families (8), video families (10), audio families (4), and 3D families (4). MIT license. Installed with `npx skills add scenario-labs/skills --skill "<name>"`.
 
 ### 7.1 Ported (patterns rewritten, not copied)
 
 | Scenario source | Lands in | Pattern taken |
 | --- | --- | --- |
-| `scenario-3d`, `scenario-meshy` | P1 | Retexture, remesh, UV, rig, and animate toolchain order, texture precedence, polycount traps |
 | `scenario-textures`, `scenario-skyboxes` | P2 | Tiling-safe upscale, equirect seam checks, engine sizing |
 | `scenario-game-assets`, `scenario-sprite-animation` | P3 | Transparent batches, style consistency, sheet slicing, frame inventory |
 | `scenario-patina-retexture` | P4 | Geometry-untouched restyle, one material family per map set |
@@ -207,7 +201,7 @@ Source groups (repo README, fetched 2026-09-26): getting started (`scenario`); d
 | Image families (`gpt-image`, `seedream`, `ideogram`, `gemini-image`, `reve`, `mai-image`, `grok-imagine-image`, `luma-image`) | `reference.png` for image-to-3D, concept art, thumbnails, texture or HDRI plates for P2 and P3 | Output is an untrusted candidate under `artifacts/`. The runtime still requires typed assets through the CLI. |
 | `scenario-product-shots` (photo half) | Marketing packshots | The in-app hero object stays `model(assets.x)`. |
 | Video and audio families, `scenario-video`, `scenario-audio` | Trailers and source material for AuraVoice | Never claimed as Aura3D render output. The silent-render rule stands. |
-| `scenario-3d-worlds`, `scenario-rodin`, `scenario-sparc3d` | One-off evaluation only after catalog and Meshy both fail a brief | No second provider pipeline without a new PRD. |
+| `scenario-3d-worlds`, `scenario-rodin`, `scenario-sparc3d` | One-off evaluation only after catalog and generation both fail a brief | No second provider pipeline without a new PRD. |
 
 ### 7.3 Skipped
 
@@ -217,10 +211,10 @@ Source groups (repo README, fetched 2026-09-26): getting started (`scenario`); d
 | `scenario-video-editing`, `-video-assembly`, `-caption-studio`, `-seedance-*`, `-video-ads`, `-ugc`, `-fan-cam` | Aura3D renders silent WebGL, and AuraVoice owns voice, captions, and mux. |
 | `scenario-model-training` | There is no training backend. Consistency comes from the catalog, `assemble-character`, and D3 cast binding. |
 | `scenario-workflows`, `-workflow-authoring` | Scenario's graph grammar is a different system from `@aura3d/workflows`, `editor-runtime`, and `scripting`, which have their own evidence rules. |
-| `scenario-team-admin`, `-admin-analytics` | No equivalent. Aura3D spend control is Meshy credit approval. |
+| `scenario-team-admin`, `-admin-analytics` | No equivalent. Aura3D spend control is a dry run plus explicit approval for paid generation. |
 | `scenario-moderation`, `-report` | Provider-specific. The Aura3D equivalents are `docs/agents/troubleshooting.md` and this repo's issue process. |
 | `scenario-brand-kit`, `-text-overlay`, `-image-editing` | 2D brand production. In-scene text uses `labels.*` and SDF text, not baked PNG cards. |
-| Per-member cost and parameter tables in all family skills | They go stale quickly and do not apply. The catalog is the free path. Meshy uses dry-run plus `--max-credits` approval. |
+| Per-member cost and parameter tables in all family skills | They go stale quickly and do not apply. The catalog is the free path. Paid generation uses a dry run plus explicit approval. |
 
 ## 8. Architecture and distribution
 
@@ -240,12 +234,11 @@ packages/aura3d-cli/skills/            # canonical source, shipped in the npm pa
   aura3d-materials-environments/SKILL.md
   aura3d-game-art/SKILL.md
   aura3d-retexture/SKILL.md
-  meshy-cli/SKILL.md                    # moved from .cursor/skills/meshy-cli
   manifest.json                         # skill -> templates, pinned CLI version, doc URLs
 ```
 
 - Add `"skills"` to `packages/aura3d-cli/package.json` `files`.
-- The monorepo's `.cursor/skills/`, `.claude/skills/`, and `.agents/skills/` are generated copies (`pnpm skills:sync`), checked in so this repo's own agents load them. The sync is verified by the skills gate. `.cursor/skills/meshy-cli` stays at its current path after the move, so there is no break for existing users.
+- The monorepo's `.cursor/skills/`, `.claude/skills/`, and `.agents/skills/` are generated copies (`pnpm skills:sync`), checked in so this repo's own agents load them. The sync is verified by the skills gate.
 
 ### 8.2 Downstream delivery
 
@@ -266,12 +259,12 @@ packages/aura3d-cli/skills/            # canonical source, shipped in the npm pa
 ## 9. Rollout
 
 - Phase 0: review this PRD and approve sections 6 and 7.
-- Phase 1 (foundation, 1 PR): canonical skills directory, manifest, `skills:sync`, `check:skills` gate, the `init --skills` writer, a bundled `llms.txt`, and the `genericAgentText` fix. Skills: C1 `aura3d-core`, C3 `aura3d-assets`, C4 `aura3d-evidence-review`, and the `meshy-cli` move and extension (P1). Distribution ships first because every later skill depends on it.
+- Phase 1 (foundation, 1 PR): canonical skills directory, manifest, `skills:sync`, `check:skills` gate, the `init --skills` writer, a bundled `llms.txt`, and the `genericAgentText` fix. Skills: C1 `aura3d-core`, C3 `aura3d-assets`, C4 `aura3d-evidence-review`. Distribution ships first because every later skill depends on it.
 - Phase 2 (authoring and domains, 1 PR): C2 `aura3d-scene-authoring`, D1 `aura3d-browser-game`, D2 `aura3d-character-animation`, and the `create-aura3d` integration. Each skill is proven against one template: `product-viewer`, `fighting-game`, and `character-controller`.
 - Phase 3 (studio and migration, 1 PR): D3 `aura3d-animation-studio`, proven with one episode through the gate suite with the render silent and the AuraVoice track intact. D4 `aura3d-threejs-migration`, proven with `three-compat-custom-threejs-migration`.
 - Phase 4 (asset authoring, 1 PR): P2, P3, P4, proven with `cinematic-scene` (night environment), `mini-game` (flipbook VFX), and one retexture before and after filmstrip.
 - Phase 5: L1 `aura3d-performance`.
-- Each phase ships `SKILL.md` files, `docs/agents/README.md` and `prompt-to-3d-workflow.md` routing updates, and one worked example log (commands, validator output, screenshots). No live paid generation in CI. Meshy smoke tests stay manual-dispatch per `docs/meshy-cli.md`.
+- Each phase ships `SKILL.md` files, `docs/agents/README.md` and `prompt-to-3d-workflow.md` routing updates, and one worked example log (commands, validator output, screenshots). No live paid generation in CI.
 
 ### 9.1 Task checklist
 
@@ -287,7 +280,6 @@ Phase 1 (foundation):
 - [x] T1.6 C1 `aura3d-core` + `references/boundaries.md`.
 - [x] T1.7 C3 `aura3d-assets`.
 - [x] T1.8 C4 `aura3d-evidence-review`.
-- [x] T1.9 P1 `meshy-cli` moved to canonical source and extended.
 
 Phase 2 (authoring and domains):
 - [x] T2.1 C2 `aura3d-scene-authoring`.
@@ -316,9 +308,9 @@ Success measures: an agent dropped into a fresh `create-aura3d` project with onl
 
 ## 10. Risks and follow-ups
 
-- Skill rot: the CLI and APIs change. Mitigation: the `check:skills` command and API verification, pinned versions (`@aura3d/cli`, `@meshy-ai/cli@0.2.0`, `@meshy-ai/meshy-mcp-server@0.5.1`), and "read `--help` first" as step one in every skill.
+- Skill rot: the CLI and APIs change. Mitigation: the `check:skills` command and API verification, pinned versions (`@aura3d/cli`), and "read `--help` first" as step one in every skill.
 - Duplication drift between skills and `docs/agents`: skills hold the procedure, docs hold the policy, and skills link to docs instead of restating them. `boundaries.md` is the only shared restatement, and the gate diffs its forbidden-pattern list against `llms.txt`.
-- Claim leakage from generated assets: `import-meshy` stays candidate-only, C4 owns the label decision, and P2, P3, and P4 default to `prototype` without evidence.
+- Claim leakage from generated assets: generated assets are admitted as `candidate` only, C4 owns the label decision, and P2, P3, and P4 default to `prototype` without evidence.
 - Downstream write safety: `init` and `create-aura3d` never overwrite user-modified agent files.
 - Library follow-ups found during review (outside this PRD's scope, filed separately): a texture and HDRI adapter for `@aura3d/asset-index` (Poly Haven has both), which would make P2 catalog-first; and `create-aura3d` shipping `llms.txt` even when agent files are declined.
 
@@ -351,7 +343,6 @@ Findings recorded during implementation (library follow-ups, outside this PRD):
 | Pull an auto-pullable candidate | `npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet` |
 | Fighter | `… assets search "animated humanoid fighting character" --profile fighting-character --json`, then `… resolve … --name fighter --profile fighting-character`, then `… validate-game --profile fighting-character --asset fighter --no-placeholders --require-license` |
 | Local model, texture, or HDRI | `… assets add ./assets/robot.glb --name robot [--role product]` / `… assets add ./hdri/night.hdr --name nightSky --type texture --license CC0-1.0 --source-page …` (HDRIs are texture-typed: `environments.hdri({ texture })` accepts only texture refs), then `… assets typegen` |
-| Meshy candidate | `meshy make "…" --dry-run`, approval, `meshy make "…" --max-credits N -o artifacts/meshy/<asset>/`, then `… assets import-meshy artifacts/meshy/<asset>/ --name <n> --quality candidate --role … --profile … --rights-evidence …` |
 | Inspect | `… assets inspect ./model.glb --animation --humanoid --skeleton --morphs --license` |
 | Validate | `… assets validate --source --release` / `… validate-game …` / `… validate-animation --map … --require-rig` / `… validate-animation-studio --episode` |
 | Character assembly | `… assets assemble-character --name hero --body heroBody --part hair=heroHair` |

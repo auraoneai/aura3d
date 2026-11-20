@@ -1,32 +1,31 @@
 # Asset workflow: find, generate, admit, use
 
-The one page for getting a 3D model, character or texture into an Aura3D scene as a typed `assets.<key>`. Every command below was checked against `packages/aura3d-cli/src` and the installed `meshy` 0.2.0 help. Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first.
+The one page for getting a 3D model, character or texture into an Aura3D scene as a typed `assets.<key>`. Every command below was checked against `packages/aura3d-cli/src`. Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first.
 
-`aura3d` followed by a subcommand below means `npx @aura3d/cli@latest` plus that subcommand (or the installed `aura3d` binary). Pass the Meshy key only through the environment, never as `--api-key`.
+`aura3d` followed by a subcommand below means `npx @aura3d/cli@latest` plus that subcommand (or the installed `aura3d` binary).
 
 ## 1. Resolve a need (one command decides)
 
 ```bash
 aura3d assets resolve "street lamp" --role prop --dry-run        # show the decision, change nothing
 aura3d assets resolve "street lamp" --role prop                  # admit it as assets.streetLamp
-aura3d assets resolve "battle-worn knight" --role character --allow meshy --budget 40
+aura3d assets resolve "battle-worn knight" --role character      # character budget; a named subject with no open match needs a real model (sections 3 and 4)
 aura3d assets resolve "garden fence"                            # no asset found: prints a primitives recipe
 ```
 
-`resolve` works at build time and tries four rungs in order, stopping at the first that fits:
+`resolve` works at build time and tries three rungs in order, stopping at the first that fits:
 
 | Rung | What it does | Cost |
 | --- | --- | --- |
 | 1 Project | An asset already admitted in `aura.assets.json` whose id or source mentions the need's main noun. Use it as `model(assets.<id>)`. | free |
 | 2 Open sources | A directly downloadable, licence-clear match from the curated library, the starter pack, Khronos samples, Poly Haven, ambientCG and the jsDelivr CC0 mirror. The title must contain the main noun ("wooden bridge" never resolves to a carved elephant); models must fit the role triangle budget; the report shows triangles and size. Admission records sha256, provenance and licence, then typegen. | free |
-| 3 Meshy | Only with `--allow meshy` and a `--budget` that covers the estimate (prop or hero 30 credits, character 38). Runs the generator named by `AURA3D_MESHY_CMD` (your credentialed path, for example Kiro Prism with ledger caps; the CLI never handles keys); otherwise prints the commands. Then `assets import-meshy`. | 30 to 38 credits |
-| 4 Procedural | Prints a paste-ready snippet built from `primitives` and `group` for common props (crate, barrel, table, chair, tree, rock, fence, lamp, building, car placeholder). | free |
+| 3 Procedural | Prints a paste-ready snippet built from `primitives` and `group` for common props (crate, barrel, table, chair, tree, rock, fence, lamp, building, car placeholder). | free |
 
-Read the decision report: the chosen rung, why, what was skipped and the credits spent. `--role hero|prop|background|character|texture|hdri` sets the budget and the kind of file; `--json` prints the report.
+Read the decision report: the chosen rung, why, and what was skipped. `--role hero|prop|background|character|texture|hdri` sets the budget and the kind of file; `--json` prints the report.
 
-`resolve` is the build-time asset finder three.js does not have: it checks your project, then open licence-clear sources, then generation when you allow it, and admits the pick so production scenes load only admitted files (`model(assets.x)`, sha256 checked). Nothing is fetched from a hosted catalog at runtime.
+`resolve` is the build-time asset finder three.js does not have: it checks your project, then open licence-clear sources, then a procedural recipe, and admits the pick so production scenes load only admitted files (`model(assets.x)`, sha256 checked). Nothing is fetched from a hosted catalog at runtime.
 
-Procedural recipes are for simple props, set dressing and placeholders. A named, recognisable subject (a character, a specific vehicle, a creature, a landmark) needs a real model: rung 2 or Meshy.
+Procedural recipes are for simple props, set dressing and placeholders. A named, recognisable subject (a character, a specific vehicle, a creature, a landmark) needs a real model: rung 2, a GLB you admit with `assets add` (section 3), or `assets generate` (section 4).
 
 ## 2. Manual search (when you want to choose yourself)
 
@@ -51,7 +50,7 @@ npx @aura3d/cli@latest assets validate --asset robot --source --no-placeholders 
 
 `add` writes `aura.assets.json`, a hashed file under `public/aura-assets/`, a thumbnail and `src/aura-assets.ts`. Read `src/aura-assets.ts` before writing scene code and reuse an existing key. `--type texture|environment|audio|navigation` admits non-model files. Roles: `character`, `vehicle`, `world`, `environment`, `track`, `product`, `weapon`, `prop`, `set-dressing`, `debug`, `abstract`.
 
-Reject a candidate when: license, source or author is missing or temp-path only; a character claims animation but `skins === 0` or has no usable clips; bounds are extreme or orientation is unknown; the hash duplicates another asset unexplained; it is a raw Meshy export that has not been optimised (section 5).
+Reject a candidate when: license, source or author is missing or temp-path only; a character claims animation but `skins === 0` or has no usable clips; bounds are extreme or orientation is unknown; the hash duplicates another asset unexplained; it is a raw, unoptimised export (section 5).
 
 Other formats (FBX, OBJ, DAE, USD/USDA/USDZ, PLY, STL, 3MF, VOX, BVH) convert first, then admit the GLB (5.6.0; partial parity, every importer loss is printed as a diagnostic):
 
@@ -66,7 +65,7 @@ aura3d assets preview ./assets/robot.n.glb --out robot-views.png                
 
 ## 4. Generate on fal.ai: Idol models and HY-Motion clips (5.6.0, the default paid lane)
 
-The 30 live games' lifelike models and motion come from this lane; Meshy (section 5) is used only when the owner asks for it.
+The 30 live games' lifelike models and motion come from this lane.
 
 ```bash
 aura3d assets generate "weathered wooden rowing boat" --name rowboat --kind vehicle --size length=4 --dry-run   # prints the cost, submits nothing
@@ -85,47 +84,12 @@ aura3d assets validate --skin courier-anim.glb
 - Generated vehicles bake their wheels into the body: generate the body without wheels and add separate wheel nodes that spin about their measured hub (lessons M20). Rotors, sails and props that move are separate nodes too.
 - Read the `assets preview` sheet, then judge real-GPU frames of the model moving in the game before calling it done (lessons V10).
 
-## 5. Generate with Meshy (text prompts only, on request)
+## 5. Optimise heavy GLBs, admit in isolation
 
-Rules that never bend:
-- **Text prompts only, in your own words**, describing a generic object. Never image-to-3D from screenshots or frames of another game or product, never name a third-party character, brand or title in a prompt.
-- Credentials: `MESHY_API_KEY` (and for AuraOne agents `MESHY_BASE_URL_V1` and `MESHY_BASE_URL_V2` pointing at Kiro Prism) come from the runtime environment. Never print, log, commit or paste a key. Never run `meshy auth login`, `auth login --with-key`, or any rotation script, and never call `api.meshy.ai` directly from agent runs that are meant to go through Prism.
-- Meshy spend is uncapped by owner decision on 2026-10-25; credits are tracked for visibility and any cap is opt-in. Run the dry run first so the plan and its cost are visible, and never split a job to dodge a limit someone did set. A user who wants a limit sets one (`--cap`, `--global-cap`, `config`); once set it hard-stops with the credits left and the flag that raises or removes it.
-- Every paid call is reserved in the ledger (below) so spend stays visible. The only automatic stop without a cap is Prism/Meshy refusing for a zero balance (exit 9).
-
-### Costs (credits; the ledger uses these as estimates, `--est` overrides)
-
-| Operation | Credits |
-| --- | --- |
-| text-to-3d preview | 20 |
-| text-to-3d refine (PBR) | 10 |
-| `make` (preview + refine) | 30 (measured pool delta) |
-| remesh | 5 |
-| rigging (includes walk and run) | 5 |
-| animate (per action) | 3 |
-| retexture | 10 |
-
-### Plan, reserve, run
+Raw exports from DCC tools, scans and generators often have 200,000 to 1,750,000 vertices and 20 to 65 MB of 4K textures. `assets generate` already optimises its output; optimise every other heavy GLB before admission:
 
 ```bash
-meshy make "a sleek low-poly hover scooter, matte teal paint, worn rubber grips, game prop" --dry-run
-aura3d meshy ledger reserve --dry-run --game <slug> --op preview,refine,rigging   # cost of the chain; writes nothing
-rid=$(aura3d meshy ledger reserve --game <slug> --op preview)                      # no cap unless you set one (--cap N for this call)
-meshy text-to-3d create --mode preview --prompt "<prompt>" --async     # look at the preview before paying for refine
-aura3d meshy ledger settle --rid "$rid" --exit-code 0 --task-id <id>
-meshy text-to-3d create --mode refine --preview-task-id <id> --texture-resolution 2k --async
-meshy text-to-3d get <id> -o artifacts/meshy/<key>/                     # download immediately; Meshy keeps assets about 3 days
-aura3d meshy ledger status
-```
-
-`meshy make "<prompt>" --max-credits N -o <dir>` runs preview then refine in one call if you do not need to inspect the preview. Put the look in the prompt (palette, material mood, silhouette, poly style) so the PBR set fits the scene lighting. Use `--texture-resolution 2k`; the default 4k wastes memory and `8k` fails every admission profile except `environment`. Exit codes: 3 auth, 4 validation, 6 rate limit (wait 60 s, retry once, stagger parallel calls), 8 timeout (the task may still finish: `get` it, never recreate paid work), 9 credits exhausted (stop and report). A rate-limited or timed-out call keeps counting in the ledger until you `reconcile --rid <id> --status ok|failed`; pass the Meshy stderr (`settle --exit-code 6 --error-text "<stderr>"`) so a 429 on a poll keeps its task id (charged) while a 429 on a create counts 0. Check the ledger against the Prism pool with `aura3d meshy ledger reconcile` (see `docs/audit/meshy-reconciliation.md`). Re-prompt a bad result once with a sharper prompt; prefer retexture when only the look is wrong.
-
-### Optimise (mandatory), admit in isolation, validate
-
-Raw Meshy exports often have 200,000 to 1,750,000 vertices and 20 to 65 MB of 4K textures. Optimise every GLB first:
-
-```bash
-aura3d assets optimize --file artifacts/meshy/<key>/model.glb --out artifacts/meshy/<key>/model.opt.glb --role prop
+aura3d assets optimize --file artifacts/<key>/model.glb --out artifacts/<key>/model.opt.glb --role prop
 ```
 
 | Role | Vertex budget | Texture px |
@@ -135,45 +99,32 @@ aura3d assets optimize --file artifacts/meshy/<key>/model.glb --out artifacts/me
 | `character` | 30,000 | 2,048 |
 | `hero`, `vehicle` | 40,000 | 2,048 |
 
-Overrides: `--max-verts N`, `--tex N`, `--no-simplify`, `--meshopt` (static background props only; quantisation breaks bounds and grounding checks). Skinned models: remesh to about 10,000 triangles before rigging and never simplify after rigging (`--no-simplify`). Keep the raw download and loose textures out of the committed tree.
+Overrides: `--max-verts N`, `--tex N`, `--no-simplify`, `--meshopt` (static background props only; quantisation breaks bounds and grounding checks). Skinned models: reduce to about 10,000 triangles before rigging and never simplify after rigging (`--no-simplify`). Keep the raw download and loose textures out of the committed tree.
 
-Admission profile budgets (checked by `import-meshy`): `prop` 100,000 triangles, 8 textures; `vehicle` 1,000 to 250,000, 12 textures; `humanoid` 3,000 to 150,000, 12 textures; `environment` 500,000, 16 textures; texture size at most 4,096 px (8,192 for `environment`).
+In the Aura3D monorepo, admit **isolated**: a plain `assets add`, `validate` or `typegen` from the repo root rewrites `aura.assets.json`, `src/aura-assets.ts` (a 100k-line diff) and `public/aura-assets/*`, and races with other agents. Admit into the game's own manifest instead, then run `assets validate --asset <key> --require-license`. Read the `blockers` and `unproven` lists; `routeReady: false` is a result to report, and a blocked asset must not be hidden in a route.
 
-In the Aura3D monorepo, admit **isolated** (the default there): a plain `import-meshy`, `validate` or `typegen` from the repo root rewrites `aura.assets.json`, `src/aura-assets.ts` (a 100k-line diff) and `public/aura-assets/*`, and races with other agents.
-
-```bash
-aura3d assets import-meshy artifacts/meshy/<key>/ --into examples/<game>/assets --prefix <game> --name <role> \
-  --rights-evidence artifacts/meshy/<key>/rights.json --profile prop|vehicle|humanoid|environment --role prop|vehicle|character
-```
-
-The typed key is `<prefix>_<name>`; the model lands in `models/<key>.glb` and evidence in `provenance/<key>.rights.json` and `.meta.json`. Validation runs inside a temporary project; on failure nothing is copied and the exit code is 1. `--overwrite` replaces a different model at the target; `--keep-temp` keeps the temp project. Outside the monorepo a plain `assets import-meshy <dir> --name <typedKey> --rights-evidence <rights.json> --profile ... --role ...` followed by `assets validate --asset <typedKey> --require-license` is correct. Read the `blockers` and `unproven` lists; `routeReady: false` is a result to report, and a blocked asset must not be hidden in a route.
-
-`rights.json` records the basis for the output (the generating account's Meshy plan terms at generation time) and the date. Do not claim CC0 or exclusivity. Record per asset: prompt text, Meshy task ids (not signed URLs), credits spent, date, optimise settings, GLB size and triangles, plan name if known.
+Record the licence basis and the date for every admitted file. Do not claim CC0 or exclusivity unless the source states it.
 
 ## 6. Characters: rig, clips, mapping
 
-Default path (section 4): `assets generate --kind character --rig`, then `animation generate` or `animation import` for clips, then steps 7 and 8 below. The Meshy steps 1 to 6 apply only when Meshy is requested.
+Default path (section 4): `assets generate --kind character --rig`, then `animation generate` or `animation import` for clips, then steps 1 and 2 below.
 
-1. Preview with a pose: `meshy text-to-3d create --mode preview --pose-mode a-pose --prompt "<generic humanoid description>"` (or `t-pose`), refine at 2k.
-2. Remesh to about 10,000 triangles: `meshy remesh create --input-task-id <refine id> --target-polycount 10000`.
-3. Rig: `meshy rigging create --input-task-id <remesh id> --height-meters 1.8` (includes walk and run).
-4. More actions: `meshy animate create --rig-task-id <rig id> --action-id <n>` (Meshy action library id, integer), one task per action.
-5. Merge clips into one GLB: `aura3d assets merge-clips --base artifacts/meshy/hero-rig/ --out artifacts/meshy/hero/model.glb run=artifacts/meshy/hero-run/ idle=artifacts/meshy/hero-idle/` (copies by node name; a foreign skeleton fails with `different skeleton`).
-6. Optimise with `--role character --no-simplify`, admit with `--profile humanoid --role character`.
-7. Inspect and map before any code names a clip:
+If a rig and its clips arrive as separate GLBs, merge them into one first: `aura3d assets merge-clips --base rigged.glb --out hero.glb run=run.glb idle=idle.glb` (copies by node name; a foreign skeleton fails with `different skeleton`). Optimise with `--role character --no-simplify`.
+
+1. Inspect and map before any code names a clip:
 
 ```bash
 aura3d assets inspect <glb> --animation --humanoid --skeleton --morphs
 aura3d assets validate-animation --clips idle,walk,run --map idle=<clip>,walk=<clip>,run=<clip> --require idle,walk,run --require-rig
 ```
 
-8. Prove the skin before any code uses the character: `aura3d assets validate --skin <glb>`. It poses the rig through every clip and fails on stretched triangles, thin flaps, bad weights and a mesh modelled in a different pose than its skeleton (the defect that tore the FC athletes' shorts). Fix with `assets repair-skin` (see docs/api/cli-asset-tools.md) or regenerate; a known defect that must ship goes in `aura.skin-allow.json` with a reason. `validate --release` and `check-deploy --release` run it for you.
+2. Prove the skin before any code uses the character: `aura3d assets validate --skin <glb>`. It poses the rig through every clip and fails on stretched triangles, thin flaps, bad weights and a mesh modelled in a different pose than its skeleton (the defect that tore the FC athletes' shorts). Fix with `assets repair-skin` (see docs/api/cli-asset-tools.md) or regenerate; a known defect that must ship goes in `aura.skin-allow.json` with a reason. `validate --release` and `check-deploy --release` run it for you.
 
 `"ok": false` with `missingActions` means the rig cannot play that action: report it, do not rename clips in code. Drive the character with `AnimationController` or `cloneSkinned` (skill `aura3d-character-animation`).
 
 ## 7. Retexture
 
-Keep the geometry, change the maps: `meshy retexture create ...` (10 credits, reserve it in the ledger), then follow skill `aura3d-retexture` to prove the geometry is untouched (bounds plus position-accessor hash) before admitting the new file as its own asset.
+Keep the geometry, change the maps, then follow skill `aura3d-retexture` to prove the geometry is untouched (bounds plus position-accessor hash) before admitting the new file as its own asset.
 
 ## 8. Use it in a scene
 
@@ -187,7 +138,7 @@ const place = groundedRenderedAssetPlacement(assets.robot, { targetMaxDimension:
 scene().add(model(assets.robot).position(...place.position).scale(place.scale));
 ```
 
-`targetHeight` suits upright humanoids; `targetMaxDimension` suits vehicles, weapons and wide props (Meshy units vary, so always size with one of them). Rigged characters (`skins > 0`) play clips through the controller.
+`targetHeight` suits upright humanoids; `targetMaxDimension` suits vehicles, weapons and wide props (source units vary, so always size with one of them). Rigged characters (`skins > 0`) play clips through the controller.
 
 Games and examples with no project manifest declare models with `defineModelAssets`:
 
@@ -205,7 +156,7 @@ scene().add(models.node("crate", { targetHeight: 1.2 }, () => primitives.box()))
 - Every model needs a same-origin URL or pathname and a 64-character `sha256`; the production bridge accepts only `createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"`. An http(s) URL, a missing hash or an unhashed duplicate under `apps/<route>/public/aura-assets/` makes the scene draw nothing (`drawCalls` 0).
 - `?models=0` switches `defineModelAssets` to the procedural fallback; keep a fallback only if loading can fail, and log a diagnostic when it triggers.
 - Budget per game: keep newly generated asset bytes small (about 10 MB) and the whole game's assets around 25 MB.
-- Ship only the optimised GLB; `artifacts/meshy/**` and raw GLBs stay out of the commit.
+- Ship only the optimised GLB; working downloads under `artifacts/` and raw GLBs stay out of the commit.
 
 ## 10. Forbidden in public examples
 

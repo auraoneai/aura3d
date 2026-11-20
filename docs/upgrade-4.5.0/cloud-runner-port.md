@@ -15,7 +15,7 @@
   - `effects.fog`, `effects.bloom`, `effects.colorGrade` and `effects.vignette`.
   - There is no `environments.*` call. `environments` is imported at `world.ts:8` but never called.
 - **Materials:** almost everything uses `material.custom(...)` shader specs (`materials.ts`, `shaders.ts`: sky, valley, water, scenery, warning decals, glow points, ball, shadow blob). The road is `material.pbr`.
-- **Primitives:** `primitives.sphere` is called only with `name`, `size`, `castShadow` and `material` (`world.ts:76`, `140`, `141`). The rest is `geometry.custom` / `geometry.dynamic` and `model(MESHY.x, {...})`.
+- **Primitives:** `primitives.sphere` is called only with `name`, `size`, `castShadow` and `material` (`world.ts:76`, `140`, `141`). The rest is `geometry.custom` / `geometry.dynamic` and `model(...)` GLBs.
 - **Instancing:** four `instances.model` nodes (`world.ts:99-102`). Counts are capped by `HERO_TREE_CAP = 150`, `HERO_ROCK_CAP = 90` (`terrain.ts:165`) and `HERO_MESA_CAP = 46` (`props.ts:48`). Transforms are built once at mount.
 - **Animation:** `hero.play(clip, { loop, captureTime, crossFade })` and `hero.setAnimationPose(...)` (`world.ts:195`, `207`, `211`, `215`), plus the game's own planted-foot gait (`gait.ts`). There is no `playLayer`, `addClipsFrom` or mask use.
 - **Other APIs:**
@@ -76,7 +76,7 @@ Nothing needs editing in the game. These are the behaviour changes that do reach
 10. **Float-target filtering fix (AO, depth of field, god rays, TAA, motion blur, auto exposure):** the game uses none of these effects.
 11. **Animation and physics (`playLayer` masks, `addClipsFrom` handle, retarget worker, collider sizes, `bindNodes`):** the game uses only `play` and `setAnimationPose`, and has no physics.
 12. **Math and animation fixes (`Clock.start()`, step-track values, `ShapeGeometry`, `SphericalHarmonics3.getBasisAt`, `@aura3d/math/three`):** none of these are used. The game's time comes from `createFixedStepLoop` and its own accumulators.
-13. **Scene kits (`particleFountain`, `solarSystem`, `neonTunnel`) and the built-in humanoid provenance:** the game uses no scene kits and loads its own Meshy models.
+13. **Scene kits (`particleFountain`, `solarSystem`, `neonTunnel`) and the built-in humanoid provenance:** the game uses no scene kits and loads its own GLB models.
 14. **Package versions:** `apps/showcase-cloud-runner-port/package.json` is already `4.5.0`. The game's source lives in `examples/kid-goku-beyond-the-clouds-port/`, which has no `package.json`. I did not check its `index.html` for version pins.
 
 ## Checklist

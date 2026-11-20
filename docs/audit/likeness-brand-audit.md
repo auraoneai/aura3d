@@ -6,7 +6,7 @@ Scope: every GLB under `public/aura-assets/` (486 files) and the per-app model f
 
 ## Method and limits
 
-- `tools/likeness-audit/dump-textures.mjs` writes the base-colour textures of every GLB onto labelled contact sheets (13 sheets, 378 textures; 7 files needed a fallback parser for webp, spec-gloss and external images). Most Meshy atlases are shard collages, so marks are not readable there.
+- `tools/likeness-audit/dump-textures.mjs` writes the base-colour textures of every GLB onto labelled contact sheets (13 sheets, 378 textures; 7 files needed a fallback parser for webp, spec-gloss and external images). Most generated atlases are shard collages, so marks are not readable there.
 - `tools/likeness-audit/render-views.mjs` is a CPU rasteriser (bind pose, base-colour texture, front, side and back). It was run on the 20 models listed below, which are the characters and vehicles that matter. Models not listed were reviewed from their atlases only (props, buildings, tracks, effects) and are marked "atlas only".
 - Verdict scale: HIGH (a recognisable real mark, product or face scan is visible), MEDIUM (a real brand or venue name is visible, or a close replica of a real product), LOW (stylised, no real mark seen), OK.
 
@@ -62,9 +62,9 @@ Rows for assets listed under "Fixed in the `hotfix-brand` branch" above are fixe
 | `showcaseCcByFormulaOpponent`, `showcaseCc0FormulaRaceCar`, `showcaseDetailedRaceCircuit` | showcase race routes | "SKETCHFAB", "SDC PERFORMANCE" decals and Pirelli "P ZERO" tyre text | MEDIUM (real brands; CC-BY attribution must be honoured) |
 | `turboTsukubaVisualTrack`, `showcaseTsukubaCircuit` | turbo race routes | "Tsukuba Circuit" logo and signage (a real venue) | MEDIUM |
 | `courierVan`, `courierTrafficHatch` | Drift & Deliver | a close replica of a classic real van; hatch looks photo-derived; no logos seen on the van render | MEDIUM (design likeness) |
-| `rooftopShooterMeshyV1`, `rooftopDefenderMeshy` (preview: "23" jersey, swoosh-style shoe marks) | listed in FC and Red Zone v2 manifests, unused by code | marks in the Meshy atlas | MEDIUM, unused |
+| `rooftopShooterMeshyV1`, `rooftopDefenderMeshy` (preview: "23" jersey, swoosh-style shoe marks) | listed in FC and Red Zone v2 manifests, unused by code | marks in the atlas | MEDIUM, unused |
 
-Recommended follow-ups, in order: (1) replace the Teleoperator vehicles with generic generated cars (Meshy text prompts, no brand words); (2) delete the rooftop photo-scan GLBs together with their manifest entries (`aura.assets.json`, `src/aura-assets.ts` types and blocks, `tools/showcase-library/route-gates.json`, `tests/browser/showcase-release-asset-probe-config.ts`, `docs/project/showcase-launch-evidence.json`, `tests/qr/prd06/games/rooftop-buckets.spec.ts`); (3) strip the Pirelli, SketchFab and circuit marks from the formula and Tsukuba textures or swap the models; (4) re-render the unreviewed vehicles.
+Recommended follow-ups, in order: (1) replace the Teleoperator vehicles with generic cars (no brand words); (2) delete the rooftop photo-scan GLBs together with their manifest entries (`aura.assets.json`, `src/aura-assets.ts` types and blocks, `tools/showcase-library/route-gates.json`, `tests/browser/showcase-release-asset-probe-config.ts`, `docs/project/showcase-launch-evidence.json`, `tests/qr/prd06/games/rooftop-buckets.spec.ts`); (3) strip the Pirelli, SketchFab and circuit marks from the formula and Tsukuba textures or swap the models; (4) re-render the unreviewed vehicles.
 
 ## Reviewed, low risk
 
@@ -89,7 +89,7 @@ Method: `tools/likeness-audit/dump-textures.mjs` over `public/aura-assets` and e
 | `auraClashPlayerRig`, `auraClashRivalRig`, `clashFighterMaraMeshy`, `clashFighterRookMeshy` | Aura Clash showcase (live) | Detailed face skin textures and a close-up eye on a pink ground; unclear if photo-derived or generated | Needs a human look at full size before a decision; not changed |
 | `showcaseCcByFormulaOpponent`, formula-car textures | Live | Pirelli "P ZERO" tyre texture and sponsor lettering | Covered on `hotfix-brand`; not part of this change |
 | `showcaseTsukubaCircuit`, `turboTsukubaVisualTrack` | Live | Real circuit logo on signage and buildings | Covered on `hotfix-brand` |
-| `teleopWaymoHero`, `teleopWaymoTraffic`, other `teleop*` vehicle atlases | Teleoperator (live) | Real vehicle photographs and brand marks | Replaced on `game-rework` by generic Meshy vehicles; textures cleaned on `hotfix-brand` |
+| `teleopWaymoHero`, `teleopWaymoTraffic`, other `teleop*` vehicle atlases | Teleoperator (live) | Real vehicle photographs and brand marks | Replaced on `game-rework` by generic generated vehicles; textures cleaned on `hotfix-brand` |
 | `courierTrafficHatch`, `courierTrafficSedan`, `courierVan` | Courier game (live) | Real-vehicle parts atlases (lights, grilles); marks not readable at sheet scale | Unreviewed at full size |
 | `rzLombardiCupMeshy` | Red Zone (live) | Texture is generic, but the asset name uses a trademarked trophy name | Rename the asset key in a later change |
 | `showcaseStylizedMaleRunner` | Live | Generic stylised face | No action |

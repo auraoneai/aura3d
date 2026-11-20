@@ -13,7 +13,7 @@
 - Effects: `stage.ts:485-490` adds `effects.vignette` and `effects.antiAlias({ mode: "fxaa" })`. They are skipped when `REDUCED` (`?still=1` or prefers-reduced-motion).
 - Materials: transparent PBR for glass and ice (`stage.ts:82`) and for puffs (`stage.ts:102`, opacity 0.75). No custom shaders and no transmission.
 - Primitives: `primitives.box/sphere/cylinder` with `name`, `material`, `castShadow`, `receiveShadow`, `instances`, `instanceColors`. Instanced groups are small (7 path, 46+18 tufts, 34 foam, a few mounds, patches, pebbles and headlands), at `stage.ts:256-273`.
-- Models: Meshy and prop GLBs via `model(...)`, with `.animate({ clip, loop, speed })` at `stage.ts:343-394` and `node.setAnimation(...)` at `main.ts:102`. There are no animation layers, masks or `addClipsFrom`.
+- Models: character and prop GLBs via `model(...)`, with `.animate({ clip, loop, speed })` at `stage.ts:343-394` and `node.setAnimation(...)` at `main.ts:102`. There are no animation layers, masks or `addClipsFrom`.
 - Physics: standalone `physics.world` with `physics.box` and `physics.sphere` only (`src/game/sim.ts:194-512`). It does not use the scene-bound `physics:{ bindNodes }` option or capsule/cylinder colliders.
 - Camera: `camera.perspective` driven each frame by `app.camera?.setPose` (`main.ts:299`). It does not use `camera.orbit` or `interactions.orbit`.
 - Canvas read-back: none in `src/`. `installBlackFrameGuard()` from `@aura3d/debug` is imported at `main.ts:26` and called at `main.ts:29`. Evidence hooks are `installGameBeacon`, `__SS_STATE__` and `__SS_PUMP__` (`main.ts:1244-1262`).
@@ -73,7 +73,7 @@
 - **Contact shadows (8):** No `effects.contactShadows`.
 - **Animation and physics (10):** No `playLayer`, masks, `addClipsFrom` or retargeting. Animation uses `.animate` and `setAnimation` only. Physics uses `physics.world` with box and sphere shapes, not scene-bound `bindNodes` or capsule/cylinder colliders.
 - **Math/animation (11):** No `Clock`, `AnimationClip`, `ShapeGeometry` or `SphericalHarmonics3` use in `src/`.
-- **Scene kits (12):** No scene kits and no built-in humanoid GLB; the models are Meshy and prop assets.
+- **Scene kits (12):** No scene kits and no built-in humanoid GLB; the models are character and prop GLBs.
 - **Per-frame cost (13):** Applies automatically (sampled `getError`, fewer allocations, unused warm programs removed). No code change. Compare frame cost only if you suspect a regression.
 - **Package versions (14):** Already `4.5.0` in `apps/showcase-slingshot-siege/package.json`.
 

@@ -32,7 +32,7 @@ No phase-1 lane runs `tools/remote-acr/run.sh`, `tools/real-gpu/run.sh`, a judge
 | ei | WP-9 E-I proof tooling and checks | 440-447; 279-290 | PRD §4.1 E-I row and §4.3 |
 | ej | WP-10 E-J HUD themes, art-direction genre | 448-451; 291-296 | PRD §4.1 E-J row |
 | g01 ... g25 | WP-11 ... WP-35 | see the WP header in PRD §5.2 | PRD §4.2 row of the lane, plus `evidence/game-upgrades-47/<slug>/` |
-| wp36 | WP-36 Meshy and asset batch | 1355-1363 | `artifacts/gu47-meshy/**` (ignored), `evidence/game-upgrades-47/meshy-ledger.md`, `docs/prds/game-upgrades-47/lanes/wp36-catalogue.md`; root `aura.assets.json`, `public/aura-assets/`, `.gitattributes` only in wave 2 |
+| wp36 | WP-36 asset batch | 1355-1363 | `artifacts/gu47-assets/**` (ignored); root `aura.assets.json`, `public/aura-assets/`, `.gitattributes` only in wave 2 |
 | wp37, wp38 | WP-37 site/posters, WP-38 proof/release | 1365-1379 | phase 2 |
 
 ## Ownership and handoffs
@@ -51,11 +51,11 @@ No phase-1 lane runs `tools/remote-acr/run.sh`, `tools/real-gpu/run.sh`, a judge
   - `tests/browser/game-luma-targets.ts`, `tests/unit/game-luma-targets.test.ts`, `tools/game-checks/**`, `tools/real-gpu/scenarios.json`: E-I. Game lanes list their new variant rows and real-GPU scenario in their report.
   - Game HUD fonts: a game copies the licensed `.woff2` files it needs into its own app folder; `packages/game/src/hud/themes.ts` is E-J's.
 - Stage owned paths explicitly (`git add <paths>`). Never `git add -A`, `git add .` or `git commit -a`. Never stage `fixtures/asset-corpus/{avocado,damaged-helmet}.glb` or `fixtures/environment-corpus/hdri/*_1k.hdr` (LFS mismatch files).
-- Never run `aura3d assets import-meshy`, `assets validate` or `assets typegen` from the repo root without `--into` / an app-local manifest: they rewrite the root `aura.assets.json` and `src/aura-assets.ts`.
+- Never run asset admission, `assets validate` or `assets typegen` from the repo root without `--into` / an app-local manifest: they rewrite the root `aura.assets.json` and `src/aura-assets.ts`.
 
 ## Interim-path rule (PRD D6)
 
-When a game item needs a NEW engine API from lane E-x, implement it now on 4.6.x APIs wherever possible, behind a small adapter in the game's own folder (for example `art/engineCompat.ts`), and mark the swap point with a `// GU47(E-x): ...` comment so wave 2 is a one-line change. Items with no interim path are recorded as `blocked (E-x)`. Items that need a new Meshy asset are written so the asset key drops in later (keep today's asset or a clearly named placeholder; never a primitive hero subject) and recorded as `blocked (WP-36)` for the asset part. Items that are measurements, captures, judging or posters are `phase 2`.
+When a game item needs a NEW engine API from lane E-x, implement it now on 4.6.x APIs wherever possible, behind a small adapter in the game's own folder (for example `art/engineCompat.ts`), and mark the swap point with a `// GU47(E-x): ...` comment so wave 2 is a one-line change. Items with no interim path are recorded as `blocked (E-x)`. Items that need a new asset are written so the asset key drops in later (keep today's asset or a clearly named placeholder; never a primitive hero subject) and recorded as `blocked (WP-36)` for the asset part. Items that are measurements, captures, judging or posters are `phase 2`.
 
 ## HDRI catalogue convention (E-A and every game)
 
@@ -69,11 +69,11 @@ When a game item needs a NEW engine API from lane E-x, implement it now on 4.6.x
 
 - No local browsers, no local Playwright, no local Docker, no dev server opened in a browser. Phase 1 has no remote runs either.
 - No `git push`. Do not touch `/Users/gurbakshchahal/platforms/aura3d` (the main checkout) or another lane's worktree. Do not delete, rebase or reset any branch but your own. Do not change git config.
-- No Meshy or other paid generation outside lane wp36.
+- No paid asset generation outside lane wp36.
 - PRD D8: presentation only. Sims, physics, collision, scoring, input, replays and reference hashes stay byte-identical. Run the game's sim/replay/parity/motion/shader-compile unit tests before and after your change.
 - Fonts (PRD D9, machine policy): licensed faces from `/Users/gurbakshchahal/fonts` only (read its `README.md` and the family's license notes); self-host `.woff2` copies; never Inter, Roboto, Google Fonts (including Barlow), Geist or a system stack as the face.
 - Aura3D is never described as built on three.js. Every visual number is "software WebGL2".
-- No secrets in code, logs, commits or evidence (`PRISM_API_KEY`, `MESHY_*` come from the environment).
+- No secrets in code, logs, commits or evidence (`PRISM_API_KEY` and other keys come from the environment).
 - Budgets are never raised to pass (PRD D7, `BUNDLE_SIZES.md`).
 - Low tier and reduced motion (PRD §6.3, §6.4) are part of every item, not an afterthought.
 
@@ -102,7 +102,7 @@ Co-Authored-By: Devin <158243242+devin-ai-integration[bot]@users.noreply.github.
 1. Header: branch, base commit, wave.
 2. Rows table: `ID | Pri | Status | Commit | Notes / evidence`. Status is one of `done`, `done-interim (E-x)`, `partial`, `blocked (E-x | WP-36)`, `phase 2`, `not done (reason)`.
 3. Handoffs: `to lane | file:symbol | change | why`.
-4. Game lanes: new luma-target rows for E-I (id, URL with params, group tag, settle times, crops), the real-GPU scenario row, and the wave-2 asset needs (key, Meshy prompt, profile, size, used by row).
+4. Game lanes: new luma-target rows for E-I (id, URL with params, group tag, settle times, crops), the real-GPU scenario row, and the wave-2 asset needs (key, prompt, profile, size, used by row).
 5. CHANGELOG text for WP-38 (software WebGL2 wording, no three.js lineage).
 6. Phase-2 plan: the captures, crops and acceptance numbers each row needs.
 7. Verification: typecheck delta, suites run with base-vs-branch results, lint, game-checks.

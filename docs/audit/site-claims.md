@@ -36,7 +36,7 @@ Counts below are reproduced by `marketing/scripts/check-site.mjs`, which now fai
 | "Every route is checked for load, assets, console errors"; "zero console errors on the routes you ship"; "each route boots with no failed requests"; "every asset path has a hash" | homepage | fixed | reworded to what `check-deploy` reports or checks |
 | "Start with 18 lines. Ship a real 3D app." | homepage CTA | fixed | |
 | Aura Slam: "Championship tennis with a full World Tour", "32-player World Tour" | homepage game card | fixed | false for the native game: tournament and online are "Coming soon" (`examples/aura-slam/ui/menuMachine.ts`). Now names Quick Match and Smash Lab and says tournament and online are not in this version |
-| Apex Overdrive: "11 typed vehicle GLBs ... barrel rolls, dogfights" | homepage game card | fixed | 10 vehicle GLBs in `apps/showcase-roadster-rush/src/assets/meshy`; dogfights and barrel rolls not verified |
+| Apex Overdrive: "11 typed vehicle GLBs ... barrel rolls, dogfights" | homepage game card | fixed | 10 vehicle GLBs in `apps/showcase-roadster-rush/src/assets/`; dogfights and barrel rolls not verified |
 | Thermal Drift: "7 playable drones with twin cannons and three thermal circuits" | homepage game card | fixed | 7 drones and 3 circuits verified in code; "twin cannons" not found (laser cannons and homing missiles are) |
 | Grid Dispatch: "Drive San Francisco as a robotaxi or a supercar" | homepage game card | fixed | vehicles were replaced by original generic models; city name not verified |
 | "Six stadiums", "2-bone IK athletes" (Aura Slam) | homepage game card | keep | six venues in the G3 render check |

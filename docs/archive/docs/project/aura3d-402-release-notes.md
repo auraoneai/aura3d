@@ -4,9 +4,9 @@ Released 2026-10-19. All public packages ship the same version.
 
 ## Highlights
 
-- **15 showcase games restored on 4.0.2.** The full playable slate is rebuilt on de-interleaved 16-bit Meshy 3D assets, with boot-gated readiness and route-health evidence.
+- **15 showcase games restored on 4.0.2.** The full playable slate is rebuilt on de-interleaved 16-bit 3D assets, with boot-gated readiness and route-health evidence.
 - **New playable routes.** Iron Crown, Pip's Big Leap, Aura Hoops 3D, Aura Diamond 3D, Aura FC 3D, Red Zone 3D, Aura Links 3D, Bunker Zero, Slingshot Siege, Dot Dash 3D, and Cross Hop join the four flagship games.
-- **Character and runtime fixes.** Rigged Meshy GLBs pass the skeletal acceptance checks; arm/torso skinning tears and hand flapping are fixed; device-killing scene remounts are eliminated; focused buttons no longer consume game keys.
+- **Character and runtime fixes.** Rigged GLBs pass the skeletal acceptance checks; arm/torso skinning tears and hand flapping are fixed; device-killing scene remounts are eliminated; focused buttons no longer consume game keys.
 - **Engine and asset fixes.** Primitive builders never emit NaN matrices from two-element sizes, WebGL2 device render targets support save/restore, and legacy SHA-256 manifest entries normalize to the canonical hash format.
 - **Site and brand.** The marketing and docs surface runs the light Daylight design with licensed Graphik, DIN Pro, and TT Commons Pro Mono, plus new social preview renders.
 

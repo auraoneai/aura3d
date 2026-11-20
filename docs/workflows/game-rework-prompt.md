@@ -16,7 +16,7 @@ Success is what a first-time player sees and feels in the first 60 seconds. Unit
 - Read before you start: `AGENTS.md` fast path, `docs/agents/build-a-game.md`, `docs/agents/claims-and-boundaries.md`, `docs/agents/art-direction.md`, `docs/audit/game-leftovers.md`, the game's `PORTING-NOTES.md` (ports) and `evidence/<game>/` (latest frames).
 - Never run `pnpm` in a worktree with symlinked `node_modules`; call `node_modules/.bin/*` directly. Work in a separate worktree off `origin/main`. Browsers only via `tools/remote-acr/run.sh` (software WebGL2), never local Playwright or Docker. No GitHub Actions.
 - Sim stays deterministic and replayable. If a fix changes simulation behaviour on purpose, regenerate the game's reference replay, record the reason in the commit, and keep determinism (same seed, same hash twice).
-- Licensed fonts only (`/Users/gurbakshchahal/fonts/README.md`), dense UI preset. Kiro Prism for any LLM or Meshy call; Meshy only with text prompts, every call reserved in the credit ledger (`aura3d meshy ledger`; uncapped by owner decision 2026-10-25, tracked for visibility), never image-to-3D from other games' frames.
+- Licensed fonts only (`/Users/gurbakshchahal/fonts/README.md`), dense UI preset. Kiro Prism for any LLM call. Model prompts are text only, in your own words; never image-to-3D from other games' frames.
 - Do not copy art, names, characters, logos or text from the games these were inspired by (`docs/workflows/crayon-game-reverse-engineering.md` section 4).
 - Commit by path with the `Co-Authored-By: Claude <noreply@anthropic.com>` trailer, add one line per game under `## 4.1.3 (unreleased)` in `CHANGELOG.md` (rebase on conflict), push to `origin main`. Do not deploy or publish.
 
@@ -81,7 +81,7 @@ Fix the game first, then retake its screenshots (section 5). Each acceptance ite
 
 ### 3.9 Where the Wind Wanders, `examples/where-the-wind-wanders-port` (image 17)
 - **Seen:** the hooded character slides; legs do not visibly move.
-- **Fix:** stride-synced locomotion: walk and run clips (or procedural leg swing if clips are missing or locked) driven by ground speed, plus turn-in-place and idle. If the Meshy rig lacks usable leg weights, re-rig or re-generate with the Meshy rig and animate flow, within the credit cap.
+- **Fix:** stride-synced locomotion: walk and run clips (or procedural leg swing if clips are missing or locked) driven by ground speed, plus turn-in-place and idle. If the rig lacks usable leg weights, re-rig it or regenerate the character rigged (`aura3d assets generate --kind character --rig`).
 - **Accept:** foot slide under threshold at walking and running speeds; frame strips of one full stride show alternating leg positions; legs visibly move in frames.
 
 ### 3.10 Cloud Runner / Kid Goku Beyond the Clouds, `examples/kid-goku-beyond-the-clouds-port` (image 18)

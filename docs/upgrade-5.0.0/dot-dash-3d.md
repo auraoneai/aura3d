@@ -30,6 +30,6 @@ Verification
 - [x] Legacy casts: SSR v2 fields and volumetricFog `as unknown as` removed (now typed by 5.0); `engineCompat.ts` probe and particles cast kept (`probes` not on public root, emitter ranges not typed): see engine issues
 - [x] Stale `art/direction.audit.json` regenerated (clears the game-check error)
 - [ ] A15 `REV 4.7` silk text: skipped, visible copy must not change
-- [ ] The 4.7.10 notes: Glint Courier's Meshy swap was reverted by the blind panel, so the baseline is the post-revert frames
+- [ ] The 4.7.10 notes: Glint Courier's model swap was reverted by the blind panel, so the baseline is the post-revert frames
 - [x] `node tools/game-checks/run.mjs dot-dash-3d` clean (0 errors, 2 pre-existing warnings)
 - [x] Before/after frames attached (static bands) with the capture command, per game, before the change ships

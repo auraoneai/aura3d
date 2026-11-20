@@ -1,6 +1,6 @@
-# PRD: Veer Wonder World (`@aura3d/wonder-world`) — 100% Native `@aura3d/engine@5.5.1` Procedural 3D & Graphics Revamp (Zero Meshy / Zero `.glb`)
+# PRD: Veer Wonder World (`@aura3d/wonder-world`) — 100% Native `@aura3d/engine@5.5.1` Procedural 3D & Graphics Revamp (Zero `.glb`)
 
-- **Document Path:** `docs/prds/veer-wonder-world/aura3d-5.5.1-procedural-no-meshy-revamp-prd.md`
+- **Document Path:** `docs/prds/veer-wonder-world/aura3d-5.5.1-procedural-revamp-prd.md`
 - **Target Package:** `@aura3d/wonder-world` (`apps/veer-wonder-world/`)
 - **Canonical Live Host:** Cloudflare Pages `aura3d-wonder-world` (`https://veer.auraone.ai` -> `aura3d-wonder-world.pages.dev`)
 - **Engine Target:** `@aura3d/engine@5.5.1` (`@aura3d/engine`, `@aura3d/engine/procedural`, `@aura3d/engine/geometry-tools`, `@aura3d/engine/game`, `@aura3d/engine/math`)
@@ -15,9 +15,9 @@
 ## 1. Executive Summary & Architectural Decisions
 
 ### 1.1 Objective
-Completely eliminate all **54 Meshy text-to-3D `.glb` blobs (`25.5 MB`)**, their Meshy provenance records, Meshy UV/triangle-slicing workarounds, and Draco/Meshopt/Basis decoder bundle overhead from Veer Wonder World (`apps/veer-wonder-world/`), replacing all **66 `StageAssetKey`s (`65 ModelKey`s + `"bubble"`)** and upgrading all **6 worlds** to a **Nintendo *Link's Awakening* (Switch) / *Yoshi's Crafted World* / Apple Arcade tactile miniature toy-diorama standard** built 100% natively on `@aura3d/engine@5.5.1` (`@aura3d/engine`, `@aura3d/engine/procedural`, `@aura3d/engine/geometry-tools`).
+Completely eliminate all **54 text-to-3D `.glb` blobs (`25.5 MB`)**, their third-party provenance records, UV/triangle-slicing workarounds, and Draco/Meshopt/Basis decoder bundle overhead from Veer Wonder World (`apps/veer-wonder-world/`), replacing all **66 `StageAssetKey`s (`65 ModelKey`s + `"bubble"`)** and upgrading all **6 worlds** to a **Nintendo *Link's Awakening* (Switch) / *Yoshi's Crafted World* / Apple Arcade tactile miniature toy-diorama standard** built 100% natively on `@aura3d/engine@5.5.1` (`@aura3d/engine`, `@aura3d/engine/procedural`, `@aura3d/engine/geometry-tools`).
 
-To guarantee zero visual disappointment, this revamp simultaneously eradicates **both** failure modes — muddy single-mesh Meshy clay blobs **and** lazy "snowman / balloon-animal / flat-plastic" primitive stacks — by combining:
+To guarantee zero visual disappointment, this revamp simultaneously eradicates **both** failure modes — muddy single-mesh `.glb` clay blobs **and** lazy "snowman / balloon-animal / flat-plastic" primitive stacks — by combining:
 1. **Anatomical Spline, Sweep & FBM-Displaced Organic Sculpting** (`45–90` sub-shapes & `1,800–4,200` triangles per cast character; `28–70` sub-shapes & `900–3,400` triangles per animal/vehicle/building; `8–35` sub-shapes & `240–1,800` triangles per prop, enforced automatically by unit tests),
 2. **Zero-File `256×256` Procedural Craft Albedo & Micro-Normal Textures** (`craft-textures.ts`: felt bouclé, maple wood grain, woven gingham, rattan wicker, limestone/brick mortar, diamond quilt stitch, storybook clock dials, and stoneware ceramic speckle via `texture.data` + `material.proceduralTextures.*`),
 3. **Full `@aura3d/engine@5.5.1` Diorama Graphics Activation** (**WebGPU-first `backend: "auto"`** for live players with seamless WebGL2 fallback, live `effects.contactShadows` grounding, `sky.gradient` sunlit cloud domes, subtle miniature tilt-shift `effects.depthOfField`, `effects.lightCone` cozy sunbeams, and paired GLSL+WGSL animated water ripple shaders), and
@@ -25,9 +25,9 @@ To guarantee zero visual disappointment, this revamp simultaneously eradicates *
 
 ### 1.2 Autonomous Architectural & Product Decisions
 
-1. **100% Meshy Removal & First-Party IP Ownership:**
-   - Delete all 54 binary `.glb` files in `apps/veer-wonder-world/src/assets/models/*.glb`, all 54 provenance JSONs in `apps/veer-wonder-world/provenance/models/*.json`, `tools/model-review.json`, and all 7 Meshy pipeline/surgery scripts (`meshy-pipeline.mjs`, `admit-models.mjs`, `recolor-atlas-regions.mjs`, `jpeg-normal-maps.mjs`, `build-articulated-cast.mjs`, `cut-cake-flame.mjs`, `bake-armature-scale.mjs`).
-   - Update `tools/gen-rights-manifest.mjs` so `MODEL_RIGHTS = []` and all 65 `ModelKey`s live in `PROCEDURAL_RIGHTS` under 100% first-party AuraOne ownership (`"Original procedural @aura3d/engine stage art owned by AuraOne"`), completely retiring third-party Meshy `"exclusivity not claimed"` licensing terms.
+1. **100% `.glb` Removal & First-Party IP Ownership:**
+   - Delete all 54 binary `.glb` files in `apps/veer-wonder-world/src/assets/models/*.glb`, all 54 provenance JSONs in `apps/veer-wonder-world/provenance/models/*.json`, `tools/model-review.json`, and all 7 GLB pipeline/surgery scripts (`meshy-pipeline.mjs`, `admit-models.mjs`, `recolor-atlas-regions.mjs`, `jpeg-normal-maps.mjs`, `build-articulated-cast.mjs`, `cut-cake-flame.mjs`, `bake-armature-scale.mjs`).
+   - Update `tools/gen-rights-manifest.mjs` so `MODEL_RIGHTS = []` and all 65 `ModelKey`s live in `PROCEDURAL_RIGHTS` under 100% first-party AuraOne ownership (`"Original procedural @aura3d/engine stage art owned by AuraOne"`), completely retiring third-party `"exclusivity not claimed"` licensing terms.
 2. **Anti-"Snowman / Balloon-Animal" Organic Sculpting Law & Automated Triangle/Sub-Part Quality Floors:**
    - **Hard Prohibition on Raw Primitive Stacking:** Stacking raw `primitives.sphere`, `primitives.capsule`, or `primitives.cone` shapes for character/animal torsos, heads, limbs, ears, snouts, wool coats, or tree canopies is strictly forbidden (it produces cheap "snowman / balloon-animal" seams).
    - **Mandatory Spline & Surface-Modifier Sculpting (`@aura3d/engine/procedural` + `@aura3d/engine/geometry-tools`):**
@@ -58,7 +58,7 @@ To guarantee zero visual disappointment, this revamp simultaneously eradicates *
 6. **Unified Synchronous Stage Architecture (`drawnAs: "procedural"`, Zero `.glb` Preloader):**
    - Delete `src/runtime/asset-preloader.ts` (which existed solely to `fetch()` `.glb` binaries with 3.5s–180s timeouts) and `tests/unit/stage/asset-preloader.test.ts`.
    - Every stage actor and prop mounts synchronously on Frame 0 from memoized unit-height (`h = 1.0`) `AuraCustomGeometrySpec` recipes (`Map<StageAssetKey, ProceduralAssetRig>`), tagged with `["wonder-node", id, "procedural"]` and reporting `drawnAs: "procedural"` in `StageNodeSnapshot` and `proceduralNodes: number` in `StageDiagnostics`.
-   - Author all 66 procedural rigs facing **`+Z` natively** (`yaw = 0` looks toward the camera), eliminating `MODEL_FRONT_YAW` (`Math.PI / 2` Meshy sideways workaround on `gogo`, `gogoCarriage`, `car`).
+   - Author all 66 procedural rigs facing **`+Z` natively** (`yaw = 0` looks toward the camera), eliminating `MODEL_FRONT_YAW` (`Math.PI / 2` sideways GLB workaround on `gogo`, `gogoCarriage`, `car`).
 7. **Removal of `/aura-decoders/` Bundle Bloat While Keeping CLI Gates Green:**
    - Remove Draco, Meshopt, and Basis `/aura-decoders/` middleware and `closeBundle` copying from `apps/veer-wonder-world/vite.config.ts` (`TypedGLBActor` and `KTX2Loader` are never invoked when `modelNodes.length === 0` and zero `.ktx2` files exist).
    - **Keep `apps/veer-wonder-world/aura.assets.json` (`"assets": []`) and `apps/veer-wonder-world/src/aura-assets.ts` on disk** because `@aura3d/cli@5.5.1 check-deploy` checks `existsSync` on both files.
@@ -79,18 +79,18 @@ To guarantee zero visual disappointment, this revamp simultaneously eradicates *
 
 ## 2. Current Codebase State & System Architecture
 
-### 2.1 Current Meshy-Bound Pipeline & Why Visuals Fell Short
+### 2.1 Current GLB-Bound Pipeline & Why Visuals Fell Short
 Today, `@aura3d/wonder-world` (`apps/veer-wonder-world/`) ships **32 playable interactive items** (`20` voiced episodes `E01`–`E20` in `src/content/episodes/` and `12` tap activities `G01`–`G12` in `src/content/activities/`) set across **6 miniature toy-island worlds** (`meadow`, `music-garden`, `peekaboo-barn`, `station`, `learning-cloud`, `home-nook`).
 
 Despite upgrading to `@aura3d/engine@5.5.1` terrain plinths, visuals fell short for **two** compounding reasons:
-- **54 Muddy Meshy `.glb` Blobs (`25.5 MB`):** `apps/veer-wonder-world/src/assets/models/*.glb` holds 54 hashed `.glb` binaries (`momo` 1.40 MB, `lulu` 1.67 MB, `sheru` 1.63 MB, `gogo` 1.62 MB, `peeko` 1.79 MB, `barn` 1.06 MB, etc.) where eyes, mouths, fur, buttons, roof tiles, windows, and fake shadows are baked into a single muddy 512px–1024px JPEG over blobby triangles. Slicing those shells in `tools/build-articulated-cast.mjs` still left painted-on blurry eyes, melted silhouettes, sideways `-X` vehicle orientations (`MODEL_FRONT_YAW`), and minute-long `.glb` preloader stalls (`src/runtime/asset-preloader.ts`, `/aura-decoders/`).
+- **54 Muddy `.glb` Blobs (`25.5 MB`):** `apps/veer-wonder-world/src/assets/models/*.glb` holds 54 hashed `.glb` binaries (`momo` 1.40 MB, `lulu` 1.67 MB, `sheru` 1.63 MB, `gogo` 1.62 MB, `peeko` 1.79 MB, `barn` 1.06 MB, etc.) where eyes, mouths, fur, buttons, roof tiles, windows, and fake shadows are baked into a single muddy 512px–1024px JPEG over blobby triangles. Slicing those shells in `tools/build-articulated-cast.mjs` still left painted-on blurry eyes, melted silhouettes, sideways `-X` vehicle orientations (`MODEL_FRONT_YAW`), and minute-long `.glb` preloader stalls (`src/runtime/asset-preloader.ts`, `/aura-decoders/`).
 - **Dormant `@aura3d/engine@5.5.1` Diorama Capabilities in `looks.ts` & `stage.ts`:** `WORLD_LOOKS` in `src/scenes/looks.ts` defined `contactShadows` and `sky` specs that `worldLookNodes()` never mounted, `stage.ts` forced `webgl2` even on WebGPU-capable browsers, and ponds used static unrippled discs — leaving sky backdrops flat and props lacking close-range contact grounding.
 
-### 2.2 Target Zero-Meshy `@aura3d/engine@5.5.1` Procedural & Diorama Graphics Architecture
+### 2.2 Target Zero-GLB `@aura3d/engine@5.5.1` Procedural & Diorama Graphics Architecture
 
 ```mermaid
 flowchart LR
-  Catalog["tools/wonder-assets.json\n(65 ModelKeys, 0 Meshy fields)"] --> GenAssets["tools/gen-aura-assets.mjs\n-> src/aura-assets.ts"]
+  Catalog["tools/wonder-assets.json\n(65 ModelKeys, 0 generation fields)"] --> GenAssets["tools/gen-aura-assets.mjs\n-> src/aura-assets.ts"]
   Catalog --> GenRights["tools/gen-rights-manifest.mjs\n-> src/assets/rights-manifest.ts"]
   CraftTex["craft-textures.ts\n8x 256x256 texture.data Maps\n(felt, wood, gingham, wicker,\nbrick, quilt, dial, ceramic)"] --> RigKit
   ProcEngine["@aura3d/engine@5.5.1 +\nprocedural + geometry-tools"] --> RigKit["rig-kit.ts\n(Bezier lathe, variable sweep,\ndeformAlongCurve, FBM puffs,\nextrude holes, 4-layer eyes)"]
@@ -467,20 +467,20 @@ Every rig MUST match `MODEL_INFO[key].heightM` (`0.5m` for `"bubble"`), `ASSET_T
 
 ## 4. File-by-File Breakdown (Mandatory — Disjoint Parallel Ownership)
 
-### 4.1 `DELETE` (Meshy Binaries, Provenance, Meshy Surgery Scripts & `.glb` Preloader)
+### 4.1 `DELETE` (GLB Binaries, Provenance, GLB Surgery Scripts & `.glb` Preloader)
 
 | Exact Path | Action | Owner Lane | Reason / Cleanup Verification |
 |---|---|---|---|
-| `apps/veer-wonder-world/src/assets/models/*.glb` (all 54 files + directory) | `DELETE` | `WP-2` | Removes 25.5 MB of Meshy clay `.glb` blobs (`0` `.glb` files remain anywhere in `apps/veer-wonder-world`). |
-| `apps/veer-wonder-world/provenance/models/*.json` (all 54 files + directory) | `DELETE` | `WP-2` | Removes Meshy text-to-3D provenance JSONs; replaced by `PROCEDURAL_RIGHTS` in `src/assets/rights-manifest.ts`. |
-| `apps/veer-wonder-world/tools/meshy-pipeline.mjs` | `DELETE` | `WP-2` | Retires Meshy API generation/download CLI driver. |
-| `apps/veer-wonder-world/tools/admit-models.mjs` | `DELETE` | `WP-2` | Retires Meshy `.glb` admission & copier script. |
-| `apps/veer-wonder-world/tools/recolor-atlas-regions.mjs` | `DELETE` | `WP-2` | Retires Meshy baked-JPEG UV atlas recolor & normal-map injector. |
+| `apps/veer-wonder-world/src/assets/models/*.glb` (all 54 files + directory) | `DELETE` | `WP-2` | Removes 25.5 MB of clay `.glb` blobs (`0` `.glb` files remain anywhere in `apps/veer-wonder-world`). |
+| `apps/veer-wonder-world/provenance/models/*.json` (all 54 files + directory) | `DELETE` | `WP-2` | Removes text-to-3D provenance JSONs; replaced by `PROCEDURAL_RIGHTS` in `src/assets/rights-manifest.ts`. |
+| `apps/veer-wonder-world/tools/meshy-pipeline.mjs` | `DELETE` | `WP-2` | Retires the text-to-3D generation/download CLI driver. |
+| `apps/veer-wonder-world/tools/admit-models.mjs` | `DELETE` | `WP-2` | Retires the `.glb` admission & copier script. |
+| `apps/veer-wonder-world/tools/recolor-atlas-regions.mjs` | `DELETE` | `WP-2` | Retires the baked-JPEG UV atlas recolor & normal-map injector. |
 | `apps/veer-wonder-world/tools/jpeg-normal-maps.mjs` | `DELETE` | `WP-2` | Retires embedded `.glb` normal-map re-encoder. |
-| `apps/veer-wonder-world/tools/build-articulated-cast.mjs` | `DELETE` | `WP-2` | Retires 913-line Meshy triangle-slicing surgery script. |
-| `apps/veer-wonder-world/tools/cut-cake-flame.mjs` | `DELETE` | `WP-2` | Retires Meshy `cake.*.glb` flame cutter. |
-| `apps/veer-wonder-world/tools/bake-armature-scale.mjs` | `DELETE` | `WP-2` | Retires Meshy `0.01` armature scale baker. |
-| `apps/veer-wonder-world/tools/model-review.json` | `DELETE` | `WP-2` | Retires per-GLB Meshy review manifest. |
+| `apps/veer-wonder-world/tools/build-articulated-cast.mjs` | `DELETE` | `WP-2` | Retires 913-line triangle-slicing surgery script. |
+| `apps/veer-wonder-world/tools/cut-cake-flame.mjs` | `DELETE` | `WP-2` | Retires the `cake.*.glb` flame cutter. |
+| `apps/veer-wonder-world/tools/bake-armature-scale.mjs` | `DELETE` | `WP-2` | Retires the `0.01` armature scale baker. |
+| `apps/veer-wonder-world/tools/model-review.json` | `DELETE` | `WP-2` | Retires per-GLB review manifest. |
 | `apps/veer-wonder-world/tools/make-portraits.sh` | `DELETE` | `WP-2` | Replaced by `tools/render-character-portraits.mjs` (`WP-9`). |
 | `apps/veer-wonder-world/src/runtime/asset-preloader.ts` | `DELETE` | `WP-9` | Retires `.glb` HTTP `fetch()` + SHA-256 runtime preloader (`0` `.glb` network fetches). |
 | `apps/veer-wonder-world/tests/unit/stage/asset-preloader.test.ts` | `DELETE` | `WP-9` | Retires unit tests for deleted `asset-preloader.ts`. |
@@ -503,13 +503,13 @@ Every rig MUST match `MODEL_INFO[key].heightM` (`0.5m` for `"bubble"`), `ASSET_T
 
 | Exact Path | Action | Owner Lane | Exact Changes Required |
 |---|---|---|---|
-| `apps/veer-wonder-world/src/scenes/articulated-actors.ts` | `MODIFY` | `WP-1` | Export `SUB_PART_PARENT: Partial<Record<SubPartId, SubPartId>>` and `resolveHierarchicalPartTransform(actorPose, part, anchorM)` composing `actorRoot -> body -> head -> leafPart` transforms cleanly around each part's baked `[0, 0, 0]` joint hinge; remove legacy Meshy `ww_*` GLB child-node lookup fallback if unused. |
+| `apps/veer-wonder-world/src/scenes/articulated-actors.ts` | `MODIFY` | `WP-1` | Export `SUB_PART_PARENT: Partial<Record<SubPartId, SubPartId>>` and `resolveHierarchicalPartTransform(actorPose, part, anchorM)` composing `actorRoot -> body -> head -> leafPart` transforms cleanly around each part's baked `[0, 0, 0]` joint hinge; remove legacy `ww_*` GLB child-node lookup fallback if unused. |
 | `apps/veer-wonder-world/src/scenes/stand-ins.ts` | `MODIFY` | `WP-1` / `WP-9` | Keep `StageAssetKey`, `LayoutRole`, `AssetTraits`, `ASSET_TRAITS`, `assetTraits`, `defaultHeightM`, and `footprintM` as the canonical layout/picking trait source (`WP-1`); once `PROCEDURAL_RIGS` is wired in `WP-9`, replace the legacy 4–10 box `STAND_INS` table with thin delegation to `PROCEDURAL_RIGS` (`STAND_IN_MIRROR_GLASS = MODEL_MIRROR_GLASS`) so zero crude programmer-art primitives remain. |
-| `apps/veer-wonder-world/tools/wonder-assets.json` | `MODIFY` | `WP-2` | Strip all Meshy-specific keys (`prompt`, `poly`, `rig`, `rigNote`, `characterStyle`, `propStyle`); retain `{ key, role, heightM, face }` for all 65 `ModelKey`s. |
+| `apps/veer-wonder-world/tools/wonder-assets.json` | `MODIFY` | `WP-2` | Strip all generation-specific keys (`prompt`, `poly`, `rig`, `rigNote`, `characterStyle`, `propStyle`); retain `{ key, role, heightM, face }` for all 65 `ModelKey`s. |
 | `apps/veer-wonder-world/tools/gen-aura-assets.mjs` | `MODIFY` | `WP-2` | Generate `src/aura-assets.ts` directly from `tools/wonder-assets.json` (`MODEL_KEYS`, `ModelKey`, `AssetRole`, `ModelInfo`, `MODEL_INFO`, `PROCEDURAL_MODELS = MODEL_KEYS`) with zero `.glb` URLs, zero `defineModelAssets`, and zero `as` casts. |
 | `apps/veer-wonder-world/src/aura-assets.ts` | `MODIFY` | `WP-2` | Regenerated output of `node tools/gen-aura-assets.mjs`. |
 | `apps/veer-wonder-world/tools/gen-rights-manifest.mjs` | `MODIFY` | `WP-2` | Emit `MODEL_RIGHTS = []`, emit all 65 keys from `tools/wonder-assets.json` into `PROCEDURAL_RIGHTS` (`license: "Original procedural @aura3d/engine stage art owned by AuraOne"`), and read portrait license directly from `provenance/portraits.json` (`record.license`). |
-| `apps/veer-wonder-world/provenance/portraits.json` | `MODIFY` | `WP-2` / `WP-9` | Replace Meshy `model` references & Meshy license strings with first-party AuraOne procedural rig provenance (`WP-2` schema update; `WP-9` updates SHA-256 hashes after re-rendering portraits). |
+| `apps/veer-wonder-world/provenance/portraits.json` | `MODIFY` | `WP-2` / `WP-9` | Replace `model` references & third-party license strings with first-party AuraOne procedural rig provenance (`WP-2` schema update; `WP-9` updates SHA-256 hashes after re-rendering portraits). |
 | `apps/veer-wonder-world/src/assets/rights-manifest.ts` | `MODIFY` | `WP-2` / `WP-9` | Regenerated output of `node tools/gen-rights-manifest.mjs`. |
 | `apps/veer-wonder-world/tools/validate-content-entry.ts` | `MODIFY` | `WP-2` | Update `validateModels()` (`lines 98-119, 186`): verify `MODEL_KEYS.length === 65`, verify every story/world key has an entry, and assert `!existsSync("src/assets/models")` and `0` `.glb` files anywhere under `apps/veer-wonder-world/`. |
 | `apps/veer-wonder-world/vite.config.ts` | `MODIFY` | `WP-2` | Remove `/aura-decoders/` dev middleware (`lines 31-33, 44-49, 110-130`), `DECODER_CODECS` + `ktx2-transcoder.worker` copy/build in `closeBundle` (`lines 175-206`), and `AURA3D_DECODER_BASE_PATH` define (`lines 212-214`). Preserve `/fonts/` & `/hdri/` copy, `stripStaticBlocksPlugin()`, and `auraPhysicsPlugin({ physics: "auto" })`. |
@@ -524,9 +524,9 @@ Every rig MUST match `MODEL_INFO[key].heightM` (`0.5m` for `"bubble"`), `ASSET_T
 | `apps/veer-wonder-world/src/scenes/home-nook.ts` | `MODIFY` | `WP-8` | Upgrade Home Nook: pleated `parametricSurface` window curtains with tie-back tassels, outdoor window flower-box visible through glass, carved wooden wall clock (`clockAndGaugeDialTexture`), baseboard/crown mouldings, braided concentric rug rings, and afternoon `effects.lightCone` (`id: "home-nook-window-beam"`) dimmed cleanly during bedtime in `shiftHomeNookTimeOfDay` while preserving `home-nook-sky-disc` & `home-nook-lamp-shade` IDs. |
 | `apps/veer-wonder-world/src/scenes/worlds.ts` | `MODIFY` | `WP-9` | Mount all `WorldDressing` items via `mountStaticDressingAsset` from `src/scenes/procedural-rigs/index.ts` (removing `modelRef` imports and stand-in branching). |
 | `apps/veer-wonder-world/src/scenes/stage.ts` | `MODIFY` | `WP-9` | Unlock **WebGPU-first live rendering** (`resolvedBackend = options.backend ?? (options.manualClock === true || softwareRenderer ? "webgl2" : "auto")`), pass `reducedMotion` into `worldLookNodes`, mount all story cast & props synchronously via `mountProceduralAsset`, remove `asset-preloader.ts` / `modelRef` / `MODEL_FRONT_YAW` / GLB retry / stand-in fallback, apply `resolveHierarchicalPartTransform` (`SUB_PART_PARENT`) to `${id}__${part}` handles, fix `line 1951` `hasArticulatedDoorLeaf`, wire `tintableIds` for `PropPlacement.tint` / `"tint"` / `applyCarWashState`, set `MIRROR_GLASS = { centerY: 0.627, frontZ: 0.03, radius: 0.305 }`, and emit `drawnAs: "procedural"` + `proceduralNodes`. |
-| `apps/veer-wonder-world/src/characters/character-registry.ts` | `MODIFY` | `WP-9` | Remove dead Meshy clip-selection helpers (`MOMO_CLIPS`, `LULU_CLIPS`, `MissingClipError`, `selectCharacterClip`) and reference procedural `MODEL_INFO`. |
+| `apps/veer-wonder-world/src/characters/character-registry.ts` | `MODIFY` | `WP-9` | Remove dead GLB clip-selection helpers (`MOMO_CLIPS`, `LULU_CLIPS`, `MissingClipError`, `selectCharacterClip`) and reference procedural `MODEL_INFO`. |
 | `apps/veer-wonder-world/src/runtime/feature-flags.ts` & `src/app.ts` | `MODIFY` | `WP-9` | Remove `modelWaitMs` stall logic (`readFlags` may keep harmless ignored parsing or clean removal matched with `session-gate.test.ts`); ensure `qaState().stage` exposes clean diagnostics. |
-| `apps/veer-wonder-world/art/direction.ts` & `art/direction.audit.json` | `MODIFY` | `WP-9` | Replace Meshy GLB `BC+N` claims in `art/direction.ts` with procedural tactile craft material contracts (`assets: []`); regenerate `art/direction.audit.json` via `art-direction.test.ts`. |
+| `apps/veer-wonder-world/art/direction.ts` & `art/direction.audit.json` | `MODIFY` | `WP-9` | Replace GLB `BC+N` claims in `art/direction.ts` with procedural tactile craft material contracts (`assets: []`); regenerate `art/direction.audit.json` via `art-direction.test.ts`. |
 | `apps/veer-wonder-world/src/assets/portraits/{momo,lulu,sheru,gogo,lumi,peeko}.webp` | `MODIFY` | `WP-9` | Re-rendered `256×256` WebP studio portraits from `node tools/render-character-portraits.mjs`. |
 | **10 Unit Test Files (`apps/veer-wonder-world/tests/unit/**`):** `privacy/source-guards.test.ts`, `privacy/no-child-data.test.ts`, `content/rights-manifest.test.ts`, `stage/art-direction.test.ts`, `stage/character-registry.test.ts`, `stage/mirror-reflection.test.ts`, `stage/model-orientation.test.ts`, `stage/motion.test.ts`, `stage/spots.test.ts`, `runtime/session-gate.test.ts` | `MODIFY` | `WP-9` | Exact contract updates documented in Section 5 (`WP-9`) — removing stale `aura-assets.ts` `ALLOWED_CASTS`, `asset-preloader.ts` `fetchFiles`, `mirror.*.glb` `readFileSync`, `provenance/models/*.json` `readFileSync`, and GLB `fetch` pause test, while adding 66-key procedural rig geometry, bounds, determinism, **and hard Section 3.6.1 sub-shape/triangle/craft-lobe quality-floor assertions** in `spots.test.ts`. |
 | **5 Browser QA Files (`tests/browser/wonder-world-*`):** `wonder-world-lib.ts`, `wonder-world-capture-lib.ts`, `wonder-world-first-frame.spec.ts`, `wonder-world-look.spec.ts`, `wonder-world-build.spec.ts` | `MODIFY` | `WP-9` | Remove `admittedModelKeys()`, `remountIfModelsLate()`, and `MODEL_WAIT_MS = 180_000`; assert `node.tags.includes("procedural")` across `first-frame`, `characters`, and `stills`; reduce `wonder-world-build.spec.ts` `--browser-settle` from `600000` to `20000`. |
@@ -540,7 +540,7 @@ Every rig MUST match `MODEL_INFO[key].heightM` (`0.5m` for `"bubble"`), `ASSET_T
 ```mermaid
 flowchart TD
   WP1["WP-1: Craft Textures, Organic Rig Kit & 2-Level Joint Kinematics\n(craft-textures.ts, rig-kit.ts, articulated-actors.ts)"]
-  WP2["WP-2: Meshy Purge, Manifests, Vite Decoder Strip & Content Validator\n(wonder-assets.json, gen-*, vite.config.ts, validate-content-entry.ts)"]
+  WP2["WP-2: GLB Purge, Manifests, Vite Decoder Strip & Content Validator\n(wonder-assets.json, gen-*, vite.config.ts, validate-content-entry.ts)"]
   WP3["WP-3: 6 Hero Cast Sculpted Rigs\n(cast-rigs.ts)"]
   WP4["WP-4: 8 Companions & Farm/Garden Animals\n(companion-animal-rigs.ts)"]
   WP5["WP-5: 9 Vehicles, Buildings & Mechanical Props\n(vehicle-architecture-rigs.ts)"]
@@ -557,7 +557,7 @@ flowchart TD
 
 ---
 
-### Wave 1 — Foundation Core & Meshy Pipeline Purge (2 Parallel Lanes: `WP-1` || `WP-2`)
+### Wave 1 — Foundation Core & GLB Pipeline Purge (2 Parallel Lanes: `WP-1` || `WP-2`)
 
 #### `WP-1`: `256×256` Craft Texture Library, Organic Sculpting Rig Kit & 2-Level Joint Kinematics
 - **Owned Files:** `apps/veer-wonder-world/src/scenes/procedural-rigs/craft-textures.ts`, `apps/veer-wonder-world/src/scenes/procedural-rigs/rig-kit.ts`, `apps/veer-wonder-world/src/scenes/articulated-actors.ts`.
@@ -574,7 +574,7 @@ flowchart TD
      - Export `SUB_PART_PARENT` (`head -> body`, `armL/R -> body`, `wingL/R -> body`, `tail -> body`, `chimney -> body`, `cabDoorL/R -> body`, `eyelidL/R -> head`, `jaw -> head`, `beakLower -> head`, `cheekPuff -> head`, `earL/R -> head`, `tuft -> head`).
      - Export `resolveHierarchicalPartTransform(actorPose, part, baseAnchorM, partAnchorsM)` so child sub-parts rotate and translate cleanly with their parent (`body` / `head`) around baked `[0, 0, 0]` joint hinges without `groups.create` `pivot` nesting.
 
-#### `WP-2`: Meshy `.glb` Purge, Manifest Generators, Vite Decoder Removal & Content Validator
+#### `WP-2`: `.glb` Purge, Manifest Generators, Vite Decoder Removal & Content Validator
 - **Owned Files:** All 11 `DELETE` targets in `src/assets/models/`, `provenance/models/`, and `tools/` (Section 4.1 except `asset-preloader*`), plus `tools/wonder-assets.json`, `tools/gen-aura-assets.mjs`, `src/aura-assets.ts`, `tools/gen-rights-manifest.mjs`, `provenance/portraits.json`, `src/assets/rights-manifest.ts`, `tools/validate-content-entry.ts`, `vite.config.ts`, `public/_headers`.
 - **Implementation Steps:**
   1. Delete `src/assets/models/` (54 `.glb`s), `provenance/models/` (54 `.json`s), `tools/model-review.json`, `tools/meshy-pipeline.mjs`, `tools/admit-models.mjs`, `tools/recolor-atlas-regions.mjs`, `tools/jpeg-normal-maps.mjs`, `tools/build-articulated-cast.mjs`, `tools/cut-cake-flame.mjs`, `tools/bake-armature-scale.mjs`, and `tools/make-portraits.sh`.
@@ -659,7 +659,7 @@ Every Wave-2 subagent owns strictly disjoint files, imports only from `@aura3d/e
 
 ### Phase A — `CODE_COMPLETE_GO` Gate (Deterministic, Visual & Proportional — Required)
 
-- [ ] **Zero Meshy / Zero `.glb` Verification:** `find apps/veer-wonder-world -name '*.glb'` returns `0` files; `provenance/models` and all 8 Meshy scripts/manifests in Section 4.1 are deleted; `rg -i "meshy" apps/veer-wonder-world/{src,tools,provenance,art}` returns `0` matches.
+- [ ] **Zero `.glb` Verification:** `find apps/veer-wonder-world -name '*.glb'` returns `0` files; `provenance/models` and all 8 GLB scripts/manifests in Section 4.1 are deleted.
 - [ ] **66-Asset, 34-Joint & Quantitative Sculpting Floor Completeness (`spots.test.ts`):** Every `StageAssetKey` (`65` `ModelKey`s + `"bubble"`) resolves in `PROCEDURAL_RIGS` with non-empty `AuraCustomGeometrySpec` buffers (`positions`, `normals`, `uvs`, `indices`), ground base `y = 0`, fitted top `y = heightM`, `+Z` forward orientation, all required `SubPartId` handles, and Section 3.6.1 sub-shape/triangle/craft-lobe floors (`45–90` sub-shapes & `1,800–4,200` tris on Cast; `>= 28` & `900–3,400` tris on Tier 2A; `>= 18` & `600–2,200` tris on Tier 2B; `>= 8` & `240–1,800` tris on Tier 3A; zero TODOs or raw sphere-stack snowmen).
 - [ ] **Real-GPU `1280×960` Close-Up Turnaround & 6-World Visual Critique (Loopback CDP):** Capture and directly inspect `1280×960` close-up renders of all 6 cast rigs, hero animals/vehicles/buildings, and all 6 live worlds (`E01`, `E04`, `E09`, `E12`, `E17`, `E19`, `G01`, `G06`) on both WebGPU (`backend: "auto"`) and `?backend=webgl2` (`0` console/renderer warnings, crisp tactile craft textures, live `contactShadows` + `sky.gradient` + animated water verified, `0` leftover processes on port `9222`).
 - [ ] **Studio Portraits & First-Party Rights Manifest Idempotency:** `src/assets/portraits/{momo,lulu,sheru,gogo,lumi,peeko}.webp` (`256×256` WebP) are freshly rendered from the procedural cast rigs, and `node tools/gen-aura-assets.mjs && node tools/gen-audio-manifest.mjs && node tools/gen-rights-manifest.mjs && git diff --exit-code apps/veer-wonder-world/src` exits `0`.
@@ -669,7 +669,7 @@ Every Wave-2 subagent owns strictly disjoint files, imports only from `@aura3d/e
 - [ ] **Art-Direction & Static Look Lint Gates:**
   - `node apps/veer-wonder-world/tools/game-checks.mjs` exits `0` (`0` errors, `art/direction.audit.json` `ok: true`, `0` `emissive-fill` violations).
   - `(cd apps/veer-wonder-world && npx @aura3d/cli@5.5.1 look lint --json)` reports `{"ok": true, "errors": 0, "warnings": 0}`.
-- [ ] **Production Dist Bundle Gate:** `bash apps/veer-wonder-world/tools/deploy-build.sh` exits `0`, confirming `0` `.glb` files in `dist/`, `0` `dist/aura-decoders/` files, `0` source maps, `noindex` headers intact, and `dist/` total size reduced by `>= 25 MB` vs. the Meshy baseline.
+- [ ] **Production Dist Bundle Gate:** `bash apps/veer-wonder-world/tools/deploy-build.sh` exits `0`, confirming `0` `.glb` files in `dist/`, `0` `dist/aura-decoders/` files, `0` source maps, `noindex` headers intact, and `dist/` total size reduced by `>= 25 MB` vs. the GLB baseline.
 
 ### Phase B — Post-`CODE_COMPLETE_GO` Deployment & Live Acceptance (When Requested by User)
 

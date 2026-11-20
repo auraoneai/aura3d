@@ -21,29 +21,6 @@ Every game reuses the Aura Slam 3D page shell:
 - A bracket/tour mode (Aura Slam's is a 32-player World Tour).
 - Route-health.json + game.evidence capture contract, same as the current four.
 
-## Meshy access (applies to every PRD)
-
-All Meshy API calls go through the **Prism proxy** — pooled keys are injected
-server-side; no raw `msy_...` key ever enters the repo, logs, or transcripts.
-
-- **Endpoint:** `https://prism.auraone.ai/v1/meshy/openapi/v2/<op>` (e.g.
-  `text-to-3d`, `openapi/v2/text-to-3d/{id}` for task status)
-- **Auth:** `-H "X-Prism-Key: $(cat .prism_key.txt)"` — key file is gitignored;
-  `x-api-key` and `Authorization: Bearer` are also accepted.
-- **Rotation:** Prism rotates pooled keys on 401/402/403/429/5xx and pins task
-  affinity — GET status and refine/remesh/rig calls route back to the owning
-  key automatically.
-- **Balance check:** `curl https://prism.auraone.ai/admin/meshy -H "X-Prism-Key: $(cat .prism_key.txt)"`
-  → masked key ids + live monthly/permanent credits.
-- **Raw keys (only if a call must run outside Prism):**
-  `~/.local/bin/aws ssm get-parameter --name /kiro/prism/meshy-keys --with-decryption --region us-west-2 --query Parameter.Value --output text`
-  via the default `auraone-production-operator` chain, or
-  `/opt/prism/secrets/meshy-keys.json` on the host. Never write them anywhere else.
-- **Repo admission path (per `meshy-cli` skill):** generate → download to
-  `artifacts/meshy/<asset>/` →
-  `aura3d assets import-meshy <dir> --name <n> --profile humanoid|vehicle|prop|environment --rights-evidence <json> --quality candidate`
-  → `assets inspect --animation` → `validate-animation` → `assets typegen`.
-
 ## The slate
 
 | # | PRD | Working title | Modeled on | Genre kit / primary API |
@@ -67,7 +44,7 @@ server-side; no raw `msy_...` key ever enters the repo, logs, or transcripts.
 2. **Aura Hoops 3D** — nearest to the tennis pattern (small court, few bodies,
    skill shot mechanic). Fastest sports win.
 3. **Pip's Big Leap** — `game.platformer` kit + platformer geometry certification
-   already exist; the work is level design and a mascot (Meshy).
+   already exist; the work is level design and a mascot.
 4. **Slingshot Siege** — smallest scope: one camera, one slingshot, stack collapse.
 5. **Aura FC 3D** — biggest audience of the sports set; schedule once one sports
    title has validated the shared sim layer.

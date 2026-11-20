@@ -19,21 +19,21 @@ Real output, trimmed:
 Need: "wooden barrel" (role prop, matching "barrel")
 Chosen: open-source: licence-clear match for "barrel" from mirror:kenney
   skipped project: no admitted asset matches "barrel"
-Cost: 0 credits (dry run)
+Dry run: nothing was admitted.
 Open source: Barrel (kenney:mini-dungeon:barrel, CC0-1.0, 148 triangles, size unknown).
 
 Need: "battle-worn knight helmet" (role prop, matching "helmet")
-Chosen: procedural: no admitted, open-source or generated asset; build from primitives
+Chosen: procedural: no admitted or open-source asset; build from primitives
   skipped project: no admitted asset matches "helmet"
   skipped open-source: no licence-clear, downloadable match for "helmet"
-  skipped meshy: needs --allow meshy (estimate 30 credits)
-No recipe for a helmet: the box below is a placeholder. For the real thing run with --allow meshy --budget 30, or admit a licensed file with `aura3d assets add`.
+Dry run: nothing was admitted.
+No recipe for a helmet: the box below is a placeholder. For the real thing admit a GLB you already have with `aura3d assets add`, or generate one with `aura3d assets generate`.
 ```
 
 The barrel is admitted by dropping `--dry-run`. The helmet is a named subject,
-so the agent does not ship the placeholder box: it asks for an approved credit
-budget and reruns with `--allow meshy --budget 30`, or asks the user for a
-licensed file. There is no hosted catalog to wait for.
+so the agent does not ship the placeholder box: it asks the user for a licensed
+file to admit with `aura3d assets add`, or for approval to run the paid
+`aura3d assets generate`. There is no hosted catalog to wait for.
 
 ## 2. Inspect an existing asset
 

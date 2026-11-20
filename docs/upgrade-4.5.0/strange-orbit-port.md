@@ -1,6 +1,6 @@
 # Craterline GP (`strange-orbit-port`): upgrading to Aura3D 4.5.0
 
-**Verdict:** Recommended changes. Nothing breaks at build or boot (the app pin is already `4.5.0` and the code uses no removed API), but the game now runs under quality `auto` instead of the old pipeline. The Meshy GLB models (riders, gate pylons, boulders, lander, observatory, moon rocks) will probably render at a different brightness, and bloom now uses the fused draw-removing chain. Pin the old pipeline (optional), add an explicit environment, then compare screenshots. Paths below are relative to the repo root unless they start with `packages/`.
+**Verdict:** Recommended changes. Nothing breaks at build or boot (the app pin is already `4.5.0` and the code uses no removed API), but the game now runs under quality `auto` instead of the old pipeline. The GLB models (riders, gate pylons, boulders, lander, observatory, moon rocks) will probably render at a different brightness, and bloom now uses the fused draw-removing chain. Pin the old pipeline (optional), add an explicit environment, then compare screenshots. Paths below are relative to the repo root unless they start with `packages/`.
 
 ## What this game uses
 
@@ -14,8 +14,8 @@
   - Lights: `lights.hemisphere` (`skyColor`/`groundColor`, intensity 1.1), a shadow-casting `lights.directional` key (`shadow: { cascades: 2, maxDistance: 160 }`) and a non-shadow directional fill.
   - Effects: `effects.bloom`, `effects.colorGrade`, `effects.vignette`.
   - There is no `environments.*` node.
-- `examples/strange-orbit-port/world.ts:79-82, 197-216, 341-361, 419-423`: the track, rails, islands, ramps, sky, planet, atmosphere, point-cloud and halo surfaces, and the primitive gate pylons/lintels/crystals and the primitive riders used with `?meshy=0` (`world.ts:275-411`), use `material.custom(...)` with hand-written GLSL (`shaders.ts`, `materials.ts`). Lighting is evaluated inline in the shader (`shaders.ts:28-41`). The key-light shadow is sampled with `a3dSunShadowAuto` (`shaders.ts:123,153,189`).
-- `world.ts:272,318,332,373`: `model(...)` GLBs through `models.ts` (`MESHY.*`) and `ROCK_ASSET`. These are the only surfaces lit by the engine's own PBR path.
+- `examples/strange-orbit-port/world.ts:79-82, 197-216, 341-361, 419-423`: the track, rails, islands, ramps, sky, planet, atmosphere, point-cloud and halo surfaces, and the primitive gate pylons/lintels/crystals and the primitive riders used when GLB models are off (`world.ts:275-411`), use `material.custom(...)` with hand-written GLSL (`shaders.ts`, `materials.ts`). Lighting is evaluated inline in the shader (`shaders.ts:28-41`). The key-light shadow is sampled with `a3dSunShadowAuto` (`shaders.ts:123,153,189`).
+- `world.ts:272,318,332,373`: `model(...)` GLBs through `models.ts` and `ROCK_ASSET`. These are the only surfaces lit by the engine's own PBR path.
 - `world.ts:275-421`: `primitives.*` builders with options `name, position, rotation, scale, size, params, material` only.
 - Runtime node updates (`world.ts:444-640`): `app.nodes.require`, `setPosition/setRotation/setScale/setVisible`, `setUniform` and `updateAttribute` on `geometry.dynamic` point clouds. `app.camera.setPose`.
 - `main.ts:394-447`: `installQaHooks("strange-orbit", ...)` exposes `window.__AURA_STRANGE_ORBIT__`, and `routeHealth` calls `createAuraRouteHealthSnapshot(app, ...)`.
@@ -75,7 +75,7 @@ const builder = scene()
 
 Alternative: leave the scene as is and add `exposure` to the existing `output` object (`output: { toneMapping: "aces", dither: false, exposure: 1.2 }`). That scales the whole frame, including the custom-shader surfaces, which already apply their own `1.2` factor at `shaders.ts:28-41`, so the environment node is the narrower fix.
 
-How to check: capture the menu view (`autostart` off) and a racing frame on a bike (`?manual=1&autostart=1&mode=trial`), then compare the rider and gate-pylon brightness against the 4.3.7 build. Also try `?meshy=0` (`models.ts`, falls back to the primitive riders) to confirm the custom-shader surfaces did not change. Then run `tests/browser/strange-orbit-port.spec.ts`: it asserts pixel statistics (`nonBackground`, `colors`, `lumaMean`, `warm`; around lines 108-128 and 206-210) that a brightness change can move.
+How to check: capture the menu view (`autostart` off) and a racing frame on a bike (`?manual=1&autostart=1&mode=trial`), then compare the rider and gate-pylon brightness against the 4.3.7 build. Also try the models-off flag (`models.ts`, falls back to the primitive riders) to confirm the custom-shader surfaces did not change. Then run `tests/browser/strange-orbit-port.spec.ts`: it asserts pixel statistics (`nonBackground`, `colors`, `lumaMean`, `warm`; around lines 108-128 and 206-210) that a brightness change can move.
 
 ### C. Canvas read-back: no game code affected, but external screenshot tools should be checked (change 2)
 

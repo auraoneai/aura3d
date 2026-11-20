@@ -1,7 +1,7 @@
 # Aura3D typed asset readiness
 
 > **Sources reality (read first).** There is no hosted catalog: the CLI searches your project, a curated
-> library and open, licence-clear sources, and `assets resolve` can generate with Meshy or print a procedural
+> library and open, licence-clear sources, and `assets resolve` can print a procedural
 > recipe. Open sources are reliable for props and set pieces. For *acting characters* they are not: most catalog "characters" are static props, T-pose meshes with no skeleton,
 > non-humanoid sculpts, or rigs whose only embedded clip is a 2 cm idle sway or a jaw-only
 > lip-flap. **Arbitrary prompt characters are NOT guaranteed to be production-quality.** The
@@ -14,9 +14,8 @@ Aura3D projects should register every GLB, glTF, texture, environment, and audio
 
 **Resolve a need** (one command decides): `assets resolve` tries the project's admitted assets, then open,
 licence-clear sources (the curated library, a built-in starter pack, Khronos samples, Poly Haven, ambientCG and a
-jsDelivr CC0 mirror), then Meshy (only with `--allow meshy` and a `--budget`), then prints a procedural
-`primitives` recipe. The match must contain the need's main noun, and the report shows triangles, size,
-licence, the rung chosen and the credits spent. See `docs/agents/asset-workflow.md`.
+jsDelivr CC0 mirror), then prints a procedural `primitives` recipe. The match must contain the need's main
+noun, and the report shows triangles, size, licence and the rung chosen. See `docs/agents/asset-workflow.md`.
 
 ```bash
 npx @aura3d/cli@latest assets resolve "street lamp" --role prop --dry-run
@@ -127,15 +126,15 @@ The sidecar must match assets by `assetKey` or `id` and include source/license
 evidence such as `license`, `licenseNote`, `sourcePath`, `publicUrl`, `hash`, or
 `provenance.sourcePack`.
 
-## Mandatory 3D asset, Meshy optimization & game-scene guardrails
+## Mandatory 3D asset, GLB optimization & game-scene guardrails
 
 1. **No primitive-box characters, vehicles, or hero props ("no stick-figure humans or box cars")**:
    - Never assemble characters, athletes, enemies, vehicles, aircraft, trees, or architectural landmarks out of `primitives.box`, `primitives.sphere`, or `primitives.cylinder` — keep every silhouette, look, lighting, and shadow readable with real 3D geometry.
-   - Every character, vehicle, creature, weapon, and landmark must mount a real 3D GLB via `model(assets.<name>, { targetMaxDimension, role })` from `src/aura-assets.ts`. If the catalog lacks a required 3D model, generate a bespoke PBR 3D model with Meshy (`meshy`) and admit it via `aura3d assets import-meshy`.
+   - Every character, vehicle, creature, weapon, and landmark must mount a real 3D GLB via `model(assets.<name>, { targetMaxDimension, role })` from `src/aura-assets.ts`. If the catalog lacks a required model, admit a GLB you already have with `aura3d assets add` or generate one with `aura3d assets generate`.
    - Primitives (`primitives.plane`, `primitives.box`, `primitives.cylinder`, `primitives.torus`) are reserved strictly for ground/court surfaces, field lines, UI rings/reticles, laser beams, and invisible physics colliders.
-2. **Always decimate & compress Meshy 3D GLBs before admission (`<= 20,000` vertices, `<= 2 MB`, 16-bit indices)**:
-   - Raw Meshy exports often contain `200,000–1,750,000` vertices and `20–65 MB` of uncompressed 4K PNG textures, which stall main-thread glTF parsing and exhaust GPU memory when multiple models load in one scene.
-   - Every generated Meshy GLB must be simplified (`MeshoptSimplifier` to `<= 20,000` vertices for props/vehicles, 16-bit `Uint16Array` indices, de-interleaved `byteStride === 0` buffers) and have its textures compressed to `<= 1024x1024` (`~0.5–2.0 MB` per GLB) before being admitted into `public/aura-assets/` so PBR palette, contrast, and reflection stay responsive.
+2. **Always decimate & compress heavy 3D GLBs before admission (`<= 20,000` vertices, `<= 2 MB`, 16-bit indices)**:
+   - Raw exports often contain `200,000–1,750,000` vertices and `20–65 MB` of uncompressed 4K PNG textures, which stall main-thread glTF parsing and exhaust GPU memory when multiple models load in one scene.
+   - Every heavy GLB must be simplified (`MeshoptSimplifier` to `<= 20,000` vertices for props/vehicles, 16-bit `Uint16Array` indices, de-interleaved `byteStride === 0` buffers) and have its textures compressed to `<= 1024x1024` (`~0.5–2.0 MB` per GLB) before being admitted into `public/aura-assets/` so PBR palette, contrast, and reflection stay responsive.
 3. **Always use canonical typed asset manifest refs (`hash` required)**:
    - The production glTF bridge requires `createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"`, which requires a valid 64-character `sha256-...` `hash` and `public/aura-assets/...` provenance from `aura.assets.json` / `src/aura-assets.ts`.
    - Never omit `hash` in custom `defineAssets(...)` declarations and never place unhashed duplicate GLBs in route-local `apps/<route>/public/aura-assets/` that collide with root `public/aura-assets/`.

@@ -186,7 +186,7 @@ The app is the renderer. Every published video plays real `EpisodeSpec` data thr
 | B3.5 | **Event log**: the director emits `{t, type: line|song|sfx|bed|duck, id}` for every audio start/stop, exposed as `__AURA_WONDER_WORLD__.eventLog()` | `src/runtime/episode-director.ts`, `src/runtime/narration-player.ts`, `src/runtime/audio-mixer.ts` | unit: log matches narration-player timing to within 1 step |
 | B3.6 | **Timed mouths**: save ElevenLabs character-level alignment (`/with-timestamps`) next to each line MP3. Convert it to a viseme track and feed the existing bridge (`src/scenes/articulated-actors.ts:2252+`). The amplitude curve stays as the fallback | `tools/gen-audio.ts`, new `tools/gen-visemes.ts`, `src/scenes/articulated-actors.ts` | unit: mouth closed at rest; open frames line up with voiced segments |
 | B3.7 | **Data-driven cast**: `CharacterId` and `SpeakerId` stay typed unions, but they are generated from `src/characters/sheets/*.json` (personality, voice id, catchphrases, banned behaviours, rig module), the same way `src/aura-assets.ts` is generated. Adding a character = sheet + rig module + portrait + regenerate | new `tools/gen-cast.mjs`, `src/characters/character-registry.ts`, `tools/gen-audio.ts` (`VOICES` read from sheets) | `check-all.sh` generated-files diff; registry test covers every sheet |
-| B3.8 | **Docs fix**: README and `02` §1 still describe Meshy GLBs and "no mouth morphs". Update them to the procedural cast | `README.md`, `02-character-and-content-bible.md` | none |
+| B3.8 | **Docs fix**: README and `02` §1 still describe generated GLBs and "no mouth morphs". Update them to the procedural cast | `README.md`, `02-character-and-content-bible.md` | none |
 
 ### B.4 New tools
 

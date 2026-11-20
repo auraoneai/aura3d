@@ -216,7 +216,7 @@ liveGameCount 25 → 30) and its site gates. Stop before WP-8 — remote evidenc
 explicit request.
 
 Hard rules: no edits to packages/**, examples/splat-rush-port/**, or the kit (report kit gaps instead); no new
-dependencies; no Meshy spend; no local Playwright/Docker/heavy builds (remote runner only); no trademarked game
+dependencies; no generated models; no local Playwright/Docker/heavy builds (remote runner only); no trademarked game
 names in public copy; never describe Aura3D as built on three.js; max 2 targeted fix attempts per failure, then
 report honestly instead of disabling checks or skipping tests (the glslangValidator skip pattern is the only
 sanctioned skip). Subagent lanes previously died on a credit usage limit — if agent launches fail, do the work

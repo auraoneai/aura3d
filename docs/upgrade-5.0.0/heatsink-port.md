@@ -26,8 +26,8 @@ Adoption (5.0 adoption row)
 - [x] B2 partial AuraApp cast: none present in this game
 
 - [ ] A4 for `materials.ts` set (skipped: not a designated A4 pilot; stays GLSL, WebGL2-only. 10 GLSL specs read bespoke fog/twilight/pool uniforms, no pixel-diff harness exists for them)
-- [ ] A5 lighting probes/IES/clustered/voxel GI (skipped: all surfaces except 11 Meshy model nodes are custom GLSL that do not sample engine lighting resources; EXPERIMENTAL with no lab flag in the shared parser; no real-GPU proof)
-- [ ] A8 per-slot custom shader on Meshy models (skipped: the models already take HDRI + cascaded shadow lighting; a custom slot shader would change look identity with no measured gain)
+- [ ] A5 lighting probes/IES/clustered/voxel GI (skipped: all surfaces except 11 GLB model nodes are custom GLSL that do not sample engine lighting resources; EXPERIMENTAL with no lab flag in the shared parser; no real-GPU proof)
+- [ ] A8 per-slot custom shader on GLB models (skipped: the models already take HDRI + cascaded shadow lighting; a custom slot shader would change look identity with no measured gain)
 - [ ] A12 scatter/merge, A13 KTX2, A7 workers (skipped: A12 changes seeded placement of buildProps; no KTX2 textures in game; no createWorker)
 - [ ] A6 verify motion blur + chromatic aberration (twilight look enables them via postToggles; the 5.0.3 real-GPU frames at standstill show no artefact or console error, but both effects need speed to show; not isolated)
 

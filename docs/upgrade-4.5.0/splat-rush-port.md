@@ -2,7 +2,7 @@
 
 **Status (2026-10-29):** done. The environment fix below is in `backdrop.ts`, and the checklist is closed.
 
-**Verdict:** Recommended changes. The game needs no code change to build or run on 4.5.0, but the seven Meshy GLB models (floating-island backdrop and power-up gems) are lit only by the scene's authored lights now. They are expected to render darker than on 4.3.7, so compare screenshots before release.
+**Verdict:** Recommended changes. The game needs no code change to build or run on 4.5.0, but the seven GLB models (floating-island backdrop and power-up gems) are lit only by the scene's authored lights now. They are expected to render darker than on 4.3.7, so compare screenshots before release.
 
 ## What this game uses
 

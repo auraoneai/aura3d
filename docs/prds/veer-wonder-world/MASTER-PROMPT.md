@@ -17,7 +17,7 @@ These override any "needs review" or "needs sign-off" text in the PRD files.
 1. **Build everything now.** That means all 6 characters, 20 episodes, 12 activities and 6 worlds, plus all media, all tests and every doc update. P1 and P2 are both in scope. P3 (microphone and voice input, 04 K01-K06) stays out of scope and OFF.
 2. **No human sign-off is needed.** Wherever a PRD file asks for SLP, caregiver, creative, rights or legal review, do the review yourself as an agent. Record it in `07-autonomous-decisions-and-build-record.md` and keep going. Story manifests carry `review: { language: "approved", rights: "approved", reviewer: "agent (owner instruction 2026-10-29)", date }`.
 3. **Every safety rule still applies in full** (section 6). Agent review replaces the sign-off step. It never relaxes a rule.
-4. **Generation spend is authorised.** This covers Meshy (no cap; record each job in the ledger) and the pooled ElevenLabs keys, both through Kiro Prism.
+4. **Generation spend is authorised.** This covers the pooled ElevenLabs keys through Kiro Prism.
 5. **No public release in this run.**
    - The route stays labelled `prototype` and carries `noindex`.
    - Keep it out of the site catalog, sitemap and showcase index. If a repo check insists on registration, register it hidden and log why.
@@ -66,7 +66,7 @@ All paths are under `apps/veer-wonder-world/`.
 
 | Character | File | Motion | Model key |
 | --- | --- | --- | --- |
-| Momo, small fuzzy purple monster (host) | `src/characters/momo.ts` (D01) | Procedural: bounce, sway, point-lean, squash (the Meshy humanoid rig was rejected; see 07) | `momo` |
+| Momo, small fuzzy purple monster (host) | `src/characters/momo.ts` (D01) | Procedural: bounce, sway, point-lean, squash (the humanoid auto-rig was rejected; see 07) | `momo` |
 | Lulu, mint baby dinosaur (music) | `src/characters/lulu.ts` (D02) | Procedural: dance sway, stomp hop, clap pulses, freeze (rig rejected; see 07) | `lulu` |
 | Sheru, cartoon puppy (barks, never speaks) | `src/characters/sheru.ts` (D03) | Procedural: walk bob, wag, sniff, carry | `sheru` |
 | Peeko, round chick (renamed from Pip) | `src/characters/peeko.ts` (D04) | Procedural: hop, hide, pop up | `peeko` |
@@ -176,7 +176,7 @@ Update the PRD files with the targeted edits below. Keep the product intent and 
    - `installSafetyNet` and `installBlackFrameGuard` come from `@aura3d/debug`, a separate dependency.
    - The QA kit imports from the root `@aura3d/engine`.
 6. **Rigs and mouths** (02, 03 section 5, 04 D).
-   - Meshy rigging is humanoid only. It was tried on Lulu and rejected: `aura3d assets validate --skin` fails in every clip (895-1465 of 12,356 triangles stretch past 1.6x), and after baking the armature scale (`tools/bake-armature-scale.mjs`) and `repair-skin --refit-skeleton` the worst stretch is 142.9x.
+   - Humanoid auto-rigging was tried on Lulu and rejected: `aura3d assets validate --skin` fails in every clip (895-1465 of 12,356 triangles stretch past 1.6x), and after baking the armature scale (`tools/bake-armature-scale.mjs`) and `repair-skin --refit-skeleton` the worst stretch is 142.9x.
    - Every character, animal and prop therefore moves procedurally (hop, sway, squash-stretch, wag, roll, float).
    - Generated models have no mouth morphs. "Talking" is a squash-and-bob pulse while the line plays, and it is never called lip sync.
 7. **Rename Pip to Peeko everywhere.** That includes the cast table, "Peeko Peekaboo Barn", the D04 file name, and episodes E02, E03, E14 and E18. Reason: Pip is the hero of the live game *Pip's Big Leap* (`tools/site/games.catalog.json`).
@@ -187,7 +187,7 @@ Update the PRD files with the targeted edits below. Keep the product intent and 
 
    Do not delete any safety rule.
 9. **Media sources.**
-   - Models: Meshy text-to-3D through Kiro Prism.
+   - Models: built procedurally in `src/scenes/procedural-rigs/` (the earlier generated GLBs were retired in the 5.5.1 procedural revamp, `aura3d-5.5.1-procedural-revamp-prd.md`).
    - Voices, songs, music beds and sound effects: ElevenLabs through Kiro Prism.
    - Keep a rights record for every file. Output from free-tier keys is prototype-only and must be re-rendered on a paid tier before any commercial release.
 10. **Required reading.** Add these to the README engineering start prompt and to 06 sections 4 and 11:
@@ -215,15 +215,11 @@ If the worktree is gone, recreate it from origin/main.
   - the shared contract `src/types.ts`
   - parts of the runtime, audio and UI
   - 7 episode files
-  - generators: `tools/gen-aura-assets.mjs`, `tools/gen-audio.ts`, `tools/gen-audio-manifest.mjs` and `tools/meshy-pipeline.mjs`
+  - generators: `tools/gen-aura-assets.mjs`, `tools/gen-audio.ts` and `tools/gen-audio-manifest.mjs`
   - `tools/wonder-assets.json`, the list of all 59 models with prompts and heights
 - Partial edits to `README.md` and `02-character-and-content-bible.md`. Diff them against origin/main before continuing.
 
-**Generated models.** Raw Meshy output lives in `artifacts/meshy/wonder-world/<key>/` (gitignored). Admitted models live in `apps/veer-wonder-world/src/assets/models/<key>.<sha8>.glb`, with provenance in `apps/veer-wonder-world/provenance/models/<key>.json`; audio lives in `src/assets/audio/**` with provenance in `provenance/audio/*.json`. URLs are module-relative (`new URL("./assets/...", import.meta.url)`), because the repo dev server only maps `/aura-assets/` to the root `public/` tree. The visual review of every model is recorded in `tools/model-review.json`; rejected versions are kept in `artifacts/meshy/wonder-world/_rejected/`.
-- Each folder has a `state.json` listing the finished steps and their task IDs, plus a `rights.json`.
-- Resume with `node apps/veer-wonder-world/tools/meshy-pipeline.mjs`. It waits on existing task IDs instead of paying twice.
-- Meshy deletes task outputs after about 3 days, so finish the pending downloads first.
-- Look at each model's thumbnail before admitting it. The first `ball` came out looking like a face; regenerate it with a sharper prompt.
+**Models and audio.** Every stage model is procedural (`src/scenes/procedural-rigs/`; no `.glb` files ship). Audio lives in `src/assets/audio/**` with provenance in `provenance/audio/*.json`. URLs are module-relative (`new URL("./assets/...", import.meta.url)`), because the repo dev server only maps `/aura-assets/` to the root `public/` tree.
 
 ## 5. Parallel execution (required)
 
@@ -309,20 +305,6 @@ Follow `parallelism.md`.
 - Delete any temporary cloud resource when you are done.
 
 ## 7. Media production (all through Kiro Prism; never print `PRISM_API_KEY`)
-
-### Meshy models
-
-Set these in the process environment:
-- `MESHY_API_KEY=$PRISM_API_KEY`
-- `MESHY_BASE_URL_V1=https://prism.auraone.ai/v1/meshy/openapi/v1`
-- `MESHY_BASE_URL_V2=https://prism.auraone.ai/v1/meshy/openapi/v2`
-
-A `503 quota_exhausted` reply means Prism picked a spent key. Wait about 15 seconds and retry. Record every job with `aura3d meshy ledger reserve/settle --game wonder-world`.
-
-Steps:
-1. Preview, then refine at 2k, then remesh. `tools/meshy-pipeline.mjs` runs this chain and downloads each refine thumbnail.
-2. Look at every thumbnail. Record approve, reject or a tint (glTF `baseColorFactor` for near-white generations) in `tools/model-review.json`. To regenerate a rejected model, move its folder to `_rejected/` and rerun the pipeline with a sharper prompt.
-3. `node tools/admit-models.mjs` (needs `npm install --no-package-lock` in `tools/asset-optimize`). It runs `aura3d assets optimize` (1024 px textures for the main cast, 512 px for the rest), applies the tint, strips normal and roughness maps outside the main cast, stamps `asset.extras.aura3d.orientation`, inspects the model, copies it with its sha256 name, writes provenance and regenerates `src/aura-assets.ts`.
 
 ### Audio
 

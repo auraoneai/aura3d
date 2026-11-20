@@ -236,7 +236,7 @@ export const prd04SceneSpecs: Record<string, Prd04SceneSpec> = {
     id: "prd04-tinted-hero",
     index: 409,
     title: "Texture detail retained under tint",
-    purpose: "Meshy hero keeps authored maps under a color tint (S3; E2 regression target).",
+    purpose: "Generated hero keeps authored maps under a color tint (S3; E2 regression target).",
     camera: { position: [0, 0.6, 3.6], target: [0, 0.1, 0], fov: 42, near: 0.05, far: 50 },
     background: { kind: "hdri", hdri: "studioSmall08", fallbackColor: "#2a2c30", intensity: 0.9 },
     environment: { hdri: "studioSmall08", intensity: 0.9, rotation: 0 },

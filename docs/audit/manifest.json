@@ -1927,7 +1927,7 @@
    "topic": "assets",
    "lastCommit": "2026-10-24",
    "verdict": "REWRITE",
-   "reason": "Becomes the one assets doc (catalog, own GLB, Meshy, typegen, validate)."
+   "reason": "Becomes the one assets doc (catalog, own GLB, typegen, validate)."
   },
   {
    "path": "docs/agents/benchmark-recipes.md",
@@ -1957,7 +1957,7 @@
    "topic": "games and assets playbook",
    "lastCommit": "2026-10-24",
    "verdict": "REWRITE",
-   "reason": "Lane 2: now the games and generated-assets playbook (kits, guardrails, Meshy); the scene workflow lives in prompt-to-3d-workflow."
+   "reason": "Lane 2: now the games and generated-assets playbook (kits, guardrails); the scene workflow lives in prompt-to-3d-workflow."
   },
   {
    "path": "docs/agents/cinematic-scene-quality.md",

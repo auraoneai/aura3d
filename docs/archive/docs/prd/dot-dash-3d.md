@@ -75,23 +75,11 @@ Fruit schedule: cherry → strawberry → orange → apple → melon → star.
 
 ## Asset plan
 
-- Byte + 4 Specters: tiny characters — primitives-to-Meshy, ~3 clips each
+- Byte + 4 Specters: tiny characters — primitives or custom rigs, ~3 clips each
   (idle, move, frightened/eyes).
 - Mazes: procedurally generated from ASCII grids; wall kit + emissive trim.
 - Audio: `packs/game-sfx-core` (chomp loop via short repeat, ghost siren via
   ambience loop, fright mode, fruit chime).
-
-## Meshy access
-
-All Meshy API calls go through the **Prism proxy** — pooled keys are injected
-server-side; no raw `msy_...` key ever enters the repo, logs, or transcripts.
-
-- **Endpoint:** `https://prism.auraone.ai/v1/meshy/openapi/v2/<op>` (e.g. `text-to-3d`, `openapi/v2/text-to-3d/{id}` for task status)
-- **Auth:** `-H "X-Prism-Key: $(cat .prism_key.txt)"` — key file is gitignored; `x-api-key` and `Authorization: Bearer` are also accepted.
-- **Rotation:** Prism rotates pooled keys on 401/402/403/429/5xx and pins task affinity — GET status and refine/remesh/rig calls route back to the owning key automatically.
-- **Balance check:** `curl https://prism.auraone.ai/admin/meshy -H "X-Prism-Key: $(cat .prism_key.txt)"` → masked key ids + live monthly/permanent credits.
-- **Raw keys (only if a call must run outside Prism):** `~/.local/bin/aws ssm get-parameter --name /kiro/prism/meshy-keys --with-decryption --region us-west-2 --query Parameter.Value --output text` via the default `auraone-production-operator` chain, or `/opt/prism/secrets/meshy-keys.json` on the host. Never write them anywhere else.
-- **Repo admission path (per `meshy-cli` skill):** generate → download to `artifacts/meshy/<asset>/` → `aura3d assets import-meshy <dir> --name <n> --profile humanoid|vehicle|prop|environment --rights-evidence <json> --quality candidate` → `assets inspect --animation` → `validate-animation` → `assets typegen`.
 
 ## Look direction
 

@@ -16,7 +16,7 @@
   - `effects.fog` (`world.ts:234`)
   - `effects.ambientOcclusion` (only when `quality !== "low"`, which is the game's own `?quality=low` URL parameter, `world.ts:235`)
   - `effects.bloom`, `effects.colorGrade`, `effects.vignette`, `effects.antiAlias({ mode:"fxaa" })` (`world.ts:237-240`)
-- Instancing (`world.ts:267-285`): one `instances.mesh(defineShape(...), layerMaterial(spec), count)` per scenery layer (`LAYERS` in `scenery.ts:27-43`), and `instances.model(PROP_ASSETS[...], { name, castShadow, transforms, colors })` for Meshy props. The scenery test asserts 8,000 to 60,000 total placements (`tests/unit/ninja-runner-port/scenery.test.ts:72-74`). Per-layer counts are unknown without running.
+- Instancing (`world.ts:267-285`): one `instances.mesh(defineShape(...), layerMaterial(spec), count)` per scenery layer (`LAYERS` in `scenery.ts:27-43`), and `instances.model(PROP_ASSETS[...], { name, castShadow, transforms, colors })` for GLB props. The scenery test asserts 8,000 to 60,000 total placements (`tests/unit/ninja-runner-port/scenery.test.ts:72-74`). Per-layer counts are unknown without running.
 - Primitives (`world.ts:289` to about `350`): `primitives.box` and `primitives.sphere`, using only `name`, `size`, `material` and `castShadow`, plus `.runtime({ id })`. The 4000 m `sky` sphere (`world.ts:289`) uses `material.custom`. Ground, river, falls, blob discs, points use `geometry.custom` / `geometry.dynamic`.
 - Custom shader materials (`materials.ts`): ground, solid, sky, water, falls, ball, aura, sparks, flame, particles. Several are `transparent` or additive.
 - Characters: `cloneSkinned` is called at `world.ts:177` inside `loadActors` (`world.ts:168+`) and gives 13 `TypedGLBActor`s (`ACTOR_COUNT`, `world.ts:25`). They are posed with `actor.playClip(clip, t)` (`world.ts:~428`) and tinted with `actor.setTint` (`setTint` helper, `world.ts:411-414`). They are attached with `attachRootRenderSource` (`world.ts:438`).
@@ -120,7 +120,7 @@ app = createAuraApp(canvas, {
 - **Animation fixes (`playLayer`, mask `{humanoid, exclude}`, `addClipsFrom`, retarget worker):** Characters use `actor.playClip(clip, t)` only. No layers, masks or retargeting.
 - **Physics (capsule/cylinder collider sizes, `bindNodes`):** No `physics` option. Debris physics in `impact.ts` is the game's own pure code.
 - **Math and animation fixes (`Clock.start()`, step tracks, `ShapeGeometry`, `SphericalHarmonics3`, `@aura3d/math/three`):** The game's `loopClock` (`world.ts:364`) is a plain number array, not the `Clock` class. It has no `AnimationClip`, `ShapeGeometry` or spherical harmonics use. Its shapes come from its own `shapes.ts`.
-- **Scene kit fixes and `provenance.builtIn` on the built-in humanoid GLB:** No scene kits. Characters are Meshy GLBs (`models.ts`), not the built-in humanoid.
+- **Scene kit fixes and `provenance.builtIn` on the built-in humanoid GLB:** No scene kits. Characters are rigged GLBs (`models.ts`), not the built-in humanoid.
 - **Package versions:** `apps/showcase-ninja-runner-port/package.json` is already `4.5.0`.
 
 ## Measured on 4.5.0 (2026-10-29, lane G20)

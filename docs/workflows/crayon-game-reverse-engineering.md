@@ -1233,4 +1233,4 @@ phase is green, with disjoint file ownership per the repo's parallel-agent rules
 
 ## 8. Current status
 
-This document describes the reverse-engineering workflow. For the current state of all eleven ports (simulation parity, art and Meshy passes, real-device findings, engine fixes, the Aura Slam 3D conversion and open items) see [`threejs-parity-gaps.md`](./threejs-parity-gaps.md) sections 12.5 to 12.13.
+This document describes the reverse-engineering workflow. For the current state of all eleven ports (simulation parity, art and generated-model passes, real-device findings, engine fixes, the Aura Slam 3D conversion and open items) see [`threejs-parity-gaps.md`](./threejs-parity-gaps.md) sections 12.5 to 12.13.

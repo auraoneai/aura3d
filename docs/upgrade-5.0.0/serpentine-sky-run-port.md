@@ -44,7 +44,7 @@ Verification
 - [ ] A4 shader graph: skipped, not a designated pilot; road/sky/figures stay GLSL, WebGL2-only
 - [ ] A5 lighting (probe grid, IES, projected spot, clustered, voxel GI): skipped, EXPERIMENTAL and the world is unlit custom materials; only the rigged runner is PBR
 - [ ] A7 workers: skipped, no worker entry
-- [ ] A8 per-slot custom materials: skipped, imported GLBs (runner, Meshy props) are plain PBR; no custom surface on a GLB slot
+- [ ] A8 per-slot custom materials: skipped, imported GLBs (runner, props) are plain PBR; no custom surface on a GLB slot
 - [ ] A9 camera depth: tried `?depth=logarithmic` on real GPU: RENDERER_MOUNT_FAILED "Contact shadows require standard depth" (script look uses contact shadows). Not wired. Engine limitation
 - [ ] A10 wide gamut: stays lab flag `?gamut=p3`
 - [ ] A11 add-ons, A12 scatter/merge (seeded placement would change), A13 KTX2, A14 formats, A15 text3D, A16 physics, A17 splats: not applicable or skipped, no player-visible gain

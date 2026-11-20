@@ -8,8 +8,7 @@ Decide where a model comes from before you search or generate. The command detai
 2. **User-supplied file**: admit it with `assets add` and its provenance.
 3. **Catalog**: `assets search` then `assets resolve`. Only auto-pullable, redistributable, direct-download candidates are pulled automatically.
 4. **Generate on fal.ai** (5.6.0): `assets generate` (Idol model, optional `--rig`) and `animation generate` (HY-Motion clips) when the catalog has no clean candidate or the game needs a bespoke or lifelike model. Dry run first (`--dry-run` prints the cost); spend is ledgered in `.aura3d/fal/ledger.jsonl`; the result is optimised, normalised and admitted as `candidate`.
-5. **Meshy from a text prompt**, only when requested: requires a dry run, a ledger reservation (credits are tracked, not capped, unless you opt in to a cap), optimisation and isolated admission.
-6. **Stop and report** if none works. Do not substitute primitives for a named subject.
+5. **Stop and report** if none works. Do not substitute primitives for a named subject.
 
 ## Pick by role
 
@@ -52,4 +51,4 @@ If any item is missing, keep the route or claim marked `prototype`, `internal`, 
 
 ## Rights
 
-`assets generate` admits fal output with licence `LicenseRef-fal-idol-generated` (fal.ai terms for `speridlabs/idol/max`) and a `<key>.idol.json` provenance file; keep both. Meshy output is covered by the generating account's plan terms at generation time; record that and the date, and never claim CC0 or exclusivity. Marketplace and unverified assets are never pulled automatically. Never generate from images of a third-party game, product or character, and never name one in a prompt.
+`assets generate` admits fal output with licence `LicenseRef-fal-idol-generated` (fal.ai terms for `speridlabs/idol/max`) and a `<key>.idol.json` provenance file; keep both. For any other generated file, record the generator's terms and the date, and never claim CC0 or exclusivity. Marketplace and unverified assets are never pulled automatically. Never generate from images of a third-party game, product or character, and never name one in a prompt.

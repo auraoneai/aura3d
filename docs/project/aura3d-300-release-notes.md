@@ -14,7 +14,7 @@ Aura3D 4.0.0 is the agent-era major: the public API surface and parity evidence 
 - Rendering proofs: native fused LDR postprocess path, multi-mip bloom pyramid with quality presets, exact sRGB output encoding, anisotropic-GGX over authored tangents, cascaded directional shadows with PCF, GGX PMREM image-based lighting — with shader-reference vectors pinning the math against regressions.
 - three.js comparison evidence stays in the repository-locked `three@0.185.1` head-to-head reports. No workload outside those reports supports a superiority sentence.
 - Showcase routes are individually gated as before: machine-green is necessary but never sufficient — promotion waits on hash-bound independent human review of the exact final artifacts.
-- The 4.0.0 Meshy CLI asset-pipeline patch, secret-scan, and provenance rules carry over unchanged.
+- The 4.0.0 asset-pipeline patch, secret-scan, and provenance rules carry over unchanged.
 
 ## Claim boundary
 

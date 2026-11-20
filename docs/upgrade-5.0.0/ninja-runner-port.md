@@ -21,7 +21,7 @@ Adoption (5.0 adoption row)
 
 - [ ] A4 for particle/flame shaders (L): SKIPPED. Not a designated A4 pilot (decision D2: last-train-port, silt-and-signal-port water, roadster-rush); the seven shaders stay GLSL (WebGL2-only). A8 for ninja GLB: SKIPPED. The actors are `cloneSkinned` root render sources whose per-slot custom material would need a PortableShaderMaterial (A4) and would change the hero look the blind panel judged; no GLSL-to-portable pixel diff exists.
 - [x] A6 verify outline: `?ink=1` renders on real-GPU Chrome with no new console errors or degrade codes (`evidence/game-upgrades-503/ninja-runner-port/after-ink-lab.png`). Stays opt-in (existing flag, not default): the ink is heavy and speckled on the cobbles, so the default look is unchanged.
-- [x] 4.7.10 notes Shadowstep's Meshy swap was reverted: baseline = post-revert. The before frames are built from origin/main (001455903) with no model changes.
+- [x] 4.7.10 notes Shadowstep's model swap was reverted: baseline = post-revert. The before frames are built from origin/main (001455903) with no model changes.
 
 Verification
 

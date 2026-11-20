@@ -67,7 +67,7 @@ Status: `done`, `partial`, `declined (reason)`, `already applied (lane, commit)`
 | E-F | G08, G09, G10 | Diamond `main.ts:766`, FC `game/scene.ts:418`, Links `main.ts:899` | `effects.trail({ target })` ribbons now draw: add `life` (~0.4 s) and `widthOverSpeed`, or remove the node; recapture |
 | E-I | G03, G11, G16, G17, G18, G20, G21, G23 | boot code | implement the NEW variant params (`?circuit=`, `?floor=`, `?look=`, `?stage=`, `?at=`, `?band=`, `?found=`) |
 | E-I | all game lanes | `art/direction.ts` + test | follow the compliance recipe in `ei.md`; commit `art/direction.audit.json` |
-| E-I | WP-36 | Meshy admissions | key new assets with the owning game's prefix |
+| E-I | WP-36 | asset admissions | key new assets with the owning game's prefix |
 | E-A | WP-38 | distinctness | `outdoor-midday` and `kloppenheim_06_puresky` are the same sky |
 | E-A | WP-38 / owner | HDRI page weight | 6 catalogue files are 1.63-1.83 MB |
 | E-G | WP-38 | `CHANGELOG.md`, `BUNDLE_SIZES.md` | CHANGELOG text; bundle delta; consider a `@aura3d/engine/world` subpath |

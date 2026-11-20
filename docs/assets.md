@@ -6,7 +6,7 @@ Read `llms.txt` and `docs/agents/claims-and-boundaries.md` before writing route 
 
 ## Resolve-first rule
 
-If a prompt names a real object, do not invent a GLB URL. Let `assets resolve` decide: it uses an asset already in the project, then an open, licence-clear source, then Meshy (with `--allow meshy` and a budget), and otherwise prints a primitives recipe for simple props. There is no hosted catalog.
+If a prompt names a real object, do not invent a GLB URL. Let `assets resolve` decide: it uses an asset already in the project, then an open, licence-clear source, and otherwise prints a primitives recipe for simple props. There is no hosted catalog.
 
 ```bash
 npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet --dry-run
@@ -46,5 +46,5 @@ Every admitted asset in `aura.assets.json` and `src/aura-assets.ts` must carry a
 
 - **Prop normalization (`targetMaxDimension` vs `targetHeight`)**: Use `targetHeight` only for upright humanoids and vertical characters. Use `targetMaxDimension` for horizontal vehicles, rackets, paddles, weapons, barriers, and wide props so aspect ratios and silhouettes never stretch vertically.
 - **Skeletal locomotion (`skins > 0`)**: Humanoid and creature characters must be rigged GLBs (`skins > 0`) driven via `handle.setAnimation({ clip, loop: true, speed })` (or `AnimationController`) synchronized to locomotion (`idle`, `walk`, `run`, `attack`, `swing`) so limbs articulate under the key light and shadow rather than sliding rigid statues across the floor.
-- **Meshy GLB decimation & compression (`<= 20,000` vertices, `<= 2 MB`, 16-bit indices)**: Simplify every generated Meshy GLB (`MeshoptSimplifier` to `<= 20,000` vertices for props/vehicles, 16-bit `Uint16Array` indices, `byteStride === 0`) and compress textures to `<= 1024x1024` (`~0.5–2.0 MB` per GLB) before admission.
+- **GLB decimation & compression (`<= 20,000` vertices, `<= 2 MB`, 16-bit indices)**: Simplify every heavy GLB (`MeshoptSimplifier` to `<= 20,000` vertices for props/vehicles, 16-bit `Uint16Array` indices, `byteStride === 0`) and compress textures to `<= 1024x1024` (`~0.5–2.0 MB` per GLB) before admission.
 - **Boot sequence gate (`app.ready().then(...)`) & default manual control (`autopilot = false`)**: Always wait on `app.ready()` (`.then(...)` or inside an async boot function; never a module top-level `await`, which deadlocks a production build) before dismissing `#boot-gate` and starting the simulation loop so all GLB assets are decoded and mounted on Frame 1. Default `autopilot` to `false` (manual control on Frame 1) unless `?autoplay=1` or `?demo=1` is present in the URL or the user clicks the HUD `Auto` toggle button (`button.blur()`).

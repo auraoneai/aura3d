@@ -9,7 +9,7 @@ for(const line of execSync("git log --format=%x00%cs --name-only --diff-filter=A
 const base=mdFiles.map(p=>({path:p,bytes:fs.statSync(p).size,date:dates[p]||"unknown"}));
 base.push({path:"llms.txt",bytes:fs.statSync("llms.txt").size,date:"2026-10-23"});
 const SK="packages/aura3d-cli/skills/";
-const skillMap={"aura3d-animation-studio":1,"aura3d-assets":1,"aura3d-browser-game":1,"aura3d-character-animation":1,"aura3d-core":1,"aura3d-evidence-review":1,"aura3d-game-art":1,"aura3d-materials-environments":1,"aura3d-performance":1,"aura3d-retexture":1,"aura3d-scene-authoring":1,"aura3d-threejs-migration":1,"meshy-cli":1};
+const skillMap={"aura3d-animation-studio":1,"aura3d-assets":1,"aura3d-browser-game":1,"aura3d-character-animation":1,"aura3d-core":1,"aura3d-evidence-review":1,"aura3d-game-art":1,"aura3d-materials-environments":1,"aura3d-performance":1,"aura3d-retexture":1,"aura3d-scene-authoring":1,"aura3d-threejs-migration":1};
 const exact={
  "AGENTS.md":["agent","entry","REWRITE","Repo pointer holds policy plus Aura3D manual links but gives no fast path: add a 10-line learn-and-ship path (llms.txt, 3 docs, one command) and a doc map with token budgets."],
  "CLAUDE.md":["agent","entry","KEEP","One-line @AGENTS.md include."],
@@ -31,20 +31,19 @@ const exact={
  "docs/assets.md":["human","assets","MERGE-INTO docs/agents/asset-workflow.md","42% overlapping lines with the asset workflow."],
  "docs/troubleshooting.md":["human","troubleshooting","MERGE-INTO docs/agents/troubleshooting.md","Second troubleshooting page."],
  "docs/migration-4.0.md":["human","migration","MERGE-INTO docs/migration/4.0-to-4.1.md","Two 4.0 migration docs."],
- "docs/meshy-cli.md":["human","meshy","KEEP","Human Meshy guide; reconcile with skills/meshy-cli."],
  "docs/whats-new-4.1.md":["human","release notes","KEEP","Current release narrative."],
  "docs/aura3d-vs-threejs.md":["human","comparison","REWRITE","Public comparison (Aura3D 4.1.2 vs three.js) must carry measured numbers from evidence/vs-threejs and the superiority plan."],
  "docs/guides/build-a-browser-game.md":["agent","games","MERGE-INTO docs/agents/build-a-game.md","Single game-building guide."],
  "docs/agents/README.md":["agent","agent map","REWRITE","35-file sprawl; becomes the single agent map with 3 tiers (Tier 0 five minutes, Tier 1 one scene, Tier 2 reference)."],
  "docs/agents/agent-quickstart.md":["agent","quickstart","REWRITE","Becomes the one zero-to-first-scene path (target under 3k tokens)."],
  "docs/agents/agent-context.md":["agent","agent map","MERGE-INTO docs/agents/README.md","Merged into README.md (lane 2); kept as a one-line redirect until the prune lane deletes it."],
- "docs/agents/build-playbook.md":["agent","games and assets playbook","REWRITE","Lane 2: now the games and generated-assets playbook (kits, guardrails, Meshy); the scene workflow lives in prompt-to-3d-workflow."],
+ "docs/agents/build-playbook.md":["agent","games and assets playbook","REWRITE","Lane 2: now the games and generated-assets playbook (kits, guardrails); the scene workflow lives in prompt-to-3d-workflow."],
  "docs/agents/prompt-to-3d-workflow.md":["agent","workflow","REWRITE","Lane 2 rewrite done: policy, prompt plans, scene kits and prompt-family recipes; games and assets moved to build-playbook."],
  "docs/agents/claims-and-boundaries.md":["agent","claims","REWRITE","3.6k tokens; keep claim labels, move long boundary prose behind a short table; absorb never-lists."],
  "docs/agents/anti-hallucination-rules.md":["agent","rules","MERGE-INTO docs/agents/claims-and-boundaries.md","Never-list belongs with the boundary table."],
  "docs/agents/no-hackjob-rules.md":["agent","rules","MERGE-INTO docs/agents/claims-and-boundaries.md","Never-list belongs with the boundary table."],
  "docs/agents/api-surface.md":["agent","API","REWRITE","Becomes a verified cheat sheet of live root exports; mark the 106 deprecated names."],
- "docs/agents/asset-workflow.md":["agent","assets","REWRITE","Becomes the one assets doc (catalog, own GLB, Meshy, typegen, validate)."],
+ "docs/agents/asset-workflow.md":["agent","assets","REWRITE","Becomes the one assets doc (catalog, own GLB, typegen, validate)."],
  "docs/agents/asset-selection.md":["agent","assets","MERGE-INTO docs/agents/asset-workflow.md","Small satellite."],
  "docs/agents/art-direction.md":["agent","art direction","REWRITE","Dead link to project/showcase/visual-quality-standard.md; becomes the look-dev loop doc."],
  "docs/agents/cinematic-scene-quality.md":["agent","art direction","MERGE-INTO docs/agents/art-direction.md","90-token stub that says it is superseded."],

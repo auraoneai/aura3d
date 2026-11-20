@@ -28,7 +28,7 @@ Fix all of these in the same change; several would break a visitor's trust on fi
 | 5 | `:107`, `:801` | "18 lines" is the one-cube benchmark scene, where three.js is 15 lines | New hero (section 4.1); final CTA rewritten |
 | 6 | `:867` | Footer link says "50 live experiences"; the showcase lists 25 games (`docs/workflows/game-inventory.json`) | "All {{GAME_COUNT}} games" |
 | 7 | `:868` | Footer links a "2.0 migration" guide; current is 4.3.5 | Link `docs/migration/from-threejs.md` as "Migrate from three.js" |
-| 8 | `:519`, `:689` | Internal language on a public page: "AuraVoice owns the voice", "de-interleaved 16-bit Meshy assets, boot-gated readiness" | Rewrite in user terms (sections 4.8, 4.9) |
+| 8 | `:519`, `:689` | Internal language on a public page: "AuraVoice owns the voice", "de-interleaved 16-bit assets, boot-gated readiness" | Rewrite in user terms (sections 4.8, 4.9) |
 | 9 | `<head>` keywords and description | "AI 3D generation", "prompt to 3D" describe an AI model; Aura3D is an engine and toolchain that agents write code against (`claims-and-boundaries.md` §2) | New meta in section 6 |
 | 10 | `marketing/docs/aura3d-vs-threejs.html` | Leads with three.js wins and a "with the caveats" title | Rebuild as the "Why Aura3D" page (section 5) |
 | 11 | `marketing/src/home.css` and markup | An eyebrow with a dot above every heading, one italic accent phrase in every `h2`, middle-dot meta strings, `→` appended to links, Semibold `h2`s, monospace step numbers. These are the template patterns `/Users/gurbakshchahal/fonts/README.md` ("Patterns to avoid") lists | Visual changes in section 7 |
@@ -118,7 +118,7 @@ Small print under the code (one line, `--ink-3`): "Line counts include imports a
 - **h2:** "Every model typed, hashed and licensed."
 - **Body:** "Add a GLB or pull a CC0 model by name. The CLI records its source, licence, author and sha256, then generates a typed key, so a missing asset is a compile error instead of a blank screen. In production, a model without a valid hash doesn't draw."
 - **Code pair:** the existing "Add an asset" CLI block (`assets add ./model.glb --name robot`) and the fixed typed-refs block (section 4.6).
-- **Bullets:** "Search open sources: `aura3d assets search \"robot\"`", "Generate with Meshy when nothing fits", "Optimize, inspect and thumbnail from the same CLI".
+- **Bullets:** "Search open sources: `aura3d assets search \"robot\"`", "Optimize, inspect and thumbnail from the same CLI".
 
 ### 4.6 Typed refs snippet (replaces `:770-776`)
 

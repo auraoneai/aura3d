@@ -137,8 +137,7 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
   `primitives.box`, `primitives.sphere`, or `primitives.cylinder`. Mount a real
   3D GLB via `model(assets.<name>, { targetMaxDimension, role })` from
   `src/aura-assets.ts` so every silhouette, look, lighting, and shadow reads
-  cleanly (or generate a bespoke PBR 3D model with `meshy` and admit it via
-  `aura3d assets import-meshy`). Reserve `primitives.plane`, `primitives.box`,
+  cleanly. Reserve `primitives.plane`, `primitives.box`,
   `primitives.cylinder`, and `primitives.torus` strictly for ground/court
   surfaces, field lines, UI rings/reticles, laser beams, and invisible physics
   colliders.
@@ -152,13 +151,12 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
   stage, camera, and roster selectors in a compact, non-blocking top HUD bar,
   and always call `button.blur()` after button clicks so `Space` or `Enter`
   gameplay keys never re-trigger focused HUD buttons.
-- Meshy GLB stalls main-thread glTF parsing or exhausts GPU memory: raw Meshy
+- Heavy GLB stalls main-thread glTF parsing or exhausts GPU memory: raw
   exports often contain `200,000–1,750,000` vertices and `20–65 MB` of
   uncompressed 4K PNG textures. Before admission, run
   `assets optimize --file in.glb --out out.glb --role <role>` (prop 6,000,
   background 15,000, character 30,000, hero or vehicle 40,000 vertices; textures
-  capped at 1024 to 2048 px) and admit with `assets import-meshy --into <dir>
-  --prefix <game> --name <role>`.
+  capped at 1024 to 2048 px) and admit the optimised file with `assets add`.
 - Custom `defineAssets(...)` model is dropped by the production glTF bridge or
   collides across routes: the production glTF bridge requires
   `createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"`,
@@ -186,7 +184,7 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
   `emissive: "#ffffff"` with high `emissiveIntensity` on an instanced pool
   material (`instances.box` / `primitives.box({ instances })`) because
   `instanceColors` multiply `u_baseColor`, not `u_emissiveColor`. Always pass an
-  explicit `material: material.pbr({ color })` on untextured Meshy preview GLBs.
+  explicit `material: material.pbr({ color })` on untextured GLBs.
 - Character or vehicle sinks halfway into logs, pads, or road lanes, or custom
   terrain renders dark/unlit: `model(asset, { targetHeight })` normalizes the
   GLB with `minY = 0` (feet at `position[1]`), whereas `primitives.box` and

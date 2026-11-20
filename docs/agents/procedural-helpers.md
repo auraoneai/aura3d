@@ -1,6 +1,6 @@
 # Procedural helpers (`@aura3d/engine/procedural`, 5.1 additive)
 
-Build meshes from code with no GLB and no Meshy credit. Every builder is deterministic (same inputs, same bytes), returns a plain custom geometry spec with positions, normals, UVs and tight bounds, and plugs into `geometry.custom(spec, { material })`.
+Build meshes from code with no GLB and no generation cost. Every builder is deterministic (same inputs, same bytes), returns a plain custom geometry spec with positions, normals, UVs and tight bounds, and plugs into `geometry.custom(spec, { material })`.
 
 ```ts
 import { geometry, material } from "@aura3d/engine";
