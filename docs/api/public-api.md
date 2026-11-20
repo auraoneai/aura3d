@@ -16,134 +16,134 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.7.0` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.7.0` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.7.0` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.7.0` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.7.0` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.7.0` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.7.0` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.7.0` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.7.0` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.7.0` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.7.0` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.7.0` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.7.0` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.7.0` | `./dist/index.d.ts` | 460 |
-| `@aura3d/animation/contracts` | `5.7.0` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.7.0` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.7.0` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.7.0` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.7.0` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.7.0` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.7.0` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.7.0` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.7.0` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.7.0` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.7.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
-| `@aura3d/assets/vite-client` | `5.7.0` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.7.0` | `./dist/index.d.ts` | 310 |
-| `@aura3d/cli` | `5.7.0` | `./dist/index.d.ts` | 305 |
-| `@aura3d/controls` | `5.7.0` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.7.0` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.7.0` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.7.0` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.7.0` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.7.0` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.7.0` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.7.0` | `./dist/engine/public/index.d.ts` | 11314 |
-| `@aura3d/engine/animation` | `5.7.0` | `./dist/animation/index.d.ts` | 460 |
-| `@aura3d/engine/assets` | `5.7.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.7.0` | `./dist/audio/index.d.ts` | 310 |
-| `@aura3d/engine/controls` | `5.7.0` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.7.0` | `./dist/engine/public/devtools.d.ts` | 10983 |
-| `@aura3d/engine/ecs` | `5.7.0` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.7.0` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.7.0` | `./dist/game/index.d.ts` | 11794 |
-| `@aura3d/engine/game/art` | `5.7.0` | `./dist/game/art/index.d.ts` | 339 |
-| `@aura3d/engine/game/capture` | `5.7.0` | `./dist/game/capture/index.d.ts` | 11263 |
-| `@aura3d/engine/game/styles.css` | `5.7.0` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.7.0` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.7.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.7.0` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.7.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.7.0` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.7.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.7.0` | `./dist/physics/index.d.ts` | 285 |
-| `@aura3d/engine/physics/solverless` | `5.7.0` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.7.0` | `./dist/physics/world.d.ts` | 16 |
-| `@aura3d/engine/procedural` | `5.7.0` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.7.0` | `./dist/engine/public/renderer.d.ts` | 11240 |
-| `@aura3d/engine/scatter` | `5.7.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.7.0` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.7.0` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.7.0` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/sculpt` | `5.7.0` | `./dist/engine/public/sculpt.d.ts` | 82 |
-| `@aura3d/engine/shader-graph-runtime` | `5.7.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
-| `@aura3d/engine/v5` | `5.7.0` | `./dist/engine/public/v5.d.ts` | 8723 |
-| `@aura3d/engine/v5/context` | `5.7.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.7.0` | `./dist/game/v5.d.ts` | 11790 |
-| `@aura3d/engine/v5/internal` | `5.7.0` | `./dist/engine/public/v5-internal.d.ts` | 449 |
-| `@aura3d/engine/v5/math/hull` | `5.7.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.7.0` | `./dist/engine/public/worker.d.ts` | 88 |
-| `@aura3d/engine/workflows` | `5.7.0` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.7.0` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.7.0` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.7.0` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.7.0` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.7.0` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.7.0` | `./dist/index.d.ts` | 35 |
-| `@aura3d/physics/solverless` | `5.7.0` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.7.0` | `./dist/world.d.ts` | 16 |
-| `@aura3d/product-studio` | `5.7.0` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.7.0` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.7.0` | `./dist/index.d.ts` | 4360 |
-| `@aura3d/rendering/contracts` | `5.7.0` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.7.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.7.0` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.7.0` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.7.0` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.7.0` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.7.0` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.7.0` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.7.0` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.7.0` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.7.0` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.7.0` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.7.0` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.7.0` | `./dist/contracts/output.d.ts` | 9 |
-| `@aura3d/rendering/contracts/particles` | `5.7.0` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.7.0` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.7.0` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.7.0` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.7.0` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.7.0` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.7.0` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.7.0` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.7.0` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.7.0` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.7.0` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.7.0` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.7.0` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.7.0` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.7.0` | `./dist/lanes/index.d.ts` | 1061 |
-| `@aura3d/rendering/lighting` | `5.7.0` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.7.0` | `./dist/production-runtime/index.d.ts` | 418 |
-| `@aura3d/rendering/reference` | `5.7.0` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.7.0` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.7.0` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.7.0` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.7.0` | `./dist/webgpu.d.ts` | 225 |
-| `@aura3d/rendering/world` | `5.7.0` | `./dist/world/index.d.ts` | 174 |
-| `@aura3d/scene` | `5.7.0` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.7.0` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.7.0` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.7.0` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.7.1` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.7.1` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.7.1` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.7.1` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.7.1` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.7.1` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.7.1` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.7.1` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.7.1` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.7.1` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.7.1` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.7.1` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.7.1` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.7.1` | `./dist/index.d.ts` | 460 |
+| `@aura3d/animation/contracts` | `5.7.1` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.7.1` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.7.1` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.7.1` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.7.1` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.7.1` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.7.1` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.7.1` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.7.1` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.7.1` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.7.1` | `./dist/vite/auraDecoders.d.ts` | 27 |
+| `@aura3d/assets/vite-client` | `5.7.1` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.7.1` | `./dist/index.d.ts` | 310 |
+| `@aura3d/cli` | `5.7.1` | `./dist/index.d.ts` | 305 |
+| `@aura3d/controls` | `5.7.1` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.7.1` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.7.1` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.7.1` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.7.1` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.7.1` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.7.1` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.7.1` | `./dist/engine/public/index.d.ts` | 11314 |
+| `@aura3d/engine/animation` | `5.7.1` | `./dist/animation/index.d.ts` | 460 |
+| `@aura3d/engine/assets` | `5.7.1` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.7.1` | `./dist/audio/index.d.ts` | 310 |
+| `@aura3d/engine/controls` | `5.7.1` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.7.1` | `./dist/engine/public/devtools.d.ts` | 10983 |
+| `@aura3d/engine/ecs` | `5.7.1` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.7.1` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.7.1` | `./dist/game/index.d.ts` | 11794 |
+| `@aura3d/engine/game/art` | `5.7.1` | `./dist/game/art/index.d.ts` | 339 |
+| `@aura3d/engine/game/capture` | `5.7.1` | `./dist/game/capture/index.d.ts` | 11263 |
+| `@aura3d/engine/game/styles.css` | `5.7.1` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.7.1` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.7.1` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.7.1` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.7.1` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.7.1` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.7.1` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.7.1` | `./dist/physics/index.d.ts` | 285 |
+| `@aura3d/engine/physics/solverless` | `5.7.1` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.7.1` | `./dist/physics/world.d.ts` | 16 |
+| `@aura3d/engine/procedural` | `5.7.1` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.7.1` | `./dist/engine/public/renderer.d.ts` | 11240 |
+| `@aura3d/engine/scatter` | `5.7.1` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.7.1` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.7.1` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.7.1` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/sculpt` | `5.7.1` | `./dist/engine/public/sculpt.d.ts` | 82 |
+| `@aura3d/engine/shader-graph-runtime` | `5.7.1` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
+| `@aura3d/engine/v5` | `5.7.1` | `./dist/engine/public/v5.d.ts` | 8723 |
+| `@aura3d/engine/v5/context` | `5.7.1` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.7.1` | `./dist/game/v5.d.ts` | 11790 |
+| `@aura3d/engine/v5/internal` | `5.7.1` | `./dist/engine/public/v5-internal.d.ts` | 449 |
+| `@aura3d/engine/v5/math/hull` | `5.7.1` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.7.1` | `./dist/engine/public/worker.d.ts` | 88 |
+| `@aura3d/engine/workflows` | `5.7.1` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.7.1` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.7.1` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.7.1` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.7.1` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.7.1` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.7.1` | `./dist/index.d.ts` | 35 |
+| `@aura3d/physics/solverless` | `5.7.1` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.7.1` | `./dist/world.d.ts` | 16 |
+| `@aura3d/product-studio` | `5.7.1` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.7.1` | `./dist/index.d.ts` | 51 |
+| `@aura3d/rendering` | `5.7.1` | `./dist/index.d.ts` | 4360 |
+| `@aura3d/rendering/contracts` | `5.7.1` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.7.1` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.7.1` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.7.1` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.7.1` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.7.1` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.7.1` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.7.1` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.7.1` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.7.1` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.7.1` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.7.1` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.7.1` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.7.1` | `./dist/contracts/output.d.ts` | 9 |
+| `@aura3d/rendering/contracts/particles` | `5.7.1` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.7.1` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.7.1` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.7.1` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.7.1` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.7.1` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.7.1` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.7.1` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.7.1` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.7.1` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.7.1` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.7.1` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.7.1` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.7.1` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.7.1` | `./dist/lanes/index.d.ts` | 1061 |
+| `@aura3d/rendering/lighting` | `5.7.1` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.7.1` | `./dist/production-runtime/index.d.ts` | 418 |
+| `@aura3d/rendering/reference` | `5.7.1` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.7.1` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.7.1` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.7.1` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.7.1` | `./dist/webgpu.d.ts` | 225 |
+| `@aura3d/rendering/world` | `5.7.1` | `./dist/world/index.d.ts` | 174 |
+| `@aura3d/scene` | `5.7.1` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.7.1` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.7.1` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.7.1` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1272,8 +1272,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1349,8 +1349,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1424,8 +1424,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1547,8 +1547,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1664,8 +1664,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1761,8 +1761,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1928,8 +1928,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2021,8 +2021,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2136,8 +2136,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2240,8 +2240,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2341,8 +2341,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2405,8 +2405,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/addons@5.7.1#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2515,8 +2515,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/animation@5.7.0#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/animation@5.7.1#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
 
 ### Export conditions
 
@@ -5255,7 +5255,7 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 /**
  * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
  * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
- * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * since 5.7.1, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
  * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
  * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
@@ -5681,7 +5681,7 @@ export interface HumanoidAnimator<N extends string = string> {
  */
 export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
 /**
- * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.1.
  */
 export declare const createMotionAnimator: typeof createHumanoidAnimator;
 /**
@@ -6095,8 +6095,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/animation@5.7.0#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/animation@5.7.1#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
 
 ### Export conditions
 
@@ -6142,8 +6142,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/animation@5.7.0#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/animation@5.7.1#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
 
 ### Export conditions
 
@@ -7916,8 +7916,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/animation@5.7.0#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/animation@5.7.1#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
 
 ### Export conditions
 
@@ -7956,8 +7956,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/apps@5.7.0#contents-sha256=81f1027028a940404ae6a883262475da0d919de9cc650a782512d2090d22efd2`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/apps@5.7.1#contents-sha256=81f1027028a940404ae6a883262475da0d919de9cc650a782512d2090d22efd2`
 
 ### Export conditions
 
@@ -8021,8 +8021,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/asset-index@5.7.0#contents-sha256=e03c809cf25be42c1d6aeb125b95f13ce7c1a9d95d72c0effa82e82d9faa51c7`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/asset-index@5.7.1#contents-sha256=e03c809cf25be42c1d6aeb125b95f13ce7c1a9d95d72c0effa82e82d9faa51c7`
 
 ### Export conditions
 
@@ -8759,8 +8759,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/assets@5.7.1#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -14484,8 +14484,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/assets@5.7.1#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -19187,8 +19187,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/assets@5.7.1#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -20096,8 +20096,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/assets@5.7.1#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -22531,8 +22531,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/assets@5.7.1#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -24291,8 +24291,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/assets@5.7.1#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -24577,8 +24577,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/assets@5.7.1#contents-sha256=248aa1942808a20d9ff76a89ee7f51ec4628b35487b17a2e0ca3957d7f1d0b8b`
 
 ### Export conditions
 
@@ -24597,8 +24597,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/audio@5.7.0#contents-sha256=b917b8ae5f0b8f1986faded158a4355da10e4e211640c3b8a280e4d3d5f54074`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/audio@5.7.1#contents-sha256=b917b8ae5f0b8f1986faded158a4355da10e4e211640c3b8a280e4d3d5f54074`
 
 ### Export conditions
 
@@ -27264,8 +27264,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/cli@5.7.0#contents-sha256=b9a07cf771cb48c5872b3a0c1957914cd46b03db48ee67165bc9967cace5a0e1`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/cli@5.7.1#contents-sha256=b9a07cf771cb48c5872b3a0c1957914cd46b03db48ee67165bc9967cace5a0e1`
 
 ### Export conditions
 
@@ -27305,7 +27305,7 @@ export type { AssetAdmissionCheck, AssetAdmissionInput, AssetAdmissionReport, As
 export { DEFAULT_AURA_ASSET_MANIFEST, DEFAULT_AURA_ASSET_OUTPUT_DIR, DEFAULT_AURA_ASSET_PUBLIC_PATH, DEFAULT_AURA_ASSET_TYPEGEN } from "./asset-constants.js";
 export { listAssets, readAssetManifest, writeAssetManifest, writeTypedAssets } from "./asset-manifest.js";
 export type { AddAssetOptions, AssetCliResult, AssetSourceTypedAssetUsage, AssetSourceValidationReport, AssetValidationOptions, AssetValidationResult, AuraAssetQuality, AuraCliAssetEntry, AuraCliAssetManifest, AuraCliAssetProvenance, AuraCliAudioMetadata, AuraCliModelInspection, AuraCliGeneratedAssetProvenance, AuraCliAssetRole, AuraCliAssetType, AuraCliRenderedProbe, AuraCliRenderedProbeForegroundBounds, AuraCliRenderedProbeKind, AuraCliResolveCandidateProvenance, BindGameRouteEvidenceOptions, BindGameRouteEvidenceResult, CertifyGameGeometryOptions, CheckDeployOptions, GameGeometryCertificationResult, ReadRenderedProbeMetadataOptions } from "./asset-core-types.js";
-/** @deprecated Meshy support was removed in 5.7.0; these exports remain as throwing stubs until the next major. */
+/** @deprecated Meshy support was removed in 5.7.1; these exports remain as throwing stubs until the next major. */
 export { importMeshyAsset, createMeshyAdmissionReport, inferMeshyAssetProfile, inspectMeshyTextureDimensions } from "./removed-meshy.js";
 export type { ImportMeshyOptions, ImportMeshyResult, MeshyAdmissionCheck, MeshyAdmissionReport, MeshyAdmissionVerdict, MeshyAssetProfile } from "./removed-meshy.js";
 export type { AssetInspectionReport, AuraCliAnimationClipInspection, AuraCliAnimationInspection, AuraCliAssetBoundsInspection, AuraCliHumanoidConfidence, AuraCliHumanoidInspection, AuraCliHumanoidStatus, AuraCliMaterialInspection, AuraCliMorphTargetInspection, AuraCliMorphTargetMeshInspection, AuraCliOrientationInspection, AuraCliSceneHierarchyInspection, AuraCliSkeletonInspection, AuraCliSkeletonSkinInspection, InspectAssetOptions } from "./asset-inspection-types.js";
@@ -29007,7 +29007,7 @@ export interface AssetSourceTypedAssetUsage {
 /**
  * Deprecated public exports kept only so 5.x consumers still compile.
  *
- * Meshy support was removed from `@aura3d/cli` in 5.7.0. These declarations keep
+ * Meshy support was removed from `@aura3d/cli` in 5.7.1. These declarations keep
  * their 5.6.0 shapes (a minor release cannot remove public exports), and every
  * function throws. Admit a GLB you already have with `aura3d assets add` or
  * `aura3d assets convert`, or generate one with `aura3d assets generate`.
@@ -29015,11 +29015,11 @@ export interface AssetSourceTypedAssetUsage {
 import type { AssetInspectionReport } from "./asset-inspection-types.js";
 import type { AssetCliResult, AuraAssetQuality, AuraCliAssetRole } from "./asset-core-types.js";
 import type { AssetGeometryFacts } from "./asset-role-admission.js";
-/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
+/** @deprecated Meshy support was removed in 5.7.1; kept for type compatibility only. */
 export type MeshyAssetProfile = "prop" | "environment" | "vehicle" | "humanoid";
-/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
+/** @deprecated Meshy support was removed in 5.7.1; kept for type compatibility only. */
 export type MeshyAdmissionVerdict = "pass" | "fail" | "unproven" | "advisory";
-/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
+/** @deprecated Meshy support was removed in 5.7.1; kept for type compatibility only. */
 export interface MeshyAdmissionCheck {
     readonly id: string;
     readonly verdict: MeshyAdmissionVerdict;
@@ -29027,7 +29027,7 @@ export interface MeshyAdmissionCheck {
     readonly measured?: number | string | boolean;
     readonly limit?: number;
 }
-/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
+/** @deprecated Meshy support was removed in 5.7.1; kept for type compatibility only. */
 export interface MeshyAdmissionReport {
     readonly schema: "aura3d.meshy-admission/1.0";
     readonly profile: MeshyAssetProfile;
@@ -29038,7 +29038,7 @@ export interface MeshyAdmissionReport {
     readonly unproven: readonly string[];
     readonly nextActions: readonly string[];
 }
-/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
+/** @deprecated Meshy support was removed in 5.7.1; kept for type compatibility only. */
 export interface ImportMeshyOptions {
     readonly projectDir?: string;
     readonly input: string;
@@ -29053,7 +29053,7 @@ export interface ImportMeshyOptions {
     /** §6.5 release path: candidate entry id whose --from-generated derived bytes are being imported. */
     readonly sourceEntry?: string;
 }
-/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
+/** @deprecated Meshy support was removed in 5.7.1; kept for type compatibility only. */
 export interface ImportMeshyResult extends AssetCliResult {
     readonly typedKey: string;
     readonly sourceFile: string;
@@ -29064,12 +29064,12 @@ export interface ImportMeshyResult extends AssetCliResult {
     readonly nextCommands: readonly string[];
 }
 /**
- * @deprecated Meshy support was removed in 5.7.0. Always throws. Use
+ * @deprecated Meshy support was removed in 5.7.1. Always throws. Use
  * `aura3d assets add` (or `aura3d assets convert`) for a GLB you already have.
  */
 export declare function importMeshyAsset(options: ImportMeshyOptions): ImportMeshyResult;
 /**
- * @deprecated Meshy support was removed in 5.7.0. Always throws. `aura3d assets
+ * @deprecated Meshy support was removed in 5.7.1. Always throws. `aura3d assets
  * validate` and `aura3d assets inspect` report bounds, triangles and textures for any GLB.
  */
 export declare function createMeshyAdmissionReport(options: {
@@ -29083,10 +29083,10 @@ export declare function createMeshyAdmissionReport(options: {
     }[];
     readonly hasThumbnailEvidence?: boolean;
 }): MeshyAdmissionReport;
-/** @deprecated Meshy support was removed in 5.7.0. Always throws. */
+/** @deprecated Meshy support was removed in 5.7.1. Always throws. */
 export declare function inferMeshyAssetProfile(role: AuraCliAssetRole | undefined): MeshyAssetProfile;
 /**
- * @deprecated Meshy support was removed in 5.7.0. Always throws. `aura3d assets
+ * @deprecated Meshy support was removed in 5.7.1. Always throws. `aura3d assets
  * inspect` reports texture dimensions for any GLB.
  */
 export declare function inspectMeshyTextureDimensions(file: string): readonly {
@@ -29506,8 +29506,8 @@ export declare function canThumbnailAsset(asset: Pick<AuraCliAssetEntry, "id" | 
 
 ## @aura3d/controls
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/controls@5.7.0#contents-sha256=3ab97bfc741f51823a8512ad07dfde976d2fe4e1c3d2dca79cf551ee8dc946a4`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/controls@5.7.1#contents-sha256=3ab97bfc741f51823a8512ad07dfde976d2fe4e1c3d2dca79cf551ee8dc946a4`
 
 ### Export conditions
 
@@ -31309,8 +31309,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/core@5.7.0#contents-sha256=e7a3e424268b681485a1522122ad9f38a2795eac7a444d88446be2b59acc5674`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/core@5.7.1#contents-sha256=e7a3e424268b681485a1522122ad9f38a2795eac7a444d88446be2b59acc5674`
 
 ### Export conditions
 
@@ -31824,8 +31824,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.7.0`
-- Packed identity: `archive:create-aura3d@5.7.0#contents-sha256=188df0b61e4f94cd631950e45b4e83f3faaa6873717fb96d4adfe2f59c8beb92`
+- Version: `5.7.1`
+- Packed identity: `archive:create-aura3d@5.7.1#contents-sha256=188df0b61e4f94cd631950e45b4e83f3faaa6873717fb96d4adfe2f59c8beb92`
 
 ### Export conditions
 
@@ -32594,8 +32594,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/debug@5.7.0#contents-sha256=66c81c1a87d8418be865f92cefaf7323389a47f26fe3f46989103a1b7082c394`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/debug@5.7.1#contents-sha256=66c81c1a87d8418be865f92cefaf7323389a47f26fe3f46989103a1b7082c394`
 
 ### Export conditions
 
@@ -33974,8 +33974,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/debug@5.7.0#contents-sha256=66c81c1a87d8418be865f92cefaf7323389a47f26fe3f46989103a1b7082c394`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/debug@5.7.1#contents-sha256=66c81c1a87d8418be865f92cefaf7323389a47f26fe3f46989103a1b7082c394`
 
 ### Export conditions
 
@@ -34182,8 +34182,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/ecs@5.7.0#contents-sha256=33567f0b1104d38b198f321b6d438ddc819296907bf2921a18d47d0c659bc65f`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/ecs@5.7.1#contents-sha256=33567f0b1104d38b198f321b6d438ddc819296907bf2921a18d47d0c659bc65f`
 
 ### Export conditions
 
@@ -34850,8 +34850,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/editor-runtime@5.7.0#contents-sha256=0e2742c39b8de7319cee37a93ceb86e0b55bd1ba7ce236ac14b24081a4a1287c`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/editor-runtime@5.7.1#contents-sha256=0e2742c39b8de7319cee37a93ceb86e0b55bd1ba7ce236ac14b24081a4a1287c`
 
 ### Export conditions
 
@@ -37433,8 +37433,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -41488,7 +41488,7 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 /**
  * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
  * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
- * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * since 5.7.1, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
  * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
  * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
@@ -41914,7 +41914,7 @@ export interface HumanoidAnimator<N extends string = string> {
  */
 export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
 /**
- * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.1.
  */
 export declare const createMotionAnimator: typeof createHumanoidAnimator;
 /**
@@ -56171,7 +56171,7 @@ export interface AuraRuntimeNodeHandle {
     readonly version: number;
     /**
      * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
-     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * A node inside a group is parent-local, models and primitives included since 5.7.1 (they read and wrote world
      * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
      */
     position: AuraVec3;
@@ -82306,7 +82306,7 @@ export interface ShadowSystemConfigInput {
      */
     readonly softness?: number;
     /**
-     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * `shadow.fit: { center, extent, depth }` (5.7.1): one cascade over this fixed light-space box instead of the camera-fit
      * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
      */
     readonly fit?: FixedDirectionalShadowBox;
@@ -82573,7 +82573,7 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /**
- * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.1): the counterpart of a three.js
  * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
  * across the light, in world units; `depth` is its full length along the light, centred on `center`.
  */
@@ -82971,7 +82971,7 @@ export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
  * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
  *
  * - `filter: "hard"` or `softness: 0`: one tap.
- * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.1 drew).
  * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
  * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
  * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
@@ -85890,7 +85890,7 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
-/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+/** The `u_sg*` uniforms of the 5.7.1 stylised gradient program (layout documented in sky.glsl.ts). */
 export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
@@ -86067,7 +86067,7 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    /** `STYLIZED`: a gradient sky on the 5.7.1 stylised profile (its own program; classic gradients keep `GRADIENT`). */
     readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
@@ -92918,7 +92918,7 @@ export interface AuraSkyStarsLegacySpec {
     readonly auroraBand?: boolean;
 }
 /**
- * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * 5.7.1 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
  * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
  * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
  */
@@ -92927,7 +92927,7 @@ export interface AuraSkyGradientMidBand {
     /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
     readonly blend?: readonly [number, number];
 }
-/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+/** 5.7.1 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
 export interface AuraSkySunGlowLobe {
     readonly exponent: number;
     readonly intensity: number;
@@ -92947,7 +92947,7 @@ export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
     /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
     readonly discBlend?: "add" | "replace";
 }
-/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+/** 5.7.1 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
 export interface AuraSkyGradientHaze {
     /** Haze colour (default: the horizon colour). */
     readonly color?: AuraColor;
@@ -92957,7 +92957,7 @@ export interface AuraSkyGradientHaze {
     readonly falloff?: number;
 }
 /**
- * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * The 5.7.1 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
  * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
  */
 export interface AuraSkyGradientStylizedFields {
@@ -94248,7 +94248,7 @@ export interface AuraShadowOptions {
     readonly filter?: "hard" | "pcf" | "pcss";
     /**
      * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
-     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.1
      * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
      * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
      * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
@@ -94257,7 +94257,7 @@ export interface AuraShadowOptions {
     readonly softness?: number;
     /**
      * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
-     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     * the caster-to-receiver distance. Accepted and not read in 5.7.1; use `softness` for a soft edge.
      */
     readonly lightSize?: number;
 }
@@ -102871,7 +102871,7 @@ export interface ShadowSystemConfig {
      */
     readonly softness?: number;
     /**
-     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * The sun's `shadow.fit` box (5.7.1): one cascade over a fixed light-space box, so the light matrix and the world size of
      * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
      */
     readonly fit?: ResolvedShadowFit;
@@ -122941,7 +122941,7 @@ declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<A
  * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
  *
  * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
- * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ * - Stylised profile (5.7.1; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
  *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
  *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
  *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
@@ -124658,7 +124658,7 @@ export declare const vfxEffectBuilders: {
         readonly prewarm?: number;
         readonly sprite?: AuraParticleEmitterOptions["sprite"];
         /**
-         * GU47 E-F: sprite-sheet texture asset (`assets.sheet`), URL, or (5.7.0) a live texture handle such as
+         * GU47 E-F: sprite-sheet texture asset (`assets.sheet`), URL, or (5.7.1) a live texture handle such as
          * `texture.data(...)` or `createFlipbookAtlas(kind).texture`; grid from `spriteColumns × spriteRows`.
          */
         readonly texture?: AuraAssetRef<"texture"> | AuraTextureRef | string;
@@ -125549,8 +125549,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -128288,7 +128288,7 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 /**
  * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
  * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
- * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * since 5.7.1, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
  * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
  * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
@@ -128714,7 +128714,7 @@ export interface HumanoidAnimator<N extends string = string> {
  */
 export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
 /**
- * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.1.
  */
 export declare const createMotionAnimator: typeof createHumanoidAnimator;
 /**
@@ -129128,8 +129128,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -134854,8 +134854,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -137520,8 +137520,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -139322,8 +139322,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -143421,7 +143421,7 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 /**
  * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
  * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
- * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * since 5.7.1, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
  * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
  * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
@@ -143847,7 +143847,7 @@ export interface HumanoidAnimator<N extends string = string> {
  */
 export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
 /**
- * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.1.
  */
 export declare const createMotionAnimator: typeof createHumanoidAnimator;
 /**
@@ -158104,7 +158104,7 @@ export interface AuraRuntimeNodeHandle {
     readonly version: number;
     /**
      * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
-     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * A node inside a group is parent-local, models and primitives included since 5.7.1 (they read and wrote world
      * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
      */
     position: AuraVec3;
@@ -184239,7 +184239,7 @@ export interface ShadowSystemConfigInput {
      */
     readonly softness?: number;
     /**
-     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * `shadow.fit: { center, extent, depth }` (5.7.1): one cascade over this fixed light-space box instead of the camera-fit
      * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
      */
     readonly fit?: FixedDirectionalShadowBox;
@@ -184506,7 +184506,7 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /**
- * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.1): the counterpart of a three.js
  * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
  * across the light, in world units; `depth` is its full length along the light, centred on `center`.
  */
@@ -184904,7 +184904,7 @@ export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
  * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
  *
  * - `filter: "hard"` or `softness: 0`: one tap.
- * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.1 drew).
  * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
  * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
  * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
@@ -187823,7 +187823,7 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
-/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+/** The `u_sg*` uniforms of the 5.7.1 stylised gradient program (layout documented in sky.glsl.ts). */
 export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
@@ -188000,7 +188000,7 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    /** `STYLIZED`: a gradient sky on the 5.7.1 stylised profile (its own program; classic gradients keep `GRADIENT`). */
     readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
@@ -194851,7 +194851,7 @@ export interface AuraSkyStarsLegacySpec {
     readonly auroraBand?: boolean;
 }
 /**
- * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * 5.7.1 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
  * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
  * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
  */
@@ -194860,7 +194860,7 @@ export interface AuraSkyGradientMidBand {
     /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
     readonly blend?: readonly [number, number];
 }
-/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+/** 5.7.1 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
 export interface AuraSkySunGlowLobe {
     readonly exponent: number;
     readonly intensity: number;
@@ -194880,7 +194880,7 @@ export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
     /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
     readonly discBlend?: "add" | "replace";
 }
-/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+/** 5.7.1 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
 export interface AuraSkyGradientHaze {
     /** Haze colour (default: the horizon colour). */
     readonly color?: AuraColor;
@@ -194890,7 +194890,7 @@ export interface AuraSkyGradientHaze {
     readonly falloff?: number;
 }
 /**
- * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * The 5.7.1 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
  * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
  */
 export interface AuraSkyGradientStylizedFields {
@@ -196181,7 +196181,7 @@ export interface AuraShadowOptions {
     readonly filter?: "hard" | "pcf" | "pcss";
     /**
      * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
-     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.1
      * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
      * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
      * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
@@ -196190,7 +196190,7 @@ export interface AuraShadowOptions {
     readonly softness?: number;
     /**
      * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
-     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     * the caster-to-receiver distance. Accepted and not read in 5.7.1; use `softness` for a soft edge.
      */
     readonly lightSize?: number;
 }
@@ -204761,7 +204761,7 @@ export interface ShadowSystemConfig {
      */
     readonly softness?: number;
     /**
-     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * The sun's `shadow.fit` box (5.7.1): one cascade over a fixed light-space box, so the light matrix and the world size of
      * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
      */
     readonly fit?: ResolvedShadowFit;
@@ -224731,7 +224731,7 @@ declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<A
  * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
  *
  * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
- * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ * - Stylised profile (5.7.1; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
  *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
  *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
  *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
@@ -224781,8 +224781,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -225448,8 +225448,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -228030,8 +228030,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -253499,7 +253499,7 @@ export interface ShadowSystemConfigInput {
      */
     readonly softness?: number;
     /**
-     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * `shadow.fit: { center, extent, depth }` (5.7.1): one cascade over this fixed light-space box instead of the camera-fit
      * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
      */
     readonly fit?: FixedDirectionalShadowBox;
@@ -253766,7 +253766,7 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /**
- * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.1): the counterpart of a three.js
  * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
  * across the light, in world units; `depth` is its full length along the light, centred on `center`.
  */
@@ -254164,7 +254164,7 @@ export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
  * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
  *
  * - `filter: "hard"` or `softness: 0`: one tap.
- * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.1 drew).
  * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
  * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
  * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
@@ -257083,7 +257083,7 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
-/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+/** The `u_sg*` uniforms of the 5.7.1 stylised gradient program (layout documented in sky.glsl.ts). */
 export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
@@ -257260,7 +257260,7 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    /** `STYLIZED`: a gradient sky on the 5.7.1 stylised profile (its own program; classic gradients keep `GRADIENT`). */
     readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
@@ -272127,7 +272127,7 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 /**
  * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
  * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
- * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * since 5.7.1, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
  * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
  * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
@@ -272553,7 +272553,7 @@ export interface HumanoidAnimator<N extends string = string> {
  */
 export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
 /**
- * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.1.
  */
 export declare const createMotionAnimator: typeof createHumanoidAnimator;
 /**
@@ -286810,7 +286810,7 @@ export interface AuraRuntimeNodeHandle {
     readonly version: number;
     /**
      * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
-     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * A node inside a group is parent-local, models and primitives included since 5.7.1 (they read and wrote world
      * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
      */
     position: AuraVec3;
@@ -290920,7 +290920,7 @@ export interface AuraSkyStarsLegacySpec {
     readonly auroraBand?: boolean;
 }
 /**
- * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * 5.7.1 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
  * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
  * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
  */
@@ -290929,7 +290929,7 @@ export interface AuraSkyGradientMidBand {
     /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
     readonly blend?: readonly [number, number];
 }
-/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+/** 5.7.1 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
 export interface AuraSkySunGlowLobe {
     readonly exponent: number;
     readonly intensity: number;
@@ -290949,7 +290949,7 @@ export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
     /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
     readonly discBlend?: "add" | "replace";
 }
-/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+/** 5.7.1 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
 export interface AuraSkyGradientHaze {
     /** Haze colour (default: the horizon colour). */
     readonly color?: AuraColor;
@@ -290959,7 +290959,7 @@ export interface AuraSkyGradientHaze {
     readonly falloff?: number;
 }
 /**
- * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * The 5.7.1 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
  * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
  */
 export interface AuraSkyGradientStylizedFields {
@@ -292250,7 +292250,7 @@ export interface AuraShadowOptions {
     readonly filter?: "hard" | "pcf" | "pcss";
     /**
      * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
-     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.1
      * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
      * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
      * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
@@ -292259,7 +292259,7 @@ export interface AuraShadowOptions {
     readonly softness?: number;
     /**
      * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
-     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     * the caster-to-receiver distance. Accepted and not read in 5.7.1; use `softness` for a soft edge.
      */
     readonly lightSize?: number;
 }
@@ -295304,7 +295304,7 @@ export interface ShadowSystemConfig {
      */
     readonly softness?: number;
     /**
-     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * The sun's `shadow.fit` box (5.7.1): one cascade over a fixed light-space box, so the light matrix and the world size of
      * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
      */
     readonly fit?: ResolvedShadowFit;
@@ -314869,7 +314869,7 @@ declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<A
  * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
  *
  * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
- * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ * - Stylised profile (5.7.1; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
  *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
  *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
  *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
@@ -316714,7 +316714,7 @@ export declare function createAutoplayHarness<I = void>(options: AutoplayHarness
 ### `./dist/game/feel/index.d.ts`
 
 ```ts
-/** 5.7.0 feel kit: hit-stop rig, procedural SFX, screen fx, score popups, seeded RNG and procedural VFX sheets. */
+/** 5.7.1 feel kit: hit-stop rig, procedural SFX, screen fx, score popups, seeded RNG and procedural VFX sheets. */
 export { createImpactRig } from "./impactRig.js";
 export type { ImpactRig, ImpactRigOptions, ImpactRigTrigger, ImpactRigFrame } from "./impactRig.js";
 export { createProceduralSfx } from "./proceduralSfx.js";
@@ -316821,7 +316821,7 @@ export declare function createProceduralSfx(): ProceduralSfx;
  * Screen-space effects for games: a colour flash on events (`mix-blend-mode: screen`), a circular colour reveal on a
  * burst, and a speed vignette that grows with the combo multiplier. DOM only, driven by the renderer from state
  * changes; the simulation never sees any of it. The event-to-flash mapping stays with each game. Extracted from the
- * runner kit (`examples/shared/runner-kit/screen-fx.ts`) in 5.7.0.
+ * runner kit (`examples/shared/runner-kit/screen-fx.ts`) in 5.7.1.
  */
 /** Peak flash opacity when the player asked for reduced motion. */
 export declare const REDUCED_FLASH_CAP = 0.1;
@@ -316863,7 +316863,7 @@ export declare class ScreenFx {
 ```ts
 /**
  * Score popups: a sim keeps only the last {@link POPUP_LIMIT} and never clears the list, so readers must drain by
- * `seq`, not by index. Extracted from the runner kit (`examples/shared/runner-kit/popups.ts`) in 5.7.0.
+ * `seq`, not by index. Extracted from the runner kit (`examples/shared/runner-kit/popups.ts`) in 5.7.1.
  */
 /** One score popup a simulation emits (`+100`, `PERFECT`), drawn by the HUD. */
 export interface ScorePopup {
@@ -316928,7 +316928,7 @@ export declare class GameRng {
 /**
  * Procedural RGBA8 VFX sprite sheets (flipbooks) and strip grading LUTs built as `texture.data` typed arrays, so they
  * work identically headless, in a worker, on WebGPU and on WebGL2 with no image assets. Extracted from the 30 live
- * games' shared VFX pack (`apps/showcase-port-shared/vfx-pack.ts`) in 5.7.0.
+ * games' shared VFX pack (`apps/showcase-port-shared/vfx-pack.ts`) in 5.7.1.
  */
 import { texture } from "../../engine/public/v5-internal.js";
 /** The procedural flipbook looks: radial `sparks`, a soft `dust` puff, a lobed `ink` splat, a swirling `plasma` ball, a 6-ray `muzzle` flash and an expanding `ripple` ring. */
@@ -318778,8 +318778,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -319176,7 +319176,7 @@ export interface AuraShadowOptions {
     readonly filter?: "hard" | "pcf" | "pcss";
     /**
      * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
-     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.1
      * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
      * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
      * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
@@ -319185,7 +319185,7 @@ export interface AuraShadowOptions {
     readonly softness?: number;
     /**
      * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
-     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     * the caster-to-receiver distance. Accepted and not read in 5.7.1; use `softness` for a soft edge.
      */
     readonly lightSize?: number;
 }
@@ -320285,7 +320285,7 @@ export interface AuraSkyStarsLegacySpec {
     readonly auroraBand?: boolean;
 }
 /**
- * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * 5.7.1 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
  * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
  * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
  */
@@ -320294,7 +320294,7 @@ export interface AuraSkyGradientMidBand {
     /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
     readonly blend?: readonly [number, number];
 }
-/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+/** 5.7.1 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
 export interface AuraSkySunGlowLobe {
     readonly exponent: number;
     readonly intensity: number;
@@ -320314,7 +320314,7 @@ export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
     /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
     readonly discBlend?: "add" | "replace";
 }
-/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+/** 5.7.1 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
 export interface AuraSkyGradientHaze {
     /** Haze colour (default: the horizon colour). */
     readonly color?: AuraColor;
@@ -320324,7 +320324,7 @@ export interface AuraSkyGradientHaze {
     readonly falloff?: number;
 }
 /**
- * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * The 5.7.1 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
  * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
  */
 export interface AuraSkyGradientStylizedFields {
@@ -322050,8 +322050,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -347301,7 +347301,7 @@ export interface ShadowSystemConfigInput {
      */
     readonly softness?: number;
     /**
-     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * `shadow.fit: { center, extent, depth }` (5.7.1): one cascade over this fixed light-space box instead of the camera-fit
      * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
      */
     readonly fit?: FixedDirectionalShadowBox;
@@ -347568,7 +347568,7 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /**
- * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.1): the counterpart of a three.js
  * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
  * across the light, in world units; `depth` is its full length along the light, centred on `center`.
  */
@@ -347966,7 +347966,7 @@ export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
  * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
  *
  * - `filter: "hard"` or `softness: 0`: one tap.
- * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.1 drew).
  * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
  * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
  * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
@@ -350885,7 +350885,7 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
-/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+/** The `u_sg*` uniforms of the 5.7.1 stylised gradient program (layout documented in sky.glsl.ts). */
 export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
@@ -351062,7 +351062,7 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    /** `STYLIZED`: a gradient sky on the 5.7.1 stylised profile (its own program; classic gradients keep `GRADIENT`). */
     readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
@@ -365929,7 +365929,7 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 /**
  * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
  * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
- * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * since 5.7.1, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
  * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
  * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
@@ -366355,7 +366355,7 @@ export interface HumanoidAnimator<N extends string = string> {
  */
 export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
 /**
- * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.1.
  */
 export declare const createMotionAnimator: typeof createHumanoidAnimator;
 /**
@@ -380612,7 +380612,7 @@ export interface AuraRuntimeNodeHandle {
     readonly version: number;
     /**
      * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
-     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * A node inside a group is parent-local, models and primitives included since 5.7.1 (they read and wrote world
      * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
      */
     position: AuraVec3;
@@ -384722,7 +384722,7 @@ export interface AuraSkyStarsLegacySpec {
     readonly auroraBand?: boolean;
 }
 /**
- * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * 5.7.1 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
  * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
  * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
  */
@@ -384731,7 +384731,7 @@ export interface AuraSkyGradientMidBand {
     /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
     readonly blend?: readonly [number, number];
 }
-/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+/** 5.7.1 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
 export interface AuraSkySunGlowLobe {
     readonly exponent: number;
     readonly intensity: number;
@@ -384751,7 +384751,7 @@ export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
     /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
     readonly discBlend?: "add" | "replace";
 }
-/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+/** 5.7.1 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
 export interface AuraSkyGradientHaze {
     /** Haze colour (default: the horizon colour). */
     readonly color?: AuraColor;
@@ -384761,7 +384761,7 @@ export interface AuraSkyGradientHaze {
     readonly falloff?: number;
 }
 /**
- * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * The 5.7.1 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
  * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
  */
 export interface AuraSkyGradientStylizedFields {
@@ -386052,7 +386052,7 @@ export interface AuraShadowOptions {
     readonly filter?: "hard" | "pcf" | "pcss";
     /**
      * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
-     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.1
      * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
      * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
      * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
@@ -386061,7 +386061,7 @@ export interface AuraShadowOptions {
     readonly softness?: number;
     /**
      * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
-     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     * the caster-to-receiver distance. Accepted and not read in 5.7.1; use `softness` for a soft edge.
      */
     readonly lightSize?: number;
 }
@@ -389106,7 +389106,7 @@ export interface ShadowSystemConfig {
      */
     readonly softness?: number;
     /**
-     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * The sun's `shadow.fit` box (5.7.1): one cascade over a fixed light-space box, so the light matrix and the world size of
      * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
      */
     readonly fit?: ResolvedShadowFit;
@@ -408671,7 +408671,7 @@ declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<A
  * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
  *
  * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
- * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ * - Stylised profile (5.7.1; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
  *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
  *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
  *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
@@ -408966,8 +408966,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -408977,8 +408977,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -409003,8 +409003,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -409730,8 +409730,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -410971,8 +410971,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -411610,8 +411610,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -413600,8 +413600,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -414225,8 +414225,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -416897,8 +416897,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -418149,8 +418149,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -418412,8 +418412,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/engine/procedural
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -418709,8 +418709,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -443336,7 +443336,7 @@ export interface ShadowSystemConfigInput {
      */
     readonly softness?: number;
     /**
-     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * `shadow.fit: { center, extent, depth }` (5.7.1): one cascade over this fixed light-space box instead of the camera-fit
      * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
      */
     readonly fit?: FixedDirectionalShadowBox;
@@ -443603,7 +443603,7 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /**
- * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.1): the counterpart of a three.js
  * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
  * across the light, in world units; `depth` is its full length along the light, centred on `center`.
  */
@@ -444001,7 +444001,7 @@ export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
  * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
  *
  * - `filter: "hard"` or `softness: 0`: one tap.
- * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.1 drew).
  * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
  * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
  * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
@@ -446920,7 +446920,7 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
-/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+/** The `u_sg*` uniforms of the 5.7.1 stylised gradient program (layout documented in sky.glsl.ts). */
 export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
@@ -447097,7 +447097,7 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    /** `STYLIZED`: a gradient sky on the 5.7.1 stylised profile (its own program; classic gradients keep `GRADIENT`). */
     readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
@@ -456451,7 +456451,7 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 /**
  * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
  * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
- * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * since 5.7.1, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
  * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
  * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
@@ -456877,7 +456877,7 @@ export interface HumanoidAnimator<N extends string = string> {
  */
 export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
 /**
- * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.1.
  */
 export declare const createMotionAnimator: typeof createHumanoidAnimator;
 /**
@@ -471134,7 +471134,7 @@ export interface AuraRuntimeNodeHandle {
     readonly version: number;
     /**
      * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
-     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * A node inside a group is parent-local, models and primitives included since 5.7.1 (they read and wrote world
      * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
      */
     position: AuraVec3;
@@ -475275,7 +475275,7 @@ export interface AuraSkyStarsLegacySpec {
     readonly auroraBand?: boolean;
 }
 /**
- * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * 5.7.1 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
  * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
  * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
  */
@@ -475284,7 +475284,7 @@ export interface AuraSkyGradientMidBand {
     /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
     readonly blend?: readonly [number, number];
 }
-/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+/** 5.7.1 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
 export interface AuraSkySunGlowLobe {
     readonly exponent: number;
     readonly intensity: number;
@@ -475304,7 +475304,7 @@ export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
     /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
     readonly discBlend?: "add" | "replace";
 }
-/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+/** 5.7.1 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
 export interface AuraSkyGradientHaze {
     /** Haze colour (default: the horizon colour). */
     readonly color?: AuraColor;
@@ -475314,7 +475314,7 @@ export interface AuraSkyGradientHaze {
     readonly falloff?: number;
 }
 /**
- * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * The 5.7.1 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
  * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
  */
 export interface AuraSkyGradientStylizedFields {
@@ -476605,7 +476605,7 @@ export interface AuraShadowOptions {
     readonly filter?: "hard" | "pcf" | "pcss";
     /**
      * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
-     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.1
      * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
      * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
      * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
@@ -476614,7 +476614,7 @@ export interface AuraShadowOptions {
     readonly softness?: number;
     /**
      * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
-     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     * the caster-to-receiver distance. Accepted and not read in 5.7.1; use `softness` for a soft edge.
      */
     readonly lightSize?: number;
 }
@@ -485228,7 +485228,7 @@ export interface ShadowSystemConfig {
      */
     readonly softness?: number;
     /**
-     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * The sun's `shadow.fit` box (5.7.1): one cascade over a fixed light-space box, so the light matrix and the world size of
      * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
      */
     readonly fit?: ResolvedShadowFit;
@@ -505298,7 +505298,7 @@ declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<A
  * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
  *
  * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
- * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ * - Stylised profile (5.7.1; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
  *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
  *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
  *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
@@ -506094,8 +506094,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -506227,8 +506227,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -507352,8 +507352,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -507436,8 +507436,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -508616,8 +508616,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/sculpt
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -509164,8 +509164,8 @@ export declare function sculptPaintedLimbChain(chain: SdfLimbChain, hexByTag: Re
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -512288,7 +512288,7 @@ export interface AuraRuntimeNodeHandle {
     readonly version: number;
     /**
      * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
-     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * A node inside a group is parent-local, models and primitives included since 5.7.1 (they read and wrote world
      * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
      */
     position: AuraVec3;
@@ -513478,8 +513478,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -515273,7 +515273,7 @@ declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<A
  * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
  *
  * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
- * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ * - Stylised profile (5.7.1; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
  *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
  *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
  *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
@@ -515366,7 +515366,7 @@ export interface AuraSkyStarsLegacySpec {
     readonly auroraBand?: boolean;
 }
 /**
- * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * 5.7.1 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
  * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
  * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
  */
@@ -515375,7 +515375,7 @@ export interface AuraSkyGradientMidBand {
     /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
     readonly blend?: readonly [number, number];
 }
-/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+/** 5.7.1 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
 export interface AuraSkySunGlowLobe {
     readonly exponent: number;
     readonly intensity: number;
@@ -515395,7 +515395,7 @@ export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
     /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
     readonly discBlend?: "add" | "replace";
 }
-/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+/** 5.7.1 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
 export interface AuraSkyGradientHaze {
     /** Haze colour (default: the horizon colour). */
     readonly color?: AuraColor;
@@ -515405,7 +515405,7 @@ export interface AuraSkyGradientHaze {
     readonly falloff?: number;
 }
 /**
- * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * The 5.7.1 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
  * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
  */
 export interface AuraSkyGradientStylizedFields {
@@ -540795,7 +540795,7 @@ export interface ShadowSystemConfigInput {
      */
     readonly softness?: number;
     /**
-     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * `shadow.fit: { center, extent, depth }` (5.7.1): one cascade over this fixed light-space box instead of the camera-fit
      * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
      */
     readonly fit?: FixedDirectionalShadowBox;
@@ -541062,7 +541062,7 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /**
- * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.1): the counterpart of a three.js
  * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
  * across the light, in world units; `depth` is its full length along the light, centred on `center`.
  */
@@ -541460,7 +541460,7 @@ export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
  * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
  *
  * - `filter: "hard"` or `softness: 0`: one tap.
- * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.1 drew).
  * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
  * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
  * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
@@ -544379,7 +544379,7 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
-/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+/** The `u_sg*` uniforms of the 5.7.1 stylised gradient program (layout documented in sky.glsl.ts). */
 export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
@@ -544556,7 +544556,7 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    /** `STYLIZED`: a gradient sky on the 5.7.1 stylised profile (its own program; classic gradients keep `GRADIENT`). */
     readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
@@ -554546,7 +554546,7 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 /**
  * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
  * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
- * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * since 5.7.1, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
  * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
  * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
@@ -554972,7 +554972,7 @@ export interface HumanoidAnimator<N extends string = string> {
  */
 export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
 /**
- * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.1.
  */
 export declare const createMotionAnimator: typeof createHumanoidAnimator;
 /**
@@ -556918,7 +556918,7 @@ export interface AuraRuntimeNodeHandle {
     readonly version: number;
     /**
      * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
-     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * A node inside a group is parent-local, models and primitives included since 5.7.1 (they read and wrote world
      * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
      */
     position: AuraVec3;
@@ -565516,7 +565516,7 @@ export interface ShadowSystemConfig {
      */
     readonly softness?: number;
     /**
-     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * The sun's `shadow.fit` box (5.7.1): one cascade over a fixed light-space box, so the light matrix and the world size of
      * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
      */
     readonly fit?: ResolvedShadowFit;
@@ -569779,7 +569779,7 @@ export interface AuraShadowOptions {
     readonly filter?: "hard" | "pcf" | "pcss";
     /**
      * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
-     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.1
      * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
      * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
      * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
@@ -569788,7 +569788,7 @@ export interface AuraShadowOptions {
     readonly softness?: number;
     /**
      * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
-     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     * the caster-to-receiver distance. Accepted and not read in 5.7.1; use `softness` for a soft edge.
      */
     readonly lightSize?: number;
 }
@@ -580702,7 +580702,7 @@ export declare const vfxEffectBuilders: {
         readonly prewarm?: number;
         readonly sprite?: AuraParticleEmitterOptions["sprite"];
         /**
-         * GU47 E-F: sprite-sheet texture asset (`assets.sheet`), URL, or (5.7.0) a live texture handle such as
+         * GU47 E-F: sprite-sheet texture asset (`assets.sheet`), URL, or (5.7.1) a live texture handle such as
          * `texture.data(...)` or `createFlipbookAtlas(kind).texture`; grid from `spriteColumns × spriteRows`.
          */
         readonly texture?: AuraAssetRef<"texture"> | AuraTextureRef | string;
@@ -583918,8 +583918,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -584164,8 +584164,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -609504,7 +609504,7 @@ export interface ShadowSystemConfigInput {
      */
     readonly softness?: number;
     /**
-     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * `shadow.fit: { center, extent, depth }` (5.7.1): one cascade over this fixed light-space box instead of the camera-fit
      * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
      */
     readonly fit?: FixedDirectionalShadowBox;
@@ -609771,7 +609771,7 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /**
- * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.1): the counterpart of a three.js
  * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
  * across the light, in world units; `depth` is its full length along the light, centred on `center`.
  */
@@ -610169,7 +610169,7 @@ export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
  * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
  *
  * - `filter: "hard"` or `softness: 0`: one tap.
- * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.1 drew).
  * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
  * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
  * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
@@ -613088,7 +613088,7 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
-/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+/** The `u_sg*` uniforms of the 5.7.1 stylised gradient program (layout documented in sky.glsl.ts). */
 export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
@@ -613265,7 +613265,7 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    /** `STYLIZED`: a gradient sky on the 5.7.1 stylised profile (its own program; classic gradients keep `GRADIENT`). */
     readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
@@ -628132,7 +628132,7 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 /**
  * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
  * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
- * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * since 5.7.1, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
  * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
  * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
@@ -628558,7 +628558,7 @@ export interface HumanoidAnimator<N extends string = string> {
  */
 export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
 /**
- * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.1.
  */
 export declare const createMotionAnimator: typeof createHumanoidAnimator;
 /**
@@ -642815,7 +642815,7 @@ export interface AuraRuntimeNodeHandle {
     readonly version: number;
     /**
      * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
-     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * A node inside a group is parent-local, models and primitives included since 5.7.1 (they read and wrote world
      * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
      */
     position: AuraVec3;
@@ -646925,7 +646925,7 @@ export interface AuraSkyStarsLegacySpec {
     readonly auroraBand?: boolean;
 }
 /**
- * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * 5.7.1 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
  * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
  * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
  */
@@ -646934,7 +646934,7 @@ export interface AuraSkyGradientMidBand {
     /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
     readonly blend?: readonly [number, number];
 }
-/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+/** 5.7.1 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
 export interface AuraSkySunGlowLobe {
     readonly exponent: number;
     readonly intensity: number;
@@ -646954,7 +646954,7 @@ export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
     /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
     readonly discBlend?: "add" | "replace";
 }
-/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+/** 5.7.1 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
 export interface AuraSkyGradientHaze {
     /** Haze colour (default: the horizon colour). */
     readonly color?: AuraColor;
@@ -646964,7 +646964,7 @@ export interface AuraSkyGradientHaze {
     readonly falloff?: number;
 }
 /**
- * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * The 5.7.1 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
  * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
  */
 export interface AuraSkyGradientStylizedFields {
@@ -648255,7 +648255,7 @@ export interface AuraShadowOptions {
     readonly filter?: "hard" | "pcf" | "pcss";
     /**
      * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
-     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.1
      * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
      * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
      * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
@@ -648264,7 +648264,7 @@ export interface AuraShadowOptions {
     readonly softness?: number;
     /**
      * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
-     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     * the caster-to-receiver distance. Accepted and not read in 5.7.1; use `softness` for a soft edge.
      */
     readonly lightSize?: number;
 }
@@ -651309,7 +651309,7 @@ export interface ShadowSystemConfig {
      */
     readonly softness?: number;
     /**
-     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * The sun's `shadow.fit` box (5.7.1): one cascade over a fixed light-space box, so the light matrix and the world size of
      * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
      */
     readonly fit?: ResolvedShadowFit;
@@ -670874,7 +670874,7 @@ declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<A
  * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
  *
  * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
- * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ * - Stylised profile (5.7.1; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
  *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
  *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
  *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
@@ -672820,7 +672820,7 @@ export declare function createAutoplayHarness<I = void>(options: AutoplayHarness
 ### `./dist/game/feel/index.d.ts`
 
 ```ts
-/** 5.7.0 feel kit: hit-stop rig, procedural SFX, screen fx, score popups, seeded RNG and procedural VFX sheets. */
+/** 5.7.1 feel kit: hit-stop rig, procedural SFX, screen fx, score popups, seeded RNG and procedural VFX sheets. */
 export { createImpactRig } from "./impactRig.js";
 export type { ImpactRig, ImpactRigOptions, ImpactRigTrigger, ImpactRigFrame } from "./impactRig.js";
 export { createProceduralSfx } from "./proceduralSfx.js";
@@ -672927,7 +672927,7 @@ export declare function createProceduralSfx(): ProceduralSfx;
  * Screen-space effects for games: a colour flash on events (`mix-blend-mode: screen`), a circular colour reveal on a
  * burst, and a speed vignette that grows with the combo multiplier. DOM only, driven by the renderer from state
  * changes; the simulation never sees any of it. The event-to-flash mapping stays with each game. Extracted from the
- * runner kit (`examples/shared/runner-kit/screen-fx.ts`) in 5.7.0.
+ * runner kit (`examples/shared/runner-kit/screen-fx.ts`) in 5.7.1.
  */
 /** Peak flash opacity when the player asked for reduced motion. */
 export declare const REDUCED_FLASH_CAP = 0.1;
@@ -672969,7 +672969,7 @@ export declare class ScreenFx {
 ```ts
 /**
  * Score popups: a sim keeps only the last {@link POPUP_LIMIT} and never clears the list, so readers must drain by
- * `seq`, not by index. Extracted from the runner kit (`examples/shared/runner-kit/popups.ts`) in 5.7.0.
+ * `seq`, not by index. Extracted from the runner kit (`examples/shared/runner-kit/popups.ts`) in 5.7.1.
  */
 /** One score popup a simulation emits (`+100`, `PERFECT`), drawn by the HUD. */
 export interface ScorePopup {
@@ -673034,7 +673034,7 @@ export declare class GameRng {
 /**
  * Procedural RGBA8 VFX sprite sheets (flipbooks) and strip grading LUTs built as `texture.data` typed arrays, so they
  * work identically headless, in a worker, on WebGPU and on WebGL2 with no image assets. Extracted from the 30 live
- * games' shared VFX pack (`apps/showcase-port-shared/vfx-pack.ts`) in 5.7.0.
+ * games' shared VFX pack (`apps/showcase-port-shared/vfx-pack.ts`) in 5.7.1.
  */
 import { texture } from "../../engine/public/v5-internal.js";
 /** The procedural flipbook looks: radial `sparks`, a soft `dust` puff, a lobed `ink` splat, a swirling `plasma` ball, a 6-ray `muzzle` flash and an expanding `ripple` ring. */
@@ -674884,8 +674884,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -676659,7 +676659,7 @@ export interface AuraRuntimeNodeHandle {
     readonly version: number;
     /**
      * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
-     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * A node inside a group is parent-local, models and primitives included since 5.7.1 (they read and wrote world
      * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
      */
     position: AuraVec3;
@@ -680453,8 +680453,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -680641,8 +680641,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -681375,8 +681375,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/engine@5.7.1#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -681833,8 +681833,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/input@5.7.0#contents-sha256=0e43543e6bdfc89b614bdd5bf38944e34b34015dd57ccd523e98c043f48b96f1`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/input@5.7.1#contents-sha256=0e43543e6bdfc89b614bdd5bf38944e34b34015dd57ccd523e98c043f48b96f1`
 
 ### Export conditions
 
@@ -683075,8 +683075,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/math@5.7.0#contents-sha256=4673c3f6fd75e4048fb070ad414663d4693995d74825def52517f15d3f130e73`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/math@5.7.1#contents-sha256=4673c3f6fd75e4048fb070ad414663d4693995d74825def52517f15d3f130e73`
 
 ### Export conditions
 
@@ -685062,8 +685062,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/math@5.7.0#contents-sha256=4673c3f6fd75e4048fb070ad414663d4693995d74825def52517f15d3f130e73`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/math@5.7.1#contents-sha256=4673c3f6fd75e4048fb070ad414663d4693995d74825def52517f15d3f130e73`
 
 ### Export conditions
 
@@ -686310,8 +686310,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/navigation-recast@5.7.0#contents-sha256=0dd13c467cd936c9dbd80d46f436dfc1385f77ecc707938e350222bc794c691e`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/navigation-recast@5.7.1#contents-sha256=0dd13c467cd936c9dbd80d46f436dfc1385f77ecc707938e350222bc794c691e`
 
 ### Export conditions
 
@@ -686441,8 +686441,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/physics@5.7.0#contents-sha256=4bb23d63bb00cf9822270523bc9c30e8fa155c547e7e003fb52cf81fadda2d7d`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/physics@5.7.1#contents-sha256=4bb23d63bb00cf9822270523bc9c30e8fa155c547e7e003fb52cf81fadda2d7d`
 
 ### Export conditions
 
@@ -688665,8 +688665,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/physics-rapier@5.7.0#contents-sha256=49136105b168871e145f9770829d581148cb23542a9f122ab0f159996e5d86d2`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/physics-rapier@5.7.1#contents-sha256=49136105b168871e145f9770829d581148cb23542a9f122ab0f159996e5d86d2`
 
 ### Export conditions
 
@@ -689124,8 +689124,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/physics@5.7.0#contents-sha256=4bb23d63bb00cf9822270523bc9c30e8fa155c547e7e003fb52cf81fadda2d7d`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/physics@5.7.1#contents-sha256=4bb23d63bb00cf9822270523bc9c30e8fa155c547e7e003fb52cf81fadda2d7d`
 
 ### Export conditions
 
@@ -690377,8 +690377,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/physics@5.7.0#contents-sha256=4bb23d63bb00cf9822270523bc9c30e8fa155c547e7e003fb52cf81fadda2d7d`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/physics@5.7.1#contents-sha256=4bb23d63bb00cf9822270523bc9c30e8fa155c547e7e003fb52cf81fadda2d7d`
 
 ### Export conditions
 
@@ -690641,8 +690641,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/product-studio
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/product-studio@5.7.0#contents-sha256=f60ceb4788c308f9f6acd61cf2cac593884ced0e1edad3a836137612c8deeee2`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/product-studio@5.7.1#contents-sha256=f60ceb4788c308f9f6acd61cf2cac593884ced0e1edad3a836137612c8deeee2`
 
 ### Export conditions
 
@@ -690923,8 +690923,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/react@5.7.0#contents-sha256=e3a767bc9a499bc5ce6fb0ae3a6897b9d6b1bd2130364ac2a4ef7e360a5dc17f`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/react@5.7.1#contents-sha256=e3a767bc9a499bc5ce6fb0ae3a6897b9d6b1bd2130364ac2a4ef7e360a5dc17f`
 
 ### Export conditions
 
@@ -691325,8 +691325,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -715912,7 +715912,7 @@ export interface ShadowSystemConfigInput {
      */
     readonly softness?: number;
     /**
-     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * `shadow.fit: { center, extent, depth }` (5.7.1): one cascade over this fixed light-space box instead of the camera-fit
      * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
      */
     readonly fit?: FixedDirectionalShadowBox;
@@ -716179,7 +716179,7 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /**
- * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.1): the counterpart of a three.js
  * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
  * across the light, in world units; `depth` is its full length along the light, centred on `center`.
  */
@@ -716577,7 +716577,7 @@ export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
  * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
  *
  * - `filter: "hard"` or `softness: 0`: one tap.
- * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.1 drew).
  * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
  * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
  * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
@@ -719496,7 +719496,7 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
-/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+/** The `u_sg*` uniforms of the 5.7.1 stylised gradient program (layout documented in sky.glsl.ts). */
 export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
@@ -719673,7 +719673,7 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    /** `STYLIZED`: a gradient sky on the 5.7.1 stylised profile (its own program; classic gradients keep `GRADIENT`). */
     readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
@@ -723941,8 +723941,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725549,8 +725549,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725594,8 +725594,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725639,8 +725639,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725709,8 +725709,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725762,8 +725762,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725848,8 +725848,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725918,8 +725918,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -725948,8 +725948,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -726092,8 +726092,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -726150,8 +726150,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -726198,8 +726198,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -727806,8 +727806,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -727866,8 +727866,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -727957,8 +727957,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728014,8 +728014,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728122,8 +728122,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728328,8 +728328,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728457,8 +728457,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728517,8 +728517,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728635,8 +728635,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728731,8 +728731,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728792,8 +728792,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728868,8 +728868,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728907,8 +728907,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728940,8 +728940,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -728973,8 +728973,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -729045,8 +729045,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -729086,8 +729086,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -729935,7 +729935,7 @@ export interface ShadowSystemConfigInput {
      */
     readonly softness?: number;
     /**
-     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * `shadow.fit: { center, extent, depth }` (5.7.1): one cascade over this fixed light-space box instead of the camera-fit
      * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
      */
     readonly fit?: FixedDirectionalShadowBox;
@@ -730202,7 +730202,7 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
 /**
- * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.1): the counterpart of a three.js
  * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
  * across the light, in world units; `depth` is its full length along the light, centred on `center`.
  */
@@ -730600,7 +730600,7 @@ export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
  * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
  *
  * - `filter: "hard"` or `softness: 0`: one tap.
- * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.1 drew).
  * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
  * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
  * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
@@ -733962,7 +733962,7 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
-/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+/** The `u_sg*` uniforms of the 5.7.1 stylised gradient program (layout documented in sky.glsl.ts). */
 export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
@@ -734139,7 +734139,7 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    /** `STYLIZED`: a gradient sky on the 5.7.1 stylised profile (its own program; classic gradients keep `GRADIENT`). */
     readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
@@ -736390,8 +736390,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -737029,8 +737029,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -740558,8 +740558,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -741291,8 +741291,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -741426,8 +741426,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -741669,8 +741669,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -742225,8 +742225,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -745237,8 +745237,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/rendering@5.7.1#contents-sha256=7b17419ee3fc8ca1531d6fedc82f5407f3c984c3fcd02136cc835cb2e704fc31`
 
 ### Export conditions
 
@@ -746351,8 +746351,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/scene@5.7.0#contents-sha256=7d0420f6ca547dc18a41b3280a7dc16b92b253605712abe8eb4962071ac6d77b`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/scene@5.7.1#contents-sha256=7d0420f6ca547dc18a41b3280a7dc16b92b253605712abe8eb4962071ac6d77b`
 
 ### Export conditions
 
@@ -747477,8 +747477,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/scene@5.7.0#contents-sha256=7d0420f6ca547dc18a41b3280a7dc16b92b253605712abe8eb4962071ac6d77b`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/scene@5.7.1#contents-sha256=7d0420f6ca547dc18a41b3280a7dc16b92b253605712abe8eb4962071ac6d77b`
 
 ### Export conditions
 
@@ -747562,8 +747562,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/scripting@5.7.0#contents-sha256=f5d6416fe2d17561d71c2f004e936765488466fd9b22734dbc900c23e4c978cf`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/scripting@5.7.1#contents-sha256=f5d6416fe2d17561d71c2f004e936765488466fd9b22734dbc900c23e4c978cf`
 
 ### Export conditions
 
@@ -748743,8 +748743,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.7.0`
-- Packed identity: `archive:@aura3d/workflows@5.7.0#contents-sha256=1b874cabf56f92f0da53107fbfec2e5ed72737e3842cad9c9d0c757ebc90f549`
+- Version: `5.7.1`
+- Packed identity: `archive:@aura3d/workflows@5.7.1#contents-sha256=1b874cabf56f92f0da53107fbfec2e5ed72737e3842cad9c9d0c757ebc90f549`
 
 ### Export conditions
 
