@@ -262,4 +262,35 @@ describe("assets generate: mocked fal end to end", () => {
     expect(existsSync(join(project, "assets/idol/lamp.glb"))).toBe(true);
     expect(cap.all() + rerun.all()).not.toContain(KEY);
   }, 60_000);
+
+  test("slim runs glossy-safe by default and reports kept PNG normals; --no-slim skips it and --renormalize remembers", async () => {
+    const project = tmp();
+    const home = tmp();
+    writeFileSync(join(project, "ref.png"), PNG);
+    const slimCalls: string[] = [];
+    const glossySlim = async (file: string) => {
+      slimCalls.push(file);
+      return { before: 100, after: 100, reencoded: 0, written: false, skipped: [{ texture: "normal", material: "paint", reason: "normal map on glossy (roughness median 0.17)" }] };
+    };
+    const cap = capture(project);
+    expect(await assetsGenerateVerb(["--image", "ref.png", "--name", "coupe", "--game", "g", "--kind", "vehicle", "--no-admit", "--json"], cap.io, { ...runtime(idolFal(), home), deps: { slimGlb: glossySlim } })).toBe(0);
+    expect(slimCalls).toHaveLength(1);
+    const row = JSON.parse(cap.out.join("\n")).results[0];
+    expect(row.slim).toMatchObject({ reencoded: 0, keptLossless: [{ material: "paint" }] });
+    expect(JSON.parse(readFileSync(join(project, "assets/idol/coupe.idol.json"), "utf8")).slim.keptLossless).toHaveLength(1);
+
+    const noSlim = capture(project);
+    expect(await assetsGenerateVerb(["--image", "ref.png", "--name", "van", "--game", "g", "--no-slim", "--no-admit"], noSlim.io, { ...runtime(idolFal(), home), deps: { slimGlb: glossySlim } })).toBe(0);
+    expect(slimCalls).toHaveLength(1);
+    expect(noSlim.out.join("\n")).toMatch(/van: wrote .*slim skipped \(--no-slim\)/);
+    const prov = JSON.parse(readFileSync(join(project, "assets/idol/van.idol.json"), "utf8"));
+    expect(prov).toMatchObject({ settings: { noSlim: true }, slim: { disabled: true } });
+
+    // --renormalize keeps the stored noSlim setting ($0, no fal call, slim still not run).
+    const offline = createFakeFal({ results: {} });
+    const renorm = capture(project);
+    expect(await assetsGenerateVerb(["--name", "van", "--renormalize", "--no-admit", "--json"], renorm.io, { fal: { fetch: offline.fetch, ...fastFal }, env: {}, home, deps: { slimGlb: glossySlim } })).toBe(0);
+    expect(slimCalls).toHaveLength(1);
+    expect(JSON.parse(renorm.out.join("\n")).results[0]).toMatchObject({ renormalized: true, slim: { disabled: true } });
+  }, 60_000);
 });

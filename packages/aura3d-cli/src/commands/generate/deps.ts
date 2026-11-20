@@ -27,7 +27,7 @@ export interface RetargetResult {
 
 export interface GenerateDeps {
   normalizeGlb(input: string, output: string, opts: NormalizeGlbOptions): Promise<NormalizeGlbResult>;
-  slimGlb(file: string, opts?: SlimGlbOptions): Promise<Pick<SlimGlbResult, "before" | "after">>;
+  slimGlb(file: string, opts?: SlimGlbOptions): Promise<Pick<SlimGlbResult, "before" | "after"> & Partial<Pick<SlimGlbResult, "reencoded" | "skipped" | "written">>>;
   renderPreview(glbPath: string, outPng: string, opts?: RenderPreviewOptions): Promise<unknown>;
   importClipsOntoRig(opts: ImportClipsOntoRigOptions): Promise<RetargetResult>;
 }

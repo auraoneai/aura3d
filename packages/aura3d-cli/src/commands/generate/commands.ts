@@ -31,12 +31,13 @@ export interface GenerateRuntime {
 
 const DEFAULT_WORK = ".aura3d/fal";
 
-export const ASSETS_GENERATE_USAGE = `aura3d assets generate "<prompt>" --name key [--provider idol] [--kind object|character|creature|vehicle] [--rig [--animations idle,walk,run,jump]] [--role ${IDOL_ROLES.join("|")}] [--size height=1.8|length=4|width=2|maxDim=2] [--front +x|-x|+z|-z] [--yaw deg] [--max-verts N] [--tex N] [--no-simplify] [--seed N] [--style realistic|"<style words>"] [--out-dir assets/idol] [--no-admit] [--force] [--dry-run] [--work ${DEFAULT_WORK}] [--game slug] [--key-file file] [--json]
+export const ASSETS_GENERATE_USAGE = `aura3d assets generate "<prompt>" --name key [--provider idol] [--kind object|character|creature|vehicle] [--rig [--animations idle,walk,run,jump]] [--role ${IDOL_ROLES.join("|")}] [--size height=1.8|length=4|width=2|maxDim=2] [--front +x|-x|+z|-z] [--yaw deg] [--max-verts N] [--tex N] [--no-simplify] [--no-slim] [--seed N] [--style realistic|"<style words>"] [--out-dir assets/idol] [--no-admit] [--force] [--dry-run] [--work ${DEFAULT_WORK}] [--game slug] [--key-file file] [--json]
 aura3d assets generate --image ref.png --name key [same flags]
-aura3d assets generate --spec idol-spec.json [--only a,b] [--concurrency 6] [--force] [--dry-run] [--no-admit] [--json]
-aura3d assets generate --name key --renormalize [--size ...] [--front ...] [--yaw ...] [--tex ...] [--max-verts ...]   ($0: redo optimise/normalise/slim/preview from the raw downloads)
+aura3d assets generate --spec idol-spec.json [--only a,b] [--concurrency 6] [--force] [--dry-run] [--no-admit] [--no-slim] [--json]
+aura3d assets generate --name key --renormalize [--size ...] [--front ...] [--yaw ...] [--tex ...] [--max-verts ...] [--no-slim]   ($0: redo optimise/normalise/slim/preview from the raw downloads)
   Paid fal.ai lane: reference still (openai/gpt-image-2.6, $0.17; skipped with --image) -> speridlabs/idol/max ($0.20, $0.25 with --rig)
-  -> skin refit (rigs) -> role-budget optimise -> scale/ground/face +Z -> slim normals -> CPU base-colour preview ->
+  -> skin refit (rigs) -> role-budget optimise -> scale/ground/face +Z -> slim normals (glossy materials keep PNG normals;
+  --no-slim skips the step) -> CPU base-colour preview ->
   <out-dir>/<key>.glb + <key>.idol.json, admitted as quality "candidate" with the fal licence (skip with --no-admit).
   Key: FAL_KEY env, --key-file, ~/.config/aura3d/fal.env, ~/.config/auraone/fal.env (never printed). Every submit is ledgered
   to <work>/ledger.jsonl; a rerun resumes pending requests instead of paying twice. --dry-run prints the estimate only.
@@ -116,7 +117,7 @@ const money = (value: number): string => `$${value.toFixed(2)}`;
 // ---------------------------------------------------------------------------------------------- assets generate
 
 const ASSETS_VALUES = [...COMMON_VALUES, "--provider", "--name", "--image", "--kind", "--animations", "--role", "--size", "--front", "--yaw", "--max-verts", "--tex", "--seed", "--style", "--out-dir"];
-const ASSETS_BOOLEANS = [...COMMON_BOOLEANS, "--rig", "--renormalize", "--no-admit", "--no-simplify"];
+const ASSETS_BOOLEANS = [...COMMON_BOOLEANS, "--rig", "--renormalize", "--no-admit", "--no-simplify", "--no-slim"];
 
 export async function assetsGenerateVerb(argv: readonly string[], rawIo: GenerateIo, runtime: GenerateRuntime = {}): Promise<number> {
   const env = runtime.env ?? process.env;
@@ -170,6 +171,7 @@ export async function assetsGenerateVerb(argv: readonly string[], rawIo: Generat
     let spec: IdolSpec;
     if (specPath) {
       spec = readJsonFile<IdolSpec>(resolve(s.projectDir, specPath), "--spec");
+      if (args.flags.has("--no-slim")) spec = { ...spec, items: spec.items.map((item) => ({ ...item, noSlim: true })) };
     } else {
       const outDir = args.values.get("--out-dir") ?? "assets/idol";
       const previous = renormalize ? previousIdolSettings(resolve(s.projectDir, outDir, `${name}.idol.json`)) : {};
@@ -189,7 +191,8 @@ export async function assetsGenerateVerb(argv: readonly string[], rawIo: Generat
         ...(tex !== undefined ? { tex } : {}),
         ...(seed !== undefined ? { seed } : {}),
         ...(args.values.get("--style") ? { style: args.values.get("--style") } : {}),
-        ...(args.flags.has("--no-simplify") ? { noSimplify: true } : {})
+        ...(args.flags.has("--no-simplify") ? { noSimplify: true } : {}),
+        ...(args.flags.has("--no-slim") ? { noSlim: true } : {})
       };
       const previousGame = renormalize ? previousIdolGame(resolve(s.projectDir, outDir, `${name}.idol.json`)) : undefined;
       spec = { game: args.values.get("--game") ?? previousGame ?? slug(basename(s.projectDir)), outDir, items: [item] };
@@ -253,6 +256,7 @@ function describeIdolResult(r: IdolItemResult): string {
   if (r.skipped) return `${r.key}: exists at ${r.finalGlb} (use --force to regenerate, --renormalize to redo post-processing for $0)`;
   if (r.dryRun) return r.renormalized ? `${r.key}: would renormalise from the raw downloads ($0)` : `${r.key}: would generate${r.rig ? " (rigged)" : ""} as ${r.role}, est. ${money(r.estUsd ?? 0)}`;
   const parts = [`${r.key}: ${r.renormalized ? "renormalised" : "wrote"} ${r.finalGlb} (${r.sizeMB} MB${r.dims ? `, ${r.dims.join(" x ")} m` : ""}${r.skin ? `, skin ${r.skin}` : ""}, ${money(r.usd ?? 0)})`];
+  if (r.slim) parts.push(r.slim.disabled ? "slim skipped (--no-slim)" : `slim re-encoded ${r.slim.reencoded} normal map(s)${r.slim.keptLossless.length ? `, kept ${r.slim.keptLossless.length} PNG (glossy)` : ""}`);
   if (r.preview) parts.push(`preview ${r.preview} (CPU base-colour)`);
   if (r.admitted) parts.push(r.admitted.ok ? `admitted as assets.${r.admitted.id} (${r.admitted.quality})` : `NOT admitted: ${r.admitted.messages.join(" ")}`);
   return parts.join("; ");

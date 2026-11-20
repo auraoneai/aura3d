@@ -77,6 +77,11 @@ export interface IdolItem {
   readonly maxVerts?: number;
   readonly tex?: number;
   readonly noSimplify?: boolean;
+  /**
+   * Skip the slim step (keep every normal map lossless). Without it, slim still keeps normal maps of glossy materials
+   * (vehicles, products, lacquer) PNG; see `assets slim` and lessons A12.
+   */
+  readonly noSlim?: boolean;
   /** Local reference image (relative to the project); skips the paid image step. */
   readonly image?: string;
   readonly imageUrl?: string;
@@ -129,12 +134,18 @@ export interface IdolItemResult {
   readonly preview?: string | null;
   readonly sizeMB?: number;
   readonly skin?: "pass" | "FAIL";
+  /** What the slim step did: "disabled" (--no-slim), or how many normal maps it re-encoded and kept lossless. */
+  readonly slim?: IdolSlimSummary;
   readonly dims?: readonly number[];
   readonly usd?: number;
   readonly estUsd?: number;
   readonly admitted?: { readonly ok: boolean; readonly id: string; readonly quality: string; readonly messages: readonly string[] };
   readonly error?: string;
 }
+
+export type IdolSlimSummary =
+  | { readonly disabled: true }
+  | { readonly disabled?: false; readonly reencoded: number; readonly keptLossless: readonly { readonly texture: string; readonly material: string; readonly reason: string }[]; readonly before: number; readonly after: number };
 
 interface IdolResultJson {
   readonly game_glb?: { readonly url: string };
@@ -261,7 +272,7 @@ export async function runIdolItem(item: IdolItem, spec: IdolSpec, ctx: IdolRunCo
   const provenance = {
     schema: "aura3d.idol-provenance/1", game: spec.game, key: item.key, generatedAt: new Date().toISOString(), generator: ctx.generator ?? "aura3d assets generate",
     terms: IDOL_TERMS, steps, prompt, role, admitRole: idolAdmitRole(role), rig, skin,
-    settings: settingsOf(item), normalized: post.normalized, finalGlb: rel(ctx.projectDir, finalGlb), sizeBytes: statSync(finalGlb).size,
+    settings: settingsOf(item), normalized: post.normalized, slim: post.slim, finalGlb: rel(ctx.projectDir, finalGlb), sizeBytes: statSync(finalGlb).size,
     preview: post.preview ? rel(ctx.projectDir, post.preview) : null, work: rel(ctx.projectDir, work), ledger: rel(ctx.projectDir, ctx.ledgerFile),
     usd: round2(imageUsd + idolUsd)
   };
@@ -269,14 +280,14 @@ export async function runIdolItem(item: IdolItem, spec: IdolSpec, ctx: IdolRunCo
   const admitted = ctx.admit === false ? undefined : await admitIdolAsset(ctx, { key: item.key, role, finalGlb, provFile, prompt, requestId: idolRun.requestId, settings: settingsOf(item) });
   return {
     key: item.key, finalGlb: rel(ctx.projectDir, finalGlb), provenance: rel(ctx.projectDir, provFile), preview: provenance.preview,
-    sizeMB: round2(provenance.sizeBytes / 1e6), ...(skin ? { skin: skin.pass ? "pass" as const : "FAIL" as const } : {}), dims: post.normalized.size, usd: provenance.usd,
+    sizeMB: round2(provenance.sizeBytes / 1e6), ...(skin ? { skin: skin.pass ? "pass" as const : "FAIL" as const } : {}), slim: post.slim, dims: post.normalized.size, usd: provenance.usd,
     ...(admitted ? { admitted } : {})
   };
 }
 
 function settingsOf(item: IdolItem): Record<string, unknown> {
   const settings: Record<string, unknown> = {};
-  for (const name of ["kind", "rig", "animations", "role", "size", "front", "yawDeg", "maxVerts", "tex", "noSimplify", "seed", "style", "imageType", "meshResolution", "pbr"] as const) {
+  for (const name of ["kind", "rig", "animations", "role", "size", "front", "yawDeg", "maxVerts", "tex", "noSimplify", "noSlim", "seed", "style", "imageType", "meshResolution", "pbr"] as const) {
     if (item[name] !== undefined) settings[name] = item[name];
   }
   return settings;
@@ -330,7 +341,7 @@ async function postProcess(
   ctx: IdolRunContext,
   deps: GenerateDeps,
   opts: { source: string; work: string; finalGlb: string; rig: boolean; role: string }
-): Promise<{ normalized: NormalizeGlbResult; preview: string | null }> {
+): Promise<{ normalized: NormalizeGlbResult; preview: string | null; slim: IdolSlimSummary }> {
   const [maxVerts, tex] = IDOL_ROLE_BUDGET[opts.role] ?? IDOL_ROLE_BUDGET.prop!;
   const optimized = join(opts.work, "opt.glb");
   rmSync(optimized, { force: true });
@@ -349,7 +360,12 @@ async function postProcess(
     front: item.front ?? "+x", ...(item.size ? { size: item.size } : {}), yawDeg: item.yawDeg ?? 0, keepScale: opts.rig, provenance: { generator: "idol", key: item.key },
     projectDir: ctx.projectDir
   });
-  await deps.slimGlb(opts.finalGlb, { projectDir: ctx.projectDir });
+  // Glossy-safe slim (A12): normal maps of glossy materials stay PNG; --no-slim keeps every map as optimise wrote it.
+  let slim: IdolSlimSummary = { disabled: true };
+  if (!item.noSlim) {
+    const slimmed = await deps.slimGlb(opts.finalGlb, { projectDir: ctx.projectDir });
+    slim = { reencoded: slimmed.written === false ? 0 : slimmed.reencoded ?? 0, keptLossless: slimmed.skipped ?? [], before: slimmed.before, after: slimmed.after };
+  }
   const views = join(opts.work, "views.png");
   let preview: string | null = null;
   try {
@@ -358,10 +374,10 @@ async function postProcess(
   } catch {
     // The CPU preview is advisory.
   }
-  return { normalized, preview };
+  return { normalized, preview, slim };
 }
 
-/** Re-run optimise + normalise + slim + preview from the raw downloads (no fal calls, $0). */
+/** Re-run optimise + normalise + slim (unless noSlim) + preview from the raw downloads (no fal calls, $0). */
 async function renormalizeIdolItem(item: IdolItem, spec: IdolSpec, ctx: IdolRunContext, paths: ItemPaths): Promise<IdolItemResult> {
   const { work, finalGlb, provFile } = paths;
   const rig = Boolean(item.rig);
@@ -374,7 +390,7 @@ async function renormalizeIdolItem(item: IdolItem, spec: IdolSpec, ctx: IdolRunC
   const previous = existsSync(provFile) ? (JSON.parse(readFileSync(provFile, "utf8")) as Record<string, unknown>) : { schema: "aura3d.idol-provenance/1", game: spec.game, key: item.key };
   const provenance = {
     ...previous, role, admitRole: idolAdmitRole(role), settings: { ...((previous.settings as Record<string, unknown>) ?? {}), ...settingsOf(item) },
-    normalized: post.normalized, renormalizedAt: new Date().toISOString(), sizeBytes: statSync(finalGlb).size, finalGlb: rel(ctx.projectDir, finalGlb),
+    normalized: post.normalized, slim: post.slim, renormalizedAt: new Date().toISOString(), sizeBytes: statSync(finalGlb).size, finalGlb: rel(ctx.projectDir, finalGlb),
     ...(post.preview ? { preview: rel(ctx.projectDir, post.preview) } : {})
   };
   writeFileSync(provFile, `${JSON.stringify(provenance, null, 2)}\n`);
@@ -385,7 +401,7 @@ async function renormalizeIdolItem(item: IdolItem, spec: IdolSpec, ctx: IdolRunC
   });
   return {
     key: item.key, renormalized: true, finalGlb: rel(ctx.projectDir, finalGlb), provenance: rel(ctx.projectDir, provFile),
-    sizeMB: round2(provenance.sizeBytes / 1e6), dims: post.normalized.size, usd: 0, ...(admitted ? { admitted } : {})
+    sizeMB: round2(provenance.sizeBytes / 1e6), slim: post.slim, dims: post.normalized.size, usd: 0, ...(admitted ? { admitted } : {})
   };
 }
 
