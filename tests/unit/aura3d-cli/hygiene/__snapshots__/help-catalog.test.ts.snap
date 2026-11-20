@@ -153,11 +153,12 @@ exports[`help --json catalog > built-in entries match the snapshot (registry ent
       "--humanoid",
       "--license",
       "--morphs",
+      "--pbr",
       "--skeleton",
     ],
     "monorepoOnly": undefined,
     "name": "assets inspect",
-    "summary": "Print a GLB/glTF's bounds, meshes, materials, textures and optionally clips, skeleton, morphs and licence (read-only).",
+    "summary": "Print a GLB/glTF's bounds, meshes, materials, textures and optionally clips, skeleton, morphs, licence and PBR statistics (read-only).",
   },
   {
     "flags": [],
@@ -246,6 +247,7 @@ exports[`help --json catalog > built-in entries match the snapshot (registry ent
       "--json",
       "--no-assets",
       "--no-placeholders",
+      "--pbr",
       "--provenance",
       "--release",
       "--require-license",
@@ -259,7 +261,7 @@ exports[`help --json catalog > built-in entries match the snapshot (registry ent
     ],
     "monorepoOnly": undefined,
     "name": "assets validate",
-    "summary": "Validate the manifest and typed assets; --route runs the G1–G11 admission table per referenced asset; --skin checks skinned meshes.",
+    "summary": "Validate the manifest and typed assets; --route runs the G1–G11 admission table per referenced asset; --skin checks skinned meshes; --pbr adds PBR_* material warnings.",
   },
   {
     "flags": [

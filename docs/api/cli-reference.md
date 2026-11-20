@@ -43,7 +43,7 @@ Capability label: CLI asset pipeline. Commands marked **monorepo** need files fr
 | [`aura3d assets export`](#aura3d-assets-export) | Export an Aura interchange scene with a loss report. |  |
 | [`aura3d assets generate`](#aura3d-assets-generate) | Generate a game-ready GLB on fal.ai (Idol: prompt or reference image, optional rig + clips), post-process and admit it as a candidate. |  |
 | [`aura3d assets import-meshy`](#aura3d-assets-import-meshy) | Admit a downloaded Meshy result as a candidate asset (isolated by default inside the Aura3D monorepo). |  |
-| [`aura3d assets inspect`](#aura3d-assets-inspect) | Print a GLB/glTF's bounds, meshes, materials, textures and optionally clips, skeleton, morphs and licence (read-only). |  |
+| [`aura3d assets inspect`](#aura3d-assets-inspect) | Print a GLB/glTF's bounds, meshes, materials, textures and optionally clips, skeleton, morphs, licence and PBR statistics (read-only). |  |
 | [`aura3d assets library`](#aura3d-assets-library) | List/add/sync the §6.6 curated asset library (aura.library.json). |  |
 | [`aura3d assets list`](#aura3d-assets-list) | Print the manifest's assets as JSON (read-only). |  |
 | [`aura3d assets lookdev`](#aura3d-assets-lookdev) | Dispatch the §6.7 look-dev capture workflow (apps/asset-lookdev) for assets. | yes: needs .github/workflows/asset-lookdev.yml from an Aura3D repository checkout |
@@ -58,10 +58,10 @@ Capability label: CLI asset pipeline. Commands marked **monorepo** need files fr
 | [`aura3d assets scan`](#aura3d-assets-scan) | List the asset files under a directory (read-only). |  |
 | [`aura3d assets search`](#aura3d-assets-search) | Search open-source asset catalogs for a model (read-only). |  |
 | [`aura3d assets serve`](#aura3d-assets-serve) | Print where the manifest's output directory is served from (read-only). |  |
-| [`aura3d assets slim`](#aura3d-assets-slim) | Re-encode PNG normal maps (or other slots) in GLBs as JPEG q92; shrinks files 40-60% with no visible shading change. |  |
+| [`aura3d assets slim`](#aura3d-assets-slim) | Re-encode PNG normal maps (or other slots) in GLBs as JPEG q92 (shrinks files 40-60%); normal maps on glossy materials stay PNG unless --allow-glossy. |  |
 | [`aura3d assets thumbnail`](#aura3d-assets-thumbnail) | Write PNG thumbnails (CPU base-colour previews) for admitted GLB models and point the manifest at them. |  |
 | [`aura3d assets typegen`](#aura3d-assets-typegen) | Regenerate src/aura-assets.ts (or a route's typed asset module with --route) from aura.assets.json. |  |
-| [`aura3d assets validate`](#aura3d-assets-validate) | Validate the manifest and typed assets; --route runs the G1–G11 admission table per referenced asset; --skin checks skinned meshes. |  |
+| [`aura3d assets validate`](#aura3d-assets-validate) | Validate the manifest and typed assets; --route runs the G1–G11 admission table per referenced asset; --skin checks skinned meshes; --pbr adds PBR_* material warnings. |  |
 | [`aura3d assets validate-animation`](#aura3d-assets-validate-animation) | Check that clip names cover the required actions; with --file/--asset also runs the skin check on the rig. |  |
 | [`aura3d assets validate-animation-studio`](#aura3d-assets-validate-animation-studio) | Validate animation-studio cast and set assets and write evidence. |  |
 | [`aura3d assets validate-game`](#aura3d-assets-validate-game) | Validate game assets (optionally the fighting-character profile) and write evidence. |  |
@@ -404,12 +404,13 @@ Flags: `--attachment`, `--big-endian`, `--binary`, `--compression`, `--embed`, `
 Generate a game-ready GLB on fal.ai (Idol: prompt or reference image, optional rig + clips), post-process and admit it as a candidate.
 
 ```text
-aura3d assets generate "<prompt>" --name key [--provider idol] [--kind object|character|creature|vehicle] [--rig [--animations idle,walk,run,jump]] [--role prop|background|set-dressing|character|hero|vehicle|world|environment|weapon|enemy|product] [--size height=1.8|length=4|width=2|maxDim=2] [--front +x|-x|+z|-z] [--yaw deg] [--max-verts N] [--tex N] [--no-simplify] [--seed N] [--style realistic|"<style words>"] [--out-dir assets/idol] [--no-admit] [--force] [--dry-run] [--work .aura3d/fal] [--game slug] [--key-file file] [--json]
+aura3d assets generate "<prompt>" --name key [--provider idol] [--kind object|character|creature|vehicle] [--rig [--animations idle,walk,run,jump]] [--role prop|background|set-dressing|character|hero|vehicle|world|environment|weapon|enemy|product] [--size height=1.8|length=4|width=2|maxDim=2] [--front +x|-x|+z|-z] [--yaw deg] [--max-verts N] [--tex N] [--no-simplify] [--no-slim] [--seed N] [--style realistic|"<style words>"] [--out-dir assets/idol] [--no-admit] [--force] [--dry-run] [--work .aura3d/fal] [--game slug] [--key-file file] [--json]
 aura3d assets generate --image ref.png --name key [same flags]
-aura3d assets generate --spec idol-spec.json [--only a,b] [--concurrency 6] [--force] [--dry-run] [--no-admit] [--json]
-aura3d assets generate --name key --renormalize [--size ...] [--front ...] [--yaw ...] [--tex ...] [--max-verts ...]   ($0: redo optimise/normalise/slim/preview from the raw downloads)
+aura3d assets generate --spec idol-spec.json [--only a,b] [--concurrency 6] [--force] [--dry-run] [--no-admit] [--no-slim] [--json]
+aura3d assets generate --name key --renormalize [--size ...] [--front ...] [--yaw ...] [--tex ...] [--max-verts ...] [--no-slim]   ($0: redo optimise/normalise/slim/preview from the raw downloads)
   Paid fal.ai lane: reference still (openai/gpt-image-2.6, $0.17; skipped with --image) -> speridlabs/idol/max ($0.20, $0.25 with --rig)
-  -> skin refit (rigs) -> role-budget optimise -> scale/ground/face +Z -> slim normals -> CPU base-colour preview ->
+  -> skin refit (rigs) -> role-budget optimise -> scale/ground/face +Z -> slim normals (glossy materials keep PNG normals;
+  --no-slim skips the step) -> CPU base-colour preview ->
   <out-dir>/<key>.glb + <key>.idol.json, admitted as quality "candidate" with the fal licence (skip with --no-admit).
   Key: FAL_KEY env, --key-file, ~/.config/aura3d/fal.env, ~/.config/auraone/fal.env (never printed). Every submit is ledgered
   to <work>/ledger.jsonl; a rerun resumes pending requests instead of paying twice. --dry-run prints the estimate only.
@@ -417,7 +418,7 @@ aura3d assets generate --name key --renormalize [--size ...] [--front ...] [--ya
   Spec: { "game": "<slug>", "outDir": "assets/idol", "items": [ { "key": "hero", "subject": "...", "kind": "character", "rig": true, "size": { "height": 1.8 } } ] }
 ```
 
-Flags: `--animations`, `--concurrency`, `--dry-run`, `--force`, `--front`, `--game`, `--image`, `--json`, `--key-file`, `--kind`, `--max-verts`, `--name`, `--no-admit`, `--no-simplify`, `--only`, `--out-dir`, `--provider`, `--renormalize`, `--rig`, `--role`, `--seed`, `--size`, `--spec`, `--style`, `--tex`, `--work`, `--yaw`.
+Flags: `--animations`, `--concurrency`, `--dry-run`, `--force`, `--front`, `--game`, `--image`, `--json`, `--key-file`, `--kind`, `--max-verts`, `--name`, `--no-admit`, `--no-simplify`, `--no-slim`, `--only`, `--out-dir`, `--provider`, `--renormalize`, `--rig`, `--role`, `--seed`, `--size`, `--spec`, `--style`, `--tex`, `--work`, `--yaw`.
 
 <a id="aura3d-assets-import-meshy"></a>
 
@@ -436,13 +437,14 @@ Flags: `--allowed-root`, `--file`, `--into`, `--keep-temp`, `--name`, `--overwri
 
 ### `aura3d assets inspect`
 
-Print a GLB/glTF's bounds, meshes, materials, textures and optionally clips, skeleton, morphs and licence (read-only).
+Print a GLB/glTF's bounds, meshes, materials, textures and optionally clips, skeleton, morphs, licence and PBR statistics (read-only).
 
 ```text
-aura3d assets inspect ./model.glb [--animation] [--humanoid] [--skeleton] [--morphs] [--license]
+aura3d assets inspect ./model.glb [--animation] [--humanoid] [--skeleton] [--morphs] [--license] [--pbr]
+  --pbr: per material, metalness/roughness p5/p50/p95, normal-map tilt percentiles (degrees), texture encodings and sizes, with PBR_PAINT_METALLIC, PBR_NORMAL_LOSSY_GLOSSY, PBR_NORMAL_NOISY and PBR_SINGLE_MATERIAL_VEHICLE warnings.
 ```
 
-Flags: `--animation`, `--humanoid`, `--license`, `--morphs`, `--skeleton`.
+Flags: `--animation`, `--humanoid`, `--license`, `--morphs`, `--pbr`, `--skeleton`.
 
 <a id="aura3d-assets-library"></a>
 
@@ -634,15 +636,17 @@ aura3d assets serve
 
 ### `aura3d assets slim`
 
-Re-encode PNG normal maps (or other slots) in GLBs as JPEG q92; shrinks files 40-60% with no visible shading change.
+Re-encode PNG normal maps (or other slots) in GLBs as JPEG q92 (shrinks files 40-60%); normal maps on glossy materials stay PNG unless --allow-glossy.
 
 ```text
-aura3d assets slim <file.glb> [more.glb ...] [--quality 92] [--slots normal[,occlusion,...]] [--out out.glb] [--json]
+aura3d assets slim <file.glb> [more.glb ...] [--quality 92] [--slots normal[,occlusion,...]] [--allow-glossy] [--out out.glb] [--json]
   Re-encodes PNG textures in the given material slots (default: normal maps) as JPEG. Rewrites files in place
   unless --out is given (single input only). A result that is not smaller than the input is not written.
+  Normal maps on glossy materials (median roughness < 0.45, or metalness > 0.5) stay PNG and are
+  reported as skipped: JPEG blocks show as dents in glossy reflections. --allow-glossy re-encodes them anyway.
 ```
 
-Flags: `--json`, `--out`, `--quality`, `--slots`.
+Flags: `--allow-glossy`, `--json`, `--out`, `--quality`, `--slots`.
 
 <a id="aura3d-assets-thumbnail"></a>
 
@@ -675,17 +679,18 @@ Flags: `--route`, `--variant`.
 
 ### `aura3d assets validate`
 
-Validate the manifest and typed assets; --route runs the G1–G11 admission table per referenced asset; --skin checks skinned meshes.
+Validate the manifest and typed assets; --route runs the G1–G11 admission table per referenced asset; --skin checks skinned meshes; --pbr adds PBR_* material warnings.
 
 ```text
-aura3d assets validate [--asset assetId|--no-assets] [--source [src]] [--release] [--no-placeholders] [--require-license] [--provenance evidence.json] [--episode]
+aura3d assets validate [--asset assetId|--no-assets] [--source [src]] [--release] [--no-placeholders] [--require-license] [--provenance evidence.json] [--episode] [--pbr]
 aura3d assets validate --route apps/<app> [--release]
 aura3d assets validate --skin [file.glb] [--asset id[,id]] [--clips Walk,Run] [--samples 10] [--stretch-limit 1.6] [--strict] [--warn-only CODE,CODE] [--json]
   Poses every rigged GLB through the clips it ships and fails on stretched triangles (SKIN_STRETCH), thin long flaps (SKIN_FLAP), bad weights (SKIN_WEIGHT_SUM), distant influences (SKIN_WEIGHT_DISTANT), a mesh not in its skeleton's pose (SKIN_BIND_MISMATCH, warning unless --strict) and impossible joint ranges (SKIN_JOINT_RANGE).
   Known defects that ship are listed with a reason in aura.skin-allow.json.
+  --pbr: decode each model's PBR maps and warn PBR_PAINT_METALLIC, PBR_NORMAL_LOSSY_GLOSSY, PBR_NORMAL_NOISY, PBR_SINGLE_MATERIAL_VEHICLE (advisory).
 ```
 
-Flags: `--asset`, `--clips`, `--episode`, `--json`, `--no-assets`, `--no-placeholders`, `--provenance`, `--release`, `--require-license`, `--route`, `--samples`, `--skin`, `--source`, `--stretch-limit`, `--strict`, `--warn-only`.
+Flags: `--asset`, `--clips`, `--episode`, `--json`, `--no-assets`, `--no-placeholders`, `--pbr`, `--provenance`, `--release`, `--require-license`, `--route`, `--samples`, `--skin`, `--source`, `--stretch-limit`, `--strict`, `--warn-only`.
 
 <a id="aura3d-assets-validate-animation"></a>
 

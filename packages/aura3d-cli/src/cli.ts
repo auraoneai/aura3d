@@ -236,15 +236,24 @@ async function main(): Promise<void> {
       if (!result.ok) process.exitCode = 1;
     } else if (action === "inspect") {
       const file = readInspectFile();
-      if (!file) throw new Error("Usage: aura3d assets inspect ./model.glb [--animation] [--humanoid]");
-      print(inspectAsset({
+      if (!file) throw new Error("Usage: aura3d assets inspect ./model.glb [--animation] [--humanoid] [--pbr]");
+      const inspection = inspectAsset({
         file,
         animation: hasFlag("--animation"),
         humanoid: hasFlag("--humanoid"),
         skeleton: hasFlag("--skeleton"),
         morphs: hasFlag("--morphs"),
         license: hasFlag("--license")
-      }));
+      });
+      if (hasFlag("--pbr")) {
+        // Lessons A11/A12: per-material metalness/roughness/normal-tilt percentiles, encodings and PBR_* warnings.
+        if (!/\.(glb|gltf)$/i.test(file)) throw new Error("assets inspect --pbr needs a .glb or .gltf file.");
+        const { measurePbrStats, formatPbrWarnings } = await import("./admission/pbrStats.js");
+        const pbr = await measurePbrStats(resolve(process.cwd(), file), { projectDir: process.cwd() });
+        const warnings = [...inspection.warnings, ...formatPbrWarnings(pbr.warnings)];
+        const report = { ...inspection, ok: warnings.length === 0, pbr: { ...pbr, file: inspection.file }, warnings, messages: warnings.length === 0 ? inspection.messages : warnings };
+        print(report);
+      } else print(inspection);
     } else if (action === "validate" && hasFlag("--skin")) {
       const skinOptions = readSkinCliOptions();
       const report = checkProjectSkins(process.cwd(), skinOptions);
@@ -286,6 +295,14 @@ async function main(): Promise<void> {
         });
         print(report);
         if (!report.ok) process.exitCode = 1;
+      } else if (hasFlag("--pbr")) {
+        // Lessons A11/A12: decode every GLB's PBR maps and add PBR_* warnings (advisory; ok is unchanged).
+        const options = readAssetValidationOptions();
+        const result = validateAssets(options);
+        const { pbrValidationWarnings } = await import("./admission/pbrValidate.js");
+        const pbrWarnings = await pbrValidationWarnings(process.cwd(), options.assetIds);
+        const warnings = [...result.warnings, ...pbrWarnings];
+        print({ ...result, warnings, messages: [...result.messages, ...pbrWarnings] });
       } else {
         print(validateAssets(readAssetValidationOptions()));
       }
