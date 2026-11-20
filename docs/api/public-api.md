@@ -43,7 +43,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/assets/vite` | `5.7.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
 | `@aura3d/assets/vite-client` | `5.7.0` | `./vite-client.d.ts` | 1 |
 | `@aura3d/audio` | `5.7.0` | `./dist/index.d.ts` | 310 |
-| `@aura3d/cli` | `5.7.0` | `./dist/index.d.ts` | 308 |
+| `@aura3d/cli` | `5.7.0` | `./dist/index.d.ts` | 305 |
 | `@aura3d/controls` | `5.7.0` | `./dist/index.d.ts` | 195 |
 | `@aura3d/core` | `5.7.0` | `./dist/index.d.ts` | 76 |
 | `create-aura3d` | `5.7.0` | `./dist/index.d.ts` | 110 |
@@ -8022,7 +8022,7 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 ## @aura3d/asset-index
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/asset-index@5.7.0#contents-sha256=a40d909c5b9253bdd330a2966274333299a3df90e651abc176697389b28c4ebd`
+- Packed identity: `archive:@aura3d/asset-index@5.7.0#contents-sha256=e03c809cf25be42c1d6aeb125b95f13ce7c1a9d95d72c0effa82e82d9faa51c7`
 
 ### Export conditions
 
@@ -27265,7 +27265,7 @@ export interface SynthVoice {
 ## @aura3d/cli
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/cli@5.7.0#contents-sha256=d8471054a0a58bf35898d031dfbe87b81cb4d210dd4cc8f887b7a6515d401492`
+- Packed identity: `archive:@aura3d/cli@5.7.0#contents-sha256=b9a07cf771cb48c5872b3a0c1957914cd46b03db48ee67165bc9967cace5a0e1`
 
 ### Export conditions
 
@@ -27305,10 +27305,9 @@ export type { AssetAdmissionCheck, AssetAdmissionInput, AssetAdmissionReport, As
 export { DEFAULT_AURA_ASSET_MANIFEST, DEFAULT_AURA_ASSET_OUTPUT_DIR, DEFAULT_AURA_ASSET_PUBLIC_PATH, DEFAULT_AURA_ASSET_TYPEGEN } from "./asset-constants.js";
 export { listAssets, readAssetManifest, writeAssetManifest, writeTypedAssets } from "./asset-manifest.js";
 export type { AddAssetOptions, AssetCliResult, AssetSourceTypedAssetUsage, AssetSourceValidationReport, AssetValidationOptions, AssetValidationResult, AuraAssetQuality, AuraCliAssetEntry, AuraCliAssetManifest, AuraCliAssetProvenance, AuraCliAudioMetadata, AuraCliModelInspection, AuraCliGeneratedAssetProvenance, AuraCliAssetRole, AuraCliAssetType, AuraCliRenderedProbe, AuraCliRenderedProbeForegroundBounds, AuraCliRenderedProbeKind, AuraCliResolveCandidateProvenance, BindGameRouteEvidenceOptions, BindGameRouteEvidenceResult, CertifyGameGeometryOptions, CheckDeployOptions, GameGeometryCertificationResult, ReadRenderedProbeMetadataOptions } from "./asset-core-types.js";
-export { importMeshyAsset } from "./meshy/import.js";
-export { createMeshyAdmissionReport, inferMeshyAssetProfile, inspectMeshyTextureDimensions } from "./meshy/admission.js";
-export type { MeshyAdmissionCheck, MeshyAdmissionReport, MeshyAdmissionVerdict, MeshyAssetProfile } from "./meshy/admission.js";
-export type { ImportMeshyOptions, ImportMeshyResult } from "./meshy/import.js";
+/** @deprecated Meshy support was removed in 5.7.0; these exports remain as throwing stubs until the next major. */
+export { importMeshyAsset, createMeshyAdmissionReport, inferMeshyAssetProfile, inspectMeshyTextureDimensions } from "./removed-meshy.js";
+export type { ImportMeshyOptions, ImportMeshyResult, MeshyAdmissionCheck, MeshyAdmissionReport, MeshyAdmissionVerdict, MeshyAssetProfile } from "./removed-meshy.js";
 export type { AssetInspectionReport, AuraCliAnimationClipInspection, AuraCliAnimationInspection, AuraCliAssetBoundsInspection, AuraCliHumanoidConfidence, AuraCliHumanoidInspection, AuraCliHumanoidStatus, AuraCliMaterialInspection, AuraCliMorphTargetInspection, AuraCliMorphTargetMeshInspection, AuraCliOrientationInspection, AuraCliSceneHierarchyInspection, AuraCliSkeletonInspection, AuraCliSkeletonSkinInspection, InspectAssetOptions } from "./asset-inspection-types.js";
 export type { AnimationEpisodeAssetReadiness, AnimationEpisodeAssetRole, AnimationEpisodeMouthReadinessMode, AnimationEpisodeReadinessReport, AssetReadinessAnimationClipMetadata, AssetReadinessAnimationMetadata, AssetReadinessAssetArtifacts, AssetReadinessAssetReport, AssetReadinessArtifacts, AssetReadinessOptions, AssetReadinessReport, AssetReadinessValidationContract, AssetReadinessValidatorEvidence, AuraAssetReadinessProfile, AuraAssetReadinessStatus, AuraGameAssetReadinessProfile } from "./asset-readiness-types.js";
 export type { CharacterAssemblyPartInput, CharacterAssemblyPlanOptions, CharacterAssemblyPlanResult, CharacterAssemblyResolvedPart } from "./character-assembly-types.js";
@@ -27594,7 +27593,7 @@ export interface HumanoidLegs {
     readonly knee: number;
     readonly foot: number;
 }
-/** Recognises Meshy/Mixamo/VRM-style leg bone names; returns null when the rig is not a recognised humanoid. */
+/** Recognises Mixamo/VRM-style leg bone names; returns null when the rig is not a recognised humanoid. */
 export declare function findHumanoidLegs(hierarchy: Hierarchy): HumanoidLegs[] | null;
 /** Hip/knee/twist ranges of the humanoid legs per clip (degrees); null when the rig is not a recognised humanoid. */
 export declare function jointRanges(glb: GlbData, hierarchy: Hierarchy, clips: readonly GltfAnimation[], samples?: number): Record<string, JointRangeRow> | null;
@@ -28719,7 +28718,7 @@ export interface AuraCliResolveCandidateProvenance {
     readonly rawCatalogMetadata?: Readonly<Record<string, unknown>>;
 }
 export interface AuraCliGeneratedAssetProvenance {
-    readonly provider: "meshy" | string;
+    readonly provider: string;
     readonly providerCli?: string;
     readonly taskId?: string;
     readonly parentTaskIds?: readonly string[];
@@ -29002,11 +29001,44 @@ export interface AssetSourceTypedAssetUsage {
 //# sourceMappingURL=asset-core-types.d.ts.map
 ```
 
-### `./dist/meshy/import.d.ts`
+### `./dist/removed-meshy.d.ts`
 
 ```ts
-import type { AssetCliResult, AuraAssetQuality, AuraCliAssetEntry, AuraCliAssetRole } from "../asset-core-types.js";
-import { type MeshyAdmissionReport, type MeshyAssetProfile } from "./admission.js";
+/**
+ * Deprecated public exports kept only so 5.x consumers still compile.
+ *
+ * Meshy support was removed from `@aura3d/cli` in 5.7.0. These declarations keep
+ * their 5.6.0 shapes (a minor release cannot remove public exports), and every
+ * function throws. Admit a GLB you already have with `aura3d assets add` or
+ * `aura3d assets convert`, or generate one with `aura3d assets generate`.
+ */
+import type { AssetInspectionReport } from "./asset-inspection-types.js";
+import type { AssetCliResult, AuraAssetQuality, AuraCliAssetRole } from "./asset-core-types.js";
+import type { AssetGeometryFacts } from "./asset-role-admission.js";
+/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
+export type MeshyAssetProfile = "prop" | "environment" | "vehicle" | "humanoid";
+/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
+export type MeshyAdmissionVerdict = "pass" | "fail" | "unproven" | "advisory";
+/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
+export interface MeshyAdmissionCheck {
+    readonly id: string;
+    readonly verdict: MeshyAdmissionVerdict;
+    readonly detail: string;
+    readonly measured?: number | string | boolean;
+    readonly limit?: number;
+}
+/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
+export interface MeshyAdmissionReport {
+    readonly schema: "aura3d.meshy-admission/1.0";
+    readonly profile: MeshyAssetProfile;
+    readonly candidateQuality: true;
+    readonly routeReady: boolean;
+    readonly checks: readonly MeshyAdmissionCheck[];
+    readonly blockers: readonly string[];
+    readonly unproven: readonly string[];
+    readonly nextActions: readonly string[];
+}
+/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
 export interface ImportMeshyOptions {
     readonly projectDir?: string;
     readonly input: string;
@@ -29021,6 +29053,7 @@ export interface ImportMeshyOptions {
     /** §6.5 release path: candidate entry id whose --from-generated derived bytes are being imported. */
     readonly sourceEntry?: string;
 }
+/** @deprecated Meshy support was removed in 5.7.0; kept for type compatibility only. */
 export interface ImportMeshyResult extends AssetCliResult {
     readonly typedKey: string;
     readonly sourceFile: string;
@@ -29030,45 +29063,15 @@ export interface ImportMeshyResult extends AssetCliResult {
     readonly admission: MeshyAdmissionReport;
     readonly nextCommands: readonly string[];
 }
-export interface MeshyReleaseContext {
-    /** The source candidate entry this release import republishes (derived output). */
-    readonly entry: AuraCliAssetEntry;
-}
+/**
+ * @deprecated Meshy support was removed in 5.7.0. Always throws. Use
+ * `aura3d assets add` (or `aura3d assets convert`) for a GLB you already have.
+ */
 export declare function importMeshyAsset(options: ImportMeshyOptions): ImportMeshyResult;
-//# sourceMappingURL=import.d.ts.map
-```
-
-### `./dist/meshy/admission.d.ts`
-
-```ts
-import type { AssetInspectionReport } from "../asset-inspection-types.js";
-import type { AuraCliAssetRole } from "../asset-core-types.js";
-import type { AssetGeometryFacts } from "../asset-role-admission.js";
-export type MeshyAssetProfile = "prop" | "environment" | "vehicle" | "humanoid";
-export type MeshyAdmissionVerdict = "pass" | "fail" | "unproven" | "advisory";
-export interface MeshyAdmissionCheck {
-    readonly id: string;
-    readonly verdict: MeshyAdmissionVerdict;
-    readonly detail: string;
-    readonly measured?: number | string | boolean;
-    readonly limit?: number;
-}
-export interface MeshyAdmissionReport {
-    readonly schema: "aura3d.meshy-admission/1.0";
-    readonly profile: MeshyAssetProfile;
-    readonly candidateQuality: true;
-    readonly routeReady: boolean;
-    readonly checks: readonly MeshyAdmissionCheck[];
-    readonly blockers: readonly string[];
-    readonly unproven: readonly string[];
-    readonly nextActions: readonly string[];
-}
-export declare function inferMeshyAssetProfile(role: AuraCliAssetRole | undefined): MeshyAssetProfile;
-export declare function inspectMeshyTextureDimensions(file: string): readonly {
-    readonly label: string;
-    readonly width: number;
-    readonly height: number;
-}[];
+/**
+ * @deprecated Meshy support was removed in 5.7.0. Always throws. `aura3d assets
+ * validate` and `aura3d assets inspect` report bounds, triangles and textures for any GLB.
+ */
 export declare function createMeshyAdmissionReport(options: {
     readonly profile: MeshyAssetProfile;
     readonly inspection: AssetInspectionReport;
@@ -29080,7 +29083,18 @@ export declare function createMeshyAdmissionReport(options: {
     }[];
     readonly hasThumbnailEvidence?: boolean;
 }): MeshyAdmissionReport;
-//# sourceMappingURL=admission.d.ts.map
+/** @deprecated Meshy support was removed in 5.7.0. Always throws. */
+export declare function inferMeshyAssetProfile(role: AuraCliAssetRole | undefined): MeshyAssetProfile;
+/**
+ * @deprecated Meshy support was removed in 5.7.0. Always throws. `aura3d assets
+ * inspect` reports texture dimensions for any GLB.
+ */
+export declare function inspectMeshyTextureDimensions(file: string): readonly {
+    readonly label: string;
+    readonly width: number;
+    readonly height: number;
+}[];
+//# sourceMappingURL=removed-meshy.d.ts.map
 ```
 
 ### `./dist/asset-inspection-types.d.ts`
@@ -31811,7 +31825,7 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 ## create-aura3d
 
 - Version: `5.7.0`
-- Packed identity: `archive:create-aura3d@5.7.0#contents-sha256=125b6ed91a41576326889f076b29015e387c63589920f3897a1888adb044f373`
+- Packed identity: `archive:create-aura3d@5.7.0#contents-sha256=188df0b61e4f94cd631950e45b4e83f3faaa6873717fb96d4adfe2f59c8beb92`
 
 ### Export conditions
 
@@ -37420,7 +37434,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -52934,7 +52948,7 @@ export declare const effects: {
         readonly loop?: boolean;
         readonly prewarm?: number;
         readonly sprite?: import("../publishedUnion.js").AuraParticleEmitterOptions["sprite"];
-        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | string;
+        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | import("./types.js").AuraTextureRef | string;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly beam: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly particles: (options?: import("../publishedUnion.js").AuraParticleEmitterOptions & import("../publishedUnion.js").AuraLegacyParticleFields & Omit<import("./types.js").AuraEffectNode, "kind" | "effect" | "speed">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -121173,7 +121187,7 @@ export declare function scatterAlongPath(options: AuraScatterAlongPathOptions): 
 export declare function scatterInArea(options: AuraScatterInAreaOptions): AuraScatterPoint[];
 /**
  * Radius LOD: split placements into bands by XZ distance from `origin`. `radii` ascend; the result has
- * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced Meshy models), the last is beyond every radius
+ * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced GLB models), the last is beyond every radius
  * (e.g. the cheap procedural fallback). Order inside each band is preserved.
  */
 export declare function splitScatterByDistance(points: readonly AuraScatterPoint[], origin: readonly [number, number], radii: readonly number[]): AuraScatterPoint[][];
@@ -124508,7 +124522,7 @@ export {};
 ### `./dist/engine/agent-api/nodes/effects.d.ts`
 
 ```ts
-import type { AuraAssetRef, AuraEffectNode, AuraVec3 } from "../nodes/types.js";
+import type { AuraAssetRef, AuraEffectNode, AuraTextureRef, AuraVec3 } from "../nodes/types.js";
 import { AuraNodeBuilder } from "../nodes/builder.js";
 import type { AuraBlendMode } from "../../../rendering/contracts/index.js";
 import type { AuraLegacyParticleFields, AuraParticleEmitterOptions } from "../../contracts/effects.js";
@@ -124629,7 +124643,8 @@ export declare const vfxEffectBuilders: {
      * of world `size`, frame = age · `frameRate` over `spriteColumns ×
      * spriteRows` (wrapping unless `loop: false`). The sheet is, in order:
      * `texture` (GU47 E-F: a typed texture asset such as an `aura3d-game-art`
-     * sheet, straight alpha, frame 0 in the top-left cell, grid `spriteColumns ×
+     * sheet, or a live handle such as `createFlipbookAtlas(kind).texture`;
+     * straight alpha, frame 0 in the top-left cell, grid `spriteColumns ×
      * spriteRows`), a built-in atlas `sprite` name (its own grid, e.g.
      * "flame-loop"), else the built-in seeded `fireball` sheet. A texture or
      * sprite draws the soft-dot until it has loaded. `prewarm` starts the
@@ -124642,8 +124657,11 @@ export declare const vfxEffectBuilders: {
         readonly loop?: boolean;
         readonly prewarm?: number;
         readonly sprite?: AuraParticleEmitterOptions["sprite"];
-        /** GU47 E-F: sprite-sheet texture asset (`assets.sheet`) or URL; grid from `spriteColumns × spriteRows`. */
-        readonly texture?: AuraAssetRef<"texture"> | string;
+        /**
+         * GU47 E-F: sprite-sheet texture asset (`assets.sheet`), URL, or (5.7.0) a live texture handle such as
+         * `texture.data(...)` or `createFlipbookAtlas(kind).texture`; grid from `spriteColumns × spriteRows`.
+         */
+        readonly texture?: AuraAssetRef<"texture"> | AuraTextureRef | string;
     }) => AuraNodeBuilder<AuraEffectNode>;
     /**
      * Additive thick light beam / fence strip (muse3jsparity-PRD D4): recorded
@@ -125532,7 +125550,7 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 ## @aura3d/engine/animation
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -129111,7 +129129,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/engine/assets
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -134837,7 +134855,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/engine/audio
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -137503,7 +137521,7 @@ export interface SynthVoice {
 ## @aura3d/engine/controls
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -139305,7 +139323,7 @@ export declare class FirstPersonControls {
 ## @aura3d/engine/devtools
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -154863,7 +154881,7 @@ export declare const effects: {
         readonly loop?: boolean;
         readonly prewarm?: number;
         readonly sprite?: import("../publishedUnion.js").AuraParticleEmitterOptions["sprite"];
-        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | string;
+        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | import("./types.js").AuraTextureRef | string;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly beam: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly particles: (options?: import("../publishedUnion.js").AuraParticleEmitterOptions & import("../publishedUnion.js").AuraLegacyParticleFields & Omit<import("./types.js").AuraEffectNode, "kind" | "effect" | "speed">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -223059,7 +223077,7 @@ export declare function scatterAlongPath(options: AuraScatterAlongPathOptions): 
 export declare function scatterInArea(options: AuraScatterInAreaOptions): AuraScatterPoint[];
 /**
  * Radius LOD: split placements into bands by XZ distance from `origin`. `radii` ascend; the result has
- * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced Meshy models), the last is beyond every radius
+ * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced GLB models), the last is beyond every radius
  * (e.g. the cheap procedural fallback). Order inside each band is preserved.
  */
 export declare function splitScatterByDistance(points: readonly AuraScatterPoint[], origin: readonly [number, number], radii: readonly number[]): AuraScatterPoint[][];
@@ -224764,7 +224782,7 @@ export declare const sky: {
 ## @aura3d/engine/ecs
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -225431,7 +225449,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/engine/editor-runtime
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -228013,7 +228031,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine/game
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -283569,7 +283587,7 @@ export declare const effects: {
         readonly loop?: boolean;
         readonly prewarm?: number;
         readonly sprite?: import("../publishedUnion.js").AuraParticleEmitterOptions["sprite"];
-        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | string;
+        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | import("./types.js").AuraTextureRef | string;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly beam: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly particles: (options?: import("../publishedUnion.js").AuraParticleEmitterOptions & import("../publishedUnion.js").AuraLegacyParticleFields & Omit<import("./types.js").AuraEffectNode, "kind" | "effect" | "speed">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -313097,7 +313115,7 @@ export declare function scatterAlongPath(options: AuraScatterAlongPathOptions): 
 export declare function scatterInArea(options: AuraScatterInAreaOptions): AuraScatterPoint[];
 /**
  * Radius LOD: split placements into bands by XZ distance from `origin`. `radii` ascend; the result has
- * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced Meshy models), the last is beyond every radius
+ * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced GLB models), the last is beyond every radius
  * (e.g. the cheap procedural fallback). Order inside each band is preserved.
  */
 export declare function splitScatterByDistance(points: readonly AuraScatterPoint[], origin: readonly [number, number], radii: readonly number[]): AuraScatterPoint[][];
@@ -318761,7 +318779,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/game/art
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -322033,7 +322051,7 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 ## @aura3d/engine/game/capture
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -377371,7 +377389,7 @@ export declare const effects: {
         readonly loop?: boolean;
         readonly prewarm?: number;
         readonly sprite?: import("../publishedUnion.js").AuraParticleEmitterOptions["sprite"];
-        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | string;
+        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | import("./types.js").AuraTextureRef | string;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly beam: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly particles: (options?: import("../publishedUnion.js").AuraParticleEmitterOptions & import("../publishedUnion.js").AuraLegacyParticleFields & Omit<import("./types.js").AuraEffectNode, "kind" | "effect" | "speed">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -406899,7 +406917,7 @@ export declare function scatterAlongPath(options: AuraScatterAlongPathOptions): 
 export declare function scatterInArea(options: AuraScatterInAreaOptions): AuraScatterPoint[];
 /**
  * Radius LOD: split placements into bands by XZ distance from `origin`. `radii` ascend; the result has
- * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced Meshy models), the last is beyond every radius
+ * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced GLB models), the last is beyond every radius
  * (e.g. the cheap procedural fallback). Order inside each band is preserved.
  */
 export declare function splitScatterByDistance(points: readonly AuraScatterPoint[], origin: readonly [number, number], radii: readonly number[]): AuraScatterPoint[][];
@@ -408949,7 +408967,7 @@ export {};
 ## @aura3d/engine/game/styles.css
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -408960,7 +408978,7 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 ## @aura3d/engine/game/util
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -408986,7 +409004,7 @@ export declare function nowSeconds(): number;
 ## @aura3d/engine/geometry-tools
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -409713,7 +409731,7 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 ## @aura3d/engine/input
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -410954,7 +410972,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/engine/lighting
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -411593,7 +411611,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/engine/math
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -413583,7 +413601,7 @@ export declare class NURBSVolume {
 ## @aura3d/engine/media-node
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -414208,7 +414226,7 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 ## @aura3d/engine/physics
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -416880,7 +416898,7 @@ export {};
 ## @aura3d/engine/physics/solverless
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -418132,7 +418150,7 @@ export declare class PhysicsWorld {
 ## @aura3d/engine/physics/world
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -418395,7 +418413,7 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 ## @aura3d/engine/procedural
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -418692,7 +418710,7 @@ export declare function assertInt(value: number, name: string, min: number): voi
 ## @aura3d/engine/renderer
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -467893,7 +467911,7 @@ export declare const effects: {
         readonly loop?: boolean;
         readonly prewarm?: number;
         readonly sprite?: import("../publishedUnion.js").AuraParticleEmitterOptions["sprite"];
-        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | string;
+        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | import("./types.js").AuraTextureRef | string;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly beam: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly particles: (options?: import("../publishedUnion.js").AuraParticleEmitterOptions & import("../publishedUnion.js").AuraLegacyParticleFields & Omit<import("./types.js").AuraEffectNode, "kind" | "effect" | "speed">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -503526,7 +503544,7 @@ export declare function scatterAlongPath(options: AuraScatterAlongPathOptions): 
 export declare function scatterInArea(options: AuraScatterInAreaOptions): AuraScatterPoint[];
 /**
  * Radius LOD: split placements into bands by XZ distance from `origin`. `radii` ascend; the result has
- * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced Meshy models), the last is beyond every radius
+ * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced GLB models), the last is beyond every radius
  * (e.g. the cheap procedural fallback). Order inside each band is preserved.
  */
 export declare function splitScatterByDistance(points: readonly AuraScatterPoint[], origin: readonly [number, number], radii: readonly number[]): AuraScatterPoint[][];
@@ -506077,7 +506095,7 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 ## @aura3d/engine/scatter
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -506194,7 +506212,7 @@ export declare function scatterAlongPath(options: AuraScatterAlongPathOptions): 
 export declare function scatterInArea(options: AuraScatterInAreaOptions): AuraScatterPoint[];
 /**
  * Radius LOD: split placements into bands by XZ distance from `origin`. `radii` ascend; the result has
- * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced Meshy models), the last is beyond every radius
+ * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced GLB models), the last is beyond every radius
  * (e.g. the cheap procedural fallback). Order inside each band is preserved.
  */
 export declare function splitScatterByDistance(points: readonly AuraScatterPoint[], origin: readonly [number, number], radii: readonly number[]): AuraScatterPoint[][];
@@ -506210,7 +506228,7 @@ export {};
 ## @aura3d/engine/scene
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -507335,7 +507353,7 @@ export {};
 ## @aura3d/engine/scene/math
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -507419,7 +507437,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/engine/scripting
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -508599,7 +508617,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/engine/sculpt
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -508915,7 +508933,7 @@ export declare function sdfTaperedCapsule(p: V3, a: V3, b: V3, ra: number, rb: n
 /**
  * Extracts a smooth, watertight, closed 2-manifold organic mesh from an implicit SDF (`evaluate(x, y, z) < 0` inside)
  * using dual Surface-Nets + volume-preserving Taubin fairing + analytic SDF gradient normals.
- * Ideal for Meshy-grade unified creature/mascot bodies where head, brow sockets, torso, and haunches blend seamlessly.
+ * Ideal for unified creature/mascot bodies where head, brow sockets, torso, and haunches blend seamlessly.
  */
 export declare function sculptOrganicSdfMesh(opts: {
     readonly boundsMin: V3;
@@ -509147,7 +509165,7 @@ export declare function sculptPaintedLimbChain(chain: SdfLimbChain, hexByTag: Re
 ## @aura3d/engine/shader-graph-runtime
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -513461,7 +513479,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/engine/v5
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -514557,7 +514575,7 @@ export declare const effects: {
         readonly loop?: boolean;
         readonly prewarm?: number;
         readonly sprite?: import("../publishedUnion.js").AuraParticleEmitterOptions["sprite"];
-        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | string;
+        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | import("./types.js").AuraTextureRef | string;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly beam: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly particles: (options?: import("../publishedUnion.js").AuraParticleEmitterOptions & import("../publishedUnion.js").AuraLegacyParticleFields & Omit<import("./types.js").AuraEffectNode, "kind" | "effect" | "speed">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -565229,7 +565247,7 @@ export declare function scatterAlongPath(options: AuraScatterAlongPathOptions): 
 export declare function scatterInArea(options: AuraScatterInAreaOptions): AuraScatterPoint[];
 /**
  * Radius LOD: split placements into bands by XZ distance from `origin`. `radii` ascend; the result has
- * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced Meshy models), the last is beyond every radius
+ * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced GLB models), the last is beyond every radius
  * (e.g. the cheap procedural fallback). Order inside each band is preserved.
  */
 export declare function splitScatterByDistance(points: readonly AuraScatterPoint[], origin: readonly [number, number], radii: readonly number[]): AuraScatterPoint[][];
@@ -580548,7 +580566,7 @@ export {};
 ### `./dist/engine/agent-api/nodes/effects.d.ts`
 
 ```ts
-import type { AuraAssetRef, AuraEffectNode, AuraVec3 } from "../nodes/types.js";
+import type { AuraAssetRef, AuraEffectNode, AuraTextureRef, AuraVec3 } from "../nodes/types.js";
 import { AuraNodeBuilder } from "../nodes/builder.js";
 import type { AuraBlendMode } from "../../../rendering/contracts/index.js";
 import type { AuraLegacyParticleFields, AuraParticleEmitterOptions } from "../../contracts/effects.js";
@@ -580669,7 +580687,8 @@ export declare const vfxEffectBuilders: {
      * of world `size`, frame = age · `frameRate` over `spriteColumns ×
      * spriteRows` (wrapping unless `loop: false`). The sheet is, in order:
      * `texture` (GU47 E-F: a typed texture asset such as an `aura3d-game-art`
-     * sheet, straight alpha, frame 0 in the top-left cell, grid `spriteColumns ×
+     * sheet, or a live handle such as `createFlipbookAtlas(kind).texture`;
+     * straight alpha, frame 0 in the top-left cell, grid `spriteColumns ×
      * spriteRows`), a built-in atlas `sprite` name (its own grid, e.g.
      * "flame-loop"), else the built-in seeded `fireball` sheet. A texture or
      * sprite draws the soft-dot until it has loaded. `prewarm` starts the
@@ -580682,8 +580701,11 @@ export declare const vfxEffectBuilders: {
         readonly loop?: boolean;
         readonly prewarm?: number;
         readonly sprite?: AuraParticleEmitterOptions["sprite"];
-        /** GU47 E-F: sprite-sheet texture asset (`assets.sheet`) or URL; grid from `spriteColumns × spriteRows`. */
-        readonly texture?: AuraAssetRef<"texture"> | string;
+        /**
+         * GU47 E-F: sprite-sheet texture asset (`assets.sheet`), URL, or (5.7.0) a live texture handle such as
+         * `texture.data(...)` or `createFlipbookAtlas(kind).texture`; grid from `spriteColumns × spriteRows`.
+         */
+        readonly texture?: AuraAssetRef<"texture"> | AuraTextureRef | string;
     }) => AuraNodeBuilder<AuraEffectNode>;
     /**
      * Additive thick light beam / fence strip (muse3jsparity-PRD D4): recorded
@@ -583897,7 +583919,7 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 ## @aura3d/engine/v5/context
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -584143,7 +584165,7 @@ export { createGameAppWithPhysicsWorldAccess };
 ## @aura3d/engine/v5/game
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -639570,7 +639592,7 @@ export declare const effects: {
         readonly loop?: boolean;
         readonly prewarm?: number;
         readonly sprite?: import("../publishedUnion.js").AuraParticleEmitterOptions["sprite"];
-        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | string;
+        readonly texture?: import("./types.js").AuraAssetRef<"texture"> | import("./types.js").AuraTextureRef | string;
     }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly beam: (options?: Omit<import("./types.js").AuraEffectNode, "kind" | "effect">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
     readonly particles: (options?: import("../publishedUnion.js").AuraParticleEmitterOptions & import("../publishedUnion.js").AuraLegacyParticleFields & Omit<import("./types.js").AuraEffectNode, "kind" | "effect" | "speed">) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEffectNode>;
@@ -669098,7 +669120,7 @@ export declare function scatterAlongPath(options: AuraScatterAlongPathOptions): 
 export declare function scatterInArea(options: AuraScatterInAreaOptions): AuraScatterPoint[];
 /**
  * Radius LOD: split placements into bands by XZ distance from `origin`. `radii` ascend; the result has
- * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced Meshy models), the last is beyond every radius
+ * `radii.length + 1` arrays: `[0]` is closest (e.g. instanced GLB models), the last is beyond every radius
  * (e.g. the cheap procedural fallback). Order inside each band is preserved.
  */
 export declare function splitScatterByDistance(points: readonly AuraScatterPoint[], origin: readonly [number, number], radii: readonly number[]): AuraScatterPoint[][];
@@ -674863,7 +674885,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/v5/internal
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -680432,7 +680454,7 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 ## @aura3d/engine/v5/math/hull
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -680620,7 +680642,7 @@ export declare class ConvexHull {
 ## @aura3d/engine/worker
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
@@ -681354,7 +681376,7 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 ## @aura3d/engine/workflows
 
 - Version: `5.7.0`
-- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=517b1b2bf686f0948c93cca02eb6f32e9f3199aa34ab5e981038c16d0b8f9aec`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=652e963d0277c0317ac4d09cd395774634bede31ed038d088681d197a6d06b05`
 
 ### Export conditions
 
