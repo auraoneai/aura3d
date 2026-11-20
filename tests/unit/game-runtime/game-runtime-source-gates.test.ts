@@ -1353,7 +1353,8 @@ describe("game runtime source gates", () => {
 
     expectIncludesAll(cli, [
       'action === "inspect"',
-      "print(inspectAsset({",
+      "const inspection = inspectAsset({",
+      'hasFlag("--pbr")',
       'animation: hasFlag("--animation")',
       'humanoid: hasFlag("--humanoid")',
       'skeleton: hasFlag("--skeleton")',
