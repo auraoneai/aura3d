@@ -1428,7 +1428,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/subject.ts",
-          "sha256": "3d3e33669206c87fdb760c53f10f6c63f44acdf04e2e6c12edaba7a03995ded5"
+          "sha256": "c34dddbe33e19bba97575cd34037e1a19101ee3729d1511212bc6685da38b15f"
         },
         {
           "path": "packages/engine/src/agent-api/camera/CameraController.ts",
@@ -1436,7 +1436,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/extension.ts",
-          "sha256": "fa83e5c5dd3a5c86e02df3601922427beb0a2d611c30a57371c55b741abbde91"
+          "sha256": "33b672b8655095207f926054d72eae72313647725277d7cf1ff61d0dde29c8ac"
         },
         {
           "path": "packages/rendering/src/contracts/flags.state.ts",
@@ -1456,7 +1456,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
-          "sha256": "262a24c61dd638f87094363f4d1841cb3249b0fff9736e593a12ca203e47b2ab"
+          "sha256": "9f7a058678f500c5d0062f0c8e9795d145fcdbf676719743889d54a72f59f548"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1464,7 +1464,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/sceneGraph.ts",
-          "sha256": "76c796b842540adc5edabba8b9fa7e4c12bf1a36a209495e3b54a61623923bd3"
+          "sha256": "24485e71aee89ade98bf17985a4e10aad4989ef7935b357da3ac2e9c96bc62b4"
         },
         {
           "path": "packages/engine/src/agent-api/SceneGroundingUtils.ts",
@@ -2170,7 +2170,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/extension.ts",
-          "sha256": "fa83e5c5dd3a5c86e02df3601922427beb0a2d611c30a57371c55b741abbde91"
+          "sha256": "33b672b8655095207f926054d72eae72313647725277d7cf1ff61d0dde29c8ac"
         }
       ],
       "regions": [
@@ -2257,7 +2257,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/extension.ts",
-          "sha256": "fa83e5c5dd3a5c86e02df3601922427beb0a2d611c30a57371c55b741abbde91"
+          "sha256": "33b672b8655095207f926054d72eae72313647725277d7cf1ff61d0dde29c8ac"
         }
       ],
       "regions": [
@@ -2352,7 +2352,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/extension.ts",
-          "sha256": "fa83e5c5dd3a5c86e02df3601922427beb0a2d611c30a57371c55b741abbde91"
+          "sha256": "33b672b8655095207f926054d72eae72313647725277d7cf1ff61d0dde29c8ac"
         }
       ],
       "regions": [

@@ -6,8 +6,8 @@ import type {
   AuraVec3
 } from "./index";
 import { scene } from "./nodes/scene.js";
-import { eulerToQuaternion } from "./sceneGraph.js";
-import { setRuntimeNodeParentedWorldPose } from "./app/runtimeNodes.js";
+import { eulerToQuaternion } from "./eulerQuaternion.js";
+import { setRuntimeNodeParentedWorldPose } from "./app/parentedWorldPose.js";
 
 export interface GameSceneRuntimeNode {
   readonly id: string;

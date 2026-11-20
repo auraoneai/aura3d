@@ -7,7 +7,7 @@
 import type { AuraVec3 } from "../index.js";
 import type { AuraCameraSubject } from "../../contracts/camera.js";
 import { quatFromEulerXYZ, quatRotateVec3, quatToEulerXYZ, type AuraQuat } from "./quat.js";
-import { runtimeNodeParentedWorldPose } from "../app/runtimeNodes.js";
+import { runtimeNodeParentedWorldPose } from "../app/parentedWorldPose.js";
 
 /**
  * A camera frames the world pose. Since 5.7.0 a model or primitive handle nested in a group reads parent-local through

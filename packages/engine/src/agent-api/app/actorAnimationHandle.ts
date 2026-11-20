@@ -21,8 +21,8 @@ import { boneMaskSkeletonFor, toPoseBoneMaskSpec } from "../animationMask.js";
 import type { GLTFSceneAnimationApplyResult } from "@aura3d/assets/gltf-runtime";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
-import { eulerToQuaternion } from "../sceneGraph.js";
-import { runtimeNodeParentedWorldPose, setRuntimeNodeParentedWorldPose } from "./runtimeNodes.js";
+import { eulerToQuaternion } from "../eulerQuaternion.js";
+import { runtimeNodeParentedWorldPose, setRuntimeNodeParentedWorldPose } from "./parentedWorldPose.js";
 import type { AuraRuntimeNodeAnimationBindingMetadata, AuraRuntimeNodeAnimationPoseBindingMetadata } from "../RuntimeNodeHandle.js";
 import {
   StubActorAnimationApi,

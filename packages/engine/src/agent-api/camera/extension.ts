@@ -34,7 +34,7 @@ import type {
 import { stubCameraRigFactories } from "../../contracts/camera.js";
 import { mediaMatches } from "../platform.js";
 import { readWorkerCanvasCssSize, workerCanvasTransferAttempted } from "../app/workerRuntime.js";
-import { runtimeNodeParentedWorldPose } from "../app/runtimeNodes.js";
+import { runtimeNodeParentedWorldPose } from "../app/parentedWorldPose.js";
 import type { AuraApp, AuraVec3 } from "../index.js";
 import { createCameraController, type AuraCameraControllerImpl } from "./CameraController.js";
 import {

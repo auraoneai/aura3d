@@ -26,6 +26,9 @@ import { lodMarkerOf, type AuraLodRootSpec } from "../lodMarkers.js";
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { createProductionPrimitiveGeometry } from "../compiler/primitives.js";
 import { applyOwnedQueryGeometryUpdate, getNormalizedGeometryPositions, runtimeOwnedQueryBuffers, runtimeQueryGeometry } from "./runtimeQueryGeometry.js";
+import { registerParentedWorldPoseProvider, type RuntimeNodeParentedWorldPose, type RuntimeNodeParentedWorldPoseWrite } from "./parentedWorldPose.js";
+
+export { runtimeNodeParentedWorldPose, setRuntimeNodeParentedWorldPose } from "./parentedWorldPose.js";
 import { assertSdfTextMaterialSupported, reshapeWorldTextDescriptor } from "../nodes/text3d.js";
 import { assertValidPivot, assertValidPivotTree, hasNonzeroPivot } from "../pivotGuard.js";
 import { assertWeatherTransformFields, rigidWeatherMatrix } from "../../production-runtime/effects/WeatherTransform.js";
@@ -1313,14 +1316,10 @@ export function runtimeNodeTranslateWorld(handle: AuraRuntimeNodeHandle, delta: 
 /**
  * World pose of a model or primitive handle under a live parent, or `undefined` for any other handle (top-level nodes,
  * groups, foreign handle-likes), whose own `position`/`rotation`/`scale` already serve. Engine helpers that need a
- * world-space subject (camera subjects, look-at targets) read this, because a nested handle's getters are parent-local
- * since 5.7.0.
+ * world-space subject (camera subjects, look-at targets) read this through the `./parentedWorldPose.js` leaf, because a
+ * nested handle's getters are parent-local since 5.7.0.
  */
-export function runtimeNodeParentedWorldPose(handle: object): {
-  readonly position: AuraVec3; readonly quaternion: AuraQuat; readonly rotation: AuraVec3; readonly scale: AuraVec3;
-  /** Maps a point in the handle's own (parent-local) space, e.g. an interpolated `position`, to world space. */
-  readonly toWorld: (local: readonly number[]) => AuraVec3;
-} | undefined {
+function parentedWorldPoseOf(handle: object): RuntimeNodeParentedWorldPose | undefined {
   const typed = handle as AuraRuntimeNodeHandle;
   const parent = parityL7Parents.get(typed);
   if (!runtimeParentedNodes.has(typed) || !parent || disposedQueryHandles.has(typed)) return undefined;
@@ -1337,12 +1336,9 @@ export function runtimeNodeParentedWorldPose(handle: object): {
 /**
  * Write a world-space pose onto a model or primitive handle under a live parent (solving the parent-local transform);
  * returns `false`, writing nothing, for any other handle. Engine helpers that publish world poses (game body sync, bone
- * attachments) call this first and fall back to the handle's own setters.
+ * attachments) call this through the `./parentedWorldPose.js` leaf first and fall back to the handle's own setters.
  */
-export function setRuntimeNodeParentedWorldPose(
-  handle: object,
-  pose: { readonly position: AuraVec3; readonly quaternion?: AuraQuat; readonly scale?: number | AuraVec3 }
-): boolean {
+function writeParentedWorldPose(handle: object, pose: RuntimeNodeParentedWorldPoseWrite): boolean {
   const typed = handle as AuraRuntimeNodeHandle;
   if (!runtimeParentedNodes.has(typed) || !parityL7Parents.has(typed) || disposedQueryHandles.has(typed)) return false;
   if (pose.quaternion === undefined && pose.scale === undefined) return setParentedWorldPosition(typed, pose.position);
@@ -1352,6 +1348,8 @@ export function setRuntimeNodeParentedWorldPose(
   prepareParentedWorldPose(typed, pose.position, pose.quaternion ?? current.quaternion, scale ? { scale } : {})!();
   return true;
 }
+
+registerParentedWorldPoseProvider({ read: parentedWorldPoseOf, write: writeParentedWorldPose });
 
 /** Prepare one parented root-motion update without changing the node or notifying observers. */
 export function prepareRuntimeNodeRootMotion(

@@ -19,66 +19,13 @@ import type { AuraEffectNode, AuraModelNode, AuraPrimitiveNode, AuraVec3, AuraTr
 import { createModelMatrix } from "./sceneMath.js";
 import type { AuraEulerOrder, AuraQuat, AuraWorldTransform } from "../contracts/sceneGraph";
 import { assertValidPivot, hasNonzeroPivot } from "./pivotGuard.js";
+import { eulerToQuaternion } from "./eulerQuaternion.js";
 
 export type { AuraEulerOrder, AuraQuat, AuraWorldTransform };
+export { eulerToQuaternion };
 
 /** Degradation flag consumers raise when `decomposeMatrix` reports `sheared`. */
 export const SCENE_GRAPH_SHEAR = "SCENE_GRAPH_SHEAR";
-
-/** Euler -> quaternion. `order` defaults to "ZYX" (engine/three.js "ZYX" = Rz·Ry·Rx). */
-export function eulerToQuaternion(euler: AuraVec3, order: AuraEulerOrder = "ZYX"): AuraQuat {
-  const [x, y, z] = euler;
-  const c1 = Math.cos(x / 2);
-  const c2 = Math.cos(y / 2);
-  const c3 = Math.cos(z / 2);
-  const s1 = Math.sin(x / 2);
-  const s2 = Math.sin(y / 2);
-  const s3 = Math.sin(z / 2);
-  switch (order) {
-    case "XYZ":
-      return [
-        s1 * c2 * c3 + c1 * s2 * s3,
-        c1 * s2 * c3 - s1 * c2 * s3,
-        c1 * c2 * s3 + s1 * s2 * c3,
-        c1 * c2 * c3 - s1 * s2 * s3
-      ];
-    case "YXZ":
-      return [
-        s1 * c2 * c3 + c1 * s2 * s3,
-        c1 * s2 * c3 - s1 * c2 * s3,
-        c1 * c2 * s3 - s1 * s2 * c3,
-        c1 * c2 * c3 + s1 * s2 * s3
-      ];
-    case "ZXY":
-      return [
-        s1 * c2 * c3 - c1 * s2 * s3,
-        c1 * s2 * c3 + s1 * c2 * s3,
-        c1 * c2 * s3 + s1 * s2 * c3,
-        c1 * c2 * c3 - s1 * s2 * s3
-      ];
-    case "ZYX":
-      return [
-        s1 * c2 * c3 - c1 * s2 * s3,
-        c1 * s2 * c3 + s1 * c2 * s3,
-        c1 * c2 * s3 - s1 * s2 * c3,
-        c1 * c2 * c3 + s1 * s2 * s3
-      ];
-    case "YZX":
-      return [
-        s1 * c2 * c3 + c1 * s2 * s3,
-        c1 * s2 * c3 + s1 * c2 * s3,
-        c1 * c2 * s3 - s1 * s2 * c3,
-        c1 * c2 * c3 - s1 * s2 * s3
-      ];
-    case "XZY":
-      return [
-        s1 * c2 * c3 - c1 * s2 * s3,
-        c1 * s2 * c3 - s1 * c2 * s3,
-        c1 * c2 * s3 + s1 * s2 * c3,
-        c1 * c2 * c3 + s1 * s2 * s3
-      ];
-  }
-}
 
 export function quaternionMultiply(a: AuraQuat, b: AuraQuat): AuraQuat {
   const [ax, ay, az, aw] = a;
