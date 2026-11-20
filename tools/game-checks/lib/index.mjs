@@ -1096,6 +1096,83 @@ function checkNoRemoved50Apis({ game, src }) {
   return out;
 }
 
+// ---------- autoplay (5.7.0) ----------
+
+/**
+ * Live games that keep an inline `?autoplay` reader instead of `readAutoplayFlag` (docs/api/game-autoplay.md), each
+ * with the semantics that differ from the shared reader. 5.7.0 moved the 13 `autoplayRequested` copies onto the reader
+ * (CHANGELOG 5.7.0, "Game kits from the 30 live games"); these games were left as they shipped because converting them
+ * changes which URLs start the attract loop. The shared reader turns on for any value except "0"/"false" (so a bare
+ * `?demo` or `?autoplay=true` is on); every entry below accepts only "1" or reads a schema flag, and most fold the flag
+ * into other switches (autostart, manual, capture, intro). A new game must not be added here: it uses
+ * `readAutoplayFlag` + `createAutoplayHarness`. Remove an entry when its game moves to the reader (the check warns on a
+ * stale entry).
+ */
+export const AUTOPLAY_INLINE_ALLOWLIST = Object.freeze({
+  "roadster-rush": "autoplay/demo only when === \"1\"; the same list with capture=1 also autostarts, and the native shell skips its blur pause on autoplay=1",
+  heatsink: "autoplay/autopilot/demo only when === \"1\"; the original A/B build (src/original) accepts autoplay/demo only",
+  teleoperator: "autoplay/autopilot/demo only when === \"1\"; any autoplay param (has) also skips the boot intro",
+  "pips-big-leap": "autoplay/autopilot/demo only when === \"1\"",
+  "slingshot-siege": "demo accepts \"1\" or \"true\" and autoplay/autopilot only \"1\"; demo also drives the scripted intro",
+  "dot-dash-3d": "autoplay/autopilot/demo only when === \"1\"; autoplay/demo also turn the camera cinematics off",
+  "cross-hop": "autoplay/autopilot/demo only when === \"1\"",
+  "strange-orbit-port": "autoplay=1 splits into the port's autostart and autopilot config switches, each also settable alone",
+  "drift-and-deliver-port": "autoplay/autopilot/demo only when === \"1\"; folded into autostart together with autostart=1 and manual=1",
+  "roadster-hours-port": "autoplay=1 splits into the port's autostart and autopilot config switches",
+  "where-the-wind-wanders-port": "autoplay/autopilot only when === \"1\", and manual=1 overrides both",
+  "silt-and-signal-port": "autoplay=1 sets both the port's autoplay and autopilot config; autopilot alone is a QA mode",
+  "cloud-runner-port": "autoplay/autopilot only when === \"1\", and manual=1 overrides both",
+  "shape-shift-sprint": "readQaParams flag schema (autoplay, with autopilot and autostart as aliases), not the shared reader",
+  "number-surge": "readQaParams flag schema (autoplay, with autostart and autopilot as aliases), not the shared reader",
+  "splat-turf": "readQaParams flag schema (autoplay, with autopilot and autostart as aliases), not the shared reader",
+  "polarity-orbs": "readQaParams flag schema; autoplay or autostart skips the title and starts the looping attract pilot",
+  "splat-rush-port": "main.ts reads autoplay (alias autopilot) through the readQaParams flag schema; autoplay.ts re-exports readAutoplayFlag as autoplayRequested, but the page does not call it"
+});
+
+/** A game "uses the reader" when any of its sources imports, re-exports or calls readAutoplayFlag. */
+const AUTOPLAY_READER_RE = /\breadAutoplayFlag\b/;
+const AUTOPLAY_INLINE_RES = [
+  /\.(?:get|has)\(\s*["'`]autoplay["'`]\s*\)/, // params.get("autoplay") / params.has("autoplay")
+  /\[[^\]\n]*["'`]autoplay["'`][^\]\n]*\]\s*\.(?:some|every|find|filter)\(/ // ["autoplay", "demo"].some((k) => params.get(k) ...)
+];
+/** readQaParams({ autoplay: { type: "flag" } }) is a read only where the same file then uses the parsed `.autoplay`. */
+const AUTOPLAY_SCHEMA_RE = /\bautoplay\s*:\s*\{\s*type\s*:\s*["'`]flag["'`]/;
+const AUTOPLAY_SCHEMA_USE_RE = /[\w$)\]]\s*\.\s*autoplay\b(?!\s*\()/;
+
+/** First line of `f` that reads `?autoplay` without the shared reader, or -1. */
+function inlineAutoplayLine(f) {
+  const lines = f.text.split("\n");
+  const direct = lines.findIndex((l) => AUTOPLAY_INLINE_RES.some((re) => re.test(l)));
+  if (direct >= 0) return direct;
+  return AUTOPLAY_SCHEMA_RE.test(f.text) ? lines.findIndex((l) => AUTOPLAY_SCHEMA_USE_RE.test(l)) : -1;
+}
+
+/**
+ * Every live game supports `?autoplay=1` through `readAutoplayFlag` (lessons-learned P8, V10). Errors when a game reads
+ * `?autoplay` inline without being on AUTOPLAY_INLINE_ALLOWLIST, or has no autoplay reader at all; warns on a stale
+ * allow-list entry.
+ */
+function checkAutoplay({ game, src }) {
+  const out = [];
+  const code = src.files.filter((f) => CODE_KIND.test(f.kind));
+  const allowed = Object.prototype.hasOwnProperty.call(AUTOPLAY_INLINE_ALLOWLIST, game.slug);
+  const reader = code.some((f) => AUTOPLAY_READER_RE.test(f.text));
+  const inline = [];
+  for (const f of code) {
+    const i = inlineAutoplayLine(f);
+    if (i >= 0) inline.push({ f, no: i + 1 });
+  }
+  if (!reader && inline.length === 0) {
+    out.push(finding("autoplay", "error", game, `apps/${game.appFolder}`, 0, "no ?autoplay=1 support: read the flag with readAutoplayFlag and loop runs with createAutoplayHarness (docs/api/game-autoplay.md)"));
+  }
+  if (!allowed) {
+    for (const { f, no } of inline) out.push(finding("autoplay", "error", game, f.rel, no, "reads ?autoplay inline: use readAutoplayFlag from @aura3d/engine/game (docs/api/game-autoplay.md); inline readers are allowed only for the games on AUTOPLAY_INLINE_ALLOWLIST"));
+  } else if (inline.length === 0) {
+    out.push(finding("autoplay", "warn", game, "tools/game-checks/lib/index.mjs", 0, `stale AUTOPLAY_INLINE_ALLOWLIST entry: ${game.slug} no longer reads ?autoplay inline; remove the entry`));
+  }
+  return out;
+}
+
 function dedupe(list) {
   const seen = new Set();
   return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -1130,7 +1207,8 @@ export const GAME_CHECKS = {
   "borrowed-asset": checkBorrowedAsset,
   "prop-exclusivity": checkPropExclusivity,
   "luma-band": checkLumaBand,
-  "no-removed-5-0-apis": checkNoRemoved50Apis
+  "no-removed-5-0-apis": checkNoRemoved50Apis,
+  autoplay: checkAutoplay
 };
 export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
 
