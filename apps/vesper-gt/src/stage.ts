@@ -7,14 +7,14 @@ import { assets } from "./aura-assets";
 // Broad bounce light reveals the pigment. The two diffusers shape the roof and flank.
 export const lightSetups = {
   daylight: {
-    key: { position: [3.5, 5.8, 4] as AuraVec3, color: "#fff4e9", intensity: 1.58 },
-    rim: { position: [-3.4, 4.3, -3.5] as AuraVec3, color: "#d4dee8", intensity: 1.14 },
-    side: { position: [3.6, 2.35, 0.5] as AuraVec3, color: "#fff7ee", intensity: 6.15 }
+    key: { position: [2.5, 7, 4] as AuraVec3, color: "#f2e9df", intensity: 0.52 },
+    rim: { position: [-3.4, 4.3, -3.5] as AuraVec3, color: "#cbd7e2", intensity: 0.68 },
+    side: { position: [3.8, 3.4, 0.15] as AuraVec3, color: "#eee2d8", intensity: 1.32 }
   },
   tungsten: {
-    key: { position: [-3.2, 4.8, 3.9] as AuraVec3, color: "#ffc18d", intensity: 1.38 },
-    rim: { position: [3.9, 3.7, -3.2] as AuraVec3, color: "#f1e1cc", intensity: 1.2 },
-    side: { position: [3.35, 3.5, -1.2] as AuraVec3, color: "#f9b98e", intensity: 2.25 }
+    key: { position: [-3.2, 4.8, 3.9] as AuraVec3, color: "#ffbb83", intensity: 0.83 },
+    rim: { position: [3.9, 3.7, -3.2] as AuraVec3, color: "#e5d5be", intensity: 0.77 },
+    side: { position: [3.35, 3.5, -1.2] as AuraVec3, color: "#efae82", intensity: 1.07 }
   }
 };
 export const views = {
@@ -60,7 +60,7 @@ export function buildStudio(position: AuraVec3) {
   const target = views.body.target;
   return scene().background("#222b33")
     .camera(camera.perspective({ position, target, fov, near: 0.035, far: 75 }))
-    .add(environments.hdri({ name: "photography studio", texture: assets.studio, intensity: 0.95, rotation: 1.12, background: false }))
+    .add(environments.hdri({ name: "photography studio", texture: assets.studio, intensity: 0.31, rotation: 1.12, background: false }))
     .add(lights.hemisphere({ name: "studio bounce", skyColor: "#ded9d4", groundColor: "#75666a", intensity: 0.88 }))
     .add(studioSweep())
     .add(lights.key({ name: "studio key", target, shadow: { filter: "pcss", lightSize: 0.82, softness: 2, bias: 0.002, intensity: 0.88 }, ...lightSetups.daylight.key }).runtime(game.runtimeNode("key")))
