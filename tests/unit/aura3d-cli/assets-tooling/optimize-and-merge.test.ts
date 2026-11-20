@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
 import { loadGltfToolkit } from "../../../../packages/aura3d-cli/src/commands/assets/gltfToolkit.js";
 import { OPTIMIZE_BUDGETS, optimizeGlbFile, planOptimize } from "../../../../packages/aura3d-cli/src/commands/assets/optimize.js";
+import { optimizeFileVerb } from "../../../../packages/aura3d-cli/src/commands/assets/optimizeVerb.js";
 import { mergeGlbClips, parseClipSpec } from "../../../../packages/aura3d-cli/src/commands/assets/mergeClips.js";
 
 const dir = mkdtempSync(join(tmpdir(), "aura3d-gltf-"));
@@ -61,6 +62,61 @@ describe("assets optimize and merge-clips (real glTF documents)", () => {
     const skipped = await optimizeGlbFile({ input, output: join(dir, "out", "dense.keep.glb"), maxVerts: 1500, simplify: false, toolkit: toolkit! });
     expect(skipped.simplified).toBe(false);
     expect(skipped.vertsAfter).toBe(skipped.vertsBefore);
+  });
+
+  needsToolkit("optimize never JPEG-encodes normal or metallicRoughness maps (an ORM shared with occlusion stays PNG) and reports them", async () => {
+    const tk = toolkit!;
+    const image = async (size: number, format: "png" | "jpeg", rgb: [number, number, number]): Promise<Uint8Array> => {
+      const data = Buffer.alloc(size * size * 3);
+      for (let i = 0; i < size * size; i += 1) data.set([(rgb[0] + i * 7) % 256, (rgb[1] + i * 3) % 256, rgb[2]], i * 3);
+      const pipeline = tk.sharp(data, { raw: { width: size, height: size, channels: 3 } });
+      return new Uint8Array(await (format === "png" ? pipeline.png() : pipeline.jpeg({ quality: 90 })).toBuffer());
+    };
+    const doc = new tk.Document();
+    const buffer = doc.createBuffer();
+    const color = doc.createTexture("albedo").setMimeType("image/png").setImage(await image(64, "png", [200, 40, 40]));
+    const normal = doc.createTexture("normal").setMimeType("image/png").setImage(await image(64, "png", [128, 128, 250]));
+    const orm = doc.createTexture("orm").setMimeType("image/png").setImage(await image(64, "png", [255, 60, 10]));
+    const jpegNormalBytes = await image(24, "jpeg", [128, 128, 255]);
+    const jpegNormal = doc.createTexture("deliveredNormal").setMimeType("image/jpeg").setImage(jpegNormalBytes);
+    const paint = doc.createMaterial("paint").setBaseColorTexture(color).setNormalTexture(normal).setMetallicRoughnessTexture(orm).setOcclusionTexture(orm);
+    const trim = doc.createMaterial("trim").setNormalTexture(jpegNormal);
+    const scene = doc.createScene("s");
+    for (const [name, material] of [["body", paint], ["trim", trim]] as const) {
+      const prim = doc.createPrimitive()
+        .setAttribute("POSITION", doc.createAccessor().setType("VEC3").setArray(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])).setBuffer(buffer))
+        .setAttribute("TEXCOORD_0", doc.createAccessor().setType("VEC2").setArray(new Float32Array([0, 0, 1, 0, 0, 1])).setBuffer(buffer))
+        .setMaterial(material);
+      scene.addChild(doc.createNode(name).setMesh(doc.createMesh(name).addPrimitive(prim)));
+    }
+    const input = join(dir, "pbr.glb");
+    await new tk.NodeIO().write(input, doc);
+    const output = join(dir, "out", "pbr.opt.glb");
+    const result = await optimizeGlbFile({ input, output, role: "prop", tex: 32, simplify: false, toolkit: tk });
+    const out = await new tk.NodeIO().read(output);
+    type OutTexture = { getName(): string; getMimeType(): string; getImage(): Uint8Array };
+    const byName = new Map<string, OutTexture>(out.getRoot().listTextures().map((t: OutTexture) => [t.getName(), t]));
+    expect(byName.get("albedo")!.getMimeType()).toBe("image/jpeg");
+    expect(byName.get("normal")!.getMimeType()).toBe("image/png");
+    expect(byName.get("orm")!.getMimeType()).toBe("image/png");
+    expect(byName.get("deliveredNormal")!.getMimeType()).toBe("image/jpeg");
+    expect(Buffer.from(byName.get("deliveredNormal")!.getImage()).equals(Buffer.from(jpegNormalBytes))).toBe(true);
+    expect(result.lossless).toEqual(expect.arrayContaining([
+      expect.objectContaining({ texture: "normal", result: "png", sourceFormat: "png" }),
+      expect.objectContaining({ texture: "orm", result: "png", slots: expect.arrayContaining(["metallicRoughnessTexture", "occlusionTexture"]) }),
+      expect.objectContaining({ texture: "deliveredNormal", result: "kept", sourceFormat: "jpeg" })
+    ]));
+    expect(result.lossless.map((record) => record.texture)).not.toContain("albedo");
+
+    // A JPEG normal map over budget is resized as PNG, never re-encoded as JPEG.
+    const big = await optimizeGlbFile({ input, output: join(dir, "out", "pbr.small.glb"), role: "prop", tex: 16, simplify: false, toolkit: tk });
+    expect(big.lossless.find((record) => record.texture === "deliveredNormal")).toMatchObject({ result: "png" });
+
+    const lines: string[] = [];
+    const code = await optimizeFileVerb(["--file", input, "--out", join(dir, "out", "pbr.cli.glb"), "--tex", "32", "--no-simplify"], { cwd: dir, stdout: (line) => lines.push(line), stderr: (line) => lines.push(line) });
+    expect(code).toBe(0);
+    expect(lines.join("\n")).toMatch(/kept lossless: normal \[normalTexture\] -> PNG/);
+    expect(lines.join("\n")).toMatch(/kept lossless: deliveredNormal \[normalTexture\] -> jpeg as delivered/);
   });
 
   needsToolkit("merge-clips copies clips onto a base rig by node name and rejects a foreign skeleton", async () => {

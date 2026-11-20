@@ -92,6 +92,12 @@ export async function optimizeFileVerb(argv: readonly string[], io: VerbIo): Pro
     meshopt: argv.includes("--meshopt")
   });
   if (argv.includes("--json")) io.stdout(JSON.stringify(result, null, 2));
-  else io.stdout(`${result.output}: ${result.bytesIn} -> ${result.bytesOut} bytes, vertices ${result.vertsBefore} -> ${result.vertsAfter} (${result.role} budget ${result.maxVerts}, textures <= ${result.tex}px)${result.skinned ? ", skinned" : ""}`);
+  else {
+    io.stdout(`${result.output}: ${result.bytesIn} -> ${result.bytesOut} bytes, vertices ${result.vertsBefore} -> ${result.vertsAfter} (${result.role} budget ${result.maxVerts}, textures <= ${result.tex}px)${result.skinned ? ", skinned" : ""}`);
+    for (const record of result.lossless) {
+      const what = record.result === "png" ? "PNG" : `${record.sourceFormat} as delivered (within budget; re-encoding cannot repair it)`;
+      io.stdout(`  kept lossless: ${record.texture} [${record.slots.join(", ")}] -> ${what}`);
+    }
+  }
   return 0;
 }

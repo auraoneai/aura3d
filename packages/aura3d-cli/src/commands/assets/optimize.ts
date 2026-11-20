@@ -2,7 +2,8 @@
  * `aura3d assets optimize --file in.glb --out out.glb [--role hero|vehicle|character|prop|background]`
  *
  * Direct-file mode of the `assets optimize` verb (the id-based admission pipeline stays in prd05). Dedup, weld,
- * budgeted simplify, prune, texture downscale (colour/ORM -> jpeg, normal -> png) and a stable vertex order. Geometry
+ * budgeted simplify, prune, texture downscale (colour/occlusion -> jpeg; normal and metallicRoughness never jpeg, see
+ * ./textureEncode.ts) and a stable vertex order. Geometry
  * stays float32 by default: meshopt quantisation moves scale into a node transform, which skews the grounding and
  * bounds checks `assets import-meshy` runs, so `meshopt: true` is for static background props you will not measure.
  *
@@ -15,6 +16,7 @@ import { dirname, resolve } from "node:path";
 import { encodeRgb9e5ProbeKTX2 } from "@aura3d/assets/exporters";
 import { requireStandardProbePrimaries, type StandardProbePrimaries } from "../prd02/probeFormatOptions.js";
 import { createGltfIo, loadGltfToolkit, type GltfToolkit, type Loose } from "./gltfToolkit.js";
+import { encodeTexturesKeepingPbrLossless, type LosslessTextureRecord } from "./textureEncode.js";
 
 export type OptimizeRole = "hero" | "vehicle" | "character" | "prop" | "background";
 
@@ -62,6 +64,8 @@ export interface OptimizeGlbResult extends OptimizePlan {
   readonly vertsAfter: number;
   readonly skinned: boolean;
   readonly simplified: boolean;
+  /** Normal and metallicRoughness textures, which are never JPEG-encoded: resized as PNG, or kept as delivered. */
+  readonly lossless: readonly LosslessTextureRecord[];
 }
 
 export function isOptimizeRole(value: string): value is OptimizeRole {
@@ -96,7 +100,7 @@ export async function optimizeGlbFile(options: OptimizeGlbOptions): Promise<Opti
   const output = resolve(projectDir, options.output);
   if (input === output) throw new Error("--out must differ from --file: optimize never overwrites its input.");
   const toolkit = options.toolkit ?? loadGltfToolkit(projectDir);
-  const { dedup, weld, simplify, prune, textureCompress, meshopt, resample, reorder } = toolkit.functions;
+  const { dedup, weld, simplify, prune, meshopt, resample, reorder } = toolkit.functions;
   const io = await createGltfIo(toolkit);
   const doc = await io.read(input);
   const vertsBefore = countVerts(doc);
@@ -107,17 +111,13 @@ export async function optimizeGlbFile(options: OptimizeGlbOptions): Promise<Opti
     await doc.transform(simplify({ simplifier: toolkit.MeshoptSimplifier, ratio: Math.max(0.02, plan.maxVerts / vertsBefore), error: plan.error, lockBorder: skinned }));
     simplified = true;
   }
-  await doc.transform(
-    resample(),
-    prune(),
-    textureCompress({ encoder: toolkit.sharp, resize: [plan.tex, plan.tex], targetFormat: "jpeg", slots: /^(?!normal)/, quality: 86 }),
-    textureCompress({ encoder: toolkit.sharp, resize: [plan.tex, plan.tex], slots: /^normal/ }),
-    reorder({ encoder: toolkit.MeshoptEncoder })
-  );
+  await doc.transform(resample(), prune());
+  const lossless = await encodeTexturesKeepingPbrLossless(doc, toolkit, { tex: plan.tex, quality: 86 });
+  await doc.transform(reorder({ encoder: toolkit.MeshoptEncoder }));
   if (plan.meshopt) await doc.transform(meshopt({ encoder: toolkit.MeshoptEncoder, level: "medium" }));
   mkdirSync(dirname(output), { recursive: true });
   await io.write(output, doc);
-  return { ...plan, input, output, bytesIn: statSync(input).size, bytesOut: statSync(output).size, vertsBefore, vertsAfter: countVerts(doc), skinned, simplified };
+  return { ...plan, input, output, bytesIn: statSync(input).size, bytesOut: statSync(output).size, vertsBefore, vertsAfter: countVerts(doc), skinned, simplified, lossless };
 }
 
 export function optimizeUsage(): string {

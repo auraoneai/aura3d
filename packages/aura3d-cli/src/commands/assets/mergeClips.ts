@@ -10,6 +10,7 @@
 import { existsSync, mkdirSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { createGltfIo, loadGltfToolkit, type GltfToolkit, type Loose } from "./gltfToolkit.js";
+import { encodeTexturesKeepingPbrLossless } from "./textureEncode.js";
 
 export interface MergeClipInput {
   /** Clip name written to the output GLB (and used by the game: run, idle, jump...). */
@@ -77,7 +78,7 @@ export async function mergeGlbClips(options: MergeClipsOptions): Promise<MergeCl
   const tex = options.tex ?? 1024;
   if (!Number.isInteger(tex) || tex < 16 || tex > 4096) throw new Error(`--tex must be an integer from 16 to 4096 (got ${tex}).`);
   const toolkit = options.toolkit ?? loadGltfToolkit(projectDir);
-  const { dedup, prune, textureCompress, resample, reorder } = toolkit.functions;
+  const { dedup, prune, resample, reorder } = toolkit.functions;
   const io = await createGltfIo(toolkit);
   const baseFile = resolveGlb(projectDir, options.base, "rigged_character_glb.glb");
   if (baseFile === output) throw new Error("--out must differ from --base.");
@@ -122,14 +123,10 @@ export async function mergeGlbClips(options: MergeClipsOptions): Promise<MergeCl
   if (options.keepBaseAnimations !== true) {
     for (const animation of root.listAnimations()) if (!names.has(animation.getName())) animation.dispose();
   }
-  await base.transform(
-    dedup(),
-    resample(),
-    prune(),
-    textureCompress({ encoder: toolkit.sharp, resize: [tex, tex], targetFormat: "jpeg", slots: /^(?!normal)/, quality: 85 }),
-    textureCompress({ encoder: toolkit.sharp, resize: [tex, tex], slots: /^normal/ }),
-    reorder({ encoder: toolkit.MeshoptEncoder })
-  );
+  await base.transform(dedup(), resample(), prune());
+  // Normal and metallicRoughness maps are never JPEG-encoded (lessons A11, A12).
+  await encodeTexturesKeepingPbrLossless(base, toolkit, { tex, quality: 85 });
+  await base.transform(reorder({ encoder: toolkit.MeshoptEncoder }));
   mkdirSync(dirname(output), { recursive: true });
   await io.write(output, base);
   return { output, bytes: statSync(output).size, clips: reports, animations: root.listAnimations().map((animation: Loose) => animation.getName()) };
