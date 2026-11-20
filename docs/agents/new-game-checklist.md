@@ -1,6 +1,6 @@
 # New game checklist (pre-flight and acceptance)
 
-One page, current for 5.6.0. Entry ids (R1, M2, ...) point into [`lessons-learned.md`](lessons-learned.md). A game is accepted on a real GPU with a full `?autoplay=1` run; software-GL evidence is not real-GPU evidence: say which one you have in every report.
+One page, current for 5.7.0. Entry ids (R1, M2, ...) point into [`lessons-learned.md`](lessons-learned.md). A game is accepted on a real GPU with a full `?autoplay=1` run; software-GL evidence is not real-GPU evidence: say which one you have in every report.
 
 ## 1. Before coding
 
@@ -8,16 +8,29 @@ One page, current for 5.6.0. Entry ids (R1, M2, ...) point into [`lessons-learne
 - [ ] Pick a unique public name; add it to `docs/workflows/game-names.md` (N1). The game goes into `tools/site/games.catalog.json`; the site count is generated (`node tools/site/gen-game-inventory.mjs`), never typed (N3).
 - [ ] State the objective, the score and the end screen in one paragraph (G1). Player must see the objective from second one.
 - [ ] Start from the kits, not from scratch (P8): `installQaHooks`, `createFixedStepLoop` + `createFixedStepPresenter`, `installGameBeacon`, `installSafetyNet`, `createCueBank`, the impact kit, `attachToBone`, `createLocomotion`, the shared quick bar `apps/showcase-port-shared/quickbar.css`. See `docs/agents/build-a-game.md`.
+- [ ] 5.7.0 kits replace code every game used to hand-roll; use them, do not write your own (P8):
+
+  | Need | Use (import) | Doc |
+  | --- | --- | --- |
+  | `?autoplay=1` flag and results-hold-then-restart loop | `readAutoplayFlag`, `createAutoplayHarness` (`@aura3d/engine/game`) | [game-autoplay](../api/game-autoplay.md) |
+  | Fixed-step render interpolation with a snap rule | `createSnapshotInterpolator`, `mixNumber`, `mixVec3` (`@aura3d/engine/game`) | [motion-snapshot-interpolator](../api/motion-snapshot-interpolator.md) |
+  | Humanoid clip playback, cross-fades, distance-driven feet | `createHumanoidAnimator`, `humanoidLocomotionTime` (`@aura3d/engine/animation`) | [humanoid-motion](../api/humanoid-motion.md) |
+  | Hit-stop, camera trauma, FOV kick, zero-asset SFX, screen flash, popups, seeded RNG | `createImpactRig`, `createProceduralSfx`, `ScreenFx`, `drainPopups`, `GameRng` (`@aura3d/engine/game`) | [game-feel](../api/game-feel.md) |
+  | Flipbook VFX sheets and grading LUTs with no image assets | `createFlipbookAtlas`, `createGradingLut` (`@aura3d/engine/game`) | [game-vfx-sheets](../api/game-vfx-sheets.md) |
+  | Painted game sky (bands, horizon, haze, sun glow) | `sky.gradient({ mid, haze, sun: { glow } })` | [sky-gradient](../api/sky-gradient.md) |
+  | Soft or hard sun shadow edge; a shadow box fixed to the arena | `shadow: { softness, fit: { center, extent } }` | [shadow-softness](../api/shadow-softness.md) |
+  | Transparent canvas over the page | `output: { alphaMode: "premultiplied", inputAlphaMode: "premultiplied" }` | [transparent-canvas](../api/transparent-canvas.md) |
+- [ ] Hero readability: the hero separates from the set by value (rim or back light, or a lighter accent) in a back-view frame at gameplay distance (R23); HUD words (colours, names, counts) describe the drawn frame, not the authored hex (G9).
 - [ ] Assets: catalog first, then the fal.ai lane below (Meshy only when the owner asks for it, every Meshy call reserved in `aura3d meshy ledger`); isolated admission, sha256 + same-origin + provenance (A5, A6). Never name a brand, product or model in a prompt. Check licences (A9).
-- [ ] Lifelike custom models and motion: `aura3d assets generate "<subject>" --name <key> --kind character --rig --dry-run` (prints the fal.ai cost), then the paid run, `aura3d assets normalize` if facing or size is off, `aura3d assets validate --skin <file.glb>`, and `aura3d animation generate "<motion>" --onto <rig.glb> --out <hero.glb>` for clips (`aura3d animation import` for BVH/FBX/GLB motion). Spend is ledgered in `.aura3d/fal/ledger.jsonl`; reruns resume and never pay twice. Look at the `assets preview` sheet (a CPU base-colour preview, not a render) and then real frames.
-- [ ] Plan `?autoplay=1` from the start: the computer plays the player side competently, starts by itself, reaches the results screen and loops (keep `?autopilot` as an alias where it existed). It is a hands-free demo and QA mode, never a substitute for player input (claims-and-boundaries section 3).
+- [ ] Lifelike custom models and motion: `aura3d assets generate "<subject>" --name <key> --kind character --rig --dry-run` (prints the fal.ai cost), then the paid run, `aura3d assets normalize` if facing or size is off, `aura3d assets validate --skin <file.glb>`, and `aura3d animation generate "<motion>" --onto <rig.glb> --out <hero.glb>` for clips (`aura3d animation import` for BVH/FBX/GLB motion). Spend is ledgered in `.aura3d/fal/ledger.jsonl`; reruns resume and never pay twice. Look at the `assets preview` sheet (a CPU base-colour preview, not a render) and then real frames. Never trust generated PBR maps as delivered (A11): inspect metalness, roughness and normal-tilt statistics, make painted bodies dielectric with a clearcoat, split paint, glass, chrome and tyres into separate materials, keep normal maps lossless PNG, lower `normalScale`, and never `assets slim` a glossy or mirror surface (A12).
+- [ ] Plan `?autoplay=1` from the start; every game must support it: the computer plays the player side competently, starts by itself, reaches the results screen and loops. Read the flag with `readAutoplayFlag(location.search)` (accepts `autoplay`, `autopilot`, `demo`) and run the results-hold-then-restart loop on `createAutoplayHarness`; the bot stays game code and feeds the normal input path. It is a hands-free demo and QA mode, never a substitute for player input (claims-and-boundaries section 3).
 - [ ] Fonts from the licensed set only (U3).
 
 ## 2. While building
 
-- [ ] Sim is pure and deterministic (seeded RNG, fixed step); render draws between the last two steps with the presenter (M1).
-- [ ] Timers that must run while the game is frozen (hit-stop, countdowns) use real frame time (`createHitStop`) (M2).
-- [ ] Pose bones are `{x,y,z,w}` objects; props use `attachToBone`; verify the pose applied from a frame (M3, M4). Handles of models nested in a moving group are parent-local since 5.7.0; before 5.7.0 they took world coordinates (M18); pick clips by their pose, not their name, and never ship a T-posed or frozen character (M19).
+- [ ] Sim is pure and deterministic (seeded RNG, fixed step: `GameRng`); render draws between the last two steps with `createSnapshotInterpolator` or `createFixedStepPresenter` (M1).
+- [ ] Timers that must run while the game is frozen (hit-stop, countdowns) use real frame time (`createImpactRig` or `createHitStop`) (M2).
+- [ ] Pose bones are `{x,y,z,w}` objects; props use `attachToBone`; verify the pose applied from a frame (M3, M4). Handles of models nested in a moving group are parent-local since 5.7.0; before 5.7.0 they took world coordinates (M18), so convert any 5.6 code that fed them world values or make the node top-level (M22); humanoid clips play through `createHumanoidAnimator`; pick clips by their pose, not their name, and never ship a T-posed or frozen character (M19).
 - [ ] Wheels, rotors and sails are separate nodes that spin about their measured hub (M20); keep drawn road ripple, rider sway and camera trauma small enough that a flat sim never reads as a bounce (M21). Generated models get the right scale against the players (`model()` normalises to 1 m unless you pass `targetHeight`/`targetMaxDimension` or `scaleMode: "world"`).
 - [ ] Walkers use `createLocomotion`; keep `createFootSlideMeter` under the threshold (M5). No double skeletons: `checkDoubleFrame` clean (M7).
 - [ ] Every solid obstacle has a collider and a consequence (impact kit: stop or bounce, hit-stop, shake, sound, penalty) (M6). Decor that reads solid inside the play path blocks or is moved out (V12).

@@ -76,7 +76,7 @@ lighting you evaluate materials and silhouettes against.
    ```
 
    Treat `"ok": false` warnings (for example missing orientation metadata) as
-   facts to record, not noise.
+   facts to record, not noise. Never trust a generated model's PBR maps as delivered: inspect metalness, roughness and normal-tilt statistics, make painted bodies dielectric with a clearcoat, split body, glass, chrome and tyres into separate materials, keep normal maps lossless PNG and lower `normalScale` ([generated PBR maps](references/generate-convert-post.md#generated-pbr-maps-are-not-trustworthy-as-delivered)).
 6. Regenerate types and validate the shipping set.
 
    ```bash
@@ -124,7 +124,8 @@ lighting you evaluate materials and silhouettes against.
 - a generated Meshy GLB has not been through `assets optimize --file in.glb --out
   out.glb --role prop` (role budgets: prop 6k, character 30k, hero or vehicle 40k
   vertices; textures capped at 1024 to 2048 px; 16-bit indices);
-- it is placeholder-like, or only a generated thumbnail proves it is readable.
+- it is placeholder-like, or only a generated thumbnail proves it is readable;
+- a glossy or mirror surface (paint, glass, chrome) carries a JPEG normal map (`assets slim` output) or a high-metalness painted body.
 
 ## Stop and report
 
