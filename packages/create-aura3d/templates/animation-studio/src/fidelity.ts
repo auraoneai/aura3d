@@ -25,7 +25,7 @@ export type FidelityRigGrade = "A" | "B" | "C" | "D";
 
 /** Where a character's geometry/rig came from — drives the mascot/previz floor. */
 /** `catalog-resolved` is the legacy spelling of `open-source-resolved`; both are accepted. */
-export type FidelityProvenance = "curated" | "user-uploaded" | "open-source-resolved" | "catalog-resolved" | "meshy-generated" | "authored-fallback";
+export type FidelityProvenance = "curated" | "user-uploaded" | "open-source-resolved" | "catalog-resolved" | "authored-fallback";
 
 /** The motion actually played — real extracted/mocap clips vs the procedural baseline. */
 export type FidelityMotionSource = "mocap" | "extracted" | "embedded" | "procedural" | "idle" | "talk" | "fallback" | "unknown";

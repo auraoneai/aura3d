@@ -23,10 +23,9 @@ export interface Selection {
  *  - `authored-fallback` — a built-in authored/placeholder character (NOT sourced evidence).
  *  - `open-source-resolved` — resolved from open sources (carries source/license/url). Documents
  *    written earlier say `catalog-resolved`; both read the same.
- *  - `meshy-generated`  — generated with Meshy from a text prompt (opt-in, budgeted).
  *  - `user-uploaded`     — a GLB the user dropped in (`cast add --file`).
  */
-export type CastSource = "authored-fallback" | "open-source-resolved" | "meshy-generated" | "user-uploaded";
+export type CastSource = "authored-fallback" | "open-source-resolved" | "user-uploaded";
 
 export interface CastMember {
   id: string;

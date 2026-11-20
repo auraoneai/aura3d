@@ -8,13 +8,13 @@
  * recorded with the licence and author the provider reported.
  *
  * When nothing matches, callers get an error that says so plainly and names the next steps
- * (`noMatchMessage`): add a licensed GLB, or generate with Meshy by passing `--allow-meshy
- * --budget N`. This module never falls back to a network endpoint on its own.
+ * (`noMatchMessage`): add a licensed GLB you already have (or one you generated with
+ * `aura3d assets generate`). This module never falls back to a network endpoint on its own.
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -81,12 +81,10 @@ export const defaultCliRunner: CliRunner = (args) => {
 
 /** What to do when open sources have nothing: honest, concrete, copy-pasteable. */
 export function noMatchMessage(query: string, id: string, role: "character" | "prop"): string {
-  const meshyBudget = role === "character" ? 40 : 30;
   const addFlag = role === "character" ? `--file ./your-rigged-character.glb` : `--file ./your-prop.glb`;
   return [
     `No open-source model matched "${query}" (nothing licence-clear, downloadable and suitable for a ${role}).`,
-    `Next: add a licensed GLB you have the rights to:  animation-scene ${role === "character" ? "cast" : "prop"} add --id ${id} ${role === "character" ? addFlag : '--query "..." (or admit the file with `aura3d assets add ./your-prop.glb --name ' + id + "`)"}`,
-    `  or generate one with Meshy (opt-in, costs credits):  animation-scene ${role === "character" ? "cast" : "prop"} add --id ${id} --query ${JSON.stringify(query)} --allow-meshy --budget ${meshyBudget}`
+    `Next: add a licensed GLB you have the rights to:  animation-scene ${role === "character" ? "cast" : "prop"} add --id ${id} ${role === "character" ? addFlag : '--query "..." (or admit the file with `aura3d assets add ./your-prop.glb --name ' + id + "`)"}`
   ].join("\n");
 }
 
@@ -164,46 +162,4 @@ export function searchOpenSources(query: string, options: OpenSourceSearchOption
   }
   if (lastError) throw new OpenSourceSearchError(`open-source search failed: ${lastError}`);
   return [];
-}
-
-export interface MeshyGenerated {
-  /** Absolute path of the generated GLB. */
-  readonly file: string;
-  readonly prompt: string;
-  readonly credits: number;
-}
-
-/**
- * Generate with Meshy through the CLI ladder. Only called when the user passed `--allow-meshy`
- * with a budget. The CLI never handles Meshy credentials: it runs the generator configured in
- * `AURA3D_MESHY_CMD` (for example one that goes through Kiro Prism with ledger caps).
- */
-export function generateWithMeshy(
-  query: string,
-  id: string,
-  role: "character" | "prop",
-  budget: number,
-  runner: CliRunner = defaultCliRunner,
-  listGlbs: (dir: string) => string[] = (dir) => (existsSync(dir) ? readdirSync(dir).map((f) => join(dir, f)) : [])
-): MeshyGenerated {
-  const run = runner(["assets", "resolve", query, "--name", id, "--role", role, "--allow", "meshy", "--budget", String(budget), "--json"]);
-  if (run.error) throw new OpenSourceSearchError(`Meshy generation could not run: ${run.error.message}`);
-  const start = run.stdout.indexOf("{");
-  if (start < 0) throw new OpenSourceSearchError(`Meshy generation printed no report${run.stderr ? `: ${run.stderr.trim().split("\n")[0]}` : ""}`);
-  const report = JSON.parse(run.stdout.slice(start)) as {
-    chosen?: string;
-    messages?: string[];
-    meshy?: { prompt?: string; estimateCredits?: number; commands?: string[]; ran?: boolean };
-    costCredits?: number;
-    skipped?: { rung: string; reason: string }[];
-  };
-  if (report.chosen !== "meshy" || !report.meshy?.ran) {
-    const why = (report.skipped ?? []).filter((s) => s.rung === "meshy").map((s) => s.reason).join("; ") || (report.messages ?? []).join(" ");
-    throw new OpenSourceSearchError(`Meshy did not generate a model (${why || "no reason reported"}). Check AURA3D_MESHY_CMD and the budget (needs about ${role === "character" ? 38 : 30} credits).`);
-  }
-  const outDir = /--out\s+(\S+)/.exec(report.meshy.commands?.[0] ?? "")?.[1];
-  if (!outDir) throw new OpenSourceSearchError("Meshy ran but the CLI did not report where it wrote the model");
-  const glb = listGlbs(outDir).find((f) => /\.glb$/i.test(f));
-  if (!glb) throw new OpenSourceSearchError(`Meshy reported success but no .glb is in ${outDir}`);
-  return { file: glb, prompt: report.meshy.prompt ?? query, credits: report.costCredits ?? report.meshy.estimateCredits ?? 0 };
 }

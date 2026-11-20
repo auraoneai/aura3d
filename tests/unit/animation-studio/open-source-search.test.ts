@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   OpenSourceNoMatchError,
   OpenSourceSearchError,
-  generateWithMeshy,
   locateCli,
   noMatchMessage,
   searchOpenSources,
@@ -92,12 +91,10 @@ describe("searchOpenSources", () => {
 });
 
 describe("noMatchMessage", () => {
-  it("says plainly nothing was found and names both next steps", () => {
+  it("says plainly nothing was found and names the next step", () => {
     const msg = noMatchMessage("dragon", "drake", "character");
     expect(msg).toMatch(/No open-source model matched "dragon"/);
     expect(msg).toMatch(/--file \.\/your-rigged-character\.glb/);
-    expect(msg).toMatch(/--allow-meshy --budget 40/);
-    expect(noMatchMessage("crate", "box", "prop")).toMatch(/--allow-meshy --budget 30/);
     expect(noMatchMessage("crate", "box", "prop")).toMatch(/aura3d assets add/);
   });
 });
@@ -106,36 +103,6 @@ describe("locateCli", () => {
   it("prefers AURA3D_CLI and otherwise needs an installed binary", () => {
     expect(locateCli("/nonexistent", { AURA3D_CLI: "/opt/aura3d" })).toBe("/opt/aura3d");
     expect(locateCli("/nonexistent", {})).toBeUndefined();
-  });
-});
-
-describe("generateWithMeshy", () => {
-  const meshyReport = {
-    chosen: "meshy",
-    costCredits: 30,
-    meshy: { ran: true, prompt: "a wooden crate", estimateCredits: 30, commands: ["meshy generate --out /tmp/out-crate"] }
-  };
-
-  it("runs the CLI ladder with the budget and returns the generated GLB", () => {
-    const calls: string[][] = [];
-    const runner: CliRunner = (args) => {
-      calls.push([...args]);
-      return ok(JSON.stringify(meshyReport));
-    };
-    const out = generateWithMeshy("crate", "box", "prop", 30, runner, () => ["/tmp/out-crate/model.glb"]);
-    expect(out).toEqual({ file: "/tmp/out-crate/model.glb", prompt: "a wooden crate", credits: 30 });
-    expect(calls[0]).toEqual(["assets", "resolve", "crate", "--name", "box", "--role", "prop", "--allow", "meshy", "--budget", "30", "--json"]);
-  });
-
-  it("explains why Meshy did not run instead of pretending", () => {
-    const runner: CliRunner = () =>
-      ok(JSON.stringify({ chosen: "none", skipped: [{ rung: "meshy", reason: "budget 10 is below the estimate" }] }));
-    expect(() => generateWithMeshy("crate", "box", "prop", 10, runner, () => [])).toThrow(/budget 10 is below the estimate/);
-  });
-
-  it("fails when Meshy reports success but wrote no GLB", () => {
-    const runner: CliRunner = () => ok(JSON.stringify(meshyReport));
-    expect(() => generateWithMeshy("crate", "box", "prop", 30, runner, () => [])).toThrow(/no \.glb/);
   });
 });
 
@@ -148,7 +115,6 @@ describe("resolveAsset with nothing found", () => {
     const runner: CliRunner = () => report([]);
     const failure = await resolveAsset("unobtainium golem", "golem", "character", { runner }).catch((e: unknown) => e);
     expect(failure).toBeInstanceOf(OpenSourceNoMatchError);
-    expect((failure as Error).message).toMatch(/--allow-meshy --budget 40/);
     expect((failure as Error).message).toMatch(/--file \.\/your-rigged-character\.glb/);
     expect(fetchSpy).not.toHaveBeenCalled();
   });

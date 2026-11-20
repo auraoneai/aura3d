@@ -56,7 +56,7 @@ export interface RuntimeCharacter {
    * Explicit provenance class when the resolver/CLI recorded one. When absent it is INFERRED:
    * a sourceUrl/attribution → open-source-resolved; otherwise authored-fallback.
    */
-  source?: "authored-fallback" | "open-source-resolved" | "catalog-resolved" | "meshy-generated" | "user-uploaded" | "curated";
+  source?: "authored-fallback" | "open-source-resolved" | "catalog-resolved" | "user-uploaded" | "curated";
   /** M7 — rig grade (A/B/C/D) the resolver recorded, when available; drives the fidelity tier. */
   rigGrade?: "A" | "B" | "C" | "D";
   /** M7 — dominant motion source the render played (mocap/extracted/procedural…), when recorded. */
@@ -171,9 +171,6 @@ export function castProvenance(c: RuntimeCharacter): { source: CastSource; sourc
   if (c.source === "user-uploaded" || /^file:/i.test(c.sourceUrl ?? "")) {
     return { source: "user-uploaded", sourceLabel: c.attribution ?? "user-uploaded GLB" };
   }
-  if (c.source === "meshy-generated") {
-    return { source: "meshy-generated", sourceLabel: c.attribution ?? "generated with Meshy" };
-  }
   if (c.source === "curated") {
     return { source: "open-source-resolved", sourceLabel: c.attribution ?? "curated cast" };
   }
@@ -192,7 +189,6 @@ export function castProvenance(c: RuntimeCharacter): { source: CastSource; sourc
 export function fidelityProvenance(c: RuntimeCharacter): FidelityProvenance {
   if (c.source === "curated") return "curated";
   if (c.source === "user-uploaded" || /^file:/i.test(c.sourceUrl ?? "")) return "user-uploaded";
-  if (c.source === "meshy-generated") return "meshy-generated";
   if (c.source === "open-source-resolved" || c.source === "catalog-resolved" || c.sourceUrl || c.attribution) return "open-source-resolved";
   return "authored-fallback";
 }

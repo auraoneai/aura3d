@@ -95,7 +95,7 @@ Add a local GLB/glTF asset:
 npx @aura3d/cli@latest assets add ./assets/sneaker.glb --name sneaker
 ```
 
-Or resolve a catalog candidate or Meshy 3D PBR model:
+Or resolve an open-source catalog candidate:
 
 ```bash
 npx @aura3d/cli@latest assets search "battle-worn knight helmet"

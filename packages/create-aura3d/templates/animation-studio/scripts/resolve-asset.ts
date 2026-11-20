@@ -3,8 +3,8 @@
  * through the Aura3D CLI search; see open-source-search.ts) into the template's public dir, so a
  * scene's cast/props are DYNAMIC (resolved from the prompt), not the Moon Garden defaults. Uses
  * the hardened loader (auto weight-normalization). Records the licence and author the provider
- * reported. When nothing matches it says so and names the next steps (add a licensed GLB, or
- * generate with Meshy via `--allow-meshy --budget N`); there is no network service to fall back to.
+ * reported. When nothing matches it says so and names the next step (add a licensed GLB); there
+ * is no network service to fall back to.
  *
  * Used by `animation-scene cast add` / `prop add`.
  */
@@ -18,7 +18,6 @@ import { ProbeSession } from "./asset-render-probe.js";
 import { probeEmbeddedMotion, type ClipMotionScore, type MotionProbeReport } from "./asset-motion-probe.js";
 import {
   OpenSourceNoMatchError,
-  generateWithMeshy,
   noMatchMessage,
   searchOpenSources,
   type CliRunner,
@@ -544,7 +543,7 @@ export async function resolveAsset(
  * report is written. Throws (with the grades in the message) if the GLB has no usable rig or
  * fails the render probe, so a broken upload is rejected honestly rather than silently shipped.
  */
-/** Where a locally supplied GLB really came from (user upload, or generated with Meshy). */
+/** Where a locally supplied GLB really came from. */
 export interface LocalProvenance {
   readonly source: string;
   readonly attribution: string;
@@ -628,7 +627,7 @@ export async function resolveLocalGlb(
 }
 
 /**
- * Admit a prop GLB you supply (or that Meshy generated): needs geometry and self-contained
+ * Admit a prop GLB you supply: needs geometry and self-contained
  * textures, is hashed and copied into public/aura-assets, and records the provenance you pass.
  * Props have no rig, so there is no rig grade or render probe.
  */
@@ -651,34 +650,6 @@ export function resolveLocalProp(filePath: string, id: string, provenance: Local
     attribution: provenance.attribution, sourceUrl: provenance.sourceUrl, license: provenance.license,
     meshGrade: mesh, tris: info.tris, textureMaxDim: info.textureMaxDim
   };
-}
-
-/**
- * Generate a character or prop with Meshy (opt-in, budgeted), then admit the generated GLB
- * through the same grading as an upload. Only called when the user passed `--allow-meshy` with a
- * budget. The provenance records that it was generated from a text prompt, never a licence we
- * did not verify: confirm your Meshy plan's commercial terms before you ship it.
- */
-export async function resolveMeshyAsset(
-  query: string,
-  id: string,
-  role: "character" | "prop",
-  budget: number,
-  opts: { runner?: CliRunner; skipRenderProbe?: boolean } = {}
-): Promise<ResolvedAsset> {
-  const needed = role === "character" ? 38 : 30;
-  if (!Number.isFinite(budget) || budget < needed) {
-    throw new Error(`--budget ${budget} is below the about ${needed}-credit Meshy estimate for a ${role}. Pass --budget ${needed} or more with --allow-meshy.`);
-  }
-  const generated = generateWithMeshy(query, id, role, budget, opts.runner);
-  const provenance: LocalProvenance = {
-    source: "meshy",
-    attribution: `Generated with Meshy from the text prompt "${generated.prompt}" (${generated.credits} credits)`,
-    sourceUrl: `meshy:text-to-3d`,
-    license: "meshy-generated (check your Meshy plan terms before shipping)"
-  };
-  if (role === "prop") return resolveLocalProp(generated.file, id, provenance);
-  return resolveLocalGlb(generated.file, id, { ...(opts.skipRenderProbe ? { skipRenderProbe: true } : {}), provenance });
 }
 
 /**
