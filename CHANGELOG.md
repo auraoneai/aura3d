@@ -4,6 +4,25 @@ Version: 5.7.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 5.7.1 (unreleased)
+
+A patch release: two WebGL2 renderer fixes. No public API change.
+
+### Fix: alpha-preserving output no longer fails to mount at random (`@aura3d/engine`, `@aura3d/rendering`)
+
+- **Symptom.** With `output: { alphaMode: "premultiplied", inputAlphaMode: "premultiplied" }` on WebGL2, some page loads failed with `RENDERER_MOUNT_FAILED: RenderDeviceError: The active post chain cannot apply the requested output color or alpha policy`, `onUnavailable` fired and nothing drew. On an Apple M4 Max 3 to 5 of 10 loads of the AuraOne homepage hero failed on 5.7.0 (5 of 6 on 5.6.0).
+- **Cause.** Alpha output can only present through the v2 OutputPass route, which needs the deferred `post/v2Entry` module. The mount started that `import()` without waiting for it, and the sync frame path ran the first frame with whatever had loaded. When the first frame won the race, the frame fell through to the fused present, which cannot keep alpha, and threw (`packages/rendering/src/webgl2/LegacyPost.ts`, `executePostGraphWebGL2`). Whether it won depended on network and chunk-evaluation timing, so the same page failed on some loads and not others.
+- **Fix.** The mount now waits for that module, alongside the scene compile, when the canvas keeps alpha on WebGL2 (`packages/engine/src/agent-api/compiler/renderer.ts`). The renderer no longer throws if a sync alpha frame still arrives before the module: it presents a transparent frame, records `POSTPROCESS_ALPHA_OUTPUT_DEFERRED:v2-modules-loading` in `diagnostics().output.postSkipped`, and the next frame takes the OutputPass route (`packages/rendering/src/renderer/PostprocessExecution.ts`). Opaque output does not take either path and renders exactly as in 5.7.0.
+- **Tests.** `tests/unit/rendering/alpha-output-v2-race-571.test.ts` runs a sync alpha frame before the module loads (it threw the production error before this fix), checks that the next frame takes the OutputPass route, and checks that opaque output is unchanged.
+
+### Fix: WebGL2 clearcoat is no longer blurrier than authored (`@aura3d/rendering`)
+
+- **Symptom.** On the legacy WebGL2 textured-PBR program, glTF and textured-PBR clearcoat set below about 0.19 roughness rendered blurrier than authored, and blurrier than on WebGPU and the default WebGL2 route. The Vesper GT paint authors 0.05.
+- **Cause.** The WebGL2 textured-PBR program floored the coat roughness at 0.18 (0.19 plus a normal-map term in the clearcoat-texture variants). Those floors came from 4.x car-paint tuning. The WebGPU generated program and the WebGL2 physical path use 0.0525 plus a geometric-roughness term instead.
+- **Fix.** The coat lobes (direct GGX, environment Fresnel and the environment sample) now use the WebGPU resolution: the authored roughness, floored at 0.0525, plus the screen-space derivative of the geometric normal. That derivative is the specular anti-aliasing term: it widens the coat where curvature or minification would alias. A clearcoat normal texture still widens the coat by its old normal-map term. Materials without clearcoat keep their old inputs to the anisotropy and transmission-specular lobes, so they render as before.
+- **Who sees a change.** Only clearcoat drawn by the legacy WebGL2 textured-PBR program changes: apps that turn the generated-program route off (`A3D_QR_CORE_GENERATOR` off, for example `?a3d-qr=-core_generator`) and direct `Renderer` users of `TexturedPBRMaterial` without it. The default route already used the WebGPU resolution. A per-draw count over the 30 live games and the 3 examples on WebGL2 found no clearcoat draw on the legacy program, and the default Vesper GT frame is pixel-identical before and after. With the generated route turned off, the Vesper GT coat highlight is tighter and brighter and matches the default route.
+- **Tests.** `tests/unit/rendering/clearcoat-roughness-floor-571.test.ts` pins the GLSL for the base and texture variants and checks that it matches the WebGPU and physical-path sources.
+
 ## 5.7.0 (2026-11-19)
 
 A minor release: the 30 showcase games' motion player, autoplay, interpolation, feel and VFX kits move into the library; a stylised `sky.gradient`, working shadow `softness` and `fit`, transparent canvas output by default, parent-local nested handles, watertight extrusion caps, and less CPU work per frame.
