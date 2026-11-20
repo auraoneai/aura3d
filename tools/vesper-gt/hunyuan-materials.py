@@ -156,4 +156,8 @@ def curate(input_path, output_path):
 
 
 if __name__ == "__main__":
-    curate(*sys.argv[1:])
+    sys.dont_write_bytecode = True
+    from surfaces import finish
+    normalized, optimized, baseline, output = sys.argv[1:]
+    curate(normalized, baseline)
+    finish(baseline, optimized, output, read_glb, accessor)

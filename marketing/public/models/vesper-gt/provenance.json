@@ -22,8 +22,8 @@
   "requestId": "01a1f55f-2f39-7091-aa25-28a3e1678689",
   "estimatedGenerationUsd": 0.525,
   "rawSha256": "55c17a4896018bcc191d72506ff5640166e13ca9640662ed1eeed6129951206b",
-  "artifactSha256": "ce819dccaacd73f991bdc535bf135883ae643e81bc1e03ff2f3cc83d0fa78747",
-  "artifactBytes": 7429820,
+  "artifactSha256": "71c3081628baa09809eefa7e523e81919435bc65e43791d75864a642a1e9bed0",
+  "artifactBytes": 9959088,
   "artifact": "marketing/public/models/vesper-gt/coupe.glb",
   "triangles": 145874,
   "vertices": 118267,
@@ -48,7 +48,7 @@
     "Removed generated pseudo lettering at rear, neutralized rear plate pad and badge",
     "Clamped out-of-range glTF specularColorFactor to 1"
   ],
-  "evidence": "Four directional base-color views and an Aura3D browser PBR frame were inspected on November 19, 2026. The selected mesh preserves continuous hood reflections, smoked glazing, wheel arches and amber lamp slashes.",
+  "evidence": "The original Hunyuan shape was selected from an Aura3D hardware PBR frame. Geometry proof records identical attribute, oriented triangle and scene transform hashes before and after material repair.",
   "sourceImageRequestId": "01a1f551-ee8a-7bf1-8984-ff75bdae8709",
   "rawArtifact": {
     "download": "https://v3b.fal.media/files/b/0ab32209/twPZLwLi0vF9w9IrzmYOK_model.glb",
@@ -68,7 +68,8 @@
   "rebuild": {
     "sources": [
       "tools/vesper-gt/rebuild-hunyuan.mts",
-      "tools/vesper-gt/hunyuan-materials.py"
+      "tools/vesper-gt/hunyuan-materials.py",
+      "tools/vesper-gt/surfaces.py"
     ],
     "sourceGlb": "Original output identified by rawArtifact.sha256",
     "command": "pnpm exec tsx --tsconfig tsconfig.base.json tools/vesper-gt/rebuild-hunyuan.mts RAW.glb OUTPUT.glb",
@@ -81,8 +82,30 @@
     },
     "nodePackages": "Repository lockfile"
   },
-  "sha256": "ce819dccaacd73f991bdc535bf135883ae643e81bc1e03ff2f3cc83d0fa78747",
-  "bytes": 7429820,
+  "sha256": "71c3081628baa09809eefa7e523e81919435bc65e43791d75864a642a1e9bed0",
+  "bytes": 9959088,
   "creator": "AuraOne",
-  "model": "coupe.glb"
+  "model": "coupe.glb",
+  "materialRepair": {
+    "sourceSha256": "ce819dccaacd73f991bdc535bf135883ae643e81bc1e03ff2f3cc83d0fa78747",
+    "geometryProof": {
+      "attributes": {
+        "NORMAL": "3a96e04c8786e1f77ba6be9e239502e4e364a2a6dd96304800a35ae4ee901be3",
+        "POSITION": "6ef8c8189bbf9f7a819a71b157f5f9841a3c0c8c82dc26550f9b8275eb2785f9",
+        "TEXCOORD_0": "4978392fd57623c3314bdfe5b3938cae12de4abadc9bf6e76d102447fe4d8800"
+      },
+      "orientedTriangleMultiset": "96489357dcde5fc76cdfee55b04806a6fe609559e0817a80ad9c2adb21b66d8a",
+      "sceneTransforms": "f3852b11316f38336cb565bbc57394cf34bc57a06ca80c3144a323300cb0794f"
+    },
+    "method": "Partition original oriented triangles by measured spatial region and UV color. Share vertex attributes, preserve the debranded atlas detail and grade garnet pigment. Use independent PBR lobes. Paint and glass use mesh normals. Wheel and tire detail uses filtered, renormalized lossless PNG normals from the optimizer.",
+    "surfaceTriangles": {
+      "Midnight garnet | dielectric lacquer": 38846,
+      "Wheel alloy | machined aluminum": 43877,
+      "Tire | vulcanized rubber": 19439,
+      "Canopy | smoked laminated glass": 2197,
+      "Trim | graphite composite": 39492,
+      "Headlamp | amber LED lens": 1020,
+      "Taillamp | ruby lens": 1003
+    }
+  }
 }
