@@ -14,6 +14,8 @@ import { readSource5Manifest } from '../../../tools/remote-acr/source5-files.mjs
 import { CONSUMER_INDEX_NAME, consumerPartDir, planArchives, shardDownloadDir, shardIndexName, stageArtifacts, stageConsumers, verifyDownloadedArtifacts, verifyDownloadedConsumerParts, verifyDownloadedConsumers, verifyDownloadedExamples } from '../../../tools/remote-acr/source5-artifacts.mjs';
 import { exampleShardRecord, exampleShardReportName } from '../../../tools/agent-examples/shard.mjs';
 
+type UnstagedSource = { readonly path: string; readonly gitBlob: string };
+
 const REPO = resolve(__dirname, '../../..');
 const temps: string[] = [];
 const temp = (label: string) => { const dir = mkdtempSync(join(tmpdir(), `a3d-source5-${label}-`)); temps.push(dir); return dir; };
@@ -97,9 +99,9 @@ describe('source5 staged manifest (AURA3D_SOURCE_MANIFEST)', () => {
     const { root, commit, tree, paths } = evidenceCandidate();
     const unstaged = selectUnstagedSources({ root, paths, treeBlobs: commitBlobIds(root, commit) });
     // Screens, receipts, a frame named under tools/ and evidence data stay staged.
-    expect(unstaged.map((entry) => entry.path)).toEqual(['evidence/run-1/frames/a.png', 'evidence/run-1/frames/b.webp']);
+    expect(unstaged.map((entry: UnstagedSource) => entry.path)).toEqual(['evidence/run-1/frames/a.png', 'evidence/run-1/frames/b.webp']);
     for (const entry of unstaged) expect(entry.gitBlob).toBe(git(root, 'rev-parse', `${commit}:${entry.path}`));
-    const skip = new Set(unstaged.map((entry) => entry.path));
+    const skip = new Set(unstaged.map((entry: UnstagedSource) => entry.path));
     const ctx = stage(root, paths.filter((path) => !skip.has(path)));
     const { manifest, identity } = writeSource5Manifest({ root: ctx, paths, commit, tree, unstaged, sourceRoot: root });
     // Every candidate file stays in `files`; the two frames are only declared unstaged.
@@ -125,11 +127,11 @@ describe('source5 staged manifest (AURA3D_SOURCE_MANIFEST)', () => {
     put(root, 'evidence/run-1/frames/a.png', 'edited after commit');
     put(root, 'evidence/run-2/new.png', 'untracked');
     const all = [...paths, 'evidence/run-2/new.png'];
-    expect(selectUnstagedSources({ root, paths: all, treeBlobs: commitBlobIds(root, commit) }).map((entry) => entry.path)).toEqual(['evidence/run-1/frames/b.webp']);
+    expect(selectUnstagedSources({ root, paths: all, treeBlobs: commitBlobIds(root, commit) }).map((entry: UnstagedSource) => entry.path)).toEqual(['evidence/run-1/frames/b.webp']);
     git(root, 'checkout', '--', 'evidence/run-1/frames/a.png');
     const unstaged = selectUnstagedSources({ root, paths, treeBlobs: commitBlobIds(root, commit) });
     expect(() => buildSource5Manifest({ root: stage(root, paths), paths, commit, tree, unstaged, sourceRoot: root })).toThrow(/present in the staged context/);
-    const ctx = stage(root, paths.filter((path) => !unstaged.some((entry) => entry.path === path)));
+    const ctx = stage(root, paths.filter((path) => !unstaged.some((entry: UnstagedSource) => entry.path === path)));
     expect(() => buildSource5Manifest({ root: ctx, paths, commit, tree, unstaged })).toThrow(/need the checkout/);
     expect(() => buildSource5Manifest({ root: ctx, paths, commit, tree, unstaged: [{ path: 'packages/engine/src/index.ts', gitBlob: '0'.repeat(40) }], sourceRoot: root })).toThrow(/Not an unstageable/);
     put(root, 'evidence/run-1/frames/a.png', 'edited after selection');
