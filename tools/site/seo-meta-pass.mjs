@@ -170,7 +170,8 @@ function normalizeHead(html, route) {
     if (withH1 === head) throw new Error(`${route.file}: missing <body> tag for h1 injection`);
     head = withH1;
   }
-  return head;
+  // Collapse the blank lines left where earlier SEO lines were removed, so repeated runs are byte-stable.
+  return head.replace(/\n(?:[ \t]*\n){2,}/g, "\n\n");
 }
 
 function audit(html, route) {
