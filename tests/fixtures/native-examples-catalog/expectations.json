@@ -2546,7 +2546,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-fc-3d/src/main.ts",
-        "sha256": "631190befc9840915f359b07823049b188aa5455c341529a4e5a2cc992178dab"
+        "sha256": "ae4c202f6805614aabdbb5ad5bd3a27aed96afb60ff7a9eb735e861c7473c71b"
       },
       "sourceDependencies": [
         {
@@ -2628,7 +2628,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-hoops-3d/src/main.ts",
-        "sha256": "69a6b2b140c908f03da1b3bebe1067cd416e96cb20f51dfd5435a7bb66afed42"
+        "sha256": "53027ba3f2a0cc1e808266fe3e0475f6cb233fa2ca8330a1b50714262365bdad"
       },
       "sourceDependencies": [
         {
@@ -2788,7 +2788,7 @@
       },
       "source": {
         "path": "apps/showcase-pips-big-leap/src/main.ts",
-        "sha256": "5b2c451884df9791059de4ca81bfd2ff731930a5a469b5758a3933c739d95fe6"
+        "sha256": "a5c3d0e494e8a3876ba70edf8a447043f2a07f6ba3c8ecd6c13ae45ea72e3b5d"
       },
       "sourceDependencies": [
         {
@@ -2821,11 +2821,11 @@
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/world.ts",
-          "sha256": "04201efda275390a49978430212f7b7bc56a7417971b153c8c8e56fe18b9e19a"
+          "sha256": "f4000c8b0854d4930fc10bd77ac6cf5b0b5c143d8b9fa479d3eb2a668d159d69"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/diorama.ts",
-          "sha256": "1eff2f5bb0e5a8e95ca82ee73c1615d61c44cacb6731c903523bcab25d2470a3"
+          "sha256": "dac3730e94c1274c5faedb44bd268146543569cfb86959c35d9118fc7b9ec38f"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/presentation.ts",
@@ -3094,7 +3094,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-bunker-zero/src/weapons-view.ts",
-          "sha256": "ad86c361b16fe881a686b2cc3377aa1640e938d14540a2e800081025854bd33d"
+          "sha256": "77d2a4572a9bf35fea8692379f95f75da321be56ece7879292367cb016c7b5b9"
         },
         {
           "path": "apps/showcase-bunker-zero/src/art/look.ts",
@@ -3176,7 +3176,7 @@
       "id": "documented-example:apps/showcase-aura-links-3d",
       "kind": "numeric",
       "author": "Aura3D native catalog fixture authors",
-      "subject": "Hero golfer (typed linksGolferAthleteClean.b56529b1.glb, targetHeight 1.84) at the St Auroras hole-1 tee: steel-blue shirt and skin texels",
+      "subject": "Hero golfer (typed Idol linksIdolGolferBlue.8943e9fe.glb, targetHeight 1.84) at the St Auroras hole-1 tee: steel-blue shirt and skin texels",
       "provenance": "No reference capture: independently derived from source. The route boots straight into Quick Play (main.ts: live unless ?menu=1; the menu overlay is pointer-events:none until .open). ?flyover=0 is the route's own switch (broadcast.ts flyoverAllowed) that cuts to the game camera instead of the hole flyover, which would otherwise own the camera on a timed rail. The default course is stAuroras hole 1; courses.ts buildHoleTerrain gives tee [0, 1.95, 0] and lineYaw 0.0408, the ball sits at the tee + 0.05. With phase 'address' on the tee, flow.ts cameraModeFor returns 'aim'; its settled pose (zoom 1, aspect 1.778 so side = 1) is eye = ball - 5.4*(sin, cos)yaw - 2.7*(cos, -sin)yaw at terrain height + 2.2 ([-2.918, 4.150, -5.285]) -> target 34 m down the line at terrain height - 2.2 ([1.387, -1.036, 33.972]), fov 42; the camera lerps converge within a few seconds (settle waits for 240 rendered frames). rig.ts poseGolfer places the hero at localToWorld(ball, yaw, [0.52, 0, -0.02]) on the terrain, rotated yaw - pi/2, fit to targetHeight 1.84; the caddy stands at [3.1, 0, 2.2]. A z-buffered projection of the GLB bind-pose triangles puts the golfer at about x 126-222, y 298-605 (the caddy at the left edge, x <= 68); the region x 120-200, y 350-440 is ~55% shirt texels (sRGB ~(120, 152, 152)), ~15% skin (~(232, 168, 136)) and ~27% the turf behind. The 'Ready' clip moves the arms, so the skin band is kept low. The region is below the top-left HUD chips and above the gu47 hole card (left 22 px, bottom 56 px); all HUD is pointer-events:none. Two bands are required so a neutral canvas cannot pass. Lighting, animation pose, grade and rendered appearance remain unverified.",
       "surface": {
         "kind": "canvas",
@@ -3217,8 +3217,8 @@
           "sha256": "d10d784c9a3b25aa07d54b4c575befbf8892e2bca9a338d31bf79d132bf2e467"
         },
         {
-          "path": "public/aura-assets/linksGolferAthleteClean.b56529b1.glb",
-          "sha256": "b56529b145d5022acbe7f5d8f2d6dc5c3953f3944bae37ae347d43f28e85a2bd"
+          "path": "public/aura-assets/linksIdolGolferBlue.8943e9fe.glb",
+          "sha256": "8943e9fe6f4c9bcf6f3cab60c944ed33b19b4ade0ad9a6abb43167eecdef7014"
         },
         {
           "path": "packages/engine/src/agent-api/game-kits/racketGeometry.ts",
@@ -3456,7 +3456,7 @@
         },
         {
           "path": "apps/showcase-iron-crown/src/game/fighters.ts",
-          "sha256": "f1b5d9e487883c7a0fc0a882f07df0f451b9217355be7731fad7430eee17d331"
+          "sha256": "cc2a372b2adb32bcff8a3fc52f3e57e82a4128d304b0ad0f2c60a18d6a43409a"
         },
         {
           "path": "packages/engine/src/agent-api/camera/rigs/fighting.ts",
@@ -3618,7 +3618,7 @@
         },
         {
           "path": "apps/showcase-teleoperator/src/scene.ts",
-          "sha256": "039db2f6378ff12b624d039fcbe3b60c623ad0563a49b4f5a7e4f6bd29bc3707"
+          "sha256": "77b1ea5300e7e11daa3eb8b4f80cdd27f5680e7675eef2fed186ee8a87c04e9c"
         },
         {
           "path": "apps/showcase-teleoperator/src/sim.ts",
@@ -3693,11 +3693,11 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "0429f5fd303ca2969449e461a8b34e2369de22e344d9abba8938e24a9fcb3476"
+          "sha256": "c7b7df0ed04a260a7c9edd7d4401492b00fe6a66e79541cebf65dc6f3ef64871"
         },
         {
           "path": "examples/heatsink-port/models.ts",
-          "sha256": "e5451fba4ad5ebb30c2329b9e94158d80b2790e3bc18e2f1327cd8144243f8e3"
+          "sha256": "9655b4de70c5d51756fbf9c701e28e3c410c4c3a4ffdaae5d0df42f9300a72c2"
         },
         {
           "path": "examples/heatsink-port/orient.ts",
@@ -3725,7 +3725,7 @@
         },
         {
           "path": "examples/heatsink-port/art/look.ts",
-          "sha256": "b3f763a689917663cc8753f30c61732eba5e228bf769dbf05eff46ac60b709ab"
+          "sha256": "c5e64abaab1f0f0b60f8d1687c5c9aaccaee4d6b7518cea2779f196c1aec9a7c"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -3796,11 +3796,11 @@
         },
         {
           "path": "examples/heatsink-port/world.ts",
-          "sha256": "0429f5fd303ca2969449e461a8b34e2369de22e344d9abba8938e24a9fcb3476"
+          "sha256": "c7b7df0ed04a260a7c9edd7d4401492b00fe6a66e79541cebf65dc6f3ef64871"
         },
         {
           "path": "examples/heatsink-port/models.ts",
-          "sha256": "e5451fba4ad5ebb30c2329b9e94158d80b2790e3bc18e2f1327cd8144243f8e3"
+          "sha256": "9655b4de70c5d51756fbf9c701e28e3c410c4c3a4ffdaae5d0df42f9300a72c2"
         },
         {
           "path": "examples/heatsink-port/orient.ts",
@@ -3828,7 +3828,7 @@
         },
         {
           "path": "examples/heatsink-port/art/look.ts",
-          "sha256": "b3f763a689917663cc8753f30c61732eba5e228bf769dbf05eff46ac60b709ab"
+          "sha256": "c5e64abaab1f0f0b60f8d1687c5c9aaccaee4d6b7518cea2779f196c1aec9a7c"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -4092,7 +4092,7 @@
         },
         {
           "path": "examples/last-train-port/models.ts",
-          "sha256": "2e4bd0ae162882da1cf6207804fd300497a57b62d6a5a72ae5ff36d342972d91"
+          "sha256": "4767439425b2825923a74cee9346e186bfba17644b1e68ea6cf380f898395735"
         },
         {
           "path": "examples/last-train-port/orient.ts",
@@ -4112,7 +4112,7 @@
         },
         {
           "path": "examples/last-train-port/PORTING-NOTES.md",
-          "sha256": "bcae4633e43397bdb1c014ce71b122b73903c23e0157a1b0c792114a09bc7b74"
+          "sha256": "e435da5f8c345367051da46612665b56986cbfbbfca08d81ad3cf785746bbf72"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -4192,7 +4192,7 @@
         },
         {
           "path": "examples/last-train-port/models.ts",
-          "sha256": "2e4bd0ae162882da1cf6207804fd300497a57b62d6a5a72ae5ff36d342972d91"
+          "sha256": "4767439425b2825923a74cee9346e186bfba17644b1e68ea6cf380f898395735"
         },
         {
           "path": "examples/last-train-port/orient.ts",
@@ -4212,7 +4212,7 @@
         },
         {
           "path": "examples/last-train-port/PORTING-NOTES.md",
-          "sha256": "bcae4633e43397bdb1c014ce71b122b73903c23e0157a1b0c792114a09bc7b74"
+          "sha256": "e435da5f8c345367051da46612665b56986cbfbbfca08d81ad3cf785746bbf72"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -4280,7 +4280,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "1ae0f2321503268f1c171c9c4774b3d67e951408a96a9eb20e3af91aca3d1003"
+          "sha256": "435f08823c6a2c00ca86cff70cf8d7bf4a92f15dff2e67865e5ce67e56925e2c"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",
@@ -4304,7 +4304,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/models.ts",
-          "sha256": "6e3bf6f149accab3713533af1df669e6654f1fd5f396ec2b203cbde5f78ed325"
+          "sha256": "b4beaca31bd6ac57d70722504229fc4734eb7997a71399fd7a0c93850837dc17"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/ui.ts",
@@ -4397,7 +4397,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "1ae0f2321503268f1c171c9c4774b3d67e951408a96a9eb20e3af91aca3d1003"
+          "sha256": "435f08823c6a2c00ca86cff70cf8d7bf4a92f15dff2e67865e5ce67e56925e2c"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",
@@ -4421,7 +4421,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/models.ts",
-          "sha256": "6e3bf6f149accab3713533af1df669e6654f1fd5f396ec2b203cbde5f78ed325"
+          "sha256": "b4beaca31bd6ac57d70722504229fc4734eb7997a71399fd7a0c93850837dc17"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/ui.ts",
@@ -4505,11 +4505,11 @@
       "sourceDependencies": [
         {
           "path": "examples/ninja-runner-port/world.ts",
-          "sha256": "03bddde0e239e17bac2c72fa4119197b33cb505f27824c4db179ab02714b9854"
+          "sha256": "6097cc4bc80951ab1ef1515f7975e9d065888ee29c46e47404f51aa46539eccf"
         },
         {
           "path": "examples/ninja-runner-port/scenery.ts",
-          "sha256": "e976aa20b95ac04a54843f50936e282c08b613db0bfe5a9cea8de51d02741c9c"
+          "sha256": "8e9757eeca4e5ace07a68811b56074c613d8ecf45d6dab7779209f047a98609e"
         },
         {
           "path": "examples/ninja-runner-port/course.ts",
@@ -4521,7 +4521,7 @@
         },
         {
           "path": "examples/ninja-runner-port/models.ts",
-          "sha256": "60f6026cc8647ba98797a13a5b196b57683a8812c9f756ba39978bbcf4220a17"
+          "sha256": "bd96ebe4e6c3b5cc6f2e45fb543844c6766ec1b58ec2834008464e9d106cd251"
         },
         {
           "path": "examples/ninja-runner-port/cinematics.ts",
@@ -4633,11 +4633,11 @@
         },
         {
           "path": "examples/ninja-runner-port/world.ts",
-          "sha256": "03bddde0e239e17bac2c72fa4119197b33cb505f27824c4db179ab02714b9854"
+          "sha256": "6097cc4bc80951ab1ef1515f7975e9d065888ee29c46e47404f51aa46539eccf"
         },
         {
           "path": "examples/ninja-runner-port/scenery.ts",
-          "sha256": "e976aa20b95ac04a54843f50936e282c08b613db0bfe5a9cea8de51d02741c9c"
+          "sha256": "8e9757eeca4e5ace07a68811b56074c613d8ecf45d6dab7779209f047a98609e"
         },
         {
           "path": "examples/ninja-runner-port/course.ts",
@@ -4649,7 +4649,7 @@
         },
         {
           "path": "examples/ninja-runner-port/models.ts",
-          "sha256": "60f6026cc8647ba98797a13a5b196b57683a8812c9f756ba39978bbcf4220a17"
+          "sha256": "bd96ebe4e6c3b5cc6f2e45fb543844c6766ec1b58ec2834008464e9d106cd251"
         },
         {
           "path": "examples/ninja-runner-port/cinematics.ts",
@@ -4749,7 +4749,7 @@
       "sourceDependencies": [
         {
           "path": "examples/roadster-hours-port/world.ts",
-          "sha256": "71a71e418c1711d8cbd5c5111af1beed61238b3f0aae1b4523f9c282adee5d41"
+          "sha256": "4932498f6509e076e350ba5c7468a93f2e55586d183b067763e1b2772125bd1f"
         },
         {
           "path": "examples/roadster-hours-port/camera.ts",
@@ -4873,7 +4873,7 @@
         },
         {
           "path": "examples/roadster-hours-port/world.ts",
-          "sha256": "71a71e418c1711d8cbd5c5111af1beed61238b3f0aae1b4523f9c282adee5d41"
+          "sha256": "4932498f6509e076e350ba5c7468a93f2e55586d183b067763e1b2772125bd1f"
         },
         {
           "path": "examples/roadster-hours-port/camera.ts",
@@ -5189,7 +5189,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/world.ts",
-          "sha256": "5108d84ce5a87e1c588d5bcb7bedb330f5ecc40cc0745f2e6aaf443ac3ac012e"
+          "sha256": "decee6d1b569c60b3ec56fe28928884090576b61ac001f66acf071c039d2f972"
         },
         {
           "path": "examples/saiyan-snake-way-port/sim.ts",
@@ -5205,7 +5205,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/models.ts",
-          "sha256": "1b994a3f25a07249091f3ae5840ad72dee887fa56519c8233d022fc932c75510"
+          "sha256": "6efc6c5e76da0fc29d3d6dfacd95129221e41d07e2d91e5366e1c6e53ee191ee"
         },
         {
           "path": "examples/saiyan-snake-way-port/art/shots.ts",
@@ -5284,7 +5284,7 @@
         },
         {
           "path": "examples/splat-rush-port/world.ts",
-          "sha256": "ec1e0a50827e2bcedcc5dd3b854132d9d78b82bfd0a4902f346716ea19374ce6"
+          "sha256": "d7cdb733f489f1f1ca342419c35191b178394edf9c4312fb045c400753800eb5"
         },
         {
           "path": "examples/splat-rush-port/look.ts",
@@ -5379,7 +5379,7 @@
         },
         {
           "path": "examples/splat-rush-port/world.ts",
-          "sha256": "ec1e0a50827e2bcedcc5dd3b854132d9d78b82bfd0a4902f346716ea19374ce6"
+          "sha256": "d7cdb733f489f1f1ca342419c35191b178394edf9c4312fb045c400753800eb5"
         },
         {
           "path": "examples/splat-rush-port/look.ts",
@@ -5826,7 +5826,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/world.ts",
-          "sha256": "5108d84ce5a87e1c588d5bcb7bedb330f5ecc40cc0745f2e6aaf443ac3ac012e"
+          "sha256": "decee6d1b569c60b3ec56fe28928884090576b61ac001f66acf071c039d2f972"
         },
         {
           "path": "examples/saiyan-snake-way-port/sim.ts",
@@ -5842,7 +5842,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/models.ts",
-          "sha256": "1b994a3f25a07249091f3ae5840ad72dee887fa56519c8233d022fc932c75510"
+          "sha256": "6efc6c5e76da0fc29d3d6dfacd95129221e41d07e2d91e5366e1c6e53ee191ee"
         },
         {
           "path": "examples/saiyan-snake-way-port/art/shots.ts",
@@ -6056,7 +6056,7 @@
         },
         {
           "path": "apps/showcase-heatsink/src/data.ts",
-          "sha256": "931bf39e03ccc45d44588ac36524a521b2d709983d19defce2ed91f5ef4d839c"
+          "sha256": "22b4ddd2f69bb62ee8d92bbea3fd0e1db50881ab72940ef87d20f87a1922ff3e"
         },
         {
           "path": "apps/showcase-heatsink/src/scene.ts",
@@ -6593,7 +6593,7 @@
         },
         {
           "path": "apps/showcase-shape-shift-sprint/src/world.ts",
-          "sha256": "8a6342c5770e0ac3306b218e26aa22401ddc24dd4d7b8711c8f5b0b8639fc67a"
+          "sha256": "1a1b7098c18adbf23e2a4593b220e1ebc027ed2caa3dc3ccfd2bc29a81ed2eb3"
         },
         {
           "path": "apps/showcase-shape-shift-sprint/src/look.ts",
