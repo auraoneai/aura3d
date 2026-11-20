@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Benchmark gate for the "beat three.js" PRD (docs/prds/beat-threejs). Reads a results file produced by
-// the bench harness and prints PASS / FAIL / NO-DATA for every target in the PRD section 1 table.
+// Benchmark gate for the vs-three.js benchmark targets. Reads a results file produced by
+// the bench harness and prints PASS / FAIL / NO-DATA for every target.
 //
 //   node tools/bench-vs-threejs/gate.mjs --results <results.json> --static <static-metrics.json>
 //        [--gpu-results <results.json taken on a real GPU>] [--audit <capability-audit.md>]

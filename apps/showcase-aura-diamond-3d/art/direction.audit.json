@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-diamond-3d/art/direction.ts",
-  "sourceSha256": "28fc4697abce8bb545e8da98b425d1388e4c73cbe69d7503ccc6fbdd0b1bf5dd",
+  "sourceSha256": "37d6a7be485c767f858982d084dfcb329f3ab27a3e41bb3084021b7fab2d96ad",
   "id": "showcase-aura-diamond-3d",
   "genre": "golf-physics",
   "signatureEffect": "bat-crack splinter flash",

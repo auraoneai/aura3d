@@ -105,8 +105,7 @@ Without the plugin nothing changes, and the rest still applies:
   `.wasm`, 0.76 MB gzip, plus 0.24 MB of JS glue, against the compat chunk's 2.85 MB / 1.08 MB gzip with the WASM inlined as base64)
   and could be compiled while streaming and cached on its own, but it imports the `.wasm` as an ES module, which needs a WASM bundler
   plugin in every consumer and a different package name. It is not used: switching would break existing installs.
-- Making `lazy` the default (and `app.physics` async-first) is the breaking change left for 6.0 (C5-05 in
-  `docs/project/5.0-games-and-examples-upgrade-plan.md`).
+- Making `lazy` the default (and `app.physics` async-first) is the breaking change left for 6.0.
 
 A complete example is recipe 16 in `docs/agents/recipes.md` (`docs/agents/recipes-src/physics-basics`).
 

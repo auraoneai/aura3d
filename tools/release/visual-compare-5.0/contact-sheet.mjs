@@ -14,8 +14,20 @@
 //   --strict          exit 1 when a paired view has no 5.0 frame, or a baseline is missing or no longer matches its sha256
 //
 // Writes <out>/panels/<id>.png (paired: [4.7.10 | 5.0 | amplified abs diff]; showcase: [fallback | 5.0]), <out>/summary.png,
-// <out>/index.html and <out>/metrics.json. Differences are a signal to LOOK at the frames, not a verdict: see
-// docs/release/5.0-visual-comparison.md (animated scenes, software renderer, blind-panel rule).
+// <out>/index.html and <out>/metrics.json. Differences are a signal to LOOK at the frames, not a verdict.
+//
+// How to read a sheet:
+//  1. Check `problems` first: a missing frame, a baseline sha256 mismatch, HTTP 4xx (`VC_HTTP` lines, `badResponses`),
+//     pending textures, or a black or stand-in frame.
+//  2. On `light` and `static` views read `bandDelta` and `maxRegion`. A band that agrees within about 1.2 per channel
+//     did not change its lighting; a hot cell on a real object is a candidate change; uniform low-level red is codec
+//     or exposure noise.
+//  3. On `animated` views ignore the moving regions: two captures of the same code differ there too.
+//  4. Views flagged `changedIn4710` contain expected model additions.
+// Both sides are software-rendered (SwiftShader), but the browser builds and launch flags differ, and the baselines are
+// canvas-only JPEG frames, which is why the default compares a JPEG re-encode. Call a difference better or worse only
+// after a blind panel (three judges, neutral A/B copies, at least 2 of 3 agreeing). Capture with
+// `ACCEPT_GROUPS=visual-compare tools/remote-acr/run-acceptance5.sh`; narrow a run with `VC_VIEWS`, `VC_SHOTS` or `VC_RUN`.
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -318,7 +330,7 @@ function renderHtml(m) {
   return `<!doctype html><meta charset="utf-8"><title>Aura3D 4.7.10 vs 5.0 visual comparison</title>
 <style>body{font:14px system-ui,sans-serif;background:#111;color:#ddd;margin:16px}table{border-collapse:collapse}td,th{border:1px solid #444;padding:3px 8px}tr.paired td:first-child{background:#1d3b5c}tr.showcase td:first-child{background:#4a2f5c}img{max-width:100%}pre{background:#1b1b1b;padding:8px;overflow:auto}.warn{color:#ffb86b}</style>
 <h1>Aura3D 4.7.10 vs 5.0 visual comparison</h1>
-<p class="warn">A difference is a prompt to look at the frames, not a verdict. Animated scenes are time-driven, both sides are software-rendered, and the baselines are older JPEG frames of record. Read docs/release/5.0-visual-comparison.md before drawing a conclusion.</p>
+<p class="warn">A difference is a prompt to look at the frames, not a verdict. Animated scenes are time-driven, both sides are software-rendered, and the baselines are older JPEG frames of record.</p>
 <p>paired ${m.counts.pairedCompared}/${m.counts.paired} compared; showcase ${m.counts.showcaseFound}/${m.counts.showcase} found; threshold ${m.threshold}; ${m.problems.length} problems.</p>
 <h2>Summary</h2><p><a href="summary.png"><img src="summary.png" alt="summary sheet"></a></p>
 <table><tr><th>kind</th><th>id</th><th>shot / capability</th><th>mean abs diff</th><th>% px &gt; ${m.threshold}</th><th>luma delta</th><th>max cell</th><th>baseline / note</th></tr>${m.views.map(row).join('')}</table>

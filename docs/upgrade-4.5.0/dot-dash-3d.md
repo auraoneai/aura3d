@@ -78,7 +78,7 @@
 
 ## Checklist
 
-Closed by audit lane G13 on the remote runner (software WebGL2, `tests/browser/audit-fix/dot-dash-3d.spec.ts`; numbers and frames in `evidence/dot-dash-3d/audit-fix/` and `docs/audits/lanes/g13.md`).
+Closed by audit lane G13 on the remote runner (software WebGL2, `tests/browser/audit-fix/dot-dash-3d.spec.ts`; numbers and frames in `evidence/dot-dash-3d/audit-fix/`).
 
 - [x] Capture the same frames on 4.3.7 and 4.5.0 and compare brightness and colour: 25.0 on 4.3.7, 29.5 on 4.5.0 (above). After the per-normal hemisphere (lane E2) and the retune to 0.5, the old framing reads 29.50 (`g13w2-after`). The aspect-fit camera (DD-3) now shows the whole board and more of the dark deck at 16:9, so the same 75 s shot reads 25.49 (`g13w3-after3`); the board lighting itself is unchanged.
 - [x] Adjust the lights if the board reads wrong: `lights.hemisphere` 0.85 to 0.5 (`world.ts`, wave 2, LIGHT-03). Ambient, directional and `exposureEv` unchanged.

@@ -1,7 +1,7 @@
 /**
  * GU47 WP-33 look contract: the art direction passes `auditArtDirection` against a snapshot taken from the world the game
  * really builds (lights, environment and zero external GLB models walked out of `buildWorld().scene.toJSON()`), and the audit
- * record the `art-direction` game-check reads is written beside art/direction.ts (lanes/ei.md compliance recipe).
+ * record the `art-direction` game-check reads is written beside art/direction.ts (recipe: docs/agents/art-direction.md section 9).
  */
 import { basename } from "node:path";
 import { describe, expect, it } from "vitest";

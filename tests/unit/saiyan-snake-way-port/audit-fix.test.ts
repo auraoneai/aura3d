@@ -9,7 +9,7 @@ import {
 import { STEP, createRun, qaSnapshot, roadGapAt, snapshot, stepRun } from "../../../examples/saiyan-snake-way-port/sim";
 import { ENV_INTENSITY, buildWorld, environmentIntensity } from "../../../examples/saiyan-snake-way-port/world";
 
-/** Audit lane G17 (docs/audits/lanes/g17.md): one block per fixed row. */
+/** Audit lane G17: one block per fixed row. */
 const read = (path: string): string => readFileSync(new URL(`../../../${path}`, import.meta.url), "utf8");
 
 describe("C2 / RH-07: QA hook name", () => {

@@ -1,8 +1,8 @@
-# Wonder World deployment (PRD 04 J16)
+# Wonder World deployment
 
-**Status: deployed as an unlisted preview, not publicly released.** At the owner's request (2026-10-29, after PR #1398 merged) the app is served at an unlisted preview address: the Vercel project's own production domain and the owner's custom domain (`07` O6 and O7; section 3). This repository is public, so it never writes either address down. The address is linked from nowhere. The app is not in the public site build (`showcaseRoutes` in `marketing/scripts/build-showcase-routes.mjs`), the site catalog (`tools/site/games.catalog.json`), the showcase index, the game inventory or the sitemap. `index.html` carries `<meta name="robots" content="noindex">`, and every response carries `X-Robots-Tag: noindex, nofollow`. Publishing a children's app is a separate owner decision (`docs/prds/veer-wonder-world/07-autonomous-decisions-and-build-record.md` section 4.3). Until then, keep the address unlisted and use it, or a private address, for device testing.
+**Status: deployed as an unlisted preview, not publicly released.** At the owner's request (2026-10-29, after PR #1398 merged) the app is served at an unlisted preview address: the Vercel project's own production domain and the owner's custom domain (section 3). This repository is public, so it never writes either address down. The address is linked from nowhere. The app is not in the public site build (`showcaseRoutes` in `marketing/scripts/build-showcase-routes.mjs`), the site catalog (`tools/site/games.catalog.json`), the showcase index, the game inventory or the sitemap. `index.html` carries `<meta name="robots" content="noindex">`, and every response carries `X-Robots-Tag: noindex, nofollow`. Publishing a children's app is a separate owner decision (section 7). Until then, keep the address unlisted and use it, or a private address, for device testing.
 
-**Owner:** Aura3D product + game engineering (the PRD owner). The public-release decision belongs to the project owner.
+**Owner:** Aura3D product + game engineering. The public-release decision belongs to the project owner.
 
 ## 1. Build
 
@@ -21,7 +21,7 @@ pnpm exec vite build apps/veer-wonder-world
 The preview's deploy host runs `apps/veer-wonder-world/tools/deploy-build.sh` after `pnpm install --frozen-lockfile`. It runs these steps in order:
 1. the content lint;
 2. that build;
-3. `tools/check-dist.mjs`, which checks that noindex is kept, no source map was built, no served text file carries the child's name (beyond the one welcome literal, `07` O8) or a deploy-host variable, and no script holds a class static block;
+3. `tools/check-dist.mjs`, which checks that noindex is kept, no source map was built, no served text file carries the child's name (beyond the one welcome literal) or a deploy-host variable, and no script holds a class static block;
 4. the static check-deploy (section 2).
 
 A failed step stops the deploy.
@@ -66,7 +66,7 @@ Also run `tools/check-all.sh` and the remote specs (README) on the commit being 
 ## 3. Hosting requirements
 
 - **Serve `dist/` at an origin root** (for example `https://<private-preview-host>/`). The engine requests the look HDRIs at the absolute path `/hdri/`, and `fonts/local.css` names its font files under `/fonts/`; everything else is relative. Under a sub-path the HDRIs fall back to the engine's procedural studio light, and the text falls back to the next font in the stack.
-- **Neutral names.** No child's name in the host name, path, bucket prefix or alias: use `wonder-world` (for example `wonder-world/<commit-sha>/`). The source folder name is not part of any served URL. The one exception is the preview's custom domain, whose host name the owner chose (`07` O7). The project and its paths stay neutral.
+- **Neutral names.** No child's name in the host name, path, bucket prefix or alias: use `wonder-world` (for example `wonder-world/<commit-sha>/`). The source folder name is not part of any served URL. The one exception is the preview's custom domain, whose host name the owner chose. The project and its paths stay neutral.
 - **Same origin only.** The app fetches nothing from another origin; keep it that way. Do not let a CDN rewrite asset URLs to another host unless that host serves the whole `dist/`.
 - **HTTPS**, and these content types: `.glb` `model/gltf-binary`, `.mp3` `audio/mpeg`, `.hdr` `application/octet-stream`, `.woff2` `font/woff2`, `.js` a JavaScript type (`text/javascript` or `application/javascript`, which the preview sends), `.css` `text/css`.
 - **No SPA fallback is needed** (one `index.html`); a missing file should answer 404, as check-deploy's own server does.
@@ -80,7 +80,7 @@ Also run `tools/check-all.sh` and the remote specs (README) on the commit being 
 | | |
 | --- | --- |
 | Canonical Host | **Cloudflare Pages** (account `bd3fbe37a66521e496ea1b90f669f8b7`). Prefer Cloudflare Pages over Vercel; do not deploy to Vercel. |
-| Cloudflare Pages Project | `aura3d-wonder-world` (`https://aura3d-wonder-world.pages.dev` and the owner's custom domain in the `auraone.ai` Cloudflare zone, `07` O6 and O7) |
+| Cloudflare Pages Project | `aura3d-wonder-world` (`https://aura3d-wonder-world.pages.dev` and the owner's custom domain in the `auraone.ai` Cloudflare zone) |
 | Deploy Command | `bash apps/veer-wonder-world/tools/deploy-build.sh && wrangler pages deploy apps/veer-wonder-world/dist --project-name aura3d-wonder-world --branch main` |
 | Headers Config | `apps/veer-wonder-world/public/_headers` and `apps/veer-wonder-world/dist/_headers` (`X-Robots-Tag: noindex, nofollow`, `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, `Cache-Control` rules, and `.glb`/`.hdr` content types) |
 | DNS | Proxied CNAME in the `auraone.ai` Cloudflare zone pointing to `aura3d-wonder-world.pages.dev` |
@@ -89,7 +89,7 @@ Also run `tools/check-all.sh` and the remote specs (README) on the commit being 
 
 | | |
 | --- | --- |
-| Addresses | The owner's custom domain (`07` O7) and the project's own production domain, `<project>.vercel.app`. Both serve the current production deployment, and anyone who has an address can open it. Neither is written in this repository, which is public: the Vercel project lists them (`vercel-auraone domains ls`), and `tools/deploy-preview.sh --prod` writes the project address to `apps/veer-wonder-world/.preview-url` (gitignored) for the live check. |
+| Addresses | The owner's custom domain and the project's own production domain, `<project>.vercel.app`. Both serve the current production deployment, and anyone who has an address can open it. Neither is written in this repository, which is public: the Vercel project lists them (`vercel-auraone domains ls`), and `tools/deploy-preview.sh --prod` writes the project address to `apps/veer-wonder-world/.preview-url` (gitignored) for the live check. |
 | DNS | The custom domain is a DNS-only CNAME in the Cloudflare zone `auraone.ai`, pointing at the Vercel target that `vercel-auraone domains inspect` recommends. Vercel issues its certificate (Let's Encrypt), which puts the host name into public certificate-transparency logs. |
 | Project | `aura3d-wonder-world`, in the Vercel team that hosts the Aura3D site (`team_peHZvhHKYn5UsgYkLDOeaDm0`) |
 | Configuration | `deploy/vercel.json` (install, build, output directory and headers) and `deploy/vercelignore` (the upload list) |
@@ -133,7 +133,7 @@ On the preview, Vercel keeps every deployment and never changes it.
 
 ## 6. Logging and privacy (no PII)
 
-- The app logs nothing to the console. It sends no analytics, error reports or beacons, and requests nothing but its own files. J07 (`tests/unit/privacy/no-child-data.test.ts`) checks the source for this.
+- The app logs nothing to the console. It sends no analytics, error reports or beacons, and requests nothing but its own files. `tests/unit/privacy/no-child-data.test.ts` checks the source for this.
 - It never asks for the microphone, camera, location or notifications, and stores no name, photo, voice or age.
 - Host access logs are the only record a deployment creates. Keep them off for this route, or keep only what operations need (status codes and byte counts) for a short time, without IP addresses or user agents tied to sessions. On the preview, Vercel keeps its own request logs for the team for its plan's short retention, and nothing exports them. URLs carry only QA switches (`?story=`, `?mode=`, ...), never a child's data.
 - The `?diag=1` diagnostics panel shows renderer information on the device itself and sends nothing.
@@ -151,7 +151,7 @@ All of these come first:
 - physical-device evidence (iPad and iPhone Safari, Android Chrome, desktop Chrome);
 - no efficacy or therapy claim anywhere.
 
-Then the owner decides (`07` section 4.3).
+Then the owner decides.
 
 Only after that decision:
 1. Remove `noindex`, from `index.html` and from the headers in `deploy/vercel.json`.

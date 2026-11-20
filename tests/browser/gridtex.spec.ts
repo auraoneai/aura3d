@@ -3,7 +3,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 import { HOOK, emit, hasRoad, look, open, raf } from "./gridroad-lib";
 
 /**
- * Gridlock Courier texture upgrades after `ready()` (docs/audit/game-leftovers.md, road flip). Remote-only (tools/remote-acr/run.sh).
+ * Gridlock Courier texture upgrades after `ready()` (road flip). Remote-only (tools/remote-acr/run.sh).
  * A material that gains its texture switches to a textured program variant that compiles asynchronously, so the road can drop out of
  * frames the game believed were settled. `warmPrograms` now waits for pending upgrades; `?warmtex=0` keeps the old behaviour for the
  * evidence test. `@@GX <label> i=<frame> <json>` rows carry the texture status, draw calls and road presence per frame.

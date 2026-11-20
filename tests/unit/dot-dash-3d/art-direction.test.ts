@@ -6,7 +6,7 @@ import { buildScene } from "../../../apps/showcase-dot-dash-3d/src/game/world";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 /**
- * GU47 look contract (PRD §3.2, recipe in docs/prds/game-upgrades-47/lanes/ei.md): the art direction validates, the
+ * GU47 look contract (PRD §3.2, recipe in docs/agents/art-direction.md section 9): the art direction validates, the
  * authored scene passes auditArtDirection, and the audit record the `art-direction` game-check reads is rewritten.
  */
 describe("dot-dash-3d art direction (arcade-readability pass)", () => {

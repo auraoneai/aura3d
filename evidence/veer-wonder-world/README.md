@@ -6,7 +6,7 @@ Wonder World is the toddler story app in `apps/<app>/`, with its PRDs in `docs/p
 
 > ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)
 
-That is **not real-GPU or physical-device evidence**. Frame times and load times from it are not performance numbers. The physical-device runs are the open item in the build record, `docs/prds/<app>/07-autonomous-decisions-and-build-record.md` §4.3.
+That is **not real-GPU or physical-device evidence**. Frame times and load times from it are not performance numbers. Physical-device runs are still open (see `apps/<app>/DEPLOYMENT.md` section 7).
 
 **Privacy.** No real child's image, audio or name appears in any file here. The specs pass everything they print through `redact()`, and `apps/<app>/tools/extract-remote-evidence.mjs` redacts again: the app folder becomes `<app>` and the dev-server origin is dropped. The screenshots show only the app's own 3D scenes and UI.
 

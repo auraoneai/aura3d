@@ -1,8 +1,8 @@
 /**
  * PRD-03 §16.1 / Phase 2 — frozen three.js UnrealBloomPass → Aura bloom V2
  * mapping. Calibrated analytically on `prd03-hdr-bloom` (halo-energy parity
- * argument below); the remote ±10% halo-energy capture check is recorded in
- * `evidence/prd03/phase2/bloom-mapping-calibration.md`. FROZEN — do not tune.
+ * argument below), then checked against a remote ±10% halo-energy capture.
+ * FROZEN — do not tune.
  *
  * Derivation:
  *  - three `UnrealBloomPass` composites 5 fixed mips with weights

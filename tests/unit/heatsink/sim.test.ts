@@ -1,5 +1,5 @@
 /**
- * Thermal Drift (`heatsink`) simulation: the audit rows that live in the sim (docs/audits/sections/game-03-heatsink.md).
+ * Thermal Drift (`heatsink`) simulation: the audit rows that live in the sim.
  */
 import { describe, expect, it } from "vitest";
 import { CIRCUITS, SCENERY_ANCHORS, TOTAL_LAPS, WALL_LIMIT } from "../../../apps/showcase-heatsink/src/data";

@@ -1,6 +1,6 @@
 # Slingshot Siege GU47 checklist (WP-22, lane g12)
 
-Phase 1 (code) status per row is in `docs/prds/game-upgrades-47/lanes/g12.md`. Phase 2 items:
+Phase 2 items:
 
 - [x] Remote capture `slingshot-siege--default`, `--ch0` ... `--ch5` at 1280x720 and 390x844 (25 s and 60 s shots).
 - [x] Declare `luma-bands.json` from the WP acceptance numbers (committed in phase 1).

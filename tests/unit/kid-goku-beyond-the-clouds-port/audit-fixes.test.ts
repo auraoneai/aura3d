@@ -7,7 +7,7 @@ import { flashOpacity, forInput, hudVisible, retryLabel } from "../../../example
 import { CULL_RANGE, buildCheckpointFlags, buildLog, sunAnglesOf } from "../../../examples/kid-goku-beyond-the-clouds-port/world";
 import { LOOK } from "../../../examples/kid-goku-beyond-the-clouds-port/materials";
 
-/* Rows of docs/audits/sections/game-25-cloud-runner-port.md (CR-*), one block each. */
+/* Audit rows (CR-*), one block each. */
 const DT = 1 / 60;
 const frames = (g: Game, n: number, input: Partial<StepInput> = {}): string[] => {
   const out: string[] = [];

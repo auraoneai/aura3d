@@ -98,7 +98,7 @@ The ported Time Trial had no goal beyond the clock: the original's weapons, riva
 
 ## Audit fixes (2026-10-29, lane G19)
 
-These supersede the strike-layer numbers above where they differ. Rows refer to `docs/audits/sections/game-19-heatsink-port.md`.
+These supersede the strike-layer numbers above where they differ.
 
 - **GO banner (HP-01)**: `Race.goT` counts wall-clock seconds in the race state; `hud.countText` shows GO for 0.8 s, then clears, so the objective line is visible for the rest of the race.
 - **Barrels (HP-02)**: a barrel is hit as a vertical capsule from the road to 6 m (`STRIKE.barrelHitTop`), so a bolt fired at the 5.3 m hover height connects. The old sphere at the barrel's centre sat about 4 m below every bolt.

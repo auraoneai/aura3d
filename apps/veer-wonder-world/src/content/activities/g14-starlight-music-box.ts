@@ -1,4 +1,4 @@
-// G14 — Starlight Music Box (P2 bedtime activity, SleepingBaby-Songs-Games.PRD).
+// G14 — Starlight Music Box (P2 bedtime activity).
 // Lumi and Momo share a hushed Moonlit Nursery evening. Tapping the wound music
 // box or the overhead crib mobile — or simply watching through the 6 s wait —
 // opens the lid and turns the felt stars while Momo gently rocks Teddy. The

@@ -1,5 +1,5 @@
 /**
- * IRON CROWN art direction (GU47 WP-15, PRD §3.2 item 1; E-I compliance recipe in docs/prds/game-upgrades-47/lanes/ei.md).
+ * IRON CROWN art direction (GU47 WP-15, PRD §3.2 item 1; recipe in docs/agents/art-direction.md section 9).
  *
  * Mounts every venue's authored scene without the DOM (game/arena.ts), snapshots it with `snapshotForAudit` and audits
  * it against art/direction.ts. The boot venue's record is written beside direction.ts as art/direction.audit.json for

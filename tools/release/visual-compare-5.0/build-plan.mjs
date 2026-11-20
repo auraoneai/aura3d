@@ -23,7 +23,7 @@ const EVID = 'evidence/game-upgrades-47';
  * Roots a baseline path may be relative to, tried in order. JPEG frames are gitignored (`*.jpg`), so 20 of the 28 pinned
  * frames (f48/f49/f50 rounds) are untracked working-tree files: they were restored on 2026-11-03 by decoding the retained
  * ACR consoles (/private/tmp/gu47-f4x-*, evidence/audit-fix/e5/decode-luma.mjs) after the aura3d-gu47 worktree that held the
- * only copy was deleted; every restored file matched its original sha256. See docs/release/5.0-visual-comparison.md.
+ * only copy was deleted; every restored file matched its original sha256.
  */
 export const BASELINE_ROOTS = { repo: '.' };
 

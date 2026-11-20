@@ -7,7 +7,7 @@
  * against schemas/<record.kind>.schema.json (JSON Schema 2020-12 subset, no
  * dependencies). Exits 1 when any record is invalid. With no records committed
  * it prints "0 records" and exits 0: nothing exists to validate yet, and every
- * S-row stays NOT-RUN in s-rows/README.md until a record lands.
+ * S-row stays NOT-RUN until a record lands.
  *
  * Supported keywords: $ref (local #/$defs/...), allOf, type, const, enum,
  * pattern, minLength, minimum, maximum, minItems, maxItems, items, contains,

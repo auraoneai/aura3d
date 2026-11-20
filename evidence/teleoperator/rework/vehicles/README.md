@@ -4,7 +4,7 @@ Date: 2026-10-24. Branch: `game-rework`. Captured on the remote ACR runner with 
 
 ## What was wrong
 
-The Teleoperator fleet was built from photo-style models of real vehicles (see `docs/audit/likeness-brand-audit.md`): a Jaguar-style robotaxi with "JAGUAR" and "WAYMO" lettering (painted out earlier, leaving red smears), a Cybercab replica, a Corvette with its badge, a Cybertruck-style truck, a roadster, and six traffic models (sedan, SUV, taxi, van, pickup, bus) built from real-vehicle atlases. These were replaced.
+The Teleoperator fleet was built from photo-style models of real vehicles: a Jaguar-style robotaxi with "JAGUAR" and "WAYMO" lettering (painted out earlier, leaving red smears), a Cybercab replica, a Corvette with its badge, a Cybertruck-style truck, a roadster, and six traffic models (sedan, SUV, taxi, van, pickup, bus) built from real-vehicle atlases. These were replaced.
 
 ## What shipped
 

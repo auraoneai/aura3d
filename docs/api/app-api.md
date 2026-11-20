@@ -91,6 +91,14 @@ Docs and examples must name the path they are proving: root `createAuraApp`,
 `@aura3d/rendering` production/runtime internals, CLI asset pipeline, template
 scaffold, prototype, or roadmap.
 
+### Render path and bloom fusion
+
+`app.diagnostics().renderPath` reports `{ path: "direct" | "hdr-msaa", quality, reason, bloomFusion }`. `?aura3d-render=auto|production|safe-basic|cinematic` overrides `quality` for one page load, so you can compare a page's two render paths without rebuilding.
+
+`renderer.bloomFusion` is `"separable"` (default) or `"fused-2d"`; `?aura3d-bloom-fusion=` overrides it. Fusion runs only under `quality: "auto"` or `"cinematic"`, on the HDR path, in a scene with `effects.bloom`; otherwise the report says `"off"`, and `production` never fuses. Measured on the PBR viewer bench at 640x360 on software WebGL2, `fused-2d` drew fewer calls but ran slower than `separable`, so it stays opt-in (`evidence/vs-threejs/bloom-fusion-cost.json`).
+
+An invalid option in code throws `QUALITY_OPTION_INVALID`. An invalid URL value warns once with `QUALITY_URL_IGNORED` (console and `diagnostics().warnings`) and keeps the code value; strict apps throw instead.
+
 `renderer.qualityProfiles()` and `renderer.qualityProfile(id)` expose the same
 profile metadata without mounting an app. Public examples may show these
 diagnostics, but may not claim specific production-renderer features from the

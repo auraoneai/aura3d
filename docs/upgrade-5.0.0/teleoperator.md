@@ -1,6 +1,6 @@
 # Grid Dispatch (`teleoperator`): 5.0.1 upgrade guide
 
-Source: plan section 5.4 of `docs/project/5.0-games-and-examples-upgrade-plan.md` (app `apps/showcase-teleoperator`, racing). Lab flags and shared helpers: [README](./README.md). Stable features only by default; EXPERIMENTAL items stay behind lab flags (decision D1).
+App: `apps/showcase-teleoperator` (racing). Lab flags and shared helpers: [README](./README.md). Stable features only by default; EXPERIMENTAL items stay behind lab flags (decision D1).
 
 ## Plan facts
 

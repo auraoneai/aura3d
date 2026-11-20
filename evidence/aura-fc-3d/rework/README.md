@@ -1,6 +1,6 @@
 # Aura FC 3D rework: kicks, doubled legs, run cycles
 
-Lane `rework-fc` (docs/workflows/game-rework-prompt.md section 3.3). All browser frames are software WebGL2 (SwiftShader) on
+FC rework. All browser frames are software WebGL2 (SwiftShader) on
 the remote runner (`tests/browser/rework-fc.spec.ts`, run ids `rwfc-before*`, `rwfc-after*`), not a real GPU. The frames come
 from the real game in CPU-vs-CPU demo mode; a QA hook freezes the sim at an exact swing fraction and steps it three fixed steps
 at a time, so every frame is a known swing fraction. A real tackle cancelled the first attempt of one run; the spec retried

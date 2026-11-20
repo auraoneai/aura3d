@@ -2,7 +2,7 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
- * Screenshot retake (docs/workflows/game-rework-prompt.md section 5). Remote-only (tools/remote-acr/run.sh); never
+ * Screenshot retake. Remote-only (tools/remote-acr/run.sh); never
  * under local Playwright. Frames go to the log as `@@SB <slug> <name> <i> <n> <base64 jpeg>` and are decoded locally.
  */
 export interface State { name: string; drive: string; mobile?: boolean; settle?: number }

@@ -16,4 +16,4 @@ Remote runs on the ACR runner (headless Chromium, SwiftShader WebGL2, about one 
 | `after/g14after-card` | lane | 1440x900 card |
 | `after/g14combo-themes2` | lane + `audit-fix/e1` + `audit-fix/e2` merged in a throwaway worktree | `?theme=3`, `?theme=4` |
 
-Numbers are summarised in `docs/audits/lanes/g14.md`.
+

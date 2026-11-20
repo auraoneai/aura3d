@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 /**
- * package-phase1-baselines.mjs — 04-EVID prep (PRD-04 §13 Phase 1 exit:
- * "All `prd04-*` scenes capture on both engines with flags `none`; baselines
- * committed to evidence/prd-04/phase-1.md").
+ * package-phase1-baselines.mjs — packages the `prd04-*` flags-`none` baseline
+ * captures (both engines) for commit.
  *
  * Runs in the qr-prd04-materials `capture` job after the flags-`none` capture
  * spec. Reads tests/reports/prd04/captures/none/{report.json,<scene>/<engine>.png}
  * and writes a commit-ready bundle to tests/reports/prd04/phase-1-baselines/:
  *   <scene>/<engine>.png   the baseline frames
  *   manifest.json          run id, sha, runner, per-frame sha256/size/status
- *   phase-1-table.md       the results table for evidence/prd-04/phase-1.md
+ *   phase-1-table.md       the results table (Markdown)
  * The workflow uploads the bundle as the `prd04-phase1-baselines-none`
  * artifact; a maintainer commits it from a main run, citing the run id.
  *

@@ -27,7 +27,7 @@ budget; "blocked (WP-36)" = needs a generated asset; "blocked (E-x)" = needs an 
 | DIA-W2 | <= 450 (1280) and <= 260 (390) in every park; <= 1.2M tris; heap <= 300 MB | phase 2 (budget.json) |
 | DIA-X1 | audit 0 errors; same_game false in 4 of 4; >= 14 of 15 park pairs read as different venues; every category >= 7 on Harbor, Skyline, Lunar | audit: 0 violations in all six parks (art-direction.test.ts writes art/direction.audit.json); judge: phase 2 |
 
-Statuses are updated row by row in `docs/prds/game-upgrades-47/lanes/g08.md`.
+
 
 ## Phase 3 (4.7.1) status
 

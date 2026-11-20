@@ -2,8 +2,8 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "../example-dev-server";
 
 /**
- * Shadowstep Gauntlet (ninja-runner-port) audit-fix captures and behaviour checks, lane G20 of
- * docs/audits/execution-plan.md. Remote only (tools/remote-acr/run.sh); never local Playwright. The run has no artifact
+ * Shadowstep Gauntlet (ninja-runner-port) audit-fix captures and behaviour checks.
+ * Remote only (tools/remote-acr/run.sh); never local Playwright. The run has no artifact
  * egress, so everything goes to the log:
  *   GL_META <json>                       luma stats, HUD rects and engine diagnostics per shot
  *   GL_JPG  <target> <shot> <i>/<n> <b64> JPEG frame, chunked (`page` = full page with HUD, `canvas` = 3D only)

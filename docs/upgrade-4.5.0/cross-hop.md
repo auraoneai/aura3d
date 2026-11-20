@@ -73,7 +73,7 @@
 
 ## Checklist
 
-Closed by audit lane G14 on 2026-10-29 (branch `audit-fix/g14`; report `docs/audits/lanes/g14.md`). Remote runs are SwiftShader (software WebGL2) on the ACR runner, measured at steady state; they are not real-GPU evidence.
+Closed by audit lane G14 on 2026-10-29. Remote runs are SwiftShader (software WebGL2) on the ACR runner, measured at steady state; they are not real-GPU evidence.
 
 - [x] Run `pnpm --filter @aura3d/showcase-cross-hop typecheck`: 0 errors. `tests/lanes.test.ts` (8 tests) and the new `tests/unit/cross-hop/run-logic.test.ts` (37 tests) pass.
 - [x] Run `node tools/game-checks/run.mjs cross-hop`: 0 errors, 0 warnings.

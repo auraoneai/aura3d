@@ -9,7 +9,7 @@ const boot = PARK_LOOKS.sandlot;
 export default defineArtDirection({
   id: "showcase-aura-diamond-3d",
   // GU47(E-J): GameGenre has no "baseball" yet; "golf-physics" is the nearest ball-flight sports genre (launch angle,
-  // exit velocity, broadcast tracer). Handoff to E-J in docs/prds/game-upgrades-47/lanes/g08.md.
+  // exit velocity, broadcast tracer).
   genre: "golf-physics",
   fantasy: "Summer baseball on broadcast TV: six ballparks, each a postcard with its own hour, sky and light.",
   rebuildTier: "S-presentation",

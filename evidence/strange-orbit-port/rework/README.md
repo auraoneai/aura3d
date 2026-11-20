@@ -1,6 +1,6 @@
 # Strange Orbit: solid scenery impacts (rework lane `rework-orbit`)
 
-Docs: `docs/workflows/game-rework-prompt.md` section 3.5. Software WebGL2 and a pure-simulation run; not real-GPU evidence.
+Software WebGL2 and a pure-simulation run; not real-GPU evidence.
 
 ## What was wrong
 

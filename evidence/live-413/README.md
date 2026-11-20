@@ -71,4 +71,4 @@ Frames: `frames/slam-FRAME_*.jpg` (boot, rally, pause, menu, Smash Lab, mobile) 
 
 ## Needs the owner on real hardware (M4 Max)
 
-Aura Slam feel and the Modes menu look; Drift and Deliver, Silt and Signal, Last Train (Enter, E, W path), HEATSINK port, Cloud Runner; 120 Hz smoothness (see `docs/audit/motion-audit.md` on the rework branch).
+Aura Slam feel and the Modes menu look; Drift and Deliver, Silt and Signal, Last Train (Enter, E, W path), HEATSINK port, Cloud Runner; 120 Hz smoothness.

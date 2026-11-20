@@ -47,7 +47,7 @@ Software WebGL2 captures on the remote runner (picassostagingacr); blind 3-judge
 
 ## Phase 4 (4.7.2, 2026-10-31)
 
-Software WebGL2 captures on the remote runner (crmmeprodacr); blind 3-judge panel against the 4.6.2 frames. Details: lane report `docs/prds/game-upgrades-47/lanes/g20.md`, "Phase 4 (4.7.2)".
+Software WebGL2 captures on the remote runner (crmmeprodacr); blind 3-judge panel against the 4.6.2 frames.
 
 | Item | Status |
 |---|---|

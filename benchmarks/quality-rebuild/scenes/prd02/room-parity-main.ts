@@ -1,6 +1,6 @@
 /**
- * prd02 RoomEnvironment parity harness page (E3 stage-2b step 6;
- * e3-stage2b-trace.md §5). Built into the lane bundle (vite.lane.config.ts
+ * prd02 RoomEnvironment parity harness page (see benchmarks/quality-rebuild/README.md,
+ * "RoomEnvironment parity check"). Built into the lane bundle (vite.lane.config.ts
  * input `roomParity`) and driven by
  * tests/qr/prd02/browser/room-environment-parity.spec.ts.
  *

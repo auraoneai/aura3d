@@ -131,7 +131,7 @@ const CAMERA_SET = set(CAMERA_PRESETS);
 const BEAT_KIND_SET = set(BEAT_KINDS);
 
 // ---------------------------------------------------------------------------
-// Canonical catalog (MASTER-PROMPT section 2; PRD 05 sections 2-3; SleepingBaby-Songs-Games.PRD).
+// Canonical catalog order.
 
 /** Episode slugs in canonical order: index + 1 is the episode number. */
 export const EPISODE_SLUGS = [

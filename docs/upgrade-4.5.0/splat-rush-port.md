@@ -61,7 +61,7 @@ builder.add(environments.studio());
 
 ## Checklist
 
-Closed by lane G16 on 2026-10-29 (`docs/audits/lanes/g16.md`). Captures ran on the remote runner (`tools/remote-acr/run.sh`, SwiftShader software WebGL2), never local Playwright.
+Closed by lane G16 on 2026-10-29. Captures ran on the remote runner (`tools/remote-acr/run.sh`, SwiftShader software WebGL2), never local Playwright.
 
 - [x] Run `node tools/game-checks/run.mjs splat-rush-port`: 0 errors, 0 warnings.
 - [x] Run the unit tests in `tests/unit/splat-rush-port/`: 10 files, 75 tests pass, `reference-replay.test.ts` included (the simulation still matches the recorded reference on every field of every step). They run locally under vitest; no browser is needed.

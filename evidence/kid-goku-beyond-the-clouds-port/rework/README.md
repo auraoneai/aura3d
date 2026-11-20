@@ -1,6 +1,6 @@
 # Kid Goku (Cloud Runner): leg motion rework
 
-Lane `rework-cloud`, section 3.10 of `docs/workflows/game-rework-prompt.md`. Software WebGL2 on the remote CPU runner (not GPU), 960x540, quality switches `post=0 shadow=0 aa=0` only to keep software frames affordable. Runs: `rwcld-b` (before, branch head `8d7cc8843`) and `rwcld-2` (after, the stride commit). Spec: `tests/browser/kid-goku-rework.spec.ts`; both passed with 0 console errors.
+Cloud runner rework. Software WebGL2 on the remote CPU runner (not GPU), 960x540, quality switches `post=0 shadow=0 aa=0` only to keep software frames affordable. Runs: `rwcld-b` (before, branch head `8d7cc8843`) and `rwcld-2` (after, the stride commit). Spec: `tests/browser/kid-goku-rework.spec.ts`; both passed with 0 console errors.
 
 ## Diagnosis
 

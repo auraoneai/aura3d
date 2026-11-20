@@ -178,7 +178,7 @@ test.describe("roadster-hours-port audit fix (G22)", () => {
 
   test("card", async ({ page }) => {
     // The card frame loads at 1440x900 from the start: growing the window after load leaves the old backing size on screen
-    // (handoff to E1 in docs/audits/lanes/g22.md).
+    //.
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${server.origin}/examples/roadster-hours-port/?manual=1&level=0`, { waitUntil: "domcontentloaded" });
     await waitReady(page);

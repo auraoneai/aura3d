@@ -161,8 +161,7 @@ describe("game camera rig aggregator", () => {
 // ── X-7 presented gates (C21 replacement) ────────────────────────────────────
 // The retired gates asserted juice "fired"/"adopted" — rig-return numbers that
 // never reached the frame. These read the presented pose and per-frame layer
-// energy instead (the same shape `diagnostics().camera` exposes). Recorded
-// pre-change failures: evidence/prd08/gates.md.
+// energy instead (the same shape `diagnostics().camera` exposes).
 import { createCameraController } from "../../../packages/engine/src/agent-api/camera/CameraController";
 import "../../../packages/engine/src/agent-api/camera/rigs/chase";
 import type { AuraCameraSubject } from "../../../packages/engine/src/contracts/camera";

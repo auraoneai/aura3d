@@ -1,6 +1,6 @@
 # WP-28 acceptance checklist (drift-and-deliver-port)
 
-Status per acceptance line. "code" = implemented in phase 1, the number is measured in phase 2 (remote software WebGL2 capture). Row detail: `docs/prds/game-upgrades-47/lanes/g18.md`.
+Status per acceptance line. "code" = implemented in phase 1, the number is measured in phase 2 (remote software WebGL2 capture).
 
 | Row | Acceptance | Status |
 |---|---|---|

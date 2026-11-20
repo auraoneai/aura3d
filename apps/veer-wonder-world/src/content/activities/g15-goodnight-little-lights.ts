@@ -1,4 +1,4 @@
-// G15 — Goodnight, Little Lights (P2 bedtime activity, SleepingBaby-Songs-Games.PRD).
+// G15 — Goodnight, Little Lights (P2 bedtime activity).
 // Momo and Lumi wind down in the warm evening Home Nook (`sleepCategory: "bedtime"`
 // shifts the room to amber evening light). Across up to three calm rounds, a tap
 // on the bedside nightlight or toy house — or resting through the 6 s wait —

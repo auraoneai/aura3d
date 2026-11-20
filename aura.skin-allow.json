@@ -1,5 +1,5 @@
 {
-  "$comment": "Rigged characters that still ship with a known skin defect (assets validate --skin). Each entry needs a reason; remove the entry when the asset is rebuilt. Tracked in docs/audit/game-leftovers.md (F11, F12).",
+  "$comment": "Rigged characters that still ship with a known skin defect (assets validate --skin). Each entry needs a reason; remove the entry when the asset is rebuilt.",
   "gdCommuter": {
     "allow": [
       "SKIN_STRETCH"

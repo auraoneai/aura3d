@@ -9,4 +9,4 @@ Run `retex-1` (tools/remote-acr/run.sh, software WebGL2 via SwiftShader at 1280x
 | Aura Diamond 3D | `frames/aura-diamond-3d-*.jpg` | `diamondAthleteClean` | white kit and plain navy cap, bat in hand (Diamond rework lane) |
 | Aura Links 3D | `frames/aura-links-3d-*.jpg` | `linksGolferAthleteClean` | flat polo, trousers and cap; ragged region edges |
 
-The audit method, findings and the open items (Teleoperator vehicles, the rooftop face-scan files, brand marks on race textures) are in `docs/audit/likeness-brand-audit.md`.
+The rules that came out of this audit are in `docs/agents/lessons-learned.md` (section "Assets and likeness") and are enforced by the `likeness` game-check.

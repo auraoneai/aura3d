@@ -1,5 +1,5 @@
 /**
- * Audit fixes for Aura Slam 3D (docs/audits/sections/game-01-top-tennis.md): one block per row, so a regression names the row.
+ * Audit fixes for Aura Slam 3D: one block per row, so a regression names the row.
  */
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";

@@ -3,7 +3,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 import { HOOK, emit, hasRoad, look, open, raf } from "./gridroad-lib";
 
 /**
- * Gridlock Courier road-flip investigation (docs/audit/game-leftovers.md). Remote-only (tools/remote-acr/run.sh).
+ * Gridlock Courier road-flip investigation. Remote-only (tools/remote-acr/run.sh).
  * After a 300 m teleport the road used to come and go between consecutive frames. Each variant teleports, settles, then renders
  * N frames in a row and records whether the road is in each one. `@@GF <variant> <i> std=<luma spread> road=<bool>`.
  */

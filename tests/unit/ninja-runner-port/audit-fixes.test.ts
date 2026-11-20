@@ -7,7 +7,7 @@ import { ENEMY_HINT, OBJECTIVE } from "../../../examples/ninja-runner-port/label
 import { GameAudio } from "../../../examples/ninja-runner-port/audio";
 import { modelMatrix, modelMatrixInto } from "../../../examples/ninja-runner-port/world";
 
-/** Unit coverage for the lane G20 audit fixes (docs/audits/lanes/g20.md). Browser behaviour is in tests/browser/audit-fix/ninja-runner-port.spec.ts. */
+/** Unit coverage for the lane G20 audit fixes. Browser behaviour is in tests/browser/audit-fix/ninja-runner-port.spec.ts. */
 const src = (path: string): string => readFileSync(new URL(`../../../examples/ninja-runner-port/${path}`, import.meta.url), "utf8");
 const page = readFileSync(new URL("../../../apps/showcase-ninja-runner-port/index.html", import.meta.url), "utf8");
 

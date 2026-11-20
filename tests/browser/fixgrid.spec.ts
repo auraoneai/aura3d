@@ -2,7 +2,7 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
- * Gridlock Courier first-frame regression (docs/workflows/game-rework-prompt.md). Remote-only (tools/remote-acr/run.sh).
+ * Gridlock Courier first-frame regression. Remote-only (tools/remote-acr/run.sh).
  *
  * `await app.ready()` settles the mount, not the shader programs: a draw whose program is still compiling is skipped,
  * so a game that renders right after `ready()` lost the road (and more) for as long as the compile took. The game now
@@ -146,7 +146,7 @@ test.describe("gridlock courier first frames", () => {
       process.stdout.write(`@@FGLOOK-again ${w}x${h} ${JSON.stringify({ ...again, road: hasRoad(again) })}\n`);
       await page.context().close();
       // evidence only: the road still flips in and out of consecutive frames after a long jump on a loaded software-GL runner
-      // (see docs/audit/game-leftovers.md); the first-frame assertion above is the gate this spec enforces
+      // (a known leftover); the first-frame assertion above is the gate this spec enforces
       expect(Number.isFinite(s.std), `${w}x${h}: frame measured`).toBe(true);
     });
   }

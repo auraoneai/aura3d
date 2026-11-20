@@ -1,6 +1,6 @@
 # RH-13 branch and worktree sprawl (measured 2026-10-29)
 
-Read-only measurement by lane E5. Nothing was deleted, pruned or fast-forwarded: removing other people's branches and worktrees, and moving local `main`, are owner actions (`docs/audits/execution-plan.md`, lane rules; AGENTS.md precedence).
+Read-only measurement by lane E5. Nothing was deleted, pruned or fast-forwarded: removing other people's branches and worktrees, and moving local `main`, are owner actions (AGENTS.md).
 
 | Measure | Value | Command |
 | --- | ---: | --- |
@@ -18,4 +18,4 @@ The audit's "1 unmerged branch" counted only the release branches; by `--no-merg
 1. Delete merged remote branches after a review of `rh13-remote-merged.txt`: `git push origin --delete <branch>` per line (keep `main` and any protected release branch).
 2. Review `rh13-remote-unmerged.txt`; each line is `<last commit date> <commits ahead of origin/main> <branch>`.
 3. Remove finished worktrees with `git worktree remove <path>` after their owners confirm, then `git worktree prune`. The audit-fix worktrees (`.claude/worktrees/audit-*`) stay until the program merges.
-4. Fast-forward local main: `git -C /Users/gurbakshchahal/platforms/aura3d checkout main && git merge --ff-only origin/main` (the main checkout currently has untracked `docs/audits/` and `docs/prds/veer-wonder-world/MASTER-PROMPT.md`, which a fast-forward does not touch).
+4. Fast-forward local main: `git -C /Users/gurbakshchahal/platforms/aura3d checkout main && git merge --ff-only origin/main` (the main checkout currently has untracked planning docs, which a fast-forward does not touch).

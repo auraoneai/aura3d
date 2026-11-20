@@ -1,6 +1,6 @@
 # Thermal Drift (heatsink) WP-13 acceptance checklist
 
-Status per acceptance line: `done` (verified by a unit test or static check), `code done, phase 2` (implemented; the number needs a remote capture), `blocked (E-x | WP-36)`, `not done`. Lane report: `docs/prds/game-upgrades-47/lanes/g03.md`.
+Status per acceptance line: `done` (verified by a unit test or static check), `code done, phase 2` (implemented; the number needs a remote capture), `blocked (E-x | WP-36)`, `not done`.
 
 ## Look contract (PRD §3.2)
 

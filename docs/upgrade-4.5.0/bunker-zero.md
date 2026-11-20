@@ -77,7 +77,7 @@ All findings come from reading the code in `/Users/gurbakshchahal/platforms/aura
 
 ## Checklist
 
-Closed 2026-10-29 by audit lane G11 (`audit-fix/g11`). Remote runs on `tools/remote-acr/run.sh`, software WebGL2, steady state (the later shots). Numbers and frames: `evidence/showcase-bunker-zero/audit-2026-10-29/` (`metrics.json`) and `docs/audits/lanes/g11.md`.
+Closed 2026-10-29 by audit lane G11 (`audit-fix/g11`). Remote runs on `tools/remote-acr/run.sh`, software WebGL2, steady state (the later shots). Numbers and frames: `evidence/showcase-bunker-zero/audit-2026-10-29/` (`metrics.json`).
 
 - [x] Render path on 4.5.0: `diagnostics().renderPath` reports `hdr-msaa` with `bloomFusion: "separable"`; with `?aura3d-render=production` it reports `bloomFusion: "off"`. The two give the same floor-1 frame (mean luma 74.97 vs 75.01, run `g11-after-7`), so the fused bloom changes nothing visible here (RP-05).
 - [x] Same frames on 4.3.7 and 4.5.0, floors 1 and 6, 1280x720 (runs `g11-v437-2` on `v4.3.7`, `g11-before-2` on the 4.5.0 base). Floor 1: mean luma 66.53 on 4.3.7, 74.97 on 4.5.0 (+12.7%; wall band 54.6 to 64.1, pixels under 12 from 4.2% to 2.8%, none clipped). Floor 6 start: 23.93 to 25.93 (+8.4%). The boss is captured on the fixed build only (run `g11-final-states`), because the boss fight froze the base build (audit C1).

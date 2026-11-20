@@ -1,6 +1,6 @@
 # Cumulus Dash: screenshots, 2026-10-24
 
-Retaken for the screenshot refresh (section 5 of `docs/workflows/game-rework-prompt.md`).
+Retaken for the screenshot refresh.
 
 - **Build:** `origin/game-rework` at `06cf4f7eb` (examples dev server, QA hooks; spec `tests/browser/shotsc-lib.ts`, decoder `tools/shots/decode-shots.mjs`).
 - **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. Timing, shading and anti-aliasing differ from a real GPU, so these frames are not real-GPU evidence.
@@ -24,5 +24,5 @@ Retaken for the screenshot refresh (section 5 of `docs/workflows/game-rework-pro
 1. **Old game name in the UI:** the title card reads **"Beyond the Cloud Runner"** (both sizes). The public name is Cumulus Dash.
 2. **Canvas does not fill the frame at device scale 2:** `card.2x` shows the 3D view in the lower-left 960x600 of a 1440x900 frame with black elsewhere (`card.1x` is correct). On a Retina display the same sizing could show up in play; worth checking on real hardware.
 3. The game state still names the first chapter "Mount Paozu" (not visible in the captured frames; it may appear on a chapter banner).
-4. The runner's orange outfit and blue sash should be reviewed against `docs/audit/likeness-brand-audit.md`.
+4. The runner's orange outfit and blue sash should be reviewed against the likeness rules (`docs/agents/lessons-learned.md`, A1 to A4).
 5. Desktop frames are 640x360 only, so UI scale differs from the 1280x720 sets of the other games.

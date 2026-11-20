@@ -18,3 +18,12 @@ Splat-specific content; Splat itself is untouched and keeps its own copies. Noth
 
 Sims stay pure (`src/sim.ts`, no engine imports); the kit is presentation-side except `GameRng`, which wraps the
 engine's counted RNG for deterministic gameplay draws.
+
+## Game layout
+
+Each runner game in `apps/showcase-<slug>/` uses the same split:
+
+- `src/sim.ts` is pure (no DOM, no engine). It exports `CONFIG`, `IDLE`, `TRACE_COLUMNS`, a `<Game>Sim` class with `begin()`, `advance(input)` (one fixed 1/60 s step) and `traceRow(i)`, and `replay(seed, warmup, inputs)`. Gameplay random draws come only from the counted `GameRng`, so two replays from one seed give identical traces.
+- `world.ts` (scene and kit `Batch`/`Slots`), `presentation.ts` (`createFixedStepPresenter`), `hud.ts`, `fx.ts`, `audio.ts` (kit `createGameSound`), `autopilot.ts` (attract mode and browser specs), `look.ts`, `src/art/direction.ts`, and `main.ts` (boot, input, QA hooks, route health).
+- Score milestones every 750 points (`CONFIG.MILESTONE`). Settings persist in localStorage under `splatSiblings.<slug>.best|mute|motion|howtoSeen`.
+- Tests: `tests/unit/<slug>/` (sim determinism, meshes, motion, HUD contrast, audio, art direction) and `tests/browser/<slug>.spec.ts` (remote runner only). `scripts/write-route-health.mjs` writes `route-health.json` after a build.

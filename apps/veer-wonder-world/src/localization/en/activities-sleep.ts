@@ -1,5 +1,5 @@
-// English locale entries for the four calm bedtime activities (G13–G16,
-// SleepingBaby-Songs-Games.PRD). Every spoken line is 12 words or fewer,
+// English locale entries for the four calm bedtime activities (G13–G16).
+// Every spoken line is 12 words or fewer,
 // warm and unhurried, free of pressure phrases, family names, and numbers > 3.
 
 export interface StoryLocaleEntries {

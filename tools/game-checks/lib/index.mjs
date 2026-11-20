@@ -740,7 +740,7 @@ export const GU47_SEVERITY_BY_CHECK = Object.freeze({
   "luma-band": GU47_CHECK_SEVERITY
 });
 const gu47Severity = (check) => GU47_SEVERITY_BY_CHECK[check] ?? GU47_CHECK_SEVERITY;
-const RECIPE = "docs/prds/game-upgrades-47/lanes/ei.md";
+const RECIPE = "docs/agents/art-direction.md section 9";
 const posix = (p) => p.split(sep).join("/");
 
 let gu47Cache = new Map();
@@ -772,7 +772,7 @@ const AUDIT_PROBLEM = {
 
 /**
  * Art direction (PRD D1, WP-9): every live game ships art/direction.ts (defineArtDirection) and proves it with
- * auditArtDirection in a unit test that writes art/direction.audit.json (recipe: docs/prds/game-upgrades-47/lanes/ei.md).
+ * auditArtDirection in a unit test that writes art/direction.audit.json (recipe: docs/agents/art-direction.md section 9).
  * TypeScript is never evaluated here; the check reads the audit record and verifies its sha256 against direction.ts.
  */
 function checkArtDirection({ game, src, root }) {

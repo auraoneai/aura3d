@@ -73,7 +73,7 @@
 
 ## Checklist
 
-Closed by audit lane G18 on 2026-10-29. Every browser check ran on the remote runner (`tools/remote-acr/run.sh`, headless Chromium on SwiftShader software WebGL2, 1280x720 unless stated), measured at steady state (the 90 s shot, never the first frame). Not real-GPU evidence. Run ids and frames: `evidence/audit-fix/g18/wave3/` and `docs/audits/lanes/g18.md`.
+Closed by audit lane G18 on 2026-10-29. Every browser check ran on the remote runner (`tools/remote-acr/run.sh`, headless Chromium on SwiftShader software WebGL2, 1280x720 unless stated), measured at steady state (the 90 s shot, never the first frame). Not real-GPU evidence. Run ids and frames: `evidence/audit-fix/g18/wave3/`.
 
 - [x] Run `node tools/game-checks/run.mjs drift-and-deliver-port` and confirm no new errors. Result: 0 errors, 0 warnings.
 - [x] Run the app typecheck. Ran locally as `tsc -p apps/showcase-drift-and-deliver-port/tsconfig.json --noEmit` (a typecheck needs no browser): 0 errors.
@@ -82,6 +82,6 @@ Closed by audit lane G18 on 2026-10-29. Every browser check ran on the remote ru
 - [x] Compare a steady-state frame against 4.3.7. Result (runs `g18w3-v437b` and `g18w3-before2`, default URL, 90 s): mean luma 108.21 on 4.3.7 and 108.21 on 4.5.0, thirds 118.87/114.95/90.80 against 118.88/114.95/90.80, p5/p95 57/168 on both. The fixed build reads 108.29. The default frame did not move in 4.5.0.
 - [x] Confirm the black-frame watch does not escalate. Result: `drift-heal-stage` stayed absent (`heal: null`) after a 120 s splash and after the drive probes; 0% dark pixels in every default frame.
 - [x] Re-capture the `?env=0` baseline. Result: the heal ladder's `no-env` rung read 123.47 on 4.3.7 and 75.52 on 4.5.0 (39% darker, LIGHT-01: 4.5.0 dropped the implicit room probe). The game now authors `environments.neutral({ intensity: 1 })` on that rung only (`look.ts`, `LIGHTS_ONLY_NEUTRAL`), which reads 123.55 (run `g18w3-neutral`; `?neutral=0` reproduces 75.61, `?neutral=0.6` reads 106.35).
-- [x] Optional `quality: "production"`: not added. Byte-identical bloom output is not needed; see the `auto` against `?aura3d-render=production` A/B in `docs/audits/lanes/g18.md` (row C8/RP-05).
+- [x] Optional `quality: "production"`: not added. Byte-identical bloom output is not needed; see the `auto` against `?aura3d-render=production` A/B run on the remote runner.
 
 Item 5 above said the hemisphere change does not apply to the default look. That was true on 4.5.0 (LIGHT-05: the hemisphere was dropped next to the HDRI). With lane E2's engine fix the hemisphere adds to the HDRI, so the game now authors 0.3 next to the HDRI and keeps 1.7 on the lights-only path (`SKY_FILL` in `look.ts`).

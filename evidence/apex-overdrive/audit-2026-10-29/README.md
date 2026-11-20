@@ -1,6 +1,6 @@
 # Apex Overdrive audit fixes: before and after (2026-10-29)
 
-Lane G02 of the live-games audit (`docs/audits/sections/game-02-roadster-rush.md`, report `docs/audits/lanes/g02.md`).
+Live-games audit fixes for Apex Overdrive (roadster-rush).
 
 - **Runner:** serverless ACR Chromium, software WebGL2 (SwiftShader). Not a GPU: these are not real-GPU frames.
 - **Spec:** `tests/browser/audit-fix/roadster-rush.spec.ts`, seed 42, manual stepping through `window.__GAME__.game`. Every state is presented and drawn a few more frames before the `.b` shot; judge `.b`. The title is also shot early (`.a`).

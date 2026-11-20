@@ -1,5 +1,5 @@
 /**
- * PRD-06 06-QXX (Q-XX, qr-requests-prd06.md:171-188) — every joint of a
+ * PRD-06 06-QXX (Q-XX) — every joint of a
  * `Skeleton.matrixPalette()` built from affine inputs must itself be affine:
  * elements 3, 7, 11 of each 16-float column-major block are 0 and element 15
  * is 1. `Keyframe.multiplyMat4` previously computed B·A (row-major read),

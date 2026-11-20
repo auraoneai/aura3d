@@ -18,4 +18,4 @@ the QA `step(n)` hook (fixed 1/60 s steps); judge the later shots of each target
 | `after/venues-tuned` | `fa446fdf5` | `g09cap-after5-180321` |
 | `diag-4.5.0` (render path, bloom A/B, AO A/B, foot crops) | `6a0275a76` | `g09cap-diag-171922` |
 | `diag` (wave 1 diag run) | `c2fe20792` | `g09diag-125021`, `g09ao-130820` |
-| `referee-wave2` | see `docs/audits/lanes/g09.md` Wave 2 | `g09w2before3-171746`, `g09w2after3-171748` |
+| `referee-wave2` | referee second pass | `g09w2before3-171746`, `g09w2after3-171748` |

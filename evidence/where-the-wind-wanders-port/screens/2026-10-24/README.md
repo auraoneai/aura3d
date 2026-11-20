@@ -1,6 +1,6 @@
 # The Bellkeeper's Walk: screenshots, 2026-10-24
 
-Retaken for the screenshot refresh (section 5 of `docs/workflows/game-rework-prompt.md`).
+Retaken for the screenshot refresh.
 
 - **Build:** `origin/game-rework` at `06cf4f7eb` (examples dev server, QA hooks; spec `tests/browser/shotsc-lib.ts`, decoder `tools/shots/decode-shots.mjs`).
 - **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. Timing, shading and anti-aliasing differ from a real GPU, so these frames are not real-GPU evidence.

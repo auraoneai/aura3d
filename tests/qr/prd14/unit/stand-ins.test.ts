@@ -13,7 +13,7 @@ import { PRD14_REBUILD_APP_DIRS, PRD14_REBUILD_ROUTES } from "./helpers/games";
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 const APPS = join(ROOT, "apps");
 
-/** R-14-NN → filed issue(s). Source: evidence/prd14/qr-requests.md + PRD-14 §12A.6. */
+/** R-14-NN → filed issue(s). */
 const R14_ISSUES: Readonly<Record<string, readonly number[]>> = {
   "R-14-01": [73], "R-14-02": [74], "R-14-03": [75], "R-14-04": [65], "R-14-05": [66],
   "R-14-06": [67], "R-14-07": [68], "R-14-08": [69], "R-14-09": [70], "R-14-10": [76],

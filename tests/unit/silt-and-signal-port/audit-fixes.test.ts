@@ -15,7 +15,7 @@ import { applyGameBrandTypography } from "../../../tools/showcase-port-pages/lib
 // several times slower and hit the 5 s default (STACK_TRACE_ERROR). Assertions are unchanged.
 vi.setConfig({ testTimeout: 60_000 });
 
-/** Regression tests for the live-games audit rows of Duneglide (docs/audits/sections/game-24-silt-and-signal-port.md). */
+/** Regression tests for the live-games audit rows of Duneglide. */
 
 const FLY: Input = { ...IDLE, throttle: 1 };
 const run = (sim: Sim, input: Input, steps: number, each?: (sim: Sim) => void): void => {

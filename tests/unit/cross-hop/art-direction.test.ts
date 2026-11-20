@@ -1,5 +1,5 @@
 // GU47 WP-24 (CH47-20): the Cross Hop art direction passes auditArtDirection on the authored diorama scene and
-// writes art/direction.audit.json for the `art-direction` game-check (recipe: docs/prds/game-upgrades-47/lanes/ei.md).
+// writes art/direction.audit.json for the `art-direction` game-check (recipe: docs/agents/art-direction.md section 9).
 import { describe, expect, it } from "vitest";
 import direction from "../../../apps/showcase-cross-hop/src/art/direction";
 import { auditArtDirection, assetManifestLike, snapshotForAudit } from "@aura3d/game/art";

@@ -49,7 +49,7 @@ void game.ready().then(() => { /* mounted */ }); // never a module top-level awa
 - **HUD:** `mountHud`, `HUD_THEMES`, `screenFraction` and the widget specs.
 - **Touch:** touch control presets with named bindings.
 - **Juice:** `createJuice`, `createTweenEngine`, `createOverlayDriver`, `createRumbleDriver`, the fx primitive pool and `FX_PRESETS`.
-- **Session:** `GameSessionImpl`, `attachSessionLifecycle` (pauses on tab hide), `createAccessibility` (reduced motion, reduced flash, high contrast).
+- **Session:** `GameSessionImpl`, `attachSessionLifecycle` (pauses on tab hide and toggles pause on Escape, P and gamepad Start; `createGame` attaches it, so do not bind your own pause action to those keys), `createAccessibility` (reduced motion, reduced flash, high contrast).
 - **Sound:** the `sfx` pack, `SFX_IDS` and `sfxUrl(id)`.
 - **Evidence and capture:** `installGameBeacon`, `installEvidenceChannel`, `captureFromUrl`, `lookSignature`.
 

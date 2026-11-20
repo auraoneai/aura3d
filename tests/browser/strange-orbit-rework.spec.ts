@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
- * strange-orbit-port rework (docs/workflows/game-rework-prompt.md section 3.5): solid scenery has
+ * strange-orbit-port rework: solid scenery has
  * consequences in zero-G flight. Remote-only (tools/remote-acr/run.sh), software WebGL2.
  * Drives the real page: flies the rider straight at a gate pillar, the gate lintel, a boulder and the
  * observatory at 35 m/s and checks one impact each, no pass-through, a hit notice, no console errors

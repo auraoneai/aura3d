@@ -3,7 +3,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 import { HOOK, emit, hasRoad, look, open, raf } from "./gridroad-lib";
 
 /**
- * Gridlock Courier road tour (docs/audit/game-leftovers.md, road flip). Remote-only (tools/remote-acr/run.sh).
+ * Gridlock Courier road tour (road flip). Remote-only (tools/remote-acr/run.sh).
  * Teleports to five places across the city, drives briefly and settles, then records the frame. The same tour runs with the road in
  * one 1,020 m quad (`roadcells=1`), one quad per 60 m tile (the default) and 64 x 64 cells, so the frames can be compared offline: the
  * lane paint must sit on the street centre line in every variant that is not the single quad. `@@GT <variant> <i> std=<luma spread> road=<bool>`.
