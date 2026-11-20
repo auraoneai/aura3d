@@ -26,6 +26,7 @@ describe("5.7.1 WebGL2 clearcoat roughness floor", () => {
     ["sheen/anisotropy textures", DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT]
   ])("resolves the coat roughness with the 0.0525 floor and the geometric term (%s)", (_name, variant) => {
     const fragment = compiled(variant);
+    // invariant: the WebGL2 textured-PBR coat must keep the 0.0525 floor plus the geometric-normal term — the same coat roughness as the WebGPU program, so clearcoat gloss does not depend on the backend
     expect(fragment).toContain("vec3 clearcoatGeometryNormalDx = dFdx(geometryNormal);");
     expect(fragment).toContain("vec3 clearcoatGeometryNormalDy = dFdy(geometryNormal);");
     expect(fragment).toContain(GEOMETRY_ROUGHNESS);

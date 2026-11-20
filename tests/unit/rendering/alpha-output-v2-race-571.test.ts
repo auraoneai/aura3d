@@ -114,6 +114,7 @@ describe("5.7.1 mount waits for the alpha OutputPass modules", () => {
   it("awaits postV2ModulesReady alongside the scene compile for alpha-preserving WebGL2 output only", async () => {
     const { readFileSync } = await import("node:fs");
     const source = readFileSync(new URL("../../../packages/engine/src/agent-api/compiler/renderer.ts", import.meta.url), "utf8");
+    // invariant: source must keep the alpha-only `postV2ModulesReady()` await at mount — an alpha-preserving WebGL2 app never presents before the v2 OutputPass modules exist (5.7.1 RENDERER_MOUNT_FAILED race)
     expect(source).toContain('const alphaPostModules = outputPolicy.alphaMode !== "opaque" && backendSelection.active === "webgl2" && flags.on("A3D_QR_POST")');
     expect(source).toContain("? postV2ModulesReady().catch(() => undefined)");
     const compile = source.indexOf("const compiledScene = await compileScene(snapshot, sceneCompileCtx);");

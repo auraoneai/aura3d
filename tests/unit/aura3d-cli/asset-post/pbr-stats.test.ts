@@ -149,7 +149,7 @@ describe("PBR statistics (assets inspect --pbr / validate --pbr)", () => {
 
 /** Calibration on real files (lessons A11): the shipped Vesper GT coupe must trip every warning; known-good assets stay clean. */
 describe("PBR statistics calibration on repo assets", () => {
-  const coupe = join(repo, "marketing/public/models/vesper-gt/coupe.glb");
+  const coupe = join(repo, "tests/fixtures/pbr/vesper-gt-coupe-hunyuan-2026-11-19.glb");
   const calibrated = existsSync(coupe) ? it : it.skip;
 
   calibrated("Vesper GT coupe: metalness 0.77, roughness 0.17, tilt 7.2 deg, JPEG normals; all four warnings", async () => {
@@ -174,7 +174,7 @@ describe("PBR statistics calibration on repo assets", () => {
   calibrated("CLI: assets inspect --pbr prints the statistics and the coded warnings", () => {
     let stdout = "";
     try {
-      execFileSync(join(repo, "node_modules/.bin/tsx"), ["--tsconfig", join(repo, "tsconfig.base.json"), join(repo, "packages/aura3d-cli/src/cli.ts"), "assets", "inspect", "marketing/public/models/vesper-gt/coupe.glb", "--pbr"], { cwd: repo, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 60_000 });
+      execFileSync(join(repo, "node_modules/.bin/tsx"), ["--tsconfig", join(repo, "tsconfig.base.json"), join(repo, "packages/aura3d-cli/src/cli.ts"), "assets", "inspect", "tests/fixtures/pbr/vesper-gt-coupe-hunyuan-2026-11-19.glb", "--pbr"], { cwd: repo, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 60_000 });
     } catch (error) {
       stdout = String((error as { stdout?: string }).stdout ?? "");
     }

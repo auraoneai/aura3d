@@ -1500,7 +1500,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
-          "sha256": "dd561787874a74dc1533f6a44437b8f73d132d02ebf63b87483a5a4705bb8b10"
+          "sha256": "45987fc20161cf7423766de946411efbd1ef6aae362247ce0e3e769576cc59d7"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
