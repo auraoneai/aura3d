@@ -1070,7 +1070,7 @@ export class RendererPostprocessPipeline {
     v2Modules = v2Modules ?? postV2Modules;
     const host = webgl2DeviceHost(this.host.device);
     if (!v2Modules && host && postprocessPreservesAlpha(postprocess)) {
-      // 5.7.1: an alpha-preserving request can only present through the v2 OutputPass route, which needs the deferred
+      // 5.7.1: an alpha-preserving request can only present through the v2 OutputPass route, which needs the lazily imported
       // module bag (target leases, the FXAA/S12 tail). A sync frame that runs before the import resolves used to fall
       // through to the fused present and throw POSTPROCESS_OUTPUT_POLICY_UNAVAILABLE, failing the mount whenever the
       // first frame won the race (load-timing dependent). That frame now presents transparent and the next frame after
