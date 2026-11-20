@@ -101,7 +101,7 @@ were deleted in 5.5.6 (procedural kit, then the Idol pass); this section records
 
 ## Audit fixes (2026-10-29, lane G16)
 
-Rows from `docs/audits/sections/game-16-splat-rush-port.md`. Parity notes first: these two change behaviour the original
+Parity notes first: these two change behaviour the original
 has, in cases the recorded reference never reaches (`reference-replay.test.ts` still matches every field of every step).
 
 - **C16 gate rows resolve once.** Lanes are 2.3 apart and a gate reaches 1.2, so within 0.05 of a lane boundary the

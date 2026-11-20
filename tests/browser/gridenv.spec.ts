@@ -3,7 +3,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 import { HOOK, emit, hasRoad, look, open, raf } from "./gridroad-lib";
 
 /**
- * Gridlock Courier first frames after `ready()` (docs/workflows/game-rework-prompt.md). Remote-only (tools/remote-acr/run.sh).
+ * Gridlock Courier first frames after `ready()`. Remote-only (tools/remote-acr/run.sh).
  *
  * The scene requests an environment HDRI that lands a while after mount. When it does, every material switches to its
  * image-based-lighting program variant at once (the diagnostics showed `programs.reused` jump from about 1,500 to 3,000), the

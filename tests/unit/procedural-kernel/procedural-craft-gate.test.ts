@@ -5,8 +5,7 @@ import { describe, expect, it } from "vitest";
 const REPO_ROOT = resolve(__dirname, "../../..");
 
 /**
- * Frozen 29-game procedural model module manifest from
- * `docs/prds/29-games-procedural-multi-material-overhaul-prd.md` Section 4 + reference `Slingshot Siege`.
+ * Frozen manifest of the 29 games' procedural model modules, plus the reference `Slingshot Siege`.
  */
 export const PROCEDURAL_MODEL_MODULES: readonly { readonly wp: string; readonly slug: string; readonly relPath: string }[] = [
   { wp: "REF", slug: "slingshot-siege", relPath: "apps/showcase-slingshot-siege/src/art/proceduralModels.ts" },

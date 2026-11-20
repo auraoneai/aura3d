@@ -1,6 +1,6 @@
 // GU47 WP-16 (G06): the C-35 art direction, validated with defineArtDirection and audited with
 // auditArtDirection on every world's authored diorama scene. Writes art/direction.audit.json
-// (E-I recipe, docs/prds/game-upgrades-47/lanes/ei.md); commit it with art/direction.ts.
+// (recipe: docs/agents/art-direction.md section 9); commit it with art/direction.ts.
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";

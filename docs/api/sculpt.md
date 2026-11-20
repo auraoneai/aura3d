@@ -130,6 +130,17 @@ const app = createAuraApp("#app", {
 void app.ready();
 ```
 
+## Craft bar for procedural hero models
+
+A procedural model built only from boxes reads as a placeholder. Use the curved and compound builders and several materials:
+
+- **Vehicles and drones:** `loftSectionsMesh` hulls, a separate glass canopy (`material.studioGlass`) and `wheelAssemblySlots` wheels, not stacked `bevelBoxMesh` bricks with flat cylinder wheels.
+- **Masts, gantries and stands:** `latticeTrussMesh` and `archwayVoussoirSlots`, not solid box slabs.
+- **Trees:** a `tubeSweepMesh` trunk with `layeredCanopyMesh` or `coniferBoughTierMesh`, not a cylinder topped with a sphere or cone.
+- **Cliffs:** `stratifiedCliffMesh` with `material.strata(...)`.
+
+The showcase games in this repository enforce this in `tests/unit/procedural-kernel/procedural-craft-gate.test.ts`: every `art/proceduralModels.ts` calls at least 2 curved or compound builders, makes at least 4 `material.*` calls with at least 3 distinct presets, assembles through `assembleMultiMaterialNode`, `geometry.multiMaterial` or `buildGroupedGeometrySpec`, and never imports `three`.
+
 ## Boundaries
 
 The kernel produces geometry data only. It does not rig, animate or texture meshes, and it makes no claim about visual parity

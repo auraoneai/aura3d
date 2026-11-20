@@ -31,7 +31,7 @@ Result, derived from the recorded animation commands plus forward kinematics of 
 
 Unit-level, with the library meter on toe contact points over a 3 second walk: planted-toe drift is 0.2 to 0.35 u/s on average and 0.5 to 0.65 u/s at p95 (about 7% to 20% of ground speed) after the fix; the old phase rate gives several u/s.
 
-## Does it meet the 0.15 u/s drift limit in `docs/workflows/game-rework-prompt.md`?
+## Does it meet the 0.15 u/s drift limit?
 
 Median ankle drift: 0.153 u/s, at the limit. The meter's p95 does not meet 0.15: the authored Walk clip skates on its own (its stance foot speed varies through the stance and the ankle rolls heel to toe), and no playback rate removes that. The fix removed the self-inflicted 170%; the rest is the clip. Closing it needs stride warping (a non-linear clip phase that holds the planted foot's speed constant) or foot IK, tracked as a follow-up, not done here.
 

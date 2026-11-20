@@ -106,7 +106,7 @@ How to check: run `tests/browser/strange-orbit-port.spec.ts`, `tests/browser/str
 
 ## Checklist
 
-Closed by audit lane G15 on 2026-10-29 (`docs/audits/lanes/g15.md`). Remote runs are on `tools/remote-acr/run.sh` (SwiftShader software GL); numbers and frames are in `evidence/strange-orbit-port/audit-fix-2026-10-29/`.
+Closed by audit lane G15 on 2026-10-29. Remote runs are on `tools/remote-acr/run.sh` (SwiftShader software GL); numbers and frames are in `evidence/strange-orbit-port/audit-fix-2026-10-29/`.
 
 - [x] `tsc -p tsconfig.check.json --noEmit`: 58 errors, the repo baseline, none in strange-orbit-port. `pnpm exec vitest run tests/unit/strange-orbit-port`: 14 files, 153 tests pass.
 - [x] `node tools/game-checks/run.mjs strange-orbit-port`: 0 errors, 0 warnings.

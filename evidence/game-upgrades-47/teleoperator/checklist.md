@@ -1,7 +1,7 @@
 # Grid Dispatch (teleoperator) GU47 WP-14 checklist
 
 Every acceptance line of PRD WP-14 (GD-00 ... GD-21) with its phase-1 status. Pixel numbers (luma, crops, pairs,
-judges) are phase 2 on the remote runner (software WebGL2). Row status and commits: `docs/prds/game-upgrades-47/lanes/g04.md`.
+judges) are phase 2 on the remote runner (software WebGL2).
 
 | Row | Acceptance (PRD) | Phase-1 status |
 |---|---|---|

@@ -1,8 +1,8 @@
 # Wonder World (prototype)
 
-Wonder World is a toddler co-play app built on Aura3D (workspace `@aura3d/engine`; the fast consumer checks use the published packages pinned in `tools/published-deps.json`, currently 5.5.6): short 3D cartoon stories and tap games that a grown-up plays alongside a young child. The folder keeps the working name `veer-wonder-world`; the public title is **Wonder World**. No child's name appears in the app's routes, logs, story lines or strings; the one exception, at the owner's request, is the start screen's welcome, which takes the name from `WELCOME_NAME` in `src/personal.ts` (07 O8; set it to null to remove it).
+Wonder World is a toddler co-play app built on Aura3D (workspace `@aura3d/engine`; the fast consumer checks use the published packages pinned in `tools/published-deps.json`, currently 5.5.6): short 3D cartoon stories and tap games that a grown-up plays alongside a young child. The folder keeps the working name `veer-wonder-world`; the public title is **Wonder World**. No child's name appears in the app's routes, logs, story lines or strings; the one exception, at the owner's request, is the start screen's welcome, which takes the name from `WELCOME_NAME` in `src/personal.ts` (set it to null to remove it).
 
-**Status: prototype.** It is play and language exposure, not therapy. It does not test, score, diagnose or teach a child to talk, and nothing here supports an efficacy claim. It runs as an unlisted preview, deployed at the owner's request on 2026-10-29. This repository is public, so the address is not written here; see [DEPLOYMENT.md](DEPLOYMENT.md) section 3. Every response carries `noindex`, it is not in the public site build, catalog, showcase index or sitemap, and publishing it is a separate owner decision ([DEPLOYMENT.md](DEPLOYMENT.md)). The specification is [`docs/prds/veer-wonder-world/`](../../docs/prds/veer-wonder-world/README.md); decisions and results are recorded in [`07-autonomous-decisions-and-build-record.md`](../../docs/prds/veer-wonder-world/07-autonomous-decisions-and-build-record.md).
+**Status: prototype.** It is play and language exposure, not therapy. It does not test, score, diagnose or teach a child to talk, and nothing here supports an efficacy claim. It runs as an unlisted preview, deployed at the owner's request on 2026-10-29. This repository is public, so the address is not written here; see [DEPLOYMENT.md](DEPLOYMENT.md) section 3. Every response carries `noindex`, it is not in the public site build, catalog, showcase index or sitemap, and publishing it is a separate owner decision ([DEPLOYMENT.md](DEPLOYMENT.md)). The content rules are enforced in code; see [Adding a story](#adding-a-story) and [Safety rules the code holds](#safety-rules-the-code-holds).
 
 ## What is in it
 
@@ -14,13 +14,34 @@ Wonder World is a toddler co-play app built on Aura3D (workspace `@aura3d/engine
 
 ## Safety rules the code holds
 
-- No microphone, no speech recognition and no scoring. The voice-input flags in `src/runtime/feature-flags.ts` are locked off, and `tests/unit/privacy/no-child-data.test.ts` (J07) fails if a microphone API appears anywhere in `src/`.
+- No microphone, no speech recognition and no scoring. The voice-input flags in `src/runtime/feature-flags.ts` are locked off, and `tests/unit/privacy/no-child-data.test.ts` fails if a microphone API appears anywhere in `src/`.
 - Silence always completes a story: every wait ends by itself after the parent's waiting time (default 5 s), with no "wrong" or "try again" path.
 - At most two tap targets at a time, each a large, generous hit area.
 - "All done" works from every screen and every beat and ends on a calm offline-play card ("All done! Now try ..."). Nothing ever plays the next story by itself.
 - Leaving the tab pauses the story. Coming back keeps it paused until a grown-up taps Resume.
 - No flashing, camera shake or startling sound: looks have no vignette, glows fade in and out, the camera eases between fixed framings, and sound effects sit below speech.
 - No account, no analytics, no ads, no purchases and no network call besides the app's own same-origin files. Parent settings stay on the device and can be cleared in the parent panel.
+
+## Adding a story
+
+A story is an episode (`EpisodeSpec`, watched through, 120 to 240 s) or an activity (`ActivitySpec`: intro, a round played up to `roundLimit` times, outro). The types are in `src/types.ts`; `validateCatalog` in `src/content/schema.ts` enforces the rules below.
+
+1. Write `src/content/episodes/<slug>.ts` exporting `episode`, or `src/content/activities/<slug>.ts` exporting `activity`. Its `id` equals the slug.
+2. Append the slug to `EPISODE_SLUGS` or `ACTIVITY_SLUGS` in `src/content/schema.ts`. Its position plus one is the story `number`, which gives the key prefix (`e27`, `g17`).
+3. Import it in `src/content/catalog.ts` and append it to `EPISODES` or `ACTIVITIES` in the same order.
+4. Put its English text in `src/localization/en/` (`lines` and `strings` records keyed `<code>.*`, including `<code>.title`, `<code>.offline`, `<code>.bridge` and `<code>.tip.<n>`), imported from `src/localization/en/index.ts`. Each key is defined once.
+5. Record the audio with `tools/gen-audio.ts`, regenerate the manifests, then run `tools/check-all.sh`.
+
+Rules the content lint enforces:
+
+- An episode opens with a `greeting` beat and ends on an `outro`. Every story has at least one `invite` beat that waits for input.
+- An activity's last round beat waits with `more-or-done`. `roundLimit` is 1 to 5. Activities declare `options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false }`.
+- 1 to 3 target words (4 for counting or animal-sound clusters). Each episode target word is said in at least two lines, with its object visible during the beat.
+- At most 2 tap targets per beat. Waits run 2 to 60 s (default 5 s) and always end by themselves.
+- Lines are 12 words or fewer. `BANNED_PHRASES` ("say it", "repeat after me", "wrong", "try again", ...) and `FAMILY_NAMES` are rejected.
+- `review.language` and `review.rights` must be `"approved"`.
+
+Long-form shows (`ShowSpec`, `src/content/shows/`) are checked by `./node_modules/.bin/tsx tools/validate-show.ts --all`.
 
 ## App flow
 
@@ -64,8 +85,8 @@ From the app folder, everything that runs locally (no browser, no monorepo-wide 
 ```bash
 cd apps/veer-wonder-world
 ./node_modules/.bin/tsc -p tsconfig.published.json --noEmit      # against the published (pinned) typings
-./node_modules/.bin/vitest run --config vitest.config.ts         # unit tests, including J01-J07
-node tools/validate-wonder-world-content.mjs                     # J14: every story, line, word, asset and rights record
+./node_modules/.bin/vitest run --config vitest.config.ts         # unit tests
+node tools/validate-wonder-world-content.mjs                     # every story, line, word, asset and rights record
 node tools/game-checks.mjs                                       # the repo's per-game static checks, for this unlisted prototype
 tools/check-all.sh                                               # all of the above, plus the generated-files diff
 tools/check-all.sh --workspace                                   # also the strict typecheck against the workspace sources
@@ -78,7 +99,7 @@ pnpm exec tsc -p apps/veer-wonder-world/tsconfig.json --noEmit
 node apps/veer-wonder-world/tools/gen-cast.mjs && node apps/veer-wonder-world/tools/gen-aura-assets.mjs && node apps/veer-wonder-world/tools/gen-audio-manifest.mjs && node apps/veer-wonder-world/tools/gen-rights-manifest.mjs && git diff --exit-code apps/veer-wonder-world/src
 ```
 
-Browser specs (J08-J13) and the production build with `aura3d check-deploy --browser` run only on the remote runner, never on a developer Mac. One run takes the spec files named by their stems; the runner stops a run at 60 minutes, so run one line of the list in `tests/browser/wonder-world-lib.ts` per run (22 spec files in 21 runs):
+Browser specs and the production build with `aura3d check-deploy --browser` run only on the remote runner, never on a developer Mac. One run takes the spec files named by their stems; the runner stops a run at 60 minutes, so run one line of the list in `tests/browser/wonder-world-lib.ts` per run (one line per run):
 
 ```bash
 apps/veer-wonder-world/tools/remote-run.sh first-frame build       # first frame, Vite build, served-bundle privacy scan, check-deploy --browser
@@ -96,7 +117,7 @@ bash apps/veer-wonder-world/tools/deploy-build.sh
 wrangler pages deploy apps/veer-wonder-world/dist --project-name aura3d-wonder-world --branch main
 ```
 
-(Legacy script `apps/veer-wonder-world/tools/deploy-preview.sh --prod` is retained only for unit-test compatibility; see DEPLOYMENT.md section 3). Afterwards `apps/veer-wonder-world/tools/remote-run.sh live` opens the deployed address on the remote runner and checks its hosting rules. That spec file is outside the 20-run suite above.
+(Legacy script `apps/veer-wonder-world/tools/deploy-preview.sh --prod` is retained only for unit-test compatibility; see DEPLOYMENT.md section 3). Afterwards `apps/veer-wonder-world/tools/remote-run.sh live` opens the deployed address on the remote runner and checks its hosting rules. That spec file is outside the suite above.
 
 ## Running it
 
@@ -141,7 +162,7 @@ All bundled audio and portrait assets resolve from same-origin module-relative p
 
 ## Known gaps
 
-- No physical-device runs yet (iPad and iPhone Safari, Android Chrome); browser regression runs use the remote runner, and the label stays `prototype` until physical-device runs pass (`07` section 4.3).
-- No public release: that needs the owner's decision, an external privacy and legal review, a trademark search, a check of the provider terms and a human SLP and caregiver review (`07` section 4.3).
+- No physical-device runs yet (iPad and iPhone Safari, Android Chrome); browser regression runs use the remote runner, and the label stays `prototype` until physical-device runs pass (see [DEPLOYMENT.md](DEPLOYMENT.md) section 7).
+- No public release: that needs the owner's decision, an external privacy and legal review, a trademark search, a check of the provider terms and a human SLP and caregiver review (see [DEPLOYMENT.md](DEPLOYMENT.md) section 7).
 - English only in active rotation: the Punjabi pack stays off until a native speaker review. No family greeting packs are built.
 - The engine requests the look HDRIs at `/hdri/` and the font stylesheet names `/fonts/`, so a deployed `dist/` must be served at an origin root.

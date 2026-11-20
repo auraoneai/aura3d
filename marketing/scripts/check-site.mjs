@@ -123,7 +123,7 @@ for (const [property, expectedWidth, expectedHeight] of [
   if (buffer.length >= 300 * 1024) failures.push(`${asset}: ${property} must stay under 300KB, found ${Math.round(buffer.length / 1024)}KB`);
 }
 
-// Numeric claims on the homepage must equal counted sources (docs/audit/site-claims.md).
+// Numeric claims on the homepage must equal counted sources.
 {
   // Counts that change with the repo must be build-time tokens, never typed by hand.
   if (!home.includes("{{TEMPLATE_COUNT}} templates")) failures.push("index.html: the templates count must be the {{TEMPLATE_COUNT}} token");
@@ -132,7 +132,7 @@ for (const [property, expectedWidth, expectedHeight] of [
   if (/\b\d+ npm packages\b/.test(home)) failures.push("index.html: use {{PACKAGE_COUNT}} for the npm package count");
   const typedApps = /\b\d+ (?:apps|examples)\b/.exec(home);
   if (typedApps) failures.push(`index.html: hand-typed app/example count "${typedApps[0]}" has no counted source`);
-  // Retracted: the 800K/850K catalog size, any 652 described as a catalog (it is the repo demo manifest), and any promise of the hosted index (offline; docs/audit/asset-catalog-claim.md).
+  // Retracted: the 800K/850K catalog size, any 652 described as a catalog (it is the repo demo manifest), and any promise of the hosted index (retired).
   const retracted = /\b(?:800K\+|800,000\+|850K|~850k)\b|\b652\b[^<\n]{0,40}(?:catalog|assets)|(?:catalog|assets)[^<\n]{0,40}\b652\b|hosted (?:federated )?(?:index|catalog)/i;
   for (const file of [resolve(marketingDir, "index.html"), ...readdirSync(resolve(marketingDir, "docs")).filter((f) => f.endsWith(".html")).map((f) => resolve(marketingDir, "docs", f)), resolve(marketingDir, "public", "llms.txt"), resolve(marketingDir, "public", "llms-full.txt")]) {
     if (existsSync(file) && retracted.test(readFileSync(file, "utf8"))) failures.push(`${file}: contains a retracted catalog claim (800K/850K, 652 as a catalog, or the hosted index)`);

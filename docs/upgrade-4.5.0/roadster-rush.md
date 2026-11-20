@@ -75,7 +75,7 @@
 
 ## Measured after the upgrade (2026-10-29)
 
-The sections above describe the 4.5.0 release source. The audit fixes since then (`docs/audits/lanes/g02.md`) moved the pooled traffic, pickups and roadside props to `instances.*`, removed the hemisphere light (it never contributed next to the look's HDRI) and the authored bloom and colour grade that stacked on the look's, so their line numbers no longer match.
+The sections above describe the 4.5.0 release source. The audit fixes since then moved the pooled traffic, pickups and roadside props to `instances.*`, removed the hemisphere light (it never contributed next to the look's HDRI) and the authored bloom and colour grade that stacked on the look's, so their line numbers no longer match.
 
 All numbers are from remote runs on software WebGL2 (SwiftShader in the ACR runner), not a GPU. Spec: `tests/browser/audit-fix/roadster-rush.spec.ts`; frames and numbers in `evidence/apex-overdrive/audit-2026-10-29/`.
 

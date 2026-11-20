@@ -5,7 +5,7 @@
  * (MSFT_lod chain + meshopt + KTX2) through a 120-frame dolly sweep: per
  * frame the pipeline camera is moved (mutable `pipeline.camera` — the
  * actor-level load camera object; the live per-frame camera channel into
- * `collectRenderItems` is request Q-15-5, recorded in q-issues.md) and
+ * `collectRenderItems` is a separate, unbuilt request) and
  * `collectRenderItems()` is invoked exactly as the compiler would.
  *
  * Asserts/publishes:

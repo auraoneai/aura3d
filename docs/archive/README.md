@@ -1,31 +1,14 @@
 # Archive
 
-Historical planning, status and process documents moved out of the active tree on 2026-10-24 (see `docs/audit/`). They are kept for history; do not use them as current guidance. Files still read by tests or generators were left in place; the 2.0 and 4.x guides listed here were archived because every release before 4.3.5 is deprecated on npm.
+Historical planning, status and process documents moved out of the active tree on 2026-10-24. They are kept for history; do not use them as current guidance. Files still read by tests or generators were left in place; the 2.0 and 4.x guides listed here were archived because every release before 4.3.5 is deprecated on npm.
 
 - `.workbuddy-ai/memory/2026-10-17.md`
 - `.workbuddy-ai/memory/2026-10-18.md`
 - `docs/architecture/lean-device-diff.md`
-- `docs/prd/aura-diamond-3d.md`
-- `docs/prd/aura-fc-3d.md`
-- `docs/prd/aura-hoops-3d.md`
-- `docs/prd/aura-links-3d.md`
-- `docs/prd/bunker-zero.md`
-- `docs/prd/iron-crown.md`
-- `docs/prd/pips-big-leap.md`
-- `docs/prd/red-zone-3d.md`
-- `docs/prd/slingshot-siege.md`
-- `docs/project/aura3d-quality-rebuild/evidence/prd-10/phase-4.md`
-- `docs/project/aura3d-quality-rebuild/evidence/prd02/phase-4.md`
 - `docs/workflows/crayon-reverse-engineering-thread-record.md`
-- `process/owner-actions.md`
-- `process/retro-1f579954.md`
-- `process/retro-2ed5c16e.md`
-- `process/track-p-status.md`
 - `aura3d-verification-matrix.md`
 - `docs/architecture/2.0-removals.md`
 - `docs/architecture/2.0-platform.md`
-- `docs/prd/cross-hop.md`
-- `docs/prd/dot-dash-3d.md`
 - `docs/project/aura3d-400-release-notes.md`
 - `docs/project/aura3d-402-release-notes.md`
 - `docs/migration-4.0.md`
@@ -34,6 +17,3 @@ Historical planning, status and process documents moved out of the active tree o
 - `docs/migration/navigation-recast-2.0.md`
 - `docs/migration/physics-rapier-2.0.md`
 - `docs/whats-new-4.1.md`
-- `g2-racing-lane-notes.md`
-- `go-live-checklist.md`
-- `marketing-10-of-10-plan.md`

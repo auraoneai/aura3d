@@ -1,6 +1,6 @@
 # WP-2: mutable three-compatible math layer (`@aura3d/math/three`)
 
-Branch `beat3js2/wp2-math-three`, PRD `docs/prds/beat-threejs/PRD-beat-threejs-2-remaining-gaps.md` section 2.2 and WP-2. No browser or GPU work is involved, so nothing was run on the remote runner.
+Branch `beat3js2/wp2-math-three`. No browser or GPU work is involved, so nothing was run on the remote runner.
 
 ## What shipped
 

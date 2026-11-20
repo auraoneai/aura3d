@@ -123,5 +123,5 @@ the fused bloom of quality `auto` against `?aura3d-render=production` on the sam
 - [x] Check `app.diagnostics()` for `option-ignored` entries: `degradations` is empty and no engine warning is logged on the
   base or the lane (`g17before3`, `g17after3`).
 - [x] `pnpm vitest run tests/unit/saiyan-snake-way-port`: 96 tests pass.
-- [x] Browser runs on the remote runner: the lane capture spec and `shotsb-serpentine` (runs listed in `docs/audits/lanes/g17.md`).
+- [x] Browser runs on the remote runner: the lane capture spec and `shotsb-serpentine`.
 - [x] `node tools/game-checks/run.mjs serpentine-sky-run-port`: 0 errors, 0 warnings.

@@ -18,6 +18,18 @@ claim a rendered postprocess effect only when:
   caused by the pass;
 - evidence records the backend and any fallback state.
 
+## Bloom options and units
+
+`effects.bloom(...)` reads `intensity`, `threshold`, `knee`, `scatter`, `color` and `clampLuminance` (plus the aliases below). Any other field is rejected with `POST_FIELD_UNSUPPORTED`.
+
+- `threshold` is linear HDR, 0 to 64, default 1.0. A value below 1 is honoured but reports `BLOOM_THRESHOLD_BELOW_HDR_WHITE`, because it lets lit diffuse surfaces bloom. Surfaces meant to glow need emissive luminance above the threshold.
+- `knee` is a fraction of the threshold, 0 to 1, default 0.25: the width of the soft edge above the threshold.
+- `intensity` is 0 to 4, default 0.25. The mip pyramid is normalised by 1/mips, so a constant input E above the threshold adds about `intensity x E` of bloom whatever the mip count.
+- `scatter` is the halo spread, 0 to 1, default 0.7. `radius` is read as `scatter` when `scatter` is not set.
+- `clampLuminance` is a firefly clamp, default 64. Authoring `maxIntensity` sets `clampLuminance` to that value, so a small `maxIntensity` clamps the bloom input hard.
+- `color` tints the bright-pass output.
+- The mip count follows the quality tier (low 3, medium 5, high and ultra 6). More mips widen the halo but do not brighten it.
+
 ## Prior root evidence (revalidation required for 4.0.0)
 
 The measurements below describe the prior recorded workload, not acceptance of the changing 4.0.0 source. Fresh root browser receipts are required.

@@ -9,7 +9,7 @@ type Node = { kind: string; light?: string; environment?: string; intensity?: nu
 /**
  * LIGHT-01 / SO-4 (lane G15): since 4.5.0 a lights-only scene gets no implicit environment, so the lit procedural riders and
  * props of Craterline GP need explicit image-based fill. `?look=original` keeps the 4.6.1 rig: neutral environment next
- * to the hemisphere, key and fill, the intensity calibrated with the hemisphere on (docs/audits/lanes/g15.md).
+ * to the hemisphere, key and fill, the intensity calibrated with the hemisphere on.
  * GU47 WP-25 (SO47-L1/L2/E1): the gouache look rakes an 18-degree key with 3 PCSS cascades, adds the planetshine
  * directional and captures the painted sky into the probe.
  */

@@ -32,7 +32,3 @@ Aura3D is the TypeScript 3D engine that ships the whole stack for browser games 
 - [CLI reference](./api/cli-reference.md) (generated from `aura3d help --json`)
 - [Animation Studio](./animation-studio/guide.md) and [character animation](./animation/controllers.md)
 - [Rendering concepts](./concepts/rendering.md)
-
-## Audit
-
-The documentation audit (what is stale, merged or archived, and the rewrite plan) is in [`audit/README.md`](./audit/README.md).

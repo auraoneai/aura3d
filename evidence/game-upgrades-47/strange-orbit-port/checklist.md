@@ -1,6 +1,6 @@
 # WP-25 acceptance checklist (strange-orbit-port, lane g15)
 
-Code status per acceptance line; commits and notes in `docs/prds/game-upgrades-47/lanes/g15.md`. Pixel numbers are phase 2 (remote runner, software WebGL2).
+Code status per acceptance line. Pixel numbers are phase 2 (remote runner, software WebGL2).
 
 | Row | Acceptance | Status |
 |---|---|---|

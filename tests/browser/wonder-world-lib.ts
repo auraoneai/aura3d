@@ -1,6 +1,5 @@
 /**
- * Shared helpers for the Wonder World browser specs (PRD 04 J08-J13,
- * docs/prds/veer-wonder-world/04-implementation-backlog-by-filename.md section J).
+ * Shared helpers for the Wonder World browser specs.
  *
  * REMOTE RUNNER ONLY. These specs start headless Chromium with software WebGL2 (SwiftShader); never run them on the Mac.
  * From the repo root (each line is one `tools/remote-acr/run.sh` run with EXTRA_DIRS="apps/veer-wonder-world"; the

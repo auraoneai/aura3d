@@ -1,6 +1,6 @@
 # Saltwind Highway (WP-32) acceptance checklist
 
-Status per acceptance line of PRD WP-32. "code" = implemented and unit-tested in phase 1; "phase 2" = needs a remote capture, diagnostics run or judge; "blocked" = waits on a lane. Lane report: `docs/prds/game-upgrades-47/lanes/g22.md`.
+Status per acceptance line of PRD WP-32. "code" = implemented and unit-tested in phase 1; "phase 2" = needs a remote capture, diagnostics run or judge; "blocked" = waits on a lane.
 
 | Row | Acceptance | Status |
 |---|---|---|

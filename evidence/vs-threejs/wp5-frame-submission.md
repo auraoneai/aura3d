@@ -1,6 +1,6 @@
 # WP-5: frame submission residue (cube CPU in `frame()`)
 
-Branch `beat3js2/wp5-frame-submission-fixes` (on `beat3js2/wp5-frame-submission`), PRD `docs/prds/beat-threejs/PRD-beat-threejs-2-remaining-gaps.md` WP-5 (P2, G4). Software WebGL2 (SwiftShader) on the Azure ACR runner, 640x360, dpr 1, one box with `material.pbr`, ambient light, `quality: "auto"` (direct path). Remote runs via `tools/remote-acr/run.sh`, spec `tests/browser/frame-cost.spec.ts`. Raw runner lines for every figure below are in `evidence/vs-threejs/wp5-frame-submission-raw/` (`base-a`, `new-a`, `base-b`, `new-b`; "base" is `packages/` from `beat3js2/integration`, "new" is this branch, same spec and harness on both).
+Branch `beat3js2/wp5-frame-submission-fixes` (on `beat3js2/wp5-frame-submission`). Software WebGL2 (SwiftShader) on the Azure ACR runner, 640x360, dpr 1, one box with `material.pbr`, ambient light, `quality: "auto"` (direct path). Remote runs via `tools/remote-acr/run.sh`, spec `tests/browser/frame-cost.spec.ts`. Raw runner lines for every figure below are in `evidence/vs-threejs/wp5-frame-submission-raw/` (`base-a`, `new-a`, `base-b`, `new-b`; "base" is `packages/` from `beat3js2/integration`, "new" is this branch, same spec and harness on both).
 
 This file replaces the first version of the WP-5 evidence. That version quoted one A/B with three cold loads per side, mislabelled a last-load figure as a median, and quoted a profile table with no raw lines. The corrections are listed in "Corrections to the first version" at the end.
 

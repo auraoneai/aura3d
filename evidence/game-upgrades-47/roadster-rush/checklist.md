@@ -1,6 +1,6 @@
 # Apex Overdrive (roadster-rush) WP-12 acceptance checklist
 
-Status per acceptance line: `code` (implemented, verifiable statically or by unit test), `phase 2` (needs the remote capture, judge or real GPU), `blocked (E-x | WP-36)`. Row status lives in `docs/prds/game-upgrades-47/lanes/g02.md`.
+Status per acceptance line: `code` (implemented, verifiable statically or by unit test), `phase 2` (needs the remote capture, judge or real GPU), `blocked (E-x | WP-36)`.
 
 | Row | Acceptance | Status |
 |---|---|---|
@@ -34,7 +34,7 @@ Status per acceptance line: `code` (implemented, verifiable statically or by uni
 
 ## Phase 3 (4.7.1), 2026-10-31
 
-Remote run `g02p3-r5-1034` (software WebGL2). Details are in `docs/prds/game-upgrades-47/lanes/g02.md` § Phase 3.
+Remote run `g02p3-r5-1034` (software WebGL2).
 
 | Item | Status |
 |---|---|
@@ -52,7 +52,7 @@ Remote run `g02p3-r5-1034` (software WebGL2). Details are in `docs/prds/game-upg
 
 ## Phase 4 (4.7.2), 2026-10-31
 
-Build `g02p4-r3-1649` (software WebGL2). Details are in `docs/prds/game-upgrades-47/lanes/g02.md` § Phase 4.
+Build `g02p4-r3-1649` (software WebGL2).
 
 | Item | Status |
 |---|---|

@@ -10,7 +10,7 @@ import { fitCameraToAspect, horizontalCoverage } from "../../../apps/showcase-au
 import { athleteAnimation } from "../../../apps/showcase-aura-fc-3d/src/game/locomotion";
 import { assets } from "../../../apps/showcase-aura-fc-3d/src/aura-assets-v2";
 
-/** Lane G09 regression tests for the 2026-10-29 audit rows (docs/audits/sections/game-09-aura-fc-3d.md). */
+/** Lane G09 regression tests for the 2026-10-29 audit rows. */
 const IDLE: UserInputFrame = {
   move: [0, 0], sprint: false, passShort: false, passDriven: false, shootHeld: false, shootReleased: false,
   skillStepover: false, skillChop: false, switchPlayer: false, pause: false

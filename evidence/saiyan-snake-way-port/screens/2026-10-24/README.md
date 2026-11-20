@@ -1,6 +1,6 @@
 # Serpentine Sky Run: screenshots, 2026-10-24
 
-Retake for the Serpentine Sky Run card and README per `docs/workflows/game-rework-prompt.md` section 5.
+Retake for the Serpentine Sky Run card and README.
 
 - **Commit:** `06cf4f7eb` (head of `origin/game-rework` when captured). Capture code: `tests/browser/shotsb-lib.ts` and the per-game `shotsb-*.spec.ts`.
 - **Runner:** remote Azure ACR task (tools/remote-acr/run.sh), headless Chromium on SwiftShader: software WebGL2, not a GPU. Nothing here is real-GPU evidence; the owner should confirm the look on the Mac.

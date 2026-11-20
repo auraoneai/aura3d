@@ -1,6 +1,6 @@
 # Bundle composition baseline (WP-C1), Aura3D 4.5.0
 
-Measured 2026-10-29 by lane E5 of the audit-fix program (`docs/audits/execution-plan.md`, audit row RH-12). This is the first deliverable of WP-C1 in `docs/prds/agent-first-authoring/PRD-agent-first-game-authoring.md` (Track C), which `docs/prds/beat-threejs/PRD-beat-threejs-3-after-450.md` names as the owner of the 42 bundle and request rows (group G1).
+Measured 2026-10-29 during the live-games audit fixes (audit row RH-12). It is the baseline for the 42 bundle and request rows (group G1) of the three.js comparison.
 
 ## Method
 

@@ -1,6 +1,6 @@
 # The Bellkeeper's Walk (`where-the-wind-wanders-port`): 5.0.1 upgrade guide
 
-Source: plan section 5.23 of `docs/project/5.0-games-and-examples-upgrade-plan.md` (app `apps/showcase-where-the-wind-wanders-port`, arcade). Lab flags and shared helpers: [README](./README.md). Stable features only by default; EXPERIMENTAL items stay behind lab flags (decision D1).
+App: `apps/showcase-where-the-wind-wanders-port` (arcade). Lab flags and shared helpers: [README](./README.md). Stable features only by default; EXPERIMENTAL items stay behind lab flags (decision D1).
 
 ## Plan facts
 

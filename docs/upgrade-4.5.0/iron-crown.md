@@ -107,7 +107,7 @@ Scope: `apps/showcase-iron-crown/` on branch `beat3js2/integration`. `apps/showc
 
 ## Checklist
 
-Closed on 2026-10-29 by audit lane G05 (`docs/audits/lanes/g05.md`). Captures ran on the remote runner (Azure ACR Tasks, headless Chromium, software WebGL2), spec `tests/browser/audit-fix/iron-crown.spec.ts`, frames and numbers in `evidence/iron-crown/audit-2026-10-29/`. These are 4.5.0 frames before and after the lane's game fixes; the 4.3.7 comparison for Neo-Tokyo is the earlier `evidence/games450/iron-crown-neo-tokyo.md` (31.4 on 4.3.7, 33.4 on 4.5.0).
+Closed on 2026-10-29 by audit lane G05. Captures ran on the remote runner (Azure ACR Tasks, headless Chromium, software WebGL2), spec `tests/browser/audit-fix/iron-crown.spec.ts`, frames and numbers in `evidence/iron-crown/audit-2026-10-29/`. These are 4.5.0 frames before and after the lane's game fixes; the 4.3.7 comparison for Neo-Tokyo is the earlier `evidence/games450/iron-crown-neo-tokyo.md` (31.4 on 4.3.7, 33.4 on 4.5.0).
 
 - [x] `node tools/game-checks/run.mjs iron-crown`: 0 errors, 0 warnings.
 - [x] Typecheck and build: `tsc -p apps/showcase-iron-crown/tsconfig.json --noEmit` passes; `vite build` of the app passes (main chunk 6.03 MB before the lane, 3.56 MB after, because the shared asset catalog is no longer bundled). The build was a single-app vite build, run locally; no browser ran locally.

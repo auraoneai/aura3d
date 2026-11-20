@@ -117,7 +117,7 @@ project = chromium-automation
 optional = true
 split = tests
 seconds-per-test = 300
-reason = Optional 4.7.10-vs-5.0 paired visual comparison (tools/release/visual-compare-5.0/plan.json, docs/release/5.0-visual-comparison.md): 16 game views captured at the baselines' 1280x720 DPR 1 with the game-luma protocol, one 25 s shot each (about 3.5 min median on software WebGL2; 60 s-only baselines take 5-12 min). Not part of the default plan: run it on its own after batch 2 with ACCEPT_GROUPS=visual-compare (own SAS and shards, about 6 shards of 3 views, each under the 1200 s Playwright timeout in the median case). The spec runs in parallel mode so --shard splits views across shards; split = tests lets the planner use more than one shard for the single file. Showcase (5.0-only) frames are harvested from batch outputs and need no capture here.
+reason = Optional 4.7.10-vs-5.0 paired visual comparison (tools/release/visual-compare-5.0/plan.json): 16 game views captured at the baselines' 1280x720 DPR 1 with the game-luma protocol, one 25 s shot each (about 3.5 min median on software WebGL2; 60 s-only baselines take 5-12 min). Not part of the default plan: run it on its own after batch 2 with ACCEPT_GROUPS=visual-compare (own SAS and shards, about 6 shards of 3 views, each under the 1200 s Playwright timeout in the median case). The spec runs in parallel mode so --shard splits views across shards; split = tests lets the planner use more than one shard for the single file. Showcase (5.0-only) frames are harvested from batch outputs and need no capture here.
 tests/browser/visual-compare-5.0.spec.ts tests=16
 
 [group evidence]

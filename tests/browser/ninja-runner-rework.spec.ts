@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
- * ninja-runner-port rework lane (docs/workflows/game-rework-prompt.md 3.8): ramming a crate or beam has physical
+ * ninja-runner-port rework lane: ramming a crate or beam has physical
  * consequences. Remote-only (tools/remote-acr/run.sh, RUN_ID prefix rwnin); never run under local Playwright.
  * Each scenario places the runner before a crate, steps into it, then renders the aftermath in real time. Frames go to
  * the log as `NINJA_RAM_FRAME <scenario>-<n>-<label> <base64>`; metrics as `NINJA_RAM_RESULT <json>`.

@@ -1,6 +1,6 @@
 # Teleoperator: player-versus-traffic contact
 
-Lane `rework-teleop` (docs/audit/motion-audit.md, high severity: a manual driver passed through cars). All remote runs are software WebGL2 (SwiftShader) at 640x360, not a real GPU.
+Teleoperator rework (motion audit, high severity: a manual driver passed through cars). All remote runs are software WebGL2 (SwiftShader) at 640x360, not a real GPU.
 
 ## What changed
 

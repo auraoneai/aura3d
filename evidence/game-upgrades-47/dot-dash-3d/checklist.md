@@ -40,8 +40,7 @@ Pixel numbers are software WebGL2 on the remote runner (phase 2).
 ## Phase 3 (4.7.1)
 
 Rubric before/after: `look-judgement-before.json` -> `look-judgement-p3.json` (min 2.5 -> 4, ui_hud 7). Final screens and
-posters retaken (`screens-fresh` clear). Game checks: 0 errors, 14 luma-band warnings (bands not widened; see the lane
-report `docs/prds/game-upgrades-47/lanes/g13.md`, "Phase 3 (4.7.1)"). Software WebGL2.
+posters retaken (`screens-fresh` clear). Game checks: 0 errors, 14 luma-band warnings (bands not widened). Software WebGL2.
 
 ## Phase 4 (4.7.2)
 

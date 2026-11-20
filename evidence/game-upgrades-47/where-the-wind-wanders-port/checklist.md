@@ -1,6 +1,6 @@
 # WP-33 acceptance checklist (where-the-wind-wanders-port, lane g23)
 
-Status per acceptance line. "phase 2" = needs a remote capture, measurement or judge. Commits in `docs/prds/game-upgrades-47/lanes/g23.md`.
+Status per acceptance line. "phase 2" = needs a remote capture, measurement or judge.
 
 | Row | Acceptance | Status |
 |---|---|---|

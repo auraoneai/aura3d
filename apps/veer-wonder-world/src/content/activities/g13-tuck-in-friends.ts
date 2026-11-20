@@ -1,4 +1,4 @@
-// G13 — Tuck In Friends (P2 bedtime activity, SleepingBaby-Songs-Games.PRD).
+// G13 — Tuck In Friends (P2 bedtime activity).
 // Momo hosts in the warm Moonlit Nursery with Sheru (who never speaks lines)
 // and Peeko. Across up to three unhurried wind-down rounds, a tap on the cozy
 // blanket or bed — or simply resting through the 6 s wait — gently tucks Teddy,

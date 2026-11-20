@@ -1,5 +1,5 @@
 /**
- * Duneglide art direction (GU47 WP-34, PRD §3.2 item 1; E-I compliance recipe in docs/prds/game-upgrades-47/lanes/ei.md).
+ * Duneglide art direction (GU47 WP-34, PRD §3.2 item 1; recipe in docs/agents/art-direction.md section 9).
  *
  * Builds every chapter's inked scene without the DOM, snapshots it with `snapshotForAudit` and audits it against
  * art/direction.ts (one shadowed key, environment fill and no hemisphere, at most six practicals, every mounted model in

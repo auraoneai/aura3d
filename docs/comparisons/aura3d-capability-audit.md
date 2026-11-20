@@ -62,7 +62,7 @@ Promotion rule (PRD decision 6): a row becomes `shipped` only with (a) a pixel r
 | Capability | Label | Code | Evidence | Proof |
 |---|---|---|---|---|
 | `assets add`, `assets typegen` (manifest + `src/aura-assets.ts`) | shipped | `asset-manifest.ts`, `cli.ts` | Template `aura.assets.json` and generated `src/aura-assets.ts`; tagline-check | cli: tests/unit/aura3d-cli/assets.test.ts, tests/unit/aura3d-cli/asset-manifest-schema.test.ts |
-| `assets search`, `assets resolve` (project, open sources, procedural recipes) | shipped | `resolve-ladder.ts` | There is no hosted catalog (`docs/audit/asset-catalog-claim.md`) | cli: tests/unit/aura3d-cli/resolve-ladder.test.ts |
+| `assets search`, `assets resolve` (project, open sources, procedural recipes) | shipped | `resolve-ladder.ts` | There is no hosted catalog | cli: tests/unit/aura3d-cli/resolve-ladder.test.ts |
 | `assets inspect`, `optimize`, `merge-clips`, `thumbnail`, `repair-skin` | shipped | `cli-help.ts`, `commands/assets/` | `aura3d --help`. Skin-weight sums within 5% of 1 are a debug-level note, not a warning | cli: tests/unit/aura3d-cli/asset-inspection-animation.test.ts, tests/unit/aura3d-cli/skin/skin-validate.test.ts |
 | `assets validate --release`, licence and provenance gates | shipped | `asset-source-validation.ts`, `index.ts` | — | cli: tests/unit/aura3d-cli/asset-provenance-license-coherence.test.ts |
 | `check-deploy --dist [--release]` | shipped (static checks) | `index.ts:1097` | Checks hashed assets, unreferenced files and validation; it does not load routes or read the console | cli: tests/unit/aura3d-cli/deployment.test.ts |

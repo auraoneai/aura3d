@@ -1,6 +1,6 @@
 # Aura Diamond 3D (`aura-diamond-3d`): 5.0.1 upgrade guide
 
-Source: plan section 5.8 of `docs/project/5.0-games-and-examples-upgrade-plan.md` (app `apps/showcase-aura-diamond-3d`, sports). Lab flags and shared helpers: [README](./README.md). Stable features only by default; EXPERIMENTAL items stay behind lab flags (decision D1).
+App: `apps/showcase-aura-diamond-3d` (sports). Lab flags and shared helpers: [README](./README.md). Stable features only by default; EXPERIMENTAL items stay behind lab flags (decision D1).
 
 ## Plan facts
 

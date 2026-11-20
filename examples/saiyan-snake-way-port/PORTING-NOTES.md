@@ -103,7 +103,7 @@ Not ported (the original continues past these):
 
 - The post chain throws `RenderDeviceError ... 0x502 [WEBGL_LDR_POSTPROCESS_FAILED]` when any GL error is pending, including one an
   earlier pass left behind. In the 4.5.0 audit one such frame froze the game for the session in 3 of 4 `?manual=1` loads. The game now
-  skips the frame (`renderGuard.ts`); the pass that leaves the error pending is an engine issue (lane report `docs/audits/lanes/g17.md`).
+  skips the frame (`renderGuard.ts`); the pass that leaves the error pending is an engine issue.
 - `material.custom` programs read `modelMatrix`, so they cannot draw through `instances.*`; pooled props stay one node per slot.
 
 Notes for authors of `material.custom` shaders:

@@ -1,4 +1,4 @@
-// G16 — Cloud Sheep Hush (P2 bedtime activity, SleepingBaby-Songs-Games.PRD).
+// G16 — Cloud Sheep Hush (P2 bedtime activity).
 // Lulu and Lumi host on the dusk-plum Starlight Cloud with fluffy sheep and
 // lavender sleepyCloud pillows. Kept free of counting words so drowsy babies
 // simply watch or tap a wooly sheep as it floats onto a soft cloud, yawns, and

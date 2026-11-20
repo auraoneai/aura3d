@@ -1,6 +1,6 @@
 /**
- * E3 stage-2b step 6 — RoomEnvironment (neutral room) parity vs three r185
- * (e3-stage2b-trace.md §5 "smallest decisive capture"). Drives
+ * RoomEnvironment (neutral room) parity vs three r185 (benchmarks/quality-rebuild/README.md,
+ * "RoomEnvironment parity check"). Drives
  * `scenes/prd02/room-parity.html` from the lane bundle; modeled line by line
  * on pmrem.spec.ts (02-S7) with the same ±10% linear-luma band.
  *
@@ -22,8 +22,8 @@
  * is attached as JSON evidence so a red run still yields the numbers step 6
  * exists to produce.
  *
- * What this spec does NOT prove (needs the qr-azure-gpu L4 run, see
- * parity-capture-runbook.md): the full production pipeline (single-knob
+ * What this spec does NOT prove (needs a paired GPU frame capture of
+ * scene 19): the full production pipeline (single-knob
  * bind under qr_flags=compiler,lighting, tonemapped frame, LPIPS vs the
  * three frame) and RGBA16F filterability on the L4 Vulkan-ANGLE runner —
  * the harness uploads via raw WebGL2, not the renderer's texture path.

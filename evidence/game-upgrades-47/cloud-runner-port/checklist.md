@@ -1,6 +1,6 @@
 # Cumulus Dash (cloud-runner-port) WP-35 acceptance checklist
 
-Status per acceptance line: `code` (implemented, verifiable statically or by unit test), `phase 2` (needs the remote capture, judge or real GPU), `blocked (E-x | WP-36)`. Row status lives in `docs/prds/game-upgrades-47/lanes/g25.md`.
+Status per acceptance line: `code` (implemented, verifiable statically or by unit test), `phase 2` (needs the remote capture, judge or real GPU), `blocked (E-x | WP-36)`.
 
 | Row | Acceptance | Status |
 |---|---|---|

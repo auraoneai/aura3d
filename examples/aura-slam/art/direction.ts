@@ -2,7 +2,7 @@
 // Fantasy: a long-lens TV tennis broadcast on a world tour; each venue its own hour and climate (view/look.ts).
 //
 // Genre: `GameGenre` has no racket or court-sports entry; "basketball" is the nearest broadcast court-ball genre and only
-// selects the rubric fallback (handoff to E-J in docs/prds/game-upgrades-47/lanes/g01.md: add a "tennis" genre).
+// selects the rubric fallback; a "tennis" genre would remove the fallback.
 import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({

@@ -103,6 +103,16 @@ These five mappings emit an `// a3d:` comment and an approximate report row; the
 
 Matcap, distance and shadow provide paired GLSL/WGSL sources, but that alone does not establish a root WebGPU route or pixels; depth has a source-tested WebGPU forward path. For all four custom-shader alternatives (matcap, distance, shadow and toon), a model material is a whole-model replacement rather than a glTF PBR slot override; skinned models are rejected and PBR `materialOverrides` cannot be combined with it. Do not assume arbitrary GLB features or three.js options survive. Depth is more restrictive and rejects model materials outright. Verify the particular target, lighting and backend when completing the port.
 
+### Porting UnrealBloomPass settings
+
+Matching halo energy gives a starting point for `effects.bloom` (derived from the two formulas, not measured on frames; `benchmarks/quality-rebuild/aura3d/scenes/prd03/bloomMapping.ts`):
+
+- `intensity = 9 x strength`, capped at 4. three.js r185 adds `strength x 9 x E` of halo across its five mips for a uniform input E; Aura3D adds `intensity x E`. Strengths above about 0.44 saturate the cap.
+- Keep the same `threshold`, with `knee = 0.01 / threshold` to approximate three.js's 1%-wide smoothstep.
+- Start with `scatter = radius`. The halo shapes differ, so compare frames.
+
+Aura3D's threshold is linear HDR ([postprocess.md](../rendering/postprocess.md#bloom-options-and-units)), so a three.js threshold below 1 reports `BLOOM_THRESHOLD_BELOW_HDR_WHITE`.
+
 ## 4. What you finish by hand (measured)
 
 Run on `tools/bench-vs-threejs/pbr-viewer/three/scene.ts` (49 non-blank lines): 23 approximate rows, 2 unmapped rows, 22 `// a3d:` markers, 4 leftover `THREE.` references, and 55 non-blank output lines. The output does not compile as written: it emits `const scene = scene()` and `const camera = camera.perspective(...)`, which shadow their own factories, and it leaves `renderer.shadowMap.*` and `renderer.toneMapping` assignments in place. The output is an annotated worklist that drives the rewrite.

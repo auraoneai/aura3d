@@ -44,4 +44,4 @@ Race <= 150 draws High, <= 120 Low; 3 PCSS cascades (1 on Low); grain on every t
 
 ## Before/after card frames and distinctness results
 
-Phase 2 (remote captures, sibling judge). See `docs/prds/game-upgrades-47/lanes/g15.md` "Phase-2 plan".
+Phase 2 (remote captures, sibling judge).

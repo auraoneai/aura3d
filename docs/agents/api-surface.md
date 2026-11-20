@@ -71,6 +71,7 @@ Do not import `three`, `three/examples/...`, `GLTFLoader`, renderer internals or
 - Transient-light fallback (5.6.0): adding or removing a short-lived light (a VFX flash) no longer blanks lit meshes while their new shader variants compile; each draw reuses the material's last ready program that differs only in light counts and was built for at least as many direct lights, until the new variant is ready.
 - Instances under a parent: `instances.*` and model instances inside a static `group(...)` draw at parent transform x instance transform (5.6.0; before, the parent was dropped and wind-swayed batches drew at the world origin). Wind-only instance batches accept `setInstances(...)` (clearing or moving trees no longer throws `INSTANCE_SCATTER_RUNTIME_UNSUPPORTED`).
 - Thumbnails: `aura3d assets thumbnail` (run by `assets add`) writes `<id>.thumb.png` (a CPU base-colour preview for models, a downscale for textures). From code use `createAssetThumbnailsAsync({ projectDir, assetIds })` from `@aura3d/cli`; the synchronous `createAssetThumbnails` only writes placeholder cards and is deprecated.
+- Model tints multiply. `model(asset, { material: { color } })` and `materialOverrides: [{ color }]` multiply the GLB's base-colour factor and keep its textures. For a flat colour use `materialOverrides: [{ target, color, colorMode: "replace", replaceTextures: true }]`; `replaceTextures` turns off the slot's base-colour and metallic-roughness textures.
 
 ## Asset-safe pattern
 

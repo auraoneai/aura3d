@@ -86,6 +86,12 @@ Outputs go to `out/` (or `$QR_BENCH_OUT`):
 The GPU flags are `--use-angle=metal --enable-gpu` on macOS and SwiftShader on Linux. Setting
 `QR_BENCH_CHROME_ARGS` overrides them.
 
+## RoomEnvironment parity check
+
+Scene `19-room-environment-parity` authors no lights and no environment node. Aura3D renders it with its fallback neutral room; three.js renders it with `PMREMGenerator.fromScene(new RoomEnvironment(), 0.04)`. It reuses the metal and dielectric roughness sweep from scene 06.
+
+For the float readback check, build `benchmarks/quality-rebuild/scenes/prd02/vite.lane.config.ts` and run `playwright test --config tests/qr/prd02/playwright.prd02.config.ts tests/qr/prd02/browser/room-environment-parity.spec.ts` on a remote runner. The spec asserts that per-roughness mean linear luma of the Aura3D arms is within 10% of three.js, plus an analytic anchor at roughness 1, and attaches every measured value as JSON. It does not cover the tone-mapped frame or the renderer's own texture upload path; compare paired GPU frames of scene 19 for that, on the same GPU class. In `report.json`, `implicit-environment: partial` on the Aura3D arm is expected.
+
 ## Reading the results
 
 A pixel difference is not a quality verdict on its own. Some of it comes from engine-internal

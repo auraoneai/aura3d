@@ -1,6 +1,6 @@
 # Aura Hoops 3D WP-17 acceptance checklist (phase 1 status; numbers are phase 2, software WebGL2)
 
-Statuses mirror `docs/prds/game-upgrades-47/lanes/g07.md`.
+
 
 | ID | Acceptance | Status |
 |---|---|---|

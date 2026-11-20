@@ -115,3 +115,36 @@ Scenes that call `looks.preset(...)` are unchanged. For a scene that does not (a
 `model(asset)` still fits a model's longest side to 1.55 world units unless you pass an explicit scale; size cameras, floors and `heroStage({ radius })` from that, not from the source file's units.
 
 Proof for these helpers, with per-scene captures and the one-frame blind-judge results, is in `evidence/look-defaults-511/`.
+
+## 9. Art direction record for games in this repository
+
+Every live game in this repository ships `art/direction.ts` and a unit test that audits it. `node tools/game-checks/run.mjs <slug>` fails the game (`art-direction`, error) if either is missing or out of date. `@aura3d/game` is a private workspace package, so this applies to games in this repository, not to published templates.
+
+- **The file.** Put it at `apps/<appFolder>/art/direction.ts` (`apps/<appFolder>/src/art/direction.ts` also works; ports may use `examples/<example>/art/direction.ts`). It default-exports `defineArtDirection({ id, genre, palette: { primary, accent }, lighting, signatureEffect, ... })` from `@aura3d/game/art`. `defineArtDirection` throws `AuraArtDirectionError` listing every violation it finds.
+- **The test.** Build the authored scene, take a snapshot with `snapshotForAudit(app, assetManifestLike(manifest))` (or write a literal `ArtDirectionSnapshot`), audit it and record the result:
+
+  ```ts
+  import { auditArtDirection } from "@aura3d/game/art";
+  import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
+
+  const violations = auditArtDirection(direction, snapshot);
+  writeArtDirectionAudit("apps/<appFolder>/art/direction.ts", { direction, snapshot, violations });
+  expect(violations).toEqual([]);
+  ```
+
+  `tests/unit/heatsink/art-direction.test.ts` is a complete example.
+- **The record.** `writeArtDirectionAudit` writes `art/direction.audit.json` (schema `aura3d.art-direction-audit/1`) next to `direction.ts`. It stores the sha256 of `direction.ts`, so it goes stale when the source changes; it has no timestamp and is rewritten only when its content changes. Commit both files and rerun the test after every edit to `direction.ts`.
+- **What the check rejects:** a missing, invalid or stale record, a non-empty `violations` array, or an empty `id`, `signatureEffect` or `palette.primary`. Audit rules include `ambient-light`, `missing-environment`, `no-shadowed-key`, `too-many-practicals`, `asset-under-min-triangles`, `asset-unlit-card`, `asset-texture-override`, `asset-not-in-contract`, `draws-over-tier-budget`, `emissive-fill` and `capture-branch`.
+- **Each game owns its look (`look-identity`, error).** The check compares the records of all live games and fails a game whose primary HDRI (only `lighting.environment.background: "hdri"` counts; give a catalogue id or a served `/hdri/<id>_1k.hdr` path) matches another game's by id or file sha256, whose `signatureEffect` text matches another game's after normalisation, or whose `palette.primary` shares 3 hexes with another game's (2 when the smaller palette has only 2).
+- **Gotcha.** Import `auditArtDirection` from `@aura3d/game/art`. The `auditArtDirection` exported from the `@aura3d/engine` root is a placeholder that always returns `["PENDING"]`.
+
+### Luma bands per variant
+
+A mean luma hides a broken look (lesson R21 in [lessons-learned.md](lessons-learned.md)). Games in this repository declare region bands per lighting variant instead:
+
+- The capture spec `tests/browser/game-luma-capture.spec.ts` runs on the remote runner only. Decode a run with `node evidence/audit-fix/e5/decode-luma.mjs after=<run.log> --out evidence/game-upgrades-47/<slug>`.
+- Check it with `node tools/look-metrics/region-luma.mjs bands <capture> --bands evidence/game-upgrades-47/<slug>/luma-bands.json` (exits 1 on a miss). Other subcommands: `table`, `compare <before> <after>`, `pairs`, `extract`.
+- The band file (schema `aura3d.luma-bands/1`) has a `default` band (fallback `darkFrac <= 0.6`, `clipFrac <= 0.05`), `variants` keyed by variant or target name with `[min, max]` bands (`null` is open) on frame metrics (`mean`, `p5`, `p95`, `darkFrac`, `clipFrac`, `hue`, ...) plus `cells` (indexes 0 to 8 or `top`/`middle`/`bottom`/`left`/`center`/`right`) and `crops`, and `exceptions` (a variant name and a written reason).
+- Only `settle-<s>s` shots with s >= 20 count. A blank frame, or one taken while textures were still uploading, is always a miss.
+- Named crops come from the game: `window.__AURA_QA__ = { crops }` or a `crops` extra on `installQaHooks`, each `{ name, x, y, w, h }` normalised 0..1 to the main canvas, at most 16. The value may be a function so a crop can follow a moving subject.
+- The `luma-band` game-check reads `luma-after.json` and `luma-bands.json` from that folder; it currently warns rather than fails.

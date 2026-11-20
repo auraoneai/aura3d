@@ -1,6 +1,6 @@
 # Ion Circuit (`heatsink-port`): 5.0.1 upgrade guide
 
-Source: plan section 5.19 of `docs/project/5.0-games-and-examples-upgrade-plan.md` (app `apps/showcase-heatsink-port`, racing). Lab flags and shared helpers: [README](./README.md). Stable features only by default; EXPERIMENTAL items stay behind lab flags (decision D1).
+App: `apps/showcase-heatsink-port` (racing). Lab flags and shared helpers: [README](./README.md). Stable features only by default; EXPERIMENTAL items stay behind lab flags (decision D1).
 
 ## Plan facts
 

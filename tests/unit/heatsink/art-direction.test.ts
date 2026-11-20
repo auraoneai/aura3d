@@ -1,7 +1,7 @@
 /**
  * Thermal Drift art direction (GU47 WP-13 look contract): `defineArtDirection` accepts it, `auditArtDirection` finds no
  * violation on the authored scene of every circuit, and the audit record the `art-direction` game-check reads is
- * written beside `art/direction.ts` (recipe: docs/prds/game-upgrades-47/lanes/ei.md).
+ * written beside `art/direction.ts` (recipe: docs/agents/art-direction.md section 9).
  */
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";

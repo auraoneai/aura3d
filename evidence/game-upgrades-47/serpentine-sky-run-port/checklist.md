@@ -1,6 +1,6 @@
 # Serpentine Sky Run (WP-27) acceptance checklist
 
-Status per row: see `docs/prds/game-upgrades-47/lanes/g17.md`. Pixel, judge and measured-budget lines are phase 2 (remote software WebGL2 captures).
+Status per row. Pixel, judge and measured-budget lines are phase 2 (remote software WebGL2 captures).
 
 | ID | Acceptance | Status |
 |---|---|---|

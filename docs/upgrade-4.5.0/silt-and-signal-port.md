@@ -17,7 +17,7 @@
   - Scene `effects.fog`, `effects.bloom` and `effects.colorGrade` (`world.ts:186-188`).
 - Lighting (`world.ts:176-185`):
   - `environments.neutral({intensity: 0.95 | 0.4})`
-  - `lights.hemisphere` (intensity 1.05 day, 0.85 night; 1.45 until the audit lane G24 retune, see `docs/audits/lanes/g24.md`)
+  - `lights.hemisphere` (intensity 1.05 day, 0.85 night; 1.45 before the audit retune)
   - one `lights.directional` with `shadow:{mapSize:4096, cascades:3, maxDistance:360}`
 - Custom GLSL via `material.custom` for the sky and the canal water (`world.ts:190`, `218`; specs at `world.ts:44-88`). `ringSpec` (additive) is only listed in `allProgramSpecs` (`world.ts:94`) for the shader-compile unit test. The scene's rings are lit PBR models (`model(assets.ringclean)`).
 - Instancing, all built once from a `transforms` array and never updated afterwards (`world.ts:253-311`):
@@ -127,7 +127,7 @@ window.__AURA_SILT__.info().diagnostics.renderPath
 
 ## Checklist
 
-Closed by audit lane G24 on 2026-10-29 (report: `docs/audits/lanes/g24.md`; numbers from the remote software-GL runs named there).
+Closed by audit lane G24 on 2026-10-29 (numbers from remote software-GL runs).
 
 - [x] Decide: accept `auto`. The A/B below shows no measurable difference, so the game keeps the cheaper fused bloom and cascade skipping. No `quality` option is added.
 - [x] Read `window.__AURA_SILT__.info().diagnostics.renderPath` on the live app page: `{ path: "hdr-msaa", quality: "auto", bloomFusion: "separable" }` (runs `g24before3-c`, `g24after2-b`, `g24after2-c`).

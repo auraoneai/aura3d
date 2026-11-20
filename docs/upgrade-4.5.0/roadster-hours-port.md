@@ -77,7 +77,7 @@
 
 ## Checklist
 
-Closed by the 2026-10-29 audit fix (lane G22, `docs/audits/lanes/g22.md`). Captures ran on the remote runner (software WebGL2, SwiftShader, not a GPU); numbers and frames are in `evidence/roadster-hours-port/audit-fix/`.
+Closed by the 2026-10-29 audit fix. Captures ran on the remote runner (software WebGL2, SwiftShader, not a GPU); numbers and frames are in `evidence/roadster-hours-port/audit-fix/`.
 
 - [x] In `examples/roadster-hours-port/main.ts`, add an explicit `quality`. Done: `quality: "auto"` (the 4.5.0 behaviour), and the deprecated `renderer` block is gone. The game passes `pixelRatio: 1`, so the pixel ratio did not change; the frame draw count stayed at 112 (Sunbreak Coast) and 106 (Halo Skyway) with GLB models off.
 - [x] Read `diagnostics().renderPath`: `{ path: "hdr-msaa", quality: "auto", bloomFusion: "separable" }` on the base and on the fix (runs `g22-before-render2`, `g22-after-render`); `?aura3d-render=production` reports `bloomFusion: "off"`.

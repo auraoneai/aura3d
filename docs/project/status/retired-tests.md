@@ -617,7 +617,7 @@ Route directories are named without their `apps/`/`examples/` prefix here on pur
 
 - `tests/unit/rendering/frame-submission-budget.test.ts` › GL calls 68.01 > 56 and JS allocation ~450 KB > 300 KB per steady frame. Deterministic, identical on ACR and locally: a real 5.0 regression from 26eae82e2 (frame-token `isContextLost` polling ×8, per-bind default-attribute resets ×6, `getContextAttributes` per clear, `blendColor`; per-frame material/feature cloning and `createTrustedQrFlags` rebuilt each frame). Budgets not raised; needs a frame-path perf pass.
 - `tests/unit/tools/route-tiers.test.ts` › 24 published game routes are unclassified under the conservative classifier (`bd5119ec6`, also failing on `origin/main`): each needs a release-ready candidate `route-gates.json` entry or an explicit classification label. That is a release claim, not a test fix.
-- `tests/unit/runtime-edge-coverage.test.ts` › placeholder/unavailable markers (869 unallowlisted lines) and `tests/unit/quality-gate/source-substring-audit.test.ts` (73 test files without `// invariant:`): both fail on the 4.x base too (see `docs/prds/game-upgrades-47/lanes/ef.md`). Pre-existing; recorded, not chased (decision record 4b).
+- `tests/unit/runtime-edge-coverage.test.ts` › placeholder/unavailable markers (869 unallowlisted lines) and `tests/unit/quality-gate/source-substring-audit.test.ts` (73 test files without `// invariant:`): both fail on the 4.x base too. Pre-existing; recorded, not chased (decision record 4b).
 - `tests/unit/tools/docs-version-alignment.test.ts` waits for the `docs/api/public-api.md` regeneration at freeze.
 
 ### 13d. agent-api, assets and rendering cases (sub-lanes of the same pass)

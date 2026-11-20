@@ -1,6 +1,6 @@
 # Serpentine Sky Run: shake and bounce rework
 
-Lane `rework-serpentine` of `docs/workflows/game-rework-prompt.md` (section 3.6). Date 2026-10-24.
+Serpentine rework. Date 2026-10-24.
 
 ## Cause
 

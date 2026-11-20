@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Bundle composition report (PRD agent-first-authoring, WP-C1; PRD beat-threejs-3, companion Track C).
+// Bundle composition report.
 //
 //   node tools/bundle-report/report.mjs <dist-dir> [--name <label>] [--json <out.json>] [--md <out.md>]
 //

@@ -21,7 +21,7 @@ aura3d assets resolve "garden fence"                            # no asset found
 | 2 Open sources | A directly downloadable, licence-clear match from the curated library, the starter pack, Khronos samples, Poly Haven, ambientCG and the jsDelivr CC0 mirror. The title must contain the main noun ("wooden bridge" never resolves to a carved elephant); models must fit the role triangle budget; the report shows triangles and size. Admission records sha256, provenance and licence, then typegen. | free |
 | 3 Procedural | Prints a paste-ready snippet built from `primitives` and `group` for common props (crate, barrel, table, chair, tree, rock, fence, lamp, building, car placeholder). | free |
 
-Read the decision report: the chosen rung, why, and what was skipped. `--role hero|prop|background|character|texture|hdri` sets the budget and the kind of file; `--json` prints the report.
+Read the decision report: the chosen rung, why, and what was skipped. `--role hero|prop|background|character|texture|hdri` sets the budget and the kind of file; `--json` prints the report. Without `--role`, `resolve` uses the `prop` budget. If nothing is admitted and no recipe applies (characters, textures and HDRIs have no procedural recipe), it exits with code 1. `--budget` and `--allow` were removed in 5.7.0 and now fail with an error.
 
 `resolve` is the build-time asset finder three.js does not have: it checks your project, then open licence-clear sources, then a procedural recipe, and admits the pick so production scenes load only admitted files (`model(assets.x)`, sha256 checked). Nothing is fetched from a hosted catalog at runtime.
 
