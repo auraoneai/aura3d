@@ -3,29 +3,29 @@
   "generated": "2026-10-24",
   "tokenizer": "gpt-tokenizer o200k_base (OpenAI BPE; a proxy, Claude's tokenizer is not public)",
   "baseCommit": "origin/main at audit time",
-  "files": 815,
+  "files": 801,
   "note": "792 tracked .md files plus llms.txt (the only non-md entry doc)."
  },
  "summary": {
   "byVerdict": {
-   "KEEP": 627,
+   "KEEP": 616,
    "REWRITE": 32,
    "ARCHIVE": 58,
-   "DELETE-GENERATED": 56,
-   "MERGE-INTO": 42
+   "DELETE-GENERATED": 54,
+   "MERGE-INTO": 41
   },
   "byAudience": {
-   "generated": 158,
-   "agent": 102,
-   "human": 273,
-   "internal-history": 282
+   "generated": 150,
+   "agent": 99,
+   "human": 272,
+   "internal-history": 280
   },
   "tokensByVerdict": {
-   "KEEP": 1175089,
+   "KEEP": 1154979,
    "REWRITE": 60296,
    "ARCHIVE": 288657,
-   "DELETE-GENERATED": 56917,
-   "MERGE-INTO": 30903
+   "DELETE-GENERATED": 53200,
+   "MERGE-INTO": 30070
   }
  },
  "rows": [
@@ -340,26 +340,6 @@
    "reason": "Tracked mirror of packages/aura3d-cli/skills for tool discovery; edit the canonical copy only, regenerate with pnpm skills:sync."
   },
   {
-   "path": ".agents/skills/meshy-cli/SKILL.md",
-   "bytes": 8591,
-   "tokens": 2231,
-   "audience": "generated",
-   "topic": "skills mirror",
-   "lastCommit": "2026-10-24",
-   "verdict": "KEEP",
-   "reason": "Tracked mirror of packages/aura3d-cli/skills for tool discovery; edit the canonical copy only, regenerate with pnpm skills:sync."
-  },
-  {
-   "path": ".agents/skills/meshy-cli/references/asset-tooling.md",
-   "bytes": 5305,
-   "tokens": 1486,
-   "audience": "generated",
-   "topic": "skills mirror",
-   "lastCommit": "2026-10-24",
-   "verdict": "KEEP",
-   "reason": "Tracked mirror of packages/aura3d-cli/skills for tool discovery; edit the canonical copy only, regenerate with pnpm skills:sync."
-  },
-  {
    "path": ".claude/skills/agent-files/AGENTS.md",
    "bytes": 213,
    "tokens": 56,
@@ -670,26 +650,6 @@
    "reason": "Tracked mirror of packages/aura3d-cli/skills for tool discovery; edit the canonical copy only, regenerate with pnpm skills:sync."
   },
   {
-   "path": ".claude/skills/meshy-cli/SKILL.md",
-   "bytes": 8591,
-   "tokens": 2231,
-   "audience": "generated",
-   "topic": "skills mirror",
-   "lastCommit": "2026-10-24",
-   "verdict": "KEEP",
-   "reason": "Tracked mirror of packages/aura3d-cli/skills for tool discovery; edit the canonical copy only, regenerate with pnpm skills:sync."
-  },
-  {
-   "path": ".claude/skills/meshy-cli/references/asset-tooling.md",
-   "bytes": 5305,
-   "tokens": 1486,
-   "audience": "generated",
-   "topic": "skills mirror",
-   "lastCommit": "2026-10-24",
-   "verdict": "KEEP",
-   "reason": "Tracked mirror of packages/aura3d-cli/skills for tool discovery; edit the canonical copy only, regenerate with pnpm skills:sync."
-  },
-  {
    "path": ".cursor/skills/agent-files/AGENTS.md",
    "bytes": 213,
    "tokens": 56,
@@ -996,26 +956,6 @@
    "audience": "generated",
    "topic": "skills mirror",
    "lastCommit": "2026-10-06",
-   "verdict": "KEEP",
-   "reason": "Tracked mirror of packages/aura3d-cli/skills for tool discovery; edit the canonical copy only, regenerate with pnpm skills:sync."
-  },
-  {
-   "path": ".cursor/skills/meshy-cli/SKILL.md",
-   "bytes": 8591,
-   "tokens": 2231,
-   "audience": "generated",
-   "topic": "skills mirror",
-   "lastCommit": "2026-10-24",
-   "verdict": "KEEP",
-   "reason": "Tracked mirror of packages/aura3d-cli/skills for tool discovery; edit the canonical copy only, regenerate with pnpm skills:sync."
-  },
-  {
-   "path": ".cursor/skills/meshy-cli/references/asset-tooling.md",
-   "bytes": 5305,
-   "tokens": 1486,
-   "audience": "generated",
-   "topic": "skills mirror",
-   "lastCommit": "2026-10-24",
    "verdict": "KEEP",
    "reason": "Tracked mirror of packages/aura3d-cli/skills for tool discovery; edit the canonical copy only, regenerate with pnpm skills:sync."
   },
@@ -1416,16 +1356,6 @@
    "audience": "internal-history",
    "topic": "game/app notes",
    "lastCommit": "2026-10-16",
-   "verdict": "KEEP",
-   "reason": "Per-game README, attribution or porting notes."
-  },
-  {
-   "path": "apps/showcase-roadster-rush/src/assets/meshy/ATTRIBUTION.md",
-   "bytes": 2416,
-   "tokens": 791,
-   "audience": "internal-history",
-   "topic": "game/app notes",
-   "lastCommit": "2026-10-23",
    "verdict": "KEEP",
    "reason": "Per-game README, attribution or porting notes."
   },
@@ -2166,16 +2096,6 @@
    "audience": "agent",
    "topic": "skills examples",
    "lastCommit": "2026-10-11",
-   "verdict": "MERGE-INTO packages/aura3d-cli/skills/*/SKILL.md",
-   "reason": "Duplicate of the matching skill with older snippets (references three-compat, missing scripts)."
-  },
-  {
-   "path": "docs/agents/skills-examples/meshy-cli.md",
-   "bytes": 2844,
-   "tokens": 833,
-   "audience": "agent",
-   "topic": "skills examples",
-   "lastCommit": "2026-09-25",
    "verdict": "MERGE-INTO packages/aura3d-cli/skills/*/SKILL.md",
    "reason": "Duplicate of the matching skill with older snippets (references three-compat, missing scripts)."
   },
@@ -3458,16 +3378,6 @@
    "lastCommit": "2026-10-24",
    "verdict": "REWRITE",
    "reason": "Says 4.0.0; documents commands that do not exist (aura3d agent init, aura3d evidence); links 2 missing files. Becomes the single docs map (absorb documentation-index.md and site-map.md)."
-  },
-  {
-   "path": "docs/meshy-cli.md",
-   "bytes": 11687,
-   "tokens": 2723,
-   "audience": "human",
-   "topic": "meshy",
-   "lastCommit": "2026-10-15",
-   "verdict": "KEEP",
-   "reason": "Human Meshy guide; reconcile with skills/meshy-cli."
   },
   {
    "path": "docs/migration-4.0.md",
@@ -5890,26 +5800,6 @@
    "reason": "Canonical skill; verify snippets during the rewrite wave."
   },
   {
-   "path": "packages/aura3d-cli/skills/meshy-cli/SKILL.md",
-   "bytes": 8591,
-   "tokens": 2231,
-   "audience": "agent",
-   "topic": "skills",
-   "lastCommit": "2026-10-24",
-   "verdict": "KEEP",
-   "reason": "Canonical skill; verify snippets during the rewrite wave."
-  },
-  {
-   "path": "packages/aura3d-cli/skills/meshy-cli/references/asset-tooling.md",
-   "bytes": 5305,
-   "tokens": 1486,
-   "audience": "agent",
-   "topic": "skills",
-   "lastCommit": "2026-10-24",
-   "verdict": "KEEP",
-   "reason": "Canonical skill; verify snippets during the rewrite wave."
-  },
-  {
    "path": "packages/controls/README.md",
    "bytes": 1122,
    "tokens": 232,
@@ -6256,26 +6146,6 @@
    "audience": "generated",
    "topic": "skills bundle",
    "lastCommit": "2026-10-06",
-   "verdict": "DELETE-GENERATED",
-   "reason": "Fourth copy of the skills, bundled for create-aura3d; generate at pack time. Only remove after pack smoke proves prepack syncs it."
-  },
-  {
-   "path": "packages/create-aura3d/skills/meshy-cli/SKILL.md",
-   "bytes": 8591,
-   "tokens": 2231,
-   "audience": "generated",
-   "topic": "skills bundle",
-   "lastCommit": "2026-10-24",
-   "verdict": "DELETE-GENERATED",
-   "reason": "Fourth copy of the skills, bundled for create-aura3d; generate at pack time. Only remove after pack smoke proves prepack syncs it."
-  },
-  {
-   "path": "packages/create-aura3d/skills/meshy-cli/references/asset-tooling.md",
-   "bytes": 5305,
-   "tokens": 1486,
-   "audience": "generated",
-   "topic": "skills bundle",
-   "lastCommit": "2026-10-24",
    "verdict": "DELETE-GENERATED",
    "reason": "Fourth copy of the skills, bundled for create-aura3d; generate at pack time. Only remove after pack smoke proves prepack syncs it."
   },
@@ -7993,16 +7863,6 @@
    "path": "tests/unit/tools/corpus/craft-ratio/packages/aura3d-cli/skills/aura3d-threejs-migration/SKILL.md",
    "bytes": 6779,
    "tokens": 1798,
-   "audience": "internal-history",
-   "topic": "evidence and test inputs",
-   "lastCommit": "2026-10-06",
-   "verdict": "KEEP",
-   "reason": "Evidence or test input; not documentation, excluded from agent reading paths."
-  },
-  {
-   "path": "tests/unit/tools/corpus/craft-ratio/packages/aura3d-cli/skills/meshy-cli/SKILL.md",
-   "bytes": 6528,
-   "tokens": 1728,
    "audience": "internal-history",
    "topic": "evidence and test inputs",
    "lastCommit": "2026-10-06",

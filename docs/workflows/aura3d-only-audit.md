@@ -77,7 +77,7 @@ Retirement was a visual-quality call (the owner judged the games Atari-era), not
 | showcase-asset-audition | needs real work (tool) | no scene draws; keep as an internal look-dev tool, not a showcase |
 | showcase-material-asset-inspector | needs real work (tool) | 2 draws; keep as an internal look-dev tool |
 | aura-clash-showcase | needs real work | builds clean on the published surface but renders a black frame with 0 draw calls and no errors; the legacy arena app needs a render-path fix before any revival |
-| meshy-relic-pilot | no action | no source under `apps/`; only referenced by `tests/browser/meshy-relic-pilot.spec.ts` and examples metadata |
+| the retired relic-pilot showcase app | no action | no source under `apps/`; only referenced by a browser spec and examples metadata (both since removed) |
 
 Nothing was deleted from the retired set: none of it carries three.js or vendored foreign engine code, and removing a route needs the card, sitemap and gate entries edited together, which is a product decision rather than part of this audit.
 

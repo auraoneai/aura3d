@@ -40,7 +40,7 @@ this record wins.
    rejected; the `ImageBitmap` mock now carries dimensions — no assertion was
    weakened); the
    mini-game `Textures/colormap.png` sidecar + digest and the
-   `skylineParkourRunnerMeshy` manifest/file/provenance conflict; the
+   skyline-runner hero asset manifest/file/provenance conflict; the
    production-path benchmark that imports another 3D engine
    (`tools/production-path-benchmark/index.ts`); the 4.x → 5.0 migration
    guide (`docs/migration/4-to-5.md`).

@@ -61,7 +61,7 @@ The first version of this guide was written from the code alone. The measurement
 - **What happens now:** `preserveDrawingBuffer` now defaults to `false` unless the URL has `?capture=1` or `?qa=1` (`renderPath.ts:wantsPreservedDrawingBuffer`, used at `frameLoop.ts:95`). `grabCanvas()` (`main.ts:377-387`) reads the canvas in the same task as `render()`/`app.step(0)` (`main.ts:452`; the comment above `replayTo` says so), so it should still get real pixels. The `frame()` and `pixels()` QA hooks use `capturePng()` (`packages/engine/src/qa/hooks.ts:101,127-145`), not the live canvas. The repo's heatsink specs load the page with `?manual=1` (no `capture=1`) and rely on that same-task read.
 - **Risk:** any external probe that reads the canvas after an `await` or a later `requestAnimationFrame` can get a blank frame.
 - **What to do:** keep `grabCanvas()` in the same task as the render. If you add a read-back after an `await`, either load the page with `?capture=1` or add `preserveDrawingBuffer: true` to the `createAuraApp` options. For screenshots prefer `app.screenshot()`, which re-renders first (it is declared at `nodes/types/runtime.ts:398`).
-- **Check:** run `replayTo(target, 30, true)` through the `__AURA_HEATSINK__` hook and confirm `shot.lit` is above 0. `tests/browser/heatsink-port.spec.ts` and `heatsink-port-meshy.spec.ts` exercise the hooks (`st.shot` not null, line 105).
+- **Check:** run `replayTo(target, 30, true)` through the `__AURA_HEATSINK__` hook and confirm `shot.lit` is above 0. `tests/browser/heatsink-port.spec.ts` and the port's models spec exercise the hooks (`st.shot` not null, line 105).
 
 ### 6. Package pin (change 14)
 - Already done: `apps/showcase-heatsink-port/package.json` has `"version": "4.5.0"`. Nothing to do.

@@ -2312,144 +2312,6 @@
           "action": "candidate"
         },
         {
-          "id": "courierVanMeshyV1Decimated",
-          "role": "vehicle",
-          "quality": "candidate",
-          "checks": [
-            {
-              "gate": "G1",
-              "verdict": "pass",
-              "measured": {
-                "triangles": 76000,
-                "floor": 8000,
-                "ceiling": 80000,
-                "profile": "hero-vehicle"
-              },
-              "message": "G1: 76000 tris inside hero-vehicle band."
-            },
-            {
-              "gate": "G3",
-              "verdict": "fail",
-              "measured": {
-                "coverage": 0,
-                "covered": 0,
-                "total": 76000,
-                "missingTexcoord": 0,
-                "missingSlots": 76000,
-                "requiredOcclusion": true,
-                "profile": "hero-vehicle"
-              },
-              "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
-            },
-            {
-              "gate": "G4",
-              "verdict": "pass",
-              "measured": {
-                "triangles": 76000,
-                "unlitRatio": 0
-              },
-              "message": "G4: no card geometry detected."
-            },
-            {
-              "gate": "G5",
-              "verdict": "pass",
-              "measured": {
-                "noUvRatio": 0,
-                "generator": "Khronos glTF Blender I/O v5.2.40"
-              },
-              "message": "G5: UVs present and no builder provenance."
-            },
-            {
-              "gate": "G8",
-              "verdict": "fail",
-              "measured": {
-                "missingPrimitives": [
-                  0
-                ]
-              },
-              "message": "G8: 1 normal-mapped primitive(s) missing TANGENT."
-            },
-            {
-              "gate": "G11",
-              "verdict": "fail",
-              "measured": {
-                "derived": false
-              },
-              "message": "G11: no derived record — run `assets optimize` before release."
-            }
-          ],
-          "action": "not-release"
-        },
-        {
-          "id": "courierVanMeshyV2Decimated",
-          "role": "vehicle",
-          "quality": "candidate",
-          "checks": [
-            {
-              "gate": "G1",
-              "verdict": "pass",
-              "measured": {
-                "triangles": 80000,
-                "floor": 8000,
-                "ceiling": 80000,
-                "profile": "hero-vehicle"
-              },
-              "message": "G1: 80000 tris inside hero-vehicle band."
-            },
-            {
-              "gate": "G3",
-              "verdict": "fail",
-              "measured": {
-                "coverage": 0,
-                "covered": 0,
-                "total": 80000,
-                "missingTexcoord": 0,
-                "missingSlots": 80000,
-                "requiredOcclusion": true,
-                "profile": "hero-vehicle"
-              },
-              "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
-            },
-            {
-              "gate": "G4",
-              "verdict": "pass",
-              "measured": {
-                "triangles": 80000,
-                "unlitRatio": 0
-              },
-              "message": "G4: no card geometry detected."
-            },
-            {
-              "gate": "G5",
-              "verdict": "pass",
-              "measured": {
-                "noUvRatio": 0,
-                "generator": "Khronos glTF Blender I/O v5.2.40"
-              },
-              "message": "G5: UVs present and no builder provenance."
-            },
-            {
-              "gate": "G8",
-              "verdict": "fail",
-              "measured": {
-                "missingPrimitives": [
-                  0
-                ]
-              },
-              "message": "G8: 1 normal-mapped primitive(s) missing TANGENT."
-            },
-            {
-              "gate": "G11",
-              "verdict": "fail",
-              "measured": {
-                "derived": false
-              },
-              "message": "G11: no derived record — run `assets optimize` before release."
-            }
-          ],
-          "action": "not-release"
-        },
-        {
           "id": "courierZoneAwning",
           "role": "prop",
           "quality": "release",
@@ -2999,75 +2861,6 @@
             }
           ],
           "action": "prototype-proxy"
-        },
-        {
-          "id": "deepSubMeshy",
-          "role": "character",
-          "quality": "candidate",
-          "checks": [
-            {
-              "gate": "G1",
-              "verdict": "fail",
-              "measured": {
-                "triangles": 80000,
-                "floor": 5000,
-                "ceiling": 60000,
-                "profile": "hero-character"
-              },
-              "message": "G1: LOD0 80000 tris above hero-character ceiling 60000."
-            },
-            {
-              "gate": "G3",
-              "verdict": "fail",
-              "measured": {
-                "coverage": 0,
-                "covered": 0,
-                "total": 80000,
-                "missingTexcoord": 0,
-                "missingSlots": 80000,
-                "requiredOcclusion": true,
-                "profile": "hero-character"
-              },
-              "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
-            },
-            {
-              "gate": "G4",
-              "verdict": "pass",
-              "measured": {
-                "triangles": 80000,
-                "unlitRatio": 0
-              },
-              "message": "G4: no card geometry detected."
-            },
-            {
-              "gate": "G5",
-              "verdict": "pass",
-              "measured": {
-                "noUvRatio": 0,
-                "generator": "Khronos glTF Blender I/O v5.2.40"
-              },
-              "message": "G5: UVs present and no builder provenance."
-            },
-            {
-              "gate": "G8",
-              "verdict": "fail",
-              "measured": {
-                "missingPrimitives": [
-                  0
-                ]
-              },
-              "message": "G8: 1 normal-mapped primitive(s) missing TANGENT."
-            },
-            {
-              "gate": "G11",
-              "verdict": "fail",
-              "measured": {
-                "derived": false
-              },
-              "message": "G11: no derived record — run `assets optimize` before release."
-            }
-          ],
-          "action": "not-release"
         },
         {
           "id": "deliveryCar",
@@ -4516,75 +4309,6 @@
             }
           ],
           "action": "candidate"
-        },
-        {
-          "id": "gravityPostMeshyFreight",
-          "role": "prop",
-          "quality": "candidate",
-          "checks": [
-            {
-              "gate": "G1",
-              "verdict": "fail",
-              "measured": {
-                "triangles": 83333,
-                "floor": 500,
-                "ceiling": 15000,
-                "profile": "prop-large"
-              },
-              "message": "G1: LOD0 83333 tris above prop-large ceiling 15000."
-            },
-            {
-              "gate": "G3",
-              "verdict": "fail",
-              "measured": {
-                "coverage": 0,
-                "covered": 0,
-                "total": 83333,
-                "missingTexcoord": 0,
-                "missingSlots": 83333,
-                "requiredOcclusion": true,
-                "profile": "prop-large"
-              },
-              "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
-            },
-            {
-              "gate": "G4",
-              "verdict": "pass",
-              "measured": {
-                "triangles": 83333,
-                "unlitRatio": 0
-              },
-              "message": "G4: no card geometry detected."
-            },
-            {
-              "gate": "G5",
-              "verdict": "pass",
-              "measured": {
-                "noUvRatio": 0,
-                "generator": "Khronos glTF Blender I/O v5.2.40"
-              },
-              "message": "G5: UVs present and no builder provenance."
-            },
-            {
-              "gate": "G8",
-              "verdict": "fail",
-              "measured": {
-                "missingPrimitives": [
-                  0
-                ]
-              },
-              "message": "G8: 1 normal-mapped primitive(s) missing TANGENT."
-            },
-            {
-              "gate": "G11",
-              "verdict": "fail",
-              "measured": {
-                "derived": false
-              },
-              "message": "G11: no derived record — run `assets optimize` before release."
-            }
-          ],
-          "action": "not-release"
         },
         {
           "id": "gravityPostPodLostSfx",
@@ -6500,75 +6224,6 @@
           "action": "not-release"
         },
         {
-          "id": "patrolAircraftMeshy",
-          "role": "character",
-          "quality": "candidate",
-          "checks": [
-            {
-              "gate": "G1",
-              "verdict": "pass",
-              "measured": {
-                "triangles": 60000,
-                "floor": 5000,
-                "ceiling": 60000,
-                "profile": "hero-character"
-              },
-              "message": "G1: 60000 tris inside hero-character band."
-            },
-            {
-              "gate": "G3",
-              "verdict": "fail",
-              "measured": {
-                "coverage": 0,
-                "covered": 0,
-                "total": 60000,
-                "missingTexcoord": 0,
-                "missingSlots": 60000,
-                "requiredOcclusion": true,
-                "profile": "hero-character"
-              },
-              "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
-            },
-            {
-              "gate": "G4",
-              "verdict": "pass",
-              "measured": {
-                "triangles": 60000,
-                "unlitRatio": 0
-              },
-              "message": "G4: no card geometry detected."
-            },
-            {
-              "gate": "G5",
-              "verdict": "pass",
-              "measured": {
-                "noUvRatio": 0,
-                "generator": "Khronos glTF Blender I/O v5.2.40"
-              },
-              "message": "G5: UVs present and no builder provenance."
-            },
-            {
-              "gate": "G8",
-              "verdict": "fail",
-              "measured": {
-                "missingPrimitives": [
-                  0
-                ]
-              },
-              "message": "G8: 1 normal-mapped primitive(s) missing TANGENT."
-            },
-            {
-              "gate": "G11",
-              "verdict": "fail",
-              "measured": {
-                "derived": false
-              },
-              "message": "G11: no derived record — run `assets optimize` before release."
-            }
-          ],
-          "action": "not-release"
-        },
-        {
           "id": "patrolWingAmbientWindSfx",
           "role": "unknown",
           "quality": "candidate",
@@ -8421,75 +8076,6 @@
             }
           ],
           "action": "candidate"
-        },
-        {
-          "id": "rooftopShooterMeshyV1",
-          "role": "character",
-          "quality": "candidate",
-          "checks": [
-            {
-              "gate": "G1",
-              "verdict": "pass",
-              "measured": {
-                "triangles": 50000,
-                "floor": 5000,
-                "ceiling": 60000,
-                "profile": "hero-character"
-              },
-              "message": "G1: 50000 tris inside hero-character band."
-            },
-            {
-              "gate": "G3",
-              "verdict": "fail",
-              "measured": {
-                "coverage": 0,
-                "covered": 0,
-                "total": 50000,
-                "missingTexcoord": 0,
-                "missingSlots": 50000,
-                "requiredOcclusion": true,
-                "profile": "hero-character"
-              },
-              "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
-            },
-            {
-              "gate": "G4",
-              "verdict": "pass",
-              "measured": {
-                "triangles": 50000,
-                "unlitRatio": 0
-              },
-              "message": "G4: no card geometry detected."
-            },
-            {
-              "gate": "G5",
-              "verdict": "pass",
-              "measured": {
-                "noUvRatio": 0,
-                "generator": "Khronos glTF Blender I/O v5.2.40"
-              },
-              "message": "G5: UVs present and no builder provenance."
-            },
-            {
-              "gate": "G8",
-              "verdict": "fail",
-              "measured": {
-                "missingPrimitives": [
-                  0
-                ]
-              },
-              "message": "G8: 1 normal-mapped primitive(s) missing TANGENT."
-            },
-            {
-              "gate": "G11",
-              "verdict": "fail",
-              "measured": {
-                "derived": false
-              },
-              "message": "G11: no derived record — run `assets optimize` before release."
-            }
-          ],
-          "action": "not-release"
         },
         {
           "id": "rooftopShooterV2",
@@ -14439,75 +14025,6 @@
           "action": "not-release"
         },
         {
-          "id": "skylineHeroMeshyV2",
-          "role": "character",
-          "quality": "candidate",
-          "checks": [
-            {
-              "gate": "G1",
-              "verdict": "fail",
-              "measured": {
-                "triangles": 80000,
-                "floor": 5000,
-                "ceiling": 60000,
-                "profile": "hero-character"
-              },
-              "message": "G1: LOD0 80000 tris above hero-character ceiling 60000."
-            },
-            {
-              "gate": "G3",
-              "verdict": "fail",
-              "measured": {
-                "coverage": 0,
-                "covered": 0,
-                "total": 80000,
-                "missingTexcoord": 0,
-                "missingSlots": 80000,
-                "requiredOcclusion": true,
-                "profile": "hero-character"
-              },
-              "message": "G3: PBR slots on 0.0% of rendered area (< 90%)."
-            },
-            {
-              "gate": "G4",
-              "verdict": "pass",
-              "measured": {
-                "triangles": 80000,
-                "unlitRatio": 0
-              },
-              "message": "G4: no card geometry detected."
-            },
-            {
-              "gate": "G5",
-              "verdict": "pass",
-              "measured": {
-                "noUvRatio": 0,
-                "generator": "Khronos glTF Blender I/O v5.2.40"
-              },
-              "message": "G5: UVs present and no builder provenance."
-            },
-            {
-              "gate": "G8",
-              "verdict": "fail",
-              "measured": {
-                "missingPrimitives": [
-                  0
-                ]
-              },
-              "message": "G8: 1 normal-mapped primitive(s) missing TANGENT."
-            },
-            {
-              "gate": "G11",
-              "verdict": "fail",
-              "measured": {
-                "derived": false
-              },
-              "message": "G11: no derived record — run `assets optimize` before release."
-            }
-          ],
-          "action": "not-release"
-        },
-        {
           "id": "skylineHeroRunner",
           "role": "character",
           "quality": "candidate",
@@ -16943,12 +16460,12 @@
     }
   ],
   "summary": {
-    "scanned": 418,
-    "gateEvaluated": 240,
+    "scanned": 411,
+    "gateEvaluated": 233,
     "fileMissing": 0,
     "keep": 0,
     "downgradedToCandidate": 96,
     "demotedToProxyPrototype": 35,
-    "nonRelease": 287
+    "nonRelease": 280
   }
 }

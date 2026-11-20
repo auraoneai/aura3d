@@ -582,7 +582,7 @@ changed or an earlier characterization was too broad.
 - Asset and example coverage is incomplete. The source-derived catalog has
   expectations for 9 of 20 templates and does not cover discovered documented
   examples; several GLBs need missing sidecars. The root asset manifest also
-  contains conflicting identities for `skylineParkourRunnerMeshy`. See
+  contains conflicting identities for the skyline-runner hero asset. See
   `tests/fixtures/native-examples-catalog/README.md:21,98` and
   `aura.assets.json:141045,141210`.
 - Independence and provenance are unresolved. An attributed math entry

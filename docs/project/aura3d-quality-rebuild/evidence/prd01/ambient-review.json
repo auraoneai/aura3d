@@ -1,7 +1,7 @@
 {
   "generatedBy": "tools/quality-rebuild-codemods/run.ts evidence",
   "note": "ambient review list for lane 14 retune — effective irradiance changes intensity→intensity/π under physical lighting",
-  "entries": 48,
+  "entries": 47,
   "rows": [
     {
       "file": "apps/aura-clash-showcase/README.md",
@@ -131,13 +131,6 @@
       "intensity": 0.72,
       "effectiveIrradianceBefore": 0.72,
       "effectiveIrradianceAfter": 0.2292
-    },
-    {
-      "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
-      "line": 43,
-      "intensity": 0.42,
-      "effectiveIrradianceBefore": 0.42,
-      "effectiveIrradianceAfter": 0.1337
     },
     {
       "file": "apps/showcase-neon-swarm/src/environment.ts",

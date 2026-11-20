@@ -107,7 +107,7 @@ Neon Bay was near black on 4.5.0 because the night-city look's only key is a 0.7
 - **Effects RGBA32F point-sampling fallback (AO, DoF, god rays, TAA, motion blur, auto exposure):** Ambient occlusion is in every look (`lookPresets.ts:60`) so devices without float linear filtering will now show AO; this is a fix, not a regression. No action. Other listed effects are not used.
 - **Animation (`playLayer`, masks, `addClipsFrom`, retarget worker) and physics (capsule/cylinder colliders, `bindNodes`):** The game uses `.animate`, `animation.attach` and overlay pose only (`src/game/rig.ts:4-15`) and has no physics options.
 - **Math/animation (`Clock.start()`, step tracks, `ShapeGeometry`, `SphericalHarmonics3.getBasisAt`, `@aura3d/math/three`):** No uses in `src/`.
-- **Scene kits (`particleFountain`, `solarSystem`, `neonTunnel`) and built-in humanoid GLB provenance:** No scene kits and no built-in humanoid; the golfer is `assets.linksGolferAthleteMeshy`.
+- **Scene kits (`particleFountain`, `solarSystem`, `neonTunnel`) and built-in humanoid GLB provenance:** No scene kits and no built-in humanoid; the golfer is a generated athlete GLB.
 - **Package version pins:** Already `4.5.0` (`apps/showcase-aura-links-3d/package.json`).
 
 ## Checklist

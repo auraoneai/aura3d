@@ -5,7 +5,7 @@
     "keep": 70,
     "delete": 0,
     "review": 0,
-    "toolDirs": 184,
+    "toolDirs": 183,
     "unreferencedToolDirs": 0
   },
   "scripts": [
@@ -2056,15 +2056,6 @@
         "tests/unit/tools/material-structural-parity.test.ts",
         "tools/_quarantine/CLASSIFICATION.json",
         "tools/dist-freshness/index.ts",
-        "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
-      ],
-      "verdict": "referenced"
-    },
-    {
-      "dir": "tools/meshy-secret-scan",
-      "referencedBy": [
-        "tests/unit/tools/meshy-secret-scan.test.ts",
-        "tools/_quarantine/CLASSIFICATION.json",
         "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
       ],
       "verdict": "referenced"

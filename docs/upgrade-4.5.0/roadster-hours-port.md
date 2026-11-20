@@ -56,7 +56,7 @@
 ### 5. Verify the read-back path under `preserveDrawingBuffer: false` (change 2, no code change required)
 
 - **What happens now:** `preserveDrawingBuffer` is false unless `?capture=1` or `?qa=1` (`renderPath.ts:181-198`, `wantsPreservedDrawingBuffer`). The game never sets it. Its only read of the WebGL canvas is `app.capture({ type: "png-blob" })` after an `await` (`main.ts:241-246`). In 4.5.0 `capture` renders one frame synchronously (`app.step()`) and calls `gl.readPixels` in the same task (`packages/engine/src/lanes/prd01/outputSurface.ts:250-270`), so it does not depend on the preserved buffer. `stats()` and `frame()` stay valid.
-- **What to do:** Nothing. Do not replace `app.capture` with `canvas.toDataURL` or `drawImage(canvas)`; those would read a blank buffer after an await. The Playwright specs that use `page.screenshot` (`roadster-hours-meshy.spec.ts:63`, `roadster-hours-art-frames.spec.ts:64`) capture the composited page and do not read the drawing buffer.
+- **What to do:** Nothing. Do not replace `app.capture` with `canvas.toDataURL` or `drawImage(canvas)`; those would read a blank buffer after an await. The Playwright specs that use `page.screenshot` (the models spec, `roadster-hours-art-frames.spec.ts:64`) capture the composited page and do not read the drawing buffer.
 - **How to check:** In the console, `await __AURA_ROADSTER_HOURS__.stats()` must return `lumaStd` clearly above 0 and `colorBuckets` well above 1 (a blank frame gives 0 and 1). Repeat once with a delay after a user input. Open the page with `?capture=1` to compare.
 
 ## Changes that do not affect this game
@@ -86,5 +86,5 @@ Closed by the 2026-10-29 audit fix (lane G22, `docs/audits/lanes/g22.md`). Captu
 - [x] Confirm `stats()` is not blank: all 43 captures reported `lumaStd` 24 to 62 and 197 to 640 colour buckets (4-bit RGB) (without `?capture=1`; the runner page is not a capture page).
 - [x] Re-baseline `drawCalls`: 112 (Sunbreak Coast, procedural models), 106 (Halo Skyway), 150 (Redline Canyon after the in-place switch), 152 on a 390x844 touch page; with the generated models 121 on the base build at the title. `?env=0` was not re-captured (QA flag only).
 - [x] `node tools/game-checks/run.mjs roadster-hours-port`: 0 errors, 0 warnings.
-- [x] Remote specs: `tests/browser/audit-fix/roadster-hours-port.spec.ts` (new), `roadster-hours-port.spec.ts` and `port-sun-shadows-roadster-hours.spec.ts` (run `g22-after-regress`). Not rerun: `roadster-hours-meshy.spec.ts`, `roadster-hours-art-l0.spec.ts`, `render-fix-regression.spec.ts`, `exposure-scenes-*`, `fit-grounding-sweep.spec.ts`.
+- [x] Remote specs: `tests/browser/audit-fix/roadster-hours-port.spec.ts` (new), `roadster-hours-port.spec.ts` and `port-sun-shadows-roadster-hours.spec.ts` (run `g22-after-regress`). Not rerun: the models spec, `roadster-hours-art-l0.spec.ts`, `render-fix-regression.spec.ts`, `exposure-scenes-*`, `fit-grounding-sweep.spec.ts`.
 - [x] `tsc -p apps/showcase-roadster-hours-port/tsconfig.json --noEmit`: clean.

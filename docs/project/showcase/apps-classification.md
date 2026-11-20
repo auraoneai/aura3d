@@ -54,7 +54,7 @@ The starter example routes (`hello-world-typed-asset`, `material-lighting`, `cam
 | `showcase-aurora-lander` | prototype | Removed in 5.6.0: precision-landing app source deleted. Historical `prototype-blocked` gate, non-public; marketing redirects its URL. |
 | `showcase-pulse-tunnel` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and rhythm evidence are historical. |
 | `showcase-mech-hangar` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and mech evidence are historical. |
-| `showcase-meshy-relic-pilot` | prototype | Retired generated-asset pipeline prototype (typed relic collection loop); its source is absent and it is not public showcase material. |
+| the retired relic-pilot showcase app | prototype | Retired generated-asset pipeline prototype (typed relic collection loop); its source is absent and it is not public showcase material. |
 | `aura-clash-showcase` | development showcase | Removed in 5.6.0: arena-fighter app source and its launch evidence deleted; marketing redirects its URL and `/showcase/aura-clash` to the showcase index. |
 | `showcase-index` | index route | Catalog/index route only; not deploy-asset or route-primary checked as a 3D app. |
 

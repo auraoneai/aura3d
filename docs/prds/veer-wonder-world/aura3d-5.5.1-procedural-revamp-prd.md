@@ -26,7 +26,7 @@ To guarantee zero visual disappointment, this revamp simultaneously eradicates *
 ### 1.2 Autonomous Architectural & Product Decisions
 
 1. **100% `.glb` Removal & First-Party IP Ownership:**
-   - Delete all 54 binary `.glb` files in `apps/veer-wonder-world/src/assets/models/*.glb`, all 54 provenance JSONs in `apps/veer-wonder-world/provenance/models/*.json`, `tools/model-review.json`, and all 7 GLB pipeline/surgery scripts (`meshy-pipeline.mjs`, `admit-models.mjs`, `recolor-atlas-regions.mjs`, `jpeg-normal-maps.mjs`, `build-articulated-cast.mjs`, `cut-cake-flame.mjs`, `bake-armature-scale.mjs`).
+   - Delete all 54 binary `.glb` files in `apps/veer-wonder-world/src/assets/models/*.glb`, all 54 provenance JSONs in `apps/veer-wonder-world/provenance/models/*.json`, `tools/model-review.json`, and all 7 GLB pipeline/surgery scripts (the text-to-3D pipeline script, `admit-models.mjs`, `recolor-atlas-regions.mjs`, `jpeg-normal-maps.mjs`, `build-articulated-cast.mjs`, `cut-cake-flame.mjs`, `bake-armature-scale.mjs`).
    - Update `tools/gen-rights-manifest.mjs` so `MODEL_RIGHTS = []` and all 65 `ModelKey`s live in `PROCEDURAL_RIGHTS` under 100% first-party AuraOne ownership (`"Original procedural @aura3d/engine stage art owned by AuraOne"`), completely retiring third-party `"exclusivity not claimed"` licensing terms.
 2. **Anti-"Snowman / Balloon-Animal" Organic Sculpting Law & Automated Triangle/Sub-Part Quality Floors:**
    - **Hard Prohibition on Raw Primitive Stacking:** Stacking raw `primitives.sphere`, `primitives.capsule`, or `primitives.cone` shapes for character/animal torsos, heads, limbs, ears, snouts, wool coats, or tree canopies is strictly forbidden (it produces cheap "snowman / balloon-animal" seams).
@@ -473,7 +473,7 @@ Every rig MUST match `MODEL_INFO[key].heightM` (`0.5m` for `"bubble"`), `ASSET_T
 |---|---|---|---|
 | `apps/veer-wonder-world/src/assets/models/*.glb` (all 54 files + directory) | `DELETE` | `WP-2` | Removes 25.5 MB of clay `.glb` blobs (`0` `.glb` files remain anywhere in `apps/veer-wonder-world`). |
 | `apps/veer-wonder-world/provenance/models/*.json` (all 54 files + directory) | `DELETE` | `WP-2` | Removes text-to-3D provenance JSONs; replaced by `PROCEDURAL_RIGHTS` in `src/assets/rights-manifest.ts`. |
-| `apps/veer-wonder-world/tools/meshy-pipeline.mjs` | `DELETE` | `WP-2` | Retires the text-to-3D generation/download CLI driver. |
+| `apps/veer-wonder-world/tools/` text-to-3D pipeline script | `DELETE` | `WP-2` | Retires the text-to-3D generation/download CLI driver. |
 | `apps/veer-wonder-world/tools/admit-models.mjs` | `DELETE` | `WP-2` | Retires the `.glb` admission & copier script. |
 | `apps/veer-wonder-world/tools/recolor-atlas-regions.mjs` | `DELETE` | `WP-2` | Retires the baked-JPEG UV atlas recolor & normal-map injector. |
 | `apps/veer-wonder-world/tools/jpeg-normal-maps.mjs` | `DELETE` | `WP-2` | Retires embedded `.glb` normal-map re-encoder. |
@@ -577,7 +577,7 @@ flowchart TD
 #### `WP-2`: `.glb` Purge, Manifest Generators, Vite Decoder Removal & Content Validator
 - **Owned Files:** All 11 `DELETE` targets in `src/assets/models/`, `provenance/models/`, and `tools/` (Section 4.1 except `asset-preloader*`), plus `tools/wonder-assets.json`, `tools/gen-aura-assets.mjs`, `src/aura-assets.ts`, `tools/gen-rights-manifest.mjs`, `provenance/portraits.json`, `src/assets/rights-manifest.ts`, `tools/validate-content-entry.ts`, `vite.config.ts`, `public/_headers`.
 - **Implementation Steps:**
-  1. Delete `src/assets/models/` (54 `.glb`s), `provenance/models/` (54 `.json`s), `tools/model-review.json`, `tools/meshy-pipeline.mjs`, `tools/admit-models.mjs`, `tools/recolor-atlas-regions.mjs`, `tools/jpeg-normal-maps.mjs`, `tools/build-articulated-cast.mjs`, `tools/cut-cake-flame.mjs`, `tools/bake-armature-scale.mjs`, and `tools/make-portraits.sh`.
+  1. Delete `src/assets/models/` (54 `.glb`s), `provenance/models/` (54 `.json`s), `tools/model-review.json`, the text-to-3D pipeline script, `tools/admit-models.mjs`, `tools/recolor-atlas-regions.mjs`, `tools/jpeg-normal-maps.mjs`, `tools/build-articulated-cast.mjs`, `tools/cut-cake-flame.mjs`, `tools/bake-armature-scale.mjs`, and `tools/make-portraits.sh`.
   2. Clean `tools/wonder-assets.json` to pure first-party catalog metadata (`{ key, role, heightM, face }` for all 65 keys).
   3. Rewrite `tools/gen-aura-assets.mjs` and run it to emit `src/aura-assets.ts` with zero `.glb` URLs, zero `defineModelAssets`, and zero `as` casts (keep `aura.assets.json` untouched on disk!).
   4. Update `provenance/portraits.json` (AuraOne procedural rig source & license) and `tools/gen-rights-manifest.mjs` (`MODEL_RIGHTS = []`, all 65 keys in `PROCEDURAL_RIGHTS`), then run `node tools/gen-rights-manifest.mjs`.
