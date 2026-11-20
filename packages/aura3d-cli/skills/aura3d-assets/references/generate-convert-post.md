@@ -29,7 +29,8 @@ lifelike character, creature, vehicle or object. The Idol lane makes a
 reference still (`openai/gpt-image-2.6`, $0.17; skipped with `--image`), the
 mesh (`speridlabs/idol/max`, $0.20, or $0.25 with `--rig`), then refits the
 skin, optimises to the role budget, faces +Z, grounds, scales, slims normal
-maps, renders a CPU base-colour preview and admits `<out-dir>/<key>.glb` as
+maps (glossy materials keep PNG normals; `--no-slim` skips the step), renders a
+CPU base-colour preview and admits `<out-dir>/<key>.glb` as
 quality `candidate` with the fal licence and a `<key>.idol.json` provenance
 file (`--no-admit` skips admission).
 
@@ -41,6 +42,7 @@ npx @aura3d/cli@latest assets generate "lean desert runner in linen wraps" --nam
 npx @aura3d/cli@latest assets generate --image ref.png --name rover --kind vehicle --size length=4
 npx @aura3d/cli@latest assets generate --spec idol-spec.json --only hero,rival --concurrency 6
 npx @aura3d/cli@latest assets generate --name runner --renormalize --front +x
+npx @aura3d/cli@latest assets generate --image car.png --name coupe --kind vehicle --no-slim
 ```
 
 - Always run `--dry-run` first: it prints the cost estimate and makes no paid call.
@@ -54,8 +56,9 @@ npx @aura3d/cli@latest assets generate --name runner --renormalize --front +x
   request instead of submitting again, and an existing `<key>.glb` is skipped.
   `--force` regenerates and pays again; `--renormalize` redoes optimise,
   normalise, slim and preview from the raw downloads for $0.
-- The result is a `candidate`: inspect it, run `assets preview`, and for rigs
-  `assets validate --skin` before mounting it with `model(assets.<key>)`.
+- The result is a `candidate`: inspect it (`assets inspect <key>.glb --pbr`),
+  run `assets preview`, and for rigs `assets validate --skin` before mounting it
+  with `model(assets.<key>)`.
 
 ## Orientation, size and file weight
 
@@ -77,16 +80,18 @@ npx @aura3d/cli@latest assets slim hero.glb rover.n.glb --quality 92
   `--out` is given and never writes a result that is not smaller. JPEG normal
   maps are fine on rough, matte or small-on-screen props and wrong on glossy or
   mirror surfaces (car paint, glass, chrome, lacquer, polished products): the
-  block and chroma loss shows as dents, banding and wavy reflections. Skip
-  `assets slim` for any model whose visible surfaces have roughness under about
-  0.4. `assets generate` (and `--renormalize`) runs the same slim step on every
-  result, so for a glossy generated hero rebuild from the raw download under
-  `.aura3d/fal/<game>/<key>/` with `assets optimize` (resizes normal maps but
-  keeps their format) and `assets normalize` (leaves textures alone) and do not
-  slim. A normal map the generator delivered as JPEG is not repaired by
-  re-encoding: lower `normalScale` or drop it where the surface is smooth.
+  block and chroma loss shows as dents, banding and wavy reflections. So slim
+  keeps the normal map of every glossy material PNG (median roughness under
+  0.45, or median metalness over 0.5) and prints each skip with its reason;
+  `--allow-glossy` forces JPEG anyway, so never pass it for a glossy model.
+  `assets generate` and `--renormalize` slim the same glossy-safe way;
+  `--no-slim` skips the step entirely. A normal map the generator delivered as
+  JPEG is not repaired by re-encoding: lower `normalScale` or drop it where the
+  surface is smooth.
 - `assets optimize --file in.glb --out out.glb --role prop` is the polygon and
-  texture budget pass; `assets optimize --file in.hdr --out out_1k.hdr --hdri 1k`
+  texture budget pass: colour maps become JPEG, normal and metallicRoughness
+  maps are never JPEG-encoded (resized as PNG; a delivered JPEG within budget is
+  left as is) and the output lists what it kept lossless; `assets optimize --file in.hdr --out out_1k.hdr --hdri 1k`
   downsizes an HDRI.
 
 ## Generated PBR maps are not trustworthy as delivered
@@ -98,15 +103,23 @@ metalness median 0.77 (the painted body shaded as bare metal), roughness median
 on panels that should be 0 to 2: blotchy white sheen, melted reflections,
 dented panels. After every generated model:
 
-1. Inspect the statistics per material region: decode the
-   `metallicRoughnessTexture` (G = roughness, B = metalness) and the normal map
-   (n = 2c - 1, tilt = acos(n.z)); record median and p90.
+1. Inspect the statistics per material: `assets inspect <file.glb> --pbr`
+   prints metalness and roughness p5/p50/p95 (`metallicRoughnessTexture` G and
+   B times the factors), normal tilt percentiles (n = 2c - 1,
+   tilt = acos(n.z)), texture encodings and sizes, and the warnings
+   `PBR_PAINT_METALLIC`, `PBR_NORMAL_LOSSY_GLOSSY`, `PBR_NORMAL_NOISY` and
+   `PBR_SINGLE_MATERIAL_VEHICLE`; `assets validate --pbr` runs them over the
+   manifest.
 2. Painted bodies are dielectric (metalness about 0) with a clearcoat
-   (`material.carPaint`, or `material.physical` with `clearcoat`).
+   (`material.clearcoatPaint` or `material.lacquer`; `material.carPaint` is a
+   metallic-flake base at 0.65). Values per surface:
+   [material values](../../aura3d-materials-environments/references/material-values.md).
+   Never hide sheen by lowering specular or the clearcoat (A13).
 3. Split body paint, glass, chrome or machined metal, and tyres or rubber into
    separate materials; one map set rarely serves all four.
-4. Keep normal maps lossless (PNG); never `assets slim` this model. A normal
-   map that arrived as JPEG stays damaged after re-encoding: see step 5.
+4. Keep normal maps lossless (PNG); never `assets slim --allow-glossy` this
+   model. A normal map that arrived as JPEG stays damaged after re-encoding:
+   see step 5.
 5. Lower `normalScale` on reconstructed meshes (start near 0.3 on smooth
    panels) or drop the map where the surface should be smooth.
 6. Judge glossy surfaces on a real GPU under the shipping look before shipping;

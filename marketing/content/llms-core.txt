@@ -30,7 +30,7 @@
 - Size pools (bullets, traffic, particles) from the measured peak, or objects pop.
 - 5.7.0: model and primitive handles inside a `group(...)` are parent-local (5.6: world). Convert 5.6 world values to the parent's space or make the node top-level; world reads: `getWorldPosition()`.
 - A dark hero on a dark set vanishes: add a rim or back light or a lighter accent; check a back-view frame. HUD words (a colour, a name) must match the drawn frame.
-- Judge steady state: frame 1 is lit before the probe bakes. Capture at 3, 25 and 60 s and compare static bands before reverting anything.
+- Judge steady state (frame 1 is lit before the probe bakes): compare captures at 3, 25 and 60 s before reverting anything.
 
 ## Fast path
 
@@ -103,8 +103,9 @@ Do not invent asset paths, URLs or ids; every model is a generated `assets.<key>
 
 - `npx @aura3d/cli@latest assets search "<object>"` lists licence-tagged open candidates; `assets resolve "<object>" --name <n>` types the top match; `assets add ./model.glb --name <n>` adds a file (then read `src/aura-assets.ts`).
 - No match: prefer a multi-part procedural model (Fast path, `@aura3d/engine/sculpt`); Meshy (`meshy-cli` skill) only on request.
-- `assets convert in.fbx --out out.glb` (FBX, OBJ, USD, BVH and more; losses reported). `assets generate "<subject>" --name <k> --kind character --rig --dry-run` prints the fal.ai cost; the paid run admits a `candidate`. `assets normalize` (facing/size), `assets slim` (JPEG normals; skip it for glossy or mirror surfaces), `assets preview`/`assets thumbnail` (CPU base-colour PNGs).
-- Never trust generated PBR maps as delivered: check metalness, roughness and normal-tilt stats; paint is dielectric (metalness ~0) with clearcoat; split body, glass, chrome and tyres into own materials; keep normal maps PNG; lower `normalScale`; judge gloss on a real GPU.
+- `assets convert in.fbx --out out.glb` (FBX, OBJ, USD, BVH and more; losses reported). `assets generate "<subject>" --name <k> --kind character --rig --dry-run` prints the fal.ai cost; the paid run admits a `candidate`. `assets normalize` (facing/size), `assets slim` (JPEG normals; glossy ones stay PNG), `assets preview`/`assets thumbnail` (CPU base-colour PNGs).
+- Never trust generated PBR maps (`PBR_*` warnings); split body, glass, chrome and tyres; keep normals PNG; lower `normalScale`; judge gloss on a real GPU.
+- Material values: car paint = dielectric + clearcoat 1.0 (rough ~0.05), chrome = metal 1 rough ≤0.08; never fix sheen by lowering specular; run `assets inspect --pbr`.
 - Clips: `animation import <bvh|fbx|glb|motion.json> --onto rig.glb --out hero.glb`; `animation generate "<motion>" --onto rig.glb --out hero.glb` (fal.ai `FAL_KEY`, ledgered; reruns never pay twice).
 - All commands: `aura3d help --json` / `docs/api/cli-reference.md`; exit 0 ok, 1 failed, 2 usage.
 - In production a model without same-origin URL, sha256 and provenance draws nothing.

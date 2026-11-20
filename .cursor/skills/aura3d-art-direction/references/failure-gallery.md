@@ -85,10 +85,10 @@ Symptom: blotchy white sheen, melted or wavy reflections and dented-looking
 panels on an AI image-to-3D car or glossy product.
 Fix: the delivered PBR maps lie (one material, metalness median 0.77,
 roughness 0.17, a JPEG normal map tilting 7 to 14 degrees on smooth panels).
-Paint is dielectric (metalness about 0) with a clearcoat (`material.carPaint`);
+Paint is dielectric (metalness about 0) with a clearcoat (`material.clearcoatPaint`);
 give body, glass, chrome and tyres their own materials; keep normal maps
-lossless PNG (never `assets slim` a glossy model); lower `normalScale` on
-reconstructed meshes; judge the reflections on a real GPU under the look.
+lossless PNG (never `assets slim --allow-glossy` a glossy model; `assets
+inspect --pbr` flags the rest); lower `normalScale` on reconstructed meshes; judge the reflections on a real GPU under the look.
 
 ## Hand-made transparent matte
 

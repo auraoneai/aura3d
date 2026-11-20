@@ -59,9 +59,8 @@ Step 1, presets (always try first):
    `weather.wetGround(...)`; `water.surface({ preset: "calm" | "moderate" |
    "rough" | "storm" })`. Add their `nodes` with `scene().addMany(...)` and use
    the returned `background`. Painted game sky: `sky.gradient({ horizon, mid, zenith, sun: { glow } })` (5.7.0), not a custom dome. Strata, caustics, god rays, beams: [visual helpers](references/visual-helpers.md).
-4. Choosing values: start from `material.presets()` and the named builders
-   above (car paint is `material.clearcoatPaint`, thin glass `material.glass`,
-   brushed metal `material.brushedMetal`); `GAME_READY_MATERIAL_PRESETS` in
+4. Choosing values: [material values](references/material-values.md) (paint, chrome, glass, tyres; never lower specular, A13), then the
+   named builders above (car paint `material.clearcoatPaint`, thin glass `material.glass`, brushed metal `material.brushedMetal`); `GAME_READY_MATERIAL_PRESETS` in
    `packages/engine/src/devtools/materials/MaterialValidation.ts` is a source
    reference for values, not an import.
 
@@ -145,6 +144,7 @@ per round.
 ## References
 
 - [Custom shader chunks (4.1)](references/custom-shader-chunks.md)
+- [Material values for imported GLBs (A11 to A13)](references/material-values.md)
 - [Environment lighting](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/environment-lighting.md)
 - [HDR, IBL, tone mapping, and color](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/lighting-environment-color.md)
 - [Texture compression (KTX2/Basis)](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/texture-compression.md)

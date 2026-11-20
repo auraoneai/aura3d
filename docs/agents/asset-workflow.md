@@ -61,7 +61,7 @@ aura3d assets normalize ./assets/robot.glb --out ./assets/robot.n.glb --front +x
 aura3d assets preview ./assets/robot.n.glb --out robot-views.png                     # CPU base-colour preview, not a render
 ```
 
-`add` makes a real PNG thumbnail for glTF/GLB models and PNG/JPEG/WebP textures (`assets thumbnail` reruns it); like `preview` it is a CPU base-colour view in the bind pose, never GPU evidence. `aura3d assets slim <file.glb>` re-encodes PNG normal maps as JPEG q92 and never writes a larger file.
+`add` makes a real PNG thumbnail for glTF/GLB models and PNG/JPEG/WebP textures (`assets thumbnail` reruns it); like `preview` it is a CPU base-colour view in the bind pose, never GPU evidence. `aura3d assets slim <file.glb>` re-encodes PNG normal maps as JPEG q92 and never writes a larger file; normal maps on glossy materials (median roughness under 0.45, or metallic) stay PNG unless `--allow-glossy` (lessons A12). `aura3d assets inspect <file.glb> --pbr` prints per-material metalness, roughness and normal-tilt percentiles with `PBR_*` warnings, and `aura3d assets validate --pbr` runs those warnings over the manifest (A11).
 
 
 ## 4. Generate on fal.ai: Idol models and HY-Motion clips (5.6.0, the default paid lane)
@@ -78,7 +78,7 @@ aura3d animation import ./mocap/jab.bvh --onto courier.glb --out courier-anim.gl
 aura3d assets validate --skin courier-anim.glb
 ```
 
-- `assets generate` sends a prompt (or `--image ref.png`) to `speridlabs/idol/max`; without an image it first makes a reference still with `openai/gpt-image-2.6`. The result is skin-refit (rigs), optimised to the role budget, normalised (+Z front, size target, grounded), slimmed and previewed, then admitted with the fal licence (`--no-admit` skips admission).
+- `assets generate` sends a prompt (or `--image ref.png`) to `speridlabs/idol/max`; without an image it first makes a reference still with `openai/gpt-image-2.6`. The result is skin-refit (rigs), optimised to the role budget, normalised (+Z front, size target, grounded), slimmed (glossy materials keep PNG normals; `--no-slim` skips it) and previewed, then admitted with the fal licence (`--no-admit` skips admission).
 - `animation generate` is text-to-motion on `fal-ai/hunyuan-motion` (0.5 to 12 s clips), retargeted onto `--onto` by the `animation import` engine. Import checks every clip for limb flips, retarget error and frozen T-poses, then runs `assets validate --skin --clips`; `--strict` fails on any skin error not allow-listed in `aura.skin-allow.json`.
 - Key: `FAL_KEY`, then `--key-file`, then `~/.config/aura3d/fal.env`, then `~/.config/auraone/fal.env`. It is never printed. Every submit is appended to `.aura3d/fal/ledger.jsonl` (`--work` moves it) and a pending file is written before polling, so a rerun resumes or reuses the result instead of paying twice.
 - Prompts describe a generic subject in your own words: no brand, product, character or title names, and no reference image taken from another game.

@@ -18,7 +18,7 @@ These commands came out of porting games with generated 3D assets; each replaces
 | `aura3d assets convert <in.fbx\|.obj\|.dae\|.usdz\|.ply\|.stl\|.3mf\|.vox\|.bvh> --out out.glb` | Non-glTF model (or BVH skeleton + clip) to a verified GLB through the bounded importers; every loss is a diagnostic. |
 | `aura3d assets generate "<prompt>" --name key` | Paid fal.ai Idol lane: reference still, mesh (optionally rigged with clips), post-process, admit as `candidate` (section below). |
 | `aura3d assets normalize <in.glb> --out out.glb` | Face +Z, scale to a size target, centre and ground at y = 0. |
-| `aura3d assets slim <file.glb ...>` | Re-encode PNG normal maps (or other slots) as JPEG q92. |
+| `aura3d assets slim <file.glb ...>` | Re-encode PNG normal maps (or other slots) as JPEG q92; glossy materials keep PNG normals unless `--allow-glossy`. |
 | `aura3d assets preview <glb\|id> --out views.png` | CPU base-colour preview sheet (front, side, back, three-quarter); not a render. |
 | `aura3d assets thumbnail [--asset id]` | Manifest PNG thumbnails, drawn as CPU base-colour previews. |
 | `aura3d animation import <src> --onto rig.glb --out hero.glb` | Retarget BVH, FBX, GLB clips or HY-Motion `motion.json` onto a rigged GLB as real glTF clips (section below). |
@@ -26,7 +26,7 @@ These commands came out of porting games with generated 3D assets; each replaces
 
 ## `assets optimize --file`
 
-Budgets (vertices, texture px): `hero` and `vehicle` 40,000 / 2048, `character` 30,000 / 2048, `background` 15,000 / 1024, `prop` 6,000 / 1024 (default). Overrides: `--max-verts N`, `--tex N` (16 to 4096), `--error 0.05`, `--no-simplify`, `--meshopt`, `--json`. Skinned meshes simplify with locked borders. The input is never overwritten (`--out` must differ). Geometry stays float32 unless `--meshopt`, because quantisation moves scale into a node transform and skews grounding and bounds checks. `@gltf-transform/core`, `@gltf-transform/extensions`, `@gltf-transform/functions`, `meshoptimizer` and `sharp` resolve from your project or the CLI install; a missing one is reported with the install command.
+Budgets (vertices, texture px): `hero` and `vehicle` 40,000 / 2048, `character` 30,000 / 2048, `background` 15,000 / 1024, `prop` 6,000 / 1024 (default). Overrides: `--max-verts N`, `--tex N` (16 to 4096), `--error 0.05`, `--no-simplify`, `--meshopt`, `--json`. Skinned meshes simplify with locked borders. Colour and occlusion maps become JPEG; normal and metallicRoughness maps are never JPEG-encoded (resized as PNG; a map already delivered as JPEG within the budget is left untouched), and the output lists each texture it kept lossless (`lossless` in `--json`). The input is never overwritten (`--out` must differ). Geometry stays float32 unless `--meshopt`, because quantisation moves scale into a node transform and skews grounding and bounds checks. `@gltf-transform/core`, `@gltf-transform/extensions`, `@gltf-transform/functions`, `meshoptimizer` and `sharp` resolve from your project or the CLI install; a missing one is reported with the install command.
 
 ## `assets merge-clips`
 
@@ -144,7 +144,7 @@ aura3d animation generate "a boxer throws a fast left jab" --onto runner.glb --o
 aura3d animation generate --spec motion-spec.json --onto runner.glb --out runner.anim.glb --only Run,Jump
 ```
 
-- `assets generate` (Idol lane): reference still with `openai/gpt-image-2.6` ($0.17; skipped with `--image`), mesh with `speridlabs/idol/max` ($0.20, $0.25 with `--rig`), then skin refit for rigs, role-budget optimise, scale, ground and face +Z, slim normal maps and a CPU base-colour preview. It writes `<out-dir>/<key>.glb` plus `<key>.idol.json` provenance and admits the GLB as quality `candidate` with the fal licence (`--no-admit` skips that). `--spec` runs a batch (`--only`, `--concurrency`).
+- `assets generate` (Idol lane): reference still with `openai/gpt-image-2.6` ($0.17; skipped with `--image`), mesh with `speridlabs/idol/max` ($0.20, $0.25 with `--rig`), then skin refit for rigs, role-budget optimise, scale, ground and face +Z, slim normal maps (glossy materials keep PNG normals; `--no-slim` skips the step) and a CPU base-colour preview. It writes `<out-dir>/<key>.glb` plus `<key>.idol.json` provenance and admits the GLB as quality `candidate` with the fal licence (`--no-admit` skips that). `--spec` runs a batch (`--only`, `--concurrency`).
 - `animation generate`: `fal-ai/hunyuan-motion` ($0.08 per clip, another $0.08 with `--fbx`), duration 0.5 to 12 s, guidance 1 to 10; each clip's `motion.json` is retargeted onto `--onto` with the `animation import` engine and its checks.
 - Key lookup order: `FAL_KEY`, then `--key-file <file>`, then `~/.config/aura3d/fal.env`, then `~/.config/auraone/fal.env`. The key is never printed or logged.
 - `--dry-run` prints the cost estimate and makes no paid call.
@@ -161,7 +161,7 @@ aura3d assets thumbnail --asset hero --size 256
 ```
 
 - `normalize` turns the model so its front faces +Z (+Y up), scales it to one of `--height`, `--length`, `--width` or `--max-dim` (metres), centres it in X/Z and grounds it at y = 0. Static meshes get the transform baked into their vertices; skinned meshes keep one `auraRoot` wrapper node. `--front` names the axis the model faces now, `--yaw` adds a turn, `--keep-scale` writes scale 1 and reports the scale (for rigs whose skin check must see rest-length bones). It records `asset.extras.aura3d = { orientation: { forwardAxis: "+z", upAxis: "+y" }, grounded: true }`.
-- `slim` re-encodes PNG textures in the given slots (default normal maps) as JPEG, in place unless `--out` (single input); a result that is not smaller is not written.
+- `slim` re-encodes PNG textures in the given slots (default normal maps) as JPEG, in place unless `--out` (single input); a result that is not smaller is not written. A normal map used by a glossy material (median roughness, factor times texture, under 0.45, or median metalness over 0.5) stays PNG and is reported with the reason; `--allow-glossy` re-encodes it anyway (lessons A12).
 - `preview` and `thumbnail` are CPU base-colour previews: bind pose, base colour and flat lambert drawn in Node, with no browser, GPU, PBR, lighting or normal maps. They are deterministic (same GLB and flags, same PNG bytes) and catch wrong facing, scale or missing textures; they are not renders and never count as look or lighting evidence. `thumbnail` writes `<outputDir>/<id>.thumb.png` for each model asset and points the manifest's `thumbnailUrl` at it; `--help` writes nothing.
 
 ## `animation import`

@@ -1,6 +1,6 @@
 # Recipes: copy a working scene, then adapt it
 
-Coming from three.js? Read [`threejs-to-aura3d.md`](threejs-to-aura3d.md) first; signatures are in [`api-signatures.md`](api-signatures.md). Recipes 8 to 15 build complete scenes with no admitted models; recipe 16 covers physics; recipe 17 is a materials board; recipe 18 is a game shell on the 5.7.0 library kits (autoplay, interpolation, feel, sky). `aura3d examples "<what you are building>"` prints the closest one as a complete `src/main.ts`. Start here when the task looks like one of these. Each recipe is a complete `src/main.ts` body that compiled against the engine types (`tsc`, strict) and uses only non-deprecated root exports. Copy it, change names and numbers, run `npm run build`. Do not read `node_modules/@aura3d/engine/dist` to discover the API first: that is the slowest path (in the cold-start trial, 8 of 15 runs spent all 40 turns reading `.d.ts` and `dist` files without writing a scene, while the game-loop runs, which had a complete sample to copy, finished in 11 to 17 turns).
+Coming from three.js? Read [`threejs-to-aura3d.md`](threejs-to-aura3d.md) first; signatures are in [`api-signatures.md`](api-signatures.md). Recipes 8 to 15 build complete scenes with no admitted models; recipe 16 covers physics; recipe 17 is a materials board; recipe 18 is a game shell on the 5.7.0 library kits (autoplay, interpolation, feel, sky); recipe 19 sets real-world material values on an imported GLB. `aura3d examples "<what you are building>"` prints the closest one as a complete `src/main.ts`. Start here when the task looks like one of these. Each recipe is a complete `src/main.ts` body that compiled against the engine types (`tsc`, strict) and uses only non-deprecated root exports. Copy it, change names and numbers, run `npm run build`. Do not read `node_modules/@aura3d/engine/dist` to discover the API first: that is the slowest path (in the cold-start trial, 8 of 15 runs spent all 40 turns reading `.d.ts` and `dist` files without writing a scene, while the game-loop runs, which had a complete sample to copy, finished in 11 to 17 turns).
 
 Page needs a `<div id="app">` (or a `<canvas id="app">`); `createAuraApp("#app", { scene })` mounts into it. Background, camera, lights and fog are ordinary nodes or scene options. Animate inside `app.onFrame((frame) => ...)` using `frame.dt`. Chain `void app.ready().then(...)` (or await it inside an `async function main()`) when you need the first frame; never `await app.ready()` at module top level, which deadlocks a default Vite production build. With a HUD or other elements beside the canvas, give the canvas a wrapper of definite size (`<div id="stage" style="width:640px;height:360px"><canvas id="app"></canvas></div>`), or pass `resize: false` and a `width`/`height` on the canvas; the app sizes itself to its parent, and an auto-height parent that also holds a HUD can make a canvas grow until it draws nothing on 4.1.3 and earlier (see troubleshooting, black frame checklist).
 
@@ -949,6 +949,59 @@ void app.ready().then(() => loop.start());
 - **VFX sheets and grade.** `createFlipbookAtlas("sparks" | "muzzle" | "dust" | "ink" | "plasma" | "ripple", tint)` builds an 8 x 4 flipbook for `effects.flipbook({ texture, spriteColumns, spriteRows })`, and `createGradingLut("cinema-warm" | "broadcast-crisp" | "cyber-neon")` a strip LUT for `output.lut`, with no image files; pass `atlas.texture` straight to `effects.flipbook` (no cast since 5.7.0). [game-vfx-sheets](https://github.com/auraoneai/aura3d/blob/main/docs/api/game-vfx-sheets.md).
 - **Sky and shadow.** `sky.gradient` with `mid`, `haze` and a sun `glow` is the painted game sky; write a custom dome only for clouds, stars or planets. `shadow: { softness: 2 }` widens the sun's penumbra; `shadow: { fit: { center, extent } }` pins the shadow map to the arena so its texel size does not change with framing. [sky-gradient](https://github.com/auraoneai/aura3d/blob/main/docs/api/sky-gradient.md), [shadow-softness](https://github.com/auraoneai/aura3d/blob/main/docs/api/shadow-softness.md).
 - **Humanoids.** A rigged humanoid playing generated or imported clips uses `createHumanoidAnimator` from `@aura3d/engine/animation` (cross-fades, mirrored clips, `humanoidLocomotionTime` so planted feet do not slide), never a per-game motion player. [humanoid-motion](https://github.com/auraoneai/aura3d/blob/main/docs/api/humanoid-motion.md).
+
+## 19. Real-world material values on an imported or generated GLB (paint, chrome, glass, tyres)
+
+- Goal: an admitted car (or product) whose paint, chrome, glass and tyres read as what they are, set by material name with `materialOverrides` after `assets inspect --pbr` showed what the GLB delivered.
+- Workflow: `npx @aura3d/cli@latest assets inspect public/aura-assets/<file>.glb --pbr`, fix every material against the table, inspect again until no `PBR_*` warning remains, then judge on a real GPU under the shipping look.
+- Never fix unwanted sheen by lowering specular or removing the clearcoat (lessons A13): that turns paint into clay. Fix metalness, `normalScale` or the normal map's encoding instead, and leave specular at 1.0.
+
+| Material | metallic | roughness | clearcoat | clearcoatRoughness | specular | normal map |
+|---|---|---|---|---|---|---|
+| Car paint (solid; `material.clearcoatPaint`) | 0 | 0.35 to 0.45 | 1.0 | 0.03 to 0.08 | 1.0 | none or very weak; no clearcoat normal |
+| Metallic flake paint (`material.carPaint`) | 0.3 to 0.5 | 0.4 | 1.0 | 0.05 | 1.0 | none or very weak |
+| Chrome (`material.chrome`) | 1 | 0.03 to 0.08 | | | 1.0 | none |
+| Machined or polished alloy wheel | 1 | 0.15 to 0.25 | | | 1.0 | weak |
+| Brushed metal (`material.brushedMetal`) | 1 | 0.3 to 0.45, plus `anisotropy` | | | 1.0 | weak |
+| Glass (`material.glass`) | 0 | 0.02 to 0.1, `transmission` or low `opacity` | | | 1.0 | none |
+| Tyre rubber (`material.rubber`) | 0 | 0.8 to 0.9 | | | 1.0 | tread detail |
+| Matte plastic | 0 | 0.6 to 0.8 | | | 1.0 | fine |
+| Gloss plastic | 0 | 0.2 to 0.35 | | | 1.0 | weak, PNG |
+| Skin | 0 | 0.45 to 0.6, subsurface where available | | | 1.0 | PNG |
+| Fabric (`material.fabric`) | 0 | 0.8 to 1.0, `sheen` | | | 1.0 | weave |
+
+```ts
+import { camera, createAuraApp, environments, interactions, lights, material, model, primitives, scene } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+// Material names come from `assets inspect --pbr`. materialOverrides set metallic, roughness, clearcoat and
+// clearcoatRoughness (plus color, opacity, transmission, sheen) at load time; the GLB file is unchanged.
+const coupe = model(assets.coupe, {
+  name: "coupe",
+  targetMaxDimension: 4.6,
+  materialOverrides: [
+    { target: "paint", metallic: 0, roughness: 0.4, clearcoat: 1, clearcoatRoughness: 0.05 },
+    { target: "chrome", metallic: 1, roughness: 0.05 },
+    { target: /wheel|rim/i, metallic: 1, roughness: 0.2 },
+    { target: "glass", metallic: 0, roughness: 0.05, opacity: 0.3 },
+    { target: /tyre|tire|rubber/i, metallic: 0, roughness: 0.85 }
+  ]
+});
+
+// Paint, chrome and glass need something to reflect: keep the environment and the key light at full strength.
+const app = createAuraApp("#app", {
+  scene: scene({ background: "#2a2e36" })
+    .add(environments.neutral({ intensity: 1.1, background: false }))
+    .add(lights.key({ target: [0, 0.6, 0], intensity: 3 }))
+    .add(primitives.plane({ name: "ground", size: [16, 9], material: material.pbr({ color: "#3a3e47", roughness: 0.75 }) }))
+    .add(coupe)
+    .add(interactions.orbit({ target: "coupe" }))
+    .camera(camera.auto({ fill: 0.75, angle: "front", elevation: 0.3 }))
+});
+void app.ready();
+```
+
+- `normalTexture.scale`, `KHR_materials_specular` and a one-material GLB that needs splitting are fixed in the file itself (glTF-Transform `setNormalScale(0.3)`, `KHR_materials_clearcoat` `setClearcoatFactor(1)`): [material values](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/skills/aura3d-materials-environments/references/material-values.md) has the script. A generated model ships one material for paint, glass, chrome and tyres (`PBR_SINGLE_MATERIAL_VEHICLE`); split it before tuning (lessons A11).
 
 ## Type traps (strict `tsc` errors agents hit on a first draft)
 

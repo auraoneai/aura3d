@@ -76,12 +76,13 @@ lighting you evaluate materials and silhouettes against.
    ```
 
    Treat `"ok": false` warnings (for example missing orientation metadata) as
-   facts to record, not noise. Never trust a generated model's PBR maps as delivered: inspect metalness, roughness and normal-tilt statistics, make painted bodies dielectric with a clearcoat, split body, glass, chrome and tyres into separate materials, keep normal maps lossless PNG and lower `normalScale` ([generated PBR maps](references/generate-convert-post.md#generated-pbr-maps-are-not-trustworthy-as-delivered)).
+   facts to record, not noise. Never trust a generated model's PBR maps as delivered: run `assets inspect <file.glb> --pbr` (metalness, roughness and normal-tilt percentiles per material, texture encodings, `PBR_*` warnings), make painted bodies dielectric with a clearcoat, split body, glass, chrome and tyres into separate materials, keep normal maps lossless PNG and lower `normalScale` ([generated PBR maps](references/generate-convert-post.md#generated-pbr-maps-are-not-trustworthy-as-delivered)).
 6. Regenerate types and validate the shipping set.
 
    ```bash
    npx @aura3d/cli@latest assets typegen
    npx @aura3d/cli@latest assets validate --asset helmet --source
+   npx @aura3d/cli@latest assets validate --asset helmet --pbr   # PBR_* material warnings
    ```
 
    `--source` scans `src` for raw ids, URLs, and loader code, and lists
@@ -125,7 +126,7 @@ lighting you evaluate materials and silhouettes against.
   out.glb --role prop` (role budgets: prop 6k, character 30k, hero or vehicle 40k
   vertices; textures capped at 1024 to 2048 px; 16-bit indices);
 - it is placeholder-like, or only a generated thumbnail proves it is readable;
-- a glossy or mirror surface (paint, glass, chrome) carries a JPEG normal map (`assets slim` output) or a high-metalness painted body.
+- `assets inspect --pbr` reports `PBR_PAINT_METALLIC` or `PBR_NORMAL_LOSSY_GLOSSY` on a visible glossy surface (a high-metalness painted body, or a JPEG normal map on paint, glass or chrome; `assets slim --allow-glossy` makes the second).
 
 ## Stop and report
 
