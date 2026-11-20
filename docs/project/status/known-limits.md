@@ -9,13 +9,13 @@ README that touches one of these areas uses the scope stated here.
 
 ## Release limits
 
-Aura3D 5.6.0 is the current release: a complete engine for browser games and
+Aura3D 5.7.0 is the current release: a complete engine for browser games and
 interactive 3D apps, with 30 live games accepted on a real GPU. Each capability
 claim is tied to its public API, package, route, and retained evidence, and a
 route's visual approval covers that route.
 
-Engine limits found in the 5.6.0 real-GPU QA of the 30 games (nested model handles take world
-coordinates, transient lights arriving mid-frame, static-group instance batches, one black frame on
+Engine limits found in the 5.6.0 real-GPU QA of the 30 games (nested model handles took world
+coordinates until 5.7.0 made them parent-local, transient lights arriving mid-frame, static-group instance batches, one black frame on
 scene switch, runtime opacity blend changes, CPU mip builds, physics CCD cost) are tracked with their
 in-game workarounds in [future-engine-work.md](../future-engine-work.md#after-560-2026-11-19-from-the-30-game-real-gpu-idol-qa-pass).
 

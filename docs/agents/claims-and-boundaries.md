@@ -1,6 +1,6 @@
 # Claims and Boundaries
 
-Version: 5.6.0
+Version: 5.7.0
 
 Aura3D is a complete engine for browser games and interactive 3D apps: one `@aura3d/engine` import gives you WebGPU and WebGL2 rendering from the same code, PBR, IBL, shadows, post-processing, particles, water, sky and weather, Rapier physics, an animation controller with retargeting, game kits, typed provenance-checked assets and a CLI that finds, converts, generates and admits them. Use all of it freely.
 
