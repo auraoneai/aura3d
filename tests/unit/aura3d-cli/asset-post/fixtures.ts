@@ -70,6 +70,9 @@ export interface FixtureOptions {
   /** Put the body under a translated + rotated parent (tests transform baking). */
   readonly nested?: boolean;
   readonly skinned?: boolean;
+  /** Material metallic / roughness factors (glTF defaults: 1 and 1, i.e. a rough metal). */
+  readonly metallic?: number;
+  readonly roughness?: number;
 }
 
 /**
@@ -80,6 +83,8 @@ export async function vehicleFacingPlusX(options: FixtureOptions = {}): Promise<
   const doc = new Document();
   const buffer = doc.createBuffer();
   const material = doc.createMaterial("paint").setBaseColorFactor([0.8, 0.6, 0.2, 1]);
+  if (options.metallic !== undefined) material.setMetallicFactor(options.metallic);
+  if (options.roughness !== undefined) material.setRoughnessFactor(options.roughness);
   if (options.texture) {
     material.setBaseColorFactor([1, 1, 1, 1]).setBaseColorTexture(doc.createTexture("albedo").setMimeType("image/png").setImage(await checkerPng()));
   }

@@ -10,14 +10,14 @@ import { resolve } from "node:path";
 import { registerCliCommand } from "../../contracts/commands.js";
 import { readAssetManifest } from "../../asset-manifest.js";
 import { normalizeGlb, normalizeUsage, type NormalizeSize } from "./normalize.js";
-import { slimGlb, slimUsage } from "./slim.js";
+import { slimGlb, slimUsage, type SlimGlbResult } from "./slim.js";
 import { parsePreviewViews, renderPreview, previewUsage } from "./preview.js";
 import { createAssetThumbnailsAsync, thumbnailUsage } from "./thumbnail.js";
 
 export { normalizeGlb, normalizeUsage, NORMALIZE_FRONT_YAW } from "./normalize.js";
 export type { NormalizeFront, NormalizeGlbOptions, NormalizeGlbResult, NormalizeSize } from "./normalize.js";
 export { slimGlb, slimUsage, SLIM_DEFAULT_QUALITY } from "./slim.js";
-export type { SlimGlbOptions, SlimGlbResult } from "./slim.js";
+export type { SlimGlbOptions, SlimGlbResult, SlimSkip } from "./slim.js";
 export { renderPreview, renderPreviewPng, parsePreviewViews, previewUsage, DEFAULT_PREVIEW_VIEWS, PREVIEW_KIND, PREVIEW_NOTE, PREVIEW_VIEWS } from "./preview.js";
 export type { PreviewPng, PreviewView, RenderPreviewOptions, RenderPreviewResult } from "./preview.js";
 export { createAssetThumbnailsAsync, thumbnailUsage } from "./thumbnail.js";
@@ -133,9 +133,9 @@ const SLIM_VALUES = ["--quality", "--slots", "--out"] as const;
 registerCliCommand({
   name: "assets slim",
   owner: "asset-post",
-  summary: "Re-encode PNG normal maps (or other slots) in GLBs as JPEG q92; shrinks files 40-60% with no visible shading change.",
+  summary: "Re-encode PNG normal maps (or other slots) in GLBs as JPEG q92 (shrinks files 40-60%); normal maps on glossy materials stay PNG unless --allow-glossy.",
   usage: slimUsage(),
-  run: (argv, io) => runVerb(argv, io, slimUsage(), SLIM_VALUES, [], async () => {
+  run: (argv, io) => runVerb(argv, io, slimUsage(), SLIM_VALUES, ["--allow-glossy"], async () => {
     const files = positionals(argv, SLIM_VALUES);
     if (files.length === 0) throw new UsageError("assets slim needs at least one <file.glb>.");
     const out = option(argv, "--out");
@@ -143,14 +143,22 @@ registerCliCommand({
     const quality = numberOption(argv, "--quality", (n) => Number.isInteger(n) && n >= 1 && n <= 100);
     const slotsRaw = option(argv, "--slots");
     const slots = slotsRaw?.split(",").map((s) => s.trim()).filter(Boolean);
-    const results = [];
+    const results: SlimGlbResult[] = [];
     for (const file of files) {
-      results.push(await slimGlb(resolve(io.cwd, file), { projectDir: io.cwd, ...(quality !== undefined ? { quality } : {}), ...(slots ? { slots } : {}), ...(out ? { out: resolve(io.cwd, out) } : {}) }));
+      results.push(await slimGlb(resolve(io.cwd, file), { projectDir: io.cwd, allowGlossy: argv.includes("--allow-glossy"), ...(quality !== undefined ? { quality } : {}), ...(slots ? { slots } : {}), ...(out ? { out: resolve(io.cwd, out) } : {}) }));
     }
+    const describe = (r: SlimGlbResult): string => {
+      if (r.written) return r.reencoded > 0 ? ` (${r.reencoded} texture(s) re-encoded)` : " (copied; nothing re-encoded)";
+      if (r.reencoded > 0) return " (unchanged: JPEG was not smaller)";
+      return r.skipped.length > 0 ? " (unchanged: every candidate is on a glossy material)" : " (no PNG textures in the selected slots)";
+    };
     return {
       ok: true,
       json: { ok: true, files: results, before: results.reduce((s, r) => s + r.before, 0), after: results.reduce((s, r) => s + r.after, 0) },
-      lines: results.map((r) => `${r.output}: ${MB(r.before)} -> ${MB(r.after)} MB${r.written ? ` (${r.reencoded} texture(s) re-encoded)` : r.reencoded === 0 ? " (no PNG textures in the selected slots)" : " (unchanged: JPEG was not smaller)"}`)
+      lines: results.flatMap((r) => [
+        `${r.output}: ${MB(r.before)} -> ${MB(r.after)} MB${describe(r)}`,
+        ...r.skipped.map((skip) => `  skipped ${skip.texture} (material ${skip.material}): ${skip.reason}`)
+      ])
     };
   })
 });
