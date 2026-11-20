@@ -1,6 +1,6 @@
 {
   "file": "docs/agents/first-screen.md",
-  "engine": "5.0.2",
+  "engine": "5.6.0",
   "gpuRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
   "thresholds": {
     "minLitFraction": 0.05,
@@ -11,10 +11,10 @@
   "blocks": [
     {
       "index": 1,
-      "heading": "Scene skeleton: look, subject, camera, per-frame update",
-      "lines": 9,
+      "heading": "Scene skeleton: look, subject, ground, framed camera, per-frame update",
+      "lines": 10,
       "render_mode": "animated",
-      "sha256": "0a7acb6cc3562ddf72098b8640bb0f5ae6390f53dcd2de1576a2cf3b7a7e343e",
+      "sha256": "209602eb1309a639a3f9fc7bd6331acfd4216fbad07ab759907aa9795b03b29d",
       "typecheck": {
         "pass": true
       },
@@ -22,8 +22,8 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 18.52,
-        "difference": 3.992
+        "stdLuma": 21.48,
+        "difference": 2.836
       }
     },
     {
@@ -31,7 +31,7 @@
       "heading": "Instancing: many copies, one draw, updated live",
       "lines": 15,
       "render_mode": "animated",
-      "sha256": "9342088e427a667514a57f3e7bed4d916a0d7e214a56a031094dd38420bfb484",
+      "sha256": "6bebe76334030f852c1acec669ee2166bcdc06930f795c57ad529623cf0c6fb9",
       "typecheck": {
         "pass": true
       },
@@ -39,8 +39,8 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 49.26,
-        "difference": 3.067
+        "stdLuma": 63.7,
+        "difference": 13.445
       }
     },
     {
@@ -55,9 +55,9 @@
       "render": {
         "pass": true,
         "failures": [],
-        "litFraction": 1,
-        "stdLuma": 68.82,
-        "difference": 16.261
+        "litFraction": 0.994,
+        "stdLuma": 58.33,
+        "difference": 21.977
       }
     },
     {
@@ -65,7 +65,7 @@
       "heading": "Procedural geometry: revolve a profile",
       "lines": 14,
       "render_mode": "static",
-      "sha256": "edd909db0d985fb8faa43ab0770afb999cbb6c327937e4b45b0b445989927ca4",
+      "sha256": "caa57bfdc52f54e633ee951dfab92258b9f74a701fdadfa86b756199832c12f1",
       "typecheck": {
         "pass": true
       },
@@ -73,7 +73,7 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 31.37,
+        "stdLuma": 15.28,
         "difference": 0
       }
     },
@@ -82,7 +82,7 @@
       "heading": "Rigged model: clips and crossfade",
       "lines": 13,
       "render_mode": "asset:animated",
-      "sha256": "0a0ac3211415a67cba8c71010bbc5df636b81c346cb502fe91e6c31a6b649f3e",
+      "sha256": "44f7ff94b09e27fcbbe03ff531ae50f5711fb64af0a9f684f54b83776403e1dc",
       "typecheck": {
         "pass": true
       },
@@ -90,8 +90,8 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 13.14,
-        "difference": 0.249
+        "stdLuma": 13.13,
+        "difference": 0.275
       }
     },
     {
@@ -99,7 +99,7 @@
       "heading": "Game loop and input: fixed step, actions",
       "lines": 15,
       "render_mode": "animated",
-      "sha256": "48c52d8c8e5a4f6b52aa51a5498866627dcebf92e650becc6b9a02477bcef87c",
+      "sha256": "b14abdc7f3f9d91d521a82119d3b134bb3d20e6aadf1a442e7befcec7023e7ea",
       "typecheck": {
         "pass": true
       },
@@ -107,8 +107,8 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 64.63,
-        "difference": 0.569
+        "stdLuma": 64.61,
+        "difference": 0.62
       }
     },
     {
@@ -116,7 +116,7 @@
       "heading": "Physics: bound bodies stepped in onFrame",
       "lines": 12,
       "render_mode": "animated",
-      "sha256": "e112c21be5cd89dabae294a540781eff5dacd3d5b20e11f23b120f159a10504c",
+      "sha256": "4c08e7ce303079d43fd5836bedbb72a3114246f35df3d354c5ad4e8b032a4807",
       "typecheck": {
         "pass": true
       },
@@ -124,8 +124,8 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 35.92,
-        "difference": 0.915
+        "stdLuma": 36.28,
+        "difference": 1.877
       }
     },
     {
@@ -141,8 +141,8 @@
         "pass": true,
         "failures": [],
         "litFraction": 1,
-        "stdLuma": 25.75,
-        "difference": 4.711
+        "stdLuma": 25.39,
+        "difference": 4.377
       }
     }
   ]
