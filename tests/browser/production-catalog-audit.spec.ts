@@ -33,31 +33,19 @@ interface RouteAudit {
 }
 
 async function waitReady(page: Page): Promise<{ width: number; height: number; ready: boolean }> {
-  await page.waitForFunction(() => {
-    const canvas = document.querySelector("canvas");
-    return canvas instanceof HTMLCanvasElement && canvas.width > 8 && canvas.height > 8;
-  }, undefined, { timeout: 75_000 }).catch(() => undefined);
-  await page.waitForFunction(() => {
-    const gallery = (window as unknown as {
-      __A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__?: {
-        status?: string;
-        authoredAsset?: { status?: string };
-        frameCount?: number;
-      };
-    }).__A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__;
-    if (!gallery) return true;
-    if (gallery.status === "error") return true;
-    return (gallery.frameCount ?? 0) >= 3 && (gallery.authoredAsset?.status ?? "ready") !== "loading";
-  }, undefined, { timeout: 75_000 }).catch(() => undefined);
-  await page.waitForTimeout(800);
-  return page.evaluate(() => {
-    const canvas = document.querySelector("canvas");
-    if (!(canvas instanceof HTMLCanvasElement)) return { width: 0, height: 0, ready: false };
-    return { width: canvas.width, height: canvas.height, ready: canvas.width > 8 && canvas.height > 8 };
-  });
+  const studio = page.locator("body[data-scene-ready=true]");
+  const ready = await studio.waitFor({ state: "attached", timeout: 90_000 })
+    .then(() => true, () => false);
+  const canvas = await page.locator("canvas").first().evaluate((element: HTMLCanvasElement) =>
+    ({ width: element.width, height: element.height }));
+  const state = await page.evaluate(() => (window as Window & {
+    __auraShowcase?: { status: string; drawCalls: number; frameCount: number }
+  }).__auraShowcase);
+  return { ...canvas, ready: ready && state?.status === "running" && state.drawCalls > 0
+    && state.frameCount > 0 && canvas.width > 8 && canvas.height > 8 };
 }
 
-test("audit all 36 production catalog routes", async ({ page }, testInfo) => {
+test("audit the interactive production showcases", async ({ page }, testInfo) => {
   testInfo.setTimeout(900_000);
   mkdirSync(REPORT_DIR, { recursive: true });
   mkdirSync(SCRATCH_DIR, { recursive: true });
@@ -83,6 +71,20 @@ test("audit all 36 production catalog routes", async ({ page }, testInfo) => {
     const url = `${ORIGIN}${route.path}`;
     const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
     const canvas = await waitReady(page);
+    if (route.id === "vesper-gt" && canvas.ready) {
+      await expect(page.locator(".poster")).toBeHidden();
+      await expect(page.locator("#status")).toBeEmpty();
+      for (const value of ["wheel", "body"]) {
+        const button = page.locator(`button[data-view="${value}"]`);
+        await button.click();
+        await expect(button).toHaveAttribute("aria-pressed", "true");
+      }
+      for (const value of ["tungsten", "daylight"]) {
+        const button = page.locator(`button[data-light="${value}"]`);
+        await button.click();
+        await expect(button).toHaveAttribute("aria-pressed", "true");
+      }
+    }
     const bodyText = await page.locator("body").innerText().catch(() => "");
     const authoredAssetFailed = /authored asset failed to load/i.test(bodyText);
     const claims201 = /2\.0\.1/.test(bodyText) || /aura3d/i.test(bodyText);
@@ -151,6 +153,6 @@ test("audit all 36 production catalog routes", async ({ page }, testInfo) => {
     ].join("\n")
   );
 
-  expect(audits.length, "catalog must list 36 public experiences").toBe(36);
+  expect(audits.map(audit => audit.id)).toEqual(ROUTES.map(route => route.id));
   expect(report.failed, report.failed.join("\n")).toEqual([]);
 });
