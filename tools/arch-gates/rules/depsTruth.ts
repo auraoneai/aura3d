@@ -98,6 +98,21 @@ function declaredDeps(manifest: PackageManifest): Set<string> {
   return declared;
 }
 
+/**
+ * Deps declared through an npm alias (`"@aura3d/showcase-engine": "npm:@aura3d/engine@5.6.0"`, the published renderer
+ * the marketing site pins). The alias always resolves from the registry, never from a workspace package, so its local
+ * name is not a workspace dependency claim and `unknown-dependency` does not apply to it.
+ */
+function registryAliasDeps(manifest: PackageManifest): Set<string> {
+  const aliases = new Set<string>();
+  for (const key of ["dependencies", "peerDependencies", "devDependencies"] as const) {
+    for (const [dep, spec] of Object.entries(manifest[key] ?? {})) {
+      if (typeof spec === "string" && spec.startsWith("npm:")) aliases.add(dep);
+    }
+  }
+  return aliases;
+}
+
 /** devDependencies may be consumed by tests/ as well as src/. */
 function devDeps(manifest: PackageManifest): Set<string> {
   return new Set(Object.keys(manifest.devDependencies ?? {}));
@@ -203,6 +218,7 @@ export function checkDepsTruth(root: string): GateFinding[] {
     const testImported = importedDirs(root, scan.testFiles, paths, scan.manifestPath);
     const declared = declaredDeps(scan.manifest);
     const dev = devDeps(scan.manifest);
+    const registryAliases = registryAliasDeps(scan.manifest);
 
     const declaredDirs = new Map<string, string>(); // dir -> dep name used
     for (const dep of declared) {
@@ -233,6 +249,7 @@ export function checkDepsTruth(root: string): GateFinding[] {
     for (const dep of [...declared].sort()) {
       if (!dep.startsWith("@aura3d/") && dep !== "create-aura3d") continue;
       if (depNameToDir.has(dep)) continue;
+      if (registryAliases.has(dep)) continue;
       findings.push({
         file: scan.manifestPath,
         detail: `unknown-dependency: manifest declares ${dep}, which is not a workspace package`,

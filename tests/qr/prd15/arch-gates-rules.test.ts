@@ -12,6 +12,7 @@ import { checkNoCycles } from "../../../tools/arch-gates/rules/noCycles";
 import { checkMaxFileLines } from "../../../tools/arch-gates/rules/maxFileLines";
 import { checkSingleRenderer } from "../../../tools/arch-gates/rules/singleRenderer";
 import { checkGlslLocation } from "../../../tools/arch-gates/rules/glslLocation";
+import { checkDepsTruth } from "../../../tools/arch-gates/rules/depsTruth";
 
 const REPO = join(__dirname, "../../..");
 const tmp: string[] = [];
@@ -164,6 +165,30 @@ describe("arch-gates glsl-location (T4.9 fail mode)", () => {
       "packages/rendering/src/post/pass.ts": `export ${glsl}`
     });
     expect(checkGlslLocation(root).filter((f) => f.enforced)).toEqual([]);
+  });
+});
+
+describe("arch-gates deps-truth unknown-dependency", () => {
+  const unknown = (root: string) =>
+    checkDepsTruth(root).filter((f) => f.enforced && f.detail.startsWith("unknown-dependency"));
+  const workspace = { "packages/engine/package.json": JSON.stringify({ name: "@aura3d/engine-runtime" }) };
+
+  it("fails an @aura3d dependency that names no workspace package", () => {
+    const root = fixture({
+      ...workspace,
+      "package.json": JSON.stringify({ name: "@aura3d/engine", devDependencies: { "@aura3d/engin-typo": "workspace:*" } })
+    });
+    expect(unknown(root).map((f) => f.detail)).toEqual([
+      "unknown-dependency: manifest declares @aura3d/engin-typo, which is not a workspace package"
+    ]);
+  });
+
+  it("passes an npm: registry alias such as the marketing site's pinned showcase engine", () => {
+    const root = fixture({
+      ...workspace,
+      "package.json": JSON.stringify({ name: "@aura3d/engine", devDependencies: { "@aura3d/showcase-engine": "npm:@aura3d/engine@5.6.0" } })
+    });
+    expect(unknown(root)).toEqual([]);
   });
 });
 
