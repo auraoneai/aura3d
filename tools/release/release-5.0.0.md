@@ -2,7 +2,7 @@
 
 > Historical (pre-5.6.0): the 5.0.0 release record, kept for reference; do not rerun it. Its commands name paths and apps
 > that no longer exist (for example `/apps/aura-clash-showcase/`, removed in 5.6.0), and `${url}` / `${REL_URL}` inside the
-> scripts are template strings, not links. The current release is 5.7.1 (see `CHANGELOG.md`).
+> scripts are template strings, not links. The current release is 5.7.2 (see `CHANGELOG.md`).
 
 Run this only after acceptance has passed and the owner has said go. Each section is copy-paste
 bash (zsh works too). Run the sections in order. Every `test`/`node -e` guard is a hard stop: if

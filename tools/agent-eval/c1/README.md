@@ -1,6 +1,6 @@
 # C1 fixed comparison harness
 
-> Historical (pre-5.6.0): written for the 5.5.x C1 run. 5.5.0 and later are now on npm (current release 5.7.1), so the
+> Historical (pre-5.6.0): written for the 5.5.x C1 run. 5.5.0 and later are now on npm (current release 5.7.2), so the
 > "not on npm yet" notes below no longer apply; pick `AGENT_EVAL_AURA_VERSION` and `--docs-ref` for the release being measured.
 
 Plan item C1 in `docs/project/future-engine-work.md` (section 4 and the 5.5.1 task list): 8 tasks chosen before results,

@@ -7,15 +7,15 @@ Aura3D is a TypeScript 3D engine for browser games and apps: WebGPU and WebGL2 r
 ## Facts
 
 - Product: the complete TypeScript 3D engine for browser games and 3D apps: its own WebGPU and WebGL2 renderer, typed assets, AI model and motion generation, a game kit, physics, worker rendering and deploy checks (MIT, free)
-- Install: `npx create-aura3d@latest my-scene --template product-viewer` or `npm install --save-exact @aura3d/engine@5.7.1`
+- Install: `npx create-aura3d@latest my-scene --template product-viewer` or `npm install --save-exact @aura3d/engine@5.7.2`
 - Compared with three.js: three.js is a rendering library; Aura3D is the engine around the renderer. A lit, framed product is 10 lines against 38 in three.js (https://aura3d.auraone.ai/docs/aura3d-vs-threejs)
 - Website: https://aura3d.auraone.ai
-- Current release: Aura3D 5.7.1 (per the repo manifest — the same source the build's version guard uses)
+- Current release: Aura3D 5.7.2 (per the repo manifest — the same source the build's version guard uses)
 - Docs: https://aura3d.auraone.ai/docs/api
 - Showcase gallery: https://aura3d.auraone.ai/apps/showcase-index/ (30 playable games; add `?autoplay=1` to any game URL and the computer plays it)
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
 - Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
-- Last updated: 2026-11-19
+- Last updated: 2026-11-20
 
 ## Pages
 
@@ -28,13 +28,13 @@ Aura3D is a TypeScript 3D engine for browser games and apps: WebGPU and WebGL2 r
 - [Aura3D TypeScript scene API](https://aura3d.auraone.ai/docs/api): Import the scene, camera, materials, and interactions you need. The engine mounts them together and owns the frame loop.
 - [Import and validate a 3D model with Aura3D](https://aura3d.auraone.ai/docs/assets): Register a GLB or glTF file once. The CLI records its source and generates a TypeScript name you can use in your scene.
 - [Aura3D vs three.js: complete engine vs renderer](https://aura3d.auraone.ai/docs/aura3d-vs-threejs): Aura3D ships the renderer, typed assets, AI generation, game kit and deploy checks three.js leaves to you: a lit, framed product in 10 lines vs 38.
-- [Aura3D capabilities and proof](https://aura3d.auraone.ai/docs/claims): What Aura3D 5.7.1 ships: the typed browser 3D workflow, the renderer, the asset pipeline and AI generation, the game stack, and the proof behind each.
+- [Aura3D capabilities and proof](https://aura3d.auraone.ai/docs/claims): What Aura3D 5.7.2 ships: the typed browser 3D workflow, the renderer, the asset pipeline and AI generation, the game stack, and the proof behind each.
 - [Build an Aura3D scene with Claude](https://aura3d.auraone.ai/docs/claude): Give Claude the project context, a working starter, and one visible change to make. Review the result in the browser.
 - [Use Cursor with an Aura3D project](https://aura3d.auraone.ai/docs/cursor): Open the scaffolded project in Cursor. Follow a typed asset from its manifest to the scene, then make one change you can see.
 - [Deploy an Aura3D app to a static host](https://aura3d.auraone.ai/docs/deployment): Build your static files, validate the asset manifest, and check the distribution folder before uploading it to your host.
 - [Verify an Aura3D scene and its assets](https://aura3d.auraone.ai/docs/evidence): Trace a capability from the working example to its source, asset record, or deployment check.
 - [Aura3D developer documentation](https://aura3d.auraone.ai/docs/): Start with a working TypeScript scene. Learn to frame a model, light its surfaces, or build a game around a playable starter.
-- [Migrate from Aura3D 4.x to 5.0.1](https://aura3d.auraone.ai/docs/migration/4-to-5): Upgrade from Aura3D 4.x to 5: who is affected, upgrade steps, breaking and behaviour changes, new opt-in features and removed deprecated APIs.
+- [Migrate from Aura3D 4.x to 5](https://aura3d.auraone.ai/docs/migration/4-to-5): Upgrade from Aura3D 4.x to 5: who is affected, upgrade steps, breaking and behaviour changes, new opt-in features and removed deprecated APIs.
 - [Write prompts for Aura3D scenes](https://aura3d.auraone.ai/docs/prompt-recipes): Start with a subject, camera, and interaction. Match the brief to a scene kit, then change the resulting TypeScript.
 - [Choose an Aura3D starter template](https://aura3d.auraone.ai/docs/templates): Pick a starter: a product viewer, a cinematic scene, or a game with movement, scoring and input. Each one gives you editable TypeScript source.
 
@@ -75,22 +75,22 @@ Aura3D is a TypeScript 3D engine for browser games and apps: WebGPU and WebGL2 r
 
 - [Browser games built with Aura3D](https://aura3d.auraone.ai/apps/showcase-index/): Play 30 browser games built with Aura3D. Explore five genres, inspect the source behind each game, and build your own with a TypeScript starter.
 - [Ember Courier — Play the Relay Run | Aura3D](https://aura3d.auraone.ai/apps/ember-courier/): Pilot an armored courier across a floodlit industrial relay deck. Dash through three signal gates in this playable third-person Aura3D game.
-- [Vesper GT — Aura3D Automotive Studio](https://aura3d.auraone.ai/apps/vesper-gt/): Orbit the Vesper GT, an original grand touring coupe in gloss oxblood. Inspect its front wheel, change the studio light and download the model or explore the Aura3D scene source.
-- [Relay Workcell — Interactive Robotics Simulation | Aura3D](https://aura3d.auraone.ai/apps/relay-workcell/): Program a pick-and-place cycle for an articulated six-axis robot. Move the workstations and inspect tool position, joint angles and cycle timing in a real-time Aura3D workcell.
-- [Aura Slam 3D — Championship 3D Tennis on Aura3D](https://aura3d.auraone.ai/apps/showcase-top-tennis/): Championship 3D tennis on a native Aura3D simulation, with 2-bone IK athletes, 6 courts (NY, London, Paris, Dubai, Beach, Moon), Quick Match and Smash Lab.…
+- [Vesper GT — Aura3D Automotive Studio](https://aura3d.auraone.ai/apps/vesper-gt/): Orbit the Vesper GT, an original grand touring coupe in gloss oxblood. Inspect its front wheel, change the studio light and download the model or explore…
+- [Relay Workcell — Interactive Robotics Simulation | Aura3D](https://aura3d.auraone.ai/apps/relay-workcell/): Program a pick-and-place cycle for an articulated six-axis robot. Move the workstations and inspect tool position, joint angles and cycle timing in a…
+- [Aura Slam 3D — Championship 3D Tennis on Aura3D](https://aura3d.auraone.ai/apps/showcase-top-tennis/): Championship 3D tennis on a native Aura3D simulation, with 2-bone IK athletes, 6 courts (NY, London, Paris, Dubai, Beach, Moon), Quick Match and Smash…
 - [Apex Overdrive — 3D Sky-Lane Highway Racer on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush/): High-speed sunset freeway & sky-lane combat racer — fly the Apex Interceptor over gridlocked traffic with cold-gas thrusters, barrel rolls, carrier ramps,…
 - [Thermal Drift — Combat Drone Racer | Aura3D](https://aura3d.auraone.ai/apps/showcase-heatsink/): Cyberpunk anti-gravity combat drone racing through a rain-soaked megacity with 7 playable drones, twin laser cannons, thermal overdrive management, and 3…
 - [Grid Dispatch — Robotaxi Fleet Game | Aura3D](https://aura3d.auraone.ai/apps/showcase-teleoperator/): San Francisco robotaxi shifts: stop at kerb beacons to pick up and drop off five fares, five driver-assist levels, AI rival cars, signals and a scored…
-- [IRON CROWN — 2.5D Arena Fighter · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-iron-crown/): 2.5D arena fighter — six fighters battle across six stages with guards, dashes, metered specials, and throws. Best-of-3 rounds, Crown Ladder bracket, Combo…
+- [IRON CROWN — 2.5D Arena Fighter · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-iron-crown/): 2.5D arena fighter — six fighters battle across six stages with guards, dashes, metered specials, and throws.
 - [PIP'S BIG LEAP — 3D Mascot Platformer · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-pips-big-leap/): 3D mascot platformer — guide Pip through six worlds gathering sun-seeds with double-jumps, dives, glide cape, and ground-pounds. Jump Academy gauntlet,…
-- [Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/): Aura Hoops 3D: 5v5 streetball on the Aura3D engine — check ball, a timed shot meter, Jam Meter dunk packages, team kits, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour.
-- [Aura Diamond 3D — Baseball at Golden Hour · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-diamond-3d/): Aura Diamond 3D: broadcast-grade 3D baseball — real at-bats with PCI hitting, 4 pitch arsenals, 6 ballparks from Harbor Sandlot to Lunar Park, a 10-out Derby Lab, Bullpen Lab pitch-recognition drills, and a 32-team World Classic.
-- [Aura FC 3D — Street & Stadium Football · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-fc-3d/): Aura FC 3D: five-a-side broadcast football on the Aura3D engine — six venues from a favela cage to a glacier dome, Shootout & Touch Labs, a 32-team World Circuit, and a Player Studio.
-- [Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-links-3d/): Aura Links 3D: three-click arcade golf on the Aura3D engine — six storybook courses from Scottish dunes to a lunar crater, Range & Putting Labs, and a 32-player Pro Circuit.
-- [Bunker Zero — Retro Corridor FPS on Aura3D](https://aura3d.auraone.ai/apps/showcase-bunker-zero/): Bunker Zero: a six-floor retro corridor shooter with grid mazes, push-wall secrets, three enemy archetypes and the Iron Warden, rendered by the Aura3D engine.
+- [Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/): Aura Hoops 3D: 5v5 streetball on the Aura3D engine — check ball, a timed shot meter, Jam Meter dunk packages, team kits, six world courts, Dunk Lab…
+- [Aura Diamond 3D — Baseball at Golden Hour · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-diamond-3d/): Aura Diamond 3D: broadcast-grade 3D baseball — real at-bats with PCI hitting, 4 pitch arsenals, 6 ballparks from Harbor Sandlot to Lunar Park, a 10-out…
+- [Aura FC 3D — Street & Stadium Football · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-fc-3d/): Aura FC 3D: five-a-side broadcast football on the Aura3D engine — six venues from a favela cage to a glacier dome, Shootout & Touch Labs, a 32-team World…
+- [Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-links-3d/): Aura Links 3D: three-click arcade golf on the Aura3D engine — six storybook courses from Scottish dunes to a lunar crater, Range & Putting Labs, and a…
+- [Bunker Zero — Retro Corridor FPS on Aura3D](https://aura3d.auraone.ai/apps/showcase-bunker-zero/): Bunker Zero: a six-floor retro corridor shooter with grid mazes, push-wall secrets, three enemy archetypes and the Iron Warden, rendered by the Aura3D…
 - [Aura3D - Slingshot Siege](https://aura3d.auraone.ai/apps/showcase-slingshot-siege/): Aura3D Slingshot Siege: a Saturday-morning-cartoon physics destruction sandbox. Pull the pouch, lob five ammo types, squash every gull, topple every tower.
-- [Glint Courier — circuit-board chase](https://aura3d.auraone.ai/apps/showcase-dot-dash-3d/): Glint Courier: guide a courier drone across six circuit boards, collect data shards and dodge four patrol sentries with their own routines. A browser 3D game built on the Aura3D engine.
-- [Cross Hop — Aura3D Endless Lane Hopper](https://aura3d.auraone.ai/apps/showcase-cross-hop/): Aura3D Cross Hop showcase, an endless lane-hopping game: dodge cars, trams, trains, rivers and lava across 6 remixed themes, rescue critters, chase the high score.
+- [Glint Courier — circuit-board chase](https://aura3d.auraone.ai/apps/showcase-dot-dash-3d/): Glint Courier: guide a courier drone across six circuit boards, collect data shards and dodge four patrol sentries with their own routines.
+- [Cross Hop — Aura3D Endless Lane Hopper](https://aura3d.auraone.ai/apps/showcase-cross-hop/): Aura3D Cross Hop showcase, an endless lane-hopping game: dodge cars, trams, trains, rivers and lava across 6 remixed themes, rescue critters, chase the…
 - [Craterline GP — Moon-Rim Bike Racing](https://aura3d.auraone.ai/apps/craterline-gp/): Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget.
 - [Splat — Colour-Gate Ball Runner](https://aura3d.auraone.ai/apps/chroma-roll/): Colour-gate ball runner: switch colour to pass gates, grab power-ups and avoid the splatter game over.
 - [Serpentine Sky Run — Endless Sky-Road Runner](https://aura3d.auraone.ai/apps/serpentine-sky-run/): Endless runner on a winding sky road: eight stages with boost rungs, roll sections and traffic hazards (outbound run).
@@ -102,11 +102,11 @@ Aura3D is a TypeScript 3D engine for browser games and apps: WebGPU and WebGL2 r
 - [The Bellkeeper's Walk — Meadow Walk](https://aura3d.auraone.ai/apps/the-bellkeepers-walk/): Meadow walk: collect three letters and ring the bell, with a boat epilogue, a journal and audio.
 - [Duneglide — Silt-World Flight](https://aura3d.auraone.ai/apps/duneglide/): Free-ride flight over a silt world, through ring beacons; the first chapter has real colliders.
 - [Cumulus Dash — Cloud Obstacle Runner](https://aura3d.auraone.ai/apps/cumulus-dash/): Obstacle runner on a cloud: creatures, boulders, a duel and a finale, with audio.
-- [Shape Shift Sprint — Aura3D Shape-Matching Runner](https://aura3d.auraone.ai/apps/showcase-shape-shift-sprint/): Shape Shift Sprint: an endless shape-matching runner. Steer through the hole that fits your shape, grab morph tokens to switch, and chain perfect fits for combo multipliers.
+- [Shape Shift Sprint — Aura3D Shape-Matching Runner](https://aura3d.auraone.ai/apps/showcase-shape-shift-sprint/): Shape Shift Sprint: an endless shape-matching runner. Steer through the hole that fits your shape, grab morph tokens to switch, and chain perfect fits for…
 - [Number Surge — Aura3D](https://aura3d.auraone.ai/apps/showcase-number-surge/): Drag to steer. Pick the better gate. Grow your number and smash the wall! A neon-arcade number runner built with Aura3D.
 - [Splat Turf — paint the road | Aura3D](https://aura3d.auraone.ai/apps/showcase-splat-turf/): A finite 1200 m paint-the-road arcade runner. Drag to steer, paint the road, dodge solvent strips and eraser bots, and watch your tank.
 - [Polarity Orbs — Aura3D Arcade Polarity Collector](https://aura3d.auraone.ai/apps/showcase-polarity-orbs/): Polarity Orbs — an Aura3D arcade polarity-flip collector. Drag to steer, tap to flip between red and blue, collect your colour and dodge the rest.
-- [Beat Hopper — Aura3D](https://aura3d.auraone.ai/apps/showcase-beat-hopper/): Swipe between three lanes, tap to hop, hold to duck. Dodge walls, grab beat orbs and ride the 132 BPM beat — PERFECT timing builds combos! A neon lane-runner rhythm game built with Aura3D.
+- [Beat Hopper — Aura3D](https://aura3d.auraone.ai/apps/showcase-beat-hopper/): Swipe between three lanes, tap to hop, hold to duck. Dodge walls, grab beat orbs and ride the 132 BPM beat — PERFECT timing builds combos! A neon…
 
 <!-- agent-guide: everything below this marker is the long-form agent guide; gen-seo.mjs preserves it verbatim -->
 Aura3D agent guide — a typed scene API for building real 3D apps: scenes, looks,

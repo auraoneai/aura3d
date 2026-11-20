@@ -1,8 +1,8 @@
 # Support policy
 
-Version: 5.7.1
+Version: 5.7.2
 
-Current release: Aura3D 5.7.1, the major release carrying the
+Current release: Aura3D 5.7.2, the major release carrying the
 native-capability work ([4.x to 5.0 migration guide](../migration/4-to-5.md)).
 
 This policy applies to the package versions and export maps in a release, not

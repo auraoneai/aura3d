@@ -1,8 +1,8 @@
 # Aura3D
 
-> Aura3D 5.7.1: the complete TypeScript engine for browser games and 3D apps. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed assets, AI generation, checks and deploy gates. Built for AI coding agents. Site: https://aura3d.auraone.ai
+> Aura3D 5.7.2: the complete TypeScript engine for browser games and 3D apps. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed assets, AI generation, checks and deploy gates. Built for AI coding agents. Site: https://aura3d.auraone.ai
 
-Install: `npx create-aura3d@latest my-scene` or `npm i -E @aura3d/engine@5.7.1` (MIT, free).
+Install: `npx create-aura3d@latest my-scene` or `npm i -E @aura3d/engine@5.7.2` (MIT, free).
 
 ## Aura3D vs three.js
 
@@ -295,4 +295,4 @@ Use every feature freely; every claim ships with a judged capture.
 - Full guide and page map: https://aura3d.auraone.ai/llms-full.txt
 - Docs: https://aura3d.auraone.ai/docs/api, https://aura3d.auraone.ai/docs/agent-quickstart, https://aura3d.auraone.ai/docs/claims
 - Showcase (30 playable games; `?autoplay=1` plays itself): https://aura3d.auraone.ai/apps/showcase-index/
-- Last updated: 2026-11-19
+- Last updated: 2026-11-20

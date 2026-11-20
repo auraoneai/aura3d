@@ -1,8 +1,26 @@
 # Changelog
 
-Version: 5.7.1
+Version: 5.7.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 5.7.2 (2026-11-20)
+
+A documentation and package-metadata release. No code, API or behaviour change; every package is byte-for-byte the same build as 5.7.1 apart from its README and `package.json` metadata.
+
+### npm and GitHub READMEs (`@aura3d/engine`)
+
+- **The README leads with what Aura3D is.** A TypeScript 3D engine for browser games and interactive 3D apps, with its own WebGPU renderer and WebGL2 fallback, then a game screenshot, a three.js comparison table, measured results and the features grouped by area (rendering and look, assets, animation, game kit, tooling). Per-version notes moved out; history stays in this changelog.
+- **Links work on npm.** README links are absolute, so they resolve on npmjs.com as well as GitHub.
+
+### Package metadata
+
+- Clearer `description` and `keywords` for `@aura3d/engine`, `create-aura3d`, `@aura3d/cli`, `@aura3d/rendering` and `@aura3d/addons`, so the packages show up for searches such as "WebGPU game engine", "three.js alternative" and "AI 3D generation".
+
+### Docs
+
+- Internal planning documents (PRDs, lane and task files, phase logs, dated audits) are removed from the repository. What they recorded about current behaviour now lives in the developer guides: art direction, sculpt, post-processing bloom options, three.js bloom migration, the app render-path report, game-kit pause keys, asset `resolve` budgets, and model tint colour modes.
+- `docs/agents/api-surface.md` documents `handle.part()`, the transient-light fallback, `captureEnvironment: false`, model opacity blending, `texture.data` by reference, instances under a parent group, and `createAssetThumbnailsAsync`; `sky`, `water`, `weather` and `workflows` are listed as live root exports.
 
 ## 5.7.1 (2026-11-19)
 

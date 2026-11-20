@@ -1,6 +1,6 @@
 # Aura3D 4.0 public API design rules
 
-Status: historical design record, written for Aura3D 4.0.0 (current release: 5.7.1; see `CHANGELOG.md`)
+Status: historical design record, written for Aura3D 4.0.0 (current release: 5.7.2; see `CHANGELOG.md`)
 
 These rules were derived from visible product defects. They govern new public
 APIs and functional changes to existing surfaces.
