@@ -3,7 +3,7 @@
 Version: 5.7.0
 
 Date: 2026-10-15
-Status: current for Aura3D 5.7.0
+Status: current for Aura3D 5.7.1
 
 The current tree contains product documentation, executable evidence inputs,
 required package/app entry points, and the retained release records. Superseded PRDs,

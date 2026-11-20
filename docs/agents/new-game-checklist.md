@@ -1,6 +1,6 @@
 # New game checklist (pre-flight and acceptance)
 
-One page, current for 5.7.0. Entry ids (R1, M2, ...) point into [`lessons-learned.md`](lessons-learned.md). A game is accepted on a real GPU with a full `?autoplay=1` run; software-GL evidence is not real-GPU evidence: say which one you have in every report.
+One page, current for 5.7.1. Entry ids (R1, M2, ...) point into [`lessons-learned.md`](lessons-learned.md). A game is accepted on a real GPU with a full `?autoplay=1` run; software-GL evidence is not real-GPU evidence: say which one you have in every report.
 
 ## 1. Before coding
 

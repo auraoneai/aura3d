@@ -10,7 +10,7 @@ Measured on the cold-start trial (4 tasks, n=3, `evidence/agent-eval-mcp/RESULTS
 
 ## What it answers
 
-Every answer starts with a stamp such as `[aura3d-mcp docs@5.7.0 | installed @aura3d/engine@5.7.0]`. The docs bundle is built from the repository at build time; signatures are read from the engine you installed in the project, so where they differ the installed declarations win. Each answer stays under 2,500 tokens (characters / 3.6).
+Every answer starts with a stamp such as `[aura3d-mcp docs@5.7.1 | installed @aura3d/engine@5.7.1]`. The docs bundle is built from the repository at build time; signatures are read from the engine you installed in the project, so where they differ the installed declarations win. Each answer stays under 2,500 tokens (characters / 3.6).
 
 | Tool | Input | Returns |
 | --- | --- | --- |
