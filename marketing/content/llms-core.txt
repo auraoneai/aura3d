@@ -5,9 +5,9 @@
 ## Explore Aura3D
 
 - [Start a TypeScript project]({{ORIGIN}}/docs/agent-quickstart) with a working scene and development server.
-- [Ember Courier]({{ORIGIN}}/apps/ember-courier/). Guide an armored courier between three relay beacons.
-- [Vesper GT]({{ORIGIN}}/apps/vesper-gt/). Orbit a garnet grand tourer and compare studio lighting.
-- [Relay Workcell]({{ORIGIN}}/apps/relay-workcell/). Follow an industrial robot through a pick-and-place cycle.
+- [Ember Courier]({{ORIGIN}}/apps/ember-courier/). Playable courier character.
+- [Vesper GT]({{ORIGIN}}/apps/vesper-gt/). Grand tourer in a lighting studio.
+- [Relay Workcell]({{ORIGIN}}/apps/relay-workcell/). Robot pick-and-place cycle.
 - [Explore the games]({{ORIGIN}}/apps/showcase-index/). Each guide links the playable game, implementation details, source and a starter.
 - [Inspect the examples]({{ORIGIN}}/docs/#examples) to see model lighting and materials in a browser.
 - [Compare Aura3D and Three.js]({{ORIGIN}}/docs/aura3d-vs-threejs) by scene setup, asset workflow and deployment.
@@ -21,7 +21,7 @@
 2. Two 3D modeling paths (never single-mesh Meshy clay or 1-box programmer art):
    - Clean, sharp, properly UV'd or rigged skeletal GLBs via `model(assets.x)` when one exists in the project or open CC0/CC-BY sources.
    - Multi-part, multi-material procedural sculpting in `@aura3d/engine`: compose `primitives.extrude|lathe|tube|roundedBox|polyhedron`, `geometry.define|applyMatrix4|merge|multiMaterial` and `instances.custom` across 3 to 8 physical materials (`material.carPaint`, `lacquer`, `brushedMetal`, `ceramic`, `studioGlass`, `fabric`, `physical`) so bevels and seams catch IBL and key-light speculars. Eight complete procedural scenes are in `docs/agents/recipes.md` recipes 8 to 15 (sources in `docs/agents/recipes-src/`).
-   - Organic characters, creatures and hulls: `@aura3d/engine/sculpt` (5.5.6): SDF bodies (`sculptOrganicSdfMesh`), heads, one-piece limbs (`sculptSdfLimbChainMesh`), hair, garments and hulls for `geometry.define` / `geometry.multiMaterial`; list in `docs/api/sculpt.md`. Bake once at load, never per frame.
+   - Organic characters, creatures and hulls: `@aura3d/engine/sculpt` (5.5.6): SDF bodies (`sculptOrganicSdfMesh`), heads, one-piece limbs (`sculptSdfLimbChainMesh`), hair, garments and hulls; list in `docs/api/sculpt.md`. Bake once at load, never per frame.
 
 ## More pitfalls
 
