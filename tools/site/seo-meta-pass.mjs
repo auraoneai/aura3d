@@ -35,11 +35,15 @@ const BRAND_OG = `${ORIGIN}/store-assets/brand/social/og-1200x630.png`;
 const unescapeHtml = (s) => s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
 const escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
+// Search results show about 155 characters; cut at a sentence end when one fits, else at a word.
+const MAX_DESCRIPTION = 155;
 function metaDescription(text) {
   const clean = unescapeHtml(text).replace(/\s+/g, " ").trim();
-  if (clean.length <= 158) return clean;
-  const cut = clean.slice(0, 158);
-  return `${cut.slice(0, cut.lastIndexOf(" "))}…`;
+  if (clean.length <= MAX_DESCRIPTION) return clean;
+  const cut = clean.slice(0, MAX_DESCRIPTION);
+  const sentence = cut.lastIndexOf(". ");
+  if (sentence >= 80) return cut.slice(0, sentence + 1);
+  return `${cut.slice(0, cut.lastIndexOf(" ")).replace(/[,;:]$/, "")}…`;
 }
 
 function gameImage(previewSlug) {
@@ -124,7 +128,7 @@ function normalizeHead(html, route) {
   if (!title) throw new Error(`${route.file}: missing <title>`);
   const canonical = `${ORIGIN}${route.url}`;
   const existingDesc = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i)?.[1];
-  const description = existingDesc ? unescapeHtml(existingDesc) : metaDescription(route.fallbackDescription ?? route.ld.description ?? title);
+  const description = metaDescription(existingDesc ? existingDesc : (route.fallbackDescription ?? route.ld.description ?? title));
   const ld = { ...route.ld };
   if (!ld.description) ld.description = description;
   if (!ld.image) ld.image = route.image;
@@ -174,6 +178,11 @@ function audit(html, route) {
   const need = (cond, label) => !cond && problems.push(label);
   need(/<title>[^<]+<\/title>/i.test(html), "title");
   need(new RegExp(`<meta\\s+name=["']description["']\\s+content=["'][^"']{20,}`).test(html), "meta description");
+  const descLen = unescapeHtml(html.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)/i)?.[1] ?? "").length;
+  need(descLen <= MAX_DESCRIPTION, `meta description ${descLen} > ${MAX_DESCRIPTION} chars`);
+  const titleLen = unescapeHtml(html.match(/<title>([^<]*)<\/title>/i)?.[1]?.trim() ?? "").length;
+  need(titleLen <= 60, `title ${titleLen} > 60 chars`);
+  need((html.match(/<h1[\s>]/gi) ?? []).length === 1, "exactly one <h1>");
   need(html.includes(`<link rel="canonical" href="${ORIGIN}${route.url}"`), `canonical != ${route.url}`);
   need(/property=["']og:site_name["']/i.test(html), "og:site_name");
   need(/property=["']og:title["']/i.test(html), "og:title");

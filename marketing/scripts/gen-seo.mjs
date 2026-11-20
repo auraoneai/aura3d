@@ -177,7 +177,9 @@ ${pageMeta(MANIFEST["/"].source).description}
 
 ## Facts
 
-- Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits
+- Product: the complete TypeScript 3D engine for browser games and 3D apps: its own WebGPU and WebGL2 renderer, typed assets, AI model and motion generation, a game kit, physics, worker rendering and deploy checks (MIT, free)
+- Install: \`npx create-aura3d@latest my-scene --template product-viewer\` or \`npm install --save-exact @aura3d/engine@${version}\`
+- Compared with three.js: three.js is a rendering library; Aura3D is the engine around the renderer. A lit, framed product is 10 lines against 38 in three.js (${ORIGIN}/docs/aura3d-vs-threejs)
 - Website: ${ORIGIN}
 - Current release: Aura3D ${version} (per the repo manifest — the same source the build's version guard uses)
 - Docs: ${ORIGIN}/docs/api

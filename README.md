@@ -5,9 +5,15 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-browser%203D-3178c6.svg)](https://www.typescriptlang.org/)
 
-**The complete TypeScript engine for browser games and 3D apps.** three.js gives you a renderer. Aura3D gives you the whole engine around it: its own WebGPU and WebGL2 renderer, typed and licensed assets, AI model and motion generation, lighting looks, a game kit, physics, worker rendering and deploy checks, all in one package. It is built for agent-written browser 3D, and people who write it by hand use the same API.
+**Aura3D is a TypeScript 3D engine for browser games and interactive 3D apps, with its own WebGPU renderer and WebGL2 fallback.** It is a three.js alternative that ships the whole engine around the renderer: typed and licensed assets, AI-generated 3D models and motion, lighting looks, a game kit, physics, worker rendering and deploy checks, in one package with one typed API.
 
-[Play the 30 games](https://aura3d.auraone.ai/apps/showcase-index/) · [Docs](https://aura3d.auraone.ai/docs/) · [`llms.txt`](./llms.txt) · [Changelog](./CHANGELOG.md)
+Built for agent-written browser 3D; people who write it by hand use the same API. MIT licensed.
+
+[![Apex Overdrive, a browser racing game built with Aura3D](https://raw.githubusercontent.com/auraoneai/aura3d/main/evidence/apex-overdrive/screens/final/1280-05-boost.jpg)](https://aura3d.auraone.ai/apps/showcase-roadster-rush/)
+
+*Apex Overdrive, one of the 30 games built with Aura3D. [Play it in your browser](https://aura3d.auraone.ai/apps/showcase-roadster-rush/).*
+
+**[Website](https://aura3d.auraone.ai)** · **[Docs](https://aura3d.auraone.ai/docs/)** · **[Play the 30 games](https://aura3d.auraone.ai/apps/showcase-index/)** · **[Aura3D vs three.js](https://aura3d.auraone.ai/docs/aura3d-vs-threejs)** · **[llms.txt](https://aura3d.auraone.ai/llms.txt)** · **[npm](https://www.npmjs.com/package/@aura3d/engine)**
 
 A lit, shadowed, framed product with orbit controls, in 10 lines:
 
@@ -25,7 +31,7 @@ createAuraApp("#app", {
 });
 ```
 
-`looks.preset` supplies image-based light, a shadow-casting key, fog, background and a post grade as one unit. `model(assets.product)` is a typed asset the CLI generated, never a raw URL. The same scene in three.js is 38 lines before orbit controls ([tagline check](./evidence/vs-threejs/tagline-check/)).
+`looks.preset` supplies image-based light, a shadow-casting key, fog, background and a post grade as one unit. `model(assets.product)` is a typed asset the CLI generated, never a raw URL. The same scene in three.js is 38 lines before orbit controls ([tagline check](https://github.com/auraoneai/aura3d/tree/main/evidence/vs-threejs/tagline-check)).
 
 ## Start in five commands
 
@@ -58,11 +64,11 @@ three.js is a rendering library: you assemble loaders, controls, post-processing
 
 **Measured, not claimed:**
 
-- **Less code.** In the five-scene benchmark, Aura3D scene code is shorter in 4 of 5 scenes (PBR viewer 24 vs 49 lines, forest 49 vs 71, skinned character 45 vs 62, game loop 61 vs 82), with 1 import module instead of up to 8 ([results](./evidence/vs-threejs/RESULTS.md)).
-- **Agents write it well.** The same AI model built the same eight scenes three times with each engine (measured on Aura3D 5.5.1 against three.js 0.185.1). The Aura3D apps came out 17% shorter (median 270 lines against 326), passed the same functional checks, and a blind visual judge picked the Aura3D frame in 13 of 24 pairs ([results](./evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md)).
+- **Less code.** In the five-scene benchmark, Aura3D scene code is shorter in 4 of 5 scenes (PBR viewer 24 vs 49 lines, forest 49 vs 71, skinned character 45 vs 62, game loop 61 vs 82), with 1 import module instead of up to 8 ([results](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS.md)).
+- **Agents write it well.** The same AI model built the same eight scenes three times with each engine (measured on Aura3D 5.5.1 against three.js 0.185.1). The Aura3D apps came out 17% shorter (median 270 lines against 326), passed the same functional checks, and a blind visual judge picked the Aura3D frame in 13 of 24 pairs ([results](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md)).
 - **30 playable games** run on it, all on WebGPU by default with WebGL2 fallback and worker rendering ([showcase](https://aura3d.auraone.ai/apps/showcase-index/)).
 
-Full comparison with sources: [`docs/aura3d-vs-threejs.md`](./docs/aura3d-vs-threejs.md). Porting a three.js project: [`docs/migration/from-threejs.md`](./docs/migration/from-threejs.md).
+Full comparison with sources: [`docs/aura3d-vs-threejs.md`](https://github.com/auraoneai/aura3d/blob/main/docs/aura3d-vs-threejs.md). Porting a three.js project: [`docs/migration/from-threejs.md`](https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md).
 
 ## What's in the engine
 
@@ -90,11 +96,11 @@ Full comparison with sources: [`docs/aura3d-vs-threejs.md`](./docs/aura3d-vs-thr
 - `aura3d help --json` lists every command and flag; `doctor`, `validate`, `render`, `look capture` and `look lint` for checking a scene; `check-deploy` before you ship.
 - `installSafetyNet` from `@aura3d/debug`: a `?diag=1` panel, quality switches and black-frame self-heal.
 
-Kit docs: [game kit](./docs/api/game-kit.md), [QA kit](./docs/api/qa-kit.md), [safety net](./docs/api/safety-net.md), [audio synth](./docs/api/audio-synth.md), [model loader](./docs/api/model-loader.md), [CLI asset tools](./docs/api/cli-asset-tools.md), [sculpt](./docs/api/sculpt.md), [quality governor](./docs/api/quality-governor.md).
+Kit docs: [game kit](https://github.com/auraoneai/aura3d/blob/main/docs/api/game-kit.md), [QA kit](https://github.com/auraoneai/aura3d/blob/main/docs/api/qa-kit.md), [safety net](https://github.com/auraoneai/aura3d/blob/main/docs/api/safety-net.md), [audio synth](https://github.com/auraoneai/aura3d/blob/main/docs/api/audio-synth.md), [model loader](https://github.com/auraoneai/aura3d/blob/main/docs/api/model-loader.md), [CLI asset tools](https://github.com/auraoneai/aura3d/blob/main/docs/api/cli-asset-tools.md), [sculpt](https://github.com/auraoneai/aura3d/blob/main/docs/api/sculpt.md), [quality governor](https://github.com/auraoneai/aura3d/blob/main/docs/api/quality-governor.md).
 
 ## If you are an AI agent
 
-Read [`llms.txt`](./llms.txt) first (one screen, the fast path), then [`docs/agents/agent-quickstart.md`](./docs/agents/agent-quickstart.md) and [`docs/agents/claims-and-boundaries.md`](./docs/agents/claims-and-boundaries.md). The index of every agent doc is [`docs/agents/README.md`](./docs/agents/README.md); skills live in [`packages/aura3d-cli/skills/`](./packages/aura3d-cli/skills/). `npx create-aura3d@latest` and `npx @aura3d/cli@latest init --agent all` write the instruction files into your project.
+Read [`llms.txt`](https://github.com/auraoneai/aura3d/blob/main/llms.txt) first (one screen, the fast path), then [`docs/agents/agent-quickstart.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/agent-quickstart.md) and [`docs/agents/claims-and-boundaries.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/claims-and-boundaries.md). The index of every agent doc is [`docs/agents/README.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/README.md); skills live in [`packages/aura3d-cli/skills/`](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/skills/). `npx create-aura3d@latest` and `npx @aura3d/cli@latest init --agent all` write the instruction files into your project.
 
 One trap to know: never `await app.ready()` at module top level. It deadlocks a Vite production build and leaves a black page with no error. Wait inside a function or chain on it:
 
@@ -107,7 +113,7 @@ void app.ready().then(() => {
 });
 ```
 
-`aura3d validate` reports it as `LINT_TOP_LEVEL_AWAIT_READY` ([details](./evidence/n4-frame/integration/README.md)).
+`aura3d validate` reports it as `LINT_TOP_LEVEL_AWAIT_READY` ([details](https://github.com/auraoneai/aura3d/blob/main/evidence/n4-frame/integration/README.md)).
 
 ## Packages
 
@@ -129,12 +135,12 @@ All public packages share one version. `@aura3d/engine` is the root of this repo
 
 ## Documentation
 
-- [`docs/index.md`](./docs/index.md): hub for humans and agents
-- [`docs/agents/README.md`](./docs/agents/README.md): agent docs index
-- [`docs/api/public-api.md`](./docs/api/public-api.md): public API
-- [`docs/api/cli-reference.md`](./docs/api/cli-reference.md): every CLI command and flag (generated from `aura3d help --json`)
-- [`docs/aura3d-vs-threejs.md`](./docs/aura3d-vs-threejs.md) and [`docs/migration/from-threejs.md`](./docs/migration/from-threejs.md): Aura3D next to three.js, and how to port
-- Upgrading from an earlier version: [`CHANGELOG.md`](./CHANGELOG.md)
+- [`docs/index.md`](https://github.com/auraoneai/aura3d/blob/main/docs/index.md): hub for humans and agents
+- [`docs/agents/README.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/README.md): agent docs index
+- [`docs/api/public-api.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/public-api.md): public API
+- [`docs/api/cli-reference.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/cli-reference.md): every CLI command and flag (generated from `aura3d help --json`)
+- [`docs/aura3d-vs-threejs.md`](https://github.com/auraoneai/aura3d/blob/main/docs/aura3d-vs-threejs.md) and [`docs/migration/from-threejs.md`](https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md): Aura3D next to three.js, and how to port
+- Upgrading from an earlier version: [`CHANGELOG.md`](https://github.com/auraoneai/aura3d/blob/main/CHANGELOG.md)
 - Site: https://aura3d.auraone.ai
 
 ## Contributing

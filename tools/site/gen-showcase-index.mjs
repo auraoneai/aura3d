@@ -19,7 +19,7 @@ const origin = "https://aura3d.auraone.ai";
 const gallery = "/apps/showcase-index/";
 const esc = (s) => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 const capture = (g) => `/previews/showcase-index/${g.previewSlug}`;
-const image = (g, priority = false) => `<img src="${capture(g)}.webp" srcset="${capture(g)}.webp 720w, ${capture(g)}@2x.webp 1440w" sizes="${priority ? "(max-width: 800px) 100vw, 68vw" : "(max-width: 640px) 94vw, (max-width: 980px) 46vw, 31vw"}" alt="" width="720" height="450" ${priority ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">`;
+const image = (g, priority = false) => `<img src="${capture(g)}.webp" srcset="${capture(g)}.webp 720w, ${capture(g)}@2x.webp 1440w" sizes="${priority ? "(max-width: 800px) 100vw, 68vw" : "(max-width: 640px) 94vw, (max-width: 980px) 46vw, 31vw"}" alt="${esc(g.title)} gameplay screenshot, a browser game built with Aura3D" width="720" height="450" ${priority ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">`;
 const nav = `<a class="skip" href="#main">Skip to content</a>
 <nav class="nav" aria-label="Primary"><div class="wrap nav-inner">
   <a class="brand" href="/"><img src="/store-assets/brand/aura3d-logo.svg" alt="Aura3D" width="104" height="26"></a>

@@ -40,7 +40,7 @@
     "meshoptimizer": "1.2.0",
     "sharp": "0.33.5"
   },
-  "description": "Bring real GLB/glTF assets into Aura3D browser apps with typed references, provenance, catalog search, validation, screenshots, and deploy checks.",
+  "description": "Aura3D CLI: typed GLB assets, open-catalog search, AI 3D model and motion generation, format conversion to GLB, three.js migration and deploy checks.",
   "keywords": [
     "aura3d",
     "3d",
@@ -66,7 +66,15 @@
     "vite",
     "static-deploy",
     "diagnostics",
-    "screenshot-testing"
+    "screenshot-testing",
+    "cli",
+    "3d-assets",
+    "fbx-to-glb",
+    "ai-3d-generation",
+    "text-to-motion",
+    "threejs-migration",
+    "webgpu",
+    "game-engine"
   ],
   "homepage": "https://aura3d.auraone.ai",
   "repository": {

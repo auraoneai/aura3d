@@ -7,9 +7,15 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-browser%203D-3178c6.svg)](https://www.typescriptlang.org/)
 
-**The complete TypeScript engine for browser games and 3D apps.** three.js gives you a renderer. Aura3D gives you the whole engine around it: its own WebGPU and WebGL2 renderer, typed and licensed assets, AI model and motion generation, lighting looks, a game kit, physics, worker rendering and deploy checks, all in one package. It is built for agent-written browser 3D, and people who write it by hand use the same API.
+**Aura3D is a TypeScript 3D engine for browser games and interactive 3D apps, with its own WebGPU renderer and WebGL2 fallback.** It is a three.js alternative that ships the whole engine around the renderer: typed and licensed assets, AI-generated 3D models and motion, lighting looks, a game kit, physics, worker rendering and deploy checks, in one package with one typed API.
 
-[Play the 30 games](https://aura3d.auraone.ai/apps/showcase-index/) · [Docs](https://aura3d.auraone.ai/docs/) · [`llms.txt`](https://github.com/auraoneai/aura3d/blob/main/llms.txt) · [Changelog](https://github.com/auraoneai/aura3d/blob/main/CHANGELOG.md)
+Built for agent-written browser 3D; people who write it by hand use the same API. MIT licensed.
+
+[![Apex Overdrive, a browser racing game built with Aura3D](https://raw.githubusercontent.com/auraoneai/aura3d/main/evidence/apex-overdrive/screens/final/1280-05-boost.jpg)](https://aura3d.auraone.ai/apps/showcase-roadster-rush/)
+
+*Apex Overdrive, one of the 30 games built with Aura3D. [Play it in your browser](https://aura3d.auraone.ai/apps/showcase-roadster-rush/).*
+
+**[Website](https://aura3d.auraone.ai)** · **[Docs](https://aura3d.auraone.ai/docs/)** · **[Play the 30 games](https://aura3d.auraone.ai/apps/showcase-index/)** · **[Aura3D vs three.js](https://aura3d.auraone.ai/docs/aura3d-vs-threejs)** · **[llms.txt](https://aura3d.auraone.ai/llms.txt)** · **[npm](https://www.npmjs.com/package/@aura3d/engine)**
 
 A lit, shadowed, framed product with orbit controls, in 10 lines:
 
@@ -27,7 +33,7 @@ createAuraApp("#app", {
 });
 ```
 
-`looks.preset` supplies image-based light, a shadow-casting key, fog, background and a post grade as one unit. `model(assets.product)` is a typed asset the CLI generated, never a raw URL. The same scene in three.js is 38 lines before orbit controls ([tagline check](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/tagline-check/)).
+`looks.preset` supplies image-based light, a shadow-casting key, fog, background and a post grade as one unit. `model(assets.product)` is a typed asset the CLI generated, never a raw URL. The same scene in three.js is 38 lines before orbit controls ([tagline check](https://github.com/auraoneai/aura3d/tree/main/evidence/vs-threejs/tagline-check)).
 
 ## Start in five commands
 

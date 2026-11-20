@@ -14,7 +14,7 @@
       html, body { margin: 0; height: 100%; background: #261e1a; color: var(--ink); font: 400 13px/1.45 "Aeonik Pro", sans-serif; overflow: hidden; }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
       .hidden { display: none !important; }
-      h1 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.15; }
+      :is(h1, .a3d-h1) { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.15; }
       .meta { font-size: 13px; color: var(--muted); }
       button { font: 500 13px/1 "Aeonik Pro", sans-serif; color: #261e1a; background: var(--warm); border: 0; border-radius: 6px; padding: 10px 16px; cursor: pointer; }
       button:disabled { opacity: 0.5; cursor: default; }
@@ -47,7 +47,7 @@
       @media (prefers-reduced-motion: reduce) { .popup { animation-name: fade; } }
       #minimap { position: absolute; bottom: 20px; right: 20px; width: 160px; height: 160px; }
       .title { background: linear-gradient(160deg, rgba(60, 40, 30, 0.86), rgba(30, 24, 22, 0.9)); width: min(520px, 92vw); padding: 22px 24px; gap: 14px; }
-      .title h1 { font-size: 34px; letter-spacing: 0.01em; }
+      .title :is(h1, .a3d-h1) { font-size: 34px; letter-spacing: 0.01em; }
       .title .tag { color: var(--warm); letter-spacing: 3px; font-size: 13px; }
       .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; }
       kbd { display: inline-block; min-width: 26px; text-align: center; padding: 2px 7px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: rgba(255, 246, 230, 0.08); font: 500 13px/1.3 "Aeonik Pro", sans-serif; }
@@ -143,7 +143,7 @@
       }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
       .hidden { display: none !important; }
-      h1 { margin: 0; font-family: var(--font-ui); font-size: 24px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+      :is(h1, .a3d-h1) { margin: 0; font-family: var(--font-ui); font-size: 24px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
       .meta { font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
       button {
         min-height: 44px;
@@ -373,7 +373,7 @@
         padding: 22px 24px;
         gap: 14px;
       }
-      .title h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.015em; }
+      .title :is(h1, .a3d-h1) { font-size: 32px; font-weight: 600; letter-spacing: -0.015em; }
       .title .tag {
         color: var(--teal);
         font-family: var(--font-ui);
@@ -602,7 +602,9 @@
     <meta name="twitter:title" content="Gridlock Courier — Arcade City Drift" />
     <meta name="twitter:description" content="Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera." />
 
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Gridlock Courier","url":"https://aura3d.auraone.ai/apps/gridlock-courier/","description":"Arcade drift driving through a block city: coin pickups, 84 traffic cars, headlight beams, bloom and a chase camera; all four recorded scenarios reproduce…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/drift-and-deliver-port.jpg?v=43a82203b37d","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.6.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Gridlock Courier","url":"https://aura3d.auraone.ai/apps/gridlock-courier/","description":"Arcade drift driving through a block city: coin pickups, 84 traffic cars, headlight beams, bloom and a chase camera; all four recorded scenarios reproduce…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/drift-and-deliver-port.jpg?v=43a82203b37d","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.7.1"}</script>
+    <style>:where(.a3d-h1){display:block;font-size:2em;font-weight:bold;margin-block:0.67em}</style>
+
     <style>
       :root {
         color-scheme: dark;
@@ -631,7 +633,7 @@
       }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
       .hidden { display: none !important; }
-      h1 { margin: 0; font-family: var(--font-ui); font-size: 24px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+      :is(h1, .a3d-h1) { margin: 0; font-family: var(--font-ui); font-size: 24px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
       .meta { font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
       button {
         min-height: 44px;
@@ -861,7 +863,7 @@
         padding: 22px 24px;
         gap: 14px;
       }
-      .title h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.015em; }
+      .title :is(h1, .a3d-h1) { font-size: 32px; font-weight: 600; letter-spacing: -0.015em; }
       .title .tag {
         color: var(--teal);
         font-family: var(--font-ui);
@@ -1127,14 +1129,14 @@
     </div>
     <div id="pause" class="overlay hidden">
       <div class="panel">
-        <h1>Shift Paused</h1>
+        <div role="heading" aria-level="2" class="a3d-h1">Shift Paused</div>
         <div class="meta">Dispatch timer held. Press P or Esc, or tap Resume, to continue your run.</div>
         <button id="resume">Resume Shift</button>
       </div>
     </div>
     <div id="results" class="overlay hidden">
       <div class="panel results" role="dialog" aria-labelledby="r-title">
-        <h1 id="r-title">Shift Complete</h1>
+        <div role="heading" aria-level="2" class="a3d-h1" id="r-title">Shift Complete</div>
         <dl class="meta">
           <dt>Total Tips</dt><dd id="r-score">0</dd>
           <dt>Shift Best</dt><dd id="r-best">0</dd>
@@ -1148,7 +1150,7 @@
     </div>
     <div id="loading" class="overlay">
       <div class="panel">
-        <h1 id="loading-title">Preparing Downtown Grid</h1>
+        <div role="heading" aria-level="2" class="a3d-h1" id="loading-title">Preparing Downtown Grid</div>
         <div class="aura3d-loading" id="loading-bar" role="progressbar" aria-labelledby="loading-title" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
         <div class="meta" id="loading-status">Building blocks, buildings and traffic.</div>
       </div>

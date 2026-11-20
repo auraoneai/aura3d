@@ -6,20 +6,22 @@
     <meta name="theme-color" content="#2e9be6" />
     <link rel="icon" href="data:," />
     <title>Shape Shift Sprint — Aura3D Shape-Matching Runner</title>
-    <meta name="description" content="Shape Shift Sprint: an endless shape-matching runner. Steer through the hole that fits your shape, grab morph tokens to switch, and chain perfect fits for combo multipliers." />
+    <meta name="description" content="Shape Shift Sprint: an endless shape-matching runner. Steer through the hole that fits your shape, grab morph tokens to switch, and chain perfect fits for…" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-shape-shift-sprint/" />
     <meta property="og:site_name" content="Aura3D" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Shape Shift Sprint — Aura3D Shape-Matching Runner" />
-    <meta property="og:description" content="Shape Shift Sprint: an endless shape-matching runner. Steer through the hole that fits your shape, grab morph tokens to switch, and chain perfect fits for combo multipliers." />
+    <meta property="og:description" content="Shape Shift Sprint: an endless shape-matching runner. Steer through the hole that fits your shape, grab morph tokens to switch, and chain perfect fits for…" />
     <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-shape-shift-sprint/" />
 
     <meta property="og:image" content="https://aura3d.auraone.ai/previews/social/play/shape-shift-sprint.jpg?v=4888c38c2936" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" /><meta property="og:image:type" content="image/jpeg" /><meta property="og:image:alt" content="Shape Shift Sprint gameplay captured in Aura3D. Thread a sphere, cube or cone through its matching cutout. A morph pickup changes the next decision." /><meta name="twitter:image" content="https://aura3d.auraone.ai/previews/social/play/shape-shift-sprint.jpg?v=4888c38c2936" /><meta name="twitter:image:alt" content="Shape Shift Sprint gameplay captured in Aura3D. Thread a sphere, cube or cone through its matching cutout. A morph pickup changes the next decision." /><meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Shape Shift Sprint — Aura3D Shape-Matching Runner" />
-    <meta name="twitter:description" content="Shape Shift Sprint: an endless shape-matching runner. Steer through the hole that fits your shape, grab morph tokens to switch, and chain perfect fits for combo multipliers." />
+    <meta name="twitter:description" content="Shape Shift Sprint: an endless shape-matching runner. Steer through the hole that fits your shape, grab morph tokens to switch, and chain perfect fits for…" />
 
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Shape Shift Sprint","url":"https://aura3d.auraone.ai/apps/showcase-shape-shift-sprint/","description":"Shape-gate runner on a candy-primary track: steer into the wall hole matching your current sphere, cube or cone form, grab morph and wildcard tokens, and…","genre":"Platformers and runners","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/shape-shift-sprint.jpg?v=4888c38c2936","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.6.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Shape Shift Sprint","url":"https://aura3d.auraone.ai/apps/showcase-shape-shift-sprint/","description":"Shape-gate runner on a candy-primary track: steer into the wall hole matching your current sphere, cube or cone form, grab morph and wildcard tokens, and…","genre":"Platformers and runners","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/shape-shift-sprint.jpg?v=4888c38c2936","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.7.1"}</script>
+    <style>:where(.a3d-h1){display:block;font-size:2em;font-weight:bold;margin-block:0.67em}</style>
+
     <style>
       /* AuraOne licensed self-hosted typography via apps/showcase-port-shared/hud-tokens.css:
          --font-ui ("Whitney"), --font-metric ("DIN Pro"), --font-mono ("Monument Grotesk Mono"). */
@@ -270,7 +272,7 @@
         align-items: center;
         max-width: 520px;
       }
-      .overlay-card h1 {
+      .overlay-card :is(h1, .a3d-h1) {
         font-family: var(--font-ui);
         font-weight: 600;
         font-size: clamp(28px, 7.6vh, 52px);
@@ -279,9 +281,9 @@
         letter-spacing: -0.01em;
         color: #1f2a44;
       }
-      .overlay-card h1 .red { color: #c0271f; }
-      .overlay-card h1 .yellow { color: #8a5e06; }
-      .overlay-card h1 .blue { color: #2f6fe4; }
+      .overlay-card :is(h1, .a3d-h1) .red { color: #c0271f; }
+      .overlay-card :is(h1, .a3d-h1) .yellow { color: #8a5e06; }
+      .overlay-card :is(h1, .a3d-h1) .blue { color: #2f6fe4; }
       .instructions { font-size: clamp(14px, 2.4vh, 18px); font-weight: 400; line-height: 1.4; margin: 0 0 clamp(8px, 2vh, 16px); color: #1f2a44; }
       .btn {
         min-height: 48px;
@@ -592,7 +594,7 @@
     </div>
     <div id="gameover-screen" class="overlay hidden">
       <div class="overlay-card">
-        <h1><span class="red">SPLAT!</span></h1>
+        <div role="heading" aria-level="2" class="a3d-h1"><span class="red">SPLAT!</span></div>
         <p id="final-score"></p>
         <p id="final-stats"></p>
         <button id="btn-restart" class="btn no-steer" type="button">play again</button>
@@ -601,7 +603,7 @@
     </div>
     <div id="pause-screen" class="overlay hidden no-steer">
       <div class="overlay-card">
-        <h1><span class="blue">PAUSED</span></h1>
+        <div role="heading" aria-level="2" class="a3d-h1"><span class="blue">PAUSED</span></div>
         <button id="btn-resume" class="btn" type="button">resume</button>
         <button id="btn-howto-pause" class="btn-ghost" type="button" data-howto-open aria-haspopup="dialog">How to play</button>
         <div class="settings">
@@ -686,7 +688,7 @@
     </div>
     <div id="render-error">
       <div class="overlay-card">
-        <h1><span class="red">CAN'T RENDER</span></h1>
+        <div role="heading" aria-level="2" class="a3d-h1"><span class="red">CAN'T RENDER</span></div>
         <p class="instructions">This game needs WebGPU or WebGL2. Try a current browser with hardware acceleration enabled.</p>
       </div>
     </div>

@@ -92,6 +92,7 @@
 }
 
 @font-face {
+  font-display: swap;
   font-family: "Whitney Fallback";
   src: local("Arial"), local("ArialMT"), local("Helvetica Neue"), local("Helvetica");
   font-weight: 100 500;
@@ -103,6 +104,7 @@
 }
 
 @font-face {
+  font-display: swap;
   font-family: "Whitney Fallback";
   src: local("Arial Bold"), local("Arial-BoldMT"), local("Helvetica Neue Bold"), local("Helvetica Bold");
   font-weight: 600 900;
@@ -114,6 +116,7 @@
 }
 
 @font-face {
+  font-display: swap;
   font-family: "DIN Pro Fallback";
   src: local("Arial"), local("ArialMT"), local("Helvetica Neue"), local("Helvetica");
   font-weight: 100 450;
@@ -126,6 +129,7 @@
 }
 
 @font-face {
+  font-display: swap;
   font-family: "DIN Pro Fallback";
   src: local("Arial"), local("ArialMT"), local("Helvetica Neue"), local("Helvetica");
   font-weight: 451 600;
@@ -138,6 +142,7 @@
 }
 
 @font-face {
+  font-display: swap;
   font-family: "Monument Grotesk Mono Fallback";
   src: local("Menlo"), local("Courier New"), local("CourierNewPSMT"), local("Liberation Mono"), local("DejaVu Sans Mono");
   font-weight: 400;

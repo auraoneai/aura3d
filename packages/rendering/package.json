@@ -74,7 +74,7 @@
     "./dist/lanes/**/*.js",
     "./dist/program/ProgramGenerator.js"
   ],
-  "description": "Render-device abstraction, WebGL2/mock backends, buffers, textures, shader modules, materials, render graphs, lighting, shadows, and particle rendering for Aura3D.",
+  "description": "Aura3D renderer: WebGPU and WebGL2 backends, PBR materials, shadows, image-based lighting, post-processing, render graphs and runtime quality scaling.",
   "keywords": [
     "aura3d",
     "3d",
@@ -89,7 +89,10 @@
     "pbr",
     "render-graph",
     "particles",
-    "postprocess"
+    "postprocess",
+    "shadows",
+    "post-processing",
+    "3d-engine"
   ],
   "homepage": "https://aura3d.auraone.ai",
   "repository": {

@@ -18,7 +18,9 @@
     <meta name="twitter:title" content="Polarity Orbs — Aura3D Arcade Polarity Collector" />
     <meta name="twitter:description" content="Polarity Orbs — an Aura3D arcade polarity-flip collector. Drag to steer, tap to flip between red and blue, collect your colour and dodge the rest." />
 
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Polarity Orbs","url":"https://aura3d.auraone.ai/apps/showcase-polarity-orbs/","description":"Dual-polarity arcade runner: drag to steer and tap to flip between warm red and cool blue polarity, collect matching orbs, trigger magnet and rainbow…","genre":"Arcade and exploration","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/polarity-orbs.jpg?v=9e35731e92fa","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.6.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Polarity Orbs","url":"https://aura3d.auraone.ai/apps/showcase-polarity-orbs/","description":"Dual-polarity arcade runner: drag to steer and tap to flip between warm red and cool blue polarity, collect matching orbs, trigger magnet and rainbow…","genre":"Arcade and exploration","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/polarity-orbs.jpg?v=9e35731e92fa","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.7.1"}</script>
+    <style>:where(.a3d-h1){display:block;font-size:2em;font-weight:bold;margin-block:0.67em}</style>
+
     <style>
       :root {
         --ink: #f6f7ff;
@@ -335,14 +337,14 @@
         backdrop-filter: blur(4px);
       }
       .screen.visible { display: flex; }
-      .screen h1 {
+      .screen :is(h1, .a3d-h1) {
         font-family: var(--font-ui);
         font-weight: 600;
         font-size: clamp(32px, 6.8vw, 54px);
         letter-spacing: 0.04em;
       }
-      .screen h1 .red { color: var(--red); }
-      .screen h1 .blue { color: var(--blue); }
+      .screen :is(h1, .a3d-h1) .red { color: var(--red); }
+      .screen :is(h1, .a3d-h1) .blue { color: var(--blue); }
       .screen p { font-size: 16px; font-weight: 400; max-width: 420px; line-height: 1.45; }
       .big-btn {
         font-family: var(--font-ui);
@@ -407,7 +409,7 @@
         background: radial-gradient(ellipse at 50% 45%, rgba(16, 18, 36, 0.58) 0%, rgba(12, 14, 28, 0.34) 72%);
         backdrop-filter: blur(1.5px);
       }
-      #splash-screen h1, #splash-screen p, #splash-screen .settings, #splash-screen .hint, #splash-screen #load-label {
+      #splash-screen :is(h1, .a3d-h1), #splash-screen p, #splash-screen .settings, #splash-screen .hint, #splash-screen #load-label {
         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
       }
       #gameover-screen {
@@ -657,7 +659,7 @@
     </div>
 
     <div id="gameover-screen" class="screen no-steer">
-      <h1>GAME OVER</h1>
+      <div role="heading" aria-level="2" class="a3d-h1">GAME OVER</div>
       <div id="final-score">0</div>
       <dl class="stats">
         <dt>Best</dt><dd id="stat-best">0</dd>
@@ -670,7 +672,7 @@
     </div>
 
     <div id="pause-screen" class="screen no-steer">
-      <h1>PAUSED</h1>
+      <div role="heading" aria-level="2" class="a3d-h1">PAUSED</div>
       <div class="screen-btns">
         <button type="button" id="btn-resume" class="big-btn">RESUME</button>
         <button type="button" id="btn-howto-pause" class="ghost-btn" aria-haspopup="dialog" aria-controls="howto-screen">HOW TO PLAY</button>

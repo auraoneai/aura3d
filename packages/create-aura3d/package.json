@@ -99,7 +99,7 @@
   "dependencies": {
     "@aura3d/asset-index": "workspace:*"
   },
-  "description": "Start real Aura3D browser 3D apps in one command with Vite templates, typed GLB/glTF assets, route-health tests, screenshots, and deploy-ready structure.",
+  "description": "Create an Aura3D TypeScript 3D app or browser game in one command: Vite templates, typed GLB assets, agent skills, llms.txt and deploy checks.",
   "keywords": [
     "create-aura3d",
     "vite",
@@ -130,7 +130,14 @@
     "animation-channel",
     "animation-studio",
     "episode-builder",
-    "prompt-to-video"
+    "prompt-to-video",
+    "create-app",
+    "scaffold",
+    "3d-engine",
+    "game-engine",
+    "webgpu",
+    "threejs-alternative",
+    "browser-games"
   ],
   "homepage": "https://aura3d.auraone.ai",
   "repository": {

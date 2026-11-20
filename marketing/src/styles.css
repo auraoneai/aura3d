@@ -1019,6 +1019,9 @@ img, svg, canvas, iframe { display: block; max-width: 100%; }
 .compare-section-head { max-width: 850px; margin-bottom: 46px; }
 .compare-section-head h2 { margin: 12px 0 16px; font-size: clamp(22px, 2.2vw, 26px); line-height: 1.25; letter-spacing: -0.01em; font-weight: 500; }
 .compare-section-head p { margin: 0; color: var(--ink-2); font-size: 17px; line-height: 1.62; }
+.faq-list { display: grid; gap: 22px; margin-top: 8px; }
+.faq-item h3 { margin: 0 0 6px; font-size: 18px; line-height: 1.35; font-weight: 500; }
+.faq-item p { margin: 0; color: var(--ink-2); font-size: 16px; line-height: 1.6; }
 .compare-columns { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 .compare-columns article { padding: 38px; border: 1px solid var(--line-strong); border-radius: 18px; background: var(--bg-1); }
 .compare-columns article.aura-choice { background: linear-gradient(145deg, rgba(15, 122, 88, .11), rgba(244, 244, 239, 0.92) 60%); }

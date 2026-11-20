@@ -41,7 +41,7 @@
       #splash-best { font-size: 22px; font-weight: 900; color: #333; margin: 0 0 14px; min-height: 26px; }
       @media (max-width: 520px) {
         .overlay-card { width: calc(100vw - 28px); max-width: calc(100vw - 28px); padding-left: 16px; padding-right: 16px; border-width: 5px; box-shadow: 8px 8px 0 rgba(0,0,0,0.2); }
-        .overlay-card h1 { font-size: min(13vw, 64px) !important; }
+        .overlay-card :is(h1, .a3d-h1) { font-size: min(13vw, 64px) !important; }
         #hud-lives { flex: none; white-space: nowrap; }
         #hud-score { white-space: nowrap; font-size: clamp(18px, 5.2vw, 26px); }
         #hud-combo { top: calc(72px + env(safe-area-inset-top)) !important; }
@@ -98,7 +98,9 @@
     <meta name="twitter:title" content="Splat — Colour-Gate Ball Runner" />
     <meta name="twitter:description" content="Colour-gate ball runner: switch colour to pass gates, grab power-ups and avoid the splatter game over." />
 
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Splat","url":"https://aura3d.auraone.ai/apps/chroma-roll/","description":"Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches a recorded reference run. Native…","genre":"Platformers and runners","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/splat-rush-port.jpg?v=d83b44f9626f","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.6.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Splat","url":"https://aura3d.auraone.ai/apps/chroma-roll/","description":"Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches a recorded reference run.","genre":"Platformers and runners","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/splat-rush-port.jpg?v=d83b44f9626f","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.7.1"}</script>
+    <style>:where(.a3d-h1){display:block;font-size:2em;font-weight:bold;margin-block:0.67em}</style>
+
     <style>
       @font-face {
         font-family: 'Splat Display';
@@ -228,7 +230,7 @@
     </div>
     <div id="gameover-screen" class="overlay hidden" style="background:#f0433a">
       <div class="overlay-card">
-        <h1 style="font-size:clamp(30px,7vh,44px);font-weight:600;letter-spacing:0.04em;margin:0 0 8px;color:#f0433a">SPLAT!</h1>
+        <div role="heading" aria-level="2" class="a3d-h1" style="font-size:clamp(30px,7vh,44px);font-weight:600;letter-spacing:0.04em;margin:0 0 8px;color:#f0433a">SPLAT!</div>
         <p id="final-score" style="font-size:clamp(20px,4.4vh,28px);font-weight:600;margin:0 0 8px;color:#3b1f3f"></p>
         <p id="final-stats"></p>
         <button id="btn-restart" class="btn btn-gold">PLAY AGAIN</button>
@@ -237,7 +239,7 @@
     </div>
     <div id="pause-screen" class="overlay hidden no-steer" style="background:rgba(11,16,32,0.45)">
       <div class="overlay-card">
-        <h1 style="font-size:clamp(28px,6.5vh,40px);font-weight:600;letter-spacing:0.04em;margin:0 0 12px;color:#3b1f3f">PAUSED</h1>
+        <div role="heading" aria-level="2" class="a3d-h1" style="font-size:clamp(28px,6.5vh,40px);font-weight:600;letter-spacing:0.04em;margin:0 0 12px;color:#3b1f3f">PAUSED</div>
         <button id="btn-resume" class="btn">RESUME</button>
         <div class="settings"><button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Colour symbols: off</button><button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button></div>
         <p class="hint">P or Esc to resume</p>

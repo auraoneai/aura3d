@@ -95,7 +95,12 @@
     "aura3d",
     "3d",
     "typescript",
-    "addons"
+    "addons",
+    "3d-engine",
+    "webgpu",
+    "webgl2",
+    "procedural-geometry",
+    "post-processing"
   ],
   "homepage": "https://aura3d.auraone.ai",
   "repository": {

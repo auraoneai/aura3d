@@ -182,8 +182,8 @@ function render() {
   const headEnd = shell.indexOf("<header class=\"doc-hero\">");
   const footerStart = shell.indexOf("<footer>");
   if (headEnd < 0 || footerStart < 0) throw new Error(`gen-migration-doc: shell markers missing in ${SHELL}`);
-  const title = `Migrate from Aura3D 4.x to ${version}`;
-  const description = `Upgrade guide from Aura3D 4.x to ${version}: who is affected, upgrade steps, breaking changes, behavior changes, new opt-in features and removed deprecated APIs.`;
+  const title = "Migrate from Aura3D 4.x to 5";
+  const description = "Upgrade from Aura3D 4.x to 5: who is affected, upgrade steps, breaking and behaviour changes, new opt-in features and removed deprecated APIs.";
   const canonical = `${ORIGIN}${ROUTE}`;
   let head = shell.slice(0, headEnd);
   const replaceOnce = (pattern, value) => {

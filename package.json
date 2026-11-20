@@ -407,7 +407,7 @@
     "./templates/**",
     "./dist/engine/agent-api/app/runtimeNodes.js"
   ],
-  "description": "Build AI-authored browser 3D apps with TypeScript, typed GLB/glTF assets, Vite templates, scene kits, diagnostics, screenshots, and deploy checks.",
+  "description": "TypeScript 3D engine for browser games and 3D apps: WebGPU renderer with WebGL2 fallback, typed GLB assets, AI 3D generation, game kit and deploy checks.",
   "keywords": [
     "3d",
     "3d-library",
@@ -456,7 +456,15 @@
     "webgpu-framework",
     "ai-3d",
     "3d-sdk",
-    "browser-3d-engine"
+    "browser-3d-engine",
+    "game-engine",
+    "threejs-alternative",
+    "browser-games",
+    "html5-game-engine",
+    "ai-3d-generation",
+    "pbr",
+    "physics",
+    "rapier"
   ],
   "homepage": "https://aura3d.auraone.ai",
   "repository": {

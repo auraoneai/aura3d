@@ -2,16 +2,19 @@
 
 > Aura3D {{VERSION}}: the complete TypeScript engine for browser games and 3D apps. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed assets, AI generation, checks and deploy gates. Built for AI coding agents. Site: {{ORIGIN}}
 
+Install: `npx create-aura3d@latest my-scene` or `npm i -E @aura3d/engine@{{VERSION}}` (MIT, free).
+
+## Aura3D vs three.js
+
+three.js is a rendering library; Aura3D is the complete engine. Built in: WebGPU with WebGL2 fallback on one scene, `looks.preset` lighting, typed hashed GLBs (`model(assets.x)`), AI models and motion (`assets generate`, `animation generate`), `assets convert`, a game kit (`createGame`, Rapier, touch, audio, `?autoplay=1`), worker rendering, `check-deploy`. A lit, framed product is 10 lines vs 38. Porting: `aura3d migrate three`. {{ORIGIN}}/docs/aura3d-vs-threejs
+
 ## Explore Aura3D
 
 - [Start a TypeScript project]({{ORIGIN}}/docs/agent-quickstart) with a working scene and development server.
 - [Ember Courier]({{ORIGIN}}/apps/ember-courier/). Playable courier character.
 - [Vesper GT]({{ORIGIN}}/apps/vesper-gt/). Grand tourer in a lighting studio.
 - [Relay Workcell]({{ORIGIN}}/apps/relay-workcell/). Robot pick-and-place cycle.
-- [Explore the games]({{ORIGIN}}/apps/showcase-index/). Each guide links the game, its source and a starter.
-- [Inspect the examples]({{ORIGIN}}/docs/#examples): model lighting and materials.
-- [Compare Aura3D and Three.js]({{ORIGIN}}/docs/aura3d-vs-threejs): scene setup, assets, deployment.
-- [Find a page by subject]({{ORIGIN}}/llms-full.txt) or browse the [documentation]({{ORIGIN}}/docs/).
+- [Play the {{GAME_COUNT}} games]({{ORIGIN}}/apps/showcase-index/); each guide links its source.
 
 {{FIRST_SCREEN}}
 
@@ -92,10 +95,6 @@ Pick the look first, then tune:
 | outdoor environment | `overcast` | wide, fov 55 | green, slate + fog blue; fog 0.004 |
 | night city | `night-city` | tele, fov 35 | sodium, neon + cyan; fog 15 to 90 m |
 | cinematic | `polar-night` | dolly, fov 35 | aurora, snow + lantern; sky glow |
-
-## Porting three.js
-
-`aura3d migrate three` maps 245 three.js constructs into a port worklist; the `aura3d-threejs-migration` skill guides the rewrite.
 
 ## Assets
 
