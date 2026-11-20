@@ -7,9 +7,9 @@ import { assets } from "./aura-assets";
 // Broad bounce light reveals the pigment. The two diffusers shape the roof and flank.
 export const lightSetups = {
   daylight: {
-    key: { position: [2.5, 7, 4] as AuraVec3, color: "#fff3e7", intensity: 1.28 },
+    key: { position: [3.5, 5.8, 4] as AuraVec3, color: "#fff4e9", intensity: 1.58 },
     rim: { position: [-3.4, 4.3, -3.5] as AuraVec3, color: "#d4dee8", intensity: 1.14 },
-    side: { position: [3.8, 3.4, 0.15] as AuraVec3, color: "#fcf1e8", intensity: 4.5 }
+    side: { position: [3.6, 2.35, 0.5] as AuraVec3, color: "#fff7ee", intensity: 6.15 }
   },
   tungsten: {
     key: { position: [-3.2, 4.8, 3.9] as AuraVec3, color: "#ffc18d", intensity: 1.38 },
@@ -60,7 +60,7 @@ export function buildStudio(position: AuraVec3) {
   const target = views.body.target;
   return scene().background("#222b33")
     .camera(camera.perspective({ position, target, fov, near: 0.035, far: 75 }))
-    .add(environments.hdri({ name: "photography studio", texture: assets.studio, intensity: 0.79, rotation: 1.12, background: false }))
+    .add(environments.hdri({ name: "photography studio", texture: assets.studio, intensity: 0.95, rotation: 1.12, background: false }))
     .add(lights.hemisphere({ name: "studio bounce", skyColor: "#ded9d4", groundColor: "#75666a", intensity: 0.88 }))
     .add(studioSweep())
     .add(lights.key({ name: "studio key", target, shadow: { filter: "pcss", lightSize: 0.82, softness: 2, bias: 0.002, intensity: 0.88 }, ...lightSetups.daylight.key }).runtime(game.runtimeNode("key")))
