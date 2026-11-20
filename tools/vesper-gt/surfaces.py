@@ -138,12 +138,14 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
     labels = material_regions(pos, uv, faces, color)
     surfaces = {
         "paint": material(
-            "Midnight garnet | dielectric lacquer", 0, 0.36, coat=(0.28, 0.24)
+            "Oxblood | satin dielectric paint", 0, 0.52, coat=(0.075, 0.47)
         ),
-        "alloy": material("Wheel alloy | machined aluminum", 0.88, 0.34, normal=0.18),
-        "rubber": material("Tire | vulcanized rubber", 0, 0.79, normal=0.35),
-        "glass": material("Canopy | smoked laminated glass", 0, 0.20),
-        "trim": material("Trim | graphite composite", 0.09, 0.50),
+        "alloy": material(
+            "Wheel alloy | brushed graphite aluminum", 0.76, 0.52, normal=0.09
+        ),
+        "rubber": material("Tire | vulcanized rubber", 0, 0.84, normal=0.22),
+        "glass": material("Canopy | smoked laminated glass", 0, 0.30),
+        "trim": material("Trim | graphite composite", 0.055, 0.67),
         "headlamp": material(
             "Headlamp | amber LED lens", 0, 0.20, emissive=[1, 0.72, 0.36]
         ),
@@ -152,34 +154,55 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
         ),
     }
     # The bright studio environment requires a restrained dielectric base lobe beneath the lacquer.
-    surfaces["paint"]["extensions"]["KHR_materials_specular"] = {"specularFactor": 0.28}
-    surfaces["paint"]["pbrMetallicRoughness"]["baseColorFactor"] = [0.59, 0.42, 0.46, 1]
+    surfaces["paint"]["extensions"]["KHR_materials_specular"] = {
+        "specularFactor": 0.095
+    }
+    surfaces["paint"]["pbrMetallicRoughness"]["baseColorFactor"] = [0.59, 0.39, 0.41, 1]
     glazing = surfaces["glass"]["pbrMetallicRoughness"]
     glazing.pop("baseColorTexture")
-    glazing["baseColorFactor"] = [0.0036, 0.0050, 0.0062, 1]
+    glazing["baseColorFactor"] = [0.0030, 0.0042, 0.0052, 1]
     surfaces["glass"]["extensions"] = {
-        "KHR_materials_specular": {"specularFactor": 0.33}
+        "KHR_materials_specular": {"specularFactor": 0.095}
     }
-    # Preserve boundary texels, lamp optics, tread, panel gaps and millwork. Regrade garnet pigment
-    # within its observed chroma range, leaving the reflection shape to the real studio lights.
+    for name, factor in [("alloy", 0.32), ("rubber", 0.17), ("trim", 0.115)]:
+        surfaces[name]["extensions"] = {
+            "KHR_materials_specular": {"specularFactor": factor}
+        }
+
+    # The generated atlas contains photographed white streaks on spokes, tire shoulders,
+    # sill blades and the splitter. Reconstruct a bounded graphite substrate from luminance.
+    # Keep low-frequency variation to distinguish brake recesses from the spoke faces.
     rgb = color.astype(np.float32)
     r, g, b = rgb.transpose(2, 0, 1)
-    weight = np.clip((r - np.maximum(g, b) - 8) / 27, 0, 1) * np.clip(
-        (b - 0.90 * g + 2) / 8, 0, 1
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    graphite = np.interp(
+        luminance, [0, 12, 36, 75, 135, 200, 255], [6, 8, 15, 32, 48, 58, 65]
     )
+    metal = np.stack([graphite * 0.94, graphite * 0.98, graphite], axis=2)
+    pigment = np.clip((r - np.maximum(g, b) - 5) / 24, 0, 1)
     paint = np.stack(
         [
-            np.clip(76 + 0.30 * (r - 83), 49, 98),
-            np.clip(14 + 0.14 * (g - 25), 8, 24),
-            np.clip(28 + 0.17 * (b - 36), 14, 41),
+            np.clip(73 + 0.14 * (r - 83), 58, 87),
+            np.clip(14 + 0.10 * (g - 25), 9, 22),
+            np.clip(23 + 0.11 * (b - 36), 14, 31),
         ],
         axis=2,
     )
-    graded = (
-        np.rint(rgb * (1 - weight[:, :, None]) + paint * weight[:, :, None])
-        .clip(0, 255)
-        .astype(np.uint8)
-    )
+    graded = np.rint(
+        metal * (1 - pigment[:, :, None]) + paint * pigment[:, :, None]
+    ).astype(np.uint8)
+    # Keep high-intensity optics on their own texture so an amber LED never bakes into a rim.
+    # Only their padded UV islands need shipping. The black exterior compresses losslessly.
+    optics_mask = np.zeros(color.shape[:2], dtype=np.uint8)
+    shape = np.asarray([color.shape[1], color.shape[0]])
+    for triangle in faces[(labels == "headlamp") | (labels == "taillamp")]:
+        pixels = np.rint(uv[triangle] * shape).astype(np.int32)
+        cv2.fillConvexPoly(optics_mask, pixels, 255)
+    optics_mask = cv2.dilate(optics_mask, np.ones((25, 25), np.uint8))
+    optics = np.where(optics_mask[:, :, None] > 0, color, 0)
+    for name in ["headlamp", "taillamp"]:
+        surfaces[name]["pbrMetallicRoughness"]["baseColorTexture"] = {"index": 2}
+        surfaces[name]["emissiveTexture"] = {"index": 2}
     # Use the optimizer's lossless normal source for tires and alloys only. Filter high-frequency
     # reconstruction noise and renormalize before encoding at full resolution without JPEG.
     normal_idx = src["materials"][0]["normalTexture"]["index"]
@@ -224,9 +247,10 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
         for name, pixels in [
             ("Vesper surface color", graded),
             ("Tire and alloy detail normals", normal),
+            ("Original amber and ruby optics", optics),
         ]
     ]
-    doc["textures"] = [{"source": i, "sampler": 0} for i in range(2)]
+    doc["textures"] = [{"source": i, "sampler": 0} for i in range(3)]
     doc["materials"] = list(surfaces.values())
     doc["extensionsUsed"] = ["KHR_materials_clearcoat", "KHR_materials_specular"]
     groups = []

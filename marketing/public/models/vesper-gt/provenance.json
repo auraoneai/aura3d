@@ -22,8 +22,8 @@
   "requestId": "01a1f55f-2f39-7091-aa25-28a3e1678689",
   "estimatedGenerationUsd": 0.525,
   "rawSha256": "55c17a4896018bcc191d72506ff5640166e13ca9640662ed1eeed6129951206b",
-  "artifactSha256": "a5d2d0bffe231bed24d092e647753efd3359a673d255012d74e4753badf70d59",
-  "artifactBytes": 9816292,
+  "artifactSha256": "119f6976583ba6053dfe778762b1b06c27233a72d5fa91743ef389a38e291cf1",
+  "artifactBytes": 9155476,
   "artifact": "marketing/public/models/vesper-gt/coupe.glb",
   "triangles": 145874,
   "vertices": 118267,
@@ -48,7 +48,7 @@
     "Removed generated pseudo lettering at rear, neutralized rear plate pad and badge",
     "Clamped out-of-range glTF specularColorFactor to 1"
   ],
-  "evidence": "Matched Apple M4 Max browser renders using the production Aura3D 5.6.0 runtime were reviewed under daylight and tungsten, with additional flank, wheel and front three-quarter views. The final windshield correction was compared at two locked camera angles. The recorded attribute, oriented triangle and scene transform hashes match the original selected mesh.",
+  "evidence": "The car was reviewed in native-size 1905 by 1200 Apple M4 Max browser renders with the production Aura3D 5.6.0 runtime. The fixed daylight wheel and front-three-quarter views isolate the material change under the previous studio setup. Full reconstruction from the original verified generation reproduced the distributed GLB byte for byte.",
   "sourceImageRequestId": "01a1f551-ee8a-7bf1-8984-ff75bdae8709",
   "rawArtifact": {
     "download": "https://v3b.fal.media/files/b/0ab32209/twPZLwLi0vF9w9IrzmYOK_model.glb",
@@ -82,8 +82,8 @@
     },
     "nodePackages": "Repository lockfile"
   },
-  "sha256": "a5d2d0bffe231bed24d092e647753efd3359a673d255012d74e4753badf70d59",
-  "bytes": 9816292,
+  "sha256": "119f6976583ba6053dfe778762b1b06c27233a72d5fa91743ef389a38e291cf1",
+  "bytes": 9155476,
   "creator": "AuraOne",
   "model": "coupe.glb",
   "materialRepair": {
@@ -97,10 +97,10 @@
       "orientedTriangleMultiset": "96489357dcde5fc76cdfee55b04806a6fe609559e0817a80ad9c2adb21b66d8a",
       "sceneTransforms": "f3852b11316f38336cb565bbc57394cf34bc57a06ca80c3144a323300cb0794f"
     },
-    "method": "Partition original oriented triangles by measured spatial region and UV color. Share vertex attributes, preserve the debranded atlas detail and grade garnet pigment. Use independent PBR lobes. Paint and glass use mesh normals. Wheel and tire detail uses filtered, renormalized lossless PNG normals from the optimizer.",
+    "method": "Partition oriented triangles by measured spatial region and UV color. Oxblood paint uses a satin dielectric base and a restrained clearcoat. Compress photographed hardware highlights into a bounded graphite albedo, preserve lamp optics on separate padded atlas islands, and use lossless curated normals only on rim and rubber. Hold mesh attributes, topology, transforms and dimensions invariant.",
     "surfaceTriangles": {
-      "Midnight garnet | dielectric lacquer": 38680,
-      "Wheel alloy | machined aluminum": 43877,
+      "Oxblood | satin dielectric paint": 38680,
+      "Wheel alloy | brushed graphite aluminum": 43877,
       "Tire | vulcanized rubber": 19439,
       "Canopy | smoked laminated glass": 9136,
       "Trim | graphite composite": 32719,
