@@ -9,7 +9,7 @@ README that touches one of these areas uses the scope stated here.
 
 ## Release limits
 
-Aura3D 5.7.0 is the current release: a complete engine for browser games and
+Aura3D 5.7.1 is the current release: a complete engine for browser games and
 interactive 3D apps, with 30 live games accepted on a real GPU. Each capability
 claim is tied to its public API, package, route, and retained evidence, and a
 route's visual approval covers that route.

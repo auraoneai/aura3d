@@ -84,7 +84,7 @@ warnings to failures, and scans source by default. `--source` can also take an
 optional file or directory:
 
 ```bash
-npx @aura3d/cli@latest assets validate --source apps/showcase-turbo-drift-circuit --release
+npx @aura3d/cli@latest assets validate --source apps/showcase-roadster-rush --release
 ```
 
 The strict release gate blocks:

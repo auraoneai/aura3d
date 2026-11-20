@@ -937,9 +937,8 @@ A controller that reads only `trackOffset` cannot tell which side of the line it
 
 The kits above are reusable package surface. Opponent behaviour, level layout, art direction, challenge scoring, and duration proofs are **route-local** and are not part of the public package:
 
-- `apps/showcase-turbo-drift-circuit/src/opponent-ai.ts` is a route-local deterministic opponent controller. Its contract is `step(dt, playerProgress)` — the second argument is required, and omitting it leaves the AI with an undefined gap so it never accelerates. There is no reusable production racing AI in the package.
-- `apps/showcase-turbo-drift-circuit/src/race-proof.ts` and `apps/showcase-skyline-runner/src/level-proof.ts` are route-local duration proofs. They simulate the public kits to prove authored playable duration and both publish `provesMountedKitPlayback: false`, because a planned input sequence is not evidence of mounted browser playback.
-- `apps/showcase-skyline-runner/src/runner-challenge.ts` holds route-local flow/challenge scoring, not a reusable platformer challenge system.
+- Each game keeps its opponent controller, level layout, challenge scoring and any duration proof in its own `apps/<game>/src/` or `examples/<game>/src/`. There is no reusable production racing AI or platformer challenge system in the package.
+- A duration proof that simulates the public kits with a planned input sequence proves authored playable length, not mounted browser playback; such proofs publish `provesMountedKitPlayback: false`. (The original examples, `showcase-turbo-drift-circuit` and `showcase-skyline-runner`, were deleted when the repository was pruned to the 30 live games in 5.7.0.)
 
 Reading these route-local modules as package capability would overstate the library. The reusable claim is the kit plus its certified-surface query, nothing more.
 

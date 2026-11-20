@@ -1,7 +1,7 @@
 # Aura3D Showcase Apps Classification
 
 Date: 2026-08-11
-Status: current classification policy
+Status: historical (2026-08-11 classification; the live set is now the 30 games in `docs/workflows/game-inventory.json`, and the 5.6.0 and 5.7.0 prunes removed the other apps)
 
 App classification controls what public copy may say. A route can be useful and
 still not be a public release candidate.

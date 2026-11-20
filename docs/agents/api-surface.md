@@ -59,9 +59,17 @@ Members of each namespace (for example `effects.bloom`, `camera.orbit`, `ui.slid
 | `character.*` | `characters`, `AnimationController`, `prefabs.lowPolyHumanoid` |
 | `unsafeModelUrl`, `loadAsset`, `GLTFLoader` | Typed assets and `model(assets.name)`. All three left the root in 5.0.0 ([migration guide](../migration/4-to-5.md), B14) |
 | `createDiagnosticsPanel`, `createEnvironment` | `app.diagnostics()`, `environments.*` |
-| `sky`, `water`, `weather`, `workflows` | Marked deprecated with no replacement at the root; check `root-exports.md` before teaching them |
 
 Do not import `three`, `three/examples/...`, `GLTFLoader`, renderer internals or `@aura3d/engine/renderer` production-runtime internals to make a public example look better. If a feature needs internals, the right output is a library task or a roadmap item, not route-local workaround code.
+
+## Behaviour you can rely on (5.6 and later)
+
+- `sky`, `water`, `weather` and `workflows` are live root exports (not deprecated). `sky.gradient(...)` is the painted game sky; pass `captureEnvironment: false` to keep it from becoming the scene's image-based light (the flag is honoured since 5.6.0, and a failed sky capture logs one warning instead of throwing).
+- `handle.part(name)` on a `model(...)` handle returns the GLB node named `name` as its own handle (local `setPosition` / `setRotation` / `setScale` / `setVisible`, world reads from the last drawn frame), also for models read during the first mount. It returns `undefined` when the GLB has no such node or `consolidateStaticMeshes` merged it, and a clip that animates the node overwrites your writes.
+- `opacity < 1` on `model(asset, { material })` or `materialOverrides` draws see-through (alpha blending, no depth write, base-colour alpha scaled). Runtime `setMaterialOverrides` cannot change blend state: set opacity on the node.
+- `texture.data(...)` keeps your array by reference, like a three.js `DataTexture`: paint into the same array and set `needsUpdate` to re-upload it (WebGL2 and WebGPU).
+- Short-lived lights (a VFX flash) no longer blank lit meshes while their shader variants compile; the draw reuses the last ready program built for at least as many lights.
+- Thumbnails: `aura3d assets thumbnail` (run by `assets add`) writes `<id>.thumb.png` (a CPU base-colour preview for models, a downscale for textures). From code use `createAssetThumbnailsAsync({ projectDir, assetIds })` from `@aura3d/cli`; the synchronous `createAssetThumbnails` only writes placeholder cards and is deprecated.
 
 ## Asset-safe pattern
 

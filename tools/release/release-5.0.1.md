@@ -2,7 +2,7 @@
 
 > Historical (pre-5.6.0): the 5.0.1 release record, kept for reference; do not rerun it. Its commands name paths and apps
 > that no longer exist (for example `/apps/aura-clash-showcase/`, removed in 5.6.0), and `${url}` / `${REL_URL}` inside the
-> scripts are template strings, not links. The current release is 5.7.0 (see `CHANGELOG.md`).
+> scripts are template strings, not links. The current release is 5.7.1 (see `CHANGELOG.md`).
 
 5.0.1 is 5.0.0 plus the render fixes in `tests/reports/render-census-501.md` (contact-shadow mount guard and
 eleven other new hard throws now degrade with a one-time warning; corrected asset hashes; reduced-motion water;

@@ -4,6 +4,8 @@
 - **Status:** accepted
 - **Workstream:** WS-3.3 (P3 — architectural duplication)
 
+> Historical record: `apps/editor`, cited below as a live consumer, was deleted when the repository was pruned to the 30 live games (5.7.0). The decision to keep `packages/ecs` and `packages/scripting` public stands.
+
 ## Context
 
 The Aura3D 4.0 platform boundary lists "an ECS research framework" and "a behaviour-tree /
