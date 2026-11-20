@@ -6,6 +6,7 @@ import { existsCheck, fileIncludes, noFileMatches, writeReport, type ReleaseChec
 // @ts-ignore plain ESM module without types (tests/unit/agent-eval/modules.d.ts declares *.mjs in the check program)
 import { extractBlocks, verifyReport } from "../docs/cheatsheet-lib.mjs";
 import { runAgentSimulation } from "./simulation";
+import { tscInvocation } from "./tsc";
 
 const docs = [
   "llms.txt",
@@ -178,7 +179,9 @@ export const assets = defineAuraAssets({
   }, null, 2));
 
   try {
-    execFileSync("pnpm", ["exec", "tsc", "-p", resolve(outDir, "tsconfig.json"), "--pretty", "false"], { encoding: "utf8", stdio: "pipe" });
+    // tsc from the typescript package bin, not `pnpm exec tsc` (which aborts in a symlinked worktree; see ./tsc.ts).
+    const [command, args] = tscInvocation(["-p", resolve(outDir, "tsconfig.json"), "--pretty", "false"]);
+    execFileSync(command, [...args], { encoding: "utf8", stdio: "pipe" });
     return { pass: true, detail: `${files.length} TypeScript snippets compile`, files };
   } catch (error) {
     const output = error instanceof Error && "stdout" in error
