@@ -46,7 +46,7 @@ direct-download. Marketplace and deep-link results are user-handled: the user
 downloads and licenses them, then admits the file with `assets add`.
 
 When no clean project or open-source GLB exists, **do not default to single-mesh,
-melted-clay Meshy GLBs and never drop 1–3 raw box/cone/sphere placeholders**.
+melted-clay GLBs and never drop 1–3 raw box/cone/sphere placeholders**.
 Instead, sculpt a rich multi-part, multi-material procedural assembly in
 `@aura3d/engine` using `primitives.extrude`, `primitives.lathe`,
 `primitives.tube`, `primitives.roundedBox`, `primitives.polyhedron`,
@@ -54,13 +54,13 @@ Instead, sculpt a rich multi-part, multi-material procedural assembly in
 `geometry.multiMaterial`, and `instances.custom` split across 3–8 distinct
 physical materials (`material.carPaint`, `material.lacquer`,
 `material.brushedMetal`, `material.ceramic`, `material.studioGlass`,
-`material.fabric`, `material.physical`). Reserve Meshy (`--allow meshy` with an
-approved budget) strictly for explicit user requests or organic skeletal rigs.
+`material.fabric`, `material.physical`). A GLB the user supplies, or one
+generated with `assets generate` on request, goes through the typed-asset rule below.
 
 ## Typed-asset rule
 
-1. Admit every file through the CLI (`assets add`, `assets resolve`, or
-   `assets import-meshy`) so it is hashed, inspected, and recorded in
+1. Admit every file through the CLI (`assets add`, `assets convert`,
+   `assets resolve`, or `assets generate`) so it is hashed, inspected, and recorded in
    `aura.assets.json`.
 2. Read the generated `src/aura-assets.ts` and import `assets` from
    `./aura-assets`.
@@ -72,19 +72,16 @@ approved budget) strictly for explicit user requests or organic skeletal rigs.
 If the key you need is missing, fix the import. Never fall back to a string
 id, a URL, a copied GLB, or a draft artifact path.
 
-## Paid generation controls (Meshy)
+## Paid generation controls (`assets generate`)
 
 - Resolve first. Generation is a fallback after `assets resolve` reports no
   project or open-source match.
-- Run `meshy make ... --dry-run` and show the plan before any paid call.
-- Get explicit user approval for the displayed maximum, then pass
-  `--max-credits <approved>` on the paid command. Prices are never assumed.
-- Resume recorded task IDs. Do not repeat paid work that already succeeded.
-- Download immediately with `-o artifacts/meshy/<asset>/`. Provider retention
-  is short and signed URLs expire.
+- Run `assets generate ... --dry-run` and show the estimate before any paid call,
+  and get explicit user approval for it.
+- Reruns resume ledgered requests. Do not repeat paid work that already succeeded.
 - Keep credentials out of arguments, prompts, logs, commits, and output.
-- Admit through `assets import-meshy` with rights evidence. Import defaults to
-  `candidate` quality and never certifies release quality.
+- Generated models are admitted as `candidate` quality; generation never
+  certifies release quality.
 
 ## Benchmark mode versus normal mode
 

@@ -263,7 +263,7 @@ function checkMarkdown(ctx: CheckCtx, skill: string, path: string, isSkill: bool
       if (!inFence) checkApis(ctx, at, code);
     }
     if (/scenario\.com/i.test(line)) failIn(ctx, `${at}: Scenario URL`);
-    if (/(sk-[A-Za-z0-9]{20,}|MESHY_API_KEY=\S{8,}|ghp_[A-Za-z0-9]{20,})/.test(line)) failIn(ctx, `${at}: secret-like token`);
+    if (/(sk-[A-Za-z0-9]{20,}|[A-Z][A-Z0-9_]*_API_KEY=\S{8,}|ghp_[A-Za-z0-9]{20,})/.test(line)) failIn(ctx, `${at}: secret-like token`);
     for (const m of line.matchAll(/\]\(([^)\s]+)\)/g)) checkLink(ctx, at, path, m[1]!);
   });
 }

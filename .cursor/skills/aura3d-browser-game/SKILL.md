@@ -84,7 +84,7 @@ Pick the genre's recipe row before adding props: [genre looks](references/genre-
    true, speed })` on `skins > 0`) OR crisp multi-part, multi-material procedural
    `@aura3d/engine` assemblies (`primitives.extrude`, `primitives.lathe`,
    `primitives.tube`, `primitives.roundedBox`, `geometry.define`, `geometry.merge`,
-   `geometry.multiMaterial`, `instances.custom`) instead of blurry Meshy clay.
+   `geometry.multiMaterial`, `instances.custom`) instead of blurry single-mesh clay.
    Split procedural parts across 3–8 physical materials (`material.carPaint`,
    `material.lacquer`, `material.brushedMetal`, `material.ceramic`,
    `material.studioGlass`) so bevels, rims, canopies, and foliage catch real key

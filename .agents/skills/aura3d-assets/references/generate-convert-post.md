@@ -96,7 +96,7 @@ npx @aura3d/cli@latest assets slim hero.glb rover.n.glb --quality 92
 
 ## Generated PBR maps are not trustworthy as delivered
 
-AI image-to-3D models (Hunyuan 3D, Idol, Meshy) ship one material whose maps
+AI image-to-3D models (Hunyuan 3D, Idol and similar) ship one material whose maps
 guess at physics. The Vesper GT car (Hunyuan 3D v3.1 Pro on fal) arrived with
 metalness median 0.77 (the painted body shaded as bare metal), roughness median
 0.17 (near mirror) and a JPEG normal map tilting 7 degrees median and 14 at p90

@@ -46,7 +46,7 @@ look renders flat on a void.
    `prefabs.*`, and when no clean GLB exists, sculpt multi-part, multi-material
    procedural `@aura3d/engine` models (`primitives.extrude`, `primitives.lathe`,
    `primitives.tube`, `primitives.roundedBox`, `geometry.define`,
-   `geometry.merge`, `geometry.multiMaterial`) rather than 1-box placeholders or Meshy clay.
+   `geometry.merge`, `geometry.multiMaterial`) rather than 1-box placeholders or single-mesh clay.
 
    | Prompt family | Start from | Screenshot must show |
    | --- | --- | --- |

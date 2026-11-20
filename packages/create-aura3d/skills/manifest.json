@@ -46,10 +46,6 @@
       "tier": "domain",
       "prd": "D4"
     },
-    "meshy-cli": {
-      "tier": "asset",
-      "prd": "P1"
-    },
     "aura3d-materials-environments": {
       "tier": "asset",
       "prd": "P2"
@@ -70,8 +66,7 @@
   "templates": {
     "product-viewer": [
       "aura3d-materials-environments",
-      "aura3d-retexture",
-      "meshy-cli"
+      "aura3d-retexture"
     ],
     "cinematic-scene": [
       "aura3d-materials-environments",

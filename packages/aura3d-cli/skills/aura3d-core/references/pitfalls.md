@@ -35,14 +35,12 @@ but passes in CI.
   valid `sha256` and provenance, and then draws nothing while the game state keeps
   advancing. Declare models with `defineModelAssets`; check every asset URL returns
   200 on the built site.
-- Never run `assets import-meshy`, `validate` or `typegen` from the repo root while
+- Never run `assets add`, `validate` or `typegen` from the Aura3D repo root while
   other work is open: they rewrite `aura.assets.json`, `src/aura-assets.ts` (a
-  100k-line diff) and `public/aura-assets/*`. Use `import-meshy --into <dir>
-  --prefix <game> --name <role>`.
+  100k-line diff) and `public/aura-assets/*`. Admit a game's models from the
+  game's own folder.
 - Prefix every raw download with the game name: unprefixed `rocks.raw.glb` files
   collide across games.
-- A rate-limited Meshy poll is not a failed task: record it `unconfirmed`, resume it
-  with `get`, and never create it again.
 - A large imported model set blows past upload and budget limits: run
   `assets optimize --role` and keep a game's assets under about 25 MB.
 

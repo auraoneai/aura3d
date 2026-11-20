@@ -47,7 +47,7 @@ without a look ships flat shading, void background and floating props.
    clean GLB exists, sculpt multi-part, multi-material procedural models
    (`primitives.extrude`, `primitives.lathe`, `primitives.tube`,
    `primitives.roundedBox`, `geometry.define`, `geometry.merge`,
-   `geometry.multiMaterial`) rather than 1-box placeholders or Meshy clay.
+   `geometry.multiMaterial`) rather than 1-box placeholders or single-mesh clay.
    `aura3d examples "<task>"` finds the closest recipe offline; after each edit run
    `aura3d validate`, then `aura3d render` and open the screenshot it saves.
 2. Add the look first — it supplies the sky/environment light, the key shadow,
@@ -84,7 +84,7 @@ without a look ships flat shading, void background and floating props.
    `geometry.define`, `geometry.merge`, `geometry.multiMaterial`, `instances.custom`,
    `group` joints across 3–8 physical `material.*` lobes, adapting
    [recipes.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/recipes.md)
-   8–15) instead of defaulting to muddy single-texture Meshy clay—and never drop
+   8–15) instead of defaulting to muddy single-texture clay—and never drop
    1–3 raw box/cone/sphere placeholders. Visuals to judge by capture:
    `material.node`, `renderOrder`, `effects.*`, and `effects.shaderPass`.
 7. For interactive and game routes, gate Frame 1 on `app.ready().then(...)`
@@ -94,7 +94,7 @@ without a look ships flat shading, void background and floating props.
    `?autoplay=1` / `?demo=1` is in the URL or the user clicks the HUD `Auto`
    button (with `button.blur()` for clean framing), keep canonical `sha256-...`
    `hash` provenance in `defineAuraAssets(...)` or `defineModelAssets(...)`, run
-   Meshy GLBs through `assets optimize --role` first, never pin post-processing or
+   generated GLBs through `assets optimize --role` first, never pin post-processing or
    the compiler off with a `qualityRebuild` list (use the safety net), and mutate
    runtime node handles (`app.nodes.require(...)`) instead of calling
    `app.setScene()` on same-stage restarts so lighting and grade never drop.
@@ -117,7 +117,6 @@ without a look ships flat shading, void background and floating props.
 | Flipbook VFX sheets, HUD icons, UI sprites | `aura3d-game-art` |
 | Restyling a finished mesh without touching geometry | `aura3d-retexture` |
 | Frame time, bundle size, KTX2, LOD, instancing | `aura3d-performance` |
-| No clean open-source candidate, Meshy generation or import | `meshy-cli` |
 
 A listed skill that is not installed in this project is a gap to report, not
 permission to improvise its procedure.

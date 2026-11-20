@@ -1,6 +1,6 @@
 ---
 name: aura3d-evidence-review
-description: Reviews Aura3D work before it is called done, public, or shippable by collecting route-health, screenshots, visual QA, asset release checks, and `check-deploy` output, then choosing a claim label through a capped critique loop. Use when finishing a route or template, writing README or showcase claims, comparing catalog versus Meshy candidates, writing manifest thumbnails (CPU base-colour previews) with `assets thumbnail` or `assets preview`, or running `assets validate --release` and `check-deploy`.
+description: Reviews Aura3D work before it is called done, public, or shippable by collecting route-health, screenshots, visual QA, asset release checks, and `check-deploy` output, then choosing a claim label through a capped critique loop. Use when finishing a route or template, writing README or showcase claims, comparing candidate assets from different sources, writing manifest thumbnails (CPU base-colour previews) with `assets thumbnail` or `assets preview`, or running `assets validate --release` and `check-deploy`.
 ---
 
 # Aura3D evidence review
@@ -84,7 +84,7 @@ benchmark exception are in [boundaries](../aura3d-core/references/boundaries.md)
    blind A/B judge as identification accuracy against chance (50%) with trial
    count and seed, and say it is a model's judgement, not a human's. "Same game
    design" and "indistinguishable" are different claims; never say pixel parity
-   from histograms and a judge. Bake-offs: when comparing a catalog candidate against a Meshy candidate,
+   from histograms and a judge. Bake-offs: when comparing candidates from different sources,
    use one brief, one rubric, one camera and lighting setup, and the same
    gates for both. Report both verdict sets and pick on evidence, not source.
 9. Thumbnails and posters: `npx @aura3d/cli@latest assets thumbnail` writes

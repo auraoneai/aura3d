@@ -96,18 +96,17 @@ lighting you evaluate materials and silhouettes against.
    (`targetHeight` only for upright humanoids; `handle.setAnimation({ clip, loop:
    true, speed })` on `skins > 0`). With no clean GLB, sculpt multi-part
    `@aura3d/engine` geometry (`primitives.extrude`, `primitives.lathe`,
-   `geometry.define`, `geometry.multiMaterial`) — never 1-box placeholders or blurry Meshy clay.
+   `geometry.define`, `geometry.multiMaterial`) — never 1-box placeholders or blurry single-mesh clay.
 
    Worked example: [preview under look](references/preview-under-look.md#grounded-placement-example).
 
 8. Games and examples without a project manifest declare models with
    `defineModelAssets` (same-origin URL, `sha256`, license; `?models=0` falls
    back to a procedural stand-in) and never use an http(s) URL: the production
-   bridge refuses it and the scene draws nothing. Admit generated models in an
-   isolated project (`assets import-meshy <dir> --into <assets-dir> --prefix
-   <game> --name <role>`). Never run `import-meshy`, `validate` or `typegen` from
-   the repo root while other work is open: they rewrite `aura.assets.json`,
-   `src/aura-assets.ts` (a 100k-line diff) and `public/aura-assets/*`.
+   bridge refuses it and the scene draws nothing. Never run `assets add`,
+   `validate` or `typegen` from the Aura3D repo root while other work is open:
+   they rewrite `aura.assets.json`, `src/aura-assets.ts` (a 100k-line diff) and
+   `public/aura-assets/*`; admit a game's models from the game's own folder.
 9. Hand off: fighters and games to `aura3d-browser-game`
    (`assets validate-game`), rigs and clips to `aura3d-character-animation`
    (`assets validate-animation`, `assets validate --skin`), release checks to
@@ -122,7 +121,7 @@ lighting you evaluate materials and silhouettes against.
 - bounds are extreme, pivot is bad, or orientation is unknown and public APIs
   cannot correct it;
 - the hash duplicates another asset without an explanation;
-- a generated Meshy GLB has not been through `assets optimize --file in.glb --out
+- a generated GLB has not been through `assets optimize --file in.glb --out
   out.glb --role prop` (role budgets: prop 6k, character 30k, hero or vehicle 40k
   vertices; textures capped at 1024 to 2048 px; 16-bit indices);
 - it is placeholder-like, or only a generated thumbnail proves it is readable;
@@ -133,8 +132,8 @@ lighting you evaluate materials and silhouettes against.
 - Search returns no clean auto-pullable candidate, or candidates fail the reject
   list: sculpt a multi-part, multi-material procedural `@aura3d/engine` assembly
   (`primitives.extrude`, `primitives.lathe`, `primitives.tube`, `geometry.define`,
-  `geometry.multiMaterial`) or accept a user-supplied licensed GLB; use `meshy-cli`
-  (dry run + ledger reserve, never from competitor frames) only when requested, and never drop 1-box placeholders.
+  `geometry.multiMaterial`) or accept a user-supplied licensed GLB; use
+  `assets generate` (dry run first, never from competitor frames) only when requested, and never drop 1-box placeholders.
 - Search prints a source fetch warning (for example an HTTP 404): report it
   verbatim, label asset-dependent work `blocked`, and never treat fallback
   deep-links as auto-pullable.
