@@ -11,7 +11,7 @@ import type { AuraVec3 } from "./CpuEmitter";
 import { VOLUME_PRESETS, VOLUME_SPRITE_LIMITS, type VolumeEmitterSpec } from "@aura3d/rendering";
 import { VFX_SPRITE_LAYOUT, isVfxBuiltinSprite } from "./FlipbookAtlas";
 import type { AuraVfxBuiltinSequence } from "../../agent-api/vfx/atlas";
-import type { AuraTransformSpec } from "../../agent-api/nodes/types.js";
+import type { AuraTextureRef, AuraTransformSpec } from "../../agent-api/nodes/types.js";
 import { assertWeatherTransformFields } from "./WeatherTransform.js";
 import { parseAuraColor, withColorUse } from "../../agent-api/color.js";
 import { PARTICLE_DEFAULT_ALPHA_OVER_LIFE, PARTICLE_DEFAULT_SIZE_OVER_LIFE, isAuthoredCurve } from "../../agent-api/nodes/particleDefaults.js";
@@ -140,7 +140,17 @@ export interface EffectNodeLike extends AuraTransformSpec {
  */
 export type LoweredSprite =
   | { readonly kind: "builtin"; readonly name: AuraVfxBuiltinSequence; readonly columns: number; readonly rows: number; readonly frames: number; readonly fps?: number; readonly loop?: boolean }
-  | { readonly kind: "texture"; readonly url: string; readonly columns: number; readonly rows: number; readonly frames: number; readonly frame: number };
+  | {
+    readonly kind: "texture";
+    /** Asset URL, or `aura-texture-ref:<id>` for a live handle (then `ref` carries the handle). */
+    readonly url: string;
+    readonly columns: number;
+    readonly rows: number;
+    readonly frames: number;
+    readonly frame: number;
+    /** 5.7.0: a live texture handle (`texture.data`, `createFlipbookAtlas().texture`) sampled directly, no load. */
+    readonly ref?: AuraTextureRef;
+  };
 
 export interface LoweredParticleEffect {
   readonly type: "emitter";
@@ -356,6 +366,13 @@ function simFor(node: EffectNodeLike, count: number): "cpu" | "gpu" {
   return count > GPU_AUTO_THRESHOLD ? "gpu" : "cpu";
 }
 
+/** 5.7.0: a live texture handle (`kind: "aura-texture-ref"`, e.g. `texture.data(...)` or `createFlipbookAtlas().texture`). */
+export function liveTextureRef(value: unknown): AuraTextureRef | null {
+  if (typeof value !== "object" || value === null) return null;
+  const ref = value as { kind?: unknown; id?: unknown };
+  return ref.kind === "aura-texture-ref" && typeof ref.id === "string" && ref.id.length > 0 ? (value as AuraTextureRef) : null;
+}
+
 /**
  * URL of a texture asset value: an `assets.x` ref (`{ kind: "aura-asset-ref", type: "texture", url }`), a
  * texture-like object with a `url`, or a plain URL string. Null when the value carries no URL.
@@ -553,7 +570,9 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
       const count = Math.max(1, Math.min(64, Math.round(node.particleCount ?? 1)));
       // GU47 E-F sheet source: `texture` asset (grid from spriteColumns × spriteRows), else a built-in
       // atlas `sprite` (its own grid), else the procedural fireball sheet (unchanged default).
-      const textureUrl = textureAssetUrl(node.texture);
+      // A live handle (createFlipbookAtlas().texture) keys its batch by handle id and is sampled with no load.
+      const textureRef = liveTextureRef(node.texture);
+      const textureUrl = textureRef ? `aura-texture-ref:${textureRef.id}` : textureAssetUrl(node.texture);
       const builtin = !textureUrl ? lowerSprite({ sprite: typeof node.sprite === "string" ? node.sprite : undefined }) : undefined;
       const columns = builtin ? builtin.columns : Math.max(1, Math.round(node.spriteColumns ?? 8));
       const rows = builtin ? builtin.rows : Math.max(1, Math.round(node.spriteRows ?? 8));
@@ -563,7 +582,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
       const blend: Blend = node.blend && VALID_BLENDS.has(node.blend) ? (node.blend as Blend) : "alpha";
       const sheetSeed = (node.seed ?? hashSeed(nodeId)) >>> 0;
       const sprite: LoweredSprite | undefined = textureUrl
-        ? { kind: "texture", url: textureUrl, columns, rows, frames, frame: 0 }
+        ? { kind: "texture", url: textureUrl, columns, rows, frames, frame: 0, ...(textureRef ? { ref: textureRef } : {}) }
         : builtin;
       const atlasKey = sprite ? spriteAtlasKey(sprite) : `flipbook.${columns}x${rows}.${sheetSeed}`;
       return {

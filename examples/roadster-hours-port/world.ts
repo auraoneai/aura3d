@@ -1725,7 +1725,7 @@ export function buildWorld(
     const sparksAtlas = createFlipbookAtlas("sparks", [255, 206, 112]);
     builder.add(effects.flipbook({
       name: "scrape-sparks",
-      texture: sparksAtlas.texture as never,
+      texture: sparksAtlas.texture,
       spriteColumns: sparksAtlas.columns,
       spriteRows: sparksAtlas.rows,
       frameRate: 30,

@@ -863,17 +863,18 @@ app.onFrame((frame) => {
 void app.ready();
 ```
 
-## 18. A game shell on the 5.7.0 kits (autoplay, interpolation, hit feel, painted sky)
+## 18. A game shell on the 5.7.0 kits (autoplay, interpolation, hit feel, VFX sheet, painted sky)
 
-The 30 live games each hand-wrote an autoplay flag reader, a results-then-restart timer, a snapshot presenter, a hit-stop rig, procedural sound cues, a screen flash and a painted sky dome. All of them are library calls now; this recipe wires them into one fixed-step loop. Use these, not your own copies.
+The 30 live games each hand-wrote an autoplay flag reader, a results-then-restart timer, a snapshot presenter, a hit-stop rig, procedural sound cues, a screen flash, a VFX sheet and a painted sky dome. All of them are library calls now; this recipe wires them into one fixed-step loop. Use these, not your own copies.
 
 ```ts
-import { camera, createAuraApp, createFixedStepLoop, lights, material, primitives, scene, sky } from "@aura3d/engine";
+import { camera, createAuraApp, createFixedStepLoop, effects, lights, material, primitives, scene, sky } from "@aura3d/engine";
 import {
-  createAutoplayHarness, createImpactRig, createProceduralSfx, createSnapshotInterpolator,
+  createAutoplayHarness, createFlipbookAtlas, createImpactRig, createProceduralSfx, createSnapshotInterpolator,
   flashStrength, GameRng, mixNumber, readAutoplayFlag, ScreenFx
 } from "@aura3d/engine/game";
 
+const sparks = createFlipbookAtlas("sparks", [255, 206, 112]); // 8 x 4 procedural sheet, no image file
 const app = createAuraApp("#app", {
   scene: scene()
     .add(sky.gradient({ horizon: "#f6d7b0", mid: { color: "#7fb2e0", blend: [0, 0.12] }, zenith: "#2a5fa8", haze: { intensity: 0.2 },
@@ -881,6 +882,8 @@ const app = createAuraApp("#app", {
     .add(lights.key({ target: [0, 0, 0], shadow: { softness: 2 } }))
     .add(primitives.plane({ name: "track", size: [40, 1, 8], material: material.pbr({ color: "#7d8a6a", roughness: 0.95 }) }))
     .add(primitives.box({ name: "runner", size: 0.8, material: material.pbr({ color: "#e4572e", roughness: 0.4 }) }).position(0, 0.4, 0).runtime({ id: "runner", mutable: true }))
+    .add(effects.flipbook({ name: "runner-sparks", texture: sparks.texture, spriteColumns: sparks.columns, spriteRows: sparks.rows,
+      frameRate: 30, size: 1.2, blend: "additive" }).position(-15, 0.6, 0).runtime({ id: "runner-sparks", mutable: true }))
     .camera(camera.perspective({ position: [0, 3, 9], target: [0, 0.5, 0], fov: 45 }))
 });
 
@@ -934,6 +937,7 @@ const loop = createFixedStepLoop({
     if (autopilot) autoplay.tick(frameSeconds);
     const shown = presenter.present(loop, true);
     app.nodes.require("runner").setPosition(shown.x + f.shakeOffset[0], 0.4 + f.shakeOffset[1], 0);
+    app.nodes.require("runner-sparks").setPosition(shown.x, 0.6, 0); // the looping sheet trails the runner
   }
 });
 void app.ready().then(() => loop.start());
@@ -942,7 +946,7 @@ void app.ready().then(() => loop.start());
 - **Autoplay.** Every game supports `?autoplay=1`. `readAutoplayFlag` accepts `autoplay`, `autopilot` and `demo` (any value but `0`/`false`); the bot is game code and feeds the same input path as the keys; `createAutoplayHarness` holds the results about 3 s and calls your normal restart. Fold `autoplay.diag()` into your QA hook. [game-autoplay](../api/game-autoplay.md).
 - **Interpolation.** `createSnapshotInterpolator` blends the last two steps by the loop's `alpha` and declares the snap rule once, so a restart or teleport never slides across the screen. Pass `create` for an allocation-free pool. [motion-snapshot-interpolator](../api/motion-snapshot-interpolator.md).
 - **Feel.** `createImpactRig` runs hit-stop, trauma and FOV kick on real frame time (a freeze always ends, M2); `createProceduralSfx` plays six zero-asset cues; `ScreenFx` flashes, reveals and vignettes; `drainPopups` reads score popups by `seq`; `GameRng` is the seeded, counted RNG the sim owns. [game-feel](../api/game-feel.md).
-- **VFX sheets and grade.** `createFlipbookAtlas("sparks" | "muzzle" | "dust" | "ink" | "plasma" | "ripple", tint)` builds an 8 x 4 flipbook for `effects.flipbook({ texture, spriteColumns, spriteRows })`, and `createGradingLut("cinema-warm" | "broadcast-crisp" | "cyber-neon")` a strip LUT for `output.lut`, with no image files. The `effects.flipbook` `texture` type does not accept the data texture yet, so pass it as the doc shows. [game-vfx-sheets](../api/game-vfx-sheets.md).
+- **VFX sheets and grade.** `createFlipbookAtlas("sparks" | "muzzle" | "dust" | "ink" | "plasma" | "ripple", tint)` builds an 8 x 4 flipbook for `effects.flipbook({ texture, spriteColumns, spriteRows })`, and `createGradingLut("cinema-warm" | "broadcast-crisp" | "cyber-neon")` a strip LUT for `output.lut`, with no image files; pass `atlas.texture` straight to `effects.flipbook` (no cast since 5.7.0). [game-vfx-sheets](../api/game-vfx-sheets.md).
 - **Sky and shadow.** `sky.gradient` with `mid`, `haze` and a sun `glow` is the painted game sky; write a custom dome only for clouds, stars or planets. `shadow: { softness: 2 }` widens the sun's penumbra; `shadow: { fit: { center, extent } }` pins the shadow map to the arena so its texel size does not change with framing. [sky-gradient](../api/sky-gradient.md), [shadow-softness](../api/shadow-softness.md).
 - **Humanoids.** A rigged humanoid playing generated or imported clips uses `createHumanoidAnimator` from `@aura3d/engine/animation` (cross-fades, mirrored clips, `humanoidLocomotionTime` so planted feet do not slide), never a per-game motion player. [humanoid-motion](../api/humanoid-motion.md).
 

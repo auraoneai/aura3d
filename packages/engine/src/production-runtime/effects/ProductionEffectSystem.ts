@@ -66,6 +66,15 @@ export function writeSpriteFrames(state: EmitterState, out: Float32Array, live: 
   for (let i = 0; i < live; i++) out[i * 16 + 13] = vfxSpriteFrame(fixed, state.age[i], state.life[i]);
 }
 
+/**
+ * 5.7.0: the device texture behind a live handle (`TextureHandle.texture`, e.g. `createFlipbookAtlas().texture`),
+ * or null when the ref carries none or it was disposed (the batch then draws the soft-dot).
+ */
+function liveRefTexture(ref: unknown): Texture | null {
+  const backing = (ref as { texture?: unknown }).texture;
+  return backing instanceof Texture && !backing.disposed ? backing : null;
+}
+
 /** §8.2 weather volume binding — stateless positions, packed fresh in feed. */
 interface VolumeBinding {
   readonly lowered: LoweredVolumeEffect;
@@ -1945,7 +1954,10 @@ export class ProductionEffectSystem {
 
   /** GU47 E-F: texture for a lowered sprite, or null while it loads (or after it failed). */
   private spriteTexture(sprite: LoweredSprite): Texture | null {
-    return sprite.kind === "builtin" ? this.sprites.builtin(sprite.name) : this.sprites.texture(sprite.url);
+    if (sprite.kind === "builtin") return this.sprites.builtin(sprite.name);
+    // 5.7.0: a live handle (texture.data, createFlipbookAtlas().texture) is sampled directly; a disposed one draws the soft-dot.
+    if (sprite.ref) return liveRefTexture(sprite.ref);
+    return this.sprites.texture(sprite.url);
   }
 
   /** GU47 E-F: load state of every sprite texture requested so far (`vfx:<name>` / `tex:<url>`). */

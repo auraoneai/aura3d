@@ -577,7 +577,7 @@ export function buildWorld(options: WorldOptions): World {
     for (let i = 0; i < FLIPBOOK_POOL; i++) {
       builder.add(effects.flipbook({
         name: `spark-burst-${i}`,
-        texture: sparksAtlas.texture as never,
+        texture: sparksAtlas.texture,
         spriteColumns: sparksAtlas.columns,
         spriteRows: sparksAtlas.rows,
         frameRate: 30,
@@ -590,7 +590,7 @@ export function buildWorld(options: WorldOptions): World {
       }).runtime({ id: `spark-burst-${i}` }));
       builder.add(effects.flipbook({
         name: `smoke-step-${i}`,
-        texture: dustAtlas.texture as never,
+        texture: dustAtlas.texture,
         spriteColumns: dustAtlas.columns,
         spriteRows: dustAtlas.rows,
         frameRate: 26,

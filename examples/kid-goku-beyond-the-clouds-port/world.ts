@@ -498,11 +498,11 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
     const dustAtlas = createSkyFlipbookAtlas("dust", [238, 245, 255]);
     const sparkAtlas = createSkyFlipbookAtlas("sparks", [255, 198, 92]);
     b.add(flipbookWithVisibility({
-      name: "vfx-cloud-wake", texture: dustAtlas.texture as never, spriteColumns: dustAtlas.columns, spriteRows: dustAtlas.rows,
+      name: "vfx-cloud-wake", texture: dustAtlas.texture, spriteColumns: dustAtlas.columns, spriteRows: dustAtlas.rows,
       frameRate: 28, size: 1.9, color: "#eef3f8", intensity: 0.95, blend: "alpha", position: [0, -1000, 0], visible: false
     }).runtime({ id: "vfx-cloud-wake" }));
     b.add(flipbookWithVisibility({
-      name: "vfx-orb-spark", texture: sparkAtlas.texture as never, spriteColumns: sparkAtlas.columns, spriteRows: sparkAtlas.rows,
+      name: "vfx-orb-spark", texture: sparkAtlas.texture, spriteColumns: sparkAtlas.columns, spriteRows: sparkAtlas.rows,
       frameRate: 34, size: 2.1, color: "#ffb347", intensity: 1.45, blend: "additive", position: [0, -1000, 0], visible: false
     }).runtime({ id: "vfx-orb-spark" }));
   }
