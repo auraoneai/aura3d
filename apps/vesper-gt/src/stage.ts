@@ -4,17 +4,17 @@ import {
 import { assets } from "./aura-assets";
 
 // An automotive photo stage with an uninterrupted floor-to-wall sweep.
-// Cool daylight on the garnet body, with long ceiling and side-strip reflections.
+// Broad bounce light reveals the pigment. The two diffusers shape the roof and flank.
 export const lightSetups = {
   daylight: {
-    key: { position: [3.8, 6, 4] as AuraVec3, color: "#fff4e7", intensity: 1.55 },
-    rim: { position: [-2.8, 3.2, -3.5] as AuraVec3, color: "#d4e1f1", intensity: 1.35 },
-    side: { position: [3.6, 1.95, 0.65] as AuraVec3, color: "#fff6ee", intensity: 5.6 }
+    key: { position: [2.5, 7, 4] as AuraVec3, color: "#f2e9df", intensity: 0.52 },
+    rim: { position: [-3.4, 4.3, -3.5] as AuraVec3, color: "#cbd7e2", intensity: 0.68 },
+    side: { position: [3.8, 3.4, 0.15] as AuraVec3, color: "#eee2d8", intensity: 1.32 }
   },
   tungsten: {
-    key: { position: [-2.7, 3.2, 4.6] as AuraVec3, color: "#ffc28a", intensity: 1.65 },
-    rim: { position: [3.7, 2.8, -3.2] as AuraVec3, color: "#fff0da", intensity: 1.6 },
-    side: { position: [3.0, 2.9, -1.0] as AuraVec3, color: "#ffba8f", intensity: 1.8 }
+    key: { position: [-3.2, 4.8, 3.9] as AuraVec3, color: "#ffbb83", intensity: 0.83 },
+    rim: { position: [3.9, 3.7, -3.2] as AuraVec3, color: "#e5d5be", intensity: 0.77 },
+    side: { position: [3.35, 3.5, -1.2] as AuraVec3, color: "#efae82", intensity: 1.07 }
   }
 };
 export const views = {
@@ -51,7 +51,7 @@ function studioSweep() {
   });
   return geometry.custom(geometry.define({ positions: Float32Array.from(positions), normals: Float32Array.from(normals),
     indices: Uint16Array.from(indices) }), {
-    name: "seamless graphite cyclorama", material: material.pbr({ color: "#262a30", roughness: 0.89, metalness: 0.02 }),
+    name: "seamless graphite cyclorama", material: material.pbr({ color: "#222529", roughness: 0.96, metalness: 0 }),
     receiveShadow: true, castShadow: false
   });
 }
@@ -60,14 +60,15 @@ export function buildStudio(position: AuraVec3) {
   const target = views.body.target;
   return scene().background("#222b33")
     .camera(camera.perspective({ position, target, fov, near: 0.035, far: 75 }))
-    .add(environments.hdri({ name: "photography studio", texture: assets.studio, intensity: 0.98, rotation: 1.12, background: false }))
+    .add(environments.hdri({ name: "photography studio", texture: assets.studio, intensity: 0.31, rotation: 1.12, background: false }))
+    .add(lights.hemisphere({ name: "studio bounce", skyColor: "#ded9d4", groundColor: "#75666a", intensity: 0.88 }))
     .add(studioSweep())
-    .add(lights.key({ name: "studio key", target, shadow: { filter: "pcss", lightSize: 0.6, softness: 2, bias: 0.002, intensity: 0.8 }, ...lightSetups.daylight.key }).runtime(game.runtimeNode("key")))
-    .add(lights.rectArea({ name: "rear diffusion panel", width: 4.8, height: 1.45, target, ...lightSetups.daylight.rim }).runtime(game.runtimeNode("rim")))
-    .add(lights.rectArea({ name: "long side softbox", target, width: 6.4, height: 1.9,
+    .add(lights.key({ name: "studio key", target, shadow: { filter: "pcss", lightSize: 0.82, softness: 2, bias: 0.002, intensity: 0.88 }, ...lightSetups.daylight.key }).runtime(game.runtimeNode("key")))
+    .add(lights.rectArea({ name: "rear diffusion panel", width: 5.8, height: 2.2, target, ...lightSetups.daylight.rim }).runtime(game.runtimeNode("rim")))
+    .add(lights.rectArea({ name: "long side softbox", target, width: 6.8, height: 2.7,
       ...lightSetups.daylight.side }).runtime(game.runtimeNode("side")))
     .add(lights.spot({ name: "backdrop wash", position: [-2, 3, -2.5], target: [-4.8, 1, -5.5],
-      angle: 0.95, penumbra: 0.95, distance: 11, color: "#b8c8dd", intensity: 18 }))
+      angle: 0.95, penumbra: 0.95, distance: 11, color: "#bbc4d0", intensity: 7 }))
     .add(model(assets.coupe, { name: "Vesper GT", scaleMode: "world", castShadow: true, receiveShadow: true }))
     .add(effects.contactShadows({ length: 0.23, intensity: 0.75, steps: 8 }))
     .add(effects.antiAlias({ mode: "fxaa" }));
