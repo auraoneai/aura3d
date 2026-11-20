@@ -539,7 +539,7 @@ describe("ShaderLibrary", () => {
     expect(clearcoatTransmission.fragment).toContain("step(0.5, u_clearcoatTextureEnabled)");
     expect(clearcoatTransmission.fragment).toContain("float clearcoatRoughness = max(clamp(u_clearcoatRoughnessFactor, 0.0, 1.0), 0.18);");
     expect(clearcoatTransmission.fragment).toContain("clearcoatRoughness = max(clearcoatRoughness, 0.19 + (1.0 - clearcoatNormalBoost) * 0.12);");
-    expect(clearcoatTransmission.fragment).toContain("a3dTexturedPbrEnvironmentSpecularInput(clearcoatNormalDirection, viewDirection, clamp(clearcoatRoughness, 0.18, 1.0))");
+    expect(clearcoatTransmission.fragment).toContain("a3dTexturedPbrEnvironmentSpecularInput(clearcoatNormalDirection, viewDirection, clearcoat > 0.0 ? coatRoughness : clamp(clearcoatRoughness, 0.18, 1.0))");
     expect(clearcoatTransmission.fragment).toContain("texture(u_transmissionTexture, a3dTexturedPbrWrapUv(transmissionUv, u_transmissionTextureWrap))");
     expect(clearcoatTransmission.fragment).toContain("texture(u_diffuseTransmissionTexture, a3dTexturedPbrWrapUv(diffuseTransmissionUv, u_diffuseTransmissionTextureWrap))");
     expect(clearcoatTransmission.fragment).toContain("texture(u_diffuseTransmissionColorTexture, a3dTexturedPbrWrapUv(diffuseTransmissionColorUv, u_diffuseTransmissionColorTextureWrap))");
@@ -597,7 +597,7 @@ describe("ShaderLibrary", () => {
     expect(compiled.fragment).toContain("clearcoatNormalDirection,\n    v_tangent,\n    viewDirection");
     expect(compiled.fragment).toContain("vec3 a3dTexturedPbrThinFilmFresnel(");
     expect(compiled.fragment).toContain("vec3 iridescenceLobe = (filmF - a3dFresnelSchlick(substrateF0, vDotH)) * clamp(iridescence, 0.0, 1.0) * filmD * filmG;");
-    expect(compiled.fragment).toContain("vec3 extensionEnvironmentSpecular = a3dTexturedPbrEnvironmentSpecularInput(clearcoatNormalDirection, viewDirection, clamp(clearcoatRoughness, 0.18, 1.0));");
+    expect(compiled.fragment).toContain("vec3 extensionEnvironmentSpecular = a3dTexturedPbrEnvironmentSpecularInput(clearcoatNormalDirection, viewDirection, clearcoat > 0.0 ? coatRoughness : clamp(clearcoatRoughness, 0.18, 1.0));");
     expect(compiled.fragment).toContain("vec3 boundedSpecularRadiance = min(specularRadiance * mix(0.1, 0.82, faceOn), vec3(mix(0.08, 0.95, faceOn)));");
     expect(compiled.fragment).toContain("vec3 clearcoatLobe = specularRadiance * clearcoatF * clamp(clearcoat, 0.0, 1.0);");
     expect(compiled.fragment).toContain("vec3 iridescenceLobe = substrateSpecularRadiance * (filmF - a3dFresnelSchlick(substrateF0, filmNdotV)) * clamp(iridescence, 0.0, 1.0);");

@@ -2794,6 +2794,7 @@ vec3 a3dTexturedPbrExtensionDirectLight(
   float lightIntensity,
   float clearcoat,
   float clearcoatRoughness,
+  float coatRoughness,
   vec3 sheenColor,
   float sheenRoughness,
   float anisotropy,
@@ -2814,10 +2815,12 @@ vec3 a3dTexturedPbrExtensionDirectLight(
   float nDotV = max(a3dSaturate(dot(N, V)), A3D_EPSILON);
   float nDotH = a3dSaturate(dot(N, H));
   float vDotH = a3dSaturate(dot(V, H));
+  // The anisotropy lobe keeps its 0.18 shape floor; only the coat lobe takes the resolved coat roughness.
   float clearcoatRough = clamp(clearcoatRoughness, 0.18, 1.0);
+  float coatRough = clamp(coatRoughness, 0.0525, 1.0);
   vec3 clearcoatF = a3dFresnelSchlick(vec3(0.04), vDotH);
-  float clearcoatD = a3dDistributionGGX(nDotH, clearcoatRough);
-  float clearcoatG = a3dGeometrySmithGGXCorrelated(nDotV, nDotL, clearcoatRough);
+  float clearcoatD = a3dDistributionGGX(nDotH, coatRough);
+  float clearcoatG = a3dGeometrySmithGGXCorrelated(nDotV, nDotL, coatRough);
   vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0);
   float sheenDistribution = a3dTexturedPbrCharlieSheen(nDotH, sheenRoughness);
   float sheenVisibility = 1.0 / max(4.0 * (nDotV + nDotL - nDotV * nDotL), A3D_EPSILON);
@@ -2843,6 +2846,7 @@ vec3 a3dTexturedPbrExtensionEnvironmentLight(
   vec3 specularRadiance,
   float clearcoat,
   float clearcoatRoughness,
+  float coatRoughness,
   vec3 sheenColor,
   float sheenRoughness,
   float anisotropy,
@@ -2856,7 +2860,7 @@ vec3 a3dTexturedPbrExtensionEnvironmentLight(
   vec3 substrateSpecularRadiance
 ) {
   float nDotV = max(a3dSaturate(dot(normalize(normal), normalize(viewDirection))), A3D_EPSILON);
-  vec3 clearcoatF = a3dFresnelSchlickRoughness(vec3(0.04), nDotV, clamp(clearcoatRoughness, 0.18, 1.0));
+  vec3 clearcoatF = a3dFresnelSchlickRoughness(vec3(0.04), nDotV, clamp(coatRoughness, 0.0525, 1.0));
   float faceOn = smoothstep(0.18, 0.68, nDotV);
   vec3 boundedSpecularRadiance = min(specularRadiance * mix(0.1, 0.82, faceOn), vec3(mix(0.08, 0.95, faceOn)));
   vec3 clearcoatLobe = specularRadiance * clearcoatF * clamp(clearcoat, 0.0, 1.0);
@@ -3034,6 +3038,8 @@ void main() {
 #endif
   float clearcoat = clamp(u_clearcoatFactor * clearcoatNormalBoost, 0.0, 1.0);
   float clearcoatRoughness = max(clamp(u_clearcoatRoughnessFactor, 0.0, 1.0), 0.18);
+  float clearcoatAuthoredRoughness = clamp(u_clearcoatRoughnessFactor, 0.0, 1.0);
+  float clearcoatNormalWidening = 0.0;
   float transmission = clamp(u_transmissionFactor, 0.0, 1.0);
   float diffuseTransmission = clamp(u_diffuseTransmissionFactor, 0.0, 1.0);
   vec3 diffuseTransmissionColor = clamp(u_diffuseTransmissionColorFactor, vec3(0.0), vec3(1.0));
@@ -3053,12 +3059,26 @@ void main() {
   clearcoat = clamp(clearcoat * mix(1.0, texture(u_clearcoatTexture, a3dTexturedPbrWrapUv(clearcoatUv, u_clearcoatTextureWrap)).r, step(0.5, u_clearcoatTextureEnabled)), 0.0, 1.0);
 #endif
 #ifdef A3D_PBR_EXTENSION_ATLAS
-  clearcoatRoughness = clamp(clearcoatRoughness * mix(1.0, a3dAtlasSample(clearcoatRoughnessUv, u_clearcoatRoughnessAtlasRect, u_clearcoatRoughnessAtlasY, u_clearcoatRoughnessTextureWrap, u_clearcoatRoughnessAtlasFilter).g, step(0.5, u_clearcoatRoughnessTextureEnabled)), 0.0, 1.0);
+  float clearcoatRoughnessSample = mix(1.0, a3dAtlasSample(clearcoatRoughnessUv, u_clearcoatRoughnessAtlasRect, u_clearcoatRoughnessAtlasY, u_clearcoatRoughnessTextureWrap, u_clearcoatRoughnessAtlasFilter).g, step(0.5, u_clearcoatRoughnessTextureEnabled));
 #else
-  clearcoatRoughness = clamp(clearcoatRoughness * mix(1.0, texture(u_clearcoatRoughnessTexture, a3dTexturedPbrWrapUv(clearcoatRoughnessUv, u_clearcoatRoughnessTextureWrap)).g, step(0.5, u_clearcoatRoughnessTextureEnabled)), 0.0, 1.0);
+  float clearcoatRoughnessSample = mix(1.0, texture(u_clearcoatRoughnessTexture, a3dTexturedPbrWrapUv(clearcoatRoughnessUv, u_clearcoatRoughnessTextureWrap)).g, step(0.5, u_clearcoatRoughnessTextureEnabled));
 #endif
+  clearcoatRoughness = clamp(clearcoatRoughness * clearcoatRoughnessSample, 0.0, 1.0);
   clearcoatRoughness = max(clearcoatRoughness, 0.19 + (1.0 - clearcoatNormalBoost) * 0.12);
+  clearcoatAuthoredRoughness = clamp(clearcoatAuthoredRoughness * clearcoatRoughnessSample, 0.0, 1.0);
+  // A coat normal map still widens the coat lobe (normal-map shimmer guard); without one it adds nothing.
+  clearcoatNormalWidening = (1.0 - clearcoatNormalBoost) * 0.12 * clearcoatNormalTextureWeight;
 #endif
+  // 5.7.1: the coat lobes resolve roughness like the WebGPU generated program and the WebGL2 physical path
+  // (a3dPrd04ResolveRoughness): the authored value with a 0.0525 floor plus the geometric-normal derivative term
+  // (specular anti-aliasing on curved or minified surfaces). The old 0.18 / 0.19 floor blurred glTF coats authored
+  // below ~0.19. clearcoatRoughness keeps its old value for the lobes that are not the coat (anisotropy, the
+  // transmission specular estimate) on uncoated surfaces, so materials without clearcoat render as before.
+  vec3 clearcoatGeometryNormalDx = dFdx(geometryNormal);
+  vec3 clearcoatGeometryNormalDy = dFdy(geometryNormal);
+  float clearcoatGeometryRoughness = min(sqrt(max(dot(clearcoatGeometryNormalDx, clearcoatGeometryNormalDx), dot(clearcoatGeometryNormalDy, clearcoatGeometryNormalDy))), 1.0);
+  float coatRoughness = clamp(max(clearcoatAuthoredRoughness, 0.0525 + clearcoatNormalWidening) + clearcoatGeometryRoughness, 0.0525, 1.0);
+  float coatLobeRoughness = clearcoat > 0.0 ? coatRoughness : clearcoatRoughness;
 #ifdef A3D_PBR_TRANSMISSION_VOLUME_TEXTURES
   transmission = clamp(transmission * mix(1.0, texture(u_transmissionTexture, a3dTexturedPbrWrapUv(transmissionUv, u_transmissionTextureWrap)).r, step(0.5, u_transmissionTextureEnabled)), 0.0, 1.0);
   diffuseTransmission = clamp(diffuseTransmission * mix(1.0, texture(u_diffuseTransmissionTexture, a3dTexturedPbrWrapUv(diffuseTransmissionUv, u_diffuseTransmissionTextureWrap)).r, step(0.5, u_diffuseTransmissionTextureEnabled)), 0.0, 1.0);
@@ -3098,7 +3118,7 @@ void main() {
   vec3 base = a3dApplyAdvancedPbrLobes(
     texturedBase.rgb,
     clearcoat,
-    clearcoatRoughness,
+    coatLobeRoughness,
     transmission,
     diffuseTransmission,
     diffuseTransmissionColor,
@@ -3128,7 +3148,7 @@ void main() {
   float sourcePaintDirectDetail = mix(0.82, 1.22, sourcePaintDepthSignal);
   float environmentNdotV = clamp(dot(mappedNormal, viewDirection), 0.0, 1.0);
   vec2 environmentBrdf = mix(vec2(1.0, 0.0), texture(u_environmentBrdfLutTexture, vec2(environmentNdotV, roughness)).rg, step(0.0001, u_environmentBrdfLutEnabled));
-  vec3 extensionEnvironmentSpecular = a3dTexturedPbrEnvironmentSpecularInput(clearcoatNormalDirection, viewDirection, clamp(clearcoatRoughness, 0.18, 1.0));
+  vec3 extensionEnvironmentSpecular = a3dTexturedPbrEnvironmentSpecularInput(clearcoatNormalDirection, viewDirection, clearcoat > 0.0 ? coatRoughness : clamp(clearcoatRoughness, 0.18, 1.0));
   vec3 emissiveSample = a3dTexturedPbrDecodeSrgb(texture(u_emissiveTexture, a3dTexturedPbrWrapUv(emissiveUv, u_emissiveTextureWrap)).rgb);
   vec3 shaded = u_emissiveColor * u_emissiveStrength * mix(vec3(1.0), emissiveSample, step(0.5, u_emissiveTextureEnabled)) + a3dPbrEnvironmentLightSplitSum(
     mappedNormal,
@@ -3148,6 +3168,7 @@ void main() {
     extensionEnvironmentSpecular,
     clearcoat,
     clearcoatRoughness,
+    coatRoughness,
     sheenColor,
     sheenRoughness,
     anisotropy,
@@ -3281,6 +3302,7 @@ void main() {
       directLightIntensity,
       clearcoat,
       clearcoatRoughness,
+      coatRoughness,
       sheenColor,
       sheenRoughness,
       anisotropy,
