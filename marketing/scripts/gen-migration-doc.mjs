@@ -206,7 +206,7 @@ function render() {
       "@type": "TechArticle",
       headline: title,
       description,
-      softwareVersion: version,
+      about: { "@type": "SoftwareApplication", name: "Aura3D", applicationCategory: "DeveloperApplication", operatingSystem: "Web", softwareVersion: version },
       url: canonical,
       publisher: { "@type": "Organization", name: "Aura3D" }
     })}</script>`
