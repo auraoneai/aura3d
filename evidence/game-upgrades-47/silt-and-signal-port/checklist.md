@@ -35,7 +35,7 @@ E-I captures / measured budgets on the remote runner; "WP-36" = waits for genera
 | DG-M2 | >= 4 hues 12 deg apart, plaster kept, stain band | unit; wall stddev phase 2 |
 | DG-M3 | glint, fresnel, streaks, one pass | done (water-ink); pixel numbers phase 2 |
 | DG-M4 | jade only on ring, board, HUD | unit (no cyan in the scene; jade beacon and strips); bronze verdigris masts not done |
-| DG-A1..A5 | Meshy flora, dwellings, retextures, mast, landmarks | blocked (WP-36); thruster spheres removed (A3 part) |
+| DG-A1..A5 | Generated flora, dwellings, retextures, mast, landmarks | blocked (WP-36); thruster spheres removed (A3 part) |
 | DG-V1 | wake gate (< 6 m, > 20 speed; 0 above 10 m), <= 600 | unit; bottom cell +4 phase 2 |
 | DG-V2 | twin jade trails on E-F trail | done; length on boost phase 2 |
 | DG-V3 | silt-signal burst, impact dust | unit |
@@ -74,5 +74,5 @@ E-I captures / measured budgets on the remote runner; "WP-36" = waits for genera
 | every changed view beats 4.6.2 | done: panel `g24p4r4a` (final code) 3/0/0 on default, ch0, ch2, ch3, ch4, ch5; `g24p4r2a` 3/0/0 on the same six |
 | rubric >= 7 per category | not met: `look-judgement-p4r4b.json` (= `look-judgement.json`) min 3.5 (ibl), `look-judgement-p4r4a.json` min 3 (ibl); only ui_hud reaches 7 |
 | distinctness vs 8 genre neighbours | done: `sibling-p4/<slug>/judge-results.json`, all same_game false at 0.848-0.943 |
-| WP-36 assets (30 rows) | blocked: Meshy keys refuse API calls (orchestrator cutoff note). Arrived but not used: `duneCourierOchre` (static, unrigged retexture) and `duneCourierRig` (rig of the old courier mesh: old texture, no idle clip) |
+| WP-36 assets (30 rows) | blocked: asset generation unavailable (orchestrator cutoff note). Arrived but not used: `duneCourierOchre` (static, unrigged retexture) and `duneCourierRig` (rig of the old courier mesh: old texture, no idle clip) |
 | game-checks | 0 errors, 14 warnings (luma-band; bands not widened) |

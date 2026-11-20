@@ -50,7 +50,7 @@ crowd whose heads follow the rally."
   (`public/hdri/ATTRIBUTION.md`); `rooftop_night`, `venice_sunset`, `outdoor-midday` and `deep_space_starfield` also appear
   in other sports rows of §6.1 (G07, G08, G10). The `look-identity` check compares primary environments only.
 - No rooftop prop or cyan floodlit Moon shared with Diamond: the Moon here is a hard white sun on grey regolith; the two
-  `rooftop*Meshy` props are replaced by tennis-only models in TT-A2 (WP-36 assets).
+  `rooftop*` props are replaced by tennis-only models in TT-A2 (WP-36 assets).
 - Signature string is unique among live games (ball marks + bounce puffs + head-following crowd).
 
 ## Budget row (PRD WP-11)

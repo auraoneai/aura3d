@@ -1,6 +1,6 @@
 # Shadowstep Gauntlet: 4.3.0 art pass (before / after)
 
-Ten generated models replace the placeholder scenery (box houses, flat-faceted cliffs, cone tufts, low-poly rocks, smooth sphere hills, stone-slab fences, box stalls and box pagoda stacks). Meshy text-to-3D through Kiro Prism with own text prompts, remeshed to about 4,500 triangles, optimised to 512-640 px textures (ledger tag `ninja`, prompts and task ids in `examples/ninja-runner-port/assets/ATTRIBUTION.md`, provenance in `assets/provenance/*.json`).
+Ten generated models replace the placeholder scenery (box houses, flat-faceted cliffs, cone tufts, low-poly rocks, smooth sphere hills, stone-slab fences, box stalls and box pagoda stacks). Text-to-3D generation from own text prompts, remeshed to about 4,500 triangles, optimised to 512-640 px textures (ledger tag `ninja`, prompts and task ids in `examples/ninja-runner-port/assets/ATTRIBUTION.md`, provenance in `assets/provenance/*.json`).
 
 Frames: `<biome>-before-after.jpg` (left: 4.2.0 scenery, right: art pass). Software WebGL2 on the remote runner (`tools/remote-acr/run.sh`, run ids `p1shstep-*`), 960x540, high quality, `tests/browser/ninja-runner-art-{a,b,c}.spec.ts` autopilot frames. Not real-GPU evidence. The valley and finish "after" frames come from an earlier iteration (valley outcrops sunk deeper, fence rails not yet in); the shipped look is in `evidence/ninja-runner-port/screens/final/`.
 

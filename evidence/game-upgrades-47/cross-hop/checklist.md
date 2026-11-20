@@ -44,8 +44,8 @@ Status per acceptance line. "phase 2" = needs remote captures, measured budgets 
 |---|---|
 | shadows (CH47-01) | shadow map rendered and sampled but invisible on this scene in software WebGL2 (probes g14p4-a/b/c, all filters, fits and fills); sun-cast shadow decals shipped on themes 1-5 (panel won); rubric shadows 4 / 4 (not 7): engine handoff |
 | ibl_reflections | clearcoat river on the vivid views (panel won); rubric 4.5 / 3.5 (not 7) |
-| CH47-09 coin | done: Meshy `xhopCoin` admitted (licence, rights, provenance) and swapped in on themes 1-5; logs replaced by toy rafts (presentation; hitbox unchanged); log, pad and stone Meshy rows blocked: Meshy keys refuse API calls |
-| CH47-10, 15, 16 | blocked: Meshy keys refuse API calls |
+| CH47-09 coin | done: `xhopCoin` admitted (licence, rights, provenance) and swapped in on themes 1-5; logs replaced by toy rafts (presentation; hitbox unchanged); log, pad and stone rows blocked: asset generation unavailable |
+| CH47-10, 15, 16 | blocked: asset generation unavailable |
 | CH47-20 rubric >= 7 | not met: min 4 / 3.5 (two runs, `look-judgement-p4*.json`) |
 | CH47-20 distinctness | pass vs cloud-runner (0.814), splat-rush (0.933), serpentine (0.927), ninja-runner (0.906); pips-big-leap 0.785 and 0.786 (fail; tell: both heroes are glossy blush-cheek figurines) |
 | panel per changed view | theme1 3/0, theme2 3/0, theme5 3/0 (`g14p4r2`), theme3 3/0, theme4 3/0 (`g14p4r3`); theme0 and original unchanged (1/1/1 reverted) |

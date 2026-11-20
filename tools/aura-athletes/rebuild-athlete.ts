@@ -6,7 +6,7 @@
  *   node_modules/.bin/tsx --tsconfig tsconfig.base.json tools/aura-athletes/rebuild-athlete.ts \
  *     --kind hoops|diamond --in <orig.glb> --base <rigged.glb for skeleton/image/material> --out <out.glb> [--keep-frame]
  *
- * The shared Meshy skeleton puts the feet at y = -0.952 in the Hoops/Diamond files and at y = 0 in the Links file; the FC rebuild
+ * The shared athlete skeleton puts the feet at y = -0.952 in the Hoops/Diamond files and at y = 0 in the Links file; the FC rebuild
  * works with the feet at 0, so the input is lifted for the rebuild and lowered again (unless --keep-frame).
  */
 import { mkdtempSync } from "node:fs";

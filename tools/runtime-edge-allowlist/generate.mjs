@@ -24,7 +24,7 @@ const overrides={
  "packages/physics/src/native/NativeQueries.ts":"explicit unsupported shape-pair refusal: native capsule/box sweeps and the inside-origin wheel ray throw for target shapes they do not solve instead of returning a wrong hit",
  "packages/rendering/src/EnvironmentPreset.ts":R.legacyThrowing[1],
  "packages/rendering/src/TerrainTiles.ts":R.legacyThrowing[1],
- "packages/aura3d-cli/src/resolve-ladder.ts":"CLI disclosure: when no recipe matches, the generated crate is labelled PLACEHOLDER with the command to obtain a real model (meshy or assets add)",
+ "packages/aura3d-cli/src/resolve-ladder.ts":"CLI disclosure: when no recipe matches, the generated crate is labelled PLACEHOLDER with the command to obtain a real model (assets add or assets generate)",
  "packages/rendering/src/lighting/PhotometricProfileBindings.ts":"EXPERIMENTAL-5.0 (S5-WP04-03/04): clustered profile indexing is an explicit refusal with scalar-lighting fallback",
  "packages/rendering/src/lighting/ProjectedSpotBindings.ts":"EXPERIMENTAL-5.0 (S5-WP04-03/04): clustered projection indexing and stale/missing projected-image inputs are explicit unsupported results with scalar-lighting fallback",
  "packages/rendering/src/atmosphere/shaders/wetness.glsl.ts":"WebGL2 wetness chunk reports WETNESS_PENDING once when the C-02 generator seam is not provided (flag off); native WebGPU wetness shipped under S5-DEF-02",

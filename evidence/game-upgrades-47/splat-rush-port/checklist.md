@@ -59,8 +59,8 @@ Status per acceptance line. "unit" = covered by `tests/unit/splat-rush-port/gu47
 | shadows | cast shadows that read | crisp gate shadow strips (alpha 0.78), ball shadow 0.75 |
 | ibl_reflections | environment that reflects | analytic deck reflection of gates and ball (+0 draws); enamel dome reflection on rails, gates, ball |
 | distinctness | same_game false at >= 0.8 vs 5 neighbours | done: 0.917 / 0.955 / 0.85 / 0.924 / 0.927 |
-| CR-A1 | WP-36 paint-world GLBs | 1 of 5: `chromaPaintPotIsland` in carnival slots 3 and 6; the other 4 blocked: Meshy keys refuse API calls |
-| CR-A2 / CR-AN2 | gem retextures, easel | blocked: Meshy keys refuse API calls |
+| CR-A1 | WP-36 paint-world GLBs | 1 of 5: `chromaPaintPotIsland` in carnival slots 3 and 6; the other 4 blocked: asset generation unavailable |
+| CR-A2 / CR-AN2 | gem retextures, easel | blocked: asset generation unavailable |
 | screens | retaken on the current build | done from `g16p4-r4` (`p3/retake.py`) |
 | game-checks | 0 errors, no band widened | 0 errors, 0 warnings |
 | D8 | sim, replay, parity green | done: 14 files / 122 tests pass one file at a time (sim 19, reference-replay 6, policy-parity 1) |

@@ -43,6 +43,6 @@ not used; the same source in the clean consumer renders (`../clean-consumer-pres
 
 Not usable as evidence (harness or pre-existing, identical on base where base was captured): Vault Breakers
 (`RENDERER_MOUNT_FAILED: MODEL_CUSTOM_MATERIAL_UNSUPPORTED`, black playfield, base and branch), Bunker Zero and Cross Hop (renderer
-mount failed on a 404 for `/aura-assets/bzGuardMeshy.010bba7b.glb` and `/aura-assets/trafficSedan.5c9c3aaf.glb`: the capture serves the
+mount failed on a 404 for the bunker guard GLB and `/aura-assets/trafficSedan.5c9c3aaf.glb`: the capture serves the
 main checkout's `public/`, which lacks those files; base and branch), Dot Dash (the branch page stopped answering CDP under the shim;
 base not captured).

@@ -16,7 +16,7 @@ Branch `game-rework`. Frames are remote software WebGL2 (SwiftShader), not real-
 
 ## Not done / caveats
 
-- The recolour is a restyle of Meshy art, not new characters. Kenji is still a martial artist in a loose jacket; a stronger change (different silhouette, hair, headwear) needs a new Meshy generation (no credits were spent).
+- The recolour is a restyle of the existing generated art, not new characters. Kenji is still a martial artist in a loose jacket; a stronger change (different silhouette, hair, headwear) needs a new model.
 - The black belt stays black: belt and hair share near-black pixels and cannot be separated by colour.
 - The 390 px layout (four-row bar over the arena, truncated health-bar names) is not touched here (`fix-d-ui` owns layout).
 - Capture note: the capture server logged three 404s for `/apps/showcase-iron-crown/fonts/whitney-*.woff2` and `fonts.css` in the first pass. Production serves them (200); my staging did not copy the route font folder. Not a product defect.

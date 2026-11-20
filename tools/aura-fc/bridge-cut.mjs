@@ -3,7 +3,7 @@
 // played clips exceeds `limit` is removed from the index buffer; vertices, weights, UVs and animations are untouched.
 //   node tools/aura-fc/bridge-cut.mjs <in.glb> <out.glb> [--limit 1.6] [--clips Run,Sprint_Loop,...] [--samples 12] [--sliver 0.1 [--thin 0.1] [--sliver-materials shorts]] [--keep-stretch skin]
 // `--sliver E` also removes rest-pose spikes from the primitives whose material matches `--sliver-materials` (default shorts; on skin and kit
-// it opens holes in thighs and sleeves): triangles with an edge over E metres and an area under `--thin` of that edge squared (Meshy leaves
+// it opens holes in thighs and sleeves): triangles with an edge over E metres and an area under `--thin` of that edge squared (the generated meshes leave
 // thin 15 to 65 cm flaps at the hems that read as shards once a leg swings). Default clips are every animation in the file, so no pose the game can play stretches past the limit.
 import { readGlb, writeGlb } from "./glb.mjs";
 import { loadSkinnedMesh, triangleStretch } from "./skin.mjs";

@@ -1,6 +1,6 @@
 ---
 name: aura3d-retexture
-description: Restyles a finished, admitted mesh while proving the geometry is untouched: before and after `assets inspect` bounds plus a position-accessor hash diff, one material family per map set, and a matched before and after screenshot filmstrip. Use when retexturing, recoloring, reskinning, or restyling an existing GLB or typed `assets.<key>` model, including after `meshy retexture`, a DCC texture pass, or a `model(asset, { material })` tint.
+description: Restyles a finished, admitted mesh while proving the geometry is untouched: before and after `assets inspect` bounds plus a position-accessor hash diff, one material family per map set, and a matched before and after screenshot filmstrip. Use when retexturing, recoloring, reskinning, or restyling an existing GLB or typed `assets.<key>` model, including after a DCC texture pass, or a `model(asset, { material })` tint.
 ---
 
 # Aura3D retexture (geometry untouched)
@@ -21,9 +21,8 @@ benchmark mode) are in
    an admitted typed asset with a license. Keep its original file; never
    overwrite it in place.
 3. Choose the path:
-   - Offline: a new GLB with new maps (a `meshy retexture` result through the
-     `meshy-cli` skill, or a DCC texture pass). This is the only way to change
-     texture maps.
+   - Offline: a new GLB with new maps (a DCC texture pass). This is the only
+     way to change texture maps.
    - Runtime tint: `model(assets.x, { material: material.pbr({ color, roughness, metallic }) })`.
      On typed GLBs this applies a flat tint that replaces surface textures on
      the whole model. It cannot target one part or add maps.
@@ -105,4 +104,3 @@ benchmark mode) are in
 - [Geometry hash script](references/geometry-hash.mjs)
 - [Asset workflow and `assets inspect`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md)
 - [Rendering proof rule](https://github.com/auraoneai/aura3d/blob/main/docs/agents/rendering-proof-required.md)
-- Meshy retexture runs, approval, and `--max-credits`: load `meshy-cli`.

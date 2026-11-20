@@ -1,4 +1,4 @@
-// Rebuilds the arms of a Meshy athlete GLB (run after rebuild-legs.mjs) in the straight pose the skeleton assumes, and stands the
+// Rebuilds the arms of a generated athlete GLB (run after rebuild-legs.mjs) in the straight pose the skeleton assumes, and stands the
 // torso and head upright. The mesh is modelled mid-stride: the spine is bent forward ~30 degrees and the arms are bound bent, so
 // every clip rotated the shoulders and elbows about joints far from the limbs and tore the sleeves into fragments.
 //   1. a per-height shear removes the forward lean of the torso, neck and head (rigid enough: shifts of a few cm over 0.5 m)

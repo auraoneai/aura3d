@@ -39,8 +39,8 @@ const ROUND = {
 
 /** Games whose 4.7.10 release changed their scene (STATE.md 2026-11-02 17:35): the baseline predates the swap. */
 const CHANGED_4710 = {
-  heatsink: 'two Meshy towers added',
-  'aura-links-3d': 'Meshy gorse added',
+  heatsink: 'two towers added',
+  'aura-links-3d': 'gorse added',
   teleoperator: 'Victorian facade added',
   'splat-rush-port': 'palette island added'
 };

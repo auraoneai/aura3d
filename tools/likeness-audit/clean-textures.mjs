@@ -206,9 +206,7 @@ const ROOFTOP = [
   ["rooftopDefender", "rooftopDefender.6c43f9e1.glb"],
   ["rooftopDefenderV2", "rooftopDefenderV2.65bc306f.glb"],
   ["rooftopLayupScorer", "rooftopLayupScorer.03a093f2.glb"],
-  ["rooftopShooterV2", "rooftopShooterV2.602fe28f.glb"],
-  ["rooftopDefenderMeshy", "rooftopDefenderMeshy.c53681c7.glb"],
-  ["rooftopShooterMeshyV1", "rooftopShooterMeshyV1.ed5a33b3.glb"]
+  ["rooftopShooterV2", "rooftopShooterV2.602fe28f.glb"]
 ];
 if (process.argv[2] === "rooftop") {
   // Photographic face scans and marked jerseys: smear every base-colour texture beyond recognition.

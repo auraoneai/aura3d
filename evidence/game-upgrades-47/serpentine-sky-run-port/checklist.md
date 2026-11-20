@@ -37,7 +37,7 @@ Status per row: see `docs/prds/game-upgrades-47/lanes/g17.md`. Pixel, judge and 
 ## Phase 4 (4.7.2) update
 
 - SSR-03: the gates' sun shadows are traced on the road (pillar diagonals, lintel bands). The shadow map reports the whole custom road as shadowed under the low stage suns in software WebGL2: root cause found, engine-side follow-up. A tight contact core sits under the feet.
-- SSR-10/SSR-17: `serpSerpentHead` (WP-36) is admitted and drawn as the serpent landmark beside the road. The other 10 WP-36 rows are blocked because the Meshy keys refuse API calls.
+- SSR-10/SSR-17: `serpSerpentHead` (WP-36) is admitted and drawn as the serpent landmark beside the road. The other 10 WP-36 rows are blocked because asset generation was unavailable.
 - SSR-11: pilgrim gates every 54 m as flag-draw instances (0 new draws).
 - SSR-16: ui_hud 7-7.5 (`look-judgement.json`, `look-judgement-p4b.json`). Final screens retaken (`g17p4-r7-shots`).
 - SSR-20: blind panel `g17p4r7` 3/0/0 better on all nine views. Rubric minimum still 4 (ibl_reflections), so goal 1 is open. Distinctness passes vs cross-hop, pips-big-leap and splat-rush-port, and fails vs ninja-runner-port (true @ 0.583) and cloud-runner-port (false @ 0.767).

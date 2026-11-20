@@ -50,7 +50,6 @@ textures are not committed:
 | Sketchfab Mermaid2 GLB | Sketchfab API authenticated download, model `01371cd3990f4d9587d40244b5e2a0a8` | CC0 Public Domain | authenticated external GLB download, `assets add`, validation, typegen, build, and browser-render evidence in `docs/project/sketchfab-asset-corpus-results.md` |
 
 External wild-asset confidence is still not complete. Authenticated Sketchfab
-CC0 proof now passes, but Meshy coverage still requires a generated/exported
-asset or API credential. Add those source/license notes and run the same
-add/validate/typegen/render flow before broad generated-asset confidence is
-claimed.
+CC0 proof now passes, but generated-model exports are not yet covered. Add
+their source/license notes and run the same add/validate/typegen/render flow
+before broad generated-asset confidence is claimed.

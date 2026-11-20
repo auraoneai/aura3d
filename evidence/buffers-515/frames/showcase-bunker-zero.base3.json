@@ -21,7 +21,7 @@
  "frames": 240,
  "hz": 60,
  "consoleErrors": [
-  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/bzGuardMeshy.010bba7b.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/<bunker guard GLB>: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
  ],
  "real": true
 }

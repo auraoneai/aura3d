@@ -17,8 +17,8 @@ NAMES = {
     "turboCircuitEnvironmentV2",
     "propPineTree", "propRockB", "showcaseTeaHouse", "skylineHeroRunner",
     "courierParcel", "courierTrafficHatch", "courierTrafficSedan", "courierVan",
-    "courierVanMeshyV2Decimated", "courierZoneAwning", "courierZoneBollard",
-    "patrolAircraftMeshy", "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon",
+    "courierZoneAwning", "courierZoneBollard",
+    "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon",
 }
 
 def is_pointer(path):

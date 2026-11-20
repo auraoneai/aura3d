@@ -70,7 +70,7 @@ Every acceptance line of PRD WP-11 with its phase-1 status. `unit` = asserted by
 | Sibling distinctness vs aura-diamond-3d >= 0.8 | not met: 0.794 (was 0.766); crowd and athlete models are the tells (WP-36) |
 | game-checks 0 errors | done: 0 errors, 15 warnings (was 16) |
 | page-parity, look-identity, screens-fresh | fixed |
-| borrowed-asset (3) | waiting on WP-36 Meshy assets |
+| borrowed-asset (3) | waiting on WP-36 assets |
 | luma-band | round-3 rows; bands not widened (see lane report: default band predates the panel-verified HDRI swap) |
 
 ## Phase 4 (4.7.2)
@@ -78,5 +78,5 @@ Every acceptance line of PRD WP-11 with its phase-1 status. `unit` = asserted by
 - Distinctness vs all four sports neighbours: done (`distinct/vs-*-p4final.json`, all >= 0.8).
 - Blind panel `g01p4f1`: all six views better than 4.6.2 (4 at 3/0/0, 2 at 2/1/0).
 - Rubric >= 7 in every category: not met (`look-judgement.json`, `rubric/look-judgement-p4*.json`).
-- WP-36 swaps (TT-A1, TT-A2, TT-A3, TT-A4 poses, TT-W1): blocked: Meshy keys refuse API calls (moved to a later release). Only `tennisSegTorso` admitted (needs the full 11-segment set).
+- WP-36 swaps (TT-A1, TT-A2, TT-A3, TT-A4 poses, TT-W1): blocked: asset generation unavailable (moved to a later release). Only `tennisSegTorso` admitted (needs the full 11-segment set).
 - TT-L2 desert shadow: sun 52/160, athletes cast toward the camera (p4-r3 frame). TT-M2 net: see-through again (opacity 0.5).

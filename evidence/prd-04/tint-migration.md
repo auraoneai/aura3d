@@ -9,7 +9,7 @@ Generated 2026-10-06 by the C-39 codemod `prd04-model-tint-report` (`packages/au
 
 | Site | Construct | Detail | Decision |
 |---|---|---|---|
-| `apps/showcase-patrol-wing/src/main.ts:264` | model(assets.patrolAircraftMeshy, { material }) | color=true emissive=false material={ name: "ghost shell", color: "#9fd8ff", opacity: 0.32, roughness: 0.4 } [props:name,color,opacity,roughness] | TBD |
+| `apps/showcase-patrol-wing/src/main.ts:264` | model(assets.<patrol aircraft>, { material }) | color=true emissive=false material={ name: "ghost shell", color: "#9fd8ff", opacity: 0.32, roughness: 0.4 } [props:name,color,opacity,roughness] | TBD |
 | `apps/showcase-courier-rush/src/main.ts:363` | model(assets.courierParcel, { material }) | color=true emissive=true material={ name: "parcel safety-orange finish", color: "#f5ad4f", roughness: 0.38, metallic: 0.08, clearcoat: 0.2, emissive:  | TBD |
 | `apps/showcase-courier-rush/src/main.ts:386` | model(car.variant === "sedan" ? assets.courierTrafficSedan : assets.courierTrafficHatc, {  | color=true emissive=false material={           name: car.variant === "sedan" ? "courier traffic sedan lacquer" : "courier traffic hatch lacquer",      | TBD |
 | `apps/showcase-courier-rush/src/city.ts:700` | model(assets.courierTrafficSedan, { material }) | color=true emissive=true material={         name: "courier pressure blocker lacquer",         color: "#e85d75",         roughness: 0.2,         metall | TBD |

@@ -123,13 +123,7 @@ export function verifySupplementalEvidence({ runId, plan, check, inventory, api,
       const parsed = api.parseVitestInventory(json(result, 'supplemental Vitest result'), plan.expectedFiles, inventory.sourceRoot, plan.cwd);
       checkSummary(inventory, parsed);
     } else {
-      const stats = plan.runner === 'node-test'
-        ? api.parseTap(output.toString('utf8'))
-        : api.parseSourceShellResult(output.toString('utf8'), invocation.file);
-      if (plan.runner === 'shell') {
-        assert(inventory.countKind === 'file-invocations' && subrun.reportedCases === stats.reportedCases,
-          `supplemental shell result mismatch: ${invocation.file}`);
-      }
+      const stats = api.parseTap(output.toString('utf8'));
       observed.discoveredFiles.push(invocation.file);
       for (const key of ['testCount', 'passedCount', 'failedCount', 'skippedCount']) observed[key] += stats[key];
       observed.testNames.push(...stats.testNames);
@@ -149,7 +143,7 @@ export function verifySourceBuildHandoff({ root, runId, releaseKind, manifestByt
   assert(HASH.test(expectedReportSha256 || ''), 'missing separately retained build report digest');
   assert(Buffer.isBuffer(manifestBytes), 'staged manifest bytes are required');
   for (const key of ['buildSteps', 'expectedTestFiles', 'nativeSourceInventoryForManifest', 'sourceTestFileCoverage',
-    'validateSupplementalCheck', 'parseSourceShellResult', 'parseVitestInventory', 'parseTap', 'validateSourceArgv', 'verifyCandidate']) {
+    'validateSupplementalCheck', 'parseVitestInventory', 'parseTap', 'validateSourceArgv', 'verifyCandidate']) {
     assert(typeof api?.[key] === 'function', `missing verifier callback: ${key}`);
   }
   const sourceRoot = realpathSync(root), reportDir = `tests/reports/native-capabilities/${runId}`;

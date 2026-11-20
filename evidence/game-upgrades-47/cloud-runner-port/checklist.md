@@ -30,7 +30,7 @@ Status per acceptance line: `code` (implemented, verifiable statically or by uni
 ## Phase 3 (4.7.1)
 
 - Default views: storm-washed look kept on title and gameplay (phase-2 blind panel win); `?look=original` unchanged.
-- CD-22 rubric: `look-judgement.json`, minimum 4 (shadows), 7+ bar not met; open for 4.7.2 (see lane report). modeling_assets 5.5 and material_quality 5.5 blocked on WP-36 Meshy assets.
+- CD-22 rubric: `look-judgement.json`, minimum 4 (shadows), 7+ bar not met; open for 4.7.2 (see lane report). modeling_assets 5.5 and material_quality 5.5 blocked on WP-36 assets.
 - CD-22 sibling: ninja-runner-port 0.828 pass, cross-hop 0.932 pass, serpentine-sky-run-port 0.746 fail (`distinct/`).
 - CD-13, CD-06, CD-17 birds, CD-20 arches: still blocked on WP-36 (no borrowed or invented assets).
 - Final screens: retaken on the 4.7.1 lane build (capture g25p3-r3, software WebGL2).
@@ -40,4 +40,4 @@ Status per acceptance line: `code` (implemented, verifiable statically or by uni
 - Default view: new storm look (IBL fill, horizon towers, draped ground shades, "After the squall" kicker) won the blind panel `g25p4r3` 3/0/0; luma bands met (capture g25p4-r3-2), no band changed.
 - CD-22 rubric: `look-judgement.json` + `look-judgement-p4-run2.json`, minimum 3-4 (shadows); 7+ bar not met. Cast shadows and IBL do not render on the software WebGL2 path (probe g25p4-probe4; handed off).
 - CD-22 sibling: all five genre neighbours pass vs the 4.7.1 acceptance frames (serpentine 0.835, cross-hop 0.928, ninja 0.849, pips 0.841, splat 0.939; `distinct-p4/`).
-- CD-06, CD-13, CD-17 birds, CD-20 arches: blocked: Meshy keys refuse API calls (WP-36 moved to a later release).
+- CD-06, CD-13, CD-17 birds, CD-20 arches: blocked: asset generation unavailable (WP-36 moved to a later release).

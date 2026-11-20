@@ -204,7 +204,7 @@
    "route": "/apps/showcase-iron-crown/",
    "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
    "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || Boolean(window.__AURA3D_SHOWCASE_IRON_CROWN__ || window.__AURA3D_GAME_EVIDENCE__))",
-   "notes": "Attract mode auto-plays CPU-vs-CPU behind the title card. Controls: A/D move, W/Space jump, S crouch, double-tap dash, J light, K heavy, L special (meter), U throw, block hold-away, Esc/Enter pause. Six bespoke Meshy fighter rigs (ironcrownKenji..Sovereign), six stages via #ic-venues buttons.",
+   "notes": "Attract mode auto-plays CPU-vs-CPU behind the title card. Controls: A/D move, W/Space jump, S crouch, double-tap dash, J light, K heavy, L special (meter), U throw, block hold-away, Esc/Enter pause. Six bespoke fighter rigs (ironcrownKenji..Sovereign), six stages via #ic-venues buttons.",
    "wave": 4,
    "rebuildTier": "S-world",
    "qrFlags": [
@@ -302,7 +302,7 @@
    "route": "/apps/showcase-pips-big-leap/",
    "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
    "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || Boolean(window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__ || window.__AURA3D_GAME_EVIDENCE__))",
-   "notes": "Click #aura-btn-play (Quick Play) to drop into Whispering Forest. Controls: WASD/arrows camera-relative move, Space jump (hold=glide), double-jump, Shift dive, C/Ctrl pound, Esc pause. Bespoke Meshy hero (pipsPip), Brambleback boss, sunseed/acorn/flag/gate props. World buttons: Forest/Wharf/Clouds/Ember/Palace/Starfall.",
+   "notes": "Click #aura-btn-play (Quick Play) to drop into Whispering Forest. Controls: WASD/arrows camera-relative move, Space jump (hold=glide), double-jump, Shift dive, C/Ctrl pound, Esc pause. Bespoke hero (pipsPip), Brambleback boss, sunseed/acorn/flag/gate props. World buttons: Forest/Wharf/Clouds/Ember/Palace/Starfall.",
    "wave": 4,
    "rebuildTier": "S-world",
    "qrFlags": [

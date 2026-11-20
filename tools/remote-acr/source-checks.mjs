@@ -148,8 +148,6 @@ const SUPPLEMENTAL_POLICY = Object.freeze({
   'app-cross-hop-vitest': { runner: 'vitest', cwd: 'apps/showcase-cross-hop', config: 'vitest.config.ts', pattern: /^apps\/showcase-cross-hop\/tests\/(?:[\w.-]+\/)*[\w.-]+\.test\.ts$/ },
   'app-wonder-world-vitest': { runner: 'vitest', cwd: 'apps/veer-wonder-world', config: '../../tools/native-source-inventory/index.mjs', pattern: /^apps\/veer-wonder-world\/tests\/unit\/(?:[\w.-]+\/)*[\w.-]+\.test\.ts$/ },
   'asset-optimize-vitest': { runner: 'vitest', cwd: 'tools/asset-optimize', config: 'vitest.config.ts', pattern: /^tools\/asset-optimize\/tests\/(?:[\w.-]+\/)*[\w.-]+\.test\.ts$/ },
-  'cli-config-node': { runner: 'node-test', cwd: '.', files: ['tests/cli-configs/install-meshy-mcp.test.mjs', 'tests/cli-configs/meshy-docs-skill.test.mjs', 'tests/cli-configs/meshy-live-smoke-workflow.test.mjs'] },
-  'cli-config-shell': { runner: 'shell', cwd: '.', files: ['tests/cli-configs/meshy-agent.test.sh', 'tests/cli-configs/meshy-mcp-keychain-launcher.test.sh', 'tests/cli-configs/setup-meshy.test.sh'] },
   'docs-game-upgrades-node': { runner: 'node-test', cwd: '.', files: ['docs/prds/game-upgrades-47/lanes/wp36-decisions.test.mjs'] },
   'game-runtime-vitest': { runner: 'vitest', cwd: '.', config: 'tools/native-source-inventory/index.mjs', pattern: /^tests\/game-runtime\/(?:[\w.-]+\/)*[\w.-]+\.test\.ts$/ },
   'node-release-unit': { runner: 'node-test', cwd: '.', files: ['tests/unit/release/exact-plan.test.mjs', 'tests/unit/release/final-review-approval.test.mjs', 'tests/unit/release/muse301-publication-workflows.test.mjs'] },
@@ -576,8 +574,7 @@ export function validateSupplementalCheck(check, runId) {
     ? [{ argv: ['pnpm', 'exec', 'vitest', 'run', '--config', policy.config, '--maxWorkers=1', '--reporter=json',
       `--outputFile=${posix.relative(policy.cwd, `${reportDir}/${check.id}.json`)}`,
       ...files.map(path => posix.relative(policy.cwd, path))] }]
-    : files.map(file => ({ file, argv: policy.runner === 'shell'
-      ? ['bash', file] : ['node', '--test', '--test-reporter=tap', '--test-concurrency=1', file] }));
+    : files.map(file => ({ file, argv: ['node', '--test', '--test-reporter=tap', '--test-concurrency=1', file] }));
   assert(canonicalJson(check.invocations) === canonicalJson(expected), `supplemental command is not on the fixed allowlist: ${check.id}`);
   return check;
 }
@@ -620,12 +617,6 @@ export function sourceTestFileCoverage(inventory, testInventories) {
     executedSourceTestFiles: [...new Set(Object.values(executed).flat())].sort()
   };
 }
-export function parseSourceShellResult(text, file) {
-  const escaped = posix.basename(file).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const matches = [...text.matchAll(new RegExp(`^${escaped}: ([1-9][0-9]*) cases passed\\r?$`, 'gm'))];
-  assert(matches.length === 1 && Number.isSafeInteger(Number(matches[0][1])), `shell test completion marker is missing or invalid: ${file}`);
-  return { testCount: 1, passedCount: 1, failedCount: 0, skippedCount: 0, testNames: [file], reportedCases: Number(matches[0][1]) };
-}
 function verifiedCandidate(root, path, manifest) {
   const expectedDir = `${dirname(path)}/candidate-tarballs/`;
   const planPath = inRoot(root, path), bytes = readFileSync(planPath), plan = JSON.parse(bytes);
@@ -645,7 +636,7 @@ function verifiedCandidate(root, path, manifest) {
 /** Canonical callbacks shared with the stage-one handoff and final gate. */
 export function sourceHandoffApi() {
   return { buildSteps, expectedTestFiles, nativeSourceInventoryForManifest, sourceTestFileCoverage, validateSupplementalCheck,
-    parseSourceShellResult, parseVitestInventory, parseTap, validateSourceArgv, verifyCandidate: verifiedCandidate };
+    parseVitestInventory, parseTap, validateSourceArgv, verifyCandidate: verifiedCandidate };
 }
 function checkCompletedOutcomes(root) {
   const ledger = JSON.parse(readFileSync(join(root, ADMINISTRATIVE_FILES[0]), 'utf8'));
@@ -1002,13 +993,10 @@ function runSupplementalCheck(root, runId, check, childEnv, absLog) {
       } else errors.push(`${check.id}: Vitest result is missing`);
     } else {
       try {
-        const stats = check.runner === 'node-test'
-          ? (result.status === 0 ? parseTap(output.toString('utf8')) : observeTap(output.toString('utf8')))
-          : parseSourceShellResult(output.toString('utf8'), invocation.file);
+        const stats = result.status === 0 ? parseTap(output.toString('utf8')) : observeTap(output.toString('utf8'));
         for (const key of Object.keys(counts)) counts[key] += stats[key];
         discoveredFiles.push(invocation.file);
         testNames.push(...stats.testNames);
-        if (check.runner === 'shell') subrun.reportedCases = stats.reportedCases;
       } catch (error) { errors.push(`${invocation.file}: ${error.message}`); }
     }
     subruns.push(subrun);
@@ -1018,7 +1006,7 @@ function runSupplementalCheck(root, runId, check, childEnv, absLog) {
     ? vitestInventory || { checkId: check.id, runner: check.runner, cwd: check.cwd, expectedFiles: [...check.expectedFiles],
       discoveredFiles: [], testCount: 0, passedCount: 0, failedCount: 0, skippedCount: 0, testNames: [], observation: 'unavailable' }
     : { checkId: check.id, runner: check.runner, cwd: check.cwd, expectedFiles: [...check.expectedFiles], discoveredFiles,
-      ...counts, testNames, ...(check.runner === 'shell' ? { countKind: 'file-invocations' } : {}) };
+      ...counts, testNames };
   return { subruns, inventory, error: errors.join('; '), started: subruns.some(run => run.exitCode !== null || run.signal) };
 }
 

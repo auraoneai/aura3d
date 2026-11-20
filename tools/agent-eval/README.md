@@ -20,7 +20,7 @@ The LLM loop and file operations run locally (they are network and light file I/
 
 ## Tasks (`tasks/`)
 
-1 PBR cube + orbit; 2 forest of 10,000 instances; 3 skinned character + crossfade; 4 game loop; 5 shader water; 6 complete mobile arcade game; 7 prop on a pedestal (GLB provided to both arms; the Aura3D Meshy generation path needs a shell and is not exercised). `tasks/checklists.json` is what the model judge scores against; browser probes in `remote/score-all.mjs` are deterministic.
+1 PBR cube + orbit; 2 forest of 10,000 instances; 3 skinned character + crossfade; 4 game loop; 5 shader water; 6 complete mobile arcade game; 7 prop on a pedestal (GLB provided to both arms; asset generation needs a shell and is not exercised). `tasks/checklists.json` is what the model judge scores against; browser probes in `remote/score-all.mjs` are deterministic.
 
 ## Metrics
 

@@ -96,6 +96,6 @@ Status legend: **done** (code and unit test in this branch), **phase 2** (needs 
 | Controls chips (PBL-H1) | done | `index.html`, `src/styles.css` |
 | Rubric of every category >= 7 (PRD 1.2) | not met: minimum 4-4.5 over four runs (phase 3: 3.5-4.5); 11 of 12 categories scored (no animation_quality) | `look-judgement-p4-*.json` |
 | Distinctness >= 0.8 (PRD 1.2) | 4 of 5 pass; cloud-runner-port 0.794 (48/48 "different") | `distinct-p4/` |
-| WP-36 swap-in | blocked: Meshy keys refuse API calls | lane report |
+| WP-36 swap-in | blocked: asset generation unavailable | lane report |
 | L1 luma bands | warn (14 rows); bands not widened | `luma-after.json` (p4-r4) |
 | Final screens and card | retaken from `p4-r4` (results screens kept from 2026-10-29) | `evidence/pips-big-leap/screens/final/` |

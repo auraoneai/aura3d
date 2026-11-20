@@ -20,9 +20,9 @@ NAMES = {
     "skylineIceLedgeCompact", "skylineIceLedgeLong", "skylineIceLedgeMedium", "skylineWinterParallaxBackdrop",
     # courier
     "courierParcel", "courierTrafficHatch", "courierTrafficSedan", "courierVan",
-    "courierVanMeshyV2Decimated", "courierZoneAwning", "courierZoneBollard",
+    "courierZoneAwning", "courierZoneBollard",
     # patrol
-    "patrolAircraftMeshy", "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon",
+    "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon",
 }
 
 def sha256_of(path):

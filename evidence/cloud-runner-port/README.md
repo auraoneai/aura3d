@@ -10,10 +10,10 @@
 - Capture tools: `tools/crayon-capture/kid-goku-frames*.ts` (original, remote), `tests/browser/kid-goku-art-frames.spec.ts` (port, remote),
   `kid-goku-judge.ts`, `kid-goku-compare.ts`.
 
-## Meshy art pass (2026-10-23)
+## Generated-model art pass (2026-10-23)
 
-`meshy-before/` = the previous art pass (procedural trees, catalog KayKit runner); `meshy-after/` = Meshy hero kid, cloud, creatures, boulders, instanced
+Before frames = the previous art pass (procedural trees, catalog KayKit runner); after frames = generated hero kid, cloud, creatures, boulders, instanced
 trees/rocks/mesas (software GL, SwiftShader; textures bind a few frames after mount, so the first frames after a fresh load show untextured road and rocks).
-`compare-meshy-menu.jpg` = before | after at the title position. Original-game frames are not committed. Judge and metrics were not re-run for this pass
+A before | after sheet at the title position (frames not committed). Original-game frames are not committed. Judge and metrics were not re-run for this pass
 (model judge budget of time); see `examples/kid-goku-beyond-the-clouds-port/PORTING-NOTES.md` for assets, prompts, task ids and credits.
 Draw calls: 505 (previous pass) -> 187 with the hero set (remote software-GL run `cloud-runner-diag-2`; behaviour spec reports 179); sim replay exact (worst delta 9.2e-13 over 160 points).

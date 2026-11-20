@@ -10,7 +10,7 @@ Run 2026-10-25 against `game-rework` (head at time of writing: see `git log`). N
 | `verify-exports`, `verify-imports`, `public-api-contract` | pass (26 packages, 33 subpaths, 25 manifests) |
 | `public-surface-diff` | pass after `docs/migration/4.2.0.md` classified the 9 retired hosted-index exports |
 | `check:skills`, docs links/snippets, root exports, engine README sync | pass after regeneration |
-| `tools/game-checks --all` | 26 games, 0 errors, 5 Meshy-cap warnings (ninja 496, silt 453, cloud-runner 446, roadster 445, drift 500) |
+| `tools/game-checks --all` | 26 games, 0 errors, 5 generation-cap warnings (ninja 496, silt 453, cloud-runner 446, roadster 445, drift 500) |
 | `marketing check-site`, `gen-seo --check`, `game-inventory --check` | pass (690 links, 46 manifest routes, 26 live games) |
 | Consumer build smoke, remote ACR, from packed tarballs | pass: mini-game, racing-starter, falling-blocks-starter, product-viewer, hello-world on Vite 7.3.2 and 7.3.7 |
 | Aura Slam G1 replay, G3 render, LDR equivalence, UI (remote, 13 tests) | 13 passed |
@@ -45,4 +45,4 @@ Engine fix `9e1e3442a` (attachments read the final pose) plus `9d3dc50a1` (knob 
 
 - Browser smoke of every live game against the deployed site: the preview is SSO-protected and no bypass secret was created. It runs after the production deploy (runbook section 8).
 - Real-GPU evidence: none anywhere. HEATSINK and Last Train do not finish on software GL.
-- Trademark clearance for the new names; hard enforcement of the per-game Meshy cap.
+- Trademark clearance for the new names; hard enforcement of the per-game generation cap.

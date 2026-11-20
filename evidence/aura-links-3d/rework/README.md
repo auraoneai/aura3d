@@ -35,6 +35,6 @@ Unit tests: `tests/unit/aura-links-3d/golfer-posture-and-contact.test.ts` (14 te
 
 ## Not done or not verified
 
-- Real-GPU look on the owner's Mac. The golfer texture shows silver speckle in these frames: that is the existing Meshy texture, untouched here.
+- Real-GPU look on the owner's Mac. The golfer texture shows silver speckle in these frames: that is the existing generated texture, untouched here.
 - The address frame is a little off the stance cam (the golfer's feet are near the bottom edge at 960x540).
 - No rename and no screenshot retake in this lane (separate lanes).

@@ -59,7 +59,7 @@
   "after": {
     "phase": "GU47 phase 6 (4.7.4)",
     "source": "evidence/game-upgrades-47/roadster-hours-port/p6-r4/roadster-hours-port/luma-g22p6-r4-{2,3,4}.json GL_META (software WebGL2, 1280x720, crmmeprodacr); before = p5-r1 (the 4.7.3 build, luma-g22p5-r1-{2,3,4}.json)",
-    "fix": "far LOD + near-only shadow casters for the repeated Meshy props and traffic: full mesh and shadow casting within LOD_NEAR_M = 150 m of the camera, a meshoptimizer LOD (error <= 4% of the model, untextured mean texture colour) beyond it, no shadow (the one sun cascade covers 75 m)",
+    "fix": "far LOD + near-only shadow casters for the repeated generated props and traffic: full mesh and shadow casting within LOD_NEAR_M = 150 m of the camera, a meshoptimizer LOD (error <= 4% of the model, untextured mean texture colour) beyond it, no shadow (the one sun cascade covers 75 m)",
     "sunbreak": {
       "before": {
         "drawCalls": 129,

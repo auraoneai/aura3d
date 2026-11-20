@@ -8,7 +8,7 @@ The Teleoperator fleet was built from photo-style models of real vehicles (see `
 
 ## What shipped
 
-Eight original vehicles generated through Meshy via Kiro Prism from text prompts only (no brand or model names, no image input, no frames from other games). Prompts are in `tools/teleoperator-vehicles/prompts.json`.
+Eight original vehicles generated with text-to-3D from text prompts only (no brand or model names, no image input, no frames from other games). Prompts are in `tools/teleoperator-vehicles/prompts.json`.
 
 | Vehicle | File | Triangles | MB | Materials |
 |---|---|---|---|---|
@@ -21,13 +21,13 @@ Eight original vehicles generated through Meshy via Kiro Prism from text prompts
 | van | `teleopVehVan.44a544bc.glb` | 22,172 | 1.57 | 5 |
 | boxtruck | `teleopVehBoxTruck.8cf91d05.glb` | 13,873 | 2.08 | 1 |
 
-Total about 14.5 MB, against about 59.1 MB for the files they replace. Every model is within the 40,000-triangle vehicle target (the pickup is the largest at 37,996; the robotaxi count includes its cover discs). The sedan, box truck and roadster were remeshed through Meshy because the first simplification could not reduce them (after the standard optimiser they still had 117k triangles for the box truck, 67k for the roadster and 41k for the sedan). The roughly 10 MB target for new assets was missed by about 4.5 MB: textures are 1024 px JPEG and the generated geometry makes up the rest.
+Total about 14.5 MB, against about 59.1 MB for the files they replace. Every model is within the 40,000-triangle vehicle target (the pickup is the largest at 37,996; the robotaxi count includes its cover discs). The sedan, box truck and roadster were remeshed by the generator because the first simplification could not reduce them (after the standard optimiser they still had 117k triangles for the box truck, 67k for the roadster and 41k for the sedan). The roughly 10 MB target for new assets was missed by about 4.5 MB: textures are 1024 px JPEG and the generated geometry makes up the rest.
 
 Slot mapping (asset key -> vehicle): `teleopWaymoHero`, `teleopWaymoTraffic` -> robotaxi; `teleopCybercab`, `teleopSuv` -> hatch; `teleopCybertruck`, `teleopPickup` -> pickup; `teleopCorvette` -> coupe; `teleopMissions` -> roadster; `teleopSedan`, `teleopTaxi` -> sedan; `teleopVan` -> van; `teleopBus` -> box truck. Keys are unchanged so the apps, route-health references and the typed manifest keep working. Display names in the UI were already generic.
 
 ## Provenance
 
-Meshy tasks (text-to-3D preview, then refine; three models were also remeshed to a 20k polycount because the generated UV islands were too fragmented to simplify):
+Generation tasks (text-to-3D preview, then refine; three models were also remeshed to a 20k polycount because the generated UV islands were too fragmented to simplify):
 
 | Vehicle | Preview task | Refine task | Remesh task |
 |---|---|---|---|
@@ -40,13 +40,13 @@ Meshy tasks (text-to-3D preview, then refine; three models were also remeshed to
 | box truck | 01a170be-6503-708b-809d-4c7abcd37d50 | 01a170bf-5b1b-72f5-be34-628c5ab43f1b | 01a170c4-4489-7384-992e-b9b67f45ac7e |
 | roadster | 01a170bf-14f5-779f-b983-2b4ec291cfd6 | 01a170c0-0d8f-7259-abdd-acc586f1d41d | 01a170c4-b93b-7399-a58e-22afc200640f |
 
-Credits: 255 spent against the 420 per-game cap (8 x 30 for preview plus refine, 3 x 5 for remesh), from the ledger (`node /tmp/meshy/meshy.mjs ledger`, game `teleoperator`). Rights basis: the Meshy plan terms of the AuraOne account at generation time (not CC0, no exclusivity claimed); the manifest `license` field says so. Generation date 2026-10-24 local (`rights.json` records 2026-10-25 UTC).
+Rights basis: the generator plan terms of the AuraOne account at generation time (not CC0, no exclusivity claimed); the manifest `license` field says so. Generation date 2026-10-24 local (`rights.json` records 2026-10-25 UTC).
 
 Post-processing: optimise to about 12k to 30k vertices with 1024 px JPEG textures (normals as JPEG, quality 88), then `orient.mjs` (face -Z, centre, rest on y = 0). Each file is admitted by same-origin URL plus sha256 in `aura.assets.json`, `src/aura-assets.ts` and the app tables, written by `tools/teleoperator-vehicles/apply.mjs`.
 
 ## Marks the generator invented, and what was done
 
-Meshy added a few emblem-like marks despite the no-badge prompt. They were found by rendering the shipped GLBs orthographically from four sides (`views/`) and covered with thin plain-colour discs (`tools/teleoperator-vehicles/cover.mjs`): the robotaxi nose emblem and six dark door marks (one read like a "T"); the hatch grille badge and tailgate badge; the sedan hood and tailgate badges; the van nose badge and three small rear-door scribbles. Texture-space painting was tried first and rejected: the marks sit on large triangles that also hold other detail, so patching left smudges. The coupe, pickup, roadster and box truck showed no emblems or lettering in any view. Licence plates are blank.
+The generator added a few emblem-like marks despite the no-badge prompt. They were found by rendering the shipped GLBs orthographically from four sides (`views/`) and covered with thin plain-colour discs (`tools/teleoperator-vehicles/cover.mjs`): the robotaxi nose emblem and six dark door marks (one read like a "T"); the hatch grille badge and tailgate badge; the sedan hood and tailgate badges; the van nose badge and three small rear-door scribbles. Texture-space painting was tried first and rejected: the marks sit on large triangles that also hold other detail, so patching left smudges. The coupe, pickup, roadster and box truck showed no emblems or lettering in any view. Licence plates are blank.
 
 Honest limits:
 - Covers read as small plain discs close up (visible on the hatch grille and the sedan, which has a faint lighter dot); a better fix is regenerating the models with cleaner texture, which needs new art.

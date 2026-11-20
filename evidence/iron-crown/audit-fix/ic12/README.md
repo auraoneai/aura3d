@@ -4,9 +4,9 @@ Commit 296d7b781 on `audit-fix/g05-ic12` (cut from origin/main 47388606e, Aura3D
 
 ## What changed
 
-All six fighter GLBs gain four Meshy `animate` clips; the ten shipped clips, the geometry (position-accessor hashes) and the WebP textures are unchanged.
+All six fighter GLBs gain four generated `animate` clips; the ten shipped clips, the geometry (position-accessor hashes) and the WebP textures are unchanged.
 
-| State | Before (origin/main) | After | Meshy action id |
+| State | Before (origin/main) | After | Action id |
 |---|---|---|---|
 | idle | `Block1` (stand-in) | `Combat_Stance` | 89 |
 | crouch | `Block1` (stand-in) | `CrouchLookAroundBow` | 258 |
@@ -15,11 +15,11 @@ All six fighter GLBs gain four Meshy `animate` clips; the ten shipped clips, the
 | guard | `Block1` | `Block1` (now the only state on it) | |
 | dash | `Walk_Fight_Forward` (stand-in) | unchanged, still the one stand-in | |
 
-The fighters' original rig tasks had expired (Prism returns 404 on `GET /rigging/<id>`), so each fighter was re-rigged from the same remeshed mesh at its original height (Kenji 1.80 m, Volt 1.78, Boulder 2.00, Seraph 1.85, Jinx 1.70, Sovereign 2.05). The new rigs have the same 24 joint names but different joint placement, so `tools/iron-crown-clips/retarget-clips.mjs` moves each clip onto the admitted skeleton through the bind pose. On Kenji, 400 sampled vertices of the admitted mesh land 0.65 cm (mean) from where the fresh rig puts them in the new clips, max 13.8 cm; copying the channels by joint name gives 1.42 cm mean, max 10.6 cm. Task ids, credits and checks per fighter: `apps/showcase-iron-crown/aura-evidence/meshy/ironcrown*.ic12-clips.json`.
+The fighters' original rig tasks had expired (Prism returns 404 on `GET /rigging/<id>`), so each fighter was re-rigged from the same remeshed mesh at its original height (Kenji 1.80 m, Volt 1.78, Boulder 2.00, Seraph 1.85, Jinx 1.70, Sovereign 2.05). The new rigs have the same 24 joint names but different joint placement, so `tools/iron-crown-clips/retarget-clips.mjs` moves each clip onto the admitted skeleton through the bind pose. On Kenji, 400 sampled vertices of the admitted mesh land 0.65 cm (mean) from where the fresh rig puts them in the new clips, max 13.8 cm; copying the channels by joint name gives 1.42 cm mean, max 10.6 cm. Task ids and checks per fighter were recorded in the app's asset evidence.
 
-Meshy jobs: 6 rigging + 24 animate in the shipped set (102 credits by the task records); 5 rigs at 1.8 m that were discarded for the wrong height and 15 extra animate candidates for action selection bring the ledger (`aura3d meshy ledger --game iron-crown`) to 50 jobs, 172 credits estimated. All calls went through Kiro Prism.
+Generation jobs: 6 rigging + 24 animate in the shipped set; 5 rigs at 1.8 m that were discarded for the wrong height and 15 extra animate candidates for action selection bring the total to 50 jobs.
 
-`aura3d assets validate --skin` reports `SKIN_STRETCH` and `SKIN_JOINT_RANGE` on every fighter, on the shipped clips too (Kenji body: 2,564 of 29,334 triangles past 1.6x in `Idle`, 3,371 in `Block1`; 2,864 in `Combat_Stance`, 4,211 in `CrouchLookAroundBow`, 5,986 in `Over_Shoulder_Throw`). These are the same Meshy rigs and the new clips sit in the shipped range; per-clip counts are in the evidence JSON.
+`aura3d assets validate --skin` reports `SKIN_STRETCH` and `SKIN_JOINT_RANGE` on every fighter, on the shipped clips too (Kenji body: 2,564 of 29,334 triangles past 1.6x in `Idle`, 3,371 in `Block1`; 2,864 in `Combat_Stance`, 4,211 in `CrouchLookAroundBow`, 5,986 in `Over_Shoulder_Throw`). These are the same generated rigs and the new clips sit in the shipped range; per-clip counts are in the evidence JSON.
 
 ## Remote proof
 

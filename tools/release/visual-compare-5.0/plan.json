@@ -217,8 +217,8 @@
       "motion": "light",
       "route": "/apps/showcase-aura-links-3d/index.html",
       "query": "?course=stAuroras",
-      "changedIn4710": "Meshy gorse added",
-      "expectedDelta": "localized change from 4.7.10 content (Meshy gorse added) is expected; the baseline predates it",
+      "changedIn4710": "gorse added",
+      "expectedDelta": "localized change from 4.7.10 content (gorse added) is expected; the baseline predates it",
       "note": "golfer on the tee under a clear sky",
       "viewport": {
         "width": 1280,
@@ -602,8 +602,8 @@
       "motion": "animated",
       "route": "/apps/showcase-heatsink/",
       "query": "",
-      "changedIn4710": "two Meshy towers added",
-      "expectedDelta": "localized change from 4.7.10 content (two Meshy towers added) is expected; the baseline predates it",
+      "changedIn4710": "two towers added",
+      "expectedDelta": "localized change from 4.7.10 content (two towers added) is expected; the baseline predates it",
       "note": "Thermal Drift sunset circuit: sparks, bloom, lit traffic",
       "viewport": {
         "width": 1280,

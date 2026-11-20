@@ -22,7 +22,7 @@
  *
  * Default file list (POST_V2_DEFAULT_FILES): the 17 game
  * `apps/showcase-<id>/src/main.ts` named in §5 + `apps/aura-clash-showcase/src/**`
- * + `examples/neon-corridor-strike/**` + `templates/**`. The 10 non-game
+ * + `examples/neon-corridor-strike/**` + `templates/**`. The non-game
  * `apps/showcase-*` apps (POST_V2_NOT_MIGRATED) are excluded and surfaced in
  * dry-run output as "not migrated".
  */
@@ -42,11 +42,11 @@ export const POST_V2_DEFAULT_FILES = [
   "templates/**"
 ];
 
-/** §10: the 10 non-game `apps/showcase-*` apps are out of scope — listed "not migrated". */
+/** §10: the non-game `apps/showcase-*` apps are out of scope — listed "not migrated". */
 export const POST_V2_NOT_MIGRATED = [
   "showcase-asset-audition", "showcase-cinematic-architecture", "showcase-data-galaxy",
   "showcase-digital-twin-ops", "showcase-index", "showcase-material-asset-inspector",
-  "showcase-meshy-relic-pilot", "showcase-product-configurator", "showcase-smart-city-control",
+  "showcase-product-configurator", "showcase-smart-city-control",
   "showcase-webgpu-particle-lab"
 ];
 

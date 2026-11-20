@@ -81,13 +81,13 @@ Other limits: one judge model, one prompt per question. Original frames are Play
 
 `frames/` holds the 16 original JPEGs, the 16 final (run f) port JPEGs, and `run2-before/` (the 16 pre-art-pass port JPEGs).
 
-## Meshy art pass (2026-10-23)
+## Generated-model art pass (2026-10-23)
 
-Nine Meshy-generated models (prompts and task ids in `examples/heatsink-port/assets/ATTRIBUTION.md`) plus a terrain fix for the step-4500 ceiling. Frames at the same eight simulation steps (450, 1170, 1500, 2250, 3000, 3750, 4500, 5340): `meshy-before/port-*.jpg` (previous art pass) and `meshy-after/port-*.jpg`, side by side in `compare-meshy-before-after.jpg` (the `*.jpg` ignore rule keeps them local unless force-added; the original game's frames are not in these sheets).
+Nine generated models (prompts and task ids in `examples/heatsink-port/assets/ATTRIBUTION.md`) plus a terrain fix for the step-4500 ceiling. Frames at the same eight simulation steps (450, 1170, 1500, 2250, 3000, 3750, 4500, 5340): before (previous art pass) and after frames, side by side in a before | after sheet (kept local, not committed; the original game's frames are not in these sheets).
 
-Blind model judge (`claude-sonnet-5.5` via Kiro Prism, seed 20261023, 8 states x 6 passes = 48 trials, same prompts; a model, not a human), results in `judge-results-meshy.json` and `judge-results-design-meshy.json`:
+Blind model judge (`claude-sonnet-5.5` via Kiro Prism, seed 20261023, 8 states x 6 passes = 48 trials, same prompts; a model, not a human), results below (result JSON no longer kept):
 
-| | before (art round 2, run f, 16 states) | after (Meshy pass, 8 states) |
+| | before (art round 2, run f, 16 states) | after (generated-model pass, 8 states) |
 | --- | --- | --- |
 | strict: original identified | 48/48 | **35/48 (72.9%, Wilson 59-83%)**, chance 50%, "same game" 0/48 |
 | design: "same game design?" | 38/48 (79.2%) | **40/48 (83.3%, Wilson 70-91%)** |

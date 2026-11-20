@@ -104,9 +104,8 @@ Shared rules (catalog-first, typed assets, paid generation) are in
 ## Stop and report
 
 - Search returns no auto-pullable candidate, or every candidate fails the
-  reject list: stop, list the query, profile, and rejection reasons, and offer
-  two options: a user-supplied licensed file, or Meshy generation (load
-  `meshy-cli`, dry run first). Do not model the subject from primitives.
+  reject list: stop, list the query, profile, and rejection reasons, and ask
+  for a user-supplied licensed file. Do not model the subject from primitives.
 - Search prints a catalog fetch warning (for example an HTTP 404 from the
   index): report it verbatim, label asset-dependent work `blocked`, and do not
   treat fallback deep-links as auto-pullable.

@@ -233,7 +233,7 @@ for (let pass = 0; pass < PASSES; pass += 1) {
   tris = next;
 }
 
-// The Meshy mesh carries noisy per-vertex normals that a flat colour turns into glossy blotches under a bright sky. Recompute them
+// The generated mesh carries noisy per-vertex normals that a flat colour turns into glossy blotches under a bright sky. Recompute them
 // from the final triangles: area-weighted over welded positions, but only across faces within the crease angle of this vertex's
 // own incident faces, so hems, jersey edges and fingers stay crisp. The skinned bind pose is what is smoothed.
 if (SMOOTH) {

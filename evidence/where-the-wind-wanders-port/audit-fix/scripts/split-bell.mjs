@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Split the Meshy belltower into the tower (bell removed) and the bell alone, so the bell can swing (audit WW-4).
+// Split the belltower model into the tower (bell removed) and the bell alone, so the bell can swing (audit WW-4).
 // The bell (with its yoke and rope) is the second-largest connected component of the single mesh (1,074 of 27,088
 // triangles, inside x -0.17..0.19, y -0.29..0.64, z 0.11..0.45 in file units). The bell file is re-centred on its pivot
 // (the yoke, mean of its vertices above y 0.6) so a rotation of the node swings it from there.

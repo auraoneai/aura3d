@@ -451,11 +451,11 @@ export const runtimeEdgeAllowlist: readonly RuntimeEdgeAllowlistGroup[] = [
   },
   {
     file: "packages/aura3d-cli/src/resolve-ladder.ts",
-    reason: "CLI disclosure: when no recipe matches, the generated crate is labelled PLACEHOLDER with the command to obtain a real model (meshy or assets add)",
+    reason: "CLI disclosure: when no recipe matches, the generated crate is labelled PLACEHOLDER with the command to obtain a real model (assets add or assets generate)",
     expires: EXPIRES,
     reviewer: REVIEWER,
     markers: [
-      "messages.push(`No recipe for a ${noun ?? \"need like this\"}: the box below is a placeholder. For the real thing run with --allow meshy --budget ${estimate || 30}, or admit a licensed file with \\`aura3d assets add\\`.`);",
+      "messages.push(`No recipe for a ${noun ?? \"need like this\"}: the box below is a placeholder. For the real thing admit a GLB you already have with \\`aura3d assets add\\`, or generate one with \\`aura3d assets generate\\`.`);",
       "/** The recipe for a need, or undefined when no keyword or alias matches (the crate is then a placeholder). */",
       "const note = matched === undefined ? \" PLACEHOLDER: no recipe matches this need; replace it with a real model before shipping.\" : \" Tune sizes and colours.\";",
     ]

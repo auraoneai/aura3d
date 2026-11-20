@@ -20,7 +20,7 @@ The 4.3.0 repair (`split-bridges`: stretched triangles get their own rigid verti
 | hoopsAthleteBig | 1.60x after splitting 810 triangles (17.9x originally) | 1.56x, 0 triangles over 1.6x, no split, no cut |
 | hoopsAthleteGuard | 1.60x after splitting 496 (21.4x) | 1.55x, 0 over |
 | diamondAthlete | 1.60x after splitting 1224 (30.8x) | 1.54x, 0 over |
-| linksGolferAthleteMeshy | 1.64x, 5 over | 1.54x, 0 over |
+| Links golfer athlete | 1.64x, 5 over | 1.54x, 0 over |
 
 `tests/unit/athletes-rebuild/skin.test.ts` holds the 1.6x ceiling for all four.
 

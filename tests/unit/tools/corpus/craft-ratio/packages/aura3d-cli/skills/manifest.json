@@ -12,14 +12,13 @@
     "aura3d-character-animation": { "tier": "domain", "prd": "D2" },
     "aura3d-animation-studio": { "tier": "domain", "prd": "D3" },
     "aura3d-threejs-migration": { "tier": "domain", "prd": "D4" },
-    "meshy-cli": { "tier": "asset", "prd": "P1" },
     "aura3d-materials-environments": { "tier": "asset", "prd": "P2" },
     "aura3d-game-art": { "tier": "asset", "prd": "P3" },
     "aura3d-retexture": { "tier": "asset", "prd": "P4" },
     "aura3d-performance": { "tier": "later", "prd": "L1" }
   },
   "templates": {
-    "product-viewer": ["aura3d-materials-environments", "aura3d-retexture", "meshy-cli"],
+    "product-viewer": ["aura3d-materials-environments", "aura3d-retexture"],
     "cinematic-scene": ["aura3d-materials-environments", "aura3d-character-animation"],
     "mini-game": ["aura3d-browser-game", "aura3d-game-art"],
     "racing-starter": ["aura3d-browser-game", "aura3d-game-art"],

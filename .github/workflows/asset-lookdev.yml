@@ -42,7 +42,7 @@ concurrency:
 env:
   A3D_LOOKDEV_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
   # Push events have no inputs — default to the PRD-05 §6.7 corpus.
-  LOOKDEV_ASSETS: ${{ github.event.inputs.assets || 'DamagedHelmet,AntiqueCamera,Soldier,mechHeroDecimated,patrolAircraftMeshy,courierTrafficSedan,showcaseHeadphones,bankShotTable,skylineArcticRunnerHero,siegeGolfBall' }}
+  LOOKDEV_ASSETS: ${{ github.event.inputs.assets || 'DamagedHelmet,AntiqueCamera,Soldier,mechHeroDecimated,courierTrafficSedan,showcaseHeadphones,bankShotTable,skylineArcticRunnerHero,siegeGolfBall' }}
 
 jobs:
   capture:

@@ -1,5 +1,5 @@
 /**
- * Splits the bridging triangles of a Meshy-rigged athlete: triangles that stretch past the limit (or draw as thin long flaps) in the
+ * Splits the bridging triangles of an auto-rigged athlete: triangles that stretch past the limit (or draw as thin long flaps) in the
  * shipped clips get their own vertices, skinned rigidly to the bone that owns most of them, so they keep their rest size instead of
  * stretching into slabs when a limb swings. The rest pose, skeleton, clips, UVs, texture and material are unchanged; POSITION, NORMAL,
  * TEXCOORD_0, JOINTS_0, WEIGHTS_0 and the index buffer are rewritten (new vertices are appended).

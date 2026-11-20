@@ -1,6 +1,6 @@
 # Iron Crown roster art pass (2026-10-25)
 
-Boulder Kane, Seraph Lin and Sovereign carried photographic faces baked into their Meshy atlases. `tools/iron-crown-restyle/flatface.mjs` replaced them with flat stylised faces in the same style as Kenji Arashi and Mara Volt: own skin tone, hair colour, brows, eyes, a scar for Boulder, lash lines for Seraph. Seraph's surgical mask and Sovereign's helmet keep their original material. Skeleton, the 10 fight clips and all non-head triangles are unchanged. Jinx Oko keeps his painted mask face (already stylised). Gameplay, hitboxes and replays are untouched.
+Boulder Kane, Seraph Lin and Sovereign carried photographic faces baked into their generated texture atlases. `tools/iron-crown-restyle/flatface.mjs` replaced them with flat stylised faces in the same style as Kenji Arashi and Mara Volt: own skin tone, hair colour, brows, eyes, a scar for Boulder, lash lines for Seraph. Seraph's surgical mask and Sovereign's helmet keep their original material. Skeleton, the 10 fight clips and all non-head triangles are unchanged. Jinx Oko keeps his painted mask face (already stylised). Gameplay, hitboxes and replays are untouched.
 
 - `head-before-*.png` / `head-after-*.png`: bind-pose head close-ups (front and three-quarter), before and after.
 - `fight-*.jpg`, `attack-*.jpg`: in-bout frames from the remote runner (Versus mode, Crown Arena), software WebGL2, 1280x720 or 1440x900.

@@ -6,10 +6,10 @@ from the real game in CPU-vs-CPU demo mode; a QA hook freezes the sim at an exac
 at a time, so every frame is a known swing fraction. A real tackle cancelled the first attempt of one run; the spec retried
 (`RWFC_AFTER_ATTEMPT` lines in the run log), and the final run's first attempt completed.
 
-> **Mesh note.** The filmstrips below were captured on the original Meshy athlete meshes. While this lane ran, the texture lane
+> **Mesh note.** The filmstrips below were captured on the original generated athlete meshes. While this lane ran, the texture lane
 > (`47b51e3f7`) replaced them with repainted, remeshed models (striker 5,221 triangles, keeper 3,584) on the same rig and clips.
-> The shipped GLBs are the kick clips and soft weights rebuilt from those repainted files (`fcSoccerStrikerMeshyAthlete.1b318c94.glb`,
-> `fcGoalkeeperMeshyAthlete.057b1a70.glb`); the numbers in the unit tests are for the shipped files, the frames are not re-captured
+> The shipped GLBs are the kick clips and soft weights rebuilt from those repainted files (the striker and
+> goalkeeper athlete GLBs); the numbers in the unit tests are for the shipped files, the frames are not re-captured
 > on them (a remote re-capture is the next step: `tests/browser/rework-fc.spec.ts`, label file `after full`).
 
 ## What was wrong (root causes, measured)
@@ -28,11 +28,11 @@ at a time, so every frame is a known swing fraction. A real tackle cancelled the
 ## What changed
 
 - Athlete = one skinned body + shadow + ring (was 23 nodes). Kit boxes and procedural limbs deleted.
-- `KickTap` / `KickPass` / `KickShot` baked into both GLBs (`tools/aura-fc/bake-kick.mjs`, analytic two-bone leg IK; no Meshy
+- `KickTap` / `KickPass` / `KickShot` baked into both GLBs (`tools/aura-fc/bake-kick.mjs`, analytic two-bone leg IK; no generator
   credits). Clip phase = swing progress (`kickT / kickDur`); run phase = distance travelled / stance speed.
 - Sim: kicker turns to the kick line during the swing and is planted; interrupted or stunned swings are cancelled; no swings
   before live play.
-- Skin weights softened around the Meshy auto-rig's bridging triangles (`tools/aura-fc/skin.mjs`).
+- Skin weights softened around the auto-rig's bridging triangles (`tools/aura-fc/skin.mjs`).
 
 ## Measured (acceptance, section 3.3)
 

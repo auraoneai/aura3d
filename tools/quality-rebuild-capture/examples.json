@@ -50,7 +50,6 @@
     { "id": "showcase-cinematic-architecture", "kind": "app" },
     { "id": "showcase-digital-twin-ops", "kind": "app" },
     { "id": "showcase-data-galaxy", "kind": "app" },
-    { "id": "showcase-webgpu-particle-lab", "kind": "app" },
-    { "id": "showcase-meshy-relic-pilot", "kind": "app" }
+    { "id": "showcase-webgpu-particle-lab", "kind": "app" }
   ]
 }

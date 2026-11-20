@@ -4,7 +4,7 @@ Branch `game-rework`. Remote software WebGL2 (SwiftShader), 1280x720; not real-G
 
 ## Finding
 
-The Crown Arena wall showed framed photographs of people beside the speaker towers. They come from the shared catalog model `billiardsTrophyCabinetMeshy` (placed at x = ±4.3): its baked 1024 px texture atlas holds small framed photographs (faces, a man in a suit) among wood and red shards. `compare-portrait-crops.jpg` (top: before, bottom: after; left and right wall) shows the portraits before and after.
+The Crown Arena wall showed framed photographs of people beside the speaker towers. They come from the shared catalog model, the billiards trophy cabinet (placed at x = ±4.3): its baked 1024 px texture atlas holds small framed photographs (faces, a man in a suit) among wood and red shards. `compare-portrait-crops.jpg` (top: before, bottom: after; left and right wall) shows the portraits before and after.
 
 ## What was tried, and what shipped
 
@@ -15,7 +15,7 @@ The Crown Arena wall showed framed photographs of people beside the speaker towe
 
 ## Scan of the other Iron Crown stages
 
-Texture sheets for all 30 shared catalog models used by the stages (`tools/likeness-audit/dump-textures.mjs`) plus a rendered frame of every venue (`tests/browser/ic-stage-scan.spec.ts`): only generic signage ("RAMEN" lettering on the Lantern Dock stalls), hazard signs and a small emblem on the aircraft, no photographs, faces or real brand marks readable. The Colosseum busts and the monastery buildings are untextured or flat. The fighters' own Meshy textures include generated (not photographic) faces and are outside this stage scan.
+Texture sheets for all 30 shared catalog models used by the stages (`tools/likeness-audit/dump-textures.mjs`) plus a rendered frame of every venue (`tests/browser/ic-stage-scan.spec.ts`): only generic signage ("RAMEN" lettering on the Lantern Dock stalls), hazard signs and a small emblem on the aircraft, no photographs, faces or real brand marks readable. The Colosseum busts and the monastery buildings are untextured or flat. The fighters' own generated textures include generated (not photographic) faces and are outside this stage scan.
 
 ## Guard
 
@@ -24,5 +24,5 @@ Texture sheets for all 30 shared catalog models used by the stages (`tools/liken
 ## Caveats
 
 - The new cabinets are plainer than the scanned one (no carved detail); the black speaker towers hide most of them from the gameplay camera.
-- The shared model still exists in the root catalog for other apps; this change only removes it from Iron Crown. Other users of `billiardsTrophyCabinetMeshy` (the billiards route) were not audited here.
+- The shared model still exists in the root catalog for other apps; this change only removes it from Iron Crown. Other users of the trophy cabinet (the billiards route) were not audited here.
 - Unrelated, found while checking hashes: `ironcrownCrown`'s manifest sha256 does not match the shipped file (both `aura.assets.json` and `src/aura-assets.ts`); it predates this work and was left alone.

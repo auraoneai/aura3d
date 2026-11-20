@@ -28,11 +28,6 @@ const SCRATCH_PROBE = Object.freeze({
   sha256: 'e31ea093fb088eadbf9ab5c618c9ca8832009063a2099f5774788e622d741507'
 });
 const NODE_TESTS = Object.freeze({
-  'cli-config-node': Object.freeze([
-    'tests/cli-configs/install-meshy-mcp.test.mjs',
-    'tests/cli-configs/meshy-docs-skill.test.mjs',
-    'tests/cli-configs/meshy-live-smoke-workflow.test.mjs'
-  ]),
   'docs-game-upgrades-node': Object.freeze(['docs/prds/game-upgrades-47/lanes/wp36-decisions.test.mjs']),
   'node-release-unit': Object.freeze([
     'tests/unit/release/exact-plan.test.mjs',
@@ -44,11 +39,6 @@ const NODE_TESTS = Object.freeze({
     'tools/agent-templates/command.test.mjs'
   ])
 });
-const SHELL_TESTS = Object.freeze([
-  'tests/cli-configs/meshy-agent.test.sh',
-  'tests/cli-configs/meshy-mcp-keychain-launcher.test.sh',
-  'tests/cli-configs/setup-meshy.test.sh'
-]);
 const VITEST_RULES = Object.freeze([
   {
     id: 'app-cross-hop-vitest',
@@ -91,16 +81,6 @@ const FILE_PREREQUISITES = Object.freeze({
   'docs/prds/game-upgrades-47/lanes/wp36-decisions.test.mjs': Object.freeze([
     'docs/prds/game-upgrades-47/lanes/wp36-decisions.mjs'
   ]),
-  'tests/cli-configs/install-meshy-mcp.test.mjs': Object.freeze(['cli-configs/install-meshy-mcp.sh']),
-  'tests/cli-configs/meshy-docs-skill.test.mjs': Object.freeze([
-    '.cursor/skills/meshy-cli/SKILL.md',
-    'cli-configs/install-meshy-mcp.sh',
-    'docs/meshy-cli.md'
-  ]),
-  'tests/cli-configs/meshy-agent.test.sh': Object.freeze(['cli-configs/meshy-agent']),
-  'tests/cli-configs/meshy-mcp-keychain-launcher.test.sh': Object.freeze(['cli-configs/meshy-mcp-keychain-launcher']),
-  'tests/cli-configs/setup-meshy.test.sh': Object.freeze(['cli-configs/setup-meshy.sh']),
-  'tests/cli-configs/meshy-live-smoke-workflow.test.mjs': Object.freeze(['.github/workflows/meshy-live-smoke.yml']),
   'tests/unit/release/muse301-publication-workflows.test.mjs': Object.freeze([
     'tools/release/publish-all.mjs',
     'tools/release/exact-release-plan.mjs',
@@ -117,8 +97,6 @@ const REASON_BY_GROUP = Object.freeze({
   'app-cross-hop-vitest': 'App-owned Vitest configuration selects pure game-math source tests.',
   'app-wonder-world-vitest': 'Node-environment app unit tests use the canonical source aliases instead of stale workspace dist.',
   'asset-optimize-vitest': 'Tool-owned Vitest configuration selects optimizer source and fixture tests; admitted tool dependencies are required.',
-  'cli-config-node': 'Reviewed Node CLI-configuration tests use static assertions or synthetic local fixtures.',
-  'cli-config-shell': 'Reviewed shell CLI-configuration tests use synthetic executables and temporary inputs.',
   'docs-game-upgrades-node': 'Reviewed Node source tests cover the game-upgrade decision logic.',
   'game-runtime-vitest': 'Vitest source tests exercise the game runtime without running its browser evidence.',
   'node-release-unit': 'Reviewed Node release tests exercise source contracts and synthetic release fixtures.',
@@ -181,7 +159,6 @@ function acceptanceReason(path) {
 function supplementalGroup(path) {
   for (const rule of VITEST_RULES) if (rule.pattern.test(path)) return rule.id;
   for (const [id, files] of Object.entries(NODE_TESTS)) if (files.includes(path)) return id;
-  if (SHELL_TESTS.includes(path)) return 'cli-config-shell';
   return null;
 }
 
@@ -235,7 +212,7 @@ function createCheck(id, files, available, runId) {
   const expectedFiles = [...files].sort();
   const prerequisitePaths = groupPrerequisites(id, expectedFiles);
   const missingPrerequisitePaths = prerequisitePaths.filter(path => !available.has(path));
-  const runner = config ? 'vitest' : id === 'cli-config-shell' ? 'shell' : 'node-test';
+  const runner = config ? 'vitest' : 'node-test';
   let invocations;
   if (config) {
     const report = `tests/reports/native-capabilities/${runId}/${id}.json`;
@@ -247,9 +224,7 @@ function createCheck(id, files, available, runId) {
   } else {
     invocations = expectedFiles.map(file => ({
       file,
-      argv: runner === 'shell'
-        ? ['bash', file]
-        : ['node', '--test', '--test-reporter=tap', '--test-concurrency=1', file]
+      argv: ['node', '--test', '--test-reporter=tap', '--test-concurrency=1', file]
     }));
   }
   return {
@@ -303,9 +278,7 @@ export function createNativeSourceInventory({ manifest, expectedTestFiles, runId
       if (group) {
         classification = 'source';
         checkIds = [group];
-        reason = path === 'tests/cli-configs/meshy-live-smoke-workflow.test.mjs'
-          ? 'Static assertions inspect the workflow text; they do not execute a live service or the workflow.'
-          : REASON_BY_GROUP[group];
+        reason = REASON_BY_GROUP[group];
         if (!groups.has(group)) groups.set(group, []);
         groups.get(group).push(path);
       } else {

@@ -2,7 +2,7 @@
 
 Build a scene with {{LIBRARY}}.
 
-The file `/assets/prop.glb` is a provided 3D model (a stylised robot). In the full study the Aura3D arm may generate a prop with the Meshy pipeline; in this version the model is provided to both arms.
+The file `/assets/prop.glb` is a provided 3D model (a stylised robot).
 
 Requirements:
 1. Load `/assets/prop.glb` and place it standing on a round pedestal (a cylinder) in a lit scene, scaled to a sensible size and centred in the frame.

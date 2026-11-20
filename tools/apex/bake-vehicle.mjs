@@ -1,5 +1,5 @@
-// Bakes a Meshy vehicle GLB to the Apex convention: long axis along z, front toward -z (the player drives toward -z),
-// centred on x and z, wheels on y = 0. Meshy cars come out with the front toward -x; positions, normals and tangents are rotated.
+// Bakes a generated vehicle GLB to the Apex convention: long axis along z, front toward -z (the player drives toward -z),
+// centred on x and z, wheels on y = 0. Generated cars come out with the front toward -x; positions, normals and tangents are rotated.
 // usage: node tools/apex/bake-vehicle.mjs <model.glb> [more.glb ...]   (run from the repo root; uses the repo's node_modules)
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";

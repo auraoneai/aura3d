@@ -4,7 +4,7 @@ Owner report (production 4.3.0): the opponents are not facing the player, they a
 
 ## Cause
 
-The sim's enemy `facing` is a compass yaw where 0 looks down -Z, and the renderer drew every enemy with `setRotation(0, -facing, ...)`, which is correct only for a model whose forward axis is -Z. All four Meshy enemy GLBs (guard, gunner, hound, warden) look down +Z, so every enemy was exactly 180 degrees off: back to the player while chasing and attacking. The alert state also never turned toward the player at all.
+The sim's enemy `facing` is a compass yaw where 0 looks down -Z, and the renderer drew every enemy with `setRotation(0, -facing, ...)`, which is correct only for a model whose forward axis is -Z. All four generated enemy GLBs (guard, gunner, hound, warden) look down +Z, so every enemy was exactly 180 degrees off: back to the player while chasing and attacking. The alert state also never turned toward the player at all.
 
 ## Measured forward axes
 
@@ -36,4 +36,4 @@ Frames: `<kind>-legacy-z.jpg` (before: back to the player), `<kind>-configured.j
 
 ## Other games (code-level sweep, no new frames)
 
-Hoops and Diamond already use `atan2(dx, dz)` with +Z models (consistent with the Meshy convention); Ninja Runner applies `MODEL_YAW_OFFSET`; the Pips Big Leap boss is a rolling ball (no facing); Iron Crown fighters visibly face each other in the owner's production screenshot; Slingshot Siege targets are placed with fixed rotations. None needed a change. Lesson M15 records the rule.
+Hoops and Diamond already use `atan2(dx, dz)` with +Z models (consistent with the generated-model +Z convention); Ninja Runner applies `MODEL_YAW_OFFSET`; the Pips Big Leap boss is a rolling ball (no facing); Iron Crown fighters visibly face each other in the owner's production screenshot; Slingshot Siege targets are placed with fixed rotations. None needed a change. Lesson M15 records the rule.

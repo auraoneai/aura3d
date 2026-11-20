@@ -1,6 +1,6 @@
 // Skinned-mesh analysis and repair for the Aura FC athlete GLBs (no dependencies).
 //
-// The Meshy auto-rig leaves bridging triangles between body parts that move independently (left thigh to right thigh across
+// The auto-rig leaves bridging triangles between body parts that move independently (left thigh to right thigh across
 // the shorts seam, hand to hip). In a stride they stretch into the pale "sail" flaps seen at the hips. `triangleStretch`
 // measures, for every triangle, its worst edge stretch (posed length / rest length) over sampled poses of the given clips;
 // `dropStretched` writes a copy of the GLB whose index buffer omits triangles stretched past a limit.

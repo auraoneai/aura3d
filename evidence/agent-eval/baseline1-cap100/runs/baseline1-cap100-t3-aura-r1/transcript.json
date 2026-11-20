@@ -101,7 +101,7 @@
    {
     "type": "tool_result",
     "tool_use_id": "toolu_bdrk_01V3xXwucauaenSmTjcUcb2k",
-    "content": "AUTHORING.md\nagent-files/\naura3d-animation-studio/\naura3d-art-direction/\naura3d-assets/\naura3d-browser-game/\naura3d-character-animation/\naura3d-core/\naura3d-evidence-review/\naura3d-game-art/\naura3d-materials-environments/\naura3d-performance/\naura3d-retexture/\naura3d-scene-authoring/\naura3d-threejs-migration/\nllms.txt\nmanifest.json\nmeshy-cli/"
+    "content": "AUTHORING.md\nagent-files/\naura3d-animation-studio/\naura3d-art-direction/\naura3d-assets/\naura3d-browser-game/\naura3d-character-animation/\naura3d-core/\naura3d-evidence-review/\naura3d-game-art/\naura3d-materials-environments/\naura3d-performance/\naura3d-retexture/\naura3d-scene-authoring/\naura3d-threejs-migration/\nllms.txt\nmanifest.json"
    },
    {
     "type": "tool_result",
@@ -1377,7 +1377,7 @@
    {
     "type": "tool_result",
     "tool_use_id": "toolu_bdrk_01GvXW6SQt5apmg5GZ9uiYmC",
-    "content": "docs/agents/agent-quickstart.md:79:[Omitted long matching line]\ndocs/agents/agent-quickstart.md:95:[Omitted long matching line]\ndocs/agents/asset-workflow.md:187:[Omitted long matching line]\ndocs/agents/troubleshooting.md:34:  `aura3d assets import-meshy`). Reserve `primitives.plane`, `primitives.box`,\ndocs/agents/troubleshooting.md:80:  material (`instances.box` / `primitives.box({ instances })`) because\n"
+    "content": "docs/agents/agent-quickstart.md:79:[Omitted long matching line]\ndocs/agents/agent-quickstart.md:95:[Omitted long matching line]\ndocs/agents/asset-workflow.md:187:[Omitted long matching line]\ndocs/agents/troubleshooting.md:80:  material (`instances.box` / `primitives.box({ instances })`) because\n"
    },
    {
     "type": "tool_result",
@@ -1424,7 +1424,7 @@
    {
     "type": "tool_result",
     "tool_use_id": "toolu_bdrk_01UX8XxQsY8SuEobSzMgSvTi",
-    "content": "70\t```\n71\t\n72\tFull workflow details live in `docs/agents/prompt-to-3d-workflow.md`.\n73\t\n74\t## Mandatory 3D game & scene anti-failure guardrails\n75\t\n76\t1. **No primitive-box characters, vehicles, or hero props (\"no stick-figure humans or box cars\")**:\n77\t   - Never assemble characters, athletes, enemies, vehicles, aircraft, trees, or architectural landmarks out of `primitives.box`, `primitives.sphere`, or `primitives.cylinder` — keep every silhouette, look, lighting, and shadow readable with real 3D geometry.\n78\t   - Every character, vehicle, creature, weapon, and landmark must mount a real 3D GLB via `model(assets.<name>, { targetMaxDimension, role })` from `src/aura-assets.ts`. If the catalog lacks a required 3D model, generate a bespoke PBR 3D model with Meshy (`meshy`) and admit it via `aura3d assets import-meshy`.\n79\t   - Primitives (`primitives.plane`, `primitives.box`, `primitives.cylinder`, `primitives.torus`) are reserved strictly for ground/court surfaces, field lines, UI rings/reticles, laser beams, and invisible physics colliders.\n80\t2. **Boot directly into live 60 FPS 3D gameplay (no blocking start modals)**:\n81\t   - Never hide the 3D canvas, camera framing, or atmosphere behind an opaque full-screen HTML start menu, character select modal, or briefing overlay on initial page load, and never require query parameters (`?autoplay=1`, `?demo=1`, `?play=1`) for the scene to animate.\n82\t   - Every game route must start in active 60 FPS gameplay on Frame 1 with an intel"
+    "content": "70\t```\n71\t\n72\tFull workflow details live in `docs/agents/prompt-to-3d-workflow.md`.\n73\t\n74\t## Mandatory 3D game & scene anti-failure guardrails\n75\t\n76\t1. **No primitive-box characters, vehicles, or hero props (\"no stick-figure humans or box cars\")**:\n77\t   - Never assemble characters, athletes, enemies, vehicles, aircraft, trees, or architectural landmarks out of `primitives.box`, `primitives.sphere`, or `primitives.cylinder` — keep every silhouette, look, lighting, and shadow readable with real 3D geometry.\n78\t   - Every character, vehicle, creature, weapon, and landmark must mount a real 3D GLB via `model(assets.<name>, { targetMaxDimension, role })` from `src/aura-assets.ts`. If the catalog lacks a required 3D model, admit your own GLB via `aura3d assets add`.\n79\t   - Primitives (`primitives.plane`, `primitives.box`, `primitives.cylinder`, `primitives.torus`) are reserved strictly for ground/court surfaces, field lines, UI rings/reticles, laser beams, and invisible physics colliders.\n80\t2. **Boot directly into live 60 FPS 3D gameplay (no blocking start modals)**:\n81\t   - Never hide the 3D canvas, camera framing, or atmosphere behind an opaque full-screen HTML start menu, character select modal, or briefing overlay on initial page load, and never require query parameters (`?autoplay=1`, `?demo=1`, `?play=1`) for the scene to animate.\n82\t   - Every game route must start in active 60 FPS gameplay on Frame 1 with an intel"
    }
   ]
  },

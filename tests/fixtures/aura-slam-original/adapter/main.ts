@@ -887,7 +887,7 @@ function buildTennisScene(): ReturnType<typeof scene> {
     );
   }
 
-  // Typed Aura3D Stadium Grandstands & Floodlights (from src/aura-assets.ts)
+  // Typed Aura3D Stadium Grandstand (from src/aura-assets.ts)
   s.addMany([
     model(assets.showcaseStadiumSeats, {
       name: "stadium-grandstand-rear",
@@ -896,25 +896,7 @@ function buildTennisScene(): ReturnType<typeof scene> {
       targetMaxDimension: 12.5
     })
       .position(0, 0, -18.5)
-      .runtime(game.runtimeNode("stadium-grandstand-rear", { tags: ["typed-supporting-asset"] })),
-    model(assets.rooftopScoreboardRigMeshy, {
-      name: "stadium-scoreboard-gantry",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 6.2
-    }).position(0, 2.4, -15.6),
-    model(assets.rooftopFloodlightTowerMeshy, {
-      name: "stadium-floodlight-left",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 5.8
-    }).position(-12.5, 0, -13.2),
-    model(assets.rooftopFloodlightTowerMeshy, {
-      name: "stadium-floodlight-right",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 5.8
-    }).position(12.5, 0, -13.2)
+      .runtime(game.runtimeNode("stadium-grandstand-rear", { tags: ["typed-supporting-asset"] }))
   ]);
 
   // Bleacher tiers & animated 3D spectators

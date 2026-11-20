@@ -4,7 +4,7 @@ Software WebGL2 (SwiftShader) on the remote runner, not real-GPU evidence. Spec:
 (QA hooks: reset, 90 steps forward = `drive`, then 40 steps of a boosted right drift = `drift`), runs `carregen-before`
 (origin/game-rework before the change) and `carregen-after` (commit 4507f5f19). Both: 2 of 2 passed, 0 console errors.
 
-| Frame | Before (old Meshy car) | After (new car) |
+| Frame | Before (old generated car) | After (new car) |
 | --- | --- | --- |
 | drive 1280x720 | `before-drive-1280x720.jpg` | `after-drive-1280x720.jpg` |
 | drift 1280x720 | `before-drift-1280x720.jpg` | `after-drift-1280x720.jpg` |
@@ -14,7 +14,7 @@ Software WebGL2 (SwiftShader) on the remote runner, not real-GPU evidence. Spec:
 - Before: the blue faceted body of thin overlapping plates; the road and interior read through it.
 - After: an opaque teal compact hatchback, rear and taillights toward the camera, on a visible road at both sizes.
 
-Asset: Meshy text-to-3D through Kiro Prism, text prompt only (no image input, no brand, emblem or text), preview
+Asset: text-to-3D generation, text prompt only (no image input, no brand, emblem or text), preview
 `01a17465-6271-70ff-aa9f-dd1f1e2f335d`, refine `01a17466-f3b3-764c-b450-379f42fda5c2`; prepped (simplify to 30,951
 vertices, textures 1024), baked by `tools/gridlock-courier-bake/bake.mjs` (+z forward, lowest point y = 0, 1.9 units long).
 Checks: 37,470 triangles, 0 open edges (watertight; 91 non-manifold edges where parts meet), 1.8 MB, `assets validate

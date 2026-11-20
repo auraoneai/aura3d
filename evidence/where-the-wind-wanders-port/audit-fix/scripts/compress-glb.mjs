@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Shrink the game's Meshy GLBs for first load (audit WW-8):
+// Shrink the game's model GLBs for first load (audit WW-8):
 //   - textures re-encoded as JPEG (base colour and metal/rough at quality 85, normal maps at 92) and capped at --tex px;
 //   - optional --meshopt: gltf-transform `meshopt` (quantise positions/normals/UVs, then EXT_meshopt_compression). The
 //     dequantisation moves into the mesh node's transform; the engine computes model bounds through node world matrices

@@ -29,6 +29,6 @@ flags; statics (stands, bench, boards) now cast sun shadows, which restores the 
 rear stand came from the old post-off look and is gone in every venue; draw calls dropped from 187-209 to 111-127 with one shadow cascade
 (`?cascades=auto` restores three), one instanced draw for the spectators, and small rig parts not casting (`?rigshadows=full` restores them).
 
-Rebuild: `PUBLIC_ASSETS="showcaseStadiumSeats.afb44897.glb rooftopScoreboardRigMeshy.866123b7.glb rooftopFloodlightTowerMeshy.1bfcdd0b.glb"
+Rebuild: `PUBLIC_ASSETS="showcaseStadiumSeats.afb44897.glb <rooftop scoreboard rig GLB> <rooftop floodlight tower GLB>"
 SPECS="@headed-xvfb tests/browser/aura-slam-native-vs-live.spec.ts" tools/remote-acr/run.sh` (1280 and `native-vs-live-sheet.jpg`), and the same with
 `aura-slam-render-sizes.spec.ts` (640 and mobile). `aura-slam-render.spec.ts` enforces the 150 draw-call budget unconditionally.

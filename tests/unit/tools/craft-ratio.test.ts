@@ -55,7 +55,7 @@ describe("craft-ratio (T0.7)", () => {
   });
 
   it("reproduces the totals rows", () => {
-    // skills total: the 13 SKILL.md files + references/boundaries.md (raw mode).
+    // skills total: the 12 SKILL.md files + references/boundaries.md (raw mode).
     const skillsRows = Object.keys(EXPECTED.files).filter((f) => f.includes("/skills/"));
     const sumSkill = (pick: (f: (typeof report.files)[number]) => number) =>
       skillsRows.reduce((acc, f) => acc + pick(byFile.get(f)!), 0);

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// IC-12: add Meshy `animate` clips to an admitted Iron Crown fighter GLB without touching its mesh, skin, textures or
+// IC-12: add generated animation clips to an admitted Iron Crown fighter GLB without touching its mesh, skin, textures or
 // existing clips.
 //
-// The fighters' original Meshy rig tasks expired, so the new clips were generated on a fresh rig of the same remeshed
-// mesh at the same height (`meshy rigging create --height-meters <h>`), then merged onto that rig with
+// The fighters' original rigs were no longer available, so the new clips were generated on a fresh auto-rig of the same
+// remeshed mesh at the same height, then merged onto that rig with
 // `aura3d assets merge-clips`. The fresh rig has the same 24 joint names but slightly different joint placement and
-// rest orientation (Meshy auto-rigs each run), so copying the channels as-is would bend the admitted skin wrongly.
+// rest orientation (each auto-rig run differs), so copying the channels as-is would bend the admitted skin wrongly.
 // This tool retargets through the bind pose instead: for every joint j and frame,
 //   skin_j   = W_src(j, t) * IBM_src(j)          (how the fresh rig deforms the shared mesh)
 //   W_tgt(j) = skin_j * inverse(IBM_tgt(j))      (the admitted joint pose that deforms the mesh the same way)

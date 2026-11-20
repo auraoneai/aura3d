@@ -20,7 +20,7 @@ Every acceptance line of PRD lines 792-810 with its phase-1 status. `unit` = pro
 | LINKS-04 | hue differs >= 15 deg St Auroras vs Maple | phase 2 (cold -0.12 vs warm +0.18 temperature authored) |
 | LINKS-05 | validate --release; texel p50 256-1024 px/m; turf stddev >= 2x; <= 48 MB per course | see lane report |
 | LINKS-06 | hash same; golfer pixels >= 250 <= 1%; Neon golfer >= 1.5x turf | WP-36 (matte retexture) + phase 2 |
-| LINKS-07 | no `conifer-boughs`; no flora key shared between courses; no primitive-subject | partial phase 4: `links_marram` (WP-36 golfMarram) on St Auroras; the other flora rows blocked: Meshy keys refuse API calls |
+| LINKS-07 | no `conifer-boughs`; no flora key shared between courses; no primitive-subject | partial phase 4: `links_marram` (WP-36 golfMarram) on St Auroras; the other flora rows blocked: asset generation unavailable |
 | LINKS-08 | rg for borrowed prefixes returns nothing; validate --release; 0 borrowed findings | WP-36 (landmarks, ball, SFX) |
 | LINKS-09 | <= 4 extra draws; phone <= 50% instances; rough crop moves >= 2 luma over 1 s | see lane report |
 | LINKS-10 | <= 24 static per hole; >= 3 runtime decals per hole; <= 32 total | partial: a runtime pitch-mark decal on each landing (divot preset); counts phase 2 |
@@ -50,5 +50,5 @@ Every acceptance line of PRD lines 792-810 with its phase-1 status. `unit` = pro
 - Blind panel `g10p4r4`: all six courses better 3-0 vs 4.6.2.
 - Distinctness: pass vs all four genre neighbours (`distinct-p4/`).
 - Rubric minimum 3.5 (ibl_reflections): goal 1 open, asset-bound.
-- WP-36: `golfMarram` admitted as `links_marram`; 39 rows blocked: Meshy keys refuse API calls.
+- WP-36: `golfMarram` admitted as `links_marram`; 39 rows blocked: asset generation unavailable.
 - Game checks: 0 errors, 24 warnings (unchanged count); no band widened.

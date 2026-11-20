@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Splits a textured Meshy vehicle into flat PBR region materials (veh-body, veh-trim, veh-glass, veh-tyre, veh-rim, veh-light) by
+// Splits a textured generated vehicle into flat PBR region materials (veh-body, veh-trim, veh-glass, veh-tyre, veh-rim, veh-light) by
 // sampling its base-colour texture at each triangle's centroid, drops the textures, and recomputes creased smooth normals so a flat
 // colour does not pick up the generator's noisy per-vertex normals. Geometry, scale and origin are unchanged.
 // Usage: node flatten.mjs <in.glb> <out.glb> [bodyR,G,B 0-1 linear]

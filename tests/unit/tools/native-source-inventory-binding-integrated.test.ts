@@ -9,7 +9,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 const {
   BUILT_UNIT_TESTS, EXTERNAL_CODEC_TEST, HISTORICAL_ACCEPTANCE_TESTS, HISTORICAL_REPLAY_TEST,
   PACKED_UNIT_TESTS, buildProductsDigest, buildSteps,
-  computeInputDigest, materializeResults, nativeSourceInventoryForManifest, parseSourceShellResult, parseTap,
+  computeInputDigest, materializeResults, nativeSourceInventoryForManifest, parseTap,
   parseVitestInventory, sourceHandoffApi, sourceTestFileCoverage, validateSupplementalCheck
 } = await import(new URL('../../../tools/remote-acr/source-checks.mjs', import.meta.url).href) as Record<string, any>;
 const { verifySourceBuildHandoff } = await import(new URL('../../../tools/remote-acr/source-resume.mjs', import.meta.url).href) as {
@@ -41,8 +41,6 @@ function manifest(extra: string[] = []) {
     ...HISTORICAL_ACCEPTANCE_TESTS, HISTORICAL_REPLAY_TEST, EXTERNAL_CODEC_TEST,
     'apps/showcase-cross-hop/tests/lanes.test.ts', 'apps/showcase-cross-hop/vitest.config.ts',
     'tools/agent-templates/cli.test.mjs', 'tools/agent-templates/command.test.mjs',
-    'tests/cli-configs/meshy-agent.test.sh', 'cli-configs/meshy-agent',
-    'tests/cli-configs/setup-meshy.test.sh', 'cli-configs/setup-meshy.sh',
     ...extra
   ];
   const files = [...new Set(paths)].sort().map(path => ({ path, sha256: hash(path), mode: '100644', type: 'file' }));
@@ -88,20 +86,17 @@ function syntheticEvidence() {
       const files = expected[step.id], summary: any = { checkId: step.id,
         ...(plan ? { runner: plan.runner, cwd: plan.cwd } : {}),
         expectedFiles: files, discoveredFiles: [], testCount: 0, passedCount: 0,
-        failedCount: 0, skippedCount: 0, testNames: [],
-        ...(plan?.runner === 'shell' ? { countKind: 'file-invocations' } : {}) };
+        failedCount: 0, skippedCount: 0, testNames: [] };
       for (const [index, file] of files.entries()) {
-        const shell = plan?.runner === 'shell';
-        const output = shell ? `${file.split('/').at(-1)}: 3 cases passed\n` : tap(file);
-        const result = put(root, `${reportDir}/results/${step.id}/${index}.${shell ? 'log' : 'tap'}`, output);
+        const output = tap(file);
+        const result = put(root, `${reportDir}/results/${step.id}/${index}.tap`, output);
         const argv = plan ? plan.invocations[index].argv
           : step.id === 'packages' ? ['pnpm', 'exec', 'tsx', '--tsconfig', 'tsconfig.base.json', '--test', '--test-reporter=tap', file]
             : step.id === 'packages-dist' ? ['node', '--import', 'tsx', '--test', '--test-reporter=tap', file]
               : ['node', '--test', '--test-reporter=tap', file];
-        const stats = shell ? parseSourceShellResult(output, file) : parseTap(output);
+        const stats = parseTap(output);
         check.subruns.push({ file, argv, exitCode: 0, result,
-          ...(plan ? { cwd: plan.cwd, signal: null, error: null } : {}),
-          ...(shell ? { reportedCases: stats.reportedCases } : {}) });
+          ...(plan ? { cwd: plan.cwd, signal: null, error: null } : {}) });
         summary.discoveredFiles.push(file);
         for (const key of ['testCount', 'passedCount', 'failedCount', 'skippedCount']) summary[key] += stats[key];
         summary.testNames.push(...stats.testNames);
@@ -148,7 +143,7 @@ describe('manifest-bound source inventory execution', () => {
     const source = manifest(), inventory = nativeSourceInventoryForManifest(source, 'fixture');
     const steps = buildSteps('fixture', 'tests/reports/native-capabilities/fixture', 'patch', inventory);
     expect(inventory.supplementalChecks.map((check: any) => check.id)).toEqual([
-      'app-cross-hop-vitest', 'cli-config-shell', 'template-node'
+      'app-cross-hop-vitest', 'template-node'
     ]);
     expect(steps.findIndex((step: any) => step.id === 'template-node')).toBeLessThan(steps.findIndex((step: any) => step.id === 'build'));
     expect(steps.findIndex((step: any) => step.id === 'pack') + 1).toBe(steps.findIndex((step: any) => step.id === 'resume-rebuild'));
@@ -206,7 +201,7 @@ describe('synthetic source-runner process observations', () => {
       return { status: fail ? 3 : 0, signal: null, stdout: Buffer.from(tap(args.at(-1)!, fail)), stderr: Buffer.alloc(0) };
     };
     const context = { Buffer, realpathSync, join, lstatSync, mkdirSync, writeFileSync, readFileSync, existsSync, resolve,
-      validateSupplementalCheck, spawnSync: fakeSpawn, parseTap, parseSourceShellResult,
+      validateSupplementalCheck, spawnSync: fakeSpawn, parseTap,
       inRoot: (dir: string, path: string) => resolve(dir, path), sha256: hash,
       assert: (condition: unknown, message: string) => { if (!condition) throw new Error(message); } };
     const execute = runInNewContext(`${slice}\nrunSupplementalCheck`, context);
@@ -236,7 +231,7 @@ describe('synthetic source-runner process observations', () => {
       return { status: 0, signal: null, stdout: Buffer.from('synthetic runner output'), stderr: Buffer.alloc(0) };
     };
     const context = { Buffer, realpathSync, join, lstatSync, mkdirSync, writeFileSync, readFileSync, existsSync, resolve,
-      validateSupplementalCheck, spawnSync: fakeSpawn, parseTap, parseSourceShellResult, parseVitestInventory,
+      validateSupplementalCheck, spawnSync: fakeSpawn, parseTap, parseVitestInventory,
       observeVitestInventory: parseVitestInventory, inRoot: (dir: string, path: string) => resolve(dir, path), sha256: hash,
       assert: (condition: unknown, message: string) => { if (!condition) throw new Error(message); } };
     const execute = runInNewContext(`${slice}\nrunSupplementalCheck`, context);
@@ -265,8 +260,8 @@ describe('synthetic retained handoff and freeze evidence', () => {
     expect(() => f.verifyBuild()).toThrow(/invocation inventory/);
     expect(() => f.verifyGate()).toThrow(/invocation inventory/);
     const g = syntheticEvidence();
-    const shell = g.checks.find(check => check.id === 'cli-config-shell');
-    shell.subruns[0].exitCode = 5;
+    const failed = g.checks.find(check => check.id === 'template-node');
+    failed.subruns[0].exitCode = 5;
     g.saveBuild();
     expect(() => g.verifyBuild()).toThrow(/invocation did not pass/);
     const h = syntheticEvidence();

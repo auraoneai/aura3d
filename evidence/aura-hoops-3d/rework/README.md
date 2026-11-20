@@ -40,7 +40,7 @@ All runs: remote runner, software WebGL2 (SwiftShader), roughly 0.2 to 0.4 frame
 
 - Checked: all 15 bind rotations are identity (so the IK's world-space delta maths is valid), scale 1, symmetric shoulders at x = +/-0.2 m; the skeleton has no hand bones (hands are skinned to the forearm); arm length 0.255 + 0.30 m.
 - Cause: the idle stance aimed each hand 0.46 m below the shoulder of a 0.555 m arm, which forces about 15 cm of elbow bend, and then flared the elbow outward (`flare` 0.18): both arms bowed out in a parenthesis shape with the hands turned in (visible in `arms-before-*`). The torn-looking shoulders were the shard texture and seam normal map (section 2).
-- Fix: `IDLE_HAND_DROP = 0.53` (about 8 cm of bend), hand 3 cm outside the shoulder line, flare 0.06. The Meshy rig was not at fault, so no re-rig and no Meshy credits were spent. Test: bend under 10 cm is asserted.
+- Fix: `IDLE_HAND_DROP = 0.53` (about 8 cm of bend), hand 3 cm outside the shoulder line, flare 0.06. The rig was not at fault, so no re-rig was done. Test: bend under 10 cm is asserted.
 
 ## 7. Not done / caveats
 

@@ -1,5 +1,5 @@
 /**
- * Binds a new static athlete mesh (a Meshy text-to-3D generation in an A-pose) to the shared 15-bone athlete rig of a rigged base GLB.
+ * Binds a new static athlete mesh (a text-to-3D generation in an A-pose) to the shared 15-bone athlete rig of a rigged base GLB.
  * The base GLB keeps its skeleton, clips, node tree and material slot; the mesh, its UVs and its albedo are replaced. Skin weights are
  * transferred from a clean donor athlete (already on the same skeleton) by nearest vertices after fitting the new mesh to the donor's
  * height and centre, then smoothed over the new mesh. Run split-bridges.ts afterwards to settle any remaining stretched triangle.

@@ -4,9 +4,9 @@ Group C screenshot problem: the player car and the roadside trees rendered pure 
 
 ## Cause
 
-Not a broken material and not a regression. Textured materials upgrade **one at a time, in scene order, after mount**, and on SwiftShader each new shader takes tens of seconds. A frame taken early shows plain white models until the upgrade pass reaches them. The `meshy=0` fallback renders correctly, and all 15 texture hashes match the manifest.
+Not a broken material and not a regression. Textured materials upgrade **one at a time, in scene order, after mount**, and on SwiftShader each new shader takes tens of seconds. A frame taken early shows plain white models until the upgrade pass reaches them. The no-models fallback renders correctly, and all 15 texture hashes match the manifest.
 
-- Bisect (`/examples/roadster-hours-port/?autostart=1`, texture requests over 75 s) on `909ad506e` (the Meshy art pass whose frames were textured), `4a9b53f31` (4.1.1), `a816facf6` (frame-cost commit) and `04b7726ef` (browser-entry fix): the same pace on all four (first texture at 27 to 35 s, the second at 81 to 87 s). The earlier textured frames were captured much later.
+- Bisect (`/examples/roadster-hours-port/?autostart=1`, texture requests over 75 s) on `909ad506e` (the generated-model art pass whose frames were textured), `4a9b53f31` (4.1.1), `a816facf6` (frame-cost commit) and `04b7726ef` (browser-entry fix): the same pace on all four (first texture at 27 to 35 s, the second at 81 to 87 s). The earlier textured frames were captured much later.
 - Timeline at the head before the fix (live load, 960x540): lighthouse 28 s, villa 81, townhouse 114, palm 134, pine 178, boulders 219, hatch 266, sedan 313, pickup 350, suv 391, bus 438, semi 476. **`roadster.jpg` (the player's car) was not requested by 480 s**, because the car was added to the scene after the props and traffic.
 
 ## Fix

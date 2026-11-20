@@ -16,9 +16,8 @@
  *    re-measure the sliver ratio for the record and apply §6.5 item 4
  *    (clear `doubleSided` unless a mesh has open shells).
  *
- * The Meshy remesh API path is documented as contract fact F-05-03 instead of
- * a code path: the remesh operation lives on the remote worker, covered by
- * the meshy-cli skill.
+ * A remote remesh service path is documented as contract fact F-05-03 instead
+ * of a code path; this module never calls one.
  */
 
 import { execFileSync } from "node:child_process";

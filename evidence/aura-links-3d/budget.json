@@ -21,7 +21,7 @@
     "neonStreetLampProp": { "primitives": 27, "triangles": 272036, "use": "Neon Bay lamp pylons x4: about 1.09M triangles" },
     "showcaseModernOfficeBuilding": { "primitives": 226, "triangles": 219831, "use": "Neon Bay skyline tower" },
     "siegeGolfBall": { "primitives": 1, "triangles": 76800, "use": "the 10 cm ball" },
-    "linksGolferAthleteMeshy": { "primitives": 1, "triangles": 31758, "use": "player, caddy and six gallery copies (8 skinned actors)" }
+    "linksGolferAthlete": { "primitives": 1, "triangles": 31758, "use": "player, caddy and six gallery copies (8 skinned actors)" }
   },
   "gu47Deltas": {
     "lookRig": "lights, fog, grade, bloom, vignette, grain, god rays: 0 scene draws (post stages); key cascades 4 -> 3 on High (one fewer cascade of caster draws), 1 on Low",

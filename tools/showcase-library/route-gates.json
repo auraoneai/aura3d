@@ -625,20 +625,17 @@
       "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
-        "patrolAircraftMeshy",
         "patrolWingDroneA",
         "patrolWingDroneB",
         "patrolWingPadBeacon"
       ],
       "primaryAssetRoles": {
-        "patrolAircraftMeshy": "primary-player-aircraft",
         "patrolWingDroneA": "primary-intercept-target-a",
         "patrolWingDroneB": "primary-intercept-target-b",
         "patrolWingPadBeacon": "primary-landing-objective"
       },
-      "routePrimaryHeroAsset": "patrolAircraftMeshy",
+      "routePrimaryHeroAsset": "patrolWingDroneA",
       "secondaryPrimaryAssets": [
-        "patrolWingDroneA",
         "patrolWingDroneB",
         "patrolWingPadBeacon"
       ],

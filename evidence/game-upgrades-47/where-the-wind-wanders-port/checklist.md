@@ -65,7 +65,7 @@ Status per acceptance line. "phase 2" = needs a remote capture, measurement or j
 | PRD 1.2 goal 2 | same_game false at >= 0.8 vs each genre neighbour | done: slingshot-siege 0.88, dot-dash-3d 0.964 (48/48 different each; `distinct-p4-ss/`, `distinct-p4-dd/`) |
 | WW47-L2 | sun shadow received on meadow, ground, scenery | done (`defines` fix; the in-source `#define` never reached the engine preprocessor) |
 | WW47-A1 | kite likeness, <= 400 KB, +2 draws, yaw within 25 deg | done: WP-36 bellKite, 0.28 MB, +2 draws (kite, string), yaw upwind + 25 deg toward the view |
-| WW47-A2/A3/A4/W1 | WP-36 retextures and props | blocked: Meshy keys refuse API calls |
+| WW47-A2/A3/A4/W1 | WP-36 retextures and props | blocked: asset generation unavailable |
 | WW47-AN1 | kite follows the gust; reduced motion 0.3x | done for the kite (gust-scaled reach, bob and roll; motion() 0.3x); washing line blocked (WP-36) |
 | PRD 7.2 | game-checks 0 errors; bands never widened | done: 0 errors, 2 warnings (bell luma-band, unchanged 4.7.1 dusk key; was 6) |
 | PRD 7.2 | final screens and card retaken | done (run g23p4-r6-7; card previews rebuilt) |

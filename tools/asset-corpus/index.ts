@@ -546,12 +546,10 @@ function writeAssetCorpusMarkdown(results: readonly CorpusResult[], warnings: re
   } | undefined;
   const sketchfabLines = sketchfabReport?.pass === true
     ? [
-        `- Authenticated Sketchfab CC0 download proof passes in \`tests/reports/sketchfab-asset-corpus.json\` and \`tests/reports/sketchfab-asset-corpus-results.md\`: \`${sketchfabReport.modelName ?? "Sketchfab model"}\` (\`${sketchfabReport.modelUid ?? "unknown uid"}\`) as ${sketchfabReport.format ?? "model"} through add/validate/typegen/build/browser-render.`,
-        "- Meshy exports still require a generated/exported user asset or API credential."
+        `- Authenticated Sketchfab CC0 download proof passes in \`tests/reports/sketchfab-asset-corpus.json\` and \`tests/reports/sketchfab-asset-corpus-results.md\`: \`${sketchfabReport.modelName ?? "Sketchfab model"}\` (\`${sketchfabReport.modelUid ?? "unknown uid"}\`) as ${sketchfabReport.format ?? "model"} through add/validate/typegen/build/browser-render.`
       ]
     : [
-        "- Sketchfab CC0 direct model downloads require authenticated API access; run `pnpm audit:sketchfab-asset-corpus` with `SKETCHFAB_API_TOKEN` to refresh proof.",
-        "- Meshy exports require a generated/exported user asset or API credential."
+        "- Sketchfab CC0 direct model downloads require authenticated API access; run `pnpm audit:sketchfab-asset-corpus` with `SKETCHFAB_API_TOKEN` to refresh proof."
       ];
   const lines = [
     "# Asset Corpus Results",
@@ -576,7 +574,7 @@ function writeAssetCorpusMarkdown(results: readonly CorpusResult[], warnings: re
     "",
     "- The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 model, and a downloaded Khronos Draco-compressed glTF.",
     ...sketchfabLines,
-    "- Run the same add/validate/typegen/render flow against Meshy exports when credentials or licensed files are available before claiming broad generated-asset compatibility.",
+    "- Run the same add/validate/typegen/render flow against generated-model exports when licensed files are available before claiming broad generated-asset compatibility.",
     ""
   ];
   mkdirSync("docs/project", { recursive: true });

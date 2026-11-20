@@ -28,7 +28,7 @@ Does Iron Crown author `lights.ambient`, making the fill yield (`packages/engine
 
 ## Capture caveat found on the way (not an engine defect)
 
-The first 4.5.0 attempt (`ic450-new-1028b`) came out fully black (mean luma 6.3, 81% clipped, `drawCalls` 0, `gameMode` loading) with `RENDERER_MOUNT_FAILED: ... Unexpected token 'v', "version ht"... is not valid JSON`. The cause was the fresh git worktree: 43 of the staged `public/aura-assets/*.glb` files (for example `neonCyberPylonMeshy`, `showcaseModernBuildingOne`, `reactorFusionTurbineMeshy`) were Git LFS pointer stubs, not the GLB data. The 4.3.7 worktree had real files. Replacing those stubs with the real files from the main checkout (`cp -c`) gave the result above. Any capture from a new worktree needs the LFS pointers checked first; otherwise a black frame reads as a darkness regression.
+The first 4.5.0 attempt (`ic450-new-1028b`) came out fully black (mean luma 6.3, 81% clipped, `drawCalls` 0, `gameMode` loading) with `RENDERER_MOUNT_FAILED: ... Unexpected token 'v', "version ht"... is not valid JSON`. The cause was the fresh git worktree: 43 of the staged `public/aura-assets/*.glb` files (for example the neon cyber pylon, `showcaseModernBuildingOne` and the reactor fusion turbine) were Git LFS pointer stubs, not the GLB data. The 4.3.7 worktree had real files. Replacing those stubs with the real files from the main checkout (`cp -c`) gave the result above. Any capture from a new worktree needs the LFS pointers checked first; otherwise a black frame reads as a darkness regression.
 
 ## Method and cleanup
 

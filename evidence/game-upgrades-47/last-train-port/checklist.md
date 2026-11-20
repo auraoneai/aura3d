@@ -49,6 +49,6 @@
 | distinctness vs 8 genre neighbours (goal 2) | met: same_game false at 0.827-0.944 on r3 frames (`distinct-p4/`) |
 | blind panel vs 4.6.2, every changed view | done: default, A-E all better 3-0 (g21p4r3a, g21p4r3cd, g21p4r3e; `panel-p4/`) |
 | luma bands (luma-after.json, r3) | done: default 100.7, A 101.0, B 88.8, C 67.5, D 56.6, E 38.6; none widened |
-| WP-36 | 1 of 36 swapped in (lamplightTramEnamel); 35 blocked: Meshy keys refuse API calls |
+| WP-36 | 1 of 36 swapped in (lamplightTramEnamel); 35 blocked: asset generation unavailable |
 | screens | done: desktop, 390x844 and card retaken on the r3 build; previews rebuilt |
 | gates | typecheck NEW_ERRORS 0; 20 vitest files pass; eslint clean; game-checks 0 errors, 2 warnings (borrowed-asset, WP-36 blocked) |

@@ -24,4 +24,4 @@ Owner frames from 4.3.1 production showed grey spheres on both shoulders, dark f
 
 - Frames are DPR 1, not DPR 2, and the owner's front-left close-up is approximated by the dribble probe's chase camera.
 - The Hoops dribble probe still fails its running case on palm height and horizontal palm-to-ball distance (palm 0.574 m high, horizontal 0.214 m vs limits 0.6 and 0.2): run-to-run dribble spread, unchanged by the hand positions.
-- `tests/unit/likeness-audit/brand-clean-assets.test.ts` `rooftopDefenderMeshy` already fails on `hotfix-432` before this change (its size check reads the next manifest entry's `sizeBytes`).
+- `tests/unit/likeness-audit/brand-clean-assets.test.ts` (rooftop defender asset) already fails on `hotfix-432` before this change (its size check reads the next manifest entry's `sizeBytes`).

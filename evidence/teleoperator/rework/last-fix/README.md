@@ -12,12 +12,12 @@ Branch `game-rework`. Remote runner (software WebGL2, SwiftShader), built from t
 | Console errors | 0 | 0 |
 
 - Tap the card title (the small caret) to collapse the sheet to one line; the state is shared by the fare card and the trip card.
-- Robotaxi: the Meshy GLB baked its paint into a shard-shaped atlas (`/tmp` notes: noisy fragments, invented marks) and its
+- Robotaxi: the generated GLB baked its paint into a shard-shaped atlas (`/tmp` notes: noisy fragments, invented marks) and its
   normals were noisy, which a flat colour turned into blotchy shading. `tools/teleop-vehicle-retexture/retexture.mjs` paints the same mesh
   by region (body, glass, tyre, rim, lights, pod, mirror, underbody) into flat materials, subdivides region boundaries (depth 2, wheels
   keep their triangles), and recomputes smooth normals with a 55 degree crease. The cover discs are gone (the marks are no longer
   in any texture). 33,495 triangles, 1.0 MB, no textures. Preview tool: `tools/teleop-vehicle-retexture/preview.mjs`.
 - Edges between glass and body are still slightly serrated at depth 2; deeper subdivision costs triangles (depth 3 is 43.9k).
-- The robotaxi silhouette is still a compact crossover with a roof pod: that comes from the Meshy mesh and needs new art to change.
+- The robotaxi silhouette is still a compact crossover with a roof pod: that comes from the generated mesh and needs new art to change.
 
 Frames: `compare-*.jpg` (left before from `screens/final`, right after), `after-*.jpg`.

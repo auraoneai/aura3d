@@ -16,7 +16,7 @@ Status: done = code in phase 1; P2 = needs a phase-2 capture, judge or measureme
 | IC-10 | bottom-centre mean >= 45, spread >= 60; material >= 7 | code done; P2 |
 | IC-11 | triplanar CC0 basalt + lichen | blocked (CC0 basalt set and lichen mask not admitted) |
 | IC-12 | heat 1 vs 0: red +30, blue ±5 | not done |
-| IC-13 | Meshy sentry and heavy targets | blocked (WP-36) |
+| IC-13 | Generated sentry and heavy targets | blocked (WP-36) |
 | IC-14 | 3 crystal clusters instanced | blocked (WP-36) |
 | IC-15 | ribcage arch, start gate | blocked (WP-36) |
 | IC-16 | drone2 copper retexture | blocked (WP-36) |
@@ -49,8 +49,8 @@ Status: done = code in phase 1; P2 = needs a phase-2 capture, judge or measureme
 |---|---|
 | Default view vs 4.6.2 (blind 3-judge panel) | phase-4 look kept: better 3/0/0 in g19p4r6 and g19p4r7 (head = r7 code); `?look=original` unchanged |
 | Cast shadows (root cause) | fixed: sky dome / abyss / strips no longer cast (twilight), key raised to ~35 degrees at the sun azimuth, contact shadow drawn in the road shader, 2048 map |
-| IC-13 sentry (WP-36 ionSentryDrone) | done: admitted via `import-meshy` (rights + meta), 9,076 / 6,004 tris, swapped in as the twilight sentry core |
-| IC-13 heavy, IC-14, IC-15, IC-16, IC-17 (WP-36) | blocked: Meshy keys refuse API calls |
+| IC-13 sentry (WP-36 ionSentryDrone) | done: admitted via isolated asset import (rights + meta), 9,076 / 6,004 tris, swapped in as the twilight sentry core |
+| IC-13 heavy, IC-14, IC-15, IC-16, IC-17 (WP-36) | blocked: asset generation unavailable |
 | IC-23 HUD at 640x360 | one slim row and compact meters (twilight) |
 | Luma bands (`luma-after.json` default rows from r7) | all pass except the mean 85 vs 62-75 (band not widened); bottom cells now pass |
 | Rubric (goal 1, every category >= 7) | not met: min 3 (shadows), two runs; see the lane report |

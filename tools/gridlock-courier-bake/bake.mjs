@@ -1,5 +1,5 @@
-// Gridlock Courier hero car: bake a prepped Meshy GLB to the port's car convention.
-// Meshy cars face -x with their length along x; the port wants +z forward, lowest point at y = 0.
+// Gridlock Courier hero car: bake a prepped generated GLB to the port's car convention.
+// The source cars face -x with their length along x; the port wants +z forward, lowest point at y = 0.
 // usage: node tools/gridlock-courier-bake/bake.mjs <in.glb> <out.glb>
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";

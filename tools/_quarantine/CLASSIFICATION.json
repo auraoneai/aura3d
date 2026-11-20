@@ -1596,15 +1596,6 @@
       "classification": "runner"
     },
     {
-      "dir": "/home/ubuntu/repos/aura3d/tools/meshy-secret-scan",
-      "files": 1,
-      "browserLaunch": true,
-      "pixelDecode": false,
-      "readsReports": true,
-      "importsThree": false,
-      "classification": "runner"
-    },
-    {
       "dir": "/home/ubuntu/repos/aura3d/tools/migrate-2.0",
       "files": 1,
       "browserLaunch": false,

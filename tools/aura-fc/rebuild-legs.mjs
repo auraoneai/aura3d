@@ -1,5 +1,5 @@
-// Rebuilds the lower body of a Meshy athlete GLB in the straight pose the skeleton and every clip assume.
-// The Meshy mesh is modelled mid-stride (knee bent, thigh swung forward, thigh surface made of a few huge triangles) and bound
+// Rebuilds the lower body of a generated athlete GLB in the straight pose the skeleton and every clip assume.
+// The source mesh is modelled mid-stride (knee bent, thigh swung forward, thigh surface made of a few huge triangles) and bound
 // to a straight skeleton, so clips rotate the legs about joints 10 to 20 cm from the limbs. This removes the leg geometry from the
 // skin and shorts meshes, straightens the boots and socks, and builds new thigh/shin tubes (skin), thigh tubes and a pelvis skirt
 // (shorts) around the real bone axes with smooth weights (Hips -> thigh -> shin -> foot).

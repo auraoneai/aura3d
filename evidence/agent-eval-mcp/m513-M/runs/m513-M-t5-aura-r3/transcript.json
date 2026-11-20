@@ -227,7 +227,7 @@
    {
     "type": "tool_result",
     "tool_use_id": "toolu_bdrk_01C1zWuaoGvhcAduW3JE5B2r",
-    "content": "docs/agents/api-signatures.md:197:[Omitted long matching line]\ndocs/agents/threejs-to-aura3d.md:16:[Omitted long matching line]\ndocs/agents/skills-examples/aura3d-evidence-review.md:35:Trimmed output: `\"messages\": [\"Generated 1 thumbnails.\"]`, which wrote\ndocs/agents/skills-examples/aura3d-browser-game.md:18:   `packages/create-aura3d/templates/racing-starter`. Real output:\ndocs/agents/skills-examples/aura3d-core.md:15:Trimmed output:\ndocs/agents/skills-examples/meshy-cli.md:26:Trimmed output: `text-to-3d`, `image-to-3d`, `multi-image-to-3d`,\ndocs/agents/skills-examples/aura3d-scene-authoring.md:16:   of `npx @aura3d/cli@latest --help`). Trimmed output:\ndocs/agents/skills-examples/aura3d-scene-authoring.md:29:   `./aura-assets`). Trimmed real output:\ndocs/agents/skills-examples/aura3d-character-animation.md:16:   Trimmed real output:\n"
+    "content": "docs/agents/api-signatures.md:197:[Omitted long matching line]\ndocs/agents/threejs-to-aura3d.md:16:[Omitted long matching line]\ndocs/agents/skills-examples/aura3d-evidence-review.md:35:Trimmed output: `\"messages\": [\"Generated 1 thumbnails.\"]`, which wrote\ndocs/agents/skills-examples/aura3d-browser-game.md:18:   `packages/create-aura3d/templates/racing-starter`. Real output:\ndocs/agents/skills-examples/aura3d-core.md:15:Trimmed output:\ndocs/agents/skills-examples/aura3d-scene-authoring.md:16:   of `npx @aura3d/cli@latest --help`). Trimmed output:\ndocs/agents/skills-examples/aura3d-scene-authoring.md:29:   `./aura-assets`). Trimmed real output:\ndocs/agents/skills-examples/aura3d-character-animation.md:16:   Trimmed real output:\n"
    }
   ]
  },

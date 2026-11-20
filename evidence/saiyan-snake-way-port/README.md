@@ -55,10 +55,10 @@ Simulation parity is claimed by `tests/unit/saiyan-snake-way-port/reference-repl
 each, within 1e-6 of the original) and by the in-page replay in `tests/browser/saiyan-snake-way-port.spec.ts`, not by the pictures.
 The pictures are not a pixel match to the original; `examples/saiyan-snake-way-port/PORTING-NOTES.md` has the divergence table.
 
-## Meshy art pass (2026-10-23)
+## Generated-model art pass (2026-10-23)
 
-Frames: `meshy-before/` (the previous pass: CC0 catalog runner, primitive props), `meshy-after/` (Meshy runner, gate, barrier, ogre, cart, feast, lanterns and
-floating islands) and `compare-meshy.jpg` (before | after, four states). Production-renderer remote runs: `ssw-meshy-2` (art spec, passed, 0 errors) and
-`ssw-meshy-3` (`tests/browser/saiyan-snake-way-meshy.spec.ts`, hazard close-ups, passed: 68-110 draw calls per frame, 0 errors). Models: see
+Frames (not committed): before (the previous pass: CC0 catalog runner, primitive props), after (generated runner, gate, barrier, ogre, cart, feast, lanterns and
+floating islands) and a before | after sheet (four states). Production-renderer remote runs: the art spec (passed, 0 errors) and
+a hazard close-up spec (passed: 68-110 draw calls per frame, 0 errors). Models: see
 `examples/saiyan-snake-way-port/assets/ATTRIBUTION.md`. Images are ignored by the repo's `*.jpg` rule; force-add them if they should ship.
 The blind judge was not re-run for this pass.

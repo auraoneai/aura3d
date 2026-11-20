@@ -7,4 +7,4 @@ Frames are software WebGL2 (SwiftShader, remote runner `dotor-2`), not real-GPU 
 - `before/` (from `screens/final`): 1280 mid, 390 mid, 1280 Circuit Map.
 - `after/`: 1280 title, mid and Board Map, 390 mid and Board Map.
 
-Changes: mazes redrawn (Relay Grid, Smelter Rows, Overgrowth; all six pass `scripts/validate-mazes.mjs`), actors and pickups are instanced primitives (11 Meshy models removed, 6.4 MB), palette and HUD wording changed. The simulation and its rules are unchanged. Not done: new sounds (still the shared library effects), the index card name and blurb in `apps/showcase-index`, and `llms.txt`/README mentions of "Dot Dash 3D".
+Changes: mazes redrawn (Relay Grid, Smelter Rows, Overgrowth; all six pass `scripts/validate-mazes.mjs`), actors and pickups are instanced primitives (11 generated models removed, 6.4 MB), palette and HUD wording changed. The simulation and its rules are unchanged. Not done: new sounds (still the shared library effects), the index card name and blurb in `apps/showcase-index`, and `llms.txt`/README mentions of "Dot Dash 3D".

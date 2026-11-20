@@ -1,6 +1,6 @@
 ---
 name: aura3d-evidence-review
-description: Reviews Aura3D work before it is called done, public, or shippable by collecting route-health, screenshots, visual QA, asset release checks, and `check-deploy` output, then choosing a claim label through a capped critique loop. Use when finishing a route or template, writing README or showcase claims, comparing catalog versus Meshy candidates, capturing thumbnails or posters with `assets thumbnail`, or running `assets validate --release` and `check-deploy`.
+description: Reviews Aura3D work before it is called done, public, or shippable by collecting route-health, screenshots, visual QA, asset release checks, and `check-deploy` output, then choosing a claim label through a capped critique loop. Use when finishing a route or template, writing README or showcase claims, comparing catalog versus generated candidates, capturing thumbnails or posters with `assets thumbnail`, or running `assets validate --release` and `check-deploy`.
 ---
 
 # Aura3D evidence review
@@ -57,7 +57,7 @@ exception are in [boundaries](../aura3d-core/references/boundaries.md).
 7. Grade cinematic scenes on the ladder: L0 text only, L1 primitive sketch,
    L2 asset-backed draft, L3 realtime cinematic scene, L4 production handoff.
    Only L3 or better is public product proof.
-8. Bake-offs: when comparing a catalog candidate against a Meshy candidate,
+8. Bake-offs: when comparing a catalog candidate against a generated candidate,
    use one brief, one rubric, one camera and lighting setup, and the same
    gates for both. Report both verdict sets and pick on evidence, not source.
 9. Thumbnails and posters: run `npx @aura3d/cli@latest assets thumbnail` for

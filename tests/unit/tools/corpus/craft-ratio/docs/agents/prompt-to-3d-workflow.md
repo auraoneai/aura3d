@@ -33,7 +33,6 @@ summarized in these skills; this document stays the policy source.
 | Materials, textures, HDRI, sky, weather, water | `aura3d-materials-environments` |
 | Flipbook VFX sheets, HUD icons | `aura3d-game-art` |
 | Restyling a finished mesh | `aura3d-retexture` |
-| Paid Meshy generation | `meshy-cli` |
 | Slow or heavy routes, performance claims | `aura3d-performance` |
 
 ## Aura3D advantage

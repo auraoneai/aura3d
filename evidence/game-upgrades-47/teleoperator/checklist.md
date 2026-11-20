@@ -19,14 +19,14 @@ judges) are phase 2 on the remote runner (software WebGL2). Row status and commi
 | GD-09 | 0.6 s pair: bottom row differs >= 2, top <= 0.5; reduced motion matches; +1 draw | reduced-motion path unit-tested; pair: phase 2 |
 | GD-10 | passExecuted noon and dusk; no weak-key warning; noon p5 -6 | code done (unit test); passExecuted phase 2 |
 | GD-11 | car crop p95-p5 >= 175, clip <= 0.01, mean 120-150 | code done-interim (per-material overrides); teal strip WP-36; pixels phase 2 |
-| GD-12 | 0 game-check errors; `primitives.` lines 19 -> <= 7; no instanced spheres for trees/lamps/signals | see lane report (Meshy part: WP-36) |
+| GD-12 | 0 game-check errors; `primitives.` lines 19 -> <= 7; no instanced spheres for trees/lamps/signals | see lane report (generated-asset part: WP-36) |
 | GD-13 | gate passes; two 1 s noon shots differ >= 1.5 on the road cell; +4 draws max | see lane report |
 | GD-14 | liveCount > 0 on collision; p95 +10; -1 +2 draws | partial (impact, ring, spray; trails: E-F handoff); liveCount phase 2 |
 | GD-15 | emitters within tier budget; 2 fewer primitives; night <= 560 | partial: steam and motes halve on reduced motion/Low (unit test); beacon lightCone blocked (E-F: beam effects have no runtime position), so no primitives removed; draws phase 2 |
 | GD-16 | validate-animation passes; foot slide <= 0.05 m; clip order idle, wave, walk | partial: pitch spring and 120 ms signal fade done (unit test); humanoid lines blocked (WP-36) |
 | GD-17 | presented fov >= 61 at max speed; skip within 2 frames; reduced motion fov 56, no intro | code done: fovKick/roll, skippable 3-shot intro (skip switches rig at once; off on reduced motion, unit test), results DOF; measured fov and skip frames phase 2 |
 | GD-18 | overlap checks pass at 390/1280; tags <= 3% of viewport; contrast >= 4.5:1 | code done (bezel, bracket tags, amber warnings); contrast unit-tested over a white sky; overlap and tag area phase 2 |
-| GD-19 | side cells change >= 6 at noon; sign text equals HUD; within GD-20 | partial: sign text = HUD cross street (unit test), parked cars, catenary; Meshy street furniture WP-36; side cells phase 2 |
+| GD-19 | side cells change >= 6 at noon; sign text equals HUD; within GD-20 | partial: sign text = HUD cross street (unit test), parked cars, catenary; street furniture models WP-36; side cells phase 2 |
 | GD-20 | chase <= 480 (night <= 560); textureBytes <= 64 MB; JS +25 KB max | phase 2 (measured); caps in code |
 | GD-21 | dusk 75-100, noon 95-120, fog 105-135, night 40-65; clip <= 0.01; every category >= 7; same_game false >= 0.8 vs all 7 racers; 0 warnings | boot sky done; targets: E-I handoff; captures and judges: phase 2 |
 
@@ -57,7 +57,7 @@ Measured on the remote runner (software WebGL2). The final build is round `p4-r5
 | GD-05 | fog mean 73 (**not met**, unchanged look) |
 | GD-07 | dusk street is damp: roughness 0.36 under the SSR fade, so dusk reflects too; night unchanged |
 | GD-11 | WP-36 `dispatchPodPearl` livery on the player pod (route-local, rights and meta in `provenance/`). Noon car crop mean 54, spread 162 (**not met**: the livery rear is dark) |
-| GD-12 / GD-16 / GD-19 | the other 30 WP-36 rows: **blocked: Meshy keys refuse API calls** (moved to a later release) |
+| GD-12 / GD-16 / GD-19 | the other 30 WP-36 rows: **blocked: asset generation unavailable** (moved to a later release) |
 | GD-21 rubric | every category >= 7: **not met**. r5 min 3-4 (ibl_reflections); against the same-day re-judge of the phase-3 shots, +0.5 to +2 in 9 of 11 categories |
 | GD-21 distinct | same_game false >= 0.8 against all 8 neighbours (**met**: 0.808-0.937) |
 | panel | golden, noon, fog 3/0/0 better (`g04p4r5a`); all 4 views 2/0/0 better (`g04p4r5b`) |

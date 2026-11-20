@@ -46,7 +46,7 @@ for (let t = 0; t < idx.length; t += 3) {
   groups[g].push(a, b, c);
 }
 
-// The Meshy mesh carries noisy per-vertex normals that a flat colour turns into a glossy sheen under a bright sky: recompute them
+// The generated mesh carries noisy per-vertex normals that a flat colour turns into a glossy sheen under a bright sky: recompute them
 // (area-weighted over welded positions, only across faces within the crease angle of this vertex's own faces).
 const CREASE = Math.cos((Number(process.env.CREASE ?? 55) * Math.PI) / 180);
 const faceN = [];

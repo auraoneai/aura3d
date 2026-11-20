@@ -46,9 +46,8 @@ Primitives are set dressing around a resolved asset, never the named subject.
 
 ## Typed-asset rule
 
-1. Admit every file through the CLI (`assets add`, `assets resolve`, or
-   `assets import-meshy`) so it is hashed, inspected, and recorded in
-   `aura.assets.json`.
+1. Admit every file through the CLI (`assets add` or `assets resolve`) so it
+   is hashed, inspected, and recorded in `aura.assets.json`.
 2. Read the generated `src/aura-assets.ts` and import `assets` from
    `./aura-assets`.
 3. Render with `model(assets.<key>)` or a kit such as
@@ -58,19 +57,6 @@ Primitives are set dressing around a resolved asset, never the named subject.
 
 If the key you need is missing, fix the import. Never fall back to a string
 id, a URL, a copied GLB, or a draft artifact path.
-
-## Paid generation controls (Meshy)
-
-- Catalog first. Generation is a fallback after a reported catalog rejection.
-- Run `meshy make ... --dry-run` and show the plan before any paid call.
-- Get explicit user approval for the displayed maximum, then pass
-  `--max-credits <approved>` on the paid command. Prices are never assumed.
-- Resume recorded task IDs. Do not repeat paid work that already succeeded.
-- Download immediately with `-o artifacts/meshy/<asset>/`. Provider retention
-  is short and signed URLs expire.
-- Keep credentials out of arguments, prompts, logs, commits, and output.
-- Admit through `assets import-meshy` with rights evidence. Import defaults to
-  `candidate` quality and never certifies release quality.
 
 ## Benchmark mode versus normal mode
 

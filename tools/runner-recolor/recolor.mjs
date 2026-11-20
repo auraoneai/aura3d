@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Serpentine Sky Run runner: the Meshy base-colour atlas is orange outfit shards, dark blue trim and peach skin. Recolour only the
+// Serpentine Sky Run runner: the generated base-colour atlas is orange outfit shards, dark blue trim and peach skin. Recolour only the
 // saturated pixels (orange to teal, blue to silver); skin and hair are low saturation or dark and stay as generated.
 // Usage: node tools/runner-recolor/recolor.mjs <in.glb> <out.glb>
 import { createHash } from "node:crypto";

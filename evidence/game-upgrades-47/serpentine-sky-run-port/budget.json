@@ -179,7 +179,7 @@
       "before": 124,
       "after": 89
     },
-    "fix": "Meshy lanterns (10), islands (6) and the blob decal no longer cast the sun shadow under the colour script (castShadow false): each was one depth draw per sun cascade (2 cascades at the capture tier), -34 draws and about -497k triangles. They still write the contact-shadow depth and still receive. The sky dome stays a caster: it sets the legacy cascade fit, and dropping it would change the panel-won look.",
+    "fix": "Lanterns (10), islands (6) and the blob decal no longer cast the sun shadow under the colour script (castShadow false): each was one depth draw per sun cascade (2 cascades at the capture tier), -34 draws and about -497k triangles. They still write the contact-shadow depth and still receive. The sky dome stays a caster: it sets the legacy cascade fit, and dropping it would change the panel-won look.",
     "phase3PlusNine": "Phase 3 (3b22bb312) added the prayer-flag posts and cords as extra instances of the verge-flags draw: 152 -> 342 instances (372 since the phase-4 gates). In the main pass that is still 1 draw, but the shadow-depth shader instances through a 64-entry uniform array (PRD02_DEPTH_MAX_INSTANCES), so the node went from 3 to 6 depth draws in each of the 3 depth passes (2 sun cascades + the contact-shadow depth): +9 draws, and +9,120 triangles (190 boxes x 12 x 4 draws including the main pass). Not changed in this phase: splitting it further would cost the gate and post shadows.",
     "notLaneScope": "The 4 lens-flare sprites (High, stages 1, 2, 3, 8) are also drawn into both cascades (8 draws) by the engine's flare items; that is an engine fix (castShadow false on the flare render items), not made in a game lane."
   }

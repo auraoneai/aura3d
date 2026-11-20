@@ -27,7 +27,7 @@ This is the "REPORT-after" the docs program asked for. It is a section here, not
 
 Targets set for this loop: first-try build at least 14 of 15 (met, 15), non-black render at least 14 of 15 (**not met, 10**), no turn cap (met), forest writes a working file in all runs (met). Aura3D is still behind three.js: median 12 turns against 4, and 10 of 15 renders against 14 to 15.
 
-Tasks 6 and 7 (single run each, i3b): the complete mobile arcade game (task 6, 33 turns, 609 source lines) built, rendered non-black (300 draws), replayed deterministically (equal hashes), had a pause button and no horizontal scroll at the mobile size (probe 1.00); the prop-on-pedestal task (task 7, 26 turns, 161 lines) built and rendered (294 draws, animated). n=1: an existence proof, not a rate. The Aura3D Meshy generation path of task 7 is still not exercised (agents have no shell).
+Tasks 6 and 7 (single run each, i3b): the complete mobile arcade game (task 6, 33 turns, 609 source lines) built, rendered non-black (300 draws), replayed deterministically (equal hashes), had a pause button and no horizontal scroll at the mobile size (probe 1.00); the prop-on-pedestal task (task 7, 26 turns, 161 lines) built and rendered (294 draws, animated). n=1: an existence proof, not a rate. The Aura3D asset-generation path of task 7 is still not exercised (agents have no shell).
 
 ### What the loop found (root causes, ranked by runs affected)
 

@@ -20,9 +20,9 @@ Status per acceptance line of PRD WP-32. "code" = implemented and unit-tested in
 | RH47-08 | absent on reduced motion | code (`streakFor` 0) |
 | RH47-08 | corners edge density -20% at top speed, car SSIM >= 0.95 | phase 2; motion blur after velocity MRT blocked (E-C) |
 | RH47-09 | >= 4 traffic hue buckets | code (unit test) ; phase 2 in pixels |
-| RH47-09 | admission with normal and ORM; >= 0.5% car pixels > 230; meshy <= 10 MB | blocked (WP-36) |
+| RH47-09 | admission with normal and ORM; >= 0.5% car pixels > 230; models <= 10 MB | blocked (WP-36) |
 | RH47-10 | road and flank edge density +40%, no moire beyond 150 m; +24 MB max | not done (run 1) |
-| RH47-11 | >= 4 landmark kinds per route | code (instanced stand-ins); Meshy models blocked (WP-36) |
+| RH47-11 | >= 4 landmark kinds per route | code (instanced stand-ins); landmark models blocked (WP-36) |
 | RH47-12 | <= 2,000 | code (1,400) |
 | RH47-12 | spray centroid moves >= 8% width laterally over 2 s; visible in >= 5 of 8 states | phase 2 (CPU mirror unit-tested) |
 | RH47-13 | each sim event maps to one preset | code (unit test) |
@@ -45,7 +45,7 @@ Status per acceptance line of PRD WP-32. "code" = implemented and unit-tested in
 | RH47-02 bands | sunbreak 101/99 (100-125: 60 s just under); redline 58/59 (60-85: under); halo 59/62 above 32-48, road cell 40/54 (60 s met). Bands not widened |
 | RH47-03 under-car / shadows | rubric shadows 4: no readable car contact shadow yet; open for 4.7.2 |
 | RH47-17 sign cap height / HUD | rubric ui_hud 7; final screens retaken (results frame still 4.5.0) |
-| RH47-18 every category >= 7 | not met: min 4 (shadows), see `look-judgement.json`; material_quality 5 and modeling_assets 6 blocked on WP-36 Meshy assets |
+| RH47-18 every category >= 7 | not met: min 4 (shadows), see `look-judgement.json`; material_quality 5 and modeling_assets 6 blocked on WP-36 assets |
 | RH47-18 sibling same_game false >= 0.8 | roadster-rush 0.772 different (fail), heatsink-port 0.564 same (fail); was 0.642 / 0.598 same |
 | RH47-19 budget | 206 / 176 / 140 draws, 4.96 M / 2.1 M / 1.2 M triangles: over budget, unchanged by phase 3 (WP-36 LOD/impostors) |
 | Game-checks | 0 errors, 7 warnings (luma-band only) |
@@ -61,6 +61,6 @@ Status per acceptance line of PRD WP-32. "code" = implemented and unit-tested in
 | RH47-18 every category >= 7 | not met: min 4 / 4.5 (ibl_reflections, shadows, material_quality, postprocessing); see lane report |
 | RH47-18 sibling >= 0.8 | 6 of 8 pass; roadster-rush different 0.767, heatsink-port same 0.571 fail |
 | RH47-19 budget | draws 129 / 123 / 107 (<= 170 met); triangles 2.43 M / 1.02 M / 0.66 M (900 k: Halo only) |
-| WP-36 Meshy rows (33) | blocked: Meshy keys refuse API calls |
+| WP-36 rows (33) | blocked: asset generation unavailable |
 | Blind panel | g22p4r4: halo, redline, sunbreak better 3/0 each |
 | Game-checks | 0 errors, 2 warnings (texPending at 25 s) |

@@ -97,10 +97,6 @@ describe("native source test inventory", () => {
       "apps/showcase-cross-hop/vitest.config.ts",
       "tools/asset-optimize/tests/profiles.test.ts",
       "tools/asset-optimize/vitest.config.ts",
-      "tests/cli-configs/install-meshy-mcp.test.mjs",
-      "cli-configs/install-meshy-mcp.sh",
-      "tests/cli-configs/meshy-agent.test.sh",
-      "cli-configs/meshy-agent",
       "tests/unit/release/final-review-approval.test.mjs",
       releaseTest,
       ...releasePrerequisites,
@@ -137,8 +133,8 @@ describe("native source test inventory", () => {
     const byId = Object.fromEntries(result.supplementalChecks.map((check: any) => [check.id, check]));
     expect(Object.keys(byId).sort()).toEqual([
       "app-cross-hop-vitest",
-      "app-wonder-world-vitest", "asset-optimize-vitest", "cli-config-node",
-      "cli-config-shell", "docs-game-upgrades-node", "node-release-unit",
+      "app-wonder-world-vitest", "asset-optimize-vitest",
+      "docs-game-upgrades-node", "node-release-unit",
       "performance-cpu-vitest", "template-node", "template-source-vitest"
     ]);
     expect(byId["app-wonder-world-vitest"]).toMatchObject({
@@ -155,8 +151,8 @@ describe("native source test inventory", () => {
     ]);
     expect(byId["asset-optimize-vitest"].invocations[0].argv.at(-1)).toBe("tests/profiles.test.ts");
     expect(byId["node-release-unit"].prerequisitePaths).toEqual([...releasePrerequisites].sort());
-    expect(byId["cli-config-shell"].invocations[0].argv)
-      .toEqual(["bash", "tests/cli-configs/meshy-agent.test.sh"]);
+    expect(byId["template-node"].invocations[0].argv)
+      .toEqual(["node", "--test", "--test-reporter=tap", "--test-concurrency=1", "tools/agent-templates/cli.test.mjs"]);
     expect(byId["performance-cpu-vitest"].execution).toBe("remote-only");
     expect(() => assertNativeSourceInventoryReady(result)).not.toThrow();
     expect(result.entries.every((entry: any) => entry.reason && entry.sha256)).toBe(true);
@@ -401,26 +397,13 @@ describe("native source test inventory", () => {
     expect(() => assertNativeSourceInventoryReady(unknown)).toThrow(unknownPath);
   });
 
-  it("does not confuse the static live-smoke workflow contract with a live service test", () => {
-    const path = "tests/cli-configs/meshy-live-smoke-workflow.test.mjs";
-    const result = inventory([path, ".github/workflows/meshy-live-smoke.yml"]);
-    const entry = result.entries.find((item: any) => item.path === path);
-    expect(entry.classification).toBe("source");
-    expect(entry.reason).toMatch(/static/i);
-    expect(result.status).toBe("ready");
-  });
-
-  it("fails before running the static CLI contract when its text input is unstaged", () => {
-    const result = inventory([
-      "tests/cli-configs/meshy-docs-skill.test.mjs",
-      "docs/meshy-cli.md",
-      "cli-configs/install-meshy-mcp.sh"
-    ]);
+  it("fails before running a reviewed Node source test when its source input is unstaged", () => {
+    const result = inventory(["docs/prds/game-upgrades-47/lanes/wp36-decisions.test.mjs"]);
     expect(result.status).toBe("blocked");
     expect(result.blockers.map((blocker: any) => blocker.path)).toEqual([
-      ".cursor/skills/meshy-cli/SKILL.md"
+      "docs/prds/game-upgrades-47/lanes/wp36-decisions.mjs"
     ]);
-    expect(() => assertNativeSourceInventoryReady(result)).toThrow(/SKILL\.md/);
+    expect(() => assertNativeSourceInventoryReady(result)).toThrow(/wp36-decisions\.mjs/);
   });
 
   it("rejects undeclared matrix files, duplicates, unsafe paths, bad run IDs and missing deferred data", () => {

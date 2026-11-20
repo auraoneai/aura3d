@@ -312,7 +312,7 @@
    "unmigratedWarning": false,
    "errors": [
     "Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/bzGuardMeshy.01"
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/<bunker guard GLB>"
    ]
   },
   "after": {
@@ -325,7 +325,7 @@
    "unmigratedWarning": false,
    "errors": [
     "Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/bzGuardMeshy.01"
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/<bunker guard GLB>"
    ]
   }
  },

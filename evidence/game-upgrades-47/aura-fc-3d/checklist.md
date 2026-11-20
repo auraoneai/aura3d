@@ -65,7 +65,7 @@ Every acceptance line of WP-19 with its phase-1 status. "phase 2" = needs remote
 | game-checks 0 errors | done |
 | luma-band | 12 warnings: engine texPending=1 on every row (handoff), Favela/Glacier pitch bands written for the GU47 dark pitch, flood-bank crop above the 4.6.2-height frame; bands not widened |
 | screens-fresh | done: final screens and card retaken on the phase-3 build (`g09p3-r9`), posters rebuilt |
-| borrowed-asset (18), FC47-A1/A2/AN1/W1, M2 numbers | blocked (WP-36 Meshy assets) |
+| borrowed-asset (18), FC47-A1/A2/AN1/W1, M2 numbers | blocked (WP-36 assets) |
 | FC47-PF1 <= 360 draws | not met on Munich 391, Kyoto 390, Lagos 409, Glacier 393 (Favela 360, Uyuni 297); crowd impostors wait on WP-36 fans |
 
 ## Phase 4 (4.7.2), software WebGL2
@@ -77,8 +77,8 @@ Every acceptance line of WP-19 with its phase-1 status. "phase 2" = needs remote
 | Cast shadows read on the broadcast frame | done: hybrid key moved off the camera side (azimuth 20 -> 125), cascades fitted to the bowl, blob discs 0.14 |
 | Reflections | done: SSR on Munich, Kyoto, Glacier, Uyuni; aluminium posts |
 | Distinctness vs top-tennis, aura-hoops-3d, aura-diamond-3d, aura-links-3d (PRD 1.2 goal 2) | done: 0.811 / 0.802 / 0.827 / 0.907, same_game=false (`distinct/p4r4/`) |
-| WP-36 `pitchStandModule` | done: admitted as `fcStandModuleMeshy`, replaces the borrowed `diamondStadium` |
-| WP-36 other 28 rows (FC47-A1 dugout etc., A2, AN1, W1) | blocked: Meshy keys refuse API calls |
+| WP-36 `pitchStandModule` | done: admitted as the FC stand module, replaces the borrowed `diamondStadium` |
+| WP-36 other 28 rows (FC47-A1 dugout etc., A2, AN1, W1) | blocked: asset generation unavailable |
 | game-checks | 0 errors, 29 warnings (was 30): 17 borrowed-asset, 12 luma-band (texPending engine handoff; Favela darkFrac, Uyuni mean; bands not widened) |
 | Final screens, card, index posters | done: `g09p4-r4-4` |
 | FC47-PF1 <= 360 draws | not met on Munich 389, Kyoto 388, Glacier 391 (Lagos 409 -> 349) |

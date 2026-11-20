@@ -33,7 +33,7 @@ await doc.transform(
   reorder({ encoder: MeshoptEncoder })
 );
 // Geometry stays float32 (no EXT_meshopt/quantisation): quantisation moves scale into a node transform, which skews
-// `assets import-meshy` bounds/grounding checks. Pass --meshopt only for static background props you will not measure.
+// `assets add` / `assets inspect` bounds and grounding checks. Pass --meshopt only for static background props you will not measure.
 if (rest.includes("--meshopt")) await doc.transform(meshopt({ encoder: MeshoptEncoder, level: "medium" }));
 await io.write(out, doc);
 console.log(JSON.stringify({ in: statSync(inp).size, out: statSync(out).size, vertsBefore: before, vertsAfter: countVerts(), skinned }));

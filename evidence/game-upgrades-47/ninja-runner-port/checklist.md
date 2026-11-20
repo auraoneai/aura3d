@@ -55,6 +55,6 @@ Software WebGL2 captures on the remote runner (crmmeprodacr); blind 3-judge pane
 | Changed views | default, village, rooftops, river: panel g20p4r3b 3/0/0 each. forest: panel g20p4r1 3/0/0. gate still boots the 4.6.2 look |
 | Rubric (PRD 1.2 goal 1) | NOT MET: lowest category is ibl_reflections at 4 and 3.5 (two runs), because the engine never builds the environment reflections on this page (faceSize 0). The rest are 5 to 6.5 |
 | Distinctness (PRD 1.2 goal 2) | pass: pips, cross-hop, splat-rush. Fail: cloud-runner (0.618 same) and serpentine (different, but at 0.734, under the 0.8 bar) |
-| NR-12 / WP-36 | ninjaHouseADusk admitted and swapped in (evening). 25 rows blocked: Meshy keys refuse API calls |
+| NR-12 / WP-36 | ninjaHouseADusk admitted and swapped in (evening). 25 rows blocked: asset generation unavailable |
 | NR-01 / NR-22 luma bands | NOT MET (bands written for the night look). Not widened |
 | game-checks | 0 errors, 8 warnings (luma-band) |

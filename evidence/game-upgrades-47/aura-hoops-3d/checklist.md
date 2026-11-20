@@ -21,7 +21,7 @@ Statuses mirror `docs/prds/game-upgrades-47/lanes/g07.md`.
 | H47-M2 | ball, rim, glass, chain-link materials | not done / WP-36 for textures |
 | H47-M3 | kit sheen, number atlas | not done |
 | H47-A1 | crowd <= 10 draws, >= 140 transforms | blocked (WP-36 spectators) |
-| H47-A2 | Meshy dressing and net | blocked (WP-36) |
+| H47-A2 | Generated dressing and net | blocked (WP-36) |
 | H47-V1 | 5 kinds registered, each juice event maps to one; caps with reducedFlash; draws -12 | done in code (unit test); draws phase 2 |
 | H47-V2 | flood cones, god rays | not done |
 | H47-V3 | spray-tag decal; audit passes; <= 8 live tags | audit passes; decal not done (tag textures WP-36) |
@@ -55,7 +55,7 @@ Statuses mirror `docs/prds/game-upgrades-47/lanes/g07.md`.
 | H47-L1 / shadows | cast shadows that read | done on the steady frames: PCF key fitted to 60 m, elevation floor 12 deg, stronger key over less fill; rubric shadows 4.5 -> 3.5-6 (it varies with the HUD moment the screens spec catches) |
 | H47-E2 / ibl_reflections | glossy surfaces reflect | done: per-court floor finish, SSR on Manila/Shanghai/Orbit; rubric 4 -> 5-6 |
 | H47-E1 / environment | backdrop past the court | Rucker/Athens walk-up ring (3 / 2 instanced draws) |
-| H47-M2 / WP-36 | Meshy props swapped in | `hoops_blacktopFloodlight` (Rucker floods); 43 other rows blocked: Meshy keys refuse API calls |
+| H47-M2 / WP-36 | Generated props swapped in | `hoops_blacktopFloodlight` (Rucker floods); 43 other rows blocked: asset generation unavailable |
 | 7.2 rubric | 12 categories >= 7 | not met: final min 3.5-4, best run min 5.5 (r4 a); lowest are athlete modeling/material/animation (WP-36 blocked) |
 | 7.2 distinctness | >= 0.8 vs every neighbour | tennis 0.856, links 0.827 pass; fc 0.799, diamond 0.752 fail (tell: shared low-poly athletes) |
 | 7.2 game-checks | 0 errors | 0 errors, 13 warnings (unchanged: 12 luma-band, not widened; 1 borrowed-asset on `?look=original` only) |

@@ -60,12 +60,12 @@ The first run of this spec (`grid2-env2`) failed only its road assertion: the de
 
 ### Translucent car: it was the baked texture, now repainted
 
-- The GLB's single material is opaque (no alpha mode, no extensions, double-sided). The see-through look comes from the Meshy atlas: glass, interior and reflections baked into shard-shaped islands, on a closed shell that also carries inward-facing triangles.
+- The GLB's single material is opaque (no alpha mode, no extensions, double-sided). The see-through look comes from the generated texture atlas: glass, interior and reflections baked into shard-shaped islands, on a closed shell that also carries inward-facing triangles.
 - The model's `envMapIntensity` override cannot fix it: the override writes the legacy ambient uniform (`u_environmentIntensity`), not the image-based reflection term, and a `roughness` or `metallic` override multiplies the metallic-roughness texture (glTF semantics) instead of replacing it. The override is removed.
-- A regenerated Meshy model was not possible: the `drift` ledger tag is at 440 credits, over its 420 cap.
+- A regenerated model was not possible at the time (generation budget exhausted).
 - Fix with no credits: `tools/gridlock-car-retexture/` splits the same mesh by region into flat PBR materials (body, glass, tyre, rim, headlight, taillight, underbody) and drops the baked textures. Geometry, scale and origin are unchanged (39,182 triangles, 1.9 x 0.96 x 0.5), size 2.46 MB to 1.73 MB, deterministic output, `provenance/hypercar.repaint.json`.
 - Frames: `car-after-repaint-1280.jpg` / `car-after-repaint-crop.jpg` (first repaint) and `car-final-1280.jpg`, `car-final-1440.jpg`, `car-final-crop.jpg` (final model). Car region mean luma 144 at both sizes, against 92 to 94 with 40% bright pixels before. The body reads as a solid painted car with a dark canopy and two taillights; the colour is a flat blue, the facets come from the original mesh's normals.
-- Open: the silhouette is still a Meshy supercar. A different model needs Meshy credits (the `drift` tag is over its cap; a higher cap is the owner's call).
+- Open: the silhouette is still the generated supercar. A different model needs new art.
 
 ### Other games
 

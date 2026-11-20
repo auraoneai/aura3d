@@ -72,7 +72,6 @@ mode) live once in [references/boundaries.md](references/boundaries.md).
 | Flipbook VFX sheets, HUD icons, UI sprites | `aura3d-game-art` |
 | Restyling a finished mesh without touching geometry | `aura3d-retexture` |
 | Frame time, bundle size, KTX2, LOD, instancing | `aura3d-performance` |
-| No clean catalog candidate, Meshy generation or import | `meshy-cli` |
 
 A listed skill that is not installed in this project is a gap to report, not
 permission to improvise its procedure.

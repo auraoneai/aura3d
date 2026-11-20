@@ -60,6 +60,6 @@ Software WebGL2 (remote ACR). Detail: lane report "Phase 4 (4.7.2)".
 | Distinctness (PRD 1.2 goal 2) | met: same_game false vs all 8 racing neighbours, confidence 0.818-0.948 (`p4-sibling/`) |
 | GC-L2 / GC-L3 shadows | key lifted (52 / 40 deg) and following the chase heading; building and pole shadows on the lit street; contact shadow 0.6 / 1.0 |
 | GC-M2 glass, car paint (ibl) | facade metal-rough map (glass 0.07 / 0.75); courier and traffic paint overrides |
-| WP-36 Meshy rows | gridlockCourierTeal admitted, rejected on frames, reverted; 21 rows blocked: Meshy keys refuse API calls |
+| WP-36 rows | gridlockCourierTeal admitted, rejected on frames, reverted; 21 rows blocked: asset generation unavailable |
 | Game-checks | 0 errors, 6 luma-band warnings (bands not widened) |
 | Gates | typecheck NEW_ERRORS 0; vitest per file pass; eslint clean |

@@ -53,7 +53,7 @@ Steady-state luma from the phase-4 round-5 capture (`p4-r5`, runs `g08p4-r5-{1,2
 | DIA-L1 | Player cast shadows now read: key shadow box fitted to the diamond, keys moved off the camera side. Bands still missed (p95 118-164 vs >= 200, clip 0); not widened |
 | DIA-L2 | Skyline p95 127 vs >= 190; Dome p50 77 vs >= 85, rb 0.88. Not met |
 | DIA-M1/M2 | glossy caps, bases and galvanised benches; SSR on Harbor water, Midtown wet track and the Dome's sealed infield (not on Low) |
-| DIA-A2 | **done with WP-36 `ballparkFanA`** (`ballpark_fanA`, 625 tris, one instanced draw of 588 fans); fan rows B-D blocked: Meshy keys refuse API calls |
-| DIA-A1/A3 | blocked: Meshy keys refuse API calls (set pieces, stitched ball, kit retexture) |
+| DIA-A2 | **done with WP-36 `ballparkFanA`** (`ballpark_fanA`, 625 tris, one instanced draw of 588 fans); fan rows B-D blocked: asset generation unavailable |
+| DIA-A1/A3 | blocked: asset generation unavailable (set pieces, stitched ball, kit retexture) |
 | DIA-W2 | draws 426-469 at 1280 (Harbor 456 and Ivy 469 over the 450 budget); engine triangle counter about 5.6-6.2M (already over 1.2M in phase 3) |
 | DIA-X1 | sibling judge: top-tennis 0.812 and fc 0.838 pass; hoops 0.72 and links 0.779 fail (shared athlete model, WP-36 blocked). Rubric min 2.5 (ibl_reflections), every category under 7: `look-judgement.json`, `look-judgement-p4-run2.json` |

@@ -51,6 +51,6 @@ Status per acceptance line: `done` (verified by a unit test or static check), `c
 - [x] Shadows render on the runner (PCSS 3 cascades sampled, contact-shadow pass executed); tighter key, contact shadows
 - [ ] Rubric every category >= 7: not met (round 3: lighting, atmosphere, post 7; floor modeling_assets 5, blocked on WP-36)
 - [ ] same_game false >= 0.8 vs every neighbour: 7 of 8 pass; heatsink-port 0.69-0.75 (needs WP-36 HS-10 liveries)
-- [x] WP-36 thermalArchIron admitted and on both arches; the other 32 rows blocked: Meshy keys refuse API calls
+- [x] WP-36 thermalArchIron admitted and on both arches; the other 32 rows blocked: asset generation unavailable
 - [x] game-checks 0 errors / 0 warnings (DUSTFALL 25 s now 56.0, every luma frame in band)
 - [x] Gates: typecheck NEW_ERRORS 0, heatsink unit files pass one at a time, eslint clean

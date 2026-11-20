@@ -22,7 +22,7 @@
  "hz": 60,
  "consoleErrors": [
   "error: [grid-dispatch] building models unreachable, using box fallbacks: gridBldgVictorian, gridBldgNew1, gridBldgNew2",
-  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/meshy/models/teleoperator_dispatchPyramidTower.glb: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
+  "error: [aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/<teleoperator dispatch tower GLB>: HTTP 200 Nothing will draw. The same text is in app.diagnostics().errors; pass strict: true to make app.ready() reject."
  ],
  "real": false
 }

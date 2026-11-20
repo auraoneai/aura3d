@@ -451,11 +451,6 @@ tests/fixtures/showcase-spec/**/.DS_Store
 !.pnpmfile.cjs
 .vercel
 
-# Local Meshy candidates and operational task state (admitted public assets are not ignored)
-artifacts/meshy/**
-!artifacts/meshy/README.md
-.meshy-task-state/
-
 # Local source asset archives and bulky generated candidates
 marketing/public/aura-assets/
 
@@ -485,10 +480,6 @@ AGENTS.md
 !templates/*/AGENTS.md
 !templates/*/.claude/CLAUDE.md
 
-# Meshy key maintainer local vault + state (secrets, never commit)
-apps/meshy-keys/.meshy-keys.local.json
-apps/meshy-keys/.meshy-keys-state.json
-
 # Third-party look-reference screenshots (local only, never committed)
 evidence/look-reference-frames/
 
@@ -499,11 +490,7 @@ evidence/look-reference-frames/
 
 # Aura Slam parity baseline frames (first-party, committed)
 !evidence/aura-slam/frames-reference/*.jpg
-# Roadster Hours port: generated model textures (runtime assets) and port-only Meshy evidence frames
-!examples/roadster-hours-port/assets/meshy/*.jpg
-!evidence/roadster-hours-port/meshy-before/*.jpg
-!evidence/roadster-hours-port/meshy-after/*.jpg
-!evidence/roadster-hours-port/meshy-compare/*.jpg
+# Ninja Runner port rework frames (first-party, committed)
 !evidence/ninja-runner-port/rework/*.jpg
 
 # Screenshot retakes: per-game frames under evidence/<game>/screens/<date>/

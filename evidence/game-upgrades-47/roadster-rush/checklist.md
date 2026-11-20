@@ -9,7 +9,7 @@ Status per acceptance line: `code` (implemented, verifiable statically or by uni
 | AO-L3 | night bottom-centre cell mean >= 25, stddev >= 10; draws unchanged; fps -10% max | code (3 sodium + 2 headlights; draws unchanged); pixels and fps phase 2 |
 | AO-L4 | sun row cascadeCount 3, skipped 0; no weak-key warning; disc node gone; road band darkFrac +0.04 | code (3 PCSS cascades to 140 m, disc removed); diagnostics phase 2 |
 | AO-E1 | title top-centre B > R by >= 15; horizon R > B; clip <= 1.5%; night horizon R > B | code + unit test (zenith B > R by >= 15, horizon R > B); clip phase 2 |
-| AO-E2 | mid-drive red-pink ground pixels <= 15% (from ~45%); pylons <= 2 draws | code (haze floor, 2 pylon draws); pixels phase 2; Meshy pylon blocked (WP-36) |
+| AO-E2 | mid-drive red-pink ground pixels <= 15% (from ~45%); pylons <= 2 draws | code (haze floor, 2 pylon draws); pixels phase 2; pylon model blocked (WP-36) |
 | AO-E3 | top road cell stddev >= 30% below bottom; night top-centre <= 30 | code (fog 43/257, colour per row); pixels phase 2 |
 | AO-P1 | gameplay-early p5 <= 14, p95 >= 210; exactly one grade stage | code + unit test (one grade stage, apex-bluehour 17^3 LUT from src/art/lut.ts); pixels phase 2 |
 | AO-P2 | one bloom at threshold 0.85; sky cell within 3 of bloom off; brake bars +25 | code (one bloom at 0.85); pixels phase 2 |
@@ -19,7 +19,7 @@ Status per acceptance line: `code` (implemented, verifiable statically or by uni
 | AO-M2 | road cell stddev >= 8; centre road +15 over shoulders; no texture > 2048; no magenta hex in main.ts | code + unit tests (no magenta hex, textures <= 2048 px); pixels phase 2 |
 | AO-M3 | hash 0; taxi/bus high-pass energy -30%; draws unchanged | blocked (WP-36) |
 | AO-M4 | core p95 >= 240, edge <= 120; draws unchanged | code + unit test (fresnel cone, scrolling noise, hot core, same nodes; scroll off on reduced motion); pixels phase 2 |
-| AO-A1 | no showcaseModernBuildingOne; skyline <= 75 draws; >= 2 top cells stddev >= 12 | code (no showcaseModernBuildingOne; 3 draws); top-cell std phase 2; Meshy kit WP-36 |
+| AO-A1 | no showcaseModernBuildingOne; skyline <= 75 draws; >= 2 top cells stddev >= 12 | code (no showcaseModernBuildingOne; 3 draws); top-cell std phase 2; building kit WP-36 |
 | AO-A2 | sha differs; bounds differ >= 10% on one axis | blocked (WP-36); interim rival paint |
 | AO-V1 | presets contain all 5; liveCount <= 96 dense; crash <= 0.12 of screen | code + unit test (5 presets, <= 96 particles); cyan player / red rival wakes drawn game-side (2 instanced draws, render/wakes.ts); screen share phase 2 |
 | AO-V2 | speedLines accepted at >= 50 m/s; not called on reduced motion; >= 1 landing spark | code + unit test (speed lines >= 50 m/s, not on reduced motion, landing sparks); Rocket Send heat shimmer approximated in the rocket plume shader (no refraction pass) |
@@ -67,4 +67,4 @@ Build `g02p4-r3-1649` (software WebGL2). Details are in `docs/prds/game-upgrades
 | Steady-state `luma-after.json` | retaken (g02p4-r3); the same 6 luma-band warnings as phase 3, no band widened |
 | Final screens | 1280x720 and 390x844 retaken except the desktop results shot and the card (the card shard hung twice) |
 | Budget afterPhase4 | desktop max 172 / 230, phone 161 / 190 draws |
-| WP-36 other 16 rows | blocked: Meshy keys refuse API calls |
+| WP-36 other 16 rows | blocked: asset generation unavailable |

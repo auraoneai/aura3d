@@ -104,7 +104,7 @@
    {
     "type": "tool_result",
     "tool_use_id": "toolu_bdrk_01BBZBvPGRyVU9DecAwVr5S9",
-    "content": "AUTHORING.md\nagent-files/\naura3d-animation-studio/\naura3d-art-direction/\naura3d-assets/\naura3d-browser-game/\naura3d-character-animation/\naura3d-core/\naura3d-evidence-review/\naura3d-game-art/\naura3d-materials-environments/\naura3d-performance/\naura3d-retexture/\naura3d-scene-authoring/\naura3d-threejs-migration/\nllms.txt\nmanifest.json\nmeshy-cli/"
+    "content": "AUTHORING.md\nagent-files/\naura3d-animation-studio/\naura3d-art-direction/\naura3d-assets/\naura3d-browser-game/\naura3d-character-animation/\naura3d-core/\naura3d-evidence-review/\naura3d-game-art/\naura3d-materials-environments/\naura3d-performance/\naura3d-retexture/\naura3d-scene-authoring/\naura3d-threejs-migration/\nllms.txt\nmanifest.json"
    },
    {
     "type": "tool_result",

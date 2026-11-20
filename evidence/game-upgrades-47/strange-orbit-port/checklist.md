@@ -18,7 +18,7 @@ Code status per acceptance line; commits and notes in `docs/prds/game-upgrades-4
 | SO47-P3 | menu bike edgeDensity >= 2x sky; flare off-screen removes its draws | code done; phase 2 |
 | SO47-M1 | hashes same; texture gate passes; judge 3 of 4 | blocked (WP-36) |
 | SO47-M2 | 6 rider crops pairwise RGB distance >= 35; 6 liveries counted | tints pairwise >= 35 (unit test); crops phase 2 |
-| SO47-A1 | primitives only in `?meshy=0`; validate --release | blocked (WP-36) |
+| SO47-A1 | primitives only in the no-models fallback; validate --release | blocked (WP-36) |
 | SO47-W1 | >= 300 rocks in <= 6 draws; edgeDensity >= 0.035; horizon silhouette >= 60% width | 340 in 2 draws + rim 1 (unit test); pixels phase 2 |
 | SO47-W2 | paddock >= 10% of start frame; beacons <= 2 draws; beacon crop changes >= 30 | beacons done (2 draws); pulse not done; paddock blocked (WP-36) |
 | SO47-V1 | each event logs an effect with liveCount > 0; vfx=off gives 0; tints differ >= 0.2 | code done; phase 2 |
@@ -54,7 +54,7 @@ Software WebGL2, remote runner, capture `g15p4-r8` (+ `g15p4-r9` mobile screens)
 
 | PRD 7.2 item | status |
 |---|---|
-| game-checks 0 errors / 0 warnings | 0 errors, 1 warning (`borrowed-asset` diamondRock; WP-36 `moonRock-craterline` blocked: Meshy keys refuse API calls) |
+| game-checks 0 errors / 0 warnings | 0 errors, 1 warning (`borrowed-asset` diamondRock; WP-36 `moonRock-craterline` blocked: asset generation unavailable) |
 | game unit tests | every `tests/unit/strange-orbit-port` file passes, one at a time |
 | typecheck at or below baseline | NEW_ERRORS 0 |
 | steady-state capture inside the bands (bands unchanged) | default 73.1 / 67.2, neutral-env 74.3 / 67.1, original 75.3 / 73.3 (r2, unchanged look); rider crop 105-117 |
@@ -62,4 +62,4 @@ Software WebGL2, remote runner, capture `g15p4-r8` (+ `g15p4-r9` mobile screens)
 | panel rubric round, every category >= 7 | NOT met: two prism runs, min 2.5 (shadows) both times |
 | sibling distinctness vs every genre neighbour (same_game false at >= 0.8) | 6 of 8 pass; heatsink-port 0.671 and last-train-port 0.770 read different (same_game false) but under 0.8 |
 | blind panel vs 4.6.2 | default and neutral-env better 3/0/0 (`g15p4r8`) |
-| WP-36 Meshy rows (17) | blocked: Meshy keys refuse API calls; `craterBikeRider` arrived 2026-10-30 but rejected (geometry hash changed, photoreal suit) |
+| WP-36 rows (17) | blocked: asset generation unavailable; `craterBikeRider` arrived 2026-10-30 but rejected (geometry hash changed, photoreal suit) |

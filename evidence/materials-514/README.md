@@ -60,7 +60,7 @@ object, and an `EnvironmentCache` branch for the new `softbox` key.
 **Superseded by the v2 neutrality run below (2026-11-07).** The "black canvas" diagnosis above was wrong: it was not machine load. The
 repo-root vite server does not serve route-local `apps/<route>/public/*` (app vite configs point `publicDir` at the root `public/`; the
 route dir is layered only by `tools/remote-capture.sh`), so every game whose GLBs live in `apps/<route>/public/aura-assets` got the SPA
-`index.html` instead of the GLB (Bunker Zero says so on screen: "gLTF extension scan failed for /aura-assets/bzGuardMeshy.010bba7b.glb:
+`index.html` instead of the GLB (Bunker Zero says so on screen: "gLTF extension scan failed for /aura-assets/<bunker guard GLB>:
 HTTP 200"). No LFS pointers were involved (none in either checkout).
 
 ## Pixel neutrality v2 (`games-v2/`, 2026-11-07)
