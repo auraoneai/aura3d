@@ -2,7 +2,7 @@
 
 Version: 5.7.1
 
-Current release: Aura3D 5.7.0.
+Current release: Aura3D 5.7.1.
 
 Date: 2026-10-15
 Status: Aura3D 5.7.0 site map
