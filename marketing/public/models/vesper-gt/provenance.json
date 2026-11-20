@@ -22,8 +22,8 @@
   "requestId": "01a1f55f-2f39-7091-aa25-28a3e1678689",
   "estimatedGenerationUsd": 0.525,
   "rawSha256": "55c17a4896018bcc191d72506ff5640166e13ca9640662ed1eeed6129951206b",
-  "artifactSha256": "71c3081628baa09809eefa7e523e81919435bc65e43791d75864a642a1e9bed0",
-  "artifactBytes": 9959088,
+  "artifactSha256": "a5d2d0bffe231bed24d092e647753efd3359a673d255012d74e4753badf70d59",
+  "artifactBytes": 9816292,
   "artifact": "marketing/public/models/vesper-gt/coupe.glb",
   "triangles": 145874,
   "vertices": 118267,
@@ -48,7 +48,7 @@
     "Removed generated pseudo lettering at rear, neutralized rear plate pad and badge",
     "Clamped out-of-range glTF specularColorFactor to 1"
   ],
-  "evidence": "The original Hunyuan shape was selected from an Aura3D hardware PBR frame. Geometry proof records identical attribute, oriented triangle and scene transform hashes before and after material repair.",
+  "evidence": "Matched Apple M4 Max browser renders using the production Aura3D 5.6.0 runtime were reviewed under daylight and tungsten, with additional flank, wheel and front three-quarter views. The final windshield correction was compared at two locked camera angles. The recorded attribute, oriented triangle and scene transform hashes match the original selected mesh.",
   "sourceImageRequestId": "01a1f551-ee8a-7bf1-8984-ff75bdae8709",
   "rawArtifact": {
     "download": "https://v3b.fal.media/files/b/0ab32209/twPZLwLi0vF9w9IrzmYOK_model.glb",
@@ -82,8 +82,8 @@
     },
     "nodePackages": "Repository lockfile"
   },
-  "sha256": "71c3081628baa09809eefa7e523e81919435bc65e43791d75864a642a1e9bed0",
-  "bytes": 9959088,
+  "sha256": "a5d2d0bffe231bed24d092e647753efd3359a673d255012d74e4753badf70d59",
+  "bytes": 9816292,
   "creator": "AuraOne",
   "model": "coupe.glb",
   "materialRepair": {
@@ -99,11 +99,11 @@
     },
     "method": "Partition original oriented triangles by measured spatial region and UV color. Share vertex attributes, preserve the debranded atlas detail and grade garnet pigment. Use independent PBR lobes. Paint and glass use mesh normals. Wheel and tire detail uses filtered, renormalized lossless PNG normals from the optimizer.",
     "surfaceTriangles": {
-      "Midnight garnet | dielectric lacquer": 38846,
+      "Midnight garnet | dielectric lacquer": 38680,
       "Wheel alloy | machined aluminum": 43877,
       "Tire | vulcanized rubber": 19439,
-      "Canopy | smoked laminated glass": 2197,
-      "Trim | graphite composite": 39492,
+      "Canopy | smoked laminated glass": 9136,
+      "Trim | graphite composite": 32719,
       "Headlamp | amber LED lens": 1020,
       "Taillamp | ruby lens": 1003
     }

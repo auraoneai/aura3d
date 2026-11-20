@@ -52,7 +52,12 @@ def material_regions(positions, uv, faces, color):
     labels[in_wheel & (radius < 0.349) & (abs(x) > 0.83)] = "alloy"
     neutral = (np.maximum.reduce([r, g, b]) - np.minimum.reduce([r, g, b])) < 13
     in_canopy = (z > -1.79) & (z < 0.65) & (abs(x) < 0.79) & (y > 0.925 + 0.025 * z)
-    labels[in_canopy & neutral & (g > 32)] = "glass"
+    # The lower windshield sweeps farther forward at centre. A horizontal cutoff at z=.65
+    # leaves the atlas and its trim lobe visible in a row of triangles along the cowl.
+    lower_windscreen = (
+        (z > 0.43) & (z < 0.865 - 0.40 * x * x) & (abs(x) < 0.74) & (y > 0.849)
+    )
+    labels[(in_canopy | lower_windscreen) & neutral & (g > 4)] = "glass"
     # Amber and ruby glass are restricted to the physically measured lamp bands.
     head = (z > 1.70) & (abs(x) > 0.17) & (y > 0.47) & (y < 0.66)
     labels[head & (g > b * 1.45 + 2) & (r > g * 1.13) & (r > 80)] = "headlamp"
@@ -133,13 +138,11 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
     labels = material_regions(pos, uv, faces, color)
     surfaces = {
         "paint": material(
-            "Midnight garnet | dielectric lacquer", 0, 0.34, coat=(0.76, 0.19)
+            "Midnight garnet | dielectric lacquer", 0, 0.36, coat=(0.28, 0.24)
         ),
         "alloy": material("Wheel alloy | machined aluminum", 0.88, 0.34, normal=0.18),
         "rubber": material("Tire | vulcanized rubber", 0, 0.79, normal=0.35),
-        "glass": material(
-            "Canopy | smoked laminated glass", 0, 0.145, coat=(0.32, 0.16)
-        ),
+        "glass": material("Canopy | smoked laminated glass", 0, 0.20),
         "trim": material("Trim | graphite composite", 0.09, 0.50),
         "headlamp": material(
             "Headlamp | amber LED lens", 0, 0.20, emissive=[1, 0.72, 0.36]
@@ -148,7 +151,16 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
             "Taillamp | ruby lens", 0, 0.22, emissive=[0.48, 0.04, 0.025]
         ),
     }
-    # Preserve boundary texels, lamp optics, tread, panel gaps and millwork. Lift garnet pigment
+    # The bright studio environment requires a restrained dielectric base lobe beneath the lacquer.
+    surfaces["paint"]["extensions"]["KHR_materials_specular"] = {"specularFactor": 0.28}
+    surfaces["paint"]["pbrMetallicRoughness"]["baseColorFactor"] = [0.59, 0.42, 0.46, 1]
+    glazing = surfaces["glass"]["pbrMetallicRoughness"]
+    glazing.pop("baseColorTexture")
+    glazing["baseColorFactor"] = [0.0036, 0.0050, 0.0062, 1]
+    surfaces["glass"]["extensions"] = {
+        "KHR_materials_specular": {"specularFactor": 0.33}
+    }
+    # Preserve boundary texels, lamp optics, tread, panel gaps and millwork. Regrade garnet pigment
     # within its observed chroma range, leaving the reflection shape to the real studio lights.
     rgb = color.astype(np.float32)
     r, g, b = rgb.transpose(2, 0, 1)
@@ -157,9 +169,9 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
     )
     paint = np.stack(
         [
-            np.clip(129 + 0.40 * (r - 83), 90, 155),
-            np.clip(31 + 0.23 * (g - 25), 20, 47),
-            np.clip(49 + 0.26 * (b - 36), 34, 65),
+            np.clip(76 + 0.30 * (r - 83), 49, 98),
+            np.clip(14 + 0.14 * (g - 25), 8, 24),
+            np.clip(28 + 0.17 * (b - 36), 14, 41),
         ],
         axis=2,
     )
@@ -216,7 +228,7 @@ def finish(baseline, lossless_source, destination, read_glb, accessor):
     ]
     doc["textures"] = [{"source": i, "sampler": 0} for i in range(2)]
     doc["materials"] = list(surfaces.values())
-    doc["extensionsUsed"] = ["KHR_materials_clearcoat"]
+    doc["extensionsUsed"] = ["KHR_materials_clearcoat", "KHR_materials_specular"]
     groups = []
     for i, key in enumerate(surfaces):
         indices = faces[labels == key].astype("<u4").ravel()
