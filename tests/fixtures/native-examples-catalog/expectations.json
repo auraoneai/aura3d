@@ -3887,12 +3887,12 @@
       },
       "source": {
         "path": "examples/drift-and-deliver-port/main.ts",
-        "sha256": "7c41316da5979442cf0ca8028f29a66eea7af82a348394f90128d6440b56d444"
+        "sha256": "2a96273daf0ea68363ed9f87d898fbacf0e7d407bc491e9e89a363a84f38f3a7"
       },
       "sourceDependencies": [
         {
           "path": "examples/drift-and-deliver-port/index.html",
-          "sha256": "21920968502a6f88d3f68540789df2b409998749aa7aba10cd3b5951eaab7c01"
+          "sha256": "e6583430ae172288773fd3d55bfae849689170381a64278c45381138c06db4d9"
         },
         {
           "path": "examples/drift-and-deliver-port/chase.ts",
@@ -3984,11 +3984,11 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-drift-and-deliver-port/index.html",
-          "sha256": "36bd1838fa8d3cd38bd727aa2d35772baafb8ce7f5d81a58926eb7be9b8e387c"
+          "sha256": "445c730c7403d27b4fd7cc9627f0eb43af9f4f07dfc166b95dab4c84c4cea887"
         },
         {
           "path": "examples/drift-and-deliver-port/main.ts",
-          "sha256": "7c41316da5979442cf0ca8028f29a66eea7af82a348394f90128d6440b56d444"
+          "sha256": "2a96273daf0ea68363ed9f87d898fbacf0e7d407bc491e9e89a363a84f38f3a7"
         },
         {
           "path": "examples/drift-and-deliver-port/chase.ts",
@@ -4500,7 +4500,7 @@
       },
       "source": {
         "path": "examples/ninja-runner-port/main.ts",
-        "sha256": "93df4173ce169976eff116729043f06a3f8fd05c001b13d4f6e8e1c077c5f4c6"
+        "sha256": "22c1793acc5c96f1b5c4be3d471cda5c2c0ae961932d6cdd73e4707b387f5a5a"
       },
       "sourceDependencies": [
         {
@@ -4625,7 +4625,7 @@
         },
         {
           "path": "examples/ninja-runner-port/main.ts",
-          "sha256": "93df4173ce169976eff116729043f06a3f8fd05c001b13d4f6e8e1c077c5f4c6"
+          "sha256": "22c1793acc5c96f1b5c4be3d471cda5c2c0ae961932d6cdd73e4707b387f5a5a"
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",

@@ -78,10 +78,12 @@ export function finishMotionPose(clip: MotionClipName, p: HumanoidPoseInput): Hu
 
 /** Most a running torso leans forward from upright (rad): a sprint lean, like the procedural run's 0.39 rad body pitch. */
 export const RUN_MAX_LEAN = 0.4;
-/** Lowest an upper arm may point while running: |elevation| at least ~14 degrees below horizontal (direction y). */
-export const RUN_ARM_MAX_Y = -0.25;
+/** Lowest an upper arm may point while running: tucked cleanly down-and-in (~35 deg below horizontal, not airplane-wide). */
+export const RUN_ARM_MAX_Y = -0.58;
+/** Maximum outward lateral component (|dir.x|) of a running upper arm so runners keep arms near ribs instead of T-pose splay. */
+export const RUN_ARM_MAX_OUT = 0.34;
 /** Highest a forearm may point while running (direction y): a pumping hand stays below the shoulder. */
-export const RUN_FOREARM_MAX_Y = 0.15;
+export const RUN_FOREARM_MAX_Y = 0.08;
 
 const rotV = (q: readonly number[], v: readonly number[]): V3 => {
   const x = q[0]!, y = q[1]!, z = q[2]!, w = q[3]!;
@@ -144,16 +146,85 @@ function lowerTo(dir: V3, maxY: number): Quat | null {
   return fromTo(dir, t);
 }
 
+/** Pulls an arm direction inward toward the body's sagittal plane (sideSign = +1 left / -1 right) so it never splays like a scarecrow. */
+function tuckArmOut(dir: V3, sideSign: 1 | -1, maxOut: number, maxY: number): Quat | null {
+  const out = dir[0] * sideSign;
+  const clampedOut = out > maxOut ? maxOut : out < -0.22 ? -0.22 : out;
+  const clampedY = Math.min(dir[1], maxY);
+  if (Math.abs(clampedOut - out) < 1e-4 && clampedY >= dir[1] - 1e-4) return null;
+  const tx = clampedOut * sideSign;
+  const ty = clampedY;
+  const rem = Math.max(0, 1 - tx * tx - ty * ty);
+  const tz = (dir[2] >= 0 ? 1 : -1) * Math.sqrt(rem);
+  const len = Math.hypot(tx, ty, tz) || 1;
+  return fromTo(dir, [tx / len, ty / len, tz / len]);
+}
+
 /**
- * Straightens a captured running pose (model-space segment rotations, `segmentsFromHumanoid`): the torso (with head and
- * arms) pitches back to at most `RUN_MAX_LEAN` forward about the lateral axis, each upper arm is lowered to at least
- * `RUN_ARM_MAX_Y` (the elbow keeping its bend) and each forearm to at most `RUN_FOREARM_MAX_Y`, so the hands swing at the
- * sides below the shoulders. Hips and legs are untouched (the stance foot stays where the stride table planted it).
+ * Rebuilds the torso (and pelvis) directly from bounded yaw/lean/roll (zero Euler-cancellation flips even when a
+ * captured HY-Motion clip somersaults upside-down), then carries the arms smoothly by the delta `bodyNew * conj(bodyOld)`.
+ */
+function stabilizeTorso(
+  seg: IdolSegmentPose,
+  opts: { readonly maxLean: number; readonly leanGain: number; readonly maxRoll: number; readonly rollGain: number; readonly yawGain: number; readonly targetLean?: number }
+): IdolSegmentPose {
+  const conj = (q: Quat): Quat => [-q[0], -q[1], -q[2], q[3]];
+  const up = rotV(seg.body, [0, 1, 0]), fw = rotV(seg.body, [0, 0, 1]);
+  const rawLean = Math.atan2(up[2], Math.max(0.25, Math.abs(up[1])));
+  const rawRoll = Math.atan2(-up[0], Math.max(0.25, Math.abs(up[1])));
+  const rawYaw = Math.atan2(fw[0], fw[2]);
+  const nextLean = opts.targetLean !== undefined
+    ? opts.targetLean + softCap(rawLean * opts.leanGain, opts.maxLean)
+    : softCap(rawLean * opts.leanGain, opts.maxLean);
+  const nextRoll = softCap(rawRoll * opts.rollGain, opts.maxRoll);
+  const nextYaw = softCap(rawYaw * opts.yawGain, 0.52);
+  const nextBody = mul(qAxisY(nextYaw), mul(qAxisX(nextLean), qAxisZ(nextRoll)));
+  const R = mul(nextBody, conj(seg.body));
+  const out: IdolSegmentPose = {
+    ...seg,
+    body: nextBody,
+    head: stableHead(seg.head),
+    armL: mul(R, seg.armL),
+    foreL: mul(R, seg.foreL),
+    armR: mul(R, seg.armR),
+    foreR: mul(R, seg.foreR)
+  };
+  if (seg.pelvis) {
+    const pu = rotV(seg.pelvis, [0, 1, 0]), pf = rotV(seg.pelvis, [0, 0, 1]);
+    const pLean = opts.targetLean !== undefined
+      ? opts.targetLean * 0.65 + softCap(Math.atan2(pu[2], Math.max(0.25, Math.abs(pu[1]))) * 0.35, opts.maxLean)
+      : softCap(Math.atan2(pu[2], Math.max(0.25, Math.abs(pu[1]))) * 0.45, opts.maxLean);
+    const pRoll = softCap(Math.atan2(-pu[0], Math.max(0.25, Math.abs(pu[1]))) * opts.rollGain, opts.maxRoll);
+    const pYaw = softCap(Math.atan2(pf[0], pf[2]) * opts.yawGain, 0.45);
+    out.pelvis = mul(qAxisY(pYaw), mul(qAxisX(pLean), qAxisZ(pRoll)));
+  }
+  return out;
+}
+
+/** Keeps thighs aligned toward the forward/back stride plane so characters don't crab-splay sideways. */
+function tidyLegs(seg: IdolSegmentPose, maxLegOut: number): IdolSegmentPose {
+  const fixLeg = (leg: Quat, shin: Quat, foot: Quat, sideSign: 1 | -1): [Quat, Quat, Quat] => {
+    const d = rotV(leg, [0, -1, 0]);
+    const out = d[0] * sideSign;
+    if (out <= maxLegOut && out >= -0.15) return [leg, shin, foot];
+    const tx = Math.max(-0.15, Math.min(maxLegOut, out)) * sideSign;
+    const rem = Math.max(0, 1 - tx * tx);
+    const h = Math.hypot(d[1], d[2]) || 1;
+    const scale = Math.sqrt(rem) / h;
+    const q = fromTo(d, [tx, d[1] * scale, d[2] * scale]);
+    return [mul(q, leg), mul(q, shin), mul(q, foot)];
+  };
+  const [legL, shinL, footL] = fixLeg(seg.legL, seg.shinL, seg.footL, 1);
+  const [legR, shinR, footR] = fixLeg(seg.legR, seg.shinR, seg.footR, -1);
+  return { ...seg, legL, shinL, footL, legR, shinR, footR };
+}
+
+/**
+ * Straightens a captured running pose (model-space segment rotations, `segmentsFromHumanoid`): the torso pitches to at
+ * most `RUN_MAX_LEAN` forward, each upper arm tucks close to the ribs (`|x| <= RUN_ARM_MAX_OUT`, `y <= RUN_ARM_MAX_Y`)
+ * so runners pump front-to-back instead of splaying sideways like scarecrows, and each forearm stays below the shoulder.
  */
 export function uprightRun(seg: IdolSegmentPose): IdolSegmentPose {
-  // Torso: the clip's counter-twist (yaw, +-35 deg) and side roll (+-15 deg) scaled down linearly to ~+-8 / ~+-5 deg and
-  // its lean halved then softly limited to RUN_MAX_LEAN. Linear gains keep the motion's shape: a saturating clamp pinned
-  // the chest for a stride and then swung it across in a few frames (a snap every step).
   const up = rotV(seg.body, [0, 1, 0]), fw = rotV(seg.body, [0, 0, 1]);
   const lean = Math.atan2(up[2], up[1]), roll = Math.atan2(-up[0], up[1]), yaw = Math.atan2(fw[0], fw[2]);
   const R = mul(qAxisZ(roll * (RUN_TORSO_ROLL_GAIN - 1)), mul(qAxisY(yaw * (RUN_TORSO_YAW_GAIN - 1)), qAxisX(softLimit(lean * RUN_LEAN_GAIN, RUN_MAX_LEAN) - lean)));
@@ -163,15 +234,78 @@ export function uprightRun(seg: IdolSegmentPose): IdolSegmentPose {
     const pr = Math.atan2(-pu[0], pu[1]), py = Math.atan2(pf[0], pf[2]);
     out.pelvis = mul(qAxisZ(pr * (RUN_HIPS_ROLL_GAIN - 1)), mul(qAxisY(py * (RUN_HIPS_YAW_GAIN - 1)), seg.pelvis));
   }
-  const arm = (upper: Quat, fore: Quat): [Quat, Quat] => {
-    const c = lowerTo(rotV(upper, [0, -1, 0]), RUN_ARM_MAX_Y);
+  const arm = (upper: Quat, fore: Quat, sideSign: 1 | -1): [Quat, Quat] => {
+    const c = tuckArmOut(rotV(upper, [0, -1, 0]), sideSign, RUN_ARM_MAX_OUT, RUN_ARM_MAX_Y);
     if (c) { upper = mul(c, upper); fore = mul(c, fore); }
     const f = lowerTo(rotV(fore, [0, -1, 0]), RUN_FOREARM_MAX_Y);
     if (f) fore = mul(f, fore);
+    // Keep forearm tucked slightly inward too so hands swing neatly at waist height.
+    const fi = tuckArmOut(rotV(fore, [0, -1, 0]), sideSign, 0.36, RUN_FOREARM_MAX_Y);
+    if (fi) fore = mul(fi, fore);
     return [upper, fore];
   };
-  const [armL, foreL] = arm(out.armL, out.foreL), [armR, foreR] = arm(out.armR, out.foreR);
+  const [armL, foreL] = arm(out.armL, out.foreL, 1), [armR, foreR] = arm(out.armR, out.foreR, -1);
   return { ...out, armL, foreL, armR, foreR };
+}
+
+/**
+ * Sanitizes non-run HY-Motion clips (`Jump`, `Slide`, `Slash`, `Throw`, `Jab`, `Smash`, `Cast`, `Hit`, `Idle`, `Guard`)
+ * so every hero, clone, and enemy NPC keeps an athletic, upright shinobi silhouette with tucked limbs instead of
+ * upside-down somersaults, sideways bike-crash flops, or scarecrow T-pose arms.
+ */
+export function sanitizeActionClip(clip: MotionClipName, seg: IdolSegmentPose): IdolSegmentPose {
+  if (clip === "Death") return seg;
+  if (clip === "Jump") {
+    let out = stabilizeTorso(seg, { maxLean: 0.32, leanGain: 0.35, maxRoll: 0.14, rollGain: 0.25, yawGain: 0.35, targetLean: 0.16 });
+    const aL = tuckArmOut(rotV(out.armL, [0, -1, 0]), 1, 0.42, -0.45);
+    const aR = tuckArmOut(rotV(out.armR, [0, -1, 0]), -1, 0.42, -0.45);
+    let foreL = aL ? mul(aL, out.foreL) : out.foreL;
+    let foreR = aR ? mul(aR, out.foreR) : out.foreR;
+    const fL = lowerTo(rotV(foreL, [0, -1, 0]), 0.12);
+    const fR = lowerTo(rotV(foreR, [0, -1, 0]), 0.12);
+    if (fL) foreL = mul(fL, foreL);
+    if (fR) foreR = mul(fR, foreR);
+    out = {
+      ...out,
+      armL: aL ? mul(aL, out.armL) : out.armL,
+      foreL,
+      armR: aR ? mul(aR, out.armR) : out.armR,
+      foreR
+    };
+    return tidyLegs(out, 0.26);
+  }
+  if (clip === "Slide") {
+    // Sleek low shinobi crouch/baseball slide leaning cleanly back (-32 deg), never rolling 69 deg sideways onto the road.
+    let out = stabilizeTorso(seg, { maxLean: 0.32, leanGain: 0.35, maxRoll: 0.16, rollGain: 0.22, yawGain: 0.4, targetLean: -0.52 });
+    const aL = tuckArmOut(rotV(out.armL, [0, -1, 0]), 1, 0.44, -0.28);
+    const aR = tuckArmOut(rotV(out.armR, [0, -1, 0]), -1, 0.44, -0.28);
+    out = {
+      ...out,
+      armL: aL ? mul(aL, out.armL) : out.armL,
+      foreL: aL ? mul(aL, out.foreL) : out.foreL,
+      armR: aR ? mul(aR, out.armR) : out.armR,
+      foreR: aR ? mul(aR, out.foreR) : out.foreR
+    };
+    return tidyLegs(out, 0.28);
+  }
+  // Combat & idle clips (`Slash`, `Throw`, `Jab`, `Smash`, `Cast`, `Hit`, `Idle`, `Guard`):
+  // keep upright heroic/enemy posture (never 107-136 deg upside-down twists) and rein in scarecrow arm/leg splay.
+  const maxLean = clip === "Hit" ? 0.38 : 0.32;
+  const maxRoll = clip === "Hit" ? 0.24 : 0.2;
+  let out = stabilizeTorso(seg, { maxLean, leanGain: 0.38, maxRoll, rollGain: 0.3, yawGain: 0.55 });
+  const maxArmY = clip === "Idle" || clip === "Guard" ? -0.55 : clip === "Smash" || clip === "Slash" ? 0.42 : 0.15;
+  const maxOutL = clip === "Idle" || clip === "Guard" ? 0.34 : 0.48;
+  const maxOutR = clip === "Idle" || clip === "Guard" ? 0.34 : 0.52;
+  const aL = tuckArmOut(rotV(out.armL, [0, -1, 0]), 1, maxOutL, maxArmY);
+  const aR = tuckArmOut(rotV(out.armR, [0, -1, 0]), -1, maxOutR, maxArmY);
+  out = {
+    ...out,
+    armL: aL ? mul(aL, out.armL) : out.armL,
+    foreL: aL ? mul(aL, out.foreL) : out.foreL,
+    armR: aR ? mul(aR, out.armR) : out.armR,
+    foreR: aR ? mul(aR, out.foreR) : out.foreR
+  };
+  return tidyLegs(out, 0.28);
 }
 
 export interface SlotMotion {

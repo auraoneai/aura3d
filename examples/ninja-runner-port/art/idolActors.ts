@@ -12,7 +12,7 @@ import { createIdolRigDriver, qMul, qX, qY, qZ, type IdolRigDriver, type IdolSeg
 import { IDOL_RIGS } from "./idolRigData";
 import { MOTION_CLIPS, type MotionClipName } from "../../../apps/showcase-ninja-runner-port/src/motion.generated";
 import { sampleHumanoidClip } from "@aura3d/engine/animation";
-import { buildStrideTable, createSlotMotion, finishMotionPose, motionRequest, segmentsFromHumanoid, strideTableTime, uprightRun, type GameClipState, type IdolMotionContext, type SlotMotion, type StrideTable } from "./idolMotion";
+import { buildStrideTable, createSlotMotion, finishMotionPose, motionRequest, sanitizeActionClip, segmentsFromHumanoid, strideTableTime, uprightRun, type GameClipState, type IdolMotionContext, type SlotMotion, type StrideTable } from "./idolMotion";
 
 export type IdolActorKey = keyof typeof IDOL_RIGS;
 export type IdolVariant = "std" | "clone" | "ember";
@@ -38,15 +38,16 @@ export function buildIdolActorNode(slot: number, id: CharacterId, castShadow: bo
   const key = idolKeyFor(id, variant);
   slotKey.set(slot, key);
   slotChar.set(slot, id);
-  // R23 clone vs hero hierarchy: spectral translucency (`opacity: 0.72`, cyan rim `#51dfff`) on clones; sumi-ink Fresnel rim on hero/rivals.
+  // Keep every skinned character 100% opaque (proper depthWrite, zero inside-out self-sorting) with clean subtle rim separation:
+  // cool spirit-cyan rim on clones so they read cleanly beside the hero, subtle warm sunset rim on hero and rival NPCs.
   const materialOverrides = variant === "clone"
-    ? [{ target: "*", opacity: 0.72, rim: { color: "#51dfff", power: 2.2, intensity: 0.95 } }]
-    : [{ target: "*", rim: { color: "#1b2236", power: 2.6, intensity: 0.55 } }];
+    ? [{ target: "*", rim: { color: "#7cecff", power: 3.0, intensity: 0.45 } }]
+    : [{ target: "*", rim: { color: "#ffd8a8", power: 3.2, intensity: 0.25 } }];
   return model(IDOL_ASSETS[key]!, {
     name: nodeId(slot),
     role: slot === 0 ? "primaryCharacter" : "setDressing",
     scaleMode: "world",
-    castShadow: variant === "clone" ? false : castShadow,
+    castShadow,
     receiveShadow: true,
     visible: false,
     position: [0, -500, 0],
@@ -190,6 +191,7 @@ export function idolMotionPose(slot: number, key: IdolActorKey, id: CharacterId,
     const off = seg.hipsOffset ?? [0, 0, 0];
     seg.hipsOffset = [off[0] + st.lockX / driver.hipsHeight, off[1], off[2]];
   } else {
+    seg = sanitizeActionClip(req.clip, seg);
     st.lockX *= Math.exp(-ctx.dt * 6);
     st.lockFoot = -1;
   }

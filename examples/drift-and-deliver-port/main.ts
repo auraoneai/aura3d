@@ -249,8 +249,8 @@ function buildScene() {
   });
   // Owner QA (Nov 18): trees, palms and lamp posts between the camera and the courier fade to ghosts (presentation only)
   occluderFader = params.get("fade") === "0" ? null : createOccluderFader(takeFadeLayers());
-  // Owner QA (Nov 18): the live game opens on the elevated bird's-eye chase; C toggles the old close chase (`?cam=close`)
-  setChaseFraming(params.get("cam") === "close" ? (look.shift ? "close" : "close-original") : "bird");
+  // Normal street-level chase is the default camera; pressing C toggles the secondary bird's-eye view (`?cam=bird`).
+  setChaseFraming(params.get("cam") === "bird" ? "bird" : (look.shift ? "close" : "close-original"));
   Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 }));
   const s = look.builder;
   if (look.shift) for (const n of shiftSceneNodes(skid, { reducedFlash: config.reducedFlash })) s.add(n);

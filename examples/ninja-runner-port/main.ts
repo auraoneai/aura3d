@@ -63,8 +63,8 @@ const config = {
   godRays: params.get("godrays") !== "0",
   cones: params.get("cones") !== "0",
   vfx: params.get("vfx") !== "0",
-  // Selective high-threshold depth-weighted ukiyo-e ink outline (`threshold: 0.6`); opt-out with `?ink=0`.
-  ink: params.get("ink") !== "0",
+  // Full-frame screen-space ink outline smears black contours over skinned characters and small distant NPCs; opt-in via `?ink=1`.
+  ink: params.get("ink") === "1",
   grain: params.get("grain") === "1"
 };
 // A district target holds the run where it lands (captures drive nothing), so it behaves like `manual=1`.
