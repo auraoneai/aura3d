@@ -39,10 +39,10 @@ const SNAP = { back: 10.6, up: 4.3, lead: 5, lookUp: 1.25, fov: 56 } as const;
 /** GU47 WP-28 GC-C2: the shift look's tighter chase (back 5.0, up 2.1, fov 60) so the courier fills 15-20% of the height. */
 const SHIFT_OFFSET = { ...OFFSET, back: 5.0, up: 2.1 } as const;
 export const SHIFT_FOV = 60;
-/** WP-22 closer presentation chase: frames the sculpted cyan courier, roof delivery rack, street canyon, and sunlit blue sky cleanly from frame 0. */
-const CLOSE_OFFSET = { back: 4.95, backPerSpeed: 0.022, backBoost: 0.65, up: 2.12, upPerSpeed: 0.006, minAboveGround: 1.82, lead: 4.6, leadPerSpeed: 0.22, lookUp: 1.08 } as const;
-const CLOSE_SNAP = { back: 4.95, up: 2.12, lead: 4.6, lookUp: 1.08, fov: 56 } as const;
-export const CLOSE_FOV = 56;
+/** Balanced arcade street chase: pulls back & slightly up with a 62° FOV so the courier sits cleanly in the lower third with wide left/right lane sightlines. */
+const CLOSE_OFFSET = { back: 8.2, backPerSpeed: 0.035, backBoost: 0.9, up: 3.45, upPerSpeed: 0.01, minAboveGround: 2.6, lead: 6.2, leadPerSpeed: 0.24, lookUp: 1.05 } as const;
+const CLOSE_SNAP = { back: 8.2, up: 3.45, lead: 6.2, lookUp: 1.05, fov: 62 } as const;
+export const CLOSE_FOV = 62;
 /**
  * Owner QA (Nov 18): "the car is too close to the viewport; it should be further away so the user has more of a bird's-eye
  * view of the street". Elevated 3/4 chase: 15 m up, 16 m back, aiming 3 m ahead of the car at road level (about 38 degrees
@@ -51,8 +51,8 @@ export const CLOSE_FOV = 56;
 const BIRD_OFFSET = { back: 16, backPerSpeed: 0.03, backBoost: 0.8, up: 15, upPerSpeed: 0.03, minAboveGround: 8, lead: 3, leadPerSpeed: 0.05, lookUp: 0 } as const;
 const BIRD_SNAP = { back: 16, up: 15, lead: 3, lookUp: 0, fov: 55 } as const;
 export const BIRD_FOV = 55;
-const CLOSE_ORIG_OFFSET = { back: 4.95, backPerSpeed: 0.024, backBoost: 0.7, up: 2.22, upPerSpeed: 0.007, minAboveGround: 1.85, lead: 4.6, leadPerSpeed: 0.22, lookUp: 1.08 } as const;
-const CLOSE_ORIG_SNAP = { back: 4.95, up: 2.22, lead: 4.6, lookUp: 1.08, fov: 55 } as const;
+const CLOSE_ORIG_OFFSET = { back: 8.2, backPerSpeed: 0.035, backBoost: 0.9, up: 3.55, upPerSpeed: 0.01, minAboveGround: 2.6, lead: 6.2, leadPerSpeed: 0.24, lookUp: 1.05 } as const;
+const CLOSE_ORIG_SNAP = { back: 8.2, up: 3.55, lead: 6.2, lookUp: 1.05, fov: 61 } as const;
 /** `prefers-reduced-motion`: no shake at all and the speed/nitro field-of-view kick capped at 3 degrees. */
 export const REDUCED_FOV_KICK = 3;
 const makeRig = (
