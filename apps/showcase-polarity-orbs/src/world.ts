@@ -10,6 +10,7 @@
  *   `createFlipbookAtlas("plasma")` + `createGradingLut("cyber-neon")` polarity-discharge bursts.
  */
 import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { createFlipbookAtlas, createGradingLut } from "@aura3d/engine/game";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import { Batch, CORRIDOR_BOUNDS, OPEN_BOUNDS, Slots, scrollFrameZ, type MeshData } from "../../../examples/shared/runner-kit/batch";
 
@@ -18,7 +19,6 @@ export const ROAD_FRAME_BOUNDS = OPEN_BOUNDS;
 import { hexToLinear, type Rgb } from "../../../examples/shared/runner-kit/look-utils";
 import { flatSpec, shadowSpec, toonSpec, type CustomSpec } from "../../../examples/shared/runner-kit/shaders";
 import { dualEnergyFieldSpec } from "../../showcase-port-shared/dual-shaders";
-import { createFlipbookAtlas, createGradingLut } from "./vfx-atlases";
 import { CONFIG, type PolarityOrbsSim, type PowerupKind } from "./sim";
 import { LINEAR, LOOK, mixRgb } from "./look";
 import {
@@ -61,7 +61,9 @@ import {
   crownPrismGemMesh,
   dipoleCollectorOrbMesh,
   heroGyroOrbMesh,
-  heroPolarityEmblemMesh
+  heroPolarityEmblemMesh,
+  orbMinusHaloMesh,
+  orbPlusCoronaMesh
 } from "./art/proceduralModels";
 import { CAMERA_FAR, chaseFov, type Shown } from "./presentation";
 import { BACKDROP_GROUPS, addBackdrop, updateBackdrop } from "./backdrop";
@@ -112,9 +114,13 @@ export const NODE_IDS = [
   "polarity-light",
   "shield",
   "orbs",
+  "orbs-plus",
+  "orbs-minus",
+  "orb-shadows",
   "powerups",
   "particles",
   "plasma-bursts",
+  "plasma-flipbook",
   "shockwave",
   "streams",
   "cloud-sea",
@@ -241,7 +247,7 @@ export function buildWorld(_options: WorldOptions): World {
         target: [0, 0.8, -12],
         intensity: 2.35,
         color: "#ffe2c6",
-        shadow: { cascades: 2, maxDistance: 95, mapSize: 2048 }
+        shadow: { cascades: 2, maxDistance: 95, mapSize: 2048, softness: 1.8 }
       })
     )
     .add(
@@ -420,12 +426,38 @@ export function buildWorld(_options: WorldOptions): World {
 
   const orbs = new Batch(dipoleCollectorOrbMesh(ORB_RADIUS), CONFIG.POOL_ORBS, LINEAR.red, CORRIDOR_BOUNDS);
   addBatch("orbs", orbs, plasmaOrbSpec({ withTone: true, iridescence: 1 }), true, false);
+  // Dual-coded incoming orb silhouettes: Red (+) spiked corona + top `+`, Blue (−) equatorial orbital halo + top `−`,
+  // plus grounded contact-shadow discs (`y = 0.025`) beneath every incoming orb for figure-ground pop.
+  const orbsPlus = new Batch(orbPlusCoronaMesh(ORB_RADIUS), CONFIG.POOL_ORBS, NORTH_EDGE, CORRIDOR_BOUNDS);
+  addBatch("orbs-plus", orbsPlus, flatSpec([1, 1, 1], 0.96, true), false, false);
+  const orbsMinus = new Batch(orbMinusHaloMesh(ORB_RADIUS), CONFIG.POOL_ORBS, SOUTH_EDGE, CORRIDOR_BOUNDS);
+  addBatch("orbs-minus", orbsMinus, flatSpec([1, 1, 1], 0.96, true), false, false);
+  const orbShadows = new Batch(shadowMesh(), CONFIG.POOL_ORBS, [1, 1, 1], CORRIDOR_BOUNDS);
+  addBatch("orb-shadows", orbShadows, shadowSpec(), false, false);
   const powerups = new Batch(crownPrismGemMesh(GEM_RADIUS), CONFIG.POOL_POWERUPS, LINEAR.gold, CORRIDOR_BOUNDS);
   addBatch("powerups", powerups, plasmaOrbSpec({ withTone: true, iridescence: 1.2 }), true, false);
   const particles = new Batch(particleMesh(), CONFIG.POOL_PARTICLES, [1, 1, 1], CORRIDOR_BOUNDS);
   addBatch("particles", particles, toonSpec([1, 1, 1], undefined, [0, 0, 0], true), false, false);
   const plasmaBursts = new Batch(PLASMA_FRAMES[0]!, PLASMA_POOL, [1, 1, 1], CORRIDOR_BOUNDS);
   addBatch("plasma-bursts", plasmaBursts, plasmaBurstSpec(PLASMA_ATLAS.texture, CYBER_LUT.texture), false, false);
+  // 5.7.0 live-texture plasma flipbook emitter (`effects.flipbook({ texture: PLASMA_ATLAS.texture })`)
+  builder.add(
+    effects
+      .flipbook({
+        name: "plasma-flipbook",
+        texture: PLASMA_ATLAS.texture,
+        spriteColumns: PLASMA_ATLAS.columns,
+        spriteRows: PLASMA_ATLAS.rows,
+        frameRate: 30,
+        size: 1.75,
+        intensity: 1.35,
+        color: "#ffd6b0",
+        blend: "additive",
+        loop: true,
+        position: [0, -60, 0]
+      })
+      .runtime({ id: "plasma-flipbook" })
+  );
   const streams = new Batch(fluxArcMesh(), LOOK.magnet.streams, [1, 1, 1], CORRIDOR_BOUNDS);
   addBatch("streams", streams, fluxArcSpec(), false, false);
 
@@ -440,6 +472,9 @@ export function buildWorld(_options: WorldOptions): World {
     { id: "rails", batch: rails, tonesOnly: true },
     { id: "dashes", batch: dashes, tonesOnly: true },
     { id: "orbs", batch: orbs, tonesOnly: true },
+    { id: "orbs-plus", batch: orbsPlus, tonesOnly: true },
+    { id: "orbs-minus", batch: orbsMinus, tonesOnly: true },
+    { id: "orb-shadows", batch: orbShadows, tonesOnly: false },
     { id: "powerups", batch: powerups, tonesOnly: true },
     { id: "particles", batch: particles, tonesOnly: true },
     { id: "plasma-bursts", batch: plasmaBursts, tonesOnly: false },
@@ -510,7 +545,13 @@ export function buildWorld(_options: WorldOptions): World {
         slot.maxAge = maxAge;
         slot.size = size;
         slot.rgb = rgb;
+        flipbookLeft = Math.max(flipbookLeft, maxAge);
+        flipbookAt = [x, y, z];
+        flipbookScale = size * 0.9;
       };
+      let flipbookLeft = 0;
+      let flipbookAt: [number, number, number] = [0, -60, 0];
+      let flipbookScale = 1.5;
 
       const toneCache = new Map<number, Rgb>();
       const linearOfColor = (hex: number): Rgb => {
@@ -542,9 +583,13 @@ export function buildWorld(_options: WorldOptions): World {
       let lightKey = "";
       let reticleKey = "";
 
-      function applyRoadTones(live: readonly Seg[]): void {
-        const warmTone = mixRgb(LINEAR.deckWarm, LINEAR.deckWarmDim, mix);
-        const coolTone = mixRgb(LINEAR.deckCoolDim, LINEAR.deckCool, mix);
+      function applyRoadTones(live: readonly Seg[], boost = 1): void {
+        const warmBase = mixRgb(LINEAR.deckWarm, LINEAR.deckWarmDim, mix);
+        const coolBase = mixRgb(LINEAR.deckCoolDim, LINEAR.deckCool, mix);
+        const warmScale = mix < 0.5 ? boost : 1;
+        const coolScale = mix >= 0.5 ? boost : 1;
+        const warmTone: Rgb = [warmBase[0] * warmScale, warmBase[1] * warmScale, warmBase[2] * warmScale];
+        const coolTone: Rgb = [coolBase[0] * coolScale, coolBase[1] * coolScale, coolBase[2] * coolScale];
         const railL = mixRgb(LINEAR.railWarm, LINEAR.railCool, mix);
         const railR = mixRgb(LINEAR.railCool, LINEAR.railWarm, mix);
         for (const s of live) {
@@ -770,19 +815,36 @@ export function buildWorld(_options: WorldOptions): World {
           ballSymbol.setTone(0, reticleRgb);
         }
 
-        /* Orbs (dielectric glass + swirling dipole plasma core) */
+        /* Dual-coded incoming orbs: Red (+) spiked equatorial corona + `+` cap, Blue (−) horizontal orbital halo + `−` cap,
+         * plus dark contact-shadow discs (`y = 0.025`) beneath every orb for crisp figure-ground separation over glowing dipole lines. */
+        const rainbowOn = o.rainbowTimer > 0;
         for (let i = 0; i < simNow.orbs.length; i++) {
           const orb = simNow.orbs[i];
           if (!orb || !orb.active) {
             orbs.collapse(i);
+            orbsPlus.collapse(i);
+            orbsMinus.collapse(i);
+            orbShadows.collapse(i);
             orbToneKey[i] = "";
             continue;
           }
           const pulse = 1 + 0.05 * Math.sin(elapsed * 4 + i);
-          orbs.place(i, orb.x, 0.9, orb.z, elapsed * 1.5 + i, pulse, pulse, pulse);
-          const toneKey = o.rainbowTimer > 0 ? "gold" : orb.polarity === 1 ? "red" : "blue";
+          const spin = elapsed * 1.5 + i;
+          orbs.place(i, orb.x, 0.9, orb.z, spin, pulse, pulse, pulse);
+          orbShadows.place(i, orb.x, 0.025, orb.z, 0, 0.88, 1, 0.88);
+          if (orb.polarity === 1) {
+            orbsPlus.place(i, orb.x, 0.9, orb.z, spin * 0.7, pulse, pulse, pulse);
+            orbsMinus.collapse(i);
+          } else {
+            orbsMinus.place(i, orb.x, 0.9, orb.z, -spin * 0.5, pulse, pulse, pulse);
+            orbsPlus.collapse(i);
+          }
+          const toneKey = rainbowOn ? `gold:${orb.polarity}` : orb.polarity === 1 ? "red" : "blue";
           if (toneKey !== orbToneKey[i]) {
-            orbs.setTone(i, toneKey === "gold" ? LINEAR.gold : toneKey === "red" ? LINEAR.red : LINEAR.blue);
+            const coreRgb = rainbowOn ? LINEAR.gold : orb.polarity === 1 ? LINEAR.red : LINEAR.blue;
+            orbs.setTone(i, coreRgb);
+            if (orb.polarity === 1) orbsPlus.setTone(i, rainbowOn ? LINEAR.gold : NORTH_EDGE);
+            else orbsMinus.setTone(i, rainbowOn ? LINEAR.gold : SOUTH_EDGE);
             orbToneKey[i] = toneKey;
           }
         }
@@ -863,8 +925,21 @@ export function buildWorld(_options: WorldOptions): World {
           plasmaBursts.place(i, b.x, b.y, b.z, 0, scale, scale, scale, PLASMA_FRAMES[frameIdx]);
           plasmaBursts.setTone(i, b.rgb);
         }
+        const fbNode = app.nodes.get?.("plasma-flipbook");
+        if (fbNode) {
+          if (flipbookLeft > 0 && !reducedMotion) {
+            flipbookLeft = Math.max(0, flipbookLeft - Math.max(dt, 1 / 120));
+            fbNode.setVisible(true);
+            fbNode.setPosition(flipbookAt[0], flipbookAt[1], flipbookAt[2]);
+            fbNode.setScale(flipbookScale);
+          } else {
+            flipbookLeft = 0;
+            fbNode.setVisible(false);
+            fbNode.setPosition(0, -60, 0);
+          }
+        }
 
-        /* Feathered radial Fresnel flip shockwave ring */
+        /* Feathered radial Fresnel flip shockwave ring + +15% dominant road polarity boost during shockwave */
         ringT += dt;
         const ring = node("shockwave");
         if (ringT < LOOK.shockwave.seconds && !reducedMotion) {
@@ -874,6 +949,7 @@ export function buildWorld(_options: WorldOptions): World {
           ring.setVisible(true).setPosition(p.x, 0.08, p.z).setScale([radius, 1, radius]);
           ring.setUniform?.("uAlpha", LOOK.shockwave.alpha * Math.pow(1 - k, 1.25));
           ring.setUniform?.("uSpin", elapsed * 0.5);
+          applyRoadTones(live, 1 + 0.15 * (1 - k));
         } else {
           ring.setVisible(false);
         }

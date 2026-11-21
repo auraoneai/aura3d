@@ -18,9 +18,7 @@
  */
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp, type AuraOutputOptions } from "@aura3d/engine";
-import { warmPrograms } from "@aura3d/engine/game";
-import { createImpactRig } from "../../apps/showcase-port-shared/feel";
-import { createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
+import { createGradingLut, createImpactRig, readAutoplayFlag, warmPrograms } from "@aura3d/engine/game";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { Autopilot } from "./autopilot";
@@ -46,8 +44,6 @@ const config = readQaParams({
   seed: { type: "number", default: 20261023 },
   manual: { type: "flag" },
   autostart: { type: "flag" },
-  autopilot: { type: "flag" },
-  autoplay: { type: "flag" },
   warmup: { type: "number", default: 30 },
   dpr: { type: "number", default: 0 },
   motion: { type: "string", default: "" },
@@ -108,8 +104,8 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let steps = 0;
-/** `?autoplay=1` (or the older `?autopilot=1`): the looping hands-free player (autoplay.ts). */
-const AUTOPLAY = config.autoplay || config.autopilot;
+/** `?autoplay=1` (or `?autopilot=1` / `?demo=1`): the looping hands-free player (`autoplay.ts`, `createAutoplayHarness`). */
+const AUTOPLAY = readAutoplayFlag(typeof location === "undefined" ? "" : location.search);
 const autoplayLoop = (): AutoplayLoop => new AutoplayLoop(() => restart());
 let pilot: Pick<Autopilot, "next" | "observe"> | null = AUTOPLAY ? autoplayLoop() : null;
 let renderFailed = false;
@@ -145,8 +141,8 @@ const steady = new SteadyCamera(sim);
 /** Real-frame impact trauma & micro-FOV kick (`createImpactRig`, never read by `sim.ts`). */
 let impactRig = createImpactRig({ reducedMotion });
 let impactState = impactRig.step(0);
-/** Real-frame 32-cell chroma ink-droplet flipbook burst at the ball (presentation only). */
-let inkBurst: { x: number; y: number; z: number; color: readonly [number, number, number]; elapsed: number; duration: number } | null = null;
+/** Real-frame 32-cell chroma ink / sparks / ripple flipbook burst at the ball (presentation only). */
+let inkBurst: { x: number; y: number; z: number; color: readonly [number, number, number]; elapsed: number; duration: number; kind: "ink" | "sparks" | "ripple" } | null = null;
 let hasSteered = false;
 const resetVisualImpacts = (): void => {
   impactRig = createImpactRig({ reducedMotion });
@@ -207,6 +203,9 @@ function updateHud(): void {
       const sw = $("hud-swatch");
       sw.style.background = swatchBg;
       sw.textContent = swatchGlyph;
+      sw.classList.remove("swatch-pop");
+      void sw.offsetWidth;
+      sw.classList.add("swatch-pop");
     }
     const fill = `${Math.round(comboTubeFill(o.combo, o.multiplier) * 100)}%|${o.multiplier}`;
     if (changed("tube", fill)) {
@@ -305,20 +304,22 @@ function reactToFrame(perfect: boolean): void {
     if (flash) fx.flash(flash.color, flashStrength(flash.strength, reducedMotion));
     if (event.sound === "burst") fx.reveal(own, reducedMotion);
     if (!reducedMotion && look.id === "carnival") {
+      const streakBoost = Math.min(1.6, Math.max(0, o.multiplier - 1) * 0.45);
       if (event.sound === "perfect") {
-        impactRig.trigger({ freezeSeconds: 0.04, trauma: 0.34, fovKickDeg: 2.4 });
-        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear(own), elapsed: 0, duration: 0.36 };
+        impactRig.trigger({ freezeSeconds: 0.04, trauma: 0.34, fovKickDeg: 2.4 + streakBoost });
+        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear(own), elapsed: 0, duration: 0.36, kind: "sparks" };
       } else if (event.sound === "match") {
-        impactRig.trigger({ trauma: 0.16, fovKickDeg: 1.3 });
-        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear(own), elapsed: 0, duration: 0.28 };
+        impactRig.trigger({ trauma: 0.16, fovKickDeg: 1.3 + streakBoost * 0.6 });
+        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear(own), elapsed: 0, duration: 0.28, kind: "ink" };
       } else if (event.sound === "pickup" || event.sound === "milestone") {
-        impactRig.trigger({ trauma: 0.2, fovKickDeg: 1.7 });
-        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear(own), elapsed: 0, duration: 0.3 };
+        impactRig.trigger({ trauma: 0.2, fovKickDeg: 1.7 + streakBoost * 0.5 });
+        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear(own), elapsed: 0, duration: 0.32, kind: "ripple" };
       } else if (event.sound === "hit" || event.sound === "burst") {
         impactRig.trigger({ freezeSeconds: 0.055, trauma: 0.58, fovKickDeg: -2.2 });
-        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear("#f0433a"), elapsed: 0, duration: 0.42 };
+        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear("#f0433a"), elapsed: 0, duration: 0.42, kind: "ink" };
       } else if (event.sound === "block") {
         impactRig.trigger({ trauma: 0.24, fovKickDeg: 1.1 });
+        inkBurst = { x: sim.player.x, y: sim.player.y, z: sim.player.z, color: hexLinear("#5ecaf0"), elapsed: 0, duration: 0.3, kind: "ripple" };
       }
     }
   }
@@ -357,7 +358,7 @@ function render(live = false): void {
     const shown = live ? presenter.present(loop, true) : undefined;
     const camera = reducedMotion ? steady.at(live ? loop.alpha : 1) : undefined;
     const activeBurst = !config.manual && !reducedMotion && inkBurst
-      ? { x: inkBurst.x, y: inkBurst.y, z: inkBurst.z, color: inkBurst.color, progress: inkBurst.elapsed / inkBurst.duration }
+      ? { x: inkBurst.x, y: inkBurst.y, z: inkBurst.z, color: inkBurst.color, progress: inkBurst.elapsed / inkBurst.duration, kind: inkBurst.kind }
       : null;
     runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), {
       ...(shown ? { shown } : {}),
@@ -528,6 +529,8 @@ async function boot(): Promise<void> {
   runtime.warm(false);
   ready = true;
   loading.done();
+  const loadBar = document.getElementById("load-bar");
+  if (loadBar) { loadBar.setAttribute("data-complete", "true"); loadBar.style.display = "none"; }
   startButton?.removeAttribute("aria-busy");
   if (config.autostart) {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);

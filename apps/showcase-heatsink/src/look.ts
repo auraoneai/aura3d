@@ -31,6 +31,18 @@ export interface CircuitSkyDome {
   readonly zenith: string;
   readonly horizon: string;
   readonly ground: string;
+  readonly mid: { readonly color: string; readonly blend: readonly [number, number] };
+  readonly zenithBlend: readonly [number, number];
+  readonly groundBlend: readonly [number, number];
+  readonly haze: { readonly color: string; readonly intensity: number; readonly falloff: number };
+  readonly sun: {
+    readonly elevationDeg: number;
+    readonly azimuthDeg: number;
+    readonly color: string;
+    readonly glow: readonly { readonly exponent: number; readonly intensity: number }[];
+    readonly discIntensity: number;
+  };
+  readonly dither: true;
   readonly stars?: { readonly count: number; readonly brightness?: number };
   readonly clouds?: { readonly coverage: number; readonly speed?: number; readonly color?: string };
 }
@@ -116,6 +128,12 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
       zenith: "#03050c",
       horizon: "#0d1528",
       ground: "#05070e",
+      mid: { color: "#15203b", blend: [0.02, 0.24] },
+      zenithBlend: [0.2, 0.62],
+      groundBlend: [0.02, 0.24],
+      haze: { color: "#3b2416", intensity: 0.42, falloff: 7.5 },
+      sun: { elevationDeg: 14, azimuthDeg: 150, color: "#ff9a44", glow: [{ exponent: 12, intensity: 0.24 }, { exponent: 48, intensity: 0.14 }], discIntensity: 0 },
+      dither: true,
       stars: { count: 280, brightness: 0.82 },
       clouds: { coverage: 0.22, speed: 0.35, color: "#191c2e" }
     },
@@ -149,6 +167,12 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
       zenith: "#090813",
       horizon: "#241928",
       ground: "#0b0912",
+      mid: { color: "#4a2722", blend: [0.01, 0.22] },
+      zenithBlend: [0.18, 0.56],
+      groundBlend: [0.02, 0.22],
+      haze: { color: "#7a4622", intensity: 0.55, falloff: 6.0 },
+      sun: { elevationDeg: 9, azimuthDeg: 35, color: "#ff8c38", glow: [{ exponent: 10, intensity: 0.34 }, { exponent: 56, intensity: 0.28 }], discIntensity: 0.55 },
+      dither: true,
       stars: { count: 140, brightness: 0.48 },
       clouds: { coverage: 0.32, speed: 0.55, color: "#3c2624" }
     },
@@ -183,6 +207,12 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
       zenith: "#04040e",
       horizon: "#171330",
       ground: "#070612",
+      mid: { color: "#2c1d4c", blend: [0.02, 0.26] },
+      zenithBlend: [0.22, 0.62],
+      groundBlend: [0.02, 0.24],
+      haze: { color: "#4a2832", intensity: 0.4, falloff: 7.0 },
+      sun: { elevationDeg: 18, azimuthDeg: 300, color: "#b9a4ff", glow: [{ exponent: 14, intensity: 0.22 }, { exponent: 42, intensity: 0.14 }], discIntensity: 0 },
+      dither: true,
       stars: { count: 260, brightness: 0.78 },
       clouds: { coverage: 0.2, speed: 0.3, color: "#281e42" }
     },

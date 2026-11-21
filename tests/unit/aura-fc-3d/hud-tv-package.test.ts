@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { FC_HUD_FONT, FC_HUD_FONT_FACES, registerFcHudFonts } from "../../../apps/showcase-aura-fc-3d/src/game/hud";
+import { FC_HUD_FONT, FC_HUD_FONT_FACES } from "../../../apps/showcase-aura-fc-3d/src/game/hud";
 
 /** AuraOne WP-04 TV match package: licensed Whitney + DIN Pro + Monument Grotesk Mono stack, ident and goal lower third wired. */
 describe("aura-fc-3d TV match package (FC47-H1)", () => {
@@ -22,7 +22,9 @@ describe("aura-fc-3d TV match package (FC47-H1)", () => {
       expect(readFileSync(`apps/showcase-aura-fc-3d/public/fc-fonts/${f.file}`)).toEqual(readFileSync(`packages/game/src/fonts/${f.file}`));
     }
     expect(readFileSync("apps/showcase-aura-fc-3d/public/fc-fonts/NOTICE.txt", "utf8")).toMatch(/Klim Type Foundry/);
-    expect(registerFcHudFonts("/fc-fonts/", undefined)).toBe(0);
+    const hud = readFileSync("apps/showcase-aura-fc-3d/src/game/hud.ts", "utf8");
+    expect(hud).not.toContain("registerFcHudFonts");
+    expect(hud).toContain('.fc-hud[data-goal-l3="1"] .fc-ticker');
   });
 
   it("text stays >= 12 px, font-weight <= 600, and main.ts fires the ident on venue changes and the lower third on goals", () => {

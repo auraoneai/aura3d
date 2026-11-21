@@ -24,11 +24,11 @@ describe("where-the-wind-wanders-port Idol Bellkeeper", () => {
     expect(a.hand[1]).toBeLessThan(a.hips[1] + 0.6);
   });
 
-  it("the hero group carries the procedural staff; the rigged Idol body is a separate top-level model", () => {
+  it("the hero group carries both the nested rigged Idol body and the procedural staff", () => {
     const part = group("p", []);
     const hero = createIdolBellkeeperNode({ name: "hero", id: "hero", castShadow: true, receiveShadow: true, staff: part as never, chime: part as never, ribbon: part as never, chimeOffset: [0, 0.5, 0.5], ribbonOffset: [0, 0.5, 0.4] })!;
     const json = hero.group.toJSON() as { children?: { kind?: string; name?: string }[] };
-    expect(json.children?.map((c) => c.name)).toEqual(["hero-staff"]);
+    expect(json.children?.map((c) => c.name)).toEqual(["hero-idol", "hero-staff"]);
     const body = hero.body.toJSON() as { kind?: string; name?: string };
     expect(body.kind).toBe("model");
     expect(body.name).toBe("hero-idol");

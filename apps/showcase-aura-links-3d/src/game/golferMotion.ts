@@ -26,7 +26,15 @@ import {
   type Quat as TQuat
 } from "@aura3d/engine/animation";
 import { MOTION_CLIPS, type MotionClipName } from "./motion.generated";
-import { idolForwardKinematics, idolProfile, mapIdolRoles, retargetIdol, type IdolRigBind } from "./idolHumanoid";
+import {
+  createLinksHumanoidAnimator,
+  idolForwardKinematics,
+  idolProfile,
+  layerGolferArms,
+  mapIdolRoles,
+  retargetIdol,
+  type IdolRigBind
+} from "./idolHumanoid";
 import {
   evaluateSwing, qFromTo, qMul, qRotate, solveSwing, toModel, unit, vAdd, vCross, vDot, vLen, vScale, vSub,
   type Quat, type RootFrame, type SolvedDeltas, type SolvedSwing, type SwingPosePhase, type V3
@@ -341,12 +349,17 @@ export function golferMotionDeltas(
   return { deltas: { ...body.deltas, upperArmR: uR, foreArmR: fR, upperArmL: uL, foreArmL: fL }, hipsPos: body.hipsPos, clipWeight: w, clip: clipForPhase(phase) };
 }
 
-/** celebrate (club hidden): the Celebrate loop, full body */
+const caddieAnimator = createLinksHumanoidAnimator(MOTION_CLIPS);
+const celebrateAnimator = createLinksHumanoidAnimator(MOTION_CLIPS);
+
+/** celebrate (club hidden): the Celebrate loop via `@aura3d/engine/animation` `createHumanoidAnimator`, full body */
 export function celebrateDeltas(bind: IdolRigBind, clock: number): Body {
-  return canonToDeltas(bind, golferClipPose("celebrate", 0, clock, bind));
+  return canonToDeltas(bind, celebrateAnimator.update(0, { clip: "Celebrate", time: clock, loop: true }));
 }
 
-/** caddie: the CaddieIdle loop, full body */
+/** caddie: the CaddieIdle loop via `@aura3d/engine/animation` `createHumanoidAnimator`, full body */
 export function caddieIdleDeltas(bind: IdolRigBind, clock: number): Body {
-  return canonToDeltas(bind, sampleHumanoidClip(MOTION_CLIPS.CaddieIdle, clock));
+  return canonToDeltas(bind, caddieAnimator.update(0, { clip: "CaddieIdle", time: clock, loop: true }));
 }
+
+export { createLinksHumanoidAnimator, layerGolferArms };

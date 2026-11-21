@@ -204,6 +204,30 @@
       #hud-wall { color: var(--magenta); }
       #hud-wall[data-state="smash"] { color: var(--emerald); border-color: rgba(125, 255, 158, 0.42); }
       #hud-wall[data-state="danger"] { color: var(--danger); border-color: rgba(255, 107, 134, 0.45); }
+      #hud-boss-pill {
+        align-self: flex-start;
+        font-family: var(--font-metric, "DIN Pro", "Whitney", sans-serif);
+        font-weight: 500;
+        font-size: 13px;
+        line-height: 1.15;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.05em;
+        padding: 6px 13px;
+        border-radius: 999px;
+        background: var(--a3g-bg, rgba(19, 18, 48, 0.88));
+        border: 1px solid var(--a3g-edge, rgba(57, 245, 255, 0.45));
+        color: var(--ink);
+        white-space: nowrap;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 6px 18px rgba(5, 4, 20, 0.36);
+      }
+      #hud-boss-pill[hidden] { display: none; }
+      #hud-boss-pill[data-state="smash"] { color: var(--emerald); border-color: rgba(125, 255, 158, 0.55); }
+      #hud-boss-pill[data-state="danger"] { color: var(--gold); border-color: rgba(255, 216, 77, 0.55); }
+      #load-bar[hidden] { display: none !important; }
+      .popup-optimal { letter-spacing: 0.03em; }
+      .popup-safe { opacity: 0.88; font-size: 18px !important; }
       #hud-shield { color: var(--emerald); border-color: rgba(125, 255, 158, 0.36); }
       #hud-x2 { color: var(--gold); border-color: rgba(255, 216, 77, 0.38); }
       #popups {
@@ -412,7 +436,33 @@
       @media (pointer: coarse), (max-width: 760px) {
         #lane-rail { display: block; }
         .corner-buttons button { min-height: 46px; min-width: 48px; padding: 11px 18px; }
-        .hud-left, .hud-right { padding: 7px 10px 8px; min-width: 104px; }
+        /* Slim 42px mobile top glass strip with Boss Distance Pill */
+        #hud {
+          top: calc(8px + var(--safe-top));
+          left: calc(10px + var(--safe-left));
+          right: calc(10px + var(--safe-right));
+          align-items: center;
+          gap: 6px;
+        }
+        .hud-left, .hud-right {
+          flex-direction: row;
+          align-items: center;
+          min-width: 0;
+          height: 42px;
+          padding: 4px 10px;
+          gap: 6px;
+          border-radius: 12px;
+        }
+        .hud-eyebrow, #hud-best, #combo-tube, #hud-wall { display: none; }
+        #hud-score, #hud-number { font-size: 20px; line-height: 1; }
+        #hud-mult { font-size: 13px; }
+        #hud-boss-pill {
+          height: 42px;
+          display: inline-flex;
+          align-items: center;
+          padding: 0 10px;
+          font-size: 12px;
+        }
       }
       @media (max-width: 620px) {
         .howto-card { padding: 16px 14px 14px; gap: 10px; }
@@ -453,6 +503,7 @@
         </div>
         <div id="combo-tube"><div id="combo-fill"></div></div>
       </div>
+      <div id="hud-boss-pill" hidden>BOSS 300 M</div>
       <div class="hud-right">
         <span class="hud-eyebrow">surge</span>
         <div id="hud-number">10</div>

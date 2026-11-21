@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/aura-slam/art/direction.ts",
-  "sourceSha256": "bb2f0fae5b6a0d96f21a9212636c954c62dc3bebee7fd328c472d0c1316bc350",
+  "sourceSha256": "21ff6ac5fbc7aca0b8d4305bd9906a49da51899ffcf39592f3b4dc737244b1cb",
   "id": "showcase-top-tennis",
   "genre": "basketball",
   "signatureEffect": "Surface-coloured ball marks that persist where the ball landed, venue-tinted bounce puffs, and a seated crowd whose heads follow the rally.",
@@ -26,6 +26,11 @@
         "type": "directional",
         "shadow": true,
         "intensity": 2.4
+      },
+      {
+        "type": "directional",
+        "shadow": false,
+        "intensity": 0.45
       },
       {
         "type": "spot",
@@ -710,7 +715,7 @@
         "shadow": true
       },
       "fill": "ibl",
-      "practicals": 4,
+      "practicals": 5,
       "environment": {
         "hdri": "cobblestone_street_night",
         "background": "hdri"

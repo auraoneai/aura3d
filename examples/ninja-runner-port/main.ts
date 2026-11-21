@@ -14,13 +14,20 @@
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { publishBackendReport } from "../shared/backend-report";
-import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, type AuraOutputOptions, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { DEFAULT_POLICY, autoplayRequested, createAutoplayLoop, policyActions, type PolicyParams } from "./autopilot";
 import { courseDigest, decodeActionScript, replayScript, runIdle, runPolicy } from "./replay";
 import { GameAudio } from "./audio";
 import { ENEMY_HINT, FORM_SHORT, announcement, districtLabel, resultCopy } from "./labels";
-import { createCameraShake, createHitStop, createImpactFeedback, warmPrograms } from "@aura3d/engine/game";
-import { createImpactRig } from "../../apps/showcase-port-shared/feel";
+import {
+  HUD_THEMES,
+  createCameraShake,
+  createGradingLut,
+  createHitStop,
+  createImpactFeedback,
+  createImpactRig,
+  warmPrograms
+} from "@aura3d/engine/game";
 import { TIER_FEEDBACK, createImpactThrottle, type DebrisTier, type ImpactKick } from "./impact";
 import {
   DEFAULT_SEED, SIM_STEP, TUNING, dailySeed, applyAction, createState, drainEvents, qaAutopilotActions, snapshot, startRun, stepSim,
@@ -56,9 +63,8 @@ const config = {
   godRays: params.get("godrays") !== "0",
   cones: params.get("cones") !== "0",
   vfx: params.get("vfx") !== "0",
-  // The full-frame ink line read the grass and cobble textures as edges (a dark dot field over the whole village in the
-  // software-WebGL2 title frame, g20p2r3) and is one more full-frame pass: opt-in with `?ink=1`.
-  ink: params.get("ink") === "1",
+  // Selective high-threshold depth-weighted ukiyo-e ink outline (`threshold: 0.6`); opt-out with `?ink=0`.
+  ink: params.get("ink") !== "0",
   grain: params.get("grain") === "1"
 };
 // A district target holds the run where it lands (captures drive nothing), so it behaves like `manual=1`.
@@ -80,8 +86,13 @@ const store = {
 };
 const reducedMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 document.documentElement.classList.toggle("reduced-motion", reducedMotion);
-// GU47 NR-19: the ink-scroll HUD theme goes with the evening look; `?look=original` keeps the previous HUD.
+// GU47 NR-19 + 5.7.2: align `.ink-scroll` tokens with `HUD_THEMES["ink-scroll"]` on the evening look.
 document.documentElement.classList.toggle("ink-scroll", config.look === "evening");
+if (config.look === "evening") {
+  for (const [k, v] of Object.entries(HUD_THEMES["ink-scroll"])) {
+    document.documentElement.style.setProperty(k, v);
+  }
+}
 interface Best { score: number; distance: number; combo: number; kills: number }
 const readBest = (): Best | null => { try { const v = JSON.parse(store.get(`best:${config.seed}`) ?? "null") as Best | null; return v && typeof v.score === "number" ? v : null; } catch { return null; } };
 const bestLine = (b: Best | null): string => (b ? `Best: ${b.score} points · ${b.distance} m · ${b.kills} defeated · ${b.combo}x combo` : "");
@@ -167,6 +178,9 @@ function flashHurt(): void {
 
 function showHud(on: boolean): void {
   for (const id of ["stats", "vitals", "forms", "abilities", "progress", "controls"]) $(id).classList.toggle("hidden", !on);
+  // Auto-hide `.aura-credit` on run start so it never hovers mid-lane over running clones.
+  const credit = document.querySelector<HTMLElement>(".aura-credit");
+  if (credit) credit.classList.toggle("is-hidden", on);
 }
 
 function setMuted(on: boolean): void {
@@ -652,13 +666,19 @@ async function boot(): Promise<void> {
   const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays, cones: config.cones, vfx: config.vfx, ink: config.ink, grain: config.grain, impactRig });
   // Lab flags: WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out. ?gamut= stays off by default; depth is not wired for this port.
   const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRenderWorker });
+  const eveningLut = config.look === "evening" ? createGradingLut("cinema-warm", 16) : null;
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    // WP-23: AgX toneMapping + dither on the evening look; `?look=original` keeps aces at exposure 1.
-    output: { toneMapping: config.look === "evening" ? WOODBLOCK_POST.toneMapping : "aces", ...(config.look === "evening" ? { exposure: EVENING_EXPOSURE } : {}), dither: true, ...lab.output },
+    // WP-23 + 5.7.2: AgX toneMapping + subtle `createGradingLut("cinema-warm")` (0.18) + dither on evening look.
+    output: {
+      toneMapping: config.look === "evening" ? WOODBLOCK_POST.toneMapping : "aces",
+      ...(config.look === "evening" && eveningLut ? { exposure: EVENING_EXPOSURE, lut: { ...eveningLut, intensity: 0.18 } } : {}),
+      dither: true,
+      ...lab.output
+    } as AuraOutputOptions,
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });

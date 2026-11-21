@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-polarity-orbs/src/art/direction.ts",
-  "sourceSha256": "f3f9971a2f9f0d44f45f662e6d4dfa4baa7a9baf9f391e8f1e193a27a518dc1a",
+  "sourceSha256": "4bd61432bd288d39d7b67bb312280e98cbe58b9727433486c1f8b08623d66e94",
   "id": "polarity-orbs",
   "genre": "maze-arcade",
   "signatureEffect": "Dual-tone world halves (warm red / cool blue) that shift dominance on every polarity flip, with a flip shockwave ring and magnet attraction streams.",
@@ -47,7 +47,50 @@
       "kind": "preset",
       "background": false
     },
-    "models": [],
+    "models": [
+      {
+        "assetKey": "poResonanceCoil",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "poHorseshoeMagnet",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "poCrystalRed",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "poCrystalBlue",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "poIslandWarm",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "poIslandCool",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
     "drawCalls": 42
   },
   "direction": {
@@ -111,7 +154,50 @@
       ],
       "mobile": "both"
     },
-    "assets": [],
+    "assets": [
+      {
+        "role": "set-dressing",
+        "assetKey": "poResonanceCoil",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "poHorseshoeMagnet",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "poCrystalRed",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "poCrystalBlue",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "poIslandWarm",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "poIslandCool",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
     "vfx": [
       {
         "event": "flip",

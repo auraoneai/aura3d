@@ -30,6 +30,11 @@ export const HUD_PAIRS: readonly (readonly [string, string])[] = [
 ];
 
 const LANE_TAG = ["L", "M", "R"] as const;
+const SHAPE_BADGE_SVGS = [
+  '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="#e8453c" stroke="#1f2a44" stroke-width="2"/></svg>',
+  '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><rect x="3" y="3" width="14" height="14" rx="2.5" fill="#f7c531" stroke="#1f2a44" stroke-width="2"/></svg>',
+  '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><polygon points="10,2.5 17.5,17 2.5,17" fill="#2f6fe4" stroke="#1f2a44" stroke-width="2" stroke-linejoin="round"/></svg>'
+] as const;
 
 const el = (id: string): HTMLElement => {
   const node = document.getElementById(id);
@@ -118,8 +123,9 @@ export class Hud {
       this.last.lives = o.lives;
     }
     if (o.shapeIndex !== this.last.shape) {
-      this.shapeChip.style.background = LOOK.shapes[o.shapeIndex] as string;
+      this.shapeChip.style.background = "transparent";
       this.shapeChip.dataset.shape = LOOK.shapeNames[o.shapeIndex] as string;
+      this.shapeChip.innerHTML = SHAPE_BADGE_SVGS[o.shapeIndex] ?? SHAPE_BADGE_SVGS[0];
       this.shapeName.textContent = LOOK.shapeNames[o.shapeIndex] as string;
       for (const btn of this.formBtns) {
         const active = Number(btn.dataset.formBtn) === o.shapeIndex;

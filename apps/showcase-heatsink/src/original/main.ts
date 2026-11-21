@@ -6,7 +6,7 @@
 import "../../../showcase-port-shared/quickbar.css";
 import { createAuraApp, createFixedStepLoop, type AuraRuntimeNodeHandle } from "@aura3d/engine";
 import { installBlackFrameGuard } from "@aura3d/debug";
-import { createFixedStepPresenter, installGameBeacon } from "@aura3d/engine/game";
+import { createFixedStepPresenter, installGameBeacon, readAutoplayFlag } from "@aura3d/engine/game";
 import { createThermalDriftAudio } from "../audio";
 import { ChaseCamera, projectToScreen, type ScreenPoint } from "./camera";
 import { CIRCUITS, DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, TOTAL_LAPS, type CircuitId, type DroneId, type ModeId } from "../data";
@@ -59,7 +59,7 @@ let selectedDrone: DroneId = "orion";
 // GU47 D11: `?circuit=grand|dustfall|vesper` boots that circuit in the 4.6.2 look too (the capture variants).
 let selectedCircuit: CircuitId = circuitFromParam(params.get("circuit")) ?? "grand";
 let selectedMode: ModeId = "race";
-let autopilotOn = params.get("autoplay") === "1" || params.get("demo") === "1";
+let autopilotOn = readAutoplayFlag(params, { names: ["autoplay", "demo"] });
 let started = autopilotOn;
 let ready = false;
 

@@ -1,4 +1,4 @@
-import { createFixedStepPresenter, createRecordBlend, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createRecordBlend, createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import type { Sim } from "./sim";
 
 /** What the renderer reads of one simulation step: the board pose and the flight numbers that drive tilt, thrusters and camera. */
@@ -31,6 +31,10 @@ export function viewOf(sim: Sim, shown: Shown): Sim {
   };
 }
 
-export function createSiltPresenter(getSim: () => Sim): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getSim()), blend: blendShown });
+export function createSiltPresenter(getSim: () => Sim): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({
+    snapshot: () => shownOf(getSim()),
+    blend: blendShown,
+    snap: { distance: SNAP_DISTANCE, position: (p) => [p.x, p.y, p.z] }
+  });
 }

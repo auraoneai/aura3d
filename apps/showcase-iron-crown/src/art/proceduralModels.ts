@@ -545,27 +545,18 @@ export function buildForgedBrazierNode(
     });
   }
 
-  // Sculpted glowing coal mound + licking forged flame tongues
+  // Sculpted glowing coal mound (additive `effects.flipbook` flame cards in arena.ts supply animated fire without opaque cones).
   const coalBed = subdivideSmoothMesh(icosphereFacetMesh(0.31 * s, 1, 0.22, 19), 1, 0.42);
   slots.push({
-    mesh: transformMesh(coalBed, { pos: [0, 1.56 * s, 0], scale: [1.14, 0.58, 1.14] }),
+    mesh: transformMesh(coalBed, { pos: [0, 1.56 * s, 0], scale: [1.14, 0.56, 1.14] }),
     materialIndex: 2
   });
-  const flameTongue: V2[] = [
-    [-0.11 * s, 0],
-    [0.11 * s, 0],
-    [0.14 * s, 0.16 * s],
-    [0.05 * s, 0.34 * s],
-    [-0.02 * s, 0.46 * s],
-    [-0.09 * s, 0.24 * s]
-  ];
-  const flameMesh = subdivideSmoothMesh(extrudePolygonMesh(flameTongue, 0.06 * s, 0.015 * s, false), 1, 0.45);
-  for (let f = 0; f < 3; f += 1) {
+  for (let c = 0; c < 4; c += 1) {
+    const ca = (c / 4) * Math.PI * 2 + 0.4;
     slots.push({
-      mesh: transformMesh(flameMesh, {
-        pos: [Math.cos((f / 3) * Math.PI * 2) * 0.05 * s, 1.62 * s, Math.sin((f / 3) * Math.PI * 2) * 0.05 * s],
-        rot: [0.08, (f / 3) * Math.PI * 2 + 0.3, 0],
-        scale: f === 0 ? 1.08 : 0.86
+      mesh: transformMesh(icosphereFacetMesh(0.095 * s, 1, 0.24, 31 + c), {
+        pos: [Math.cos(ca) * 0.14 * s, 1.62 * s, Math.sin(ca) * 0.14 * s],
+        scale: [1.15, 0.52, 0.9]
       }),
       materialIndex: 2
     });

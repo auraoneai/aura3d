@@ -31,7 +31,7 @@
         "set": "final",
         "dir": "evidence/aura-slam/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 15
+        "frameCount": 17
       }
     },
     {
@@ -48,7 +48,7 @@
         "set": "final",
         "dir": "evidence/apex-overdrive/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 14
+        "frameCount": 16
       }
     },
     {
@@ -65,7 +65,7 @@
         "set": "final",
         "dir": "evidence/thermal-drift/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 13
+        "frameCount": 15
       }
     },
     {
@@ -82,7 +82,7 @@
         "set": "final",
         "dir": "evidence/teleoperator/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 13
+        "frameCount": 15
       }
     },
     {
@@ -99,7 +99,7 @@
         "set": "final",
         "dir": "evidence/iron-crown/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 18
+        "frameCount": 20
       }
     },
     {
@@ -116,7 +116,7 @@
         "set": "final",
         "dir": "evidence/pips-big-leap/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 14
+        "frameCount": 16
       }
     },
     {
@@ -133,7 +133,7 @@
         "set": "final",
         "dir": "evidence/aura-hoops-3d/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 15
+        "frameCount": 17
       }
     },
     {
@@ -150,7 +150,7 @@
         "set": "final",
         "dir": "evidence/aura-diamond-3d/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 16
+        "frameCount": 18
       }
     },
     {
@@ -167,7 +167,7 @@
         "set": "final",
         "dir": "evidence/aura-fc-3d/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 15
+        "frameCount": 17
       }
     },
     {
@@ -184,7 +184,7 @@
         "set": "final",
         "dir": "evidence/aura-links-3d/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 17
+        "frameCount": 19
       }
     },
     {
@@ -201,7 +201,7 @@
         "set": "final",
         "dir": "evidence/showcase-bunker-zero/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 15
+        "frameCount": 17
       }
     },
     {
@@ -218,7 +218,7 @@
         "set": "final",
         "dir": "evidence/slingshot-siege/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 13
+        "frameCount": 15
       }
     },
     {
@@ -235,7 +235,7 @@
         "set": "final",
         "dir": "evidence/dot-dash-3d/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 14
+        "frameCount": 16
       }
     },
     {
@@ -252,7 +252,7 @@
         "set": "final",
         "dir": "evidence/cross-hop/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 14
+        "frameCount": 16
       }
     },
     {
@@ -269,7 +269,7 @@
         "set": "final",
         "dir": "evidence/strange-orbit-port/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 13
+        "frameCount": 15
       }
     },
     {
@@ -286,7 +286,7 @@
         "set": "final",
         "dir": "evidence/splat-rush-port/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 12
+        "frameCount": 14
       }
     },
     {
@@ -303,7 +303,7 @@
         "set": "final",
         "dir": "evidence/saiyan-snake-way-port/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 15
+        "frameCount": 17
       }
     },
     {
@@ -320,7 +320,7 @@
         "set": "final",
         "dir": "evidence/drift-and-deliver-port/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 15
+        "frameCount": 17
       }
     },
     {
@@ -337,7 +337,7 @@
         "set": "final",
         "dir": "evidence/heatsink-port/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 14
+        "frameCount": 16
       }
     },
     {
@@ -354,7 +354,7 @@
         "set": "final",
         "dir": "evidence/ninja-runner-port/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 15
+        "frameCount": 17
       }
     },
     {
@@ -371,7 +371,7 @@
         "set": "final",
         "dir": "evidence/last-train-port/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 12
+        "frameCount": 14
       }
     },
     {
@@ -388,7 +388,7 @@
         "set": "final",
         "dir": "evidence/roadster-hours-port/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 13
+        "frameCount": 15
       }
     },
     {
@@ -405,7 +405,7 @@
         "set": "final",
         "dir": "evidence/where-the-wind-wanders-port/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 14
+        "frameCount": 16
       }
     },
     {
@@ -422,7 +422,7 @@
         "set": "final",
         "dir": "evidence/silt-and-signal-port/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 14
+        "frameCount": 16
       }
     },
     {
@@ -439,7 +439,7 @@
         "set": "final",
         "dir": "evidence/kid-goku-beyond-the-clouds-port/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 15
+        "frameCount": 17
       }
     },
     {
@@ -456,7 +456,7 @@
         "set": "final",
         "dir": "evidence/shape-shift-sprint/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 14
+        "frameCount": 16
       }
     },
     {
@@ -473,7 +473,7 @@
         "set": "final",
         "dir": "evidence/number-surge/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 13
+        "frameCount": 15
       }
     },
     {
@@ -490,7 +490,7 @@
         "set": "final",
         "dir": "evidence/splat-turf/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 14
+        "frameCount": 16
       }
     },
     {
@@ -507,7 +507,7 @@
         "set": "final",
         "dir": "evidence/polarity-orbs/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 13
+        "frameCount": 15
       }
     },
     {
@@ -524,7 +524,7 @@
         "set": "final",
         "dir": "evidence/beat-hopper/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 14
+        "frameCount": 16
       }
     }
   ]

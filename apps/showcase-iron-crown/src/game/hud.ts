@@ -1,3 +1,4 @@
+import { HUD_THEMES } from "@aura3d/engine/game";
 import type { Difficulty } from "./ai";
 import { FIGHTERS, PALETTE_SWATCHES, type FighterDef, type FighterId, type PaletteId } from "./fighters";
 import { STAGES, type StageId } from "./stages";
@@ -181,6 +182,12 @@ function el<T extends HTMLElement>(doc: Document, id: string): T {
 }
 
 export function createHud(doc: Document, cb: HudCallbacks): Hud {
+  const fightHudRoot = doc.getElementById("fight-hud");
+  if (fightHudRoot) {
+    for (const [k, v] of Object.entries(HUD_THEMES.fighting)) {
+      fightHudRoot.style.setProperty(k, v);
+    }
+  }
   const healthP1 = el<HTMLDivElement>(doc, "fh-health-p1");
   const chipP1 = el<HTMLDivElement>(doc, "fh-health-chip-p1");
   const meterP1 = el<HTMLDivElement>(doc, "fh-meter-p1");

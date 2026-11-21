@@ -9,7 +9,7 @@
  */
 import type { material } from "@aura3d/engine";
 import { WGSL_CLIP, WGSL_COLOR, WGSL_MATH, WGSL_NOISE, wgslStage } from "../../../showcase-port-shared/wgsl-twins";
-import type { FlipbookAtlasSpec } from "../../../showcase-port-shared/vfx-pack";
+import type { FlipbookAtlasSpec } from "@aura3d/engine/game";
 
 export type CustomMaterialSpec = Parameters<typeof material.custom>[0];
 

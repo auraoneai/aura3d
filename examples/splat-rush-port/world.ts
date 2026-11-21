@@ -36,8 +36,14 @@ import {
   carnivalToonFragmentWgsl, carnivalVertexWgsl, toonFragmentWgsl, toonVertexWgsl
 } from "./shaders-wgsl";
 import { LOOKS, hexToLinear, sunDirection, timeOfDay, timeOfDayKey, type SplatLook, type TimeOfDay } from "./look";
-import { createInkFlipbook } from "./vfx3d";
+import { createInkFlipbook, createRippleFlipbook, createSparksFlipbook } from "./vfx3d";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
+
+/** 5.7.2 texel-locked shadow config centered ahead of the rolling ball (`backdrop.ts` key light). */
+export const splatKeyShadow = (ballZ = 0) => ({
+  softness: 1.8,
+  fit: { center: [0, 0, ballZ - 12] as [number, number, number], extent: 16, depth: 45 }
+});
 
 type Rgb = readonly [number, number, number];
 type Scene = ReturnType<typeof scene>;
@@ -161,6 +167,9 @@ export interface CarnivalSurface {
   readonly mirror?: boolean;
   /** Smooth subpixel `fwidth`-antialiased cel ink silhouette contour threshold (0 = off). */
   readonly ink?: number;
+  /** 5.7.1 clearcoat dielectric lacquer gloss (`clearcoat: 1.0, clearcoatRoughness: 0.06` on ball & gate arches). */
+  readonly clearcoat?: number;
+  readonly clearcoatRoughness?: number;
 }
 
 /** GU47 phase 4: initial (empty) planar-reflection uniforms of the deck; `update` writes the nearest gates and the ball. */
@@ -179,7 +188,10 @@ const mirrorUniforms = (look: SplatLook) => {
 export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSurface = {}): CustomSpec => {
   const tod = timeOfDay(look, 0);
   if (!tod || !look.toon) throw new Error("splat-rush-port: carnivalToonSpec needs the carnival look");
-  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false, contact = false, reflect = true, env = 0, mirror = false, ink = 0 } = surface;
+  const {
+    map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false,
+    contact = false, reflect = true, env = 0, mirror = false, ink = 0, clearcoat = 0, clearcoatRoughness = 0.06
+  } = surface;
   const withMirror = mirror && look.toon.mirror !== null;
   const inkRgb = look.post ? hexToLinear(look.post.outline.color) : ([0, 0, 0] as Rgb);
   const vertex = wobble && tone ? CARNIVAL_GATE_VERTEX : tone ? CARNIVAL_TONE_VERTEX : CARNIVAL_VERTEX;
@@ -199,6 +211,7 @@ export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSu
       crSkyReflect: { type: "f32", value: reflect ? look.toon.skyReflect : 0 },
       crContact: { type: "vec2", value: contact ? [look.toon.contact.height, look.toon.contact.strength] : [1, 0] },
       crEnv: { type: "f32", value: env },
+      crClearcoat: { type: "vec2", value: [clearcoat, clearcoatRoughness] },
       crInk: { type: "vec4" as const, value: [inkRgb[0], inkRgb[1], inkRgb[2], ink] },
       ...(withMirror ? mirrorUniforms(look) : {}),
       ...(wobble && tone ? { crWobble: { type: "vec3" as const, value: [0, 0, 0] } } : {})
@@ -722,6 +735,7 @@ export interface WorldView {
     readonly z: number;
     readonly color: Rgb;
     readonly progress: number;
+    readonly kind?: "ink" | "sparks" | "ripple";
   };
 }
 
@@ -877,13 +891,22 @@ export function buildWorld(options: WorldOptions): World {
       attributes: { tone: { itemSize: 3, data: f32(ring.tones) } }
     }), { name: "spires", material: material.custom(toon([1, 1, 1], { tone: true })) }).runtime({ id: "spires" }));
   }
-  addBackdrop(builder, look);
+  addBackdrop(builder, look, sim.player.z);
 
   /* player ball: high-tessellation sphere r 0.55 in carnival (+ sculpted 64-seg chrome gyro-gimbal ring), 32x32 in original */
+  const coat = look.toon?.clearcoat ?? { clearcoat: 1.0, clearcoatRoughness: 0.06 };
   add(
     "ball",
     carnival ? sphereMesh(CONFIG.BALL_RADIUS, 54, 40) : sphereMesh(CONFIG.BALL_RADIUS, 32, 32),
-    toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0, contact: true, env: look.toon?.env.ball ?? 0, ink: 0.22 })
+    toon(hexLinear(COLORS[0] as string), {
+      map: ballTex,
+      gloss: look.toon?.gloss.ball ?? 0,
+      contact: true,
+      env: look.toon?.env.ball ?? 0,
+      ink: 0.22,
+      clearcoat: coat.clearcoat,
+      clearcoatRoughness: coat.clearcoatRoughness
+    })
   );
   if (carnival) {
     const rollerRig = buildPaintRollerCollarMesh(CONFIG.BALL_RADIUS, { withRunner: false });
@@ -927,7 +950,16 @@ export function buildWorld(options: WorldOptions): World {
   const gantry = gantryGateMeshes(Boolean(look.gates?.drips));
   gateVertexCount = gantry.right.positions.length / 3;
   const gates = new Batch(gantry.right, GATE_MAX, hexLinear(COLORS[0] as string));
-  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.44 : 0, wobble: look.gates !== null, contact: true, env: look.toon?.env.gates ?? 0, ink: 0.22 }));
+  addBatch("gates", gates, toon([1, 1, 1], {
+    tone: true,
+    gloss: carnival ? 0.52 : 0,
+    wobble: look.gates !== null,
+    contact: true,
+    env: look.toon?.env.gates ?? 0,
+    ink: 0.22,
+    clearcoat: carnival ? coat.clearcoat : 0,
+    clearcoatRoughness: coat.clearcoatRoughness
+  }));
   /* Translucent pigment curtain inside each carnival gate arch (+1 batched draw call) */
   const gateCurtains = carnival ? new Batch(gantryCurtainMesh(), GATE_MAX, hexLinear(COLORS[0] as string)) : null;
   if (gateCurtains) addBatch("gate-curtains", gateCurtains, carnivalCurtainSpec(look));
@@ -1009,13 +1041,48 @@ export function buildWorld(options: WorldOptions): World {
   addBatch("streaks", streaks, flatSpec(hexLinear(look.streaks.color), look.streaks.alpha));
   add("shield", carnival ? sphereMesh(1, 40, 28) : sphereMesh(1, 24, 16), flatSpec(hexLinear("#8fe3ff"), 0.28));
   if (carnival) {
-    const inkQuad: MeshData = {
-      positions: [-1.35, -1.35, 0, 1.35, -1.35, 0, 1.35, 1.35, 0, -1.35, 1.35, 0],
-      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
-      uvs: [0, 0, 1, 0, 1, 1, 0, 1],
-      indices: [0, 1, 2, 0, 2, 3]
-    };
-    add("ink-burst", inkQuad, carnivalInkSpec(createInkFlipbook().texture));
+    const inkAtlas = createInkFlipbook();
+    const sparksAtlas = createSparksFlipbook();
+    const rippleAtlas = createRippleFlipbook();
+    builder.add(effects.flipbook({
+      name: "ink-burst",
+      texture: inkAtlas.texture,
+      spriteColumns: inkAtlas.columns,
+      spriteRows: inkAtlas.rows,
+      frameRate: 30,
+      size: 2.35,
+      blend: "alpha",
+      color: "#fff5ea",
+      intensity: 1.2,
+      loop: false,
+      position: [0, -500, 0]
+    }).runtime({ id: "ink-burst" }));
+    builder.add(effects.flipbook({
+      name: "sparks-burst",
+      texture: sparksAtlas.texture,
+      spriteColumns: sparksAtlas.columns,
+      spriteRows: sparksAtlas.rows,
+      frameRate: 34,
+      size: 2.0,
+      blend: "additive",
+      color: "#ffe084",
+      intensity: 1.35,
+      loop: false,
+      position: [0, -500, 0]
+    }).runtime({ id: "sparks-burst" }));
+    builder.add(effects.flipbook({
+      name: "ripple-burst",
+      texture: rippleAtlas.texture,
+      spriteColumns: rippleAtlas.columns,
+      spriteRows: rippleAtlas.rows,
+      frameRate: 32,
+      size: 2.25,
+      blend: "additive",
+      color: "#fff0d2",
+      intensity: 1.15,
+      loop: false,
+      position: [0, -500, 0]
+    }).runtime({ id: "ripple-burst" }));
   }
 
   /* Post stack (carnival): warm cinematic bloom, grade, vignette, fused post-AA (4x MSAA <= 2.4 Mpx / FXAA on Retina > 2.4 Mpx),
@@ -1055,7 +1122,11 @@ export function buildWorld(options: WorldOptions): World {
       node("guide").setVisible(false);
       node("ball-symbol").setVisible(false);
       node("gate-symbols").setVisible(false);
-      if (carnival) node("ink-burst").setVisible(false);
+      if (carnival) {
+        node("ink-burst").setVisible(false);
+        node("sparks-burst").setVisible(false);
+        node("ripple-burst").setVisible(false);
+      }
 
       const segSlots = new Slots<Segment>(MAX_SEG);
       const dashSlots = new Slots<Segment>(DASH_MAX);
@@ -1428,16 +1499,25 @@ export function buildWorld(options: WorldOptions): World {
           node("splats").setUniform?.("crDry", [p.z, Math.max(1, o.speed), look.toon?.gloss.drySeconds ?? 0]);
           if (look.cloudSea) node("cloud-sea").setUniform?.("crScroll", -drift * 0.045 * look.cloudSea.scroll);
           const ink = node("ink-burst");
+          const sparks = node("sparks-burst");
+          const ripple = node("ripple-burst");
           const burst = !view.reducedMotion && view.cameraLayers === true ? view.inkBurst : null;
-          if (burst && burst.progress >= 0 && burst.progress < 1) {
-            const frame = Math.min(31, Math.floor(burst.progress * 32));
+          const active = burst && burst.progress >= 0 && burst.progress < 1;
+          if (active && burst) {
+            const kind = burst.kind ?? "ink";
             const expand = 0.72 + 1.05 * Math.pow(burst.progress, 0.55);
-            ink.setVisible(true).setPosition(burst.x, burst.y + 0.35, burst.z + 0.45).setScale(expand);
-            ink.setUniform?.("baseColor", [...burst.color]);
-            ink.setUniform?.("alpha", Math.max(0, 1 - Math.pow(burst.progress, 1.8)) * 0.92);
-            ink.setUniform?.("crFrame", frame);
+            const showInk = kind === "ink";
+            const showSparks = kind === "sparks";
+            const showRipple = kind === "ripple";
+            ink.setVisible(showInk);
+            sparks.setVisible(showSparks);
+            ripple.setVisible(showRipple);
+            const target = showSparks ? sparks : showRipple ? ripple : ink;
+            target.setPosition(burst.x, burst.y + 0.35, burst.z + 0.45).setScale(expand);
           } else {
             ink.setVisible(false);
+            sparks.setVisible(false);
+            ripple.setVisible(false);
           }
         }
         /* camera */
@@ -1467,7 +1547,7 @@ export function buildWorld(options: WorldOptions): World {
         }
       }
       const batches = [deck, rails, dashes, gates, ...(gateCurtains ? [gateCurtains] : []), ...(gateShadows ? [gateShadows] : []), gateSymbols, ballSymbol, splats, particles, clouds, streaks];
-      const parked = [...pickupNodeIds(), "shield", "guide", "ball-symbol", ...(carnival ? ["ink-burst"] : [])];
+      const parked = [...pickupNodeIds(), "shield", "guide", "ball-symbol", ...(carnival ? ["ink-burst", "sparks-burst", "ripple-burst"] : [])];
       function warm(on: boolean): void {
         for (const id of parked) {
           const h = node(id).setVisible(on);

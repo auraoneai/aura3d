@@ -3,7 +3,7 @@
  * steps the scrolling entities back by the unelapsed fraction, and keeps a reduced-motion steady camera.
  * Interpolated values never flow back into the sim.
  */
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import { CONFIG, type PolarityOrbsSim } from "./sim";
 
 export interface Shown {
@@ -126,8 +126,15 @@ export function viewOf(sim: PolarityOrbsSim, shown: Shown): PolarityOrbsSim {
   }) as PolarityOrbsSim;
 }
 
-export function createPolarityPresenter(getSim: () => PolarityOrbsSim, rig: CameraRig): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getSim(), rig.cur), blend: blendShown });
+export function createPolarityPresenter(getSim: () => PolarityOrbsSim, rig: CameraRig): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({
+    snapshot: () => shownOf(getSim(), rig.cur),
+    blend: blendShown,
+    snap: (a, b) => {
+      const moved = b.distance - a.distance;
+      return moved < 0 || moved > SNAP_DISTANCE;
+    }
+  });
 }
 
 /** Speed-driven FOV (presentation only; reduced motion keeps the base FOV). */

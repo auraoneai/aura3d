@@ -10,6 +10,7 @@
 // of it.
 
 import { camera, type AuraApp, type AuraCustomPostPass, type AuraCameraSequencePlayback, type AuraVec3 } from "@aura3d/engine";
+import { createGradingLut } from "@aura3d/engine/game";
 import { focusDistanceFor, heightFogFor, miniatureFramingFor, presentationScale, type PipLookMode, type PresentationScale } from "./looks.js";
 import { dioramaName, heatShimmerPass } from "./diorama.js";
 import { createPipVfx, registerPipVfx, type PipEffectsLike, type PipVfxController } from "./vfx.js";
@@ -259,6 +260,8 @@ interface AppSlice {
 
 type CameraSequenceArg = Parameters<NonNullable<AuraApp["camera"]>["play"]>[0];
 
+const CINEMA_WARM_LUT = createGradingLut("cinema-warm", 16);
+
 export function createDioramaPresentation(app: AppSlice, options: PresentationOptions): DioramaPresentation {
   // GU47 phase 3: the look is chosen per world (`worldLookMode`), so the runtime follows the
   // mounted world's mode; it starts on the boot world's mode.
@@ -281,7 +284,7 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
   const counts = { mounted: 0, flyovers: 0, gateCuts: 0, focusWrites: 0, flickerWrites: 0, shimmerPasses: 0 };
 
   interface FlipbookSlot {
-    readonly kind: "dust" | "sparks";
+    readonly kind: "dust" | "sparks" | "ripple";
     readonly name: string;
     active: boolean;
     age: number;
@@ -297,25 +300,30 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
   const villagerClips = new Map<string, string>();
   const flipbookPool: FlipbookSlot[] = [
     ...[0, 1, 2].map((i): FlipbookSlot => ({ kind: "dust", name: dioramaName.flipbookDust(i), active: false, age: 0, life: 0.42, x: 0, y: -120, z: 0, vy: 0.55, startScale: 0.48, endScale: 1.15 })),
-    ...[0, 1, 2].map((i): FlipbookSlot => ({ kind: "sparks", name: dioramaName.flipbookSparks(i), active: false, age: 0, life: 0.36, x: 0, y: -120, z: 0, vy: 0.85, startScale: 0.42, endScale: 1.05 }))
+    ...[0, 1, 2].map((i): FlipbookSlot => ({ kind: "sparks", name: dioramaName.flipbookSparks(i), active: false, age: 0, life: 0.36, x: 0, y: -120, z: 0, vy: 0.85, startScale: 0.42, endScale: 1.05 })),
+    ...[0, 1, 2].map((i): FlipbookSlot => ({ kind: "ripple", name: dioramaName.flipbookRipple(i), active: false, age: 0, life: 0.4, x: 0, y: -120, z: 0, vy: 0.08, startScale: 0.55, endScale: 1.55 }))
   ];
   let dustCursor = 0;
   let sparksCursor = 0;
+  let rippleCursor = 0;
 
-  const spawnFlipbook = (kind: "dust" | "sparks", at: AuraVec3, sizeBoost = 1): void => {
+  const spawnFlipbook = (kind: "dust" | "sparks" | "ripple", at: AuraVec3, sizeBoost = 1): void => {
     if (!diorama) return;
-    const base = kind === "dust" ? 0 : 3;
-    const idx = kind === "dust" ? (dustCursor = (dustCursor + 1) % 3) : (sparksCursor = (sparksCursor + 1) % 3);
+    const base = kind === "dust" ? 0 : kind === "sparks" ? 3 : 6;
+    const idx =
+      kind === "dust" ? (dustCursor = (dustCursor + 1) % 3)
+      : kind === "sparks" ? (sparksCursor = (sparksCursor + 1) % 3)
+      : (rippleCursor = (rippleCursor + 1) % 3);
     const slot = flipbookPool[base + idx]!;
     slot.active = true;
     slot.age = 0;
-    slot.life = (kind === "dust" ? 0.42 : 0.36) * (options.reducedMotion ? 0.75 : 1);
+    slot.life = (kind === "dust" ? 0.42 : kind === "ripple" ? 0.4 : 0.36) * (options.reducedMotion ? 0.75 : 1);
     slot.x = at[0];
-    slot.y = at[1] + (kind === "dust" ? 0.14 : 0.28);
+    slot.y = at[1] + (kind === "dust" ? 0.14 : kind === "ripple" ? 0.06 : 0.28);
     slot.z = at[2];
-    slot.vy = (kind === "dust" ? 0.45 : 0.75) * scale.motion;
-    slot.startScale = (kind === "dust" ? 0.45 : 0.4) * sizeBoost;
-    slot.endScale = (kind === "dust" ? 1.12 : 1.04) * sizeBoost;
+    slot.vy = (kind === "dust" ? 0.45 : kind === "ripple" ? 0.06 : 0.75) * scale.motion;
+    slot.startScale = (kind === "dust" ? 0.45 : kind === "ripple" ? 0.52 : 0.4) * sizeBoost;
+    slot.endScale = (kind === "dust" ? 1.12 : kind === "ripple" ? 1.52 : 1.04) * sizeBoost;
   };
 
   const ensureVfx = (): PipVfxController | null => {
@@ -392,13 +400,14 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
       const look = built.presentation.look;
       outputTouched = true;
       counts.mounted += 1;
-      // WP-11: AgX filmic tone-mapping + calibrated per-world exposure + broadcast-crisp HDR linear grade,
+      // 5.7.2: AgX filmic tone-mapping + cinema-warm 16^3 grading LUT (intensity 0.22) + calibrated per-world exposure,
       // paired with a gentle high-threshold cinematic bloom so sun-seeds and lava cracks gleam cleanly.
       app.setOutput?.({
         toneMapping: "agx",
         exposure: Number(Math.pow(2, look.exposureEv).toFixed(4)),
+        lut: { texture: CINEMA_WARM_LUT.texture, size: CINEMA_WARM_LUT.size, intensity: 0.22 },
         dither: true
-      });
+      } as Parameters<NonNullable<AuraApp["setOutput"]>>[0]);
       try {
         app.post?.setEffect?.("bloom", { threshold: 1.02, intensity: 0.24 });
         app.post?.setEffect?.("colorGrade", {
@@ -451,6 +460,7 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
         case "pound-land":
           v.fire("land", at, look.dust);
           spawnFlipbook("dust", at, e.kind === "pound-land" ? 1.35 : 1);
+          if (e.kind === "pound-land") spawnFlipbook("ripple", at, 1.45);
           squashAmp = SQUASH.land * scale.motion;
           squashT = 0;
           // PBL-C2 pound shake; off under reduced motion (PRD 6.3), like the pack's camera layers.
@@ -461,6 +471,7 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
         case "spring":
           v.fire("jump", at, look.dust);
           spawnFlipbook("dust", at, e.kind === "spring" ? 1.15 : 0.78);
+          if (e.kind === "double-jump" || e.kind === "spring") spawnFlipbook("ripple", at, e.kind === "spring" ? 1.25 : 0.92);
           squashAmp = SQUASH.jump * scale.motion;
           squashT = 0;
           break;
@@ -469,6 +480,7 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
           const pos: AuraVec3 = seed ? [seed.x, seed.y, seed.z] : at;
           v.fire("seed", pos);
           spawnFlipbook("sparks", pos, 1.15);
+          spawnFlipbook("ripple", pos, 1.0);
           break;
         }
         case "acorn": {
@@ -593,6 +605,38 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
         h?.setVisible?.(true);
         h?.setPosition?.(slot.x, slot.y + slot.vy * slot.age, slot.z);
         h?.setScale([s, s, s]);
+      }
+      // Airborne landing aid: feathered altitude-scaled shadow disc + glowing gold concentric ring
+      // projected onto the closest walkable platform top directly under Pip while airborne.
+      const dropShadowNode = node(dioramaName.dropShadow);
+      const landingRingNode = node(dioramaName.landingRing);
+      if (dropShadowNode || landingRingNode) {
+        const [px, py, pz] = f.position;
+        let groundY = -Infinity;
+        for (const s of built.solids) {
+          if (!s.active || s.decor) continue;
+          if (Math.abs(px - s.x) <= s.hx + 0.16 && Math.abs(pz - s.z) <= s.hz + 0.16) {
+            const topY = s.y + s.hy;
+            if (topY <= py + 0.18 && topY > groundY) groundY = topY;
+          }
+        }
+        const altitude = groundY > -Infinity ? Math.max(0, py - groundY) : Infinity;
+        const showAid = !f.grounded && altitude > 0.08 && altitude < 12;
+        if (showAid) {
+          const tAlt = Math.min(1, altitude / 6.5);
+          const discScale = 1.05 - 0.52 * tAlt;
+          const ringPulse = 1 + (options.reducedMotion ? 0 : 0.08 * Math.sin(f.time * 7.5));
+          const ringScale = (0.86 + 0.42 * tAlt) * ringPulse;
+          dropShadowNode?.setVisible?.(true);
+          dropShadowNode?.setPosition?.(px, groundY + 0.014, pz);
+          dropShadowNode?.setScale([discScale, 1, discScale]);
+          landingRingNode?.setVisible?.(true);
+          landingRingNode?.setPosition?.(px, groundY + 0.024, pz);
+          landingRingNode?.setScale([ringScale, ringScale, 1]);
+        } else {
+          dropShadowNode?.setVisible?.(false);
+          landingRingNode?.setVisible?.(false);
+        }
       }
       // PBL-V2: the unlocked Sun-Gate ring breathes.
       const ring = f.gateUnlocked ? 1 + 0.06 * Math.sin(f.time * 4) * scale.motion : 1;

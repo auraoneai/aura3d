@@ -48,6 +48,7 @@ import {
   loftSectionsMesh,
   memoizeGeometry,
   mergeRawMeshes,
+  mergeRawMeshesToRaw,
   paintMeshColors,
   sculptOrganicSdfMesh,
   smaxPoly,
@@ -1352,11 +1353,22 @@ export const CORRIDOR_HARDWARE = {
   bus: { x: 5.92, toroidR: 0.38 + 0.078, insulatorR: 0.28 }
 } as const;
 
+/** Matte-satin titanium for overhead flux-gate arches (low anisotropy prevents moiré striping at chase distance). */
+const MAT_GATE_TITANIUM: AuraMaterialSpec = material.pbr({
+  name: "po gate satin titanium",
+  color: "#b8c7dc",
+  roughness: 0.38,
+  metalness: 0.72,
+  clearcoat: 0.15,
+  clearcoatRoughness: 0.35,
+  envMapIntensity: 1.25
+});
+
 function buildCorridorArchedFluxGatesNode(groupId: string): AuraNodeBuilder<AuraSceneNode> {
   const built = memoizeGeometry("po:corridor-arched-flux-gates", () => {
     const materials: readonly AuraMaterialSpec[] = [
       MAT_LAMINATED_STEEL,         // 0: pedestal plinths
-      MAT_BRUSHED_TITANIUM,        // 1: chamfered parabolic arch girder
+      MAT_GATE_TITANIUM,           // 1: smooth satin parabolic arch girder (anti-moiré)
       MAT_WOUND_COPPER,            // 2: copper exciter collars
       MAT_HV_CERAMIC_WHITE,        // 3: HV porcelain standoffs
       MAT_NORTH_CRIMSON_LACQUER,   // 4: left (+ warm) flux conduit trim
@@ -1370,18 +1382,18 @@ function buildCorridorArchedFluxGatesNode(groupId: string): AuraNodeBuilder<Aura
     const singleGateSlots: MultiMatSlot[] = [];
     const { spanR, springY, archRise } = CORRIDOR_HARDWARE.gate;
 
-    // Chamfered octagonal girder cross-section
+    // Smooth chamfered girder cross-section with broad bevels to eliminate high-frequency specular aliasing
     const girder2D: readonly V2[] = [
-      [-0.18, -0.22],
-      [0.18, -0.22],
-      [0.24, -0.06],
-      [0.24, 0.06],
-      [0.18, 0.22],
-      [-0.18, 0.22],
-      [-0.24, 0.06],
-      [-0.24, -0.06]
+      [-0.17, -0.22],
+      [0.17, -0.22],
+      [0.24, -0.07],
+      [0.24, 0.07],
+      [0.17, 0.22],
+      [-0.17, 0.22],
+      [-0.24, 0.07],
+      [-0.24, -0.07]
     ];
-    const archSegs = 24;
+    const archSegs = 18;
     const girderRings: V3[][] = [];
     const leftPlasmaPts: V4[] = [];
     const rightPlasmaPts: V4[] = [];
@@ -1397,12 +1409,12 @@ function buildCorridorArchedFluxGatesNode(groupId: string): AuraNodeBuilder<Aura
 
       const px = Math.cos(a) * (spanR - 0.3);
       const py = springY + Math.sin(a) * (archRise - 0.3);
-      if (i <= archSegs / 2) leftPlasmaPts.push([px, py, 0, 0.068]);
-      if (i >= archSegs / 2) rightPlasmaPts.push([px, py, 0, 0.068]);
+      if (i <= archSegs / 2) leftPlasmaPts.push([px, py, 0, 0.072]);
+      if (i >= archSegs / 2) rightPlasmaPts.push([px, py, 0, 0.072]);
     }
     singleGateSlots.push({ mesh: loftSectionsMesh(girderRings, true, false), materialIndex: 1 });
-    singleGateSlots.push({ mesh: tubeSweepMesh(leftPlasmaPts, 8, false), materialIndex: 6 });
-    singleGateSlots.push({ mesh: tubeSweepMesh(rightPlasmaPts, 8, false), materialIndex: 7 });
+    singleGateSlots.push({ mesh: tubeSweepMesh(leftPlasmaPts, 10, false), materialIndex: 6 });
+    singleGateSlots.push({ mesh: tubeSweepMesh(rightPlasmaPts, 10, false), materialIndex: 7 });
 
     // Copper exciter collars along the arch + crown keystone capacitor
     for (const frac of [0.16, 0.34, 0.66, 0.84] as const) {
@@ -1737,6 +1749,50 @@ export function crownPrismGemMesh(radius = 0.4): MeshData {
       [0, r * 1.24]
     ];
     return rawToMeshData(toFlatShaded(latheMesh(profile, 8, false)));
+  });
+}
+
+/**
+ * Dual-coded Red (+) orb silhouette accessory: equatorial 4-spike corona ring + crisp top `+` ridge emblem so Red (+)
+ * orbs separate immediately from Blue (−) orbs by shape as well as hue (colorblind accessibility + figure-ground pop).
+ */
+export function orbPlusCoronaMesh(radius = 0.45): MeshData {
+  return memoizeGeometry(`po:orb-plus-corona:${radius.toFixed(3)}`, () => {
+    const r = radius;
+    const parts: RawMesh[] = [];
+    // Equatorial 4-point spiked corona band (cross arms radiating outward from the orb equator)
+    const armLen = r * 1.48;
+    const armThick = r * 0.16;
+    parts.push(bevelBoxMesh(armLen * 2, armThick * 0.85, armThick, 0.012));
+    parts.push(bevelBoxMesh(armThick, armThick * 0.85, armLen * 2, 0.012));
+    // Raised top `+` cap so the plus symbol reads cleanly from the elevated chase angle
+    const capY = r * 1.16;
+    parts.push(transformMesh(bevelBoxMesh(r * 0.88, r * 0.14, r * 0.2, 0.015), { pos: [0, capY, 0] }));
+    parts.push(transformMesh(bevelBoxMesh(r * 0.2, r * 0.14, r * 0.88, 0.015), { pos: [0, capY, 0] }));
+    return rawToMeshData(mergeRawMeshesToRaw(parts));
+  });
+}
+
+/**
+ * Dual-coded Blue (−) orb silhouette accessory: sleek horizontal orbital halo ring + crisp horizontal `−` crown bar
+ * so Blue (−) orbs are unmistakably distinct from spiked Red (+) orbs at chase distance.
+ */
+export function orbMinusHaloMesh(radius = 0.45): MeshData {
+  return memoizeGeometry(`po:orb-minus-halo:${radius.toFixed(3)}`, () => {
+    const r = radius;
+    const parts: RawMesh[] = [];
+    // Sleek horizontal equatorial orbital halo ring
+    const ringR = r * 1.38;
+    const segs = 20;
+    const pts: V4[] = [];
+    for (let i = 0; i <= segs; i += 1) {
+      const a = (i / segs) * TAU;
+      pts.push([Math.cos(a) * ringR, 0, Math.sin(a) * ringR, r * 0.085]);
+    }
+    parts.push(tubeSweepMesh(pts, 8, true));
+    // Crisp horizontal `−` bar crowning the orb
+    parts.push(transformMesh(bevelBoxMesh(r * 0.96, r * 0.14, r * 0.22, 0.015), { pos: [0, r * 1.16, 0] }));
+    return rawToMeshData(mergeRawMeshesToRaw(parts));
   });
 }
 

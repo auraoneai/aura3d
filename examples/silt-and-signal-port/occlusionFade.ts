@@ -12,6 +12,15 @@ export interface OccluderSphere {
   readonly r: number;
 }
 
+/** Vertical cylinder/pier occluder (stone piers, arch columns) spanning [bottom, top] with radius `r`. */
+export interface OccluderColumn {
+  readonly x: number;
+  readonly z: number;
+  readonly r: number;
+  readonly bottom: number;
+  readonly top: number;
+}
+
 /** Opacity of a fully faded occluder, and the fade time constant (seconds for a full fade). */
 export const FADE_OPACITY = 0.25;
 export const FADE_SECONDS = 0.15;
@@ -30,6 +39,23 @@ export function segmentHitsSphere(a: readonly [number, number, number], b: reado
   const px = a[0] + dx * t - s.x, py = a[1] + dy * t - s.y, pz = a[2] + dz * t - s.z;
   const rr = s.r + pad;
   return px * px + py * py + pz * pz < rr * rr;
+}
+
+/**
+ * True when the camera->subject segment `a->b` (or the foreground lens near `a`) passes within `pad` of a vertical
+ * stone pier / arch column, catching pillars that would otherwise slice across the left/right thirds of the lens.
+ */
+export function segmentHitsColumn(a: readonly [number, number, number], b: readonly [number, number, number], c: OccluderColumn, pad = 0): boolean {
+  const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+  const len2 = dx * dx + dz * dz;
+  const t = len2 > 1e-9 ? Math.max(0, Math.min(1, ((c.x - a[0]) * dx + (c.z - a[2]) * dz) / len2)) : 0;
+  const py = a[1] + dy * t;
+  if (py < c.bottom - pad || py > c.top + pad) return false;
+  const px = a[0] + dx * t - c.x, pz = a[2] + dz * t - c.z;
+  // Widen the clearance near the lens (small t) so pillars beside the camera eye fade before slicing a third of the frame.
+  const lensFlare = (1 - t) * Math.max(0, pad);
+  const rr = c.r + pad + lensFlare;
+  return px * px + pz * pz < rr * rr;
 }
 
 export interface OcclusionFade {
@@ -77,6 +103,60 @@ export function createOcclusionFade(spheres: readonly OccluderSphere[], options:
       const step = Math.max(0, Math.min(1, dt / FADE_SECONDS)) * (1 - FADE_OPACITY);
       const next: number[] = [];
       // easing the occluders already fading (and the new ones) keeps the scan to the active few
+      const active = new Set<number>([...faded, ...blocking]);
+      for (const i of active) {
+        const target = inside.has(i) ? INSIDE_OPACITY : blocking.includes(i) ? FADE_OPACITY : 1;
+        const o = opacity[i]!;
+        opacity[i] = target < o ? Math.max(target, o - step) : Math.min(target, o + step);
+        if (opacity[i]! < 0.999) next.push(i);
+        else opacity[i] = 1;
+      }
+      next.sort((p, q) => p - q);
+      while (next.length > maxFaded) opacity[next.pop()!] = 1;
+      const changed = next.length !== faded.length || next.some((i, k) => faded[k] !== i);
+      faded = next;
+      return changed;
+    }
+  };
+}
+
+/**
+ * Line-of-sight & foreground-frustum fade for vertical stone piers and arch columns (`sceneryColumns`), preventing
+ * pillars from slicing across the chase camera lens.
+ */
+export function createColumnOcclusionFade(columns: readonly OccluderColumn[], options: { readonly maxFaded?: number; readonly pad?: number } = {}): OcclusionFade {
+  const maxFaded = options.maxFaded ?? 4;
+  const pad = options.pad ?? 1.85;
+  const opacity = new Float32Array(columns.length).fill(1);
+  let faded: number[] = [];
+  const blocking: number[] = [];
+  const inside = new Set<number>();
+  return {
+    opacity,
+    get faded() { return faded; },
+    update(eye, subject, dt) {
+      const reachPad = pad * 2;
+      const minX = Math.min(eye[0], subject[0]) - reachPad, maxX = Math.max(eye[0], subject[0]) + reachPad;
+      const minY = Math.min(eye[1], subject[1]) - reachPad, maxY = Math.max(eye[1], subject[1]) + reachPad;
+      const minZ = Math.min(eye[2], subject[2]) - reachPad, maxZ = Math.max(eye[2], subject[2]) + reachPad;
+      blocking.length = 0;
+      inside.clear();
+      for (let i = 0; i < columns.length; i++) {
+        const c = columns[i]!;
+        if (c.x + c.r < minX || c.x - c.r > maxX || c.top < minY || c.bottom > maxY || c.z + c.r < minZ || c.z - c.r > maxZ) continue;
+        if (segmentHitsColumn(eye, subject, c, pad)) {
+          blocking.push(i);
+          const nearR = c.r + pad * 0.75;
+          if (eye[1] >= c.bottom - 1 && eye[1] <= c.top + 1 && (eye[0] - c.x) ** 2 + (eye[2] - c.z) ** 2 < nearR * nearR) inside.add(i);
+        }
+      }
+      if (blocking.length > maxFaded) {
+        const d = (i: number) => (columns[i]!.x - eye[0]) ** 2 + (columns[i]!.z - eye[2]) ** 2;
+        blocking.sort((p, q) => d(p) - d(q));
+        blocking.length = maxFaded;
+      }
+      const step = Math.max(0, Math.min(1, dt / FADE_SECONDS)) * (1 - FADE_OPACITY);
+      const next: number[] = [];
       const active = new Set<number>([...faded, ...blocking]);
       for (const i of active) {
         const target = inside.has(i) ? INSIDE_OPACITY : blocking.includes(i) ? FADE_OPACITY : 1;

@@ -251,7 +251,7 @@ export const WOODBLOCK_POST = {
   grade: { contrast: 1.18, saturation: 1.28 },
   vignette: { intensity: 0.14, smoothness: 0.82 },
   grain: { intensity: 0.016 },
-  outline: { color: PALETTE.ink, width: 1, threshold: 0.28 }
+  outline: { color: PALETTE.ink, width: 1, threshold: 0.6 }
 };
 
 /** Pooled lantern lights (NR-03 within the C-35 cap of 6 practicals): amber lantern points plus cyan spirit points. */

@@ -22,22 +22,24 @@ export const surfaces: AuraAssetMap<typeof definitions> = defineAuraAssets(defin
 
 /** Deck tiling (AO-M2): 6 x 95 repeats over the 24 x 380 m deck, i.e. one 4 m tile. */
 export const ASPHALT_REPEAT: readonly [number, number] = [6, 95];
-export const ASPHALT_ROUGHNESS = 0.4;
+export const ASPHALT_ROUGHNESS = 0.44;
+/** Minimum micro-roughness floor on wet wheel ruts to suppress grazing sun-glare pixel aliasing. */
+export const ASPHALT_MIN_MICRO_ROUGHNESS = 0.16;
 /** Barrier tiling along the 380 m run. */
 export const CONCRETE_REPEAT: readonly [number, number] = [95, 1];
 
-/** The PBR deck: coarse aggregate asphalt with subtle damp clearcoat sheen so cascaded PCSS shadows and SSR ground every car. */
+/** The PBR deck: coarse aggregate asphalt with controlled damp clearcoat and damped normal relief so sun glare stays smooth. */
 export function asphaltMaterial(): ReturnType<typeof material.pbr> {
   const scale = ASPHALT_REPEAT;
   return material.pbr({
     color: "#5d616c",
-    roughness: ASPHALT_ROUGHNESS,
-    metalness: 0.04,
-    clearcoat: 0.14,
-    clearcoatRoughness: 0.28,
+    roughness: Math.max(ASPHALT_MIN_MICRO_ROUGHNESS, ASPHALT_ROUGHNESS),
+    metalness: 0.03,
+    clearcoat: 0.12,
+    clearcoatRoughness: 0.34,
     texture: surfaces.apexAsphaltColor,
     normal: surfaces.apexAsphaltNormal,
-    normalScale: 0.85,
+    normalScale: 0.58,
     roughnessMap: surfaces.apexAsphaltRoughness,
     texTransforms: { baseColor: { scale }, normal: { scale }, metallicRoughness: { scale } }
   });
@@ -90,19 +92,24 @@ void main() {
   float aggregate = a3dValueNoise(vec2(vDeckX * 3.4, worldZ * 0.85));
   float patchWet = smoothstep(0.38, 0.78, a3dValueNoise(vec2(vDeckX * 0.42, worldZ * 0.055)));
   float polish = a3dSaturate(rutMask * (0.68 + 0.32 * patchWet) + shoulderWet * (0.55 + 0.45 * patchWet));
-  float rough = mix(0.66, 0.20, polish);
+  float dist = length(cameraPosition - vW);
+  // Specular AA: clamp micro-roughness >= 0.16 and widen roughness with screen-space footprint to kill grazing sun speckles
+  float footprint = length(fwidth(vW.xz));
+  float aaRough = a3dSaturate(footprint * 0.22 + smoothstep(14.0, 95.0, dist) * 0.24);
+  float rough = clamp(max(0.16, mix(0.66, 0.22, polish)) + aaRough * 0.34, 0.16, 0.92);
 
   vec3 v = a3dSafeNormalize(cameraPosition - vW, vec3(0.0, 0.2, 1.0));
-  vec3 n = a3dSafeNormalize(vec3((aggregate - 0.5) * 0.035 * (1.0 - polish * 0.6), 1.0, 0.0), vec3(0.0, 1.0, 0.0));
+  float normalTilt = (aggregate - 0.5) * 0.018 * (1.0 - polish * 0.65) * (1.0 - smoothstep(10.0, 60.0, dist));
+  vec3 n = a3dSafeNormalize(vec3(normalTilt, 1.0, 0.0), vec3(0.0, 1.0, 0.0));
   vec3 l = a3dSafeNormalize(rutSunDir, vec3(0.0, 0.14, -0.99));
   vec3 h = a3dSafeNormalize(v + l, vec3(0.0, 1.0, 0.0));
-  float specExp = mix(18.0, 140.0, 1.0 - rough);
-  float sunSpec = pow(max(dot(n, h), 0.0), specExp) * (0.18 + 1.45 * polish) * rutSunGain;
+  float specExp = mix(14.0, 62.0, 1.0 - rough);
+  float energyNorm = (specExp + 8.0) / 70.0;
+  float sunSpec = pow(max(dot(n, h), 0.0), specExp) * energyNorm * (0.16 + 0.95 * polish) * rutSunGain;
   float fresnel = pow(1.0 - a3dSaturate(dot(n, v)), 4.0);
-  vec3 skyCol = a3dSrgbToLinear(rutSkyColor) * fresnel * (0.16 + 0.72 * polish);
-  vec3 sunCol = a3dSrgbToLinear(rutSunColor) * sunSpec;
+  vec3 skyCol = a3dSrgbToLinear(rutSkyColor) * fresnel * (0.16 + 0.68 * polish);
+  vec3 sunCol = a3dSrgbToLinear(rutSunColor) * min(sunSpec, 1.15);
 
-  float dist = length(cameraPosition - vW);
   float fade = (1.0 - smoothstep(85.0, 215.0, dist)) * smoothstep(2.0, 8.0, dist);
   vec3 glaze = (skyCol + sunCol) * fade * polish;
   outColor = vec4(a3dFinite(glaze), 1.0);
@@ -135,19 +142,23 @@ const RUT_WGSL_FRAGMENT = wgslStage([WGSL_MATH, WGSL_NOISE, WGSL_COLOR], /* wgsl
   let aggregate = a3dValueNoise2(vec2<f32>(vDeckX * 3.4, worldZ * 0.85));
   let patchWet = smoothstep(0.38, 0.78, a3dValueNoise2(vec2<f32>(vDeckX * 0.42, worldZ * 0.055)));
   let polish = a3dSaturate(rutMask * (0.68 + 0.32 * patchWet) + shoulderWet * (0.55 + 0.45 * patchWet));
-  let rough = mix(0.66, 0.20, polish);
+  let dist = length(aura.u_cameraPosition - vW);
+  let footprint = length(fwidth(vW.xz));
+  let aaRough = a3dSaturate(footprint * 0.22 + smoothstep(14.0, 95.0, dist) * 0.24);
+  let rough = clamp(max(0.16, mix(0.66, 0.22, polish)) + aaRough * 0.34, 0.16, 0.92);
 
   let v = a3dSafeNormalize3(aura.u_cameraPosition - vW, vec3<f32>(0.0, 0.2, 1.0));
-  let n = a3dSafeNormalize3(vec3<f32>((aggregate - 0.5) * 0.035 * (1.0 - polish * 0.6), 1.0, 0.0), vec3<f32>(0.0, 1.0, 0.0));
+  let normalTilt = (aggregate - 0.5) * 0.018 * (1.0 - polish * 0.65) * (1.0 - smoothstep(10.0, 60.0, dist));
+  let n = a3dSafeNormalize3(vec3<f32>(normalTilt, 1.0, 0.0), vec3<f32>(0.0, 1.0, 0.0));
   let l = a3dSafeNormalize3(aura.u_rutSunDir, vec3<f32>(0.0, 0.14, -0.99));
   let h = a3dSafeNormalize3(v + l, vec3<f32>(0.0, 1.0, 0.0));
-  let specExp = mix(18.0, 140.0, 1.0 - rough);
-  let sunSpec = a3dPow(max(dot(n, h), 0.0), specExp) * (0.18 + 1.45 * polish) * aura.u_rutSunGain;
+  let specExp = mix(14.0, 62.0, 1.0 - rough);
+  let energyNorm = (specExp + 8.0) / 70.0;
+  let sunSpec = a3dPow(max(dot(n, h), 0.0), specExp) * energyNorm * (0.16 + 0.95 * polish) * aura.u_rutSunGain;
   let fresnel = a3dPow(1.0 - a3dSaturate(dot(n, v)), 4.0);
-  let skyCol = a3dSrgbToLinear(aura.u_rutSkyColor) * fresnel * (0.16 + 0.72 * polish);
-  let sunCol = a3dSrgbToLinear(aura.u_rutSunColor) * sunSpec;
+  let skyCol = a3dSrgbToLinear(aura.u_rutSkyColor) * fresnel * (0.16 + 0.68 * polish);
+  let sunCol = a3dSrgbToLinear(aura.u_rutSunColor) * min(sunSpec, 1.15);
 
-  let dist = length(aura.u_cameraPosition - vW);
   let fade = (1.0 - smoothstep(85.0, 215.0, dist)) * smoothstep(2.0, 8.0, dist);
   let glaze = (skyCol + sunCol) * fade * polish;
   return vec4<f32>(a3dFinite3(glaze), 1.0);

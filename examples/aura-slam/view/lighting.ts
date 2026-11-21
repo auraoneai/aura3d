@@ -38,14 +38,15 @@ export function originalPostEffects() {
 /** Runtime ids of the World Tour light rig (the renderer retunes them per venue with `setLight` / `setVisible`). */
 export const VENUE_LIGHT_IDS = {
   key: "venue-key",
+  rim: "venue-rim",
   floods: FLOODLIGHTS.map((f) => f.name)
 } as const;
 
 /**
- * TT-L2: the court box (22 m half size around the centre) the sun's map was meant to fit, 2048 texels, PCSS penumbra from the
- * venue row. Not passed as `shadow.fit` (see `keyShadow`).
+ * TT-L2: the court box (22 m half size around the centre, 64 m depth) the sun's shadow map fits tightly, 2048 texels,
+ * calibrated PCF/PCSS softness (`0.5` hard lunar shadow, `1.8` sunlit/stadium).
  */
-export const SUN_SHADOW_FIT = { center: [0, 0, 0] as [number, number, number], extent: 22 } as const;
+export const SUN_SHADOW_FIT = { center: [0, 0, 0] as [number, number, number], extent: 22, depth: 64 } as const;
 export const SUN_SHADOW_MAP_SIZE = 2048;
 
 /** The venue's shadowed key: the sun, or on the night court the floodlight bank (look.ts `nightKey`). */
@@ -53,14 +54,15 @@ export function venueKeyLight(look: VenueLook): VenueSun {
   return look.sun ?? look.nightKey!;
 }
 
-/** Shadow options of the key for a venue (PCSS on every venue; the light size is the row's). */
+/** Shadow options of the key for a venue (PCSS + court-fitted ortho box + calibrated softness). */
 export function keyShadow(look: VenueLook, cascades: 1 | 2 | 3 | 4 | "auto" = 1) {
   const key = venueKeyLight(look);
   return {
     filter: "pcss" as const,
     lightSize: key.lightSize,
     mapSize: SUN_SHADOW_MAP_SIZE as 2048,
-    // 5.7.0 reads `shadow.fit`; this game shipped while it was ignored, so it is not passed and the camera-fit shadows it shipped with stay (SUN_SHADOW_FIT is the box to adopt after a real-GPU look pass).
+    fit: SUN_SHADOW_FIT,
+    softness: look.id === "moon" ? 0.5 : 1.8,
     cascades
   };
 }
@@ -69,6 +71,7 @@ export function keyShadow(look: VenueLook, cascades: 1 | 2 | 3 | 4 | "auto" = 1)
  * TT-L1 / TT-L2: the World Tour light rig, authored once with every light the six venues use, so a venue change never
  * remounts or recompiles (E-B: a hidden light keeps its slot at intensity 0 and drops its shadow).
  * - one shadowed directional key (the venue sun; the floodlight bank on the night court), PCSS, fitted to the court;
+ * - one subtle venue-matched back-rim directional (unshadowed, intensity 0.45) for R23 athlete silhouette separation;
  * - four corner floodlight spots, shown on the hard court only.
  * No ambient, hemisphere or point light: fill comes from the venue HDRI (view/scene.ts).
  */
@@ -87,6 +90,16 @@ export function sceneLights(venueId?: string | null) {
         shadow: keyShadow(look, tune.cascades ?? 1)
       })
       .runtime(game.runtimeNode(VENUE_LIGHT_IDS.key)),
+    lights
+      .directional({
+        name: VENUE_LIGHT_IDS.rim,
+        color: look.rimLight.color,
+        intensity: look.rimLight.intensity,
+        position: [-8, 12, -24],
+        target: [0, 1.1, 0],
+        shadow: false
+      })
+      .runtime(game.runtimeNode(VENUE_LIGHT_IDS.rim)),
     ...FLOODLIGHTS.map((f) =>
       lights
         .spot({

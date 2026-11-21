@@ -5,7 +5,7 @@
  */
 import { camera, effects, game, geometry, groups, instances, lights, looks, material, primitives, scene, sky, text3D, world, type AuraCustomGeometrySpec, type AuraLookOverrides } from "@aura3d/engine";
 import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
-import { baseballSeamTextures, batWoodTexture, flipbookAtlasDataUrl, ivyBrickTexture, turfTextures } from "./turfTextures";
+import { baseballSeamTextures, batWoodTexture, flipbookAtlasSpec, ivyBrickTexture, turfTextures } from "./turfTextures";
 import { dualAnimatedWaterSpec } from "../../showcase-port-shared/dual-shaders";
 import { boardTexture } from "./boardTexture";
 import { windowTexture } from "./windowTexture";
@@ -1044,15 +1044,17 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
     primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }), ...(gu47 ? { castShadow: false } : {}) }).runtime(game.runtimeNode("ball-shadow"))
   );
 
-  // Pooled 4x4 procedural flipbook sprites (`createFlipbookAtlas("dust" | "sparks")`) for swing chalk/clay puffs & bat-crack flashes.
+  // 5.7.2: pass `createFlipbookAtlas("dust" | "sparks").texture` directly to `effects.flipbook` (zero data-URL copies).
   if (gu47) {
-    const dustSheet = flipbookAtlasDataUrl("dust");
-    const sparksSheet = flipbookAtlasDataUrl("sparks");
+    const dustAtlas = flipbookAtlasSpec("dust");
+    const sparksAtlas = flipbookAtlasSpec("sparks");
     nodes.push(
       effects
         .flipbook({
           name: "vfx-plate-dust",
-          ...(dustSheet ? { texture: dustSheet, spriteColumns: 8, spriteRows: 4 } : { sprite: "smoke-a", spriteColumns: 4, spriteRows: 4 }),
+          texture: dustAtlas.texture,
+          spriteColumns: dustAtlas.columns,
+          spriteRows: dustAtlas.rows,
           frameRate: 30,
           loop: true,
           size: [0.7, 1.25],
@@ -1065,7 +1067,9 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
       effects
         .flipbook({
           name: "vfx-bat-sparks",
-          ...(sparksSheet ? { texture: sparksSheet, spriteColumns: 8, spriteRows: 4 } : { sprite: "spark-streak", spriteColumns: 4, spriteRows: 4 }),
+          texture: sparksAtlas.texture,
+          spriteColumns: sparksAtlas.columns,
+          spriteRows: sparksAtlas.rows,
           frameRate: 36,
           loop: true,
           size: [0.55, 0.95],
@@ -1089,12 +1093,12 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
     }
   }
 
-  // Strike-zone helpers: PCI ring (batting) + aim dot (pitching) + landing ring
+  // Strike-zone helpers: refined amber bat-barrel PCI pill, cyan pitch aim dot, subtle zone frame (no confusing twin white rings)
   nodes.push(
-    primitives.torus({ name: "pci-ring", size: [0.42, 0.045] as any, castShadow: false, material: material.emissive({ color: "#ffb03a", emissive: "#ffb03a", emissiveIntensity: 1.1 }) }).runtime(game.runtimeNode("pci-ring")),
-    primitives.sphere({ name: "aim-dot", size: [0.16, 0.16, 0.16], castShadow: false, visible: false, material: material.emissive({ color: "#35d6ff", emissive: "#35d6ff", emissiveIntensity: 1.2 }) } as any).runtime(game.runtimeNode("aim-dot")),
+    primitives.torus({ name: "pci-ring", size: [0.34, 0.028] as any, castShadow: false, material: material.emissive({ color: "#ffb03a", emissive: "#ffb03a", emissiveIntensity: 1.05 }) }).runtime(game.runtimeNode("pci-ring")),
+    primitives.sphere({ name: "aim-dot", size: [0.14, 0.14, 0.14], castShadow: false, visible: false, material: material.emissive({ color: "#35d6ff", emissive: "#35d6ff", emissiveIntensity: 1.2 }) } as any).runtime(game.runtimeNode("aim-dot")),
     primitives.torus({ name: "land-ring", size: [0.5, 0.04] as any, castShadow: false, visible: false, material: material.emissive({ color: landColor, emissive: landColor, emissiveIntensity: 1.15 }) } as any).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("land-ring")),
-    primitives.torus({ name: "zone-frame", size: [0.62, 0.03] as any, castShadow: false, material: material.emissive({ color: zoneColor, emissive: zoneColor, emissiveIntensity: 0.3 }) }).position(0, ZONE_CY, 0.1).runtime(game.runtimeNode("zone-frame"))
+    primitives.torus({ name: "zone-frame", size: [0.58, 0.016] as any, castShadow: false, material: material.emissive({ color: zoneColor, emissive: zoneColor, emissiveIntensity: 0.18, opacity: 0.55 }) }).position(0, ZONE_CY, 0.1).runtime(game.runtimeNode("zone-frame"))
   );
 
   // Celebration particle fountains (hidden until fired)

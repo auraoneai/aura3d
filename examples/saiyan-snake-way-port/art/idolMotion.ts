@@ -17,10 +17,12 @@
  * changes (`lean`), and the aura surge's raised, splayed arms.
  */
 import {
+  createHumanoidAnimator,
   createHumanoidDriver,
-  createMotionAnimator,
   humanoidAirTime as airTime,
+  humanoidClipGroundSpeed,
   humanoidEventTime as eventTime,
+  humanoidLocomotionTime,
   quatAxisAngle,
   quatInv,
   quatMul,
@@ -148,7 +150,7 @@ export interface RunnerMotion {
 }
 
 /** The game state's motion request (exported for tests). */
-export function runnerMotionRequest(s: RunnerMotionState, cyclesPerLoop: number): MotionRequest<MotionClipName> {
+export function runnerMotionRequest(s: RunnerMotionState, cyclesPerLoop: number, hipHeight = HERO_HIP_Y): MotionRequest<MotionClipName> {
   if (s.flying || s.diving) return { pose: heroPartsToHumanoid(s.parts), key: "code", fade: 0.25 };
   if (s.stumble > 0.05) {
     const u = Math.max(0, Math.min(1, (STUMBLE_TIME - s.stumble) / STUMBLE_TIME));
@@ -163,8 +165,11 @@ export function runnerMotionRequest(s: RunnerMotionState, cyclesPerLoop: number)
   }
   if (!s.moving) return { clip: "Idle", rate: 1, fade: 0.3 };
   if (Math.abs(s.laneVel) > DODGE_LANE_SPEED) return { clip: "DodgeLeft", mirror: (s.laneVel < 0) !== DODGE_GOES_LEFT, rate: 1.4, loop: false, fade: 0.12 };
-  const loops = s.phase / CYCLE / cyclesPerLoop;
-  return { clip: "Run", time: (loops - Math.floor(loops)) * MOTION_CLIPS.Run.duration, fade: 0.15 };
+  const clip = MOTION_CLIPS.Run;
+  const speed = humanoidClipGroundSpeed(clip, hipHeight);
+  const metres = (s.phase / CYCLE / cyclesPerLoop) * speed * clip.duration;
+  const time = speed > 0 ? humanoidLocomotionTime(clip, metres, hipHeight) : ((s.phase / CYCLE / cyclesPerLoop) % 1) * clip.duration;
+  return { clip: "Run", time, fade: 0.15 };
 }
 
 const ROLL_AXIS: readonly [number, number, number] = [0, 0, 1];
@@ -184,10 +189,10 @@ export function applyRunnerOverlays(input: HumanoidPoseInput, lean: number, surg
 
 export function createRunnerMotion(skeleton: IdolSkeleton): RunnerMotion {
   const driver = createHumanoidDriver(skeleton);
-  const animator = createMotionAnimator(MOTION_CLIPS);
+  const animator = createHumanoidAnimator(MOTION_CLIPS);
   const cycles = runCyclesPerLoop(driver);
   const input = (s: RunnerMotionState) => {
-    const base = animator.update(s.dt, runnerMotionRequest(s, cycles));
+    const base = animator.update(s.dt, runnerMotionRequest(s, cycles, driver.map.hipHeight));
     // the code pose already carries poseHero's lean (and surge splay); clips get them as overlays
     return animator.current === "pose:code" ? base : applyRunnerOverlays(base, s.lean, s.surge);
   };

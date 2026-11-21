@@ -1036,6 +1036,10 @@
         "practical": false
       },
       {
+        "node": "tram-body window glass",
+        "practical": false
+      },
+      {
         "node": "tram-body saloon wood",
         "practical": false
       },

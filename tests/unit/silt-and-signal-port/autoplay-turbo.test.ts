@@ -27,7 +27,7 @@ describe("Duneglide Turbo start keeps the whole world drawn", () => {
 describe("Duneglide ?autoplay=1", () => {
   it("is the hands-free mode: skips the title, flies the reference controller, auto-advances cards", () => {
     const src = readFileSync("examples/silt-and-signal-port/main.ts", "utf8");
-    expect(src).toMatch(/autopilot: params\.get\("autopilot"\) === "1" \|\| params\.get\("autoplay"\) === "1"/);
+    expect(src).toMatch(/autopilot: readAutoplayFlag\(params\)/);
     expect(src).toMatch(/const skipTitle = startParam \|\| config\.autoplay;/);
     expect(src).toMatch(/if \(config\.autoplay\) setTimeout\(continueScene, AUTOPLAY_CARD_MS\)/);
     expect(src).toMatch(/if \(config\.autoplay\) setTimeout\(\(\) => \{ if \(mode === "done"\) \{ clearJourney\(session\); goToChapter\(0\); \} \}, AUTOPLAY_CARD_MS\)/);

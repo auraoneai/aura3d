@@ -3,7 +3,7 @@
  * app draws with. Lighting values come from the Vesper Heights `lighting` block.
  */
 import type { material } from "@aura3d/engine";
-import { createFlipbookAtlas, createGradingLut, type FlipbookAtlasSpec } from "../../apps/showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, createGradingLut, type FlipbookAtlasSpec } from "@aura3d/engine/game";
 import { LOOKS, type HeatsinkLookRow } from "./art/look";
 import { VESPER } from "./map";
 import { POINT_QUAD_SHADERS } from "./point-quads";

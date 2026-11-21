@@ -1,5 +1,7 @@
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, drainPopups, mixNumber as mix, type FixedStepPresenter } from "@aura3d/engine/game";
 import type { SplatRushSim } from "./sim";
+
+export { drainPopups };
 
 /**
  * Splat scrolls its world toward a fixed ball: the road, gates, power-ups and splatters advance by one shared
@@ -18,8 +20,6 @@ export interface Shown {
 
 /** A step scrolls the world a fraction of a unit; a restart jumps the distance back to zero and must not smear. */
 export const SNAP_DISTANCE = 5;
-
-const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
 
 export function shownOf(sim: Pick<SplatRushSim, "o" | "elapsed" | "player" | "camera">): Shown {
   const { player: p, camera: c } = sim;
@@ -61,7 +61,14 @@ export function viewOf(sim: SplatRushSim, shown: Shown): SplatRushSim {
 }
 
 export function createSplatPresenter(getSim: () => Pick<SplatRushSim, "o" | "elapsed" | "player" | "camera">): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getSim()), blend: blendShown });
+  return createSnapshotInterpolator<Shown>({
+    snapshot: () => shownOf(getSim()),
+    blend: blendShown,
+    snap: (prev, next) => {
+      const moved = next.distance - prev.distance;
+      return moved < 0 || moved > SNAP_DISTANCE;
+    }
+  });
 }
 
 /**
@@ -92,16 +99,6 @@ export class SteadyCamera {
     const a = this.prev, b = this.cur;
     return { x: mix(a.x, b.x, t), y: mix(a.y, b.y, t), z: mix(a.z, b.z, t), lookX: mix(a.lookX, b.lookX, t), lookY: mix(a.lookY, b.lookY, t), lookZ: mix(a.lookZ, b.lookZ, t) };
   }
-}
-
-/**
- * C2: the popups the HUD has not shown yet. The sim keeps only the last 64 popups and never clears the list, so a
- * reader that counts by index stalls for good once the list is full; reading by `seq` keeps working across restarts.
- */
-export function drainPopups<T extends { readonly seq: number }>(list: readonly T[], nextSeq: number): { fresh: T[]; nextSeq: number } {
-  const fresh: T[] = [];
-  for (const p of list) if (p.seq >= nextSeq) fresh.push(p);
-  return { fresh, nextSeq: fresh.length > 0 ? (fresh[fresh.length - 1] as T).seq + 1 : nextSeq };
 }
 
 /**

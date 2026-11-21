@@ -197,7 +197,7 @@ fn markNoise(p: vec2<f32>) -> f32 { return fbm(p + vec2<f32>(fbm(p * 0.35) * TRA
   refl = mix(refl, vec3<f32>(0.46, 0.78, 1.0), vec3<f32>(smoothstep(EARTHRISE_COS - 0.005, EARTHRISE_COS + 0.005, ed) * 0.85));
   let sunDir = normalize(aura.u_a3dSunDirection);
   let sunVis = a3dSunShadowAuto(vWorld, N);
-  refl = refl + normalize(aura.u_a3dSunColor + vec3<f32>(1e-4)) * a3dPow(max(dot(Rg, sunDir), 0.0), 260.0) * 5.0 * sunVis;
+  refl = refl + normalize(aura.u_a3dSunColor + vec3<f32>(1e-4)) * a3dPow(max(dot(Rg, sunDir), 0.0), 260.0) * 3.2 * sunVis;
   lit = lit + refl * fres * polish * GLAZE;
   let cell = regolithVoronoi(vWorld.xz * 24.0 + vec2<f32>(vWorld.y * 11.0, vWorld.x * 3.0));
   let tilt2 = hash22(floor(vWorld.xz * 24.0) + vec2<f32>(cell.y * 37.0)) * 2.0 - vec2<f32>(1.0);

@@ -10,16 +10,15 @@
  */
 import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
-import { warmPrograms } from "@aura3d/engine/game";
+import { createImpactRig, HUD_THEMES, warmPrograms } from "@aura3d/engine/game";
 import { drainPopups } from "../../../examples/shared/runner-kit/index";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
-import { createImpactRig } from "../../showcase-port-shared/feel";
 import { CONFIG, IDLE, NumberSurgeSim, TRACE_COLUMNS, replay, type Input, type Phase } from "./sim";
 import { ChaseCamera, SteadyCamera, createNumberSurgePresenter } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
-import { LOOK } from "./look";
+import { CYBER_NEON_LUT, LOOK } from "./look";
 import { NumberSurgeHud } from "./hud";
 import { FxDriver, diffFx } from "./fx";
 import { createNumberSurgeSound, diffSounds, type AudioFrame } from "./audio";
@@ -108,6 +107,11 @@ let impactState = impactRig.step(0);
 // declaration (creating it earlier is a temporal-dead-zone ReferenceError at module load).
 const presenter = createNumberSurgePresenter(() => sim, () => (reducedMotion ? steady.cur : chase.cur));
 
+// Align CSS custom properties with `HUD_THEMES["arcade-neon"]` (licensed typography + neon tokens).
+for (const [k, v] of Object.entries(HUD_THEMES["arcade-neon"])) {
+  document.documentElement.style.setProperty(k, v);
+}
+
 const hud = new NumberSurgeHud({
   hud: $("hud"),
   score: $("hud-score"),
@@ -116,6 +120,7 @@ const hud = new NumberSurgeHud({
   mult: $("hud-mult"),
   number: $("hud-number"),
   wall: $("hud-wall"),
+  bossPill: document.getElementById("hud-boss-pill"),
   shield: $("hud-shield"),
   x2: $("hud-x2"),
   laneRail: document.getElementById("lane-rail"),
@@ -133,8 +138,21 @@ function drainPopupDom(): void {
     popupsShown += 1;
     const el = document.createElement("div");
     el.className = "popup";
-    el.textContent = p.text;
-    el.style.color = p.color;
+    // Dual-coded decision feedback: gold `OPTIMAL!` on superior gate picks vs muted `SAFE` on suboptimal positive picks.
+    const isGateOp = /^[+×−÷]/.test(p.text);
+    const isPositiveOp = /^[+×]/.test(p.text);
+    if (isGateOp && p.color === "#3ef2ff") {
+      el.textContent = `${p.text} · OPTIMAL!`;
+      el.style.color = "#ffd84d";
+      el.classList.add("popup-optimal");
+    } else if (isGateOp && isPositiveOp && p.color === "#ff4fd8") {
+      el.textContent = `${p.text} · SAFE`;
+      el.style.color = "#a9b8d8";
+      el.classList.add("popup-safe");
+    } else {
+      el.textContent = p.text;
+      el.style.color = p.color;
+    }
     el.style.fontSize = `${Math.round(22 * p.size)}px`;
     host.appendChild(el);
     el.addEventListener("animationend", () => el.remove());
@@ -194,7 +212,7 @@ function reactToFrame(): void {
       if (b.shake > 0) chase.addShake(b.shake);
       if (!config.manual && !pilot) {
         if (b.cue === "smash") {
-          impactRig.trigger({ freezeSeconds: 0.038, trauma: 0.45, fovKickDeg: 3.4 });
+          impactRig.trigger({ freezeSeconds: 0.055, trauma: 0.48, fovKickDeg: 3.6 });
         } else if (b.cue === "wallBlock") {
           impactRig.trigger({ freezeSeconds: 0.028, trauma: 0.32, fovKickDeg: 1.8 });
         } else if (
@@ -340,7 +358,14 @@ async function boot(): Promise<void> {
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { preset: "neon-night", toneMapping: "agx", exposure: 1.05, dither: true, ...lab.output },
+    output: {
+      preset: "neon-night",
+      toneMapping: "agx",
+      exposure: 1.05,
+      lut: { texture: CYBER_NEON_LUT.texture, size: CYBER_NEON_LUT.size, intensity: 0.22 },
+      dither: true,
+      ...lab.output
+    } as never,
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
@@ -358,6 +383,8 @@ async function boot(): Promise<void> {
   runtime.warm(false);
   ready = true;
   loading.done();
+  const loadBar = document.getElementById("load-bar");
+  if (loadBar) loadBar.hidden = true;
   startButton.removeAttribute("aria-busy");
   if (autoplay) {
     for (let i = 0; i < config.warmup; i += 1) advance(IDLE);

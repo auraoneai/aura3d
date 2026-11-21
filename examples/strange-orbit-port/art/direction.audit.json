@@ -578,32 +578,12 @@
         "practical": false
       },
       {
-        "node": "rider-0-coneL",
-        "emissiveIntensity": 1.95,
-        "practical": true
-      },
-      {
-        "node": "rider-0-coneR",
-        "emissiveIntensity": 1.95,
-        "practical": true
-      },
-      {
         "node": "rider-1-blurF",
         "practical": false
       },
       {
         "node": "rider-1-blurR",
         "practical": false
-      },
-      {
-        "node": "rider-1-coneL",
-        "emissiveIntensity": 1.55,
-        "practical": true
-      },
-      {
-        "node": "rider-1-coneR",
-        "emissiveIntensity": 1.55,
-        "practical": true
       },
       {
         "node": "rider-2-blurF",
@@ -614,32 +594,12 @@
         "practical": false
       },
       {
-        "node": "rider-2-coneL",
-        "emissiveIntensity": 1.55,
-        "practical": true
-      },
-      {
-        "node": "rider-2-coneR",
-        "emissiveIntensity": 1.55,
-        "practical": true
-      },
-      {
         "node": "rider-3-blurF",
         "practical": false
       },
       {
         "node": "rider-3-blurR",
         "practical": false
-      },
-      {
-        "node": "rider-3-coneL",
-        "emissiveIntensity": 1.55,
-        "practical": true
-      },
-      {
-        "node": "rider-3-coneR",
-        "emissiveIntensity": 1.55,
-        "practical": true
       },
       {
         "node": "rider-4-blurF",
@@ -650,32 +610,12 @@
         "practical": false
       },
       {
-        "node": "rider-4-coneL",
-        "emissiveIntensity": 1.55,
-        "practical": true
-      },
-      {
-        "node": "rider-4-coneR",
-        "emissiveIntensity": 1.55,
-        "practical": true
-      },
-      {
         "node": "rider-5-blurF",
         "practical": false
       },
       {
         "node": "rider-5-blurR",
         "practical": false
-      },
-      {
-        "node": "rider-5-coneL",
-        "emissiveIntensity": 1.55,
-        "practical": true
-      },
-      {
-        "node": "rider-5-coneR",
-        "emissiveIntensity": 1.55,
-        "practical": true
       },
       {
         "node": "gravity-halo",

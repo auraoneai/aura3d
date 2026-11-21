@@ -8,11 +8,10 @@
  */
 import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
-import { warmPrograms } from "@aura3d/engine/game";
+import { createGradingLut, createImpactRig, createProceduralSfx, warmPrograms } from "@aura3d/engine/game";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
-import { createImpactRig, createProceduralSfx } from "../../showcase-port-shared/feel";
 import { IDLE, PHASE_CODE, ShapeShiftSim, TRACE_COLUMNS, replay, type Input } from "./sim";
 import { AUTOPLAY_PILOT, Autopilot } from "./autopilot";
 import { createShapeSound, diffSounds, type FrameState } from "./audio";
@@ -359,12 +358,20 @@ async function boot(): Promise<void> {
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight), post: postMode(config.post) });
   // WebGPU by default (backend "auto", WebGL2 fallback kept); ?backend=webgl2 opts out.
   const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
+  const broadcastLut = createGradingLut("broadcast-crisp", 16);
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { toneMapping: "agx", exposure: 1.08, dither: true, ...lab.output },
+    output: {
+      toneMapping: "neutral",
+      neutralCurve: "khronos",
+      exposure: 1.04,
+      lut: { texture: broadcastLut.texture, size: broadcastLut.size, intensity: 0.2 },
+      dither: true,
+      ...lab.output
+    } as never,
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
@@ -382,6 +389,11 @@ async function boot(): Promise<void> {
   runtime.warm(false);
   ready = true;
   loading.done();
+  const loadBar = document.getElementById("load-bar");
+  if (loadBar) {
+    loadBar.hidden = true;
+    loadBar.classList.add("hidden");
+  }
   startButton?.removeAttribute("aria-busy");
   if (autoplay) {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);

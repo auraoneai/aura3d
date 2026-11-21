@@ -27,7 +27,23 @@ export function createHud(opts: { readonly onToggleStyle: () => void; readonly o
   const results = $("results");
   const pen = $("taxiPen");
   const toastEl = $("toast");
-  let collapsed = false;
+  const mobileBar = $("wMobileSummary");
+  // Default `#taxiCard` / `#taxiTrip` to a collapsed 1-row tap-to-expand pill on narrow phones (< 640px)
+  // so mobile top HUD stays below 14% of viewport height.
+  let collapsed = typeof window !== "undefined" && window.innerWidth < 640;
+  let userToggledCollapse = false;
+  const syncCollapsed = (): void => {
+    card?.classList.toggle("min", collapsed);
+    trip?.classList.toggle("min", collapsed);
+  };
+  syncCollapsed();
+  if (typeof window !== "undefined") {
+    window.addEventListener("resize", () => {
+      if (userToggledCollapse) return;
+      const next = window.innerWidth < 640;
+      if (next !== collapsed) { collapsed = next; syncCollapsed(); }
+    });
+  }
   let cardKey = "";
   let tripKey = "";
   let statusText = "";
@@ -42,9 +58,9 @@ export function createHud(opts: { readonly onToggleStyle: () => void; readonly o
         e.stopPropagation();
         opts.onToggleStyle();
       } else if (t.closest(".tx-head .tg")) {
+        userToggledCollapse = true;
         collapsed = !collapsed;
-        card?.classList.toggle("min", collapsed);
-        trip?.classList.toggle("min", collapsed);
+        syncCollapsed();
       }
     });
   }
@@ -139,11 +155,18 @@ export function createHud(opts: { readonly onToggleStyle: () => void; readonly o
       if (total) {
         const shiftLeft = Math.max(0, SHIFT_SECONDS - s.shift.elapsedSec);
         const rating = careerRating(s.career);
-        const text = `${usd(s.shift.earnedUsd)}|Fare ${Math.min(s.shift.faresDone, SHIFT_FARES)}/${SHIFT_FARES} · shift ${formatClock(shiftLeft)} · ${rating === null ? "no rating yet" : `★ ${rating.toFixed(2)}`}`;
+        const faresCount = `${Math.min(s.shift.faresDone, SHIFT_FARES)}/${SHIFT_FARES}`;
+        const clockStr = formatClock(shiftLeft);
+        const earnedStr = usd(s.shift.earnedUsd);
+        const text = `${earnedStr}|Fare ${faresCount} · shift ${clockStr} · ${rating === null ? "no rating yet" : `★ ${rating.toFixed(2)}`}`;
         if (total.dataset.text !== text) {
           total.dataset.text = text;
           const [big, small] = text.split("|");
           total.innerHTML = `<b>${big}</b><small>${small}</small>`;
+        }
+        if (mobileBar) {
+          const compact = `${earnedStr} · ${faresCount} · ${clockStr}`;
+          if (mobileBar.textContent !== compact) mobileBar.textContent = compact;
         }
       }
       void playerDrives;

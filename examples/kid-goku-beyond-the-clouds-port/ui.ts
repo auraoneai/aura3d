@@ -56,13 +56,13 @@ const CSS = `
 #cr-ui button:hover{filter:brightness(1.06);transform:translateY(-1px)}
 #cr-ui button.primary{background:linear-gradient(#ffd75e,#f7a928);height:44px;padding:0 30px;font-size:15px;font-weight:600;letter-spacing:0}
 #cr-ui button.ghost{background:rgba(10,16,30,.68);color:#fffaf0;box-shadow:none;border:1px solid rgba(255,255,255,.22)}
-#cr-ui .title{position:absolute;left:5vw;top:calc(8vh + var(--a3d-bar-space,0px));max-width:min(520px,88vw)}
-#cr-ui .title h1{margin:0;font-weight:600;font-size:clamp(34px,6.2vw,68px);line-height:1.04;letter-spacing:0;color:#fff7e2;text-shadow:0 3px 0 #b9631b,0 6px 18px rgba(0,0,0,.35)}
-#cr-ui .title h1 span{display:block;font-size:max(13px,.38em);font-variant-caps:all-small-caps;letter-spacing:.06em;color:#ffd75e;text-shadow:0 2px 6px rgba(0,0,0,.45);font-weight:500}
-#cr-ui .title p{margin:10px 0 0;font-size:15px;line-height:1.45;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);max-width:34ch}
-#cr-ui .menu{position:absolute;left:5vw;bottom:13vh;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
-#cr-ui .menu .row{display:flex;flex-wrap:wrap;gap:10px;max-width:90vw}
-#cr-ui .keys{position:absolute;left:5vw;bottom:4vh;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.6)}
+#cr-ui .title{position:absolute;left:max(20px,4vw);top:calc(6vh + var(--a3d-bar-space,0px) + env(safe-area-inset-top,0px));max-width:min(380px,84vw);padding:14px 18px;border-radius:14px;background:rgba(19,36,64,.52);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.16)}
+#cr-ui .title h1{margin:0;font-weight:600;font-size:clamp(28px,4.8vw,50px);line-height:1.04;letter-spacing:0;color:#fff7e2;text-shadow:0 3px 0 #b9631b,0 6px 18px rgba(0,0,0,.35)}
+#cr-ui .title h1 span{display:block;font-size:max(12px,.36em);font-variant-caps:all-small-caps;letter-spacing:.06em;color:#ffd75e;text-shadow:0 2px 6px rgba(0,0,0,.45);font-weight:500}
+#cr-ui .title p{margin:8px 0 0;font-size:14px;line-height:1.4;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);max-width:30ch}
+#cr-ui .menu{position:absolute;left:max(20px,4vw);bottom:max(62px,calc(10vh + env(safe-area-inset-bottom,0px)));display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+#cr-ui .menu .row{display:flex;flex-wrap:wrap;gap:8px;max-width:90vw}
+#cr-ui .keys{position:absolute;left:max(20px,4vw);bottom:max(14px,calc(2.5vh + env(safe-area-inset-bottom,0px)));display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.6)}
 #cr-ui kbd{display:inline-block;min-width:22px;padding:2px 6px;margin-right:4px;text-align:center;font-family:var(--font-mono,"Monument Grotesk Mono",monospace);font-weight:400;font-size:12px;color:#2a1a08;background:#fff1cf;border-radius:5px;box-shadow:0 1px 0 rgba(0,0,0,.35)}
 #cr-ui .best{font-size:13px;font-variant-numeric:tabular-nums;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.6)}
 #cr-ui .credit{position:absolute;right:14px;bottom:10px;font-size:12px;font-weight:500;font-variant-caps:all-small-caps;letter-spacing:.04em;color:rgba(255,255,255,.76);text-shadow:0 1px 4px rgba(0,0,0,.5)}
@@ -110,6 +110,12 @@ const CSS = `
 #cr-ui .flash{position:absolute;inset:0;pointer-events:none;background:#fff;opacity:0}
 #cr-ui .duel{position:absolute;left:0;right:0;top:28%;text-align:center;font-weight:600;font-size:clamp(40px,9vw,104px);color:#fff;text-shadow:0 4px 0 #c0391f,0 0 26px rgba(255,170,40,.8);opacity:0;pointer-events:none;letter-spacing:.02em}
 #cr-ui .duel.on{opacity:1}
+#cr-ui .boss-hp{position:absolute;left:50%;transform:translateX(-50%);top:calc(var(--a3d-bar-space,calc(12px + env(safe-area-inset-top,0px))) + 56px);width:min(320px,72vw);padding:6px 12px;display:flex;flex-direction:column;gap:4px;opacity:0;pointer-events:none;transition:opacity .22s ease}
+#cr-ui .boss-hp.on{opacity:1}
+#cr-ui .boss-hp .bhead{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:600;font-variant-caps:all-small-caps;letter-spacing:.05em;color:#ffd75e}
+#cr-ui .boss-hp .bhead b{font-family:var(--font-metric,"DIN Pro","Whitney",sans-serif);font-size:12px;font-weight:500;font-variant-caps:normal;font-variant-numeric:tabular-nums;color:#fffaf2}
+#cr-ui .boss-hp .btrack{height:6px;border-radius:999px;background:rgba(255,255,255,.16);overflow:hidden}
+#cr-ui .boss-hp .bfill{height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,#ff5a4a,#ffb347);transition:width .22s ease-out}
 #cr-ui .panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:22px 26px;min-width:min(420px,92vw);max-height:calc(100% - 20px);overflow-y:auto;text-align:center}
 #cr-ui .panel h2{margin:0 0 4px;font-weight:600;font-size:24px}
 #cr-ui .panel .sub{font-size:13px;color:#cbd5e4;margin-bottom:14px}
@@ -122,14 +128,16 @@ const CSS = `
 #cr-ui .badge{display:inline-block;margin:4px 2px 0;padding:3px 10px;border-radius:999px;background:#ffd75e;color:#3d2204;font-size:12px;font-weight:500}
 #cr-ui .caption{position:absolute;left:0;right:0;bottom:14%;text-align:center;font-size:clamp(18px,2.6vw,26px);font-weight:500;text-shadow:0 2px 12px rgba(0,0,0,.7);opacity:0;transition:opacity .6s}
 #cr-ui.storm[data-expedition-font]{font-family:"A3G Roobert","Whitney","Graphik",sans-serif}
-#cr-ui.storm .glass{background:rgba(28,18,14,.78);border-color:rgba(255,226,184,.28)}
+#cr-ui.storm .glass{background:rgba(28,18,14,.78);border-color:rgba(255,226,184,.28);border-radius:var(--a3g-radius,12px)}
 #cr-ui.storm button.primary{background:linear-gradient(#ffc56e,#ffb347)}
+#cr-ui.storm .title{background:rgba(24,20,26,.58);border-color:rgba(255,226,184,.28)}
 #cr-ui.storm .title h1 span,#cr-ui.storm .combo{color:#ffb347}
 #cr-ui.storm .title h1{text-shadow:0 3px 0 #8f4722,0 6px 18px rgba(0,0,0,.4)}
 #cr-ui.storm .orb.got{background:radial-gradient(circle at 35% 30%,#ffe2b8,#ffb347 70%);border-color:#ffe2b8;color:#6a3010;box-shadow:0 0 8px rgba(255,179,71,.85)}
 #cr-ui.storm .prog .fill,#cr-ui.storm .gauge .gfill{background:linear-gradient(90deg,#ffe2b8,#ffb347)}
 #cr-ui.storm .prog .me{border-color:#ffb347}
 #cr-ui.storm .touch button .cring circle{stroke:#ffb347}
+#cr-ui.storm .boss-hp .bhead{color:#ffb347}
 #cr-ui .caption.on{opacity:1}
 #cr-ui .bars{position:absolute;left:0;right:0;height:9vh;background:#000;transition:transform .6s}
 #cr-ui .bars.t{top:0;transform:translateY(-100%)}#cr-ui .bars.b{bottom:0;transform:translateY(100%)}
@@ -140,16 +148,16 @@ const CSS = `
 #cr-ui .touch button{position:absolute;display:flex;align-items:center;justify-content:center;width:58px;height:58px;min-width:48px;min-height:48px;border-radius:50%;padding:0;background:rgba(10,16,30,.74);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fffaf2;border:1.5px solid rgba(255,255,255,.38);box-shadow:0 6px 18px rgba(0,0,0,.36);font-family:var(--font-ui,"Whitney",sans-serif);font-size:12px;font-weight:500;font-variant-caps:all-small-caps;letter-spacing:.03em;touch-action:none}
 #cr-ui .touch button.steer{font-size:15px;font-variant-caps:normal}
 #cr-ui .touch button:active{transform:scale(.95);background:rgba(255,226,122,.28)}
-#cr-ui .touch button[data-t="left"]{left:max(14px,env(safe-area-inset-left,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px))}
-#cr-ui .touch button[data-t="right"]{left:calc(max(14px,env(safe-area-inset-left,0px)) + 72px);bottom:calc(20px + env(safe-area-inset-bottom,0px))}
-#cr-ui .touch button[data-t="jump"]{right:max(14px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:68px;height:68px;font-size:13px;font-weight:600;background:linear-gradient(180deg,rgba(255,215,94,.34),rgba(247,169,40,.26));border-color:rgba(255,226,122,.68)}
-#cr-ui .touch button[data-t="cloud"]{right:calc(max(14px,env(safe-area-inset-right,0px)) + 82px);bottom:calc(20px + env(safe-area-inset-bottom,0px));width:54px;height:54px}
-#cr-ui .touch button[data-t="pole"]{right:calc(max(14px,env(safe-area-inset-right,0px)) + 52px);bottom:calc(92px + env(safe-area-inset-bottom,0px));width:54px;height:54px}
+#cr-ui .touch button[data-t="left"]{left:max(14px,env(safe-area-inset-left,0px));bottom:max(44px,calc(20px + env(safe-area-inset-bottom,0px) + var(--a3d-bar-space,0px)))}
+#cr-ui .touch button[data-t="right"]{left:calc(max(14px,env(safe-area-inset-left,0px)) + 72px);bottom:max(44px,calc(20px + env(safe-area-inset-bottom,0px) + var(--a3d-bar-space,0px)))}
+#cr-ui .touch button[data-t="jump"]{right:max(14px,env(safe-area-inset-right,0px));bottom:max(44px,calc(20px + env(safe-area-inset-bottom,0px) + var(--a3d-bar-space,0px)));width:68px;height:68px;font-size:13px;font-weight:600;background:linear-gradient(180deg,rgba(255,215,94,.34),rgba(247,169,40,.26));border-color:rgba(255,226,122,.68)}
+#cr-ui .touch button[data-t="cloud"]{right:calc(max(14px,env(safe-area-inset-right,0px)) + 82px);bottom:max(44px,calc(20px + env(safe-area-inset-bottom,0px) + var(--a3d-bar-space,0px)));width:54px;height:54px}
+#cr-ui .touch button[data-t="pole"]{right:calc(max(14px,env(safe-area-inset-right,0px)) + 52px);bottom:max(116px,calc(92px + env(safe-area-inset-bottom,0px) + var(--a3d-bar-space,0px)));width:54px;height:54px}
 #cr-ui .touch button .cring{position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);transform:rotate(-90deg);pointer-events:none}
 #cr-ui .touch button .cring circle{fill:none;stroke:#ffd75e;stroke-width:3;stroke-linecap:round;stroke-dasharray:144.5;stroke-dashoffset:144.5;transition:stroke-dashoffset .12s linear}
 #cr-ui .touch button[data-t="cloud"].ready{border-color:#ffe27a;box-shadow:0 0 0 2px rgba(255,226,122,.65),0 0 18px rgba(255,215,94,.65)}
-#cr-ui .hud-top,#cr-ui .gauge,#cr-ui .combo,#cr-ui .toast,#cr-ui .prompt{transition:opacity .4s}
-#cr-ui .scr.fin .hud-top,#cr-ui .scr.fin .gauge,#cr-ui .scr.fin .combo,#cr-ui .scr.fin .toast,#cr-ui .scr.fin .prompt,#cr-ui .scr.fin .touch{opacity:0 !important;pointer-events:none}
+#cr-ui .hud-top,#cr-ui .gauge,#cr-ui .combo,#cr-ui .toast,#cr-ui .prompt,#cr-ui .boss-hp{transition:opacity .4s}
+#cr-ui .scr.fin .hud-top,#cr-ui .scr.fin .gauge,#cr-ui .scr.fin .combo,#cr-ui .scr.fin .toast,#cr-ui .scr.fin .prompt,#cr-ui .scr.fin .boss-hp,#cr-ui .scr.fin .touch{opacity:0 !important;pointer-events:none}
 #cr-ui .loading .fail{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:min(520px,88vw);text-align:center;letter-spacing:0;font-variant-caps:normal}
 #cr-ui .loading .fail small{font-size:12px;opacity:.85;word-break:break-word}
 #cr-ui .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#5f95c9,#c6dce9);font-size:14px;font-weight:500;font-variant-caps:all-small-caps;color:#fff;letter-spacing:.06em;transition:opacity .5s}
@@ -170,9 +178,12 @@ const CSS = `
 #cr-ui .prog .dist{top:2px;font-size:12px}
 #cr-ui .gauge{top:calc(var(--a3d-bar-space,calc(12px + env(safe-area-inset-top,0px))) + 88px);bottom:auto;width:min(232px,64vw);padding:5px 11px;gap:8px}
 #cr-ui .gauge kbd{display:none}
+#cr-ui .boss-hp{top:calc(var(--a3d-bar-space,calc(12px + env(safe-area-inset-top,0px))) + 124px);width:min(256px,72vw);padding:5px 10px}
 #cr-ui .combo{top:calc(var(--a3d-bar-space,calc(12px + env(safe-area-inset-top,0px))) + 126px);right:max(12px,env(safe-area-inset-right,0px))}
-#cr-ui .toast{bottom:calc(162px + env(safe-area-inset-bottom,0px))}
+#cr-ui .toast{bottom:max(182px,calc(168px + env(safe-area-inset-bottom,0px) + var(--a3d-bar-space,0px)))}
 #cr-ui .touch{ display:block }
+#cr-ui .keys{display:none}
+#cr-ui .menu{bottom:max(58px,calc(42px + env(safe-area-inset-bottom,0px)))}
 }
 @media (max-height:520px){#cr-ui .title{top:5vh}#cr-ui .menu{bottom:16vh}}
 @media (max-height:420px){#cr-ui .panel{padding:10px 18px}#cr-ui .panel h2{font-size:20px;margin:0}#cr-ui .panel .sub{margin-bottom:6px}#cr-ui .stats{gap:4px;margin:6px 0 8px}#cr-ui .stats div{padding:3px 4px}#cr-ui .stats b{font-size:15px}#cr-ui .stats small{font-size:11px}#cr-ui .panel .btns{margin-top:8px}}
@@ -198,7 +209,10 @@ export class Ui {
     this.reducedMotion = opts.reducedMotion;
     this.difficulty = opts.difficulty;
     this.root.id = "cr-ui";
-    if (opts.storm) this.root.classList.add("storm");
+    if (opts.storm) {
+      this.root.classList.add("storm");
+      this.root.dataset.expeditionFont = "1";
+    }
     this.touchMode = matchMedia("(pointer: coarse)").matches;
     if (this.touchMode) this.root.classList.add("coarse");
     const style = el("style"); style.textContent = CSS; this.root.appendChild(style);
@@ -214,6 +228,7 @@ export class Ui {
         <div class="prog"><div class="bar"><div class="fill" data-q="fill"></div></div><div class="me" data-q="me"></div><div class="dist" data-q="dist">0%</div></div>
         <div class="right"><div class="score-card glass"><span class="score-lbl">Score</span><div class="score" data-q="score">0</div></div></div></div>
       <div class="combo" data-q="combo"></div>
+      <div class="boss-hp glass" data-q="bosshp"><div class="bhead"><span>Storm Tyrant</span><b data-q="bossval">100%</b></div><div class="btrack"><div class="bfill" data-q="bossfill"></div></div></div>
       <div class="prompt" data-q="prompt"><span class="tag" data-q="tag"></span><div class="ttl" data-q="ttl"></div><div class="help" data-q="help"></div></div>
       <div class="duel" data-q="duel"></div>
       <div class="toast glass" data-q="toast"></div>
@@ -327,6 +342,16 @@ export class Ui {
     const j = s.janken;
     const duel = j ? (j.t < 0.36 ? "ROCK…" : j.t < 0.74 ? "PAPER…" : ({ guu: "ROCK!", paa: "PAPER!", choki: "SCISSORS!" } as Record<string, string>)[j.hand ?? ""] ?? "!") : "";
     this.set("duel", duel, () => { this.q.duel!.textContent = duel; this.q.duel!.classList.toggle("on", !!duel); });
+    const trex = g.enc.trex;
+    const bossOn = Boolean(trex && !trex.beaten && s.s > trex.creature.s - 30 && s.s < (trex.creature.until ?? 0) + 14 && ph === "playing");
+    const bossTotal = trex ? Math.max(1, trex.attacks.length) : 1;
+    const bossLeft = trex ? trex.attacks.filter((a) => !a.done).length : 0;
+    const bossPct = bossOn ? Math.round((bossLeft / bossTotal) * 100) : 0;
+    this.set("bosshp", bossOn ? bossPct + 1 : 0, () => {
+      this.q.bosshp?.classList.toggle("on", bossOn);
+      if (this.q.bossfill) this.q.bossfill.style.width = `${bossPct}%`;
+      if (this.q.bossval) this.q.bossval.textContent = `${bossPct}%`;
+    });
     const fl = this.q.flash!, flash = Math.round(flashOpacity(g.flash?.k, g.reducedMotion) * 100) / 100, flashColor = g.flash?.color ?? "#fff";
     this.set("flash", `${flashColor}${flash}`, () => { fl.style.background = flashColor; fl.style.opacity = String(flash); });
     const fin = ph === "finale";

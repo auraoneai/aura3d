@@ -44,6 +44,7 @@ export class RoadsterHud implements GameHud {
   private lastRungs = -1;
   private airWrap!: HTMLElement;
   private boltsEl!: HTMLElement;
+  private boltsInlineEl!: HTMLElement;
   private puWrap!: HTMLElement;
   private popWrap!: HTMLElement;
   private objectiveEl!: HTMLElement;
@@ -86,10 +87,12 @@ export class RoadsterHud implements GameHud {
         <div class="rr-card rr-score-card">
           <div class="rr-head"><span class="rr-micro">score</span><span class="rr-mult">×1</span></div>
           <div class="rr-score">0</div>
-          <div class="rr-sub"><span class="rr-dist">0</span><span class="rr-micro">m</span></div>
+          <div class="rr-sub"><span class="rr-dist">0</span><span class="rr-micro">m</span><span class="rr-mobile-bolts"><span class="rr-micro">bolts</span><b class="rr-bolts-inline">0</b></span></div>
           <div class="rr-combo"><i></i></div>
-          ${clusterMarkup()}
           <div class="rr-mile"><span class="rr-micro">next</span><span class="rr-mile-label rr-micro">1 km</span><div class="rr-mile-track"><div class="rr-mile-fill"></div></div></div>
+        </div>
+        <div class="rr-card rr-cluster-card">
+          ${clusterMarkup()}
         </div>
         <div class="rr-powerups"></div>
       </div>
@@ -115,6 +118,7 @@ export class RoadsterHud implements GameHud {
     this.timeEl = run.querySelector(".rr-time-val")!;
     this.mileFill = run.querySelector(".rr-mile-fill")!;
     this.mileLabel = run.querySelector(".rr-mile-label")!;
+    this.boltsInlineEl = run.querySelector(".rr-bolts-inline")!;
 
     const right = el("div", "rr-right");
     const pauseBtn = el("button", "rr-icon-btn", CONTROL_ICONS.pause);
@@ -328,6 +332,7 @@ export class RoadsterHud implements GameHud {
     if (state.bolts !== this.last.bolts) {
       this.last.bolts = state.bolts;
       this.boltsEl.textContent = String(state.bolts);
+      this.boltsInlineEl.textContent = String(state.bolts);
     }
     if (state.mult !== this.last.mult) {
       this.last.mult = state.mult;

@@ -39,7 +39,18 @@ export interface PipPractical {
 
 export type PipSkySpec =
   | { readonly model: "preetham"; readonly turbidity: number; readonly rayleigh: number; readonly exposure: number; readonly groundColor: string }
-  | { readonly model: "gradient"; readonly zenith: string; readonly horizon: string; readonly ground: string; readonly exponent: number; readonly horizonGlow: number; readonly stars?: { readonly count: number; readonly brightness: number } };
+  | {
+      readonly model: "gradient";
+      readonly zenith: string;
+      readonly horizon: string;
+      readonly ground: string;
+      readonly exponent: number;
+      readonly horizonGlow: number;
+      readonly haze?: { readonly intensity: number; readonly height?: number; readonly color?: string };
+      readonly sun?: { readonly glow?: { readonly inner?: number; readonly outer?: number }; readonly color?: string };
+      readonly dither?: boolean;
+      readonly stars?: { readonly count: number; readonly brightness: number };
+    };
 
 export interface WorldLook {
   readonly id: WorldId;
@@ -332,7 +343,18 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     exposureEv: 0.25,
     fog: { color: "#18224a", near: 140, far: 430, density: 0.00025, heightDensity: 0.0055, heightFalloff: 0.85, maxOpacity: 0.10 },
     base: { felt: "#1e2a4a", clay: "#2a2a4a", skirt: "#0a0c1a", mound: "#24365a" },
-    sky: { model: "gradient", zenith: "#060a1e", horizon: "#1c2a5a", ground: "#0a0c1a", exponent: 1.2, horizonGlow: 0.2, stars: { count: 900, brightness: 1.2 } },
+    sky: {
+      model: "gradient",
+      zenith: "#060a1e",
+      horizon: "#1c2a5a",
+      ground: "#0a0c1a",
+      exponent: 1.2,
+      horizonGlow: 0.2,
+      haze: { intensity: 0.16, height: 0.24, color: "#283c78" },
+      sun: { glow: { inner: 0.28, outer: 0.12 }, color: "#c8dcff" },
+      dither: true,
+      stars: { count: 900, brightness: 1.2 }
+    },
     post: { preset: "space", contrast: 1.04, saturation: 1.02, temperature: -0.12, tint: 0.02, vignette: { intensity: 0.12, color: "#03040a" } },
     ambient: { kind: "fireflies", color: "#d8ff7a", maxParticles: 160, rate: 18, size: [0.03, 0.06], lifetime: [4, 7], speed: [0.08, 0.26], gravity: 0, drag: 0.35, additive: true },
     practicals: [
@@ -367,12 +389,19 @@ export function heightFogFor(look: WorldLook, baseTop: number): AuraHeightFogSpe
   };
 }
 
+export interface WorldShadowFitBox {
+  readonly center: readonly [number, number, number];
+  readonly extent: number | readonly [number, number];
+  readonly depth?: number;
+}
+
 /**
  * PBL-L1/E1/P1 as E-A look overrides: the world's catalogue HDRI (IBL only; the colour
- * background keeps it out of the backdrop), the PCSS 3-cascade key at the world's sun
- * angles, the cool rim, the base height fog, the per-world grade and the post preset.
+ * background keeps it out of the backdrop), the calibrated 5.7.2 PCSS key with `softness`
+ * and optional world-fitted `shadow.fit` box, cool rim, base height fog, per-world grade,
+ * and post preset.
  */
-export function lookOverridesFor(look: WorldLook, baseTop: number): AuraLookOverrides {
+export function lookOverridesFor(look: WorldLook, baseTop: number, shadowFit?: WorldShadowFitBox): AuraLookOverrides {
   return {
     sun: { elevationDeg: look.key.elevationDeg, azimuthDeg: look.key.azimuthDeg },
     exposureEv: look.exposureEv,
@@ -383,10 +412,19 @@ export function lookOverridesFor(look: WorldLook, baseTop: number): AuraLookOver
     key: {
       color: look.key.color,
       intensity: look.key.intensity,
-      // WP-11: 2 camera-fitted cascades within 42 m cut shadow draw calls by 33% and double near-field penumbra texel density.
-      // 5.7.0 honours shadow.softness (texels; unset = the old kernel). look.key.softness was tuned while it was ignored,
-      // so it is not passed: the shadows keep the look they shipped with until the rows are retuned on a real GPU.
-      shadow: { filter: "pcss", cascades: 2, maxDistance: 42, lightSize: look.key.lightSize, mapSize: 2048, bias: 0.0032, normalBias: 0.2 }
+      // 5.7.2: calibrated PCF/PCSS penumbra (`softness: 1.6`) + optional light-space `shadow.fit` box
+      // so diorama shadows stay crisp and shimmer-free across desktop/portrait zoom and pan.
+      shadow: {
+        filter: "pcss",
+        cascades: 2,
+        maxDistance: 42,
+        lightSize: look.key.lightSize,
+        softness: 1.6,
+        ...(shadowFit ? { fit: shadowFit } : {}),
+        mapSize: 2048,
+        bias: 0.0032,
+        normalBias: 0.2
+      }
     },
     rim: { color: look.rim.color, intensity: look.rim.intensity, azimuthDeg: look.rim.azimuthDeg },
     fog: { color: look.fog.color, height: heightFogFor(look, baseTop) },

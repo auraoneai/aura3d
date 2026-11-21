@@ -29,7 +29,7 @@ export interface LookRow {
   readonly id: OrbitLook;
   readonly timeOfDay: string;
   readonly sky: string;
-  readonly key: DirectionalRow & { readonly elevationDeg: number; readonly azimuthDeg: number; readonly cascades: 2 | 3; readonly filter: "pcf" | "pcss"; readonly maxDistance: number };
+  readonly key: DirectionalRow & { readonly elevationDeg: number; readonly azimuthDeg: number; readonly cascades: 2 | 3; readonly filter: "pcf" | "pcss"; readonly maxDistance: number; readonly softness: number };
   readonly fill: DirectionalRow | null;
   /** SO47-L2: warm unshadowed directional from the gas giant. */
   readonly planetshine: DirectionalRow | null;
@@ -75,7 +75,7 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     id: "gouache",
     timeOfDay: "permanent planet-rise and crescent earthrise, low grazing rim sun",
     sky: "ink-teal lunar sky with jade-terracotta nebula dust, banded ochre gas giant, and sunlit crescent Earthrise captured into the environment probe",
-    key: { elevationDeg: 18, azimuthDeg: 0, position: lightPosition(18, 0), color: "#fff4e6", intensity: 3.5, cascades: 3, filter: "pcss", maxDistance: 200 },
+    key: { elevationDeg: 18, azimuthDeg: 0, position: lightPosition(18, 0), color: "#fff4e6", intensity: 3.5, cascades: 3, filter: "pcss", maxDistance: 200, softness: 1.2 },
     fill: null,
     planetshine: { position: [GIANT_POSITION[0], GIANT_POSITION[1] + 60, GIANT_POSITION[2]], color: "#ffb48c", intensity: 0.8 },
     // Cool Earthshine from the crescent Earthrise overhead paired with shadowed iron-basalt regolith bounce.
@@ -89,7 +89,7 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
       vignette: { intensity: 0.3, smoothness: 0.64 },
       grain: { intensity: 0.025, size: 1.5 }
     },
-    camera: { baseFov: 64, boostKick: 9, landingKick: 5, leanRollDeg: 2.2 },
+    camera: { baseFov: 64, boostKick: 11, landingKick: 5, leanRollDeg: 2.2 },
     planet: { position: GIANT_POSITION, size: 520, ring: false, moon: false },
     exposureEV: 0.88,
     signature: { brush: 1, splitTone: 1 }
@@ -98,7 +98,7 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     id: "original",
     timeOfDay: "4.6.1 look: high warm key, cool fill",
     sky: "nebula dome + small planet overhead, neutral room environment",
-    key: { elevationDeg: 52.7, azimuthDeg: -45, position: [150, 280, -150], color: "#ffd09a", intensity: 2.6, cascades: 2, filter: "pcf", maxDistance: 160 },
+    key: { elevationDeg: 52.7, azimuthDeg: -45, position: [150, 280, -150], color: "#ffd09a", intensity: 2.6, cascades: 2, filter: "pcf", maxDistance: 160, softness: 0.8 },
     fill: { position: [-140, 80, 210], color: "#8195bc", intensity: 1.0 },
     planetshine: null,
     hemisphere: { sky: "#f8d4a0", ground: "#2f3957", intensity: 1.1 },

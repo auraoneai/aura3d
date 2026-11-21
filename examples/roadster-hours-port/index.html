@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Saltwind Highway</title>
   <link rel="stylesheet" href="../../apps/showcase-port-shared/hud-tokens.css">
   <style>
-    :root { --ink: rgba(248,250,252,.94); --ink-2: rgba(203,213,225,.76); --line: rgba(255,255,255,.14); --glass: var(--hud-glass, rgba(10,14,22,.68)); --accent: #ffb347; --cyan: #6fe4e6; --heat: #ff6b3b; --red: #e31937; --top-safe: calc(max(14px, env(safe-area-inset-top)) + var(--a3d-bar-space, 0px)); }
+    :root { --a3g-fg: #f5f7fa; --a3g-fg-dim: #aab4c0; --a3g-accent: #ffcf3f; --a3g-accent2: #2ec4ff; --a3g-warn: #ff9f1c; --a3g-danger: #ef233c; --a3g-bg: rgba(10,12,16,.78); --a3g-edge: rgba(255,207,63,.5); --ink: rgba(248,250,252,.94); --ink-2: rgba(203,213,225,.76); --line: rgba(255,255,255,.14); --glass: var(--hud-glass, rgba(10,14,22,.68)); --accent: #ffb347; --cyan: #6fe4e6; --heat: #ff6b3b; --red: #e31937; --top-safe: calc(max(14px, env(safe-area-inset-top)) + var(--a3d-bar-space, 0px)); }
     /* GU47 RH47-17: Saltwind identity tokens (salt white panels, sea teal bars, signal red as the only accent). ?look=original keeps the tokens above. */
     body:not(.look-original) { --accent: #c8321f; --cyan: #5fb3ad; --heat: #d99b43; --red: #c8321f; --salt: rgba(236,231,219,.92); --salt-ink: #1c2427; --salt-ink-2: rgba(28,36,39,.72); --salt-line: rgba(28,36,39,.16); }
     body:not(.look-original) .keys, body:not(.look-original) .modal, body:not(.look-original) .routes a, body:not(.look-original) button.ghost { background: var(--salt); color: var(--salt-ink); border-color: var(--salt-line); text-shadow: none; }
@@ -22,6 +22,8 @@
     #speedo-arc .track { stroke: rgba(233,228,214,.24); stroke-dasharray: 75 100; }
     #speedo-fill { stroke: #f2ede0; stroke-dasharray: 0 100; transition: stroke .15s ease; }
     #speedo.nitro #speedo-fill { stroke: var(--accent); filter: drop-shadow(0 0 5px rgba(200,50,31,.88)); }
+    #speedo.window #speedo-fill { stroke: #46e08a; filter: drop-shadow(0 0 6px rgba(70,224,138,.85)); animation: speedo-window .35s ease-in-out infinite alternate; }
+    @keyframes speedo-window { from { stroke: #46e08a; } to { stroke: var(--accent); } }
     body:not(.look-original) #speedo small { font-family: var(--font-ui); font-size: 12px; font-variant-caps: all-small-caps; letter-spacing: .08em; }
     /* GU47 RH47-16: letterbox bars for the intro rail (none on reduced motion: the director never raises them). */
     body.shot-bars::before, body.shot-bars::after { content: ""; position: fixed; left: 0; right: 0; height: calc(var(--shot-bars, 0) * 10vh); background: #050607; z-index: 1; pointer-events: none; }
@@ -89,7 +91,13 @@
     @keyframes nitro-window { from { opacity: .55; } to { opacity: 1; } }
     #nitro-label { color: var(--ink); font-weight: 500; }
     .gauge:has(.bar.window) #nitro-label { color: #46e08a; }
-    #pause-button { position: absolute; right: 20px; top: calc(var(--top-safe) + 64px); pointer-events: auto; min-width: 44px; min-height: 44px; padding: 0 12px; }
+    #pause-button { position: absolute; right: 20px; top: calc(var(--top-safe) + 64px); pointer-events: auto; min-width: 44px; min-height: 44px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    #mute { position: fixed; right: 16px; bottom: 16px; z-index: 5; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    #pause-button .btn-icon, #mute .btn-icon { width: 18px; height: 18px; flex: 0 0 auto; display: block; }
+    #mute .icon-off { display: none; }
+    #mute[data-muted="true"] .icon-on { display: none; }
+    #mute[data-muted="true"] .icon-off { display: block; }
+    body:not(.look-original) #pause-button.ghost, body:not(.look-original) #mute.ghost { background: rgba(10,14,22,.56); color: var(--ink); border: 1px solid rgba(255,255,255,.22); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
     #touch { display: none; }
     body.touch #touch { display: block; }
     body.touch #touch button { position: absolute; pointer-events: auto; min-height: 44px; min-width: 44px; padding: 0; border-radius: 50%; font-family: var(--font-ui); font-size: 12px; font-weight: 500; background: rgba(10,14,24,.62); border: 1px solid rgba(255,255,255,.28); color: var(--ink); touch-action: none; user-select: none; -webkit-user-select: none; backdrop-filter: blur(6px); }
@@ -117,16 +125,14 @@
     body.touch #pause-button { top: calc(var(--top-safe) + 64px); right: 10px; }
     body.touch #mute { top: calc(var(--top-safe) + 114px); bottom: auto; right: 10px; }
     body.touch .enter-hint { display: none; }
-    body.reduced-motion .bar.window i { animation: none; }
-    @media (prefers-reduced-motion: reduce) { .bar.window i { animation: none; } }
-    .credit { font-size: 12px; color: var(--ink-2); max-width: 52ch; }
+    body.reduced-motion .bar.window i, body.reduced-motion #speedo.window #speedo-fill { animation: none; }
+    @media (prefers-reduced-motion: reduce) { .bar.window i, #speedo.window #speedo-fill { animation: none; } }
     #pause, #results, #controls { justify-content: center; background: rgba(5,7,12,.58); backdrop-filter: blur(4px); }
     .modal { min-width: 300px; max-width: calc(100vw - 40px); padding: 20px 24px; display: grid; gap: 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(12,16,26,.92); }
-    .modal h1 { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.15; text-transform: capitalize; }
+    .modal :is(h1, h2, .a3d-h1) { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.15; text-transform: capitalize; }
     .stats { display: grid; grid-template-columns: 1fr auto; gap: 4px 24px; }
     .stats dt { color: var(--ink-2); }
     .stats dd { margin: 0; font-weight: 500; text-align: right; }
-    #mute { position: fixed; right: 16px; bottom: 16px; z-index: 5; min-height: 44px; min-width: 44px; }
     @media (pointer: coarse), (max-width: 760px) {
       #hud .tl { left: 10px; top: var(--top-safe); padding: 5px 8px; }
       #hud .tr { right: 10px; top: var(--top-safe); padding: 5px 8px; }
@@ -134,8 +140,11 @@
       body:not(.touch) #dash { width: min(320px, calc(100vw - 24px)); grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; bottom: max(14px, env(safe-area-inset-bottom)); }
       body:not(.touch) #coach { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 114px); }
       body:not(.touch) #speed { font-size: 32px; }
-      #mute { right: 10px; bottom: auto; top: calc(var(--top-safe) + 114px); padding: 0 10px; min-height: 44px; min-width: 44px; }
-      #pause-button { right: 10px; top: calc(var(--top-safe) + 64px); min-height: 44px; min-width: 44px; }
+      /* 44x44 translucent smoked-glass icon buttons on mobile (never stark white rectangles over sky). */
+      #mute, #pause-button { width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; border-radius: 10px; }
+      #mute .btn-label, #pause-button .btn-label { display: none; }
+      #mute { right: 10px; bottom: auto; top: calc(var(--top-safe) + 114px); }
+      #pause-button { right: 10px; top: calc(var(--top-safe) + 64px); }
       .card { margin-left: 16px; width: calc(100vw - 32px); gap: 10px; }
       .wordmark { font-size: 34px; }
       /* Portrait HUD (390x844 QA, Nov 19): the route bar left the top row (a long act name ran into it) and docks above the
@@ -156,6 +165,8 @@
     body.touch #count { top: 21%; font-size: 76px; }
     body.touch #pause-button { top: calc(var(--top-safe) + 74px); }
     body.touch #mute { top: calc(var(--top-safe) + 124px); }
+    body.touch #mute, body.touch #pause-button { width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; border-radius: 10px; }
+    body.touch #mute .btn-label, body.touch #pause-button .btn-label { display: none; }
     #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0b0d12; text-align: center; }
     #loading b { font-weight: 600; font-size: 16px; }
   </style>
@@ -175,7 +186,7 @@
       <div class="gauge"><div class="row"><span>Heat</span><span id="heat-label"></span></div><div class="bar"><i id="heat-fill"></i></div></div>
     </div>
     <span id="phase"></span>
-    <button id="pause-button" class="ghost hidden" type="button" aria-label="Pause">Pause</button>
+    <button id="pause-button" class="ghost hidden" type="button" aria-label="Pause"><svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg><span class="btn-label">Pause</span></button>
     <div id="touch" aria-label="Touch controls">
       <button id="touch-left" class="big" type="button" aria-label="Steer left">Left</button>
       <button id="touch-right" class="big" type="button" aria-label="Steer right">Right</button>
@@ -206,13 +217,12 @@
       </dl>
       <div class="actions"><button id="start" disabled>Drive</button><span class="meta enter-hint">or press Enter</span></div>
       <div class="actions"><button id="controls-open" class="ghost" type="button">Change keys</button><button id="motion" class="ghost" type="button" aria-pressed="false">Motion: full</button></div>
-      <div class="credit">An independent game built with Aura3D. Every vehicle, coastal landmark, road, cliff, ocean and sky is sculpted procedurally with @aura3d/engine; the sound is synthesised.</div>
     </div>
   </div>
-  <div id="pause" class="panel hidden"><div class="modal"><h1>Paused</h1><div class="actions"><button id="resume">Resume</button><button id="restart" class="ghost">Restart route</button></div></div></div>
+  <div id="pause" class="panel hidden"><div class="modal"><h2 class="a3d-h1">Paused</h2><div class="actions"><button id="resume">Resume</button><button id="restart" class="ghost">Restart route</button></div></div></div>
   <div id="results" class="panel hidden">
     <div class="modal">
-      <h1 id="result-medal"></h1>
+      <h2 id="result-medal" class="a3d-h1"></h2>
       <div class="best" id="result-best"></div>
       <dl class="stats">
         <dt>Time</dt><dd id="result-time" class="num"></dd>
@@ -224,8 +234,8 @@
       <div class="actions"><button id="again">Run it again</button><button id="next" class="ghost hidden">Next route</button></div>
     </div>
   </div>
-  <div id="controls" class="panel hidden"><div class="modal"><h1>Keys</h1><div id="remap"></div><div class="actions"><button id="controls-close" type="button">Done</button><button id="controls-reset" class="ghost" type="button">Reset keys</button></div></div></div>
-  <button id="mute" class="ghost hidden" aria-label="Toggle sound">Sound on</button>
+  <div id="controls" class="panel hidden"><div class="modal"><h2 class="a3d-h1">Keys</h2><div id="remap"></div><div class="actions"><button id="controls-close" type="button">Done</button><button id="controls-reset" class="ghost" type="button">Reset keys</button></div></div></div>
+  <button id="mute" class="ghost hidden" type="button" aria-label="Toggle sound" aria-pressed="false"><svg class="btn-icon icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/></svg><svg class="btn-icon icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg><span class="btn-label">Sound on</span></button>
   <div id="loading"><div><b>Saltwind Highway</b><br><span class="meta" id="loading-status">Preparing the road ahead</span></div></div>
   <script type="module" src="./main.ts"></script>
 </body>

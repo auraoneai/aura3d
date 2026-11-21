@@ -12,14 +12,14 @@
  *   - Paired GLSL+WGSL `ringShockwaveSpec` + `createFlipbookAtlas("ripple")` & `createFlipbookAtlas("sparks")` VFX
  *   - Tight `CORRIDOR_BOUNDS` on all dynamic corridor batches.
  */
-import { camera, effects, environments, geometry, group, instances, lights, material, model, primitives, scene, type AuraApp, type AuraMaterialSpec, type AuraNodeBuilder, type AuraSceneNode } from "@aura3d/engine";
+import { camera, effects, environments, geometry, group, instances, lights, material, model, primitives, scene, sky, type AuraApp, type AuraMaterialSpec, type AuraNodeBuilder, type AuraSceneNode } from "@aura3d/engine";
+import { createFlipbookAtlas } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
-  Batch, CORRIDOR_BOUNDS, flatSpec, shadowSpec, toonSpec,
+  Batch, CORRIDOR_BOUNDS, flatSpec, gradientSkyOptions, shadowSpec, toonSpec,
   type CustomSpec, type MeshData
 } from "../../../examples/shared/runner-kit/index";
-import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
 import { CONFIG, LANES, laneBit, laneX, obstacleZ, type BeatHopperSim, type ObstacleType, type Pose } from "./sim";
 import { LOOK, beatPulse, linear } from "./look";
 import {
@@ -321,7 +321,13 @@ export function buildWorld(_options: WorldOptions): World {
     target: [0, 0, -12],
     intensity: 1.28,
     color: "#cee2ff",
-    shadow: { cascades: 2, maxDistance: 85, mapSize: 2048 }
+    shadow: {
+      cascades: 2,
+      maxDistance: 85,
+      mapSize: 2048,
+      softness: 1.6,
+      fit: { center: [0, 0, -14], extent: 16, depth: 48 }
+    }
   }));
   builder.add(lights.point({
     name: "stage-gold-kicker",
@@ -385,6 +391,13 @@ export function buildWorld(_options: WorldOptions): World {
     );
   };
 
+  /* 5.7.2 stylized sky.gradient via runner-kit `gradientSkyOptions` (haze + dither) + synthwave stage dome */
+  builder.add(
+    sky.gradient({
+      name: "bh-gradient-sky",
+      ...gradientSkyOptions(LOOK.skyStops, { haze: { intensity: 0.15 }, dither: true })
+    })
+  );
   /* Sky dome */
   addCustom("sky", sphereMesh(SKY_RADIUS, 32, 20), stageSkySpec(), {
     min: [-SKY_RADIUS, -SKY_RADIUS, -SKY_RADIUS],
@@ -678,6 +691,22 @@ export function buildWorld(_options: WorldOptions): World {
   }), true, barPostsTpl.colors);
   addBatchCustom("bars", bars, multiGlowBatchSpec());
 
+  // Dual-coded overhead Duck laser chevrons (#ff3b5c pointing DOWN) vs ground Jump crate rims (#00f2ff pulsing UP).
+  const duckChevrons = new Batch(
+    translateMesh(boxMesh(0.42, 0.08, 0.08), 0, 1.38, 0.18),
+    PIECES,
+    linear("#ff3b5c"),
+    CORRIDOR_BOUNDS
+  );
+  addBatchCustom("duck-chevrons", duckChevrons, flatSpec([1, 1, 1], 0.96, true));
+  const jumpRims = new Batch(
+    translateMesh(boxMesh(1.62, 0.075, 0.56), 0, 0.88, 0),
+    PIECES,
+    linear("#00f2ff"),
+    CORRIDOR_BOUNDS
+  );
+  addBatchCustom("jump-rims", jumpRims, flatSpec([1, 1, 1], 0.94, true));
+
   addBatchCustom("gaps", gaps, gapChasmSpec(HAZE));
 
   addBatchPbr("walls", walls, material.lacquer({
@@ -727,6 +756,34 @@ export function buildWorld(_options: WorldOptions): World {
 
   const sparkCards = new Batch(uprightQuadXYMesh(1), POOL_SPARK_CARDS, [0, 0, 0], CORRIDOR_BOUNDS);
   addBatchCustom("vfx-sparks", sparkCards, flipbookBurstSpec(sparksAtlas(), 1.95));
+
+  // 5.7.0 live-texture `effects.flipbook({ texture })` emitters for PERFECT gold bursts & shockwave ripples.
+  builder.add(
+    effects.flipbook({
+      name: "bh-perfect-ripple-fb",
+      texture: rippleAtlas().texture,
+      spriteColumns: rippleAtlas().columns,
+      spriteRows: rippleAtlas().rows,
+      frameRate: 30,
+      loop: false,
+      size: 2.3,
+      color: "#ffbe2e",
+      blend: "additive"
+    }).position(0, -50, -60).runtime({ id: "bh-perfect-ripple-fb" })
+  );
+  builder.add(
+    effects.flipbook({
+      name: "bh-perfect-sparks-fb",
+      texture: sparksAtlas().texture,
+      spriteColumns: sparksAtlas().columns,
+      spriteRows: sparksAtlas().rows,
+      frameRate: 36,
+      loop: false,
+      size: 1.9,
+      color: "#00f2ff",
+      blend: "additive"
+    }).position(0, -50, -60).runtime({ id: "bh-perfect-sparks-fb" })
+  );
 
   const particles = new Batch(sphereMesh(0.09, 4, 3), CONFIG.POOL_PARTICLES, [1, 1, 1], CORRIDOR_BOUNDS);
   addBatchCustom("particles", particles, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
@@ -804,6 +861,7 @@ export function buildWorld(_options: WorldOptions): World {
       let skatesAttached = false;
       let skateSpin = 0;
       let lastJudgeAt = -10;
+      let perfectFbTimer = 0;
       let lastMilestones = 0;
       let lastOrbs = 0;
       const partShown: boolean[] = Array.from({ length: CONFIG.POOL_PARTICLES }, () => false);
@@ -1152,11 +1210,13 @@ export function buildWorld(_options: WorldOptions): World {
               blocks.place(piece, lx, 0, localOz, 0, 1, 1, 1);
               blockChrome.place(piece, lx, 0, localOz, 0, 1, 1, 1);
               blockGlow.place(piece, lx, 0, localOz, 0, 1, 1, 1);
+              jumpRims.place(piece, lx, 0, localOz, 0, 1, 1, 1);
               obstacleShown.block[piece] = true;
             } else if (obstacleShown.block[piece]) {
               blocks.collapse(piece);
               blockChrome.collapse(piece);
               blockGlow.collapse(piece);
+              jumpRims.collapse(piece);
               obstacleShown.block[piece] = false;
             }
 
@@ -1164,10 +1224,12 @@ export function buildWorld(_options: WorldOptions): World {
             if (showBar) {
               barPosts.place(piece, lx, 0, localOz, 0, 1, 1, 1);
               bars.place(piece, lx, 0, localOz, 0, 1, 1, 1);
+              duckChevrons.place(piece, lx, 0, localOz, 0, 1, 1, 1);
               obstacleShown.bar[piece] = true;
             } else if (obstacleShown.bar[piece]) {
               barPosts.collapse(piece);
               bars.collapse(piece);
+              duckChevrons.collapse(piece);
               obstacleShown.bar[piece] = false;
             }
 
@@ -1191,8 +1253,10 @@ export function buildWorld(_options: WorldOptions): World {
         node("blocks").setPosition(0, 0, obsScroll).setScale(blockScale);
         node("block-chrome").setPosition(0, 0, obsScroll).setScale(blockScale);
         node("block-glow").setPosition(0, 0, obsScroll).setScale(blockScale);
+        node("jump-rims").setPosition(0, reduced ? 0 : 0.045 * pulse, obsScroll).setScale([1 + 0.03 * pulse, 1, 1 + 0.03 * pulse]);
         node("bar-posts").setPosition(0, 0, obsScroll);
         node("bars").setPosition(0, 0, obsScroll);
+        node("duck-chevrons").setPosition(0, reduced ? 0 : -0.055 * pulse, obsScroll);
         node("gaps").setPosition(0, 0, obsScroll);
         node("walls").setPosition(0, 0, obsScroll).setScale(wallScale);
         node("wall-truss").setPosition(0, 0, obsScroll).setScale(wallScale);
@@ -1200,8 +1264,10 @@ export function buildWorld(_options: WorldOptions): World {
         blocks.flush(node("blocks"));
         blockChrome.flush(node("block-chrome"));
         blockGlow.flush(node("block-glow"));
+        jumpRims.flush(node("jump-rims"), false);
         barPosts.flush(node("bar-posts"));
         bars.flush(node("bars"));
+        duckChevrons.flush(node("duck-chevrons"), false);
         gaps.flush(node("gaps"), false);
         walls.flush(node("walls"));
         wallTruss.flush(node("wall-truss"));
@@ -1237,6 +1303,11 @@ export function buildWorld(_options: WorldOptions): World {
             spawnFlipRipple(LOOK.perfect, 5.4, 0.56);
             spawnFlipSparks(4, LOOK.perfect, 0.9 + y, 1.9);
             burst(16, LOOK.perfect, 0.8 + y, 3.2);
+            if (!reduced) {
+              perfectFbTimer = 0.45;
+              node("bh-perfect-ripple-fb").setVisible(true).setPosition(px, 0.14, 0).setScale(1.1);
+              node("bh-perfect-sparks-fb").setVisible(true).setPosition(px, 0.95 + y, 0.12).setScale(1.0);
+            }
           } else if (j.kind === "good") {
             spawnRing(LOOK.good, 0.055);
             spawnFlipRipple(LOOK.good, 4.2, 0.48);
@@ -1263,6 +1334,17 @@ export function buildWorld(_options: WorldOptions): World {
           spawnFlipSparks(5, LOOK.gold, 1.25, 2.4);
           burst(20, LOOK.gold, 1.2, 4);
           spawnRing(LOOK.gold, 0.055);
+        }
+        if (perfectFbTimer > 0) {
+          perfectFbTimer = Math.max(0, perfectFbTimer - dt);
+          const u = 1 - perfectFbTimer / 0.45;
+          if (perfectFbTimer <= 0 || reduced) {
+            node("bh-perfect-ripple-fb").setVisible(false).setPosition(0, -50, -60);
+            node("bh-perfect-sparks-fb").setVisible(false).setPosition(0, -50, -60);
+          } else {
+            node("bh-perfect-ripple-fb").setScale(1.05 + 0.9 * u);
+            node("bh-perfect-sparks-fb").setScale(0.95 + 0.65 * u);
+          }
         }
         if (o.phase === "splash" && lastMilestones !== 0) {
           lastMilestones = 0;
@@ -1384,20 +1466,22 @@ export function buildWorld(_options: WorldOptions): World {
       }
 
       const parked = [
-        "blocks", "block-chrome", "block-glow", "bar-posts", "bars", "gaps",
-        "walls", "wall-truss", "wall-glow", "orbs", "orb-glow", "rings", "vfx-ripples", "vfx-sparks", "particles"
+        "blocks", "block-chrome", "block-glow", "jump-rims", "bar-posts", "bars", "duck-chevrons", "gaps",
+        "walls", "wall-truss", "wall-glow", "orbs", "orb-glow", "rings", "vfx-ripples", "vfx-sparks", "particles",
+        "bh-perfect-ripple-fb", "bh-perfect-sparks-fb"
       ];
       function warm(on: boolean): void {
         if (!on) obsForceRefresh = true;
         for (const id of parked) {
-          const h = node(id).setVisible(true);
+          const isFb = id.startsWith("bh-perfect-");
+          const h = node(id).setVisible(isFb ? on : true);
           if (on) h.setPosition(0, -50, -60);
-          else h.setPosition(0, 0, 0);
+          else h.setPosition(0, isFb ? -50 : 0, isFb ? -60 : 0);
         }
       }
 
       const batches = [
-        stripes, dashes, blocks, blockChrome, blockGlow, barPosts, bars, gaps,
+        stripes, dashes, blocks, blockChrome, blockGlow, jumpRims, barPosts, bars, duckChevrons, gaps,
         walls, wallTruss, wallGlow, orbs, orbGlow, rings, rippleCards, sparkCards, particles
       ];
       return {

@@ -23,9 +23,13 @@
     <style>
       :root {
         --font-code: var(--font-mono);
-        --font: var(--font-ui);
+        --font: var(--a3g-font, var(--font-ui));
         --disp: var(--font-metric);
         --mono: var(--font-mono);
+        --a3d-accent: #3fd6c6;
+        --a3d-accent-ink: #051816;
+        --a3d-accent-2: #ffb347;
+        --a3d-accent-2-ink: #1c1002;
 
         --ink: #f3f4f1;
         --ink-2: rgba(243, 244, 241, 0.78);
@@ -140,6 +144,17 @@
         font-size: 12px;
         color: var(--ink-3);
         font-variant-numeric: tabular-nums;
+      }
+
+      #where .mobile-summary {
+        display: none;
+        margin-left: auto;
+        font-family: var(--font-metric);
+        font-size: 13px;
+        font-weight: 500;
+        color: #ffffff;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
       }
 
       #where .st {
@@ -1073,7 +1088,7 @@
       #dialC {
         position: absolute;
         left: 50%;
-        top: 46%;
+        top: 56%;
         transform: translate(-50%, -50%);
         text-align: center;
         line-height: 1;
@@ -1082,7 +1097,7 @@
       #spd {
         font-family: var(--font-metric);
         font-weight: 500;
-        font-size: 46px;
+        font-size: 38px;
         font-variant-numeric: tabular-nums;
         color: #ffffff;
         text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
@@ -1237,39 +1252,44 @@
         }
       }
       #dockToggle { display: none; }
-      /* Phones (390x844): top cards stack instead of overlapping, the dial shrinks, the dock collapses into one chip. */
+      /* Phones (390x844): single non-truncating merged header + collapsed 1-row fare pill (< 14% height), clean dial + compact L5 badge. */
       @media (max-width: 760px) {
-        #where { left: 8px; right: 8px; top: calc(8px + env(safe-area-inset-top, 0px)); min-width: 0; padding: 6px 10px; }
-        #where .coords, #where #wX { display: none; }
-        #topRightCluster { left: 8px; right: 8px; top: calc(70px + env(safe-area-inset-top, 0px)); flex-direction: row; align-items: center; justify-content: space-between; gap: 6px; }
-        /* Fare card and active trip: a compact sheet (18% of height), tap the title to collapse it to one line. */
-        /* Fare card and trip sit under the earnings row, clear of the dial and the touch pads (C15). */
-        #taxiCard, #taxiTrip { left: 8px; right: 8px; width: auto; top: calc(122px + env(safe-area-inset-top, 0px)); bottom: auto; transform: translateY(-6px); padding: 6px 10px; max-height: 18vh; overflow: hidden; }
+        #where { left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); top: calc(8px + env(safe-area-inset-top, 0px)); min-width: 0; padding: 6px 10px; gap: 0; }
+        #where .hood-row { gap: 8px; flex-wrap: nowrap; }
+        #where .hood { flex: 0 0 auto; white-space: nowrap; }
+        #where .mobile-summary { display: inline-block; overflow: hidden; text-overflow: ellipsis; }
+        #where .coords, #where .st, #where #wX { display: none; }
+        #topRightCluster { left: auto; right: max(8px, env(safe-area-inset-right, 0px)); top: calc(48px + env(safe-area-inset-top, 0px)); flex-direction: row; align-items: center; justify-content: flex-end; gap: 4px; }
+        #taxiTotal { display: none; }
+        /* Fare card and active trip: collapsed 1-row tap-to-expand pill by default on < 640px (top chrome <= 118px / < 14%). */
+        #taxiCard, #taxiTrip { left: max(8px, env(safe-area-inset-left, 0px)); right: max(192px, calc(env(safe-area-inset-right, 0px) + 192px)); width: auto; top: calc(48px + env(safe-area-inset-top, 0px)); bottom: auto; transform: translateY(-4px); padding: 4px 10px; max-height: 22vh; overflow: hidden; }
         #taxiCard.on, #taxiTrip.on { transform: none; }
-        #taxiCard.min, #taxiTrip.min { max-height: 36px; }
+        #taxiCard.min, #taxiTrip.min { max-height: 44px; padding-top: 0; padding-bottom: 0; }
+        #taxiCard.min .who, #taxiCard.min .leg, #taxiTrip.min .dst, #taxiTrip.min .row, #taxiTrip.min .cf, .tx.min .style-toggle { display: none; }
         .tx .tx-head { margin-bottom: 4px; }
-        .tx .tx-head .tg { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; }
-        .tx .tx-head .tg::after { content: " \25BE"; }
+        .tx.min .tx-head { margin-bottom: 0; }
+        .tx .tx-head .tg { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .tx .tx-head .tg::after { content: " \25BE"; flex: 0 0 auto; margin-left: 4px; }
         .tx.min .tx-head .tg::after { content: " \25B4"; }
         .tx .who small, .tx .leg small, .tx .dst small, .tx .row small, .tx .cf small { display: none; }
         .tx .who { gap: 8px; }
         .tx .leg, .tx .dst { padding: 2px 0; }
-        #taxiPen { top: calc(122px + 18vh + 10px + env(safe-area-inset-top, 0px)); }
-        #taxiHint { top: calc(122px + 18vh + 52px + env(safe-area-inset-top, 0px)); bottom: auto; left: 8px; right: 8px; max-width: none; text-align: center; transform: none; }
-        #toast { top: calc(122px + 18vh + 94px + env(safe-area-inset-top, 0px)); left: 8px; right: 8px; align-items: flex-start; }
+        #taxiPen { top: calc(102px + env(safe-area-inset-top, 0px)); }
+        #taxiHint { top: auto; bottom: calc(136px + env(safe-area-inset-bottom, 0px)); left: 8px; right: 124px; max-width: none; text-align: left; transform: none; }
+        #toast { top: calc(144px + env(safe-area-inset-top, 0px)); left: 8px; right: 8px; align-items: flex-start; }
         #opBezel { display: none; }
-        #mpTags { clip-path: inset(290px 0 0 0); }
+        #mpTags { clip-path: inset(118px 0 0 0); }
         .mpTag.chip { display: none; }
-        #taxiTotal { flex: 1 1 auto; min-width: 0; text-align: left; padding: 6px 10px; }
-        #taxiTotal small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #menu { flex: 0 0 auto; gap: 4px; }
-        #menu button { padding: 0 10px; white-space: nowrap; min-height: 44px; min-width: 44px; }
+        #menu button { padding: 0 8px; white-space: nowrap; min-height: 44px; min-width: 44px; }
         #teleopDock button { min-height: 44px; min-width: 44px; }
-        #aids { display: none; }
+        /* Compact tap-to-cycle assist pill above the dial; never clips off right edge */
+        #aids { right: 50%; transform: translateX(50%); bottom: 100%; margin-bottom: 4px; }
+        #gmode { max-width: 164px; overflow: hidden; text-overflow: ellipsis; padding: 2px 10px; font-size: 12px; }
         #mpCountLabel { display: none; }
         #mini { display: none; }
-        #hud { right: 6px; bottom: 10px; transform: scale(0.7); transform-origin: bottom right; }
-        #teleopDock { left: 8px; right: auto; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); max-width: calc(100vw - 16px); padding: 4px 6px; gap: 4px; }
+        #hud { right: 6px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); transform: scale(0.7); transform-origin: bottom right; }
+        #teleopDock { left: max(8px, env(safe-area-inset-left, 0px)); right: auto; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); max-width: calc(100vw - 16px); padding: 4px 6px; gap: 4px; }
         #dockToggle { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 14px; }
         #teleopDock[data-collapsed="true"] .dock-row { display: none; }
         #teleopDock[data-collapsed="false"] { right: 8px; bottom: calc(170px + env(safe-area-inset-bottom, 0px)); }
@@ -1388,10 +1408,11 @@
       <canvas id="c" width="1280" height="800" aria-label="Grid Dispatch: San Francisco street view from behind your car"></canvas>
     </div>
 
-    <!-- Top-left district -->
+    <!-- Top-left district (merges earnings/fares/clock into one line on < 760px phones) -->
     <div class="ov" id="where">
       <div class="hood-row">
         <div class="hood" id="wHood">Nob Hill</div>
+        <span class="mobile-summary" id="wMobileSummary">$0.00 · 0/5 · 07:00</span>
         <span class="coords" id="wCoords">37.7919° N · 122.4102° W</span>
       </div>
       <div class="st" id="wSt">California Street</div>

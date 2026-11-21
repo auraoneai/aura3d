@@ -67,6 +67,7 @@ export function createHud(doc: Document) {
     msg: $("msg"), msgText: $("msg-text"), msgSub: $("msg-sub"), banner: $("banner"), hyper: $("hyper-status"),
     autopilot: $("h-autopilot"), speedLines: $("speed-lines"), heatGlaze: $("heat-glaze"), damageGlaze: $("damage-glaze"), core: $("h-core"), heatPct: $("h-heat-pct"),
     setupToggle: $<HTMLButtonElement>("h-setup-toggle"), topBar: doc.querySelector<HTMLElement>(".aura3d-top-bar"),
+    controlsStrip: doc.querySelector<HTMLElement>(".controls-strip"), xhair: $("xhair"),
     countdown: $("countdown"), results: $("results"), start: $("start"), boot: $("boot"),
     minimap: $<HTMLCanvasElement>("minimap"), app: $("app"), mute: doc.querySelector<HTMLElement>("[data-touch=mute]")
   };
@@ -95,6 +96,9 @@ export function createHud(doc: Document) {
   let countdownTimer = 0;
   let minimapTimer = 0;
   let damageTimer = 0;
+  let hitMarkerTimer = 0;
+  let inputSeconds = 0;
+  let inputSeen = false;
 
   const minimapCtx = el.minimap?.getContext("2d") ?? null;
   const sizeMinimap = (): void => {
@@ -219,6 +223,15 @@ export function createHud(doc: Document) {
     },
     flashDamage(): void {
       damageTimer = 0.35;
+      hitMarkerTimer = 0.28;
+      toggle(el.xhair, "hit-damage", true);
+    },
+    flashHit(): void {
+      hitMarkerTimer = 0.22;
+      toggle(el.xhair, "hit-confirm", true);
+    },
+    noteUserInput(): void {
+      inputSeen = true;
     },
     showStart(touch: boolean): void {
       if (!el.start) return;
@@ -285,6 +298,14 @@ export function createHud(doc: Document) {
       if (bannerTimer > 0 && (bannerTimer -= dt) <= 0) showFor(el.banner, false);
       if (msgTimer > 0 && (msgTimer -= dt) <= 0) showFor(el.msg, false);
       if (countdownTimer > 0 && (countdownTimer -= dt) <= 0) showFor(el.countdown, false);
+      if (hitMarkerTimer > 0 && (hitMarkerTimer -= dt) <= 0) {
+        toggle(el.xhair, "hit-confirm", false);
+        toggle(el.xhair, "hit-damage", false);
+      }
+      if (inputSeen && race.phase === "racing") {
+        inputSeconds += dt;
+        if (inputSeconds >= 5) toggle(el.controlsStrip, "idle-hidden", true);
+      }
       damageTimer = Math.max(0, damageTimer - dt);
 
       text(el.pos, String(race.position));

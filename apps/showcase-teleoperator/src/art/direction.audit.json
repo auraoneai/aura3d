@@ -821,10 +821,6 @@
         "practical": true
       },
       {
-        "node": "taxi-beacon-ripple",
-        "practical": false
-      },
-      {
         "node": "taxi-beacon-beam",
         "practical": false
       },
@@ -845,7 +841,7 @@
       },
       {
         "node": "player-tail-lamps",
-        "emissiveIntensity": 0.405,
+        "emissiveIntensity": 0.45,
         "practical": true
       },
       {

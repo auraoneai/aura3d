@@ -26,9 +26,8 @@ import { CROWD_SEAT_COUNT, createWorldTourCrowd, type WorldTourCrowd } from "./c
 import { GRASS_STRIPE_NODE_IDS, isRigOrganicPart, racketStringsMaterial, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, upgradeRigOrganicMaterial, type RigMaterialRole } from "./surfaces";
 import { BOARD_IDS, createBoardsController, standLineText, type BoardsController } from "./boards";
 import { createNetCordMotion, NET_MESH_ID, NET_TAPE_ID } from "./net";
-import { createImpactRig } from "../../../apps/showcase-port-shared/feel";
+import { createImpactRig, warmPrograms } from "@aura3d/engine/game";
 import { IDOL_GANTRY_Y, idolEnabled } from "./idolVenue";
-import { warmPrograms } from "@aura3d/engine/game";
 import { createUmpireIdol, UMPIRE_CHAIR_X, UMPIRE_IDOL_ID } from "./idolUmpire";
 import { createTvCameraPans, TV_CAMERAS } from "./idolVenueMotion";
 
@@ -166,6 +165,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   let viewportHeight = 800;
   let pixelRatio = 1;
   let currentVenueKey = "";
+  let lastLandingTier: "" | "lob" | "drop" | "sweet" = "";
   let lastFaultActive = false;
   let lastBallWorld: Vec3 = [0, 0.8, 6.4];
   // owner pass-through audit: the drawn ball stops at the stands, chair and benches the sim lets a dead ball roll through
@@ -457,10 +457,12 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       progress(0.8, "athletes");
       if (worldTour) {
         netCord = createNetCordMotion(req(NET_MESH_ID), req(NET_TAPE_ID));
-        // GU47 TT-V1 / TT-V2: the registered bounce bursts, the decal marks and the ball's trail ribbon.
+        // GU47 TT-V1 / TT-V2 + 5.7.2: registered bounce bursts, live flipbook atlases, decal marks, and ball trail ribbon.
         const effects = (app as { effects?: Parameters<typeof createSlamVfx>[0] & Parameters<typeof registerSlamVfx>[0] }).effects;
         registerSlamVfx(effects);
-        vfx = createSlamVfx(effects, { reducedMotion });
+        const bounceFlipbook = optionalNode(app as unknown as VenueRuntimeApp, "slam-bounce-flipbook") ?? null;
+        const sparkFlipbook = optionalNode(app as unknown as VenueRuntimeApp, "slam-spark-flipbook") ?? null;
+        vfx = createSlamVfx(effects, { reducedMotion, bounceFlipbook, sparkFlipbook });
         vfx.startTrail("tennis-ball");
         standText = optionalNode(app as unknown as VenueRuntimeApp, BOARD_IDS.stand) ?? null;
         boards = createBoardsController(standText ?? undefined, h.sponsorTrim, standLineText(venueLook(bootVenue).city, null));
@@ -539,6 +541,14 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
 
       const land = options.landing && state.mode === "playing" && state.phase === "rally" && b.active && b.vy > 0 && b.bounceCount === 0 ? options.landing(b) : null;
       if (land && Number.isFinite(land.x) && Number.isFinite(land.y)) {
+        const tier: "lob" | "drop" | "sweet" =
+          b.defensiveLob || (Number(b.z ?? 0) > 1.35) ? "lob" :
+          land.y < 0.45 ? "drop" : "sweet";
+        if (worldTour && tier !== lastLandingTier) {
+          lastLandingTier = tier;
+          const color = tier === "lob" ? "#ffb838" : tier === "drop" ? "#38e8ff" : "#d8ff3e";
+          try { h.landingRing!.setMaterial(material.emissive({ color, emissive: color, emissiveIntensity: 0.85 })); } catch { /* optional */ }
+        }
         h.landingRing!.setPosition(land.x * COURT_X, 0.02, land.y * COURT_Z).setScale([1, 1, 1]).setVisible(true);
       } else {
         h.landingRing!.setScale(HIDDEN_SCALE).setVisible(false);
@@ -572,11 +582,12 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       if (particles) particlesDrawn = particleUpdater.update(particles, s.particles as never);
       vfx?.update(s as never, venueLook(currentVenueKey));
       stepAcePunch(vfx?.events.aces ?? 0, dt);
+      const aceCount = vfx?.events.aces ?? 0;
+      const newAce = aceCount > acesSeen;
       if (boards) {
         boards.setStandText(standLineText(venueLook(currentVenueKey).city, state.score));
-        const aces = vfx?.events.aces ?? 0;
-        if (aces > acesSeen) boards.pulse(reducedMotion());
-        acesSeen = aces;
+        if (newAce) boards.pulse(reducedMotion());
+        acesSeen = aceCount;
         boards.step(Number.isFinite(dt) ? dt! : 1 / 60, VENUE_PALETTES[currentVenueKey]?.trim ?? "#d8ff3e");
       }
 
@@ -594,19 +605,22 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       const serveSeq = Number(state.serveSequence ?? -1);
       const newStrike = rallyHits > lastImpactHits && rallyHits > 0;
       const newServeContact = Boolean(b.isServe && b.active && serveSeq >= 0 && serveSeq !== lastImpactServeSeq);
-      if (worldTour && !reducedMotion() && state.mode === "playing" && (newStrike || newServeContact)) {
+      if (worldTour && !reducedMotion() && state.mode === "playing" && (newStrike || newServeContact || newAce)) {
         const shotKph = Math.max(Number(state.lastShotSpeed ?? 0), Number(b.speedKph ?? 0));
-        if (newServeContact) {
+        if (newAce) {
+          impactRig.trigger({ freezeSeconds: 0.045, trauma: 0.3, fovKickDeg: 1.5 });
+          try { app.camera?.shake.add(0.28); } catch { /* optional */ }
+        } else if (newServeContact) {
           lastImpactServeSeq = serveSeq;
           if ((state.serveNumber === 1 || state.serveAttempt?.number === 1) && shotKph > 195) {
-            impactRig.trigger({ freezeSeconds: 0.028, trauma: 0.22, fovKickDeg: 1.35 });
+            impactRig.trigger({ freezeSeconds: 0.032, trauma: 0.24, fovKickDeg: 1.5 });
             try { app.camera?.shake.add(0.22); } catch { /* optional */ }
           }
         } else if (state.lastStroke === "smash") {
-          impactRig.trigger({ freezeSeconds: 0.042, trauma: 0.28, fovKickDeg: 0.95 });
+          impactRig.trigger({ freezeSeconds: 0.045, trauma: 0.28, fovKickDeg: 1.35 });
           try { app.camera?.shake.add(0.28); } catch { /* optional */ }
         } else if (state.lastShotPower || shotKph >= 138) {
-          impactRig.trigger({ freezeSeconds: 0.028, trauma: 0.16, fovKickDeg: 0.55 });
+          impactRig.trigger({ freezeSeconds: 0.028, trauma: 0.16, fovKickDeg: 0.75 });
         }
       }
       lastImpactHits = rallyHits;

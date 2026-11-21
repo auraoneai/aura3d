@@ -108,19 +108,19 @@ export const IDOL_HERO_FIT: Vec3 = (() => {
 /** Row-major Ry(pi): composes the Idol half turn onto the hero's body matrix. */
 export const HALF_TURN_MAT3 = [-1, 0, 0, 0, 1, 0, 0, 0, -1] as const;
 
-/** Hero: keep the baked albedo (cobalt + tangerine), add the clearcoat lobe and the warm golden-hour rim (AO-M1). */
+/** Hero: 5.7.1 dielectric clearcoat parity over baked cobalt+tangerine albedo (clears PBR_PAINT_METALLIC 0.98 tinting) + warm rim. */
 export function idolHeroPaint(): readonly AuraModelMaterialOverride[] {
-  return [{ clearcoat: 0.7, clearcoatRoughness: 0.14, envMapIntensity: 0.62, rim: { color: APEX_PALETTE.tangerine, power: 3.5, intensity: 0.45 } }];
+  return [{ metallic: 0.04, roughness: 0.26, clearcoat: 1.0, clearcoatRoughness: 0.06, envMapIntensity: 0.68, rim: { color: APEX_PALETTE.tangerine, power: 3.4, intensity: 0.55 } }];
 }
 
-/** Sky-lane rivals: the reserved rival-red rim (AO-A2) over the baked graphite. */
+/** Sky-lane rivals: crisp clearcoat graphite with reserved rival-red rim (AO-A2). */
 export function idolRivalPaint(): readonly AuraModelMaterialOverride[] {
-  return [{ clearcoat: 0.5, clearcoatRoughness: 0.18, rim: { color: APEX_PALETTE.rival, power: 2.5, intensity: 0.9 } }];
+  return [{ metallic: 0.12, roughness: 0.28, clearcoat: 0.92, clearcoatRoughness: 0.08, rim: { color: APEX_PALETTE.rival, power: 2.5, intensity: 0.95 } }];
 }
 
-/** Traffic: a light lacquer and a soft sunset rim; the baked maps keep tyres and glass their own roughness. */
+/** Traffic: 5.7.1 dielectric clearcoat lacquer and warm sunset rim; preserves baked texture detail without muddy metallic clamp. */
 export function idolTrafficPaint(): readonly AuraModelMaterialOverride[] {
-  return [{ clearcoat: 0.45, clearcoatRoughness: 0.12, rim: { color: "#ffb272", power: 3.8, intensity: 0.28 } }];
+  return [{ metallic: 0.05, roughness: 0.3, clearcoat: 0.95, clearcoatRoughness: 0.08, rim: { color: "#ffb272", power: 3.6, intensity: 0.32 } }];
 }
 
 /**

@@ -62,10 +62,10 @@ describe("dot-dash-3d arcade readability", () => {
           expect(courier, `courier ${w}x${h}`).toBeGreaterThanOrEqual(28);
           expect(sentry, `sentry ${w}x${h}`).toBeGreaterThanOrEqual(28);
         } else {
-          // a 390 px wide phone shows 19 tiles across: bodies are ~21-23 px, their glow halos >= 28 px
+          // a 390 px wide phone shows 19 tiles across: bodies are ~21-23 px, tightened 1.35-tile courier halo >= 25 px, sentry halo >= 28 px
           expect(courier, `courier ${w}x${h}`).toBeGreaterThanOrEqual(20);
           expect(sentry, `sentry ${w}x${h}`).toBeGreaterThanOrEqual(20);
-          expect(courierGlow, `courier glow ${w}x${h}`).toBeGreaterThanOrEqual(28);
+          expect(courierGlow, `courier glow ${w}x${h}`).toBeGreaterThanOrEqual(25);
           expect(sentryGlow, `sentry glow ${w}x${h}`).toBeGreaterThanOrEqual(28);
         }
         expect(courier / pellet).toBeGreaterThanOrEqual(5);

@@ -10,9 +10,16 @@
  * Reduced motion halves every burst's count (PRD §6.3); `?vfx=off` (engine runtime effects "off") drops bursts, trail and
  * marks.
  */
-import type { AuraAppEffects, AuraEffectInstanceHandle, AuraTrailHandle, AuraVec3, AuraVfxEffectSpec } from "@aura3d/engine";
+import type { AuraAppEffects, AuraEffectInstanceHandle, AuraRuntimeNodeHandle, AuraTrailHandle, AuraVec3, AuraVfxEffectSpec } from "@aura3d/engine";
+import { createFlipbookAtlas } from "@aura3d/engine/game";
 import { COURT_X, COURT_Z } from "./constants";
 import type { VenueBurstKind, VenueLook } from "./look";
+
+/** 5.7.2 live procedural flipbook atlases for court bounce puffs and sweet-spot racket sparks. */
+export const SLAM_FLIPBOOK_ATLASES = {
+  bounceDust: () => createFlipbookAtlas("dust", [230, 224, 206]),
+  racketSparks: () => createFlipbookAtlas("sparks", [228, 255, 96])
+} as const;
 
 export type SlamVfxKind = VenueBurstKind | "out-ring" | "ace-flash" | "felt-burst" | "win-confetti" | "beach-spray" | "grass-leaves";
 
@@ -134,10 +141,19 @@ const isMark = (m: unknown): m is SimMark =>
  */
 export function createSlamVfx(
   effects: Pick<AuraAppEffects, "burst" | "decal" | "trail" | "runtime"> | null | undefined,
-  options: { reducedMotion?: () => boolean; reducedFlash?: () => boolean } = {}
+  options: {
+    reducedMotion?: () => boolean;
+    reducedFlash?: () => boolean;
+    bounceFlipbook?: AuraRuntimeNodeHandle | null;
+    sparkFlipbook?: AuraRuntimeNodeHandle | null;
+  } = {}
 ): SlamVfxController {
   const reducedMotion = options.reducedMotion ?? (() => false);
   const reducedFlash = options.reducedFlash ?? reducedMotion;
+  const bounceFlipbook = options.bounceFlipbook ?? null;
+  const sparkFlipbook = options.sparkFlipbook ?? null;
+  let bounceFlipUntil = 0;
+  let sparkFlipUntil = 0;
   const marks: AuraEffectInstanceHandle[] = [];
   let trail: AuraTrailHandle | null = null;
   let lastMarkKey = "";
@@ -216,6 +232,12 @@ export function createSlamVfx(
             try {
               effects.burst(sig.burst, [position[0], 0.03, position[2]], { color: sig.burstColor, count: burstCount(sig.burst, reducedMotion()), camera: false, normal: [0, 1, 0] });
             } catch { /* effects surface unavailable */ }
+            if (bounceFlipbook && !reducedMotion()) {
+              try {
+                bounceFlipbook.setPosition(position[0], 0.16, position[2]).setVisible(true);
+                bounceFlipUntil = (Number.isFinite(now) ? now : 0) + 0.45;
+              } catch { /* flipbook handle optional */ }
+            }
             try {
               marks.push(effects.decal({ position, normal: [0, 1, 0] }, { size: MARK_SIZE, lifetime: sig.markLifetime, color: sig.markColor, opacity: sig.markOpacity }));
               if (marks.length > MARK_CAPACITY) marks.shift()?.stop({ immediate: true });
@@ -257,6 +279,22 @@ export function createSlamVfx(
         if (live() && (state.lastShotPower || speed >= 95 || newServeStrike)) {
           const hitPos: AuraVec3 = [ball.x * COURT_X, Math.max(0.55, Number(ball.z ?? 0.45) * 2.2), ball.y * COURT_Z];
           try { effects.burst("felt-burst", hitPos, { count: burstCount("felt-burst", reducedMotion()), camera: false }); } catch { /* unavailable */ }
+          if (sparkFlipbook && !reducedMotion()) {
+            try {
+              sparkFlipbook.setPosition(hitPos[0], hitPos[1], hitPos[2]).setVisible(true);
+              sparkFlipUntil = (Number.isFinite(now) ? now : 0) + 0.32;
+            } catch { /* flipbook handle optional */ }
+          }
+        }
+      }
+      if (Number.isFinite(now)) {
+        if (bounceFlipbook && bounceFlipUntil > 0 && now >= bounceFlipUntil) {
+          bounceFlipUntil = 0;
+          try { bounceFlipbook.setVisible(false).setPosition(0, -20, 0); } catch { /* optional */ }
+        }
+        if (sparkFlipbook && sparkFlipUntil > 0 && now >= sparkFlipUntil) {
+          sparkFlipUntil = 0;
+          try { sparkFlipbook.setVisible(false).setPosition(0, -20, 0); } catch { /* optional */ }
         }
       }
       lastRallyHits = hits;

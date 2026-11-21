@@ -2,7 +2,7 @@
 <html lang="en" data-density="compact">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>IRON CROWN — 2.5D Arena Fighter · Aura3D Showcase</title>
     <meta name="description" content="2.5D arena fighter — six fighters battle across six stages with guards, dashes, metered specials, and throws." />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -61,6 +61,7 @@
         --a3d-dim: #c7cde2;
       }
       .ic-modes { display: contents; }
+      .ic-modes-toggle { display: none; }
       .aura3d-top-bar .ic-modes > button,
       .aura3d-top-bar > button,
       .aura3d-top-bar > .a3d-credit {
@@ -69,17 +70,19 @@
       }
       .ic-setup {
         position: fixed;
-        top: var(--a3d-bar-space);
-        left: max(8px, env(safe-area-inset-left, 0px));
-        right: max(8px, env(safe-area-inset-right, 0px));
-        z-index: 56;
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(920px, calc(100vw - 20px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+        z-index: 64;
         display: none;
         gap: 8px;
-        padding: 8px 10px;
+        padding: 10px 12px;
         border-radius: 10px;
-        background: rgba(8, 10, 16, 0.94);
-        border: 1px solid rgba(255, 215, 106, 0.22);
-        backdrop-filter: blur(8px);
+        background: rgba(14, 11, 13, 0.94);
+        border: 1px solid rgba(217, 164, 65, 0.45);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(10px);
       }
       .ic-setup[data-open="true"] { display: grid; }
       .ic-row { display: flex; align-items: center; gap: 8px 12px; min-width: 0; flex-wrap: wrap; }
@@ -154,6 +157,33 @@
         background: #14161f; color: #f0c9c4; font-size: 14px; line-height: 1.6; padding: 24px; z-index: 90;
       }
       #render-error.on { display: grid; }
+      @media (max-width: 640px) {
+        .ic-modes-toggle { display: inline-flex; align-items: center; gap: 4px; }
+        .ic-modes {
+          display: none;
+          position: fixed;
+          top: var(--a3d-bar-space);
+          left: max(8px, env(safe-area-inset-left, 0px));
+          z-index: 65;
+          flex-direction: column;
+          gap: 6px;
+          padding: 8px;
+          min-width: 176px;
+          border-radius: 10px;
+          background: rgba(14, 11, 13, 0.96);
+          border: 1px solid rgba(217, 164, 65, 0.45);
+          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(10px);
+        }
+        .ic-modes[data-open="true"] { display: flex; }
+        .ic-modes > button {
+          width: 100%;
+          min-height: 44px;
+          justify-content: flex-start;
+          text-align: left;
+          padding: 0 12px;
+        }
+      }
       @media (pointer: coarse), (max-width: 760px) {
         .ic-row { gap: 6px 8px; }
         .ic-group-label { display: none; }
@@ -173,7 +203,8 @@
 </head>
   <body>
     <div class="aura3d-top-bar" role="toolbar" aria-label="Iron Crown shell">
-      <nav class="ic-modes" id="ic-modes" aria-label="Game modes">
+      <button type="button" class="ic-modes-toggle" id="ic-modes-toggle" aria-expanded="false" aria-controls="ic-modes">Modes ▾</button>
+      <nav class="ic-modes" id="ic-modes" data-open="false" aria-label="Game modes">
           <button type="button" data-mode="quick" aria-pressed="true">Quick Bout</button>
           <button type="button" data-mode="lab" aria-pressed="false">Combo Lab</button>
           <button type="button" data-mode="ladder" aria-pressed="false">Crown Ladder</button>
@@ -214,10 +245,31 @@
       (function () {
         var toggle = document.getElementById("ic-setup-toggle");
         var panel = document.getElementById("ic-setup");
-        function set(open) { panel.setAttribute("data-open", open ? "true" : "false"); toggle.setAttribute("aria-expanded", open ? "true" : "false"); }
-        toggle.addEventListener("click", function () { set(panel.getAttribute("data-open") !== "true"); });
-        panel.addEventListener("click", function (e) { if (e.target && e.target.closest && e.target.closest("button")) setTimeout(function () { set(false); }, 0); });
-        document.addEventListener("keydown", function (e) { if (e.key === "Escape") set(false); });
+        var modesToggle = document.getElementById("ic-modes-toggle");
+        var modesNav = document.getElementById("ic-modes");
+        function setSetup(open) {
+          panel.setAttribute("data-open", open ? "true" : "false");
+          toggle.setAttribute("aria-expanded", open ? "true" : "false");
+          if (open) setModes(false);
+        }
+        function setModes(open) {
+          if (!modesNav || !modesToggle) return;
+          modesNav.setAttribute("data-open", open ? "true" : "false");
+          modesToggle.setAttribute("aria-expanded", open ? "true" : "false");
+          if (open) {
+            panel.setAttribute("data-open", "false");
+            toggle.setAttribute("aria-expanded", "false");
+          }
+        }
+        toggle.addEventListener("click", function () { setSetup(panel.getAttribute("data-open") !== "true"); });
+        if (modesToggle) {
+          modesToggle.addEventListener("click", function () { setModes(modesNav.getAttribute("data-open") !== "true"); });
+        }
+        panel.addEventListener("click", function (e) { if (e.target && e.target.closest && e.target.closest("button")) setTimeout(function () { setSetup(false); }, 0); });
+        if (modesNav) {
+          modesNav.addEventListener("click", function (e) { if (e.target && e.target.closest && e.target.closest("button")) setTimeout(function () { setModes(false); }, 0); });
+        }
+        document.addEventListener("keydown", function (e) { if (e.key === "Escape") { setSetup(false); setModes(false); } });
       })();
     </script>
 

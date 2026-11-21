@@ -25,7 +25,7 @@
       {
         "type": "hemisphere",
         "shadow": false,
-        "intensity": 0.35
+        "intensity": 0.28
       },
       {
         "type": "directional",
@@ -261,6 +261,15 @@
       },
       {
         "node": "d-b",
+        "practical": false
+      },
+      {
+        "node": "player-hop-ring",
+        "emissiveIntensity": 1.05,
+        "practical": true
+      },
+      {
+        "node": "hawk-ground-shadow",
         "practical": false
       },
       {

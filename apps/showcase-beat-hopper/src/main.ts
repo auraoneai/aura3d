@@ -13,14 +13,13 @@
  */
 import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
-import { warmPrograms } from "@aura3d/engine/game";
+import { createAutoplayHarness, createGradingLut, createImpactRig, HUD_THEMES, warmPrograms } from "@aura3d/engine/game";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
-import { createImpactRig } from "../../showcase-port-shared/feel";
 import { CONFIG, IDLE, BeatHopperSim, TRACE_COLUMNS, replay, type Input } from "./sim";
 import { InputQueue, isGameKey } from "./input";
-import { AUTOPLAY_PARAMS, Autopilot, autoplayRequested } from "./autopilot";
+import { AUTOPLAY_PARAMS, AUTOPLAY_RESULTS_SECONDS, Autopilot, autoplayRequested } from "./autopilot";
 import { BeatHopperSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { ChaseCamera, cardPose, createBeatPresenter, shownOf } from "./presentation";
@@ -53,9 +52,24 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let steps = 0;
-/** `?autoplay=1` (or its aliases `?autopilot=1` / `?autostart=1`): hands-free play that loops through game over. */
+// Align CSS tokens with `HUD_THEMES["arcade-neon"]`.
+for (const [k, v] of Object.entries(HUD_THEMES["arcade-neon"])) {
+  document.documentElement.style.setProperty(k, v);
+}
+
+/** `?autoplay=1` (or its aliases `?autopilot=1` / `?autostart=1`): hands-free play managed via `createAutoplayHarness`. */
 const autoplay = autoplayRequested(location.search);
 let pilot: Autopilot | null = autoplay ? new Autopilot(AUTOPLAY_PARAMS) : null;
+const autoplayHarness = createAutoplayHarness<Input>({
+  enabled: autoplay,
+  restartDelay: AUTOPLAY_RESULTS_SECONDS,
+  idle: IDLE,
+  bot: {
+    step: () => (pilot ? pilot.next(sim, steps) : IDLE)
+  },
+  isFinished: () => sim.o.phase === "gameOver",
+  onRestart: () => restart()
+});
 /** KeyO turned the pilot off while it may have been holding a duck: release it on the next step. */
 let pilotReleasePending = false;
 let renderFailed = false;
@@ -228,15 +242,17 @@ const loop = createFixedStepLoop({
       queue.duckEnd("hud");
     }
     const typed = queue.take();
-    let input: Input = pilot ? pilot.next(sim, steps) : typed;
+    let input: Input = pilot ? (autoplayHarness.step(CONFIG.DT) ?? IDLE) : typed;
     if (pilotReleasePending) {
       pilotReleasePending = false;
       input = { ...input, up: true };
     }
-    // Autoplay loop: the pilot's start press on the results card restarts through the same path as PLAY AGAIN.
-    if (pilot && input.start && sim.o.phase === "gameOver") {
-      restart();
-      return;
+    // Autoplay loop: `createAutoplayHarness` handles results hold + restart; keep direct pilot start compatibility.
+    if (pilot && sim.o.phase === "gameOver") {
+      if (autoplayHarness.tick(CONFIG.DT) || input.start) {
+        if (sim.o.phase === "gameOver") restart();
+        return;
+      }
     }
     advance(input);
     presenter.afterStep();
@@ -301,12 +317,20 @@ async function boot(): Promise<void> {
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight) });
   // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-08 after WebGPU perf round 2: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
   const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
+  const cyberLut = createGradingLut("cyber-neon", 16);
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { preset: "neon-night", toneMapping: "agx", exposure: 0.98, dither: true, ...lab.output },
+    output: {
+      preset: "neon-night",
+      toneMapping: "agx",
+      exposure: 0.98,
+      lut: { texture: cyberLut.texture, size: cyberLut.size, intensity: 0.2 },
+      dither: true,
+      ...lab.output
+    } as never,
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
@@ -325,6 +349,8 @@ async function boot(): Promise<void> {
   runtime.warm(false);
   ready = true;
   loading.done();
+  const loadBar = document.getElementById("load-bar");
+  if (loadBar) loadBar.classList.add("hidden");
   startButton.removeAttribute("aria-busy");
   if (autoplay) {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);
@@ -512,10 +538,13 @@ function toggleAutopilot(): void {
   dropInput();
   if (pilot) {
     pilot = null;
+    autoplayHarness.enabled = false;
     pilotReleasePending = true;
   } else {
     pilot = new Autopilot(AUTOPLAY_PARAMS);
     pilot.observe(sim);
+    autoplayHarness.enabled = true;
+    autoplayHarness.reset();
     pilotReleasePending = false;
   }
 }

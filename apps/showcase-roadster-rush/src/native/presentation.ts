@@ -1,4 +1,4 @@
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, mixNumber, type SnapshotInterpolator } from "@aura3d/engine/game";
 
 interface TrafficLike {
   vehicles: { id: string; x: number; z: number }[];
@@ -21,7 +21,7 @@ export interface Shown {
 /** A step moves anything a few metres at most; a run restart or a recycled slot jumps further and must not smear. */
 export const SNAP_DISTANCE = 12;
 
-const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
+const mix = mixNumber;
 
 export function shownOf(g: GameLike): Shown {
   const p = g.player.position;
@@ -73,8 +73,12 @@ export function viewOf<G extends GameLike>(g: G, shown: Shown): G {
   return Object.create(g, { player: { value: player }, traffic: { value: traffic }, time: { value: shown.time } }) as G;
 }
 
-export function createRoadsterPresenter(getGame: () => GameLike): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getGame()), blend: blendShown });
+export function createRoadsterPresenter(getGame: () => GameLike): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({
+    snapshot: () => shownOf(getGame()),
+    blend: blendShown,
+    snap: { distance: SNAP_DISTANCE, position: (s) => s.player.z }
+  });
 }
 
 /** GU47 AO-AN1: the lean a lane change shows, in radians (6 degrees). */

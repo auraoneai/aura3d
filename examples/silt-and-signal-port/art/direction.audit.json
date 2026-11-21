@@ -312,6 +312,22 @@
         "practical": false
       },
       {
+        "node": "pier-fade-0",
+        "practical": false
+      },
+      {
+        "node": "pier-fade-1",
+        "practical": false
+      },
+      {
+        "node": "pier-fade-2",
+        "practical": false
+      },
+      {
+        "node": "pier-fade-3",
+        "practical": false
+      },
+      {
         "node": "masts",
         "practical": false
       },

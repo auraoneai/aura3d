@@ -3,6 +3,7 @@ import {
   game, looks, lights, effects, scene, camera, instances,
   primitives, material, sky, type AuraApp, type AuraSceneNode
 } from "@aura3d/engine";
+import { createFlipbookAtlas, createSnapshotInterpolator, mixNumber } from "@aura3d/engine/game";
 import type { CritterAssetId } from "../aura-assets";
 import {
   COL_MAX, COL_MIN, COL_W, FIELD_HALF, LANE_D, STRIP_W, THEMES,
@@ -434,6 +435,7 @@ export function startRun(kind: RunKind, drill: DrillDef | null, seed?: number, f
   st.themeIdx = forceTheme ?? 0;
   if (appliedLook !== st.themeIdx) swapLook(st.themeIdx);
   st.mode = "run";
+  playerInterpolator.reset();
   st.message = "";
   st.messageT = 0;
   if (kind === "drill") pushEvent(`Drill: ${drill?.label}`);
@@ -565,7 +567,7 @@ function buildSky(ti: number, row: number) {
 /** Sun-key distance from its target; only the direction matters for the camera-fitted cascades. */
 const SUN_DIST = 30;
 
-/** GU47 CH47-01: one shadowed PCSS sun with 2 camera-fitted cascades (the tier drops to 1 cascade PCF on Low). */
+/** GU47 CH47-01 + 5.7.2: one shadowed sun with calibrated `shadow.softness: 1.5` and light-space `shadow.fit`. */
 function buildSunKey(ti: number) {
   const L = THEME_LOOKS[ti]!;
   const v = sunVector(L.sun.elevationDeg, L.sun.azimuthDeg);
@@ -575,7 +577,15 @@ function buildSunKey(ti: number) {
     target: [0, 0, 0],
     color: L.sun.color,
     intensity: L.sun.intensity,
-    shadow: { cascades: 2, filter: "pcss", mapSize: 2048, maxDistance: 48, lightSize: 1.2, fit: "camera" }
+    shadow: {
+      cascades: 2,
+      filter: "pcss",
+      mapSize: 2048,
+      maxDistance: 48,
+      lightSize: 1.2,
+      softness: 1.5,
+      fit: { center: [0, 0, -6], extent: 22, depth: 55 }
+    }
   }).runtime(game.runtimeNode("sun-key"));
 }
 
@@ -657,11 +667,22 @@ function buildOriginalScene(): unknown {
     // Gentle neon life on coins/pods without blowing out the flat world.
     .add(effects.bloom({ intensity: 0.16, threshold: 0.86, radius: 0.3 }))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.65 }))
-    .add(lights.hemisphere({ skyColor: "#dce8f5", groundColor: "#6d8458", intensity: 0.42 }))
-    // Warm sun key from camera-left + cool rim from the far horizon give the
-    // flat diorama depth and unify the textured critters with the lanes.
-    .add(lights.directional({ position: [-9, 10, 9], target: [0, 0, -4], color: "#ffd8a6", intensity: 0.78 }))
-    .add(lights.directional({ position: [7, 7, -15], target: [0, 0, -2], color: "#8fc8ff", intensity: 0.46 }))
+    .add(lights.hemisphere({ skyColor: "#dce8f5", groundColor: "#586d46", intensity: 0.34 }))
+    // Warm sun key from camera-left + warm back-rim highlight give the
+    // diorama crisp depth and separate the critter cleanly against traffic.
+    .add(lights.directional({
+      position: [-9, 10, 9],
+      target: [0, 0, -4],
+      color: "#ffd8a6",
+      intensity: 0.92,
+      shadow: {
+        filter: "pcss",
+        mapSize: 2048,
+        softness: 1.5,
+        fit: { center: [0, 0, -6], extent: 22, depth: 55 }
+      }
+    }))
+    .add(lights.directional({ position: [7, 7, -15], target: [0, 0, -2], color: "#ffe1b0", intensity: 0.54 }))
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"),
       position: [0, CAM.y, CAM.back],
       target: [0, CAM.targetY, -CAM.ahead],
@@ -756,7 +777,7 @@ function buildVividSky(ti: number) {
   }).runtime(game.runtimeNode("sky")).toJSON();
 }
 
-/** The vivid look's key: one shadowed sun from the camera's left, a little behind it (2 camera-fitted cascades). */
+/** The vivid look's key: one shadowed sun with 5.7.2 `shadow.softness: 1.5` and `shadow.fit`. */
 function buildVividSunKey(ti: number) {
   const V = VIVID_LOOKS[ti]!;
   const v = sunVector(V.sun.elevationDeg, V.sun.azimuthDeg);
@@ -766,11 +787,22 @@ function buildVividSunKey(ti: number) {
     target: [0, 0, 0],
     color: V.sun.color,
     intensity: V.sun.intensity,
-    shadow: { cascades: 2, filter: "pcss", mapSize: 2048, maxDistance: 44, lightSize: 0.9, fit: "camera" }
+    shadow: {
+      cascades: 2,
+      filter: "pcss",
+      mapSize: 2048,
+      maxDistance: 44,
+      lightSize: 0.9,
+      softness: 1.5,
+      fit: { center: [0, 0, -6], extent: 22, depth: 55 }
+    }
   }).runtime(game.runtimeNode("sun-key"));
 }
 
 const FLIPBOOK_SLOTS = 4;
+const CH_SPARKS_ATLAS = createFlipbookAtlas("sparks", [255, 198, 92]);
+const CH_RIPPLE_ATLAS = createFlipbookAtlas("ripple", [198, 242, 255]);
+const CH_DUST_ATLAS = createFlipbookAtlas("dust", [244, 232, 206]);
 
 function buildGodRaysNode() {
   return effects.godRays({
@@ -791,6 +823,8 @@ function buildVividScene(): unknown {
     .add(buildLookGroup(THEMES[0]))
     .add(buildVividSky(0))
     .add(buildVividSunKey(0))
+    // Warm back-rim directional (unshadowed) for R23 critter separation against dark asphalt & traffic.
+    .add(lights.directional({ name: "cross-hop critter rim", position: [4, 7.5, -14], target: [0, 0.5, 0], color: "#ffe0ad", intensity: 0.44, shadow: false }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     .add(effects.contactShadows({ length: 0.08, thickness: 0.11, steps: 16, intensity: 0.18 }))
     .add(effects.ambientOcclusion({ intensity: 0.38, radius: 0.36, multiBounce: true }))
@@ -823,6 +857,47 @@ function buildVividScene(): unknown {
       }).position(0, -999, 0).scale([0.001, 1, 0.001]).runtime(game.runtimeNode(`vfx-dust-${i}`))
     );
   }
+  // 5.7.0 live-texture flipbook emitters (`@aura3d/engine/game` createFlipbookAtlas + effects.flipbook)
+  // for crisp splash ripples, hop dust, and train/lava spark bursts.
+  s.add(
+    effects.flipbook({
+      name: "vfx-fb-sparks",
+      texture: CH_SPARKS_ATLAS.texture,
+      spriteColumns: CH_SPARKS_ATLAS.columns,
+      spriteRows: CH_SPARKS_ATLAS.rows,
+      frameRate: 34,
+      loop: false,
+      size: 0.95,
+      color: "#ffcf72",
+      blend: "additive"
+    }).position(0, -999, 0).runtime(game.runtimeNode("vfx-fb-sparks"))
+  );
+  s.add(
+    effects.flipbook({
+      name: "vfx-fb-ripple",
+      texture: CH_RIPPLE_ATLAS.texture,
+      spriteColumns: CH_RIPPLE_ATLAS.columns,
+      spriteRows: CH_RIPPLE_ATLAS.rows,
+      frameRate: 28,
+      loop: false,
+      size: 1.15,
+      color: "#d4f6ff",
+      blend: "additive"
+    }).position(0, -999, 0).runtime(game.runtimeNode("vfx-fb-ripple"))
+  );
+  s.add(
+    effects.flipbook({
+      name: "vfx-fb-dust",
+      texture: CH_DUST_ATLAS.texture,
+      spriteColumns: CH_DUST_ATLAS.columns,
+      spriteRows: CH_DUST_ATLAS.rows,
+      frameRate: 30,
+      loop: false,
+      size: 0.85,
+      color: "#f5ebd4",
+      blend: "alpha"
+    }).position(0, -999, 0).runtime(game.runtimeNode("vfx-fb-dust"))
+  );
   s.addMany(poolNodes(false, true, V0.floor) as never[]);
   return s.toJSON();
 }
@@ -999,6 +1074,46 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
       .position(0, 0.12, 0)
       .rotate(0, Math.PI, 0)
       .runtime(game.runtimeNode("player")),
+    // Crisp hop contact ring beneath the critter (R23 visual anchor on busy lanes).
+    primitives.torus({
+      name: "player-hop-ring",
+      size: [0.76, 0.76, 0.045],
+      rotation: [Math.PI / 2, 0, 0],
+      material: material.emissive({
+        color: "#ffe47a",
+        emissive: "#ffd24a",
+        emissiveIntensity: 1.05,
+        practical: true,
+        alphaMode: "blend",
+        opacity: 0.64,
+        depthWrite: false
+      }),
+      castShadow: false,
+      receiveShadow: false
+    }).position(0, -999, 0).runtime(game.runtimeNode("player-hop-ring")),
+    // Idle-hawk expanding dark ground shadow circle under the critter during hawk warning.
+    primitives.cylinder({
+      name: "hawk-ground-shadow",
+      size: [1.4, 0.014, 1.4],
+      material: material.pbr({
+        color: "#0b0e18",
+        roughness: 1,
+        metallic: 0,
+        alphaMode: "blend",
+        opacity: 0.44,
+        depthWrite: false
+      }),
+      castShadow: false,
+      receiveShadow: false
+    }).position(0, -999, 0).runtime(game.runtimeNode("hawk-ground-shadow")),
+    // Crisp flashing crimson rail light cone swept over the nearest active level crossing.
+    effects.lightCone({
+      name: "rail-warn-cone",
+      color: "#ff2e4c",
+      intensity: 0.34,
+      length: 5.5,
+      radius: 1.4
+    }).position(0, -999, 0).runtime(game.runtimeNode("rail-warn-cone")),
     buildIdolHawkNode()
       .position(0, -999, 0)
       .runtime(game.runtimeNode("hawk")),
@@ -1111,6 +1226,7 @@ export function step(dt: number, input: GameInput): void {
   if (st.mode === "run") {
     runFrame(dt, input);
     st.railAlert = st.mode === "run" && railAlertNear();
+    playerInterpolator.afterStep();
   } else if (st.mode === "dead") {
     if (st.time - st.deadAt < RESTART_LOCKOUT) {
       // Keys pressed while the card appears are dropped, so they cannot skip it (CH-9).
@@ -1270,8 +1386,31 @@ function cachedFlipbookMaterial(kind: "ripple" | "dust", tint: readonly [number,
   return mat;
 }
 
+let fbPulseTimer: Record<"sparks" | "ripple" | "dust", number> = { sparks: 0, ripple: 0, dust: 0 };
+
+function triggerLiveFlipbook(kind: "sparks" | "ripple" | "dust", x: number, y: number, z: number, scale = 1): void {
+  if (lookMode !== "vivid" || reducedMotion || !app?.nodes) return;
+  const h = app.nodes.get(`vfx-fb-${kind}`);
+  if (!h) return;
+  h.setVisible?.(true);
+  h.setPosition(x, y, z);
+  h.setScale?.([scale, scale, scale]);
+  fbPulseTimer[kind] = 0.42;
+}
+
 function syncFlipbooks(dt: number): void {
-  if (lookMode !== "vivid" || !app?.nodes || activeFlipbooks.length === 0) return;
+  if (lookMode !== "vivid" || !app?.nodes) return;
+  for (const kind of ["sparks", "ripple", "dust"] as const) {
+    if (fbPulseTimer[kind] > 0) {
+      fbPulseTimer[kind] -= dt;
+      if (fbPulseTimer[kind] <= 0) {
+        const fh = app.nodes.get(`vfx-fb-${kind}`);
+        fh?.setPosition(0, -999, 0);
+        fh?.setVisible?.(false);
+      }
+    }
+  }
+  if (activeFlipbooks.length === 0) return;
   for (let i = activeFlipbooks.length - 1; i >= 0; i--) {
     const f = activeFlipbooks[i]!;
     f.age += dt;
@@ -1392,10 +1531,13 @@ function landingEffect(l: Lane, x: number, z: number): void {
   if (lookMode === "original") return;
   if (l.type === "river") {
     spawnFlipbook("ripple", x, 0.018, z, 0.52, 0.48, 1.65, [196, 244, 255]);
+    triggerLiveFlipbook("ripple", x, 0.04, z, 1.15);
   } else if (l.type === "lava") {
     spawnFlipbook("dust", x, 0.168, z, 0.34, 0.42, 0.92, [255, 146, 68]);
+    triggerLiveFlipbook("sparks", x, 0.24, z, 1.1);
   } else {
     spawnFlipbook("dust", x, surfaceTopY(l) + 0.012, z, 0.30, 0.38, 0.86, [244, 236, 218]);
+    triggerLiveFlipbook("dust", x, surfaceTopY(l) + 0.08, z, 0.85);
   }
   if (!app?.effects) return;
   const kind = landingVfx(l.type, l.moverKind === "log");
@@ -1717,8 +1859,39 @@ export function renderTime(alpha: number): number {
   return Math.max(0, st.time - (1 - Math.max(0, Math.min(1, alpha))) * SIM_STEP);
 }
 
-/** Player pose drawn this frame, interpolated the same way as the movers. */
+/** Player snapshot interpolator (5.7.2 `@aura3d/engine/game`): silky 120/144 Hz motion between 60 Hz steps. */
+interface PlayerSnapshot {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly hopping: boolean;
+}
+function sampleCurrentPlayer(): PlayerSnapshot {
+  const pl = lane(st.playerRow);
+  if (st.hop.active) {
+    const t = Math.max(0, Math.min(1, st.hop.t));
+    const x = st.hop.fromX + (st.hop.toX - st.hop.fromX) * t;
+    const z = st.hop.fromZ + (st.hop.toZ - st.hop.fromZ) * t;
+    const y = st.hop.fromY + (st.hop.toY - st.hop.fromY) * t + Math.sin(Math.PI * t) * 0.68;
+    return { x, y: Math.max(0.12, y), z, hopping: true };
+  }
+  return { x: st.playerCol * COL_W, y: Math.max(0.12, playerBaseY(pl)), z: laneZ(st.playerRow), hopping: false };
+}
+const playerInterpolator = createSnapshotInterpolator<PlayerSnapshot>({
+  snapshot: sampleCurrentPlayer,
+  blend: (a, b, t) => ({
+    x: mixNumber(a.x, b.x, t),
+    y: mixNumber(a.y, b.y, t),
+    z: mixNumber(a.z, b.z, t),
+    hopping: b.hopping
+  }),
+  snap: { distance: 2.6, position: (p) => [p.x, p.y, p.z] }
+});
+
+/** Player pose drawn this frame, interpolated via `createSnapshotInterpolator` alongside exact mover time. */
 export function displayPose(alpha: number): { x: number; y: number; z: number; hopping: boolean } {
+  const live = st.mode === "run" && !st.paused && !st.dead;
+  if (!live || alpha >= 1) return sampleCurrentPlayer();
   const tr = renderTime(alpha);
   const lag = st.time - tr;
   const pl = lane(st.playerRow);
@@ -1729,10 +1902,11 @@ export function displayPose(alpha: number): { x: number; y: number; z: number; h
     const y = st.hop.fromY + (st.hop.toY - st.hop.fromY) * t + Math.sin(Math.PI * t) * 0.68;
     return { x, y: Math.max(0.12, y), z, hopping: true };
   }
-  let x = st.playerCol * COL_W;
-  // Riding a log or stone: the platform moves at a constant speed, so the drawn x trails the sim by `lag`.
-  if (!st.dead && (pl.type === "river" || pl.type === "lava")) x -= pl.dir * pl.speed * lag;
-  return { x, y: Math.max(0.12, playerBaseY(pl)), z: laneZ(st.playerRow), hopping: false };
+  const interp = playerInterpolator.present(alpha, true);
+  if (pl.type === "river" || pl.type === "lava") {
+    return { x: st.playerCol * COL_W - pl.dir * pl.speed * lag, y: interp.y, z: interp.z, hopping: false };
+  }
+  return interp;
 }
 
 /** Draw-side state of the diorama look (never read by the sim). */
@@ -1863,7 +2037,21 @@ export function syncVisuals(alpha = 1): void {
 
   // player — grounded on the exact top surface of the current lane or platform
   const px = pose.x, pz = pose.z;
-  if (!st.dead) shade(px, surfaceTopY(lane(st.playerRow)), pz, 0.62, 0.55, 0.95);
+  const playerGroundY = surfaceTopY(lane(st.playerRow));
+  if (!st.dead) shade(px, playerGroundY, pz, 0.62, 0.55, 0.95);
+  // Crisp hop contact ring beneath the critter (R23 visual anchor on busy lanes).
+  const hopRing = nodes.get("player-hop-ring");
+  if (hopRing) {
+    if (!st.dead && st.mode === "run") {
+      const alt = Math.max(0, pose.y - playerGroundY);
+      const ringScale = pose.hopping ? 0.85 + Math.min(0.45, alt * 0.55) : 0.78 + (reducedMotion ? 0 : 0.04 * Math.sin(tr * 5.2));
+      hopRing.setVisible?.(true);
+      hopRing.setPosition(px, playerGroundY + 0.018, pz);
+      hopRing.setScale?.([ringScale, ringScale, 1]);
+    } else {
+      hopRing.setVisible?.(false);
+    }
+  }
   const squash = st.dead && (st.dead.kind === "squashed" || st.dead.kind === "flattened") ? 0.18 : 1;
   try {
     const h = nodes.require("player");
@@ -1978,8 +2166,38 @@ export function syncVisuals(alpha = 1): void {
     if (amb) amb.setPosition(px, 2.2, pz - 5);
   } catch { /* no-op */ }
 
-  // hawk
+  // hawk + idle-hawk ground shadow circle + flashing red rail light cone
   const warn = st.mode === "run" ? Math.min(1, Math.max(0, st.idle - 1.4) / (HAWK_KILL - 1.4)) : 0;
+  const hawkShadow = nodes.get("hawk-ground-shadow");
+  if (hawkShadow) {
+    if (warn > 0.05 && !st.dead) {
+      const hs = 0.55 + warn * 1.45;
+      hawkShadow.setVisible?.(true);
+      hawkShadow.setPosition(px, playerGroundY + 0.014, pz);
+      hawkShadow.setScale?.([hs, 1, hs]);
+    } else {
+      hawkShadow.setVisible?.(false);
+    }
+  }
+  const railCone = nodes.get("rail-warn-cone");
+  if (railCone) {
+    let alertZ: number | null = null;
+    for (let r = Math.max(0, st.playerRow - 1); r <= st.playerRow + 6; r++) {
+      const rl = lane(r);
+      if (rl.type !== "rail") continue;
+      const cyc = railCycle(rl);
+      const u = ((tr + rl.phase) % cyc.period + cyc.period) % cyc.period;
+      if (u < cyc.warn + cyc.cross) { alertZ = laneZ(r); break; }
+    }
+    if (alertZ !== null) {
+      const flashOn = reducedMotion || Math.sin(tr * 16) > 0;
+      railCone.setVisible?.(flashOn);
+      railCone.setPosition(px, 0.88, alertZ);
+      railCone.setRotation?.(Math.PI * 0.44, 0, 0);
+    } else {
+      railCone.setVisible?.(false);
+    }
+  }
   try {
     const hk = nodes.require("hawk");
     if (warn > 0 && !st.dead) {

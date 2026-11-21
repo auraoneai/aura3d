@@ -1,0 +1,32 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "shape-shift-sprint",
+  "note": "Aura3D 5.7.2 WP-4A acceptance bands for sunlit candy-primary daylight corridor (cream road + primary sphere/cube/cone cutouts under stylized sky.gradient + Khronos Neutral + broadcast-crisp LUT).",
+  "default": {
+    "mean": [
+      118,
+      192
+    ],
+    "std": [
+      30,
+      null
+    ],
+    "p95": [
+      180,
+      null
+    ],
+    "spread": [
+      105,
+      null
+    ],
+    "darkFrac": [
+      null,
+      0.12
+    ],
+    "clipFrac": [
+      null,
+      0.08
+    ]
+  },
+  "variants": {}
+}

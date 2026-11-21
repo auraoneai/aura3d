@@ -364,7 +364,8 @@ const NEO_TOKYO = makeStage(
     (idolHvacPiece("nt-vent-2", [3.95, 0, -1.75], -0.35) ?? buildNeoTokyoHvacTower("nt-vent-2", [3.95, 0, -1.75], -0.35)),
     buildNeoTokyoStreetLamp("nt-lamp-l", [-3.2, 0, -1.4], 0.15, "#ffad5c"),
     buildNeoTokyoStreetLamp("nt-lamp-r", [3.2, 0, -1.4], -0.15, "#6ee7ff"),
-    buildSearchlightPylon("nt-speaker-c", [0, 0, -3.0], 0, "#ffe3ad")
+    // Offset off centerline so the searchlight mast never sits tangent behind Kenji's head at match start.
+    buildSearchlightPylon("nt-speaker-c", [-1.35, 0, -3.2], 0.14, "#ffe3ad")
   ]
 );
 
@@ -621,17 +622,39 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
     instances.custom(crowdHeadSpec(), { name: "cr-crowd-heads", material: material.pbr({ color: "#ffffff", roughness: 0.84, metallic: 0, clearcoat: 0, sheen: 0 }), transforms: heads, colors: headColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.heads }).toJSON()
   );
 
-  // Sparse torch/ember arena lights in the stands (marked practical).
+  // Recessed warm amber bokeh lanterns in the stands (never harsh white squares behind fighters' heads).
   const crowdLights: { position: [number, number, number]; scale: [number, number, number] }[] = [];
   const crowdLightColors: string[] = [];
-  for (let i = 0; i < 42; i += 1) {
+  for (let i = 0; i < 34; i += 1) {
     const row = i % tierZ.length;
     const spread = ((Math.sin((i + 3) * 7.31) * 24634.6345) % 1 + 1) % 1;
-    crowdLights.push({ position: [-11.2 + spread * 22.4, 1.34 + row * 0.52, tierZ[row]! - 0.1], scale: [0.075, 0.075, 0.03] });
-    crowdLightColors.push(i % 5 === 0 ? palette.aura : i % 3 === 0 ? "#8ee6ff" : palette.warning);
+    const x = -11.4 + spread * 22.8;
+    // Keep the immediate head-height sightline behind the central fight plane calm.
+    const y = Math.abs(x) < 3.6 ? 1.88 + row * 0.52 : 1.38 + row * 0.52;
+    const radius = 0.055 + (i % 3) * 0.014;
+    crowdLights.push({ position: [x, y, tierZ[row]! - 0.24], scale: [radius, radius, radius * 0.6] });
+    crowdLightColors.push(i % 4 === 0 ? "#ffb86b" : i % 3 === 0 ? "#ffd699" : "#f2c27a");
   }
   nodes.push(
-    primitives.box({ name: "cr-crowd-lights", material: material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.78, roughness: 0.3, metallic: 0, clearcoat: 0, sheen: 0, practical: true }), instances: crowdLights, instanceColors: crowdLightColors, castShadow: false, receiveShadow: false }).toJSON()
+    primitives
+      .sphere({
+        name: "cr-crowd-lights",
+        material: material.pbr({
+          color: "#ffd699",
+          emissive: "#ffd699",
+          emissiveIntensity: 0.32,
+          roughness: 0.58,
+          metallic: 0,
+          clearcoat: 0,
+          sheen: 0,
+          practical: true
+        }),
+        instances: crowdLights,
+        instanceColors: crowdLightColors,
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON()
   );
 
   // Forged lattice lighting trusses and warm lens cans (batched via instancing, castShadow: false).

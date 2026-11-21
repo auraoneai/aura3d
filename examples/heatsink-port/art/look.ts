@@ -48,6 +48,8 @@ export interface HeatsinkLookRow {
     readonly cascades: number;
     readonly maxDistance: number;
     readonly droneCasts: boolean;
+    /** 5.7.2 PCF penumbra softness in shadow-map texels. */
+    readonly softness?: number;
     /** GU47 phase 4: shadow map size (absent = the engine default, today's) */
     readonly mapSize?: 1024 | 2048;
   };
@@ -122,7 +124,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     id: "twilight",
     timeOfDay: "alien blue hour, sun 15 degrees up behind a magenta-to-amber band",
     sky: { kind: "aurora-dome", twilight: 1, planetScale: 1.6, aurora: 1.35, bandLow: linearOf(PALETTE.amber), bandHigh: linearOf(PALETTE.magenta) },
-    key: { position: TWILIGHT_SHADOW_KEY_POSITION, color: "#ffe0dc", intensity: 2.9, cascades: 3, maxDistance: 220, droneCasts: true, mapSize: 2048 },
+    key: { position: TWILIGHT_SHADOW_KEY_POSITION, color: "#ffe0dc", intensity: 2.9, cascades: 3, maxDistance: 220, droneCasts: true, softness: 1.8, mapSize: 2048 },
     hemisphere: { sky: "#8a7cd8", ground: "#3a2418", intensity: 0.8 },
     environment: { kind: "hdri", hdri: "sunset-dramatic", intensity: 0.9, rotationDeg: SUN_AZIMUTH_DEG },
     /* GU47 phase 3 (twilight shards glow violet in world.ts: the panel read the dark ones as stray diamonds): at scale 0.45 the bounce and the amber district haze washed the rocks to grey-beige (round g19p3-r1); a darker teal rock albedo keeps them reading as teal basalt against the violet sky */

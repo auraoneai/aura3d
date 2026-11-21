@@ -55,6 +55,7 @@ export interface HudElements {
   mult: HTMLElement;
   number: HTMLElement;
   wall: HTMLElement;
+  bossPill?: HTMLElement | null;
   shield: HTMLElement;
   x2: HTMLElement;
   laneRail?: HTMLElement | null;
@@ -71,6 +72,7 @@ export class NumberSurgeHud {
   private lastMult = -1;
   private lastNumber = -1;
   private lastWallKey = "";
+  private lastBossKey = "";
   private lastFill = -1;
   private lastShield: boolean | null = null;
   private lastX2 = false;
@@ -121,6 +123,30 @@ export class NumberSurgeHud {
         const label =
           wallState === "smash" ? `smash −${o.wallHp}` : wallState === "shield" ? `shield ${o.wallHp}` : `danger ${o.wallHp}`;
         text(this.el.wall, label);
+      }
+    }
+    if (this.el.bossPill) {
+      let nearestWallZ = Number.POSITIVE_INFINITY;
+      let nearestWallHp = 0;
+      for (const w of o.walls) {
+        if (w.active && w.z > 0 && w.z < nearestWallZ) {
+          nearestWallZ = w.z;
+          nearestWallHp = w.hp;
+        }
+      }
+      const distM = Number.isFinite(nearestWallZ)
+        ? Math.max(0, Math.round(nearestWallZ))
+        : Math.max(0, Math.round(CONFIG.WALL_SPACING - (o.distance % CONFIG.WALL_SPACING)));
+      const reqHp = nearestWallHp > 0 ? nearestWallHp : o.wallHp;
+      const bossReady = reqHp > 0 && (o.number > reqHp || o.shieldActive);
+      const bossState = reqHp <= 0 ? "approach" : bossReady ? "smash" : "danger";
+      const bossText = reqHp > 0 ? `BOSS ${distM} M · REQ ${reqHp}` : `BOSS ${distM} M`;
+      const bossKey = `${bossState}:${bossText}`;
+      if (bossKey !== this.lastBossKey) {
+        this.lastBossKey = bossKey;
+        this.el.bossPill.hidden = false;
+        this.el.bossPill.dataset.state = bossState;
+        text(this.el.bossPill, bossText);
       }
     }
     if (o.shieldActive !== this.lastShield) {

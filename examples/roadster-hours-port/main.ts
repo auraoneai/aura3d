@@ -6,9 +6,7 @@
  * through `__AURA_ROADSTER_HOURS__.stepSteps/replay`), `touch=1` (show the touch controls on any device).
  */
 import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
-import { summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
-import { createProceduralSfx } from "../../apps/showcase-port-shared/feel";
-import { createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
+import { HUD_THEMES, createAutoplayHarness, createGradingLut, createProceduralSfx, summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { texturesSettled } from "./art/textureGate";
 import { DEFAULT_PARAMS, autopilot } from "./autopilot";
@@ -70,6 +68,14 @@ let readyAt = 0;
 let screen: "home" | "play" | "results" = "home";
 let paused = false;
 let autopilotOn = config.autopilot;
+/** Autoplay harness: feeds the closed-loop pilot and holds the results ~3.5 s before driving the next route. */
+const autoplay = createAutoplayHarness<RunInput>({
+  bot: { step: () => autopilot(run, DEFAULT_PARAMS) },
+  isFinished: () => !config.manual && screen === "results",
+  restartDelay: 3.5,
+  enabled: config.autopilot,
+  onRestart: () => { void nextRoute(levelIndex + 1 < LEVELS.length ? levelIndex + 1 : 0); }
+});
 let frames = 0;
 let simSteps = 0;
 /** Sim events of every step since the last rendered frame (audio cues and camera kicks read them once). */
@@ -101,7 +107,7 @@ addEventListener("keydown", (e) => {
   const action = input.actionOf(e.code);
   if (action === "mute") { toggleMute(); return; }
   if (action === "pause") { togglePause(); return; }
-  if (e.code === "KeyI" && !action) { autopilotOn = !autopilotOn; if (autopilotOn && screen === "results") scheduleAutoAdvance(); return; }
+  if (e.code === "KeyI" && !action) { autopilotOn = !autopilotOn; autoplay.enabled = autopilotOn; return; }
   if (e.code === "Enter" && (screen === "home" || screen === "results") && $("controls").classList.contains("hidden")) {
     // Enter before the route is ready (the Drive button is still disabled) queues the start: beginning early ran the
     // countdown under the intro rail boot starts afterwards, so the car was off screen for the whole count (QA, Nov 19).
@@ -157,6 +163,7 @@ function begin(): void {
   pendingEvents.length = 0;
   screen = "play";
   paused = false;
+  autoplay.reset();
   loop.resetAccumulator();
   panels();
   syncAudioSuspend();
@@ -173,7 +180,12 @@ function togglePause(): void {
 function toggleMute(): void {
   sound.setMuted(!sound.muted);
   feelSfx.setMuted(sound.muted);
-  $("mute").textContent = sound.muted ? "Sound off" : "Sound on";
+  const muteBtn = $("mute");
+  muteBtn.dataset.muted = sound.muted ? "true" : "false";
+  muteBtn.setAttribute("aria-pressed", String(sound.muted));
+  const label = muteBtn.querySelector<HTMLElement>(".btn-label");
+  if (label) label.textContent = sound.muted ? "Sound off" : "Sound on";
+  else muteBtn.textContent = sound.muted ? "Sound off" : "Sound on";
 }
 
 function setReducedMotion(on: boolean): void {
@@ -199,17 +211,7 @@ function stepOnce(stepInput: RunInput): void {
     runtime?.startFinish();
     screen = "results";
     panels();
-    if (autopilotOn && !config.manual) scheduleAutoAdvance();
   }
-}
-
-/** Autoplay: hold the results ~3.5 s, then drive the next route (the last route wraps to the first), forever. */
-const AUTOPLAY_RESULTS_MS = 3500;
-function scheduleAutoAdvance(): void {
-  setTimeout(() => {
-    if (screen !== "results" || !autopilotOn) return;
-    void nextRoute(levelIndex + 1 < LEVELS.length ? levelIndex + 1 : 0);
-  }, AUTOPLAY_RESULTS_MS);
 }
 
 /** Next route without a page reload: the models are already decoded, so only the scene is rebuilt. Falls back to a reload. */
@@ -338,7 +340,11 @@ function updateHud(): void {
   hud.style("thrust-fill", "width", `${((run.thrust / run.capacity) * 100).toFixed(1)}%`);
   hud.style("heat-fill", "width", `${run.heat.toFixed(1)}%`);
   hud.text("nitro-label", nitroLabel(run));
-  if (run.nitroWindow !== nitroWindowShown) { nitroWindowShown = run.nitroWindow; $("thrust-bar").classList.toggle("window", run.nitroWindow); }
+  if (run.nitroWindow !== nitroWindowShown) {
+    nitroWindowShown = run.nitroWindow;
+    $("thrust-bar").classList.toggle("window", run.nitroWindow);
+    $("speedo").classList.toggle("window", run.nitroWindow);
+  }
   hud.text("heat-label", run.overheated ? "Overheated" : "");
   hud.style("progress-fill", "width", `${Math.min(100, Math.max(0, (run.s / run.level.length) * 100)).toFixed(2)}%`);
   hud.text("phase", run.phase);
@@ -369,7 +375,7 @@ const loop = createFixedStepLoop({
   isActive: () => ready && !isDocumentHidden(),
   step: () => {
     if (config.manual || screen !== "play" || isDocumentHidden()) return;
-    stepOnce(autopilotOn && run.phase === "running" ? autopilot(run, DEFAULT_PARAMS) : runInput(run, input));
+    stepOnce(autopilotOn && run.phase === "running" ? (autoplay.step(SIM_STEP) ?? autopilot(run, DEFAULT_PARAMS)) : runInput(run, input));
     presenter.afterStep();
   },
   render: (dt) => {
@@ -403,6 +409,7 @@ function render(dt: number, time: number, live = false): void {
   }
   app.step(0);
   updateHud();
+  if (screen === "results" && !config.manual) autoplay.tick(dt);
   // The step that completes the run switches to the results screen; its events (the finish fanfare) still play here.
   if (screen === "play" || pendingEvents.length) {
     const f = audioFrames[frames & 1];
@@ -564,7 +571,8 @@ const hooks = {
     for (const seg of segments) for (let i = 0; i < seg.n && run.phase !== "complete"; i++) stepOnce(seg.input);
     return snapshot();
   },
-  setAutopilot(on: boolean): void { autopilotOn = on; },
+  setAutopilot(on: boolean): void { autopilotOn = on; autoplay.enabled = on; },
+  autoplay: () => autoplay.diag(),
   renderNow(): void { render(0, performance.now() / 1000); },
   batching: () => runtime?.batching() ?? null,
   probeBatchedDraws: () => runtime?.probeBatchedDraws() ?? null,
@@ -618,6 +626,9 @@ async function settle(): Promise<void> {
 }
 
 async function boot(): Promise<void> {
+  for (const [k, v] of Object.entries(HUD_THEMES.motorsport)) {
+    document.documentElement.style.setProperty(k, v);
+  }
   sizeCanvas();
   world = buildWorld(levelIndex);
   buildMenu();

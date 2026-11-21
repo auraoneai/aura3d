@@ -14,8 +14,17 @@ export function createQuickBar(deps: QuickBarDeps): QuickBar {
   const practice = document.getElementById("aura-btn-practice");
   const auto = document.getElementById("aura-btn-auto") as HTMLButtonElement | null;
   const menu = document.getElementById("aura-btn-menu");
+  const cycleBtn = document.getElementById("aura-btn-venue-cycle") as HTMLButtonElement | null;
   const venues = [...document.querySelectorAll<HTMLButtonElement>("[data-aura-venue]")];
+  const venueOrder = venues.map((b) => b.dataset.auraVenue || "hard");
+  let activeVenue = venues.find((b) => b.classList.contains("active"))?.dataset.auraVenue || "hard";
   let autoplay = deps.autoplay;
+  const syncCycleLabel = (id: string): void => {
+    activeVenue = id;
+    if (!cycleBtn) return;
+    const match = venues.find((b) => b.dataset.auraVenue === id);
+    cycleBtn.textContent = `${match?.textContent?.trim() || "NY"} ▾`;
+  };
   const setActiveMode: QuickBar["setActiveMode"] = (mode) => {
     play?.classList.toggle("active", mode === "play");
     practice?.classList.toggle("active", mode === "practice");
@@ -26,10 +35,17 @@ export function createQuickBar(deps: QuickBarDeps): QuickBar {
   play?.addEventListener("click", () => { deps.quickMatch(); setActiveMode("play"); });
   practice?.addEventListener("click", () => { deps.smashLab(); setActiveMode("practice"); });
   menu?.addEventListener("click", () => { deps.openModes(); setActiveMode("menu"); });
-  for (const button of venues) button.addEventListener("click", () => deps.selectVenue(button.dataset.auraVenue || "hard"));
+  cycleBtn?.addEventListener("click", () => {
+    const idx = venueOrder.indexOf(activeVenue);
+    const next = venueOrder[(idx + 1) % Math.max(1, venueOrder.length)] || "hard";
+    deps.selectVenue(next);
+    syncCycleLabel(next);
+  });
+  for (const button of venues) button.addEventListener("click", () => { const id = button.dataset.auraVenue || "hard"; deps.selectVenue(id); syncCycleLabel(id); });
+  syncCycleLabel(activeVenue);
   return {
     setActiveMode,
-    setVenue(id) { for (const b of venues) b.classList.toggle("active", b.dataset.auraVenue === id); },
+    setVenue(id) { for (const b of venues) b.classList.toggle("active", b.dataset.auraVenue === id); syncCycleLabel(id); },
     setAutoplay(on) { autoplay = on; auto?.classList.toggle("active", on); }
   };
 }

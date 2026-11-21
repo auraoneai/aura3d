@@ -12,9 +12,8 @@
  */
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
-import { createCameraShake, createHitStop, createImpactFeedback, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
+import { createCameraShake, createGradingLut, createHitStop, createImpactFeedback, createImpactRig, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import type { GameSessionState } from "@aura3d/engine";
-import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { labAppOptions, labRenderWorker, parseLabFlags } from "../shared/lab-flags";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { createOrbitAudio } from "./audio";
@@ -700,6 +699,7 @@ async function boot(): Promise<void> {
   // `?worker=1` renders in the worker the showcase route registers (labRenderWorker); main-thread fallback kept.
   // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out.
   const lab = labAppOptions(parseLabFlags(typeof location !== "undefined" ? location.search : undefined), { backend: "auto", createWorker: labRenderWorker });
+  const gradingLut = config.look === "gouache" ? createGradingLut("cinema-warm", 16) : null;
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
@@ -710,7 +710,14 @@ async function boot(): Promise<void> {
     // No `renderer` keys (SO-E4): since 4.5.0 they do not pick the pipeline, `mode`/`fallback` are deprecated and
     // `qualityProfile` warns. Quality stays `auto` (the pipeline the lighting was calibrated on); `pixelRatio: 1` is explicit.
     output: config.look === "gouache"
-      ? { preset: "space", toneMapping: "agx", exposure: lookExposure(config.look, typeof location !== "undefined" ? location.search : null), dither: true, ...lab.output }
+      ? {
+        preset: "space",
+        toneMapping: "agx",
+        exposure: lookExposure(config.look, typeof location !== "undefined" ? location.search : null),
+        dither: true,
+        ...(gradingLut ? { lut: { texture: gradingLut.texture, size: gradingLut.size, intensity: 0.28 } } : {}),
+        ...lab.output
+      }
       : { toneMapping: "aces", exposure: lookExposure(config.look, typeof location !== "undefined" ? location.search : null), dither: false, ...lab.output },
     scene: world.scene
   });

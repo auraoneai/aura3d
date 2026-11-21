@@ -1,4 +1,5 @@
 /* IRON CROWN — fight HUD + menu sheets. App-shell chrome lives in index.html. */
+@import "../../showcase-port-shared/hud-tokens.css";
 
 #fight-hud {
   position: fixed;
@@ -7,13 +8,18 @@
   z-index: 50;
   font-family: var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif);
   font-variant-numeric: tabular-nums;
-  --fh-gold: #ffd76a;
-  --fh-red: #ff4f46;
+  --fh-gold: var(--a3g-accent, #ffcc00);
+  --fh-red: var(--a3g-danger, #ff4f46);
   --fh-blue: #57c8ff;
   --fh-green: #5cff9d;
+  --fh-ink: var(--a3g-fg, #fff6e8);
+  --fh-dim: var(--a3g-fg-dim, #d9c9a8);
+  --fh-plate-bg: var(--a3g-bg, rgba(20, 8, 4, 0.78));
+  --fh-plate-edge: var(--a3g-edge, rgba(217, 164, 65, 0.58));
+  --fh-radius: var(--a3g-radius, 4px);
 }
 
-/* ---------- top plates ---------- */
+/* ---------- top plates (layout; forged visual skin lives at bottom) ---------- */
 .fh-top {
   position: absolute;
   top: calc(var(--a3d-bar-space) + 2px);
@@ -30,14 +36,9 @@
 .fh-plate {
   min-width: 0;
   padding: 8px 12px 9px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 3px solid var(--fh-blue);
-  background: linear-gradient(180deg, rgba(10, 12, 20, 0.88), rgba(10, 12, 20, 0.58));
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(8px);
 }
-.fh-plate-p2 { text-align: right; border-left-width: 1px; border-right: 3px solid var(--fh-red); }
+.fh-plate-p2 { text-align: right; }
 
 .fh-plate-inner {
   display: flex;
@@ -102,9 +103,7 @@
   position: relative;
   height: clamp(12px, 1.5vw, 15px);
   margin-top: 0;
-  background: rgba(8, 10, 16, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 3px;
+  border-radius: var(--fh-radius);
   transform: skewX(-12deg);
   overflow: hidden;
 }
@@ -113,16 +112,14 @@
   position: absolute;
   inset: 0;
   width: 100%;
-  background: linear-gradient(90deg, #ffe76a, #ffb13c 55%, #ff7a3c);
   transition: width 120ms ease-out;
   z-index: 1;
 }
-.fh-plate-p2 .fh-health-fill { right: 0; left: auto; background: linear-gradient(270deg, #ffe76a, #ffb13c 55%, #ff7a3c); }
+.fh-plate-p2 .fh-health-fill { right: 0; left: auto; }
 .fh-health-chip {
   position: absolute;
   inset: 0;
   width: 100%;
-  background: rgba(255, 79, 70, 0.85);
   transition: width 520ms ease-out 160ms;
   z-index: 0;
 }
@@ -139,11 +136,22 @@
   position: relative;
   flex: 1 1 auto;
   height: clamp(7px, 1vw, 9px);
-  background: rgba(8, 10, 16, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 3px;
+  border-radius: var(--fh-radius);
   transform: skewX(-12deg);
   overflow: hidden;
+}
+/* 50% / 100% segmented SUPER notch marker */
+.fh-meter::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1.5px;
+  background: rgba(14, 11, 13, 0.82);
+  box-shadow: 1px 0 0 rgba(217, 164, 65, 0.35);
+  z-index: 2;
+  pointer-events: none;
 }
 .fh-meter-tag {
   font-size: 12px;
@@ -151,7 +159,7 @@
   font-variant-caps: all-small-caps;
   line-height: 1;
   letter-spacing: 0.08em;
-  color: rgba(232, 235, 244, 0.72);
+  color: var(--fh-dim);
   flex: 0 0 auto;
 }
 .fh-meter-right { transform: skewX(12deg); }
@@ -159,14 +167,13 @@
   position: absolute;
   inset: 0;
   width: 0%;
-  background: linear-gradient(90deg, #36e0ff, #7d6bff);
   transition: width 140ms ease-out;
 }
 .fh-meter.full .fh-meter-fill { animation: fh-meter-pulse 640ms ease-in-out infinite alternate; }
-.fh-meter-right .fh-meter-fill { right: 0; left: auto; background: linear-gradient(270deg, #36e0ff, #7d6bff); }
+.fh-meter-right .fh-meter-fill { right: 0; left: auto; }
 @keyframes fh-meter-pulse {
   from { filter: brightness(1); }
-  to { filter: brightness(1.65); }
+  to { filter: brightness(1.55); }
 }
 .fh-meter-txt {
   font-size: 12px;
@@ -174,7 +181,6 @@
   font-variant-caps: all-small-caps;
   line-height: 1;
   letter-spacing: 0.08em;
-  color: var(--fh-blue);
   opacity: 0;
   flex: 0 0 auto;
   transition: opacity 140ms ease-out;
@@ -187,11 +193,10 @@
   width: clamp(8px, 1vw, 10px);
   height: clamp(8px, 1vw, 10px);
   border-radius: 50%;
-  border: 1px solid rgba(255, 215, 106, 0.75);
+  border: 1px solid rgba(217, 164, 65, 0.75);
   background: rgba(0, 0, 0, 0.5);
   display: inline-block;
 }
-.fh-pips i.won { background: radial-gradient(circle at 35% 35%, #fff3c4, var(--fh-gold)); box-shadow: 0 0 8px rgba(255, 215, 106, 0.7); }
 
 .fh-clock {
   display: flex;
@@ -201,10 +206,10 @@
   text-align: center;
   min-width: 94px;
   padding: 4px 14px 6px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 215, 106, 0.38);
-  background: radial-gradient(120% 130% at 50% 0%, rgba(56, 38, 26, 0.92), rgba(12, 10, 13, 0.88));
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: var(--fh-radius);
+  border: 1px solid var(--fh-plate-edge);
+  background: radial-gradient(120% 130% at 50% 0%, rgba(44, 26, 18, 0.92), var(--fh-plate-bg));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(8px);
 }
 .fh-timer {
@@ -603,7 +608,22 @@
 
 /* Touch controls (audit IC-01). Circular dark-iron glass arcade fightpad for 390x844 mobile portrait & coarse pointers. */
 .a3g-touch,
-.ic-touch-extras { position: fixed; inset: 0; pointer-events: none; z-index: 55; }
+.ic-touch-extras {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: env(safe-area-inset-bottom, 0px);
+  pointer-events: none;
+  z-index: 55;
+}
+.ic-tc-pause {
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  letter-spacing: 0 !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  background: rgba(14, 11, 13, 0.82) !important;
+}
 .a3g-tc {
   position: absolute;
   pointer-events: auto;
@@ -686,15 +706,15 @@
 
 /* ---------- GU47 IC47-H1: the forged HUD (black iron plates, gold bevel, molten bars, ember drain, crown pips) ----------
    Palette from art/direction.ts: black iron #0e0b0d, molten gold #d9a441, ember crimson #9e1b22; the SUPER meter and the
-   crown pips use the reserved objective gold #ffe08a and nothing else does. Fonts stay the licensed UI stack. */
+   crown pips use the reserved objective gold #ffe08a and nothing else does. Bound to HUD_THEMES["fighting"] vars. */
 .fh-plate {
-  border-radius: 6px;
-  border: 1px solid rgba(217, 164, 65, 0.58);
-  background: linear-gradient(180deg, rgba(30, 24, 26, 0.94), rgba(14, 11, 13, 0.84));
+  border-radius: var(--fh-radius);
+  border: 1px solid var(--fh-plate-edge);
+  background: linear-gradient(180deg, rgba(30, 24, 26, 0.94), var(--fh-plate-bg));
   box-shadow: inset 0 1px 0 rgba(255, 224, 138, 0.28), inset 0 -2px 0 rgba(0, 0, 0, 0.65), 0 8px 22px rgba(0, 0, 0, 0.48);
 }
 .fh-plate-p1 { border-left: 3px solid var(--fh-blue); }
-.fh-plate-p2 { border-right: 3px solid var(--fh-red); }
+.fh-plate-p2 { border-left: 1px solid var(--fh-plate-edge); border-right: 3px solid var(--fh-red); }
 .fh-health {
   background: linear-gradient(180deg, #1a1416, #0e0b0d);
   border: 1px solid #d9a441;

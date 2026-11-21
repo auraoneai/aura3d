@@ -598,13 +598,16 @@ void main() {
   vec3 albedo = vTint;
   float wrap = 0.25, sss = 0.0, ao = 1.0, spec = 0.0, emissive = 0.0;
   if (k == 0) {
-    // leaf mass: clumps of lighter and darker leaves, sunlit tops, translucent edges
+    // leaf mass: clumps of lighter and darker leaves, painterly gouache normal brushwork, sunlit tops, translucent edges
     float clump = vnoise(wp.xz * 0.8 + wp.y * 1.3);
     float leaf = vnoise(wp.xy * 5.5 + wp.zz * 2.2) * 0.55 + vnoise(wp.zy * 8.0 + wp.xx * 3.0) * 0.45;
+    float brushX = vnoise(wp.xy * 3.8 + vec2(1.7, 4.3)) - 0.5;
+    float brushZ = vnoise(wp.zy * 3.8 + vec2(6.1, 2.9)) - 0.5;
+    n = normalize(n + vec3(brushX, (leaf - 0.5) * 0.55, brushZ) * 0.36);
     float dap = smoothstep(0.62, 0.86, vnoise(wp.xz * 2.6 + wp.y * 2.2));
     albedo = vTint * (0.62 + 0.62 * leaf) * (0.82 + 0.34 * clump) + vTint * vec3(0.55, 0.5, 0.1) * dap * 0.55;
-    wrap = 0.6; sss = 0.7;
-    ao = 0.55 + 0.45 * clamp(n.y * 0.5 + 0.55, 0.0, 1.0);
+    wrap = 0.65; sss = 0.82;
+    ao = 0.52 + 0.48 * clamp(n.y * 0.5 + 0.55, 0.0, 1.0);
   } else if (k == 1) {
     float streak = vnoise(vec2(uv.x * 7.0, uv.y * 0.9));
     float ring = vnoise(vec2(uv.x * 22.0, uv.y * 3.0));
@@ -684,9 +687,13 @@ void main() {
     lit += sunCol * pow(max(dot(n, h), 0.0), 36.0) * spec * 0.9;
   }
   lit += albedo * vec3(1.0, 0.75, 0.4) * emissive;
-  // sky-coloured rim keeps silhouettes from going muddy against the haze
+  // sky-coloured rim keeps silhouettes from going muddy against the haze; canopies catch a warm backlit rim
   float rim = pow(1.0 - max(dot(n, view), 0.0), 3.0);
   lit += skyCol * albedo * rim * 0.1;
+  if (k == 0) {
+    float warmRim = pow(1.0 - max(dot(n, view), 0.0), 2.2) * (0.32 + 0.68 * clamp(dot(n, sunDir) * 0.5 + 0.5, 0.0, 1.0));
+    lit += sunCol * albedo * warmRim * 0.24;
+  }
   outColor = vec4(applyFog(lit, wp, 1.0), 1.0);
 }`;
 

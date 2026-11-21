@@ -35,6 +35,36 @@ export function sphereMesh(radius: number, widthSegments: number, heightSegments
   return m;
 }
 
+/** Glossy elongated teardrop splat droplet oriented along +Y (replaces chunky icosphere particles). */
+export function teardropMesh(radius = 0.085, length = 0.24, radial = 10, rings = 8): MeshData {
+  const m = empty();
+  for (let iy = 0; iy <= rings; iy++) {
+    const v = iy / rings; // 0 = pointed tail (+y), 1 = rounded nose (-y)
+    const y = (0.5 - v) * length;
+    // tapered teardrop profile: sharp tail at v=0, plump bulb around v=0.72, closed tip at v=1
+    const r = radius * Math.sin(v * Math.PI) * (0.35 + 0.85 * Math.pow(v, 0.55));
+    const slope = Math.cos(v * Math.PI) * 0.6;
+    for (let ix = 0; ix <= radial; ix++) {
+      const u = ix / radial;
+      const a = u * Math.PI * 2;
+      const cx = Math.cos(a), sz = Math.sin(a);
+      const nLen = Math.hypot(cx, slope, sz) || 1;
+      m.positions.push(cx * r, y, sz * r);
+      m.normals.push(cx / nLen, slope / nLen, sz / nLen);
+      m.uvs.push(u, 1 - v);
+    }
+  }
+  const row = radial + 1;
+  for (let iy = 0; iy < rings; iy++) {
+    for (let ix = 0; ix < radial; ix++) {
+      const a = iy * row + ix, b = a + 1, c = a + row, d = c + 1;
+      if (iy !== 0) m.indices.push(a, c, b);
+      if (iy !== rings - 1) m.indices.push(b, c, d);
+    }
+  }
+  return m;
+}
+
 /** Axis-aligned box centred at the origin, 24 verts (4 per face), 36 indices. */
 export function boxMesh(w: number, h: number, d: number): MeshData {
   const m = empty();

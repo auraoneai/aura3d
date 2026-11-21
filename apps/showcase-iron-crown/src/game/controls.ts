@@ -54,13 +54,14 @@ export const TOUCH_BINDINGS: Readonly<Record<string, ActionId>> = {
 
 /**
  * Extra touch buttons the preset has no slot for. Rects use the preset's safe-area-relative units
- * (w 0.125 x h 0.06 is about 49 x 51 CSS px at 390x844, the 48 px minimum).
+ * (w 0.128 x h 0.058 is about 50 x 49 CSS px at 390x844, meeting the >= 48 px ergonomic target).
+ * Pause sits cleanly at the top-right below the HUD plates so the bottom thumb band stays dedicated to combat.
  */
 export const EXTRA_TOUCH_BUTTONS: readonly { readonly id: string; readonly action: ActionId; readonly label: string; readonly rect: { x: number; y: number; w: number; h: number } }[] = [
-  { id: "throw", action: "throw", label: "Throw", rect: { x: 0.845, y: 0.785, w: 0.125, h: 0.06 } },
-  { id: "dash", action: "dash", label: "Dash", rect: { x: 0.555, y: 0.785, w: 0.125, h: 0.06 } },
-  { id: "crouch", action: "crouch", label: "Crouch", rect: { x: 0.1, y: 0.82, w: 0.125, h: 0.06 } },
-  { id: "pause", action: "pause", label: "Pause", rect: { x: 0.845, y: 0.71, w: 0.125, h: 0.06 } }
+  { id: "throw", action: "throw", label: "Throw", rect: { x: 0.842, y: 0.72, w: 0.128, h: 0.058 } },
+  { id: "dash", action: "dash", label: "Dash", rect: { x: 0.555, y: 0.72, w: 0.128, h: 0.058 } },
+  { id: "crouch", action: "crouch", label: "Crouch", rect: { x: 0.08, y: 0.72, w: 0.128, h: 0.058 } },
+  { id: "pause", action: "pause", label: "Pause", rect: { x: 0.842, y: 0.165, w: 0.128, h: 0.058 } }
 ];
 
 /** Touch control values that are not declared actions (empty when the bindings are sound). */

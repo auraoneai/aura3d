@@ -7,9 +7,22 @@
  * billboards, boost pads, missiles and VFX stay procedural (emissive/animated gameplay surfaces). A key that is not admitted
  * falls back to its procedural builder.
  */
-import { game, group, instances, model, type AuraNodeBuilder, type AuraSceneNode, type AuraTransformSpec } from "@aura3d/engine";
+import {
+  game,
+  geometry,
+  group,
+  instances,
+  material,
+  model,
+  type AuraCustomGeometrySpec,
+  type AuraModelMaterialOverride,
+  type AuraNodeBuilder,
+  type AuraSceneNode,
+  type AuraTransformSpec
+} from "@aura3d/engine";
 import { assets } from "../aura-assets.route";
 import type { DroneId, DroneSpec, SceneryAnchor } from "../data";
+import { mergeRawMeshes, tubeSweepMesh, type V4 } from "../../../showcase-port-shared/proceduralKernel";
 
 /**
  * Literal references, so `aura3d assets typegen --route apps/showcase-heatsink` emits exactly these GLBs into
@@ -126,6 +139,52 @@ export const IDOL_BATCH_KEYS: Readonly<Partial<Record<string, IdolKey>>> = {
   // heatsinkTunnelFrame stays procedural: the Idol portal came back as a 36 m-deep roofed tunnel, not a portal frame.
 };
 
+/** Aura3D 5.7.1 clearcoat drone hull finish: dielectric lacquer + warm foundry rim so hulls gleam cleanly in wet/night IBL. */
+function droneClearcoatOverride(isPlayer: boolean): readonly AuraModelMaterialOverride[] {
+  return [
+    {
+      metallic: isPlayer ? 0.16 : 0.12,
+      roughness: 0.24,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.06,
+      envMapIntensity: isPlayer ? 1.85 : 1.55,
+      rim: { color: "#ff8a1f", power: 2.6, intensity: isPlayer ? 1.45 : 0.9 }
+    }
+  ];
+}
+
+const NACELLE_RING_MAT = material.emissive({
+  name: "td drone nacelle ring",
+  color: "#ff9b3d",
+  emissive: "#ff8a1f",
+  emissiveIntensity: 3.8,
+  roughness: 0.14,
+  practical: true
+});
+
+const NACELLE_RING_SPECS = new Map<DroneId, AuraCustomGeometrySpec>();
+
+/** Twin HDR emissive tail nacelle rings seated at each drone's measured `IDOL_NOZZLES` sockets. */
+function buildDroneNacelleRingsSpec(id: DroneId): AuraCustomGeometrySpec {
+  const cached = NACELLE_RING_SPECS.get(id);
+  if (cached) return cached;
+  const n = IDOL_NOZZLES[id];
+  const r = id === "bastion" ? 0.19 : 0.145;
+  const tube = 0.028;
+  const rings = [-1, 1].map((side) => {
+    const cx = side * n.lateral;
+    const pts: V4[] = [];
+    for (let i = 0; i <= 16; i += 1) {
+      const a = (i / 16) * Math.PI * 2;
+      pts.push([cx + Math.cos(a) * r, n.y + Math.sin(a) * r, n.back - 0.06, tube]);
+    }
+    return tubeSweepMesh(pts, 6, false);
+  });
+  const spec = mergeRawMeshes(rings);
+  NACELLE_RING_SPECS.set(id, spec);
+  return spec;
+}
+
 export function buildIdolDroneNode(id: DroneId, spec: DroneSpec): AuraNodeBuilder<AuraSceneNode> {
   const isPlayer = id === "orion";
   return group(
@@ -135,11 +194,18 @@ export function buildIdolDroneNode(id: DroneId, spec: DroneSpec): AuraNodeBuilde
         name: `${spec.nodeId}-hull`,
         scaleMode: "world",
         role: isPlayer ? "primaryCharacter" : "setDressing",
+        materialOverrides: droneClearcoatOverride(isPlayer),
         castShadow: isPlayer,
         receiveShadow: true
       })
         .position(0, IDOL_DRONE_BELLY_Y, 0)
         .rotate(0, Math.PI, 0),
+      geometry.custom(buildDroneNacelleRingsSpec(id), {
+        name: `${spec.nodeId}-nacelle-rings`,
+        material: NACELLE_RING_MAT,
+        castShadow: false,
+        receiveShadow: false
+      }),
       group(exhaustNodeId(spec), [], { position: [0, IDOL_NOZZLES[id].y, IDOL_NOZZLES[id].back] }).runtime(game.runtimeNode(exhaustNodeId(spec)))
     ],
     { position: [0, 1.45, isPlayer ? -0.4 : -24] }

@@ -4,7 +4,7 @@
 
 import { dualEnergyFieldSpec, type CustomMaterialSpec } from "../../../showcase-port-shared/dual-shaders";
 import { WGSL_CLIP, WGSL_MATH, wgslStage } from "../../../showcase-port-shared/wgsl-twins";
-import type { FlipbookAtlasSpec } from "../../../showcase-port-shared/vfx-pack";
+import type { FlipbookAtlasSpec } from "@aura3d/engine/game";
 
 export { dualEnergyFieldSpec };
 

@@ -6,14 +6,22 @@
  * `horizon` base, each stop above it is a `mid` band blending over `[y(i+1), y(i)]` with `y = 1 - 2t`, and the top
  * stop is the `zenith`. Smoothstep is symmetric (`S(1 - x) = 1 - S(x)`), so both chains give the same colour.
  */
-import type { AuraSkyGradientMidBand, AuraSkyGradientOptions, AuraSkyGradientSunSpec } from "@aura3d/engine";
+import type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientOptions, AuraSkyGradientSunSpec } from "@aura3d/engine";
 import type { SkyStop } from "./shaders";
 
 /** Most stops a stop gradient can carry: horizon + 6 mid bands + zenith. */
 export const MAX_SKY_STOPS = 8;
 
+export interface GradientSkyExtras {
+  readonly haze?: AuraSkyGradientHaze;
+  readonly sun?: AuraSkyGradientSunSpec;
+  readonly dither?: boolean;
+  readonly horizonHeight?: number;
+  readonly horizonSharpness?: number;
+}
+
 /** `sky.gradient` options that draw the same colours as `gradientSkyFragment(stops)`. */
-export function gradientSkyOptions(stops: readonly SkyStop[]): AuraSkyGradientOptions {
+export function gradientSkyOptions(stops: readonly SkyStop[], extras?: GradientSkyExtras): AuraSkyGradientOptions {
   if (stops.length < 2) throw new Error("runner-kit: a sky gradient needs at least two stops");
   if (stops.length > MAX_SKY_STOPS) throw new Error(`runner-kit: sky.gradient carries at most ${MAX_SKY_STOPS} stops`);
   const sorted = [...stops].sort((a, b) => a.t - b.t);
@@ -27,6 +35,11 @@ export function gradientSkyOptions(stops: readonly SkyStop[]): AuraSkyGradientOp
     horizon: sorted[last]!.hex,
     ...(mid.length > 0 ? { mid } : {}),
     zenithBlend: [y(1), y(0)],
+    ...(extras?.haze ? { haze: extras.haze } : {}),
+    ...(extras?.sun ? { sun: extras.sun } : {}),
+    ...(extras?.dither !== undefined ? { dither: extras.dither } : {}),
+    ...(extras?.horizonHeight !== undefined ? { horizonHeight: extras.horizonHeight } : {}),
+    ...(extras?.horizonSharpness !== undefined ? { horizonSharpness: extras.horizonSharpness } : {}),
     captureEnvironment: false,
     affectsFog: false
   };

@@ -1,4 +1,4 @@
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import type { SimState } from "./sim";
 
 /** What the renderer reads of one simulation step that moves continuously: where the tram is on the leg, how fast, and how it rolls. */
@@ -28,6 +28,26 @@ export function viewOf(sim: SimState, shown: Shown): SimState {
   return { ...sim, distance: shown.distance, speed: shown.speed, roll: shown.roll };
 }
 
-export function createTramPresenter(getSim: () => Pick<SimState, "leg" | "distance" | "speed" | "roll">): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getSim()), blend: blendShown });
+export function createTramPresenter(getSim: () => Pick<SimState, "leg" | "distance" | "speed" | "roll">): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({
+    create: () => ({ leg: 0, distance: 0, speed: 0, roll: 0 }),
+    snapshot(out) {
+      const s = getSim();
+      const dst = out ?? { leg: 0, distance: 0, speed: 0, roll: 0 };
+      dst.leg = s.leg;
+      dst.distance = s.distance;
+      dst.speed = s.speed;
+      dst.roll = s.roll;
+      return dst;
+    },
+    blend(a, b, t, out) {
+      const dst = out ?? { leg: 0, distance: 0, speed: 0, roll: 0 };
+      dst.leg = b.leg;
+      dst.distance = mix(a.distance, b.distance, t);
+      dst.speed = mix(a.speed, b.speed, t);
+      dst.roll = mix(a.roll, b.roll, t);
+      return dst;
+    },
+    snap: (a, b) => a.leg !== b.leg || b.distance < a.distance - BACKWARD_SNAP
+  });
 }

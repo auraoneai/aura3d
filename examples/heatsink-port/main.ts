@@ -12,14 +12,15 @@
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createLoadingProgress } from "../shared/loading-progress";
-import { warmPrograms } from "@aura3d/engine/game";
+import { HUD_THEMES, warmPrograms } from "@aura3d/engine/game";
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { expandSegments, parseInputScript } from "./input-script";
 import { createHeatsinkAudio } from "./audio";
 import { runBotRace, createBot, type BotOptions } from "./bot";
 import { AUTOPLAY, autoplayRequested, createAutoplay } from "./autoplay";
 import { CFG } from "./config";
-import { HudModel, MEDAL_TEXT, OBJECTIVE_TEXT, countText, formatTime, projectTargetLock, type TargetLockHud } from "./hud";
+import { HudModel, MEDAL_TEXT, OBJECTIVE_TEXT, OBJECTIVE_TOUCH_TEXT, countText, formatTime, projectTargetLock, type TargetLockHud } from "./hud";
+import { CYBER_NEON_LUT } from "./materials";
 import { STRIKE } from "./operation";
 import { FRAME, Race } from "./race";
 import { createHeatsinkPresenter, viewOf } from "./presentation";
@@ -304,10 +305,13 @@ function begin(): void {
   el.error.classList.add("hidden");
 }
 
+const isCompactTouchHud = (): boolean => touchMode || (typeof window !== "undefined" && window.innerWidth <= 640);
+
 function simulate(steps: number, input?: Input): void {
+  const compact = isCompactTouchHud();
   for (let i = 0; i < steps; i++) {
     race.frame(FRAME, input ?? sampleInput(FRAME));
-    lastHud = hudModel.current.update(FRAME, race);
+    lastHud = hudModel.current.update(FRAME, race, compact);
   }
 }
 
@@ -705,12 +709,21 @@ async function boot(): Promise<void> {
   lookRow = world.look;
   const twilight = lookRow.id === "twilight";
   document.body.classList.toggle("ion-telemetry", twilight);
+  for (const [k, v] of Object.entries(HUD_THEMES["sci-fi-telemetry"])) {
+    document.documentElement.style.setProperty(k, v);
+  }
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...(lab.renderer ?? {}) },
-    output: { toneMapping: twilight ? "agx" : "aces", exposure: twilight ? 1.06 : 1.0, dither: twilight, ...(lab.output ?? {}) },
+    output: {
+      toneMapping: "agx",
+      exposure: twilight ? 1.06 : 1.0,
+      dither: twilight,
+      ...(twilight ? { lut: { texture: CYBER_NEON_LUT.texture, size: CYBER_NEON_LUT.size, intensity: 0.28 } } : {}),
+      ...(lab.output ?? {})
+    },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });
@@ -723,7 +736,7 @@ async function boot(): Promise<void> {
      after the mount; their texture upgrades (and the twilight HDRI) switch materials to new program variants, and draws
      whose program is still compiling are skipped (lessons-learned R2). `ready` is still false, so tick() renders nothing
      concurrently. */
-  lastHud = hudModel.current.update(0, race);
+  lastHud = hudModel.current.update(0, race, isCompactTouchHud());
   render(0);
   const warmT0 = performance.now();
   await warmPrograms(app, { environmentTimeoutMs: 20_000, textureTimeoutMs: 30_000, maxFrames: 24 });
@@ -738,14 +751,16 @@ async function boot(): Promise<void> {
   el.loading.classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;
   if (!config.autostart && !config.manual && !started) el.menu.classList.remove("hidden");
-  lastHud = hudModel.current.update(0, race);
+  lastHud = hudModel.current.update(0, race, isCompactTouchHud());
   render(0);
   if (config.autostart) begin();
   /* ?autoplay=1: say who is flying (and how to take over) on the first race */
   if (autopilot) setAutopilot(true);
 }
 
-el.menuObjective.textContent = `${OBJECTIVE_TEXT} · Chain kills for up to x5 multiplier across ${CFG.track.laps} laps.`;
+el.menuObjective.textContent = isCompactTouchHud()
+  ? `${OBJECTIVE_TOUCH_TEXT} · Chain kills for up to x5 multiplier across ${CFG.track.laps} laps.`
+  : `${OBJECTIVE_TEXT} · Chain kills for up to x5 multiplier across ${CFG.track.laps} laps.`;
 $("start").addEventListener("click", begin);
 $("again").addEventListener("click", begin);
 $("resume").addEventListener("click", () => setPaused(false, "resume"));

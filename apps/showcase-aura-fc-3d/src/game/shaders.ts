@@ -7,7 +7,7 @@
  *   sample textures via `u_<name>Texture` + `u_<name>Sampler`, and wrap clip coords in `a3dRasterPosition(...)`.
  */
 import type { material } from "@aura3d/engine";
-import type { FlipbookAtlasSpec } from "../../../showcase-port-shared/vfx-pack";
+import type { FlipbookAtlasSpec } from "@aura3d/engine/game";
 import {
   WGSL_CLIP,
   WGSL_COLOR,

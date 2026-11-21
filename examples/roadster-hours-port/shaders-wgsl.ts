@@ -294,9 +294,10 @@ export const ROAD_FRAGMENT_WGSL = stage([MATH, SHADOW, ATMOS, LINE_MASK, DETAIL]
   if (aura.u_roadSheen > 0.0) {
     let Nf = normalize(vec3<f32>(N.x * 0.3, 1.0, N.z * 0.3));
     var Rr = reflect(-V, Nf);
-    Rr.y = abs(Rr.y) + 0.02;
+    Rr.y = sqrt(Rr.y * Rr.y + 0.012) + 0.02;
     let ndvS = clamp(dot(Nf, V), 0.0, 1.0);
-    let Fs = 0.04 + 0.96 * a3dPow(1.0 - ndvS, 5.0);
+    let crestFade = smoothstep(0.0, 0.12, ndvS);
+    let Fs = (0.04 + 0.96 * a3dPow(1.0 - ndvS, 5.0)) * crestFade;
     let gloss = clamp(1.0 - rough, 0.0, 1.0) * (1.0 - 0.7 * curb) * (1.0 - 0.6 * paint);
     let Hs = normalize(aura.u_sunDir + V);
     let glare = ggx(max(dot(Nf, Hs), 0.0), 0.32) * 0.25 * max(dot(Nf, aura.u_sunDir), 0.0);

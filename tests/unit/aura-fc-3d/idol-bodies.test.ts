@@ -8,7 +8,7 @@ import {
   recordFootballerPose
 } from "../../../apps/showcase-aura-fc-3d/src/game/idolBodies";
 import { computeFootballerJointPose, poseArticulatedPitchFan } from "../../../apps/showcase-aura-fc-3d/src/art/proceduralModels";
-import { createHumanoidDriver, quatAxisAngle, readIdolSkeleton } from "../../../apps/showcase-port-shared/idol/humanoid";
+import { createHumanoidDriver, quatAxisAngle, readIdolSkeleton } from "@aura3d/engine/animation";
 import { PILOT_BONES } from "../idol-humanoid/pilotSkeleton";
 
 const driver = createHumanoidDriver(readIdolSkeleton({

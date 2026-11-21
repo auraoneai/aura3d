@@ -307,16 +307,18 @@ export const ARCADE = {
   cellGlow: "#ffb84a",
   courier: "#ffd21a",
   courierGlow: "#ffc400",
-  /** Frightened (surge) sentries: one dark blue, flashing white near the end. */
-  frightened: "#2438ff",
-  frightenedFlash: "#ffffff",
+  /** Frightened (surge) sentries: deep indigo-violet distinct from #2f6bff walls, flashing cyan-white near the end. */
+  frightened: "#1b1f7a",
+  frightenedFlash: "#e2fcff",
+  frightenedHalo: "#5ff3ff",
   frightenedEye: "#ffc9c0",
   pupil: "#0d1650",
   eyeWhite: "#ffffff",
   /** Key light (overhead, the only shadow caster) and the low IBL fill (never drawn). */
-  key: { position: [4, 30, 9] as const, color: "#ffffff", intensity: 1.4 },
+  key: { position: [4, 30, 9] as const, color: "#ffffff", intensity: 1.4, shadowSoftness: 1.5 },
   ibl: 0.3,
-  bloom: { intensity: 0.62, threshold: 0.72, radius: 0.5 },
+  bloom: { intensity: 0.56, threshold: 0.74, radius: 0.46 },
   toneMapping: "neutral" as const,
+  neutralCurve: "khronos" as const,
   exposure: 1
 } as const;

@@ -28,7 +28,13 @@
         --a3d-bg: rgba(9, 22, 28, 0.9);
         --a3d-ink: #f3f0dc;
         --a3d-dim: rgba(243, 240, 220, 0.78);
-        --a3d-bar-gutter: 340px;
+        --a3d-bar-gutter: 12px;
+      }
+      .aura3d-top-bar button { padding: 0 8px; }
+      .aura3d-top-bar .venue-picker-btn { display: none; }
+      @media (max-width: 640px) {
+        .aura3d-top-bar [data-aura-venue] { display: none; }
+        .aura3d-top-bar .venue-picker-btn { display: inline-flex; align-items: center; gap: 4px; border-color: var(--a3d-edge); color: var(--a3d-accent); }
       }
       .aura3d-controls-hint {
         position: fixed;
@@ -119,9 +125,10 @@
       <button type="button" id="aura-btn-practice" title="Overhead Smash Practice Drill">Smash Lab</button>
       <button type="button" id="aura-btn-auto" title="Toggle AI Autoplay (O)">Auto</button>
       <button type="button" id="aura-btn-menu" title="Open the menu: Quick Match and Smash Lab">Modes</button>
-      <button type="button" data-aura-venue="hard" class="active">NY Hard</button>
-      <button type="button" data-aura-venue="grass">London Grass</button>
-      <button type="button" data-aura-venue="clay">Paris Clay</button>
+      <button type="button" id="aura-btn-venue-cycle" class="venue-picker-btn" title="Switch court">NY ▾</button>
+      <button type="button" data-aura-venue="hard" class="active">NY</button>
+      <button type="button" data-aura-venue="grass">London</button>
+      <button type="button" data-aura-venue="clay">Paris</button>
       <button type="button" data-aura-venue="desert">Dubai</button>
       <button type="button" data-aura-venue="beach">Beach</button>
       <button type="button" data-aura-venue="moon">Moon</button>

@@ -14,15 +14,15 @@ import { game, model } from "@aura3d/engine";
 import { assets } from "./aura-assets.route";
 import { BALL_CART, SCORER_TABLE } from "./courtObstacles";
 import {
-  createMotionAnimator,
+  createHumanoidAnimator,
   eulerZYX,
-  humanoidAirTime as airTime,
-  humanoidEventTime as eventTime,
-  humanoidLocomotionRate as locomotionRate,
+  humanoidAirTime,
+  humanoidEventTime,
+  humanoidLocomotionRate,
   loadIdolHumanoid,
-  type HumanoidAnimator as MotionAnimator,
+  type HumanoidAnimator,
   type HumanoidDriver,
-  type HumanoidMotionRequest as MotionRequest,
+  type HumanoidMotionRequest,
   type HumanoidPoseInput
 } from "@aura3d/engine/animation";
 import { MOTION_CLIPS, type MotionClipName } from "./motion.generated";
@@ -227,7 +227,7 @@ export interface HoopsMotion {
   readonly passAge?: number;
 }
 
-type HoopsRequest = MotionRequest<MotionClipName>;
+type HoopsRequest = HumanoidMotionRequest<MotionClipName>;
 const C = MOTION_CLIPS;
 const CROSSOVER_SECONDS = 0.42;
 /** The generated shuffle travels toward the body's left when travelX > 0; the other side is its mirror. */
@@ -243,11 +243,11 @@ const takeoffOf = (c: MotionClipName) => Math.max(0, Number(C[c].meta?.lowTime ?
 export function hoopsMotionRequest(m: HoopsMotion, yaw: number, hipHeight: number): HoopsRequest {
   const g = m.gravity ?? -10.4;
   const speed = Math.hypot(m.vx, m.vz);
-  const rate = (c: MotionClipName, lo: number, hi: number) => Math.max(lo, Math.min(hi, locomotionRate(C[c], speed, hipHeight)));
-  if (m.dunkU !== undefined && m.dunkU > 0) return { clip: "Dunk", time: eventTime(C.Dunk, m.dunkU, 0.5, "apexTime"), loop: false, fade: 0.08 };
+  const rate = (c: MotionClipName, lo: number, hi: number) => Math.max(lo, Math.min(hi, humanoidLocomotionRate(C[c], speed, hipHeight)));
+  if (m.dunkU !== undefined && m.dunkU > 0) return { clip: "Dunk", time: humanoidEventTime(C.Dunk, m.dunkU, 0.5, "apexTime"), loop: false, fade: 0.08 };
   if (m.jumping) {
     const clip: MotionClipName = m.shooting ? "JumpShot" : m.clip === "Contest" ? "Block" : "Rebound";
-    return { clip, time: airTime(C[clip], m.y ?? 0, m.vy ?? 0, g, takeoffOf(clip)), loop: false, fade: 0.08 };
+    return { clip, time: humanoidAirTime(C[clip], m.y ?? 0, m.vy ?? 0, g, takeoffOf(clip)), loop: false, fade: 0.08 };
   }
   if (m.shooting || m.clip === "Load" || m.clip === "Shoot" || m.clip === "Release" || m.clip === "FollowThrough") return { clip: "SetShot", rate: 1.1, loop: false, fade: 0.1 };
   if (m.clip === "Attack" && m.action) {
@@ -267,7 +267,7 @@ export function hoopsMotionRequest(m: HoopsMotion, yaw: number, hipHeight: numbe
   return { clip: "Idle", rate: 1 };
 }
 
-const animators = new WeakMap<object, { anim: MotionAnimator<MotionClipName>; lastT: number }>();
+const animators = new WeakMap<object, { anim: HumanoidAnimator<MotionClipName>; lastT: number }>();
 
 export function driveIdolAthlete(
   handle: any, key: IdolBodyKey, pose: Pick<HoopsAthletePoseResult, "hipsPos" | "rotations">, big: boolean,
@@ -282,7 +282,7 @@ export function driveIdolAthlete(
   let base = hoopsHumanoidPose(pose, big);
   if (motion && handle) {
     let st = animators.get(handle);
-    if (!st) { st = { anim: createMotionAnimator(MOTION_CLIPS), lastT: motion.t }; animators.set(handle, st); }
+    if (!st) { st = { anim: createHumanoidAnimator(MOTION_CLIPS), lastT: motion.t }; animators.set(handle, st); }
     const dt = motion.t - st.lastT;
     st.lastT = motion.t;
     base = st.anim.update(dt, hoopsMotionRequest(motion, yaw, driver.map.hipHeight * s));

@@ -16,11 +16,13 @@
  */
 import {
   blendHumanoidPoses,
+  createHumanoidAnimator,
   eulerZYX,
   loadIdolHumanoid,
   mirrorHumanoidPose,
   quatMul,
   sampleHumanoidClip,
+  type HumanoidAnimator,
   type HumanoidDriver,
   type HumanoidPoseInput,
   type HumanoidRole
@@ -71,18 +73,18 @@ const ARM_CARVE = 0.28;
 /** Carve counter-sweep of the arms fore and aft (rad per unit carve): the steering shows in the arms without lifting them. */
 const ARM_SWEEP = 0.3;
 
-export const legExtension = (crouch: number): number => 0.84 - 0.12 * clamp(crouch, 0, 1);
+export const legExtension = (crouch: number): number => 0.84 - 0.125 * clamp(crouch, 0, 1);
 
 export function riderHumanoidPose(m: RiderMotion): HumanoidPoseInput {
   const sway = Math.sin(m.time * 1.7) * 0.035 * m.motion;
   const swayFwd = Math.sin(m.time * 1.1 + 0.6) * 0.02 * m.motion;
   const ext = legExtension(m.crouch);
   // lead (left) leg forward, rear (right) leg back; the carve shifts weight onto the inside rail
-  const leadThigh = -0.42 - 0.18 * m.crouch + m.carve * 0.06;
-  const rearThigh = 0.22 + 0.06 * m.crouch - m.carve * 0.06;
+  const leadThigh = -0.42 - 0.185 * m.crouch + m.carve * 0.06;
+  const rearThigh = 0.22 + 0.065 * m.crouch - m.carve * 0.06;
   const [leadKnee, leadFoot] = solveLeg(leadThigh, ext);
   const [rearKnee, rearFoot] = solveLeg(rearThigh, ext);
-  const chestPitch = 0.12 + m.leanFwd * 0.9 + m.breathe + swayFwd;
+  const chestPitch = 0.12 + m.leanFwd * 1.02 + m.crouch * 0.16 + m.breathe + swayFwd;
   // relaxed at low speed (hands near the hips, elbows bent), spreading for balance with speed, air and carves
   const speed01 = clamp(m.speed01 ?? 0.5, 0, 1);
   // audit 2026-11-18: at Turbo the old 0.22 + 0.55 * speed spread, plus a per-arm carve term that ADDED to the chest roll
@@ -96,7 +98,7 @@ export function riderHumanoidPose(m: RiderMotion): HumanoidPoseInput {
   return {
     rotations: {
       hips: eulerZYX(m.leanFwd * 0.2, -m.carve * 0.18, -m.carve * 0.12 + sway),
-      chest: eulerZYX(chestPitch, -m.carve * 0.22 + m.celebrate * 0.15, -m.carve * 0.18 - sway * 0.8),
+      chest: eulerZYX(chestPitch, -m.carve * 0.24 + m.celebrate * 0.15, -m.carve * 0.22 - sway * 0.8),
       head: eulerZYX(-chestPitch * 0.85 + m.air01 * 0.05, m.carve * 0.35, m.carve * 0.08),
       leftUpperArm: eulerZYX(-0.2 - m.leanFwd * 0.3 - armFwd + m.carve * ARM_SWEEP + m.armWave, 0, armOut + m.carve * ARM_CARVE),
       leftLowerArm: eulerZYX(elbow, 0, 0.1),
@@ -165,4 +167,37 @@ export function riderMotionPose(m: RiderMotion): HumanoidPoseInput {
     rotations.rightUpperArm = blendHumanoidPoses({ rotations: { rightUpperArm: rotations.rightUpperArm! } }, { rotations: { rightUpperArm: code.rotations.rightUpperArm! } }, m.celebrate).rotations.rightUpperArm!;
   }
   return { rotations, hipsOffset: code.hipsOffset };
+}
+
+/** Cross-fading humanoid clip animator on Aura3D 5.7.2 `createHumanoidAnimator` for live play (`world.ts`). */
+export type RiderClipName = keyof typeof MOTION_CLIPS;
+export function createRiderAnimator(): {
+  update(dt: number, m: RiderMotion): HumanoidPoseInput;
+  readonly animator: HumanoidAnimator<RiderClipName>;
+} {
+  const animator = createHumanoidAnimator(MOTION_CLIPS);
+  return {
+    animator,
+    update(dt: number, m: RiderMotion): HumanoidPoseInput {
+      const code = riderHumanoidPose(m);
+      const absCarve = Math.abs(m.carve);
+      const req = m.crouch > 0.34
+        ? { clip: "Crouch" as const, time: m.time, fade: 0.14 }
+        : absCarve > 0.22
+          ? { clip: "LeanLeft" as const, time: m.time, mirror: m.carve > 0, fade: 0.16 }
+          : { clip: "Balance" as const, time: m.time * (0.6 + 0.4 * m.motion), fade: 0.2 };
+      const animated = animator.update(dt, req);
+      const rotations = { ...code.rotations };
+      for (const role of CLIP_ROLES) {
+        const q = animated.rotations[role];
+        if (q) rotations[role] = q;
+      }
+      if (rotations.chest) rotations.chest = quatMul(rotations.chest, eulerZYX(m.crouch * 0.12, -m.carve * 0.15, -m.carve * 0.32));
+      if (m.celebrate > 0.01) {
+        rotations.leftUpperArm = blendHumanoidPoses({ rotations: { leftUpperArm: rotations.leftUpperArm! } }, { rotations: { leftUpperArm: code.rotations.leftUpperArm! } }, m.celebrate).rotations.leftUpperArm!;
+        rotations.rightUpperArm = blendHumanoidPoses({ rotations: { rightUpperArm: rotations.rightUpperArm! } }, { rotations: { rightUpperArm: code.rotations.rightUpperArm! } }, m.celebrate).rotations.rightUpperArm!;
+      }
+      return { rotations, hipsOffset: code.hipsOffset };
+    }
+  };
 }

@@ -1,7 +1,7 @@
 /**
- * Aura Links 3D: drive a rigged Idol golfer GLB (unnamed bones bone_0..bone_N) from the procedural swing solve.
+ * Aura Links 3D: drive a rigged Idol golfer GLB (unnamed bones bone_0..bone_N) from the procedural swing solve
+ * and `@aura3d/engine/animation` (`createHumanoidAnimator`, `layerHumanoidPose`, `ARM_ROLES`).
  *
- * Game-local equivalent of the shared humanoid helper (apps/showcase-port-shared/idol/ did not exist when this was written).
  *   1. `mapIdolRoles()` assigns humanoid roles from hierarchy + rest positions only: the hips are the joint that branches into
  *      two foot-reaching chains and one upward chain; the chest is the first joint up the spine that branches into two
  *      arm-reaching chains; in each arm / leg chain the two longest consecutive segments are upper-arm + forearm (thigh + shin),
@@ -11,8 +11,18 @@
  *   3. `retargetIdol()` turns the solved world rotation deltas into local rotations for EVERY joint (world = delta * bindWorld,
  *      local = conj(parentWorld) * world), unmapped joints inheriting their parent's delta; the hips also carry the solved
  *      position, converted into the hips' parent space.
- * Pure (no engine imports): unit tested offline against forward kinematics.
+ *   4. `createLinksHumanoidAnimator()` + `layerGolferArms()` delegate clip playback/cross-fades and arm-role layering to
+ *      `@aura3d/engine/animation` while preserving exact swing-solve palm/club-contact IK.
+ * Pure (unit tested offline against forward kinematics).
  */
+import {
+  ARM_ROLES,
+  createHumanoidAnimator,
+  layerHumanoidPose,
+  type HumanoidAnimator,
+  type HumanoidClip,
+  type HumanoidPoseInput
+} from "@aura3d/engine/animation";
 import { RIG_TUNING, PALM_PAST_HAND, type RigBonePose } from "./golferRetarget";
 import {
   qConj, qMul, qRotate, unit, vAdd, vLen, vScale, vSub,
@@ -380,3 +390,20 @@ export function idolForwardKinematics(bind: IdolRigBind, pose: Readonly<Record<s
   }
   return out as Map<string, { pos: V3; rot: Quat }>;
 }
+
+/**
+ * 5.7.2: direct `@aura3d/engine/animation` animator over a canonical humanoid clip set (used by Idol golfer/caddie
+ * clip playback and cross-fades while preserving exact swing-solve IK grip authority).
+ */
+export function createLinksHumanoidAnimator<N extends string>(
+  clips: Readonly<Record<N, HumanoidClip>>
+): HumanoidAnimator<N> {
+  return createHumanoidAnimator(clips);
+}
+
+/** Layer an arm-role pose (e.g. club grip / upper-body override) over a canonical base pose via `ARM_ROLES`. */
+export function layerGolferArms(base: HumanoidPoseInput, arms: HumanoidPoseInput): HumanoidPoseInput {
+  return layerHumanoidPose(base, arms, ARM_ROLES);
+}
+
+export { ARM_ROLES, createHumanoidAnimator, layerHumanoidPose };

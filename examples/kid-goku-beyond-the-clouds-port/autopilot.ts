@@ -7,6 +7,7 @@
  * vaults the river, kicks off the cliff wall and rides the sky cloud whenever it is charged. Around the run it leaves the
  * title after a beat, waits on the result card ~3 s and starts the next run, looping forever.
  */
+import { createAutoplayHarness } from "@aura3d/engine/game";
 import type { Game } from "./game";
 import { IDLE, OBSTACLE_REACH, worldLayout, type StepInput } from "./sim";
 import { BOULDER_RADIUS } from "./encounters";
@@ -26,18 +27,29 @@ export interface Autopilot {
 }
 
 export function createAutopilot(on = false): Autopilot {
-  let menuT = 0, resultT = 0, jumpCooldown = 0, poleCooldown = 0, gliderCooldown = 0;
+  let menuT = 0, jumpCooldown = 0, poleCooldown = 0, gliderCooldown = 0;
+  let currentGame: Game | null = null;
+  const harness = createAutoplayHarness({
+    enabled: on,
+    isFinished: () => currentGame?.phase === "result",
+    restartDelay: AUTOPLAY_RESULT_SECONDS,
+    onRestart: () => currentGame?.retry()
+  });
   return {
-    on,
+    get on() { return harness.enabled; },
+    set on(value: boolean) {
+      harness.enabled = value;
+      if (!value) menuT = 0;
+    },
     tick(game, dt) {
-      if (!this.on) { menuT = 0; resultT = 0; return; }
+      currentGame = game;
+      if (!harness.enabled) { menuT = 0; harness.reset(); return; }
       if (game.phase === "menu") { menuT += dt; if (menuT >= AUTOPLAY_TITLE_SECONDS) { menuT = 0; game.start(0); } }
       else menuT = 0;
-      if (game.phase === "result") { resultT += dt; if (resultT >= AUTOPLAY_RESULT_SECONDS) { resultT = 0; game.retry(); } }
-      else resultT = 0;
+      harness.tick(dt);
     },
     input(game) {
-      if (!this.on || game.phase !== "playing") return IDLE;
+      if (!harness.enabled || game.phase !== "playing") return IDLE;
       const s = game.state, ch = game.chapter, enc = game.enc, n = s.glider;
       const dt = 1 / 60;
       jumpCooldown = Math.max(0, jumpCooldown - dt); poleCooldown = Math.max(0, poleCooldown - dt); gliderCooldown = Math.max(0, gliderCooldown - dt);

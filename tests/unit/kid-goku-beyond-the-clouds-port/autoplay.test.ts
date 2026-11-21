@@ -57,7 +57,8 @@ describe("Cumulus Dash autoplay", () => {
 
   it("main.ts reads ?autoplay=1 / ?autopilot=1 and the O key toggles it; the title's key list (ui.ts, shared by both pages) shows it", () => {
     const main = readFileSync("examples/kid-goku-beyond-the-clouds-port/main.ts", "utf8");
-    expect(main).toMatch(/params\.get\("autoplay"\) === "1" \|\| params\.get\("autopilot"\) === "1"/);
+    expect(main).toContain("readAutoplayFlag(location.search)");
+    expect(readFileSync("examples/kid-goku-beyond-the-clouds-port/autopilot.ts", "utf8")).toContain("createAutoplayHarness");
     expect(main).toContain('e.code === "KeyO"');
     expect(readFileSync("examples/kid-goku-beyond-the-clouds-port/ui.ts", "utf8")).toContain("<kbd>O</kbd>autoplay");
     // invariant: the showcase app must mount this example's main and the O-key autoplay toggle must stay bound and labelled in the HUD; no runtime seam exposes either.

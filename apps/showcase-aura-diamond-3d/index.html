@@ -20,7 +20,6 @@
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Aura Diamond 3D","url":"https://aura3d.auraone.ai/apps/showcase-aura-diamond-3d/","description":"Three-inning baseball — PCI × timing at-bats, four pitch types, and launch-angle moonshots across six ballparks from Harbor Sandlot to Lunar Park's…","genre":"Sports","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/aura-diamond-3d.jpg?v=49d44e7f1cd7","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.7.2"}</script>
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2e3f768c44d3" />
-    <link rel="stylesheet" href="/fonts/aura-fonts.css" />
     <style>
       :root {
         --bg: #0d1020;
@@ -176,11 +175,11 @@
         box-shadow: 0 6px 18px rgba(2, 6, 16, 0.42);
       }
 
-      /* Linescore */
+      /* Linescore — aligned with HUD_THEMES["sports-broadcast"] */
       .hud-linescore {
-        background: rgba(9, 13, 24, 0.84);
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        border-radius: 6px;
+        background: var(--a3g-bg, rgba(8, 14, 26, 0.85));
+        border: 1px solid var(--a3g-edge, rgba(255, 255, 255, 0.24));
+        border-radius: var(--a3g-radius, 6px);
         overflow: hidden;
         box-shadow: 0 8px 24px rgba(2, 6, 16, 0.42);
         backdrop-filter: blur(10px);
@@ -400,15 +399,16 @@
         color: var(--danger);
       }
 
-      /* PCI feedback + exit velo readout */
+      /* PCI feedback + Statcast exit velo readout (bottom-right off home plate) */
       .hud-contact {
         position: absolute;
-        bottom: 118px;
-        left: 50%;
-        transform: translateX(-50%);
+        bottom: 64px;
+        right: 20px;
+        left: auto;
+        transform: none;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-end;
         gap: 5px;
         opacity: 0;
         transition: opacity 0.2s;
@@ -507,7 +507,7 @@
         padding: 3px 10px;
       }
 
-      /* Strike-zone aim diagram (pitching) */
+      /* Strike-zone aim diagram (hairline 3x3 broadcast grid + amber bat-barrel PCI pill) */
       .hud-zone {
         position: absolute;
         bottom: 118px;
@@ -515,8 +515,11 @@
         transform: translateX(-50%);
         width: 110px;
         height: 132px;
-        border: 1px solid rgba(242, 238, 227, 0.28);
+        border: 1px solid rgba(242, 238, 227, 0.34);
         background: transparent;
+        background-image:
+          linear-gradient(90deg, transparent 33%, rgba(242, 238, 227, 0.16) 33% calc(33% + 1px), transparent calc(33% + 1px) 66.6%, rgba(242, 238, 227, 0.16) 66.6% calc(66.6% + 1px), transparent calc(66.6% + 1px)),
+          linear-gradient(180deg, transparent 33%, rgba(242, 238, 227, 0.16) 33% calc(33% + 1px), transparent calc(33% + 1px) 66.6%, rgba(242, 238, 227, 0.16) 66.6% calc(66.6% + 1px), transparent calc(66.6% + 1px));
         opacity: 0;
         transition: opacity 0.2s;
       }
@@ -537,10 +540,11 @@
 
       .hud-zone .pci-dot {
         border: 2px solid var(--amber);
-        box-shadow: 0 0 8px rgba(255, 176, 58, 0.7);
-        background: rgba(255, 176, 58, 0.25);
-        width: 22px;
-        height: 22px;
+        box-shadow: 0 0 10px rgba(255, 176, 58, 0.78);
+        background: rgba(255, 176, 58, 0.22);
+        width: 30px;
+        height: 14px;
+        border-radius: 999px;
       }
 
       .hud-zone .aim-dot {
@@ -1252,8 +1256,8 @@
         }
         .hud-touch-deck.show {
           position: fixed;
-          left: 14px;
-          right: 14px;
+          left: max(12px, env(safe-area-inset-left, 0px));
+          right: max(12px, env(safe-area-inset-right, 0px));
           bottom: calc(12px + env(safe-area-inset-bottom, 0px));
           display: flex;
           justify-content: space-between;
@@ -1261,29 +1265,59 @@
           z-index: 32;
           pointer-events: none;
         }
+        .touch-pad {
+          width: 124px;
+          height: 124px;
+        }
+        .touch-action {
+          min-width: 124px;
+          min-height: 64px;
+        }
+        .hud-pitch-read {
+          top: calc(var(--a3d-bar-space) + 150px);
+          left: max(12px, env(safe-area-inset-left, 0px));
+          transform: none;
+          align-items: flex-start;
+        }
+        .hud-pitch-read .chip {
+          font-size: 12px;
+          padding: 4px 10px;
+        }
+        .hud-banner {
+          top: calc(var(--a3d-bar-space) + 186px);
+          left: max(12px, env(safe-area-inset-left, 0px));
+          transform: none;
+        }
         .hud-pitch-pad {
-          bottom: calc(134px + env(safe-area-inset-bottom, 0px));
+          bottom: calc(146px + env(safe-area-inset-bottom, 0px));
         }
         .hud-pitch-pad button {
           min-width: 56px;
           min-height: 48px;
         }
         .hud-meter {
-          bottom: calc(138px + env(safe-area-inset-bottom, 0px));
+          bottom: calc(148px + env(safe-area-inset-bottom, 0px));
         }
         .hud-zone {
-          bottom: calc(192px + env(safe-area-inset-bottom, 0px));
+          bottom: calc(198px + env(safe-area-inset-bottom, 0px));
         }
         .hud-contact {
-          bottom: calc(188px + env(safe-area-inset-bottom, 0px));
+          bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+          right: max(12px, env(safe-area-inset-right, 0px));
+          left: auto;
+          transform: none;
+          align-items: flex-end;
         }
         #event-ticker {
-          left: 14px;
-          bottom: calc(136px + env(safe-area-inset-bottom, 0px));
-          max-width: 236px;
+          left: max(12px, env(safe-area-inset-left, 0px));
+          bottom: calc(148px + env(safe-area-inset-bottom, 0px));
+          max-width: 212px;
+        }
+        #event-ticker .tick:nth-child(n + 3) {
+          display: none;
         }
         .hud-center-msg {
-          top: calc(var(--a3d-bar-space) + 236px);
+          top: calc(var(--a3d-bar-space) + 224px);
           width: max-content;
           max-width: calc(100vw - 24px);
         }

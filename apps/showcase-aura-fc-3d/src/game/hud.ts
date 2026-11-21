@@ -52,7 +52,7 @@ export interface Hud {
 }
 
 /**
- * WP-04 AuraOne TV Broadcast Typography:
+ * AuraOne 5.7.2 TV Broadcast Typography (hud-tokens.css + HUD_THEMES["sports-broadcast"]):
  * - `var(--font-ui)` ("Whitney", weights 400/500/600, tabular-nums) for team codes, phase tags, banners & lower thirds
  * - `var(--font-metric)` ("DIN Pro", weight 500, tabular-nums) strictly for standalone scoreline, clock & KPI figures
  * - `var(--font-mono)` ("Monument Grotesk Mono", weight 400, >= 12px) strictly for match event telemetry
@@ -62,24 +62,21 @@ export const FC_HUD_FONT_FACES = [
   { file: "calibre-400.woff2", weight: "400" },
   { file: "calibre-600.woff2", weight: "600" }
 ] as const;
-let fontsRegistered = false;
-export function registerFcHudFonts(_baseUrl = "/fc-fonts/", doc: Document | undefined = typeof document === "undefined" ? undefined : document): number {
-  if (fontsRegistered || !doc || typeof FontFace === "undefined") return 0;
-  fontsRegistered = true;
-  return FC_HUD_FONT_FACES.length;
-}
 
 const css = `
 .fc-hud { position: fixed; inset: 0; pointer-events: none; z-index: 30;
   font-family: var(--font-ui, "Whitney", "Whitney Fallback", sans-serif);
-  font-variant-numeric: tabular-nums; color: #f3f0dc; }
+  font-variant-numeric: tabular-nums; color: var(--a3g-fg, #f3f0dc); }
 .fc-hud * { box-sizing: border-box; }
 .fc-hud b { font-weight: 600; }
-.fc-bug { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 8px); left: 18px; display: flex; align-items: stretch;
-  background: linear-gradient(180deg, rgba(8,16,24,.9), rgba(4,10,16,.94));
+.fc-bug { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 8px); left: max(18px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; align-items: stretch;
+  background: var(--a3g-bg, linear-gradient(180deg, rgba(8,14,26,.88), rgba(4,10,16,.94)));
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(216,255,62,.32); border-top: 2px solid #d8ff3e; border-radius: 9px; overflow: hidden;
+  border: 1px solid var(--a3g-edge, rgba(216,255,62,.32)); border-top: 2px solid #d8ff3e;
+  border-radius: var(--a3g-radius, 6px); overflow: hidden;
   box-shadow: 0 10px 28px rgba(0,0,0,.46); }
+.fc-bug-main { display: flex; align-items: stretch; }
 .fc-bug .team { display: flex; align-items: center; gap: 7px; padding: 6px 10px; font-weight: 600;
   font-size: 13px; letter-spacing: .07em; }
 .fc-bug .kit { width: 5px; height: 20px; border-radius: 2px; box-shadow: 0 0 8px rgba(255,255,255,.16); }
@@ -93,19 +90,19 @@ const css = `
 .fc-bug .clock { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 15px; font-weight: 500;
   font-variant-numeric: tabular-nums; letter-spacing: .04em; color: #d8ff3e; line-height: 1.1; }
 .fc-bug .half { font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: .09em; opacity: .78; line-height: 1.1; }
-.fc-tag { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 108px); left: 18px; padding: 3px 10px; font-size: 12px;
+.fc-tag { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 92px); left: max(18px, env(safe-area-inset-left, 0px));
+  padding: 3px 10px; font-size: 12px;
   letter-spacing: .12em; font-weight: 600; font-variant-caps: all-small-caps; color: #0b1f1c;
   background: linear-gradient(135deg,#d8ff3e,#9be84e); border-radius: 6px; }
-.fc-poss { position: relative; width: 176px; height: 5px; border-radius: 3px;
+.fc-poss { position: relative; width: 100%; height: 4px; border-radius: 2px;
   background: rgba(255,255,255,.12); overflow: hidden; display: flex; }
 .fc-poss > i { display: block; height: 100%; transition: width .4s; }
-.fc-poss-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; line-height: 1; }
-.fc-poss-l { font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: .09em; opacity: .82; }
+.fc-poss-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 3px; line-height: 1; }
+.fc-poss-l { font-size: 12px; font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: .09em; opacity: .78; }
 .fc-poss-pct { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 12px; font-weight: 500;
   font-variant-numeric: tabular-nums; color: #dce6ec; opacity: .9; }
-.fc-poss-wrap { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 64px); left: 18px; padding: 6px 10px 5px;
-  background: rgba(6,13,20,.82); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(216,255,62,.18); border-radius: 8px; }
+.fc-poss-wrap { padding: 4px 10px 5px; background: rgba(4,10,16,.58);
+  border-top: 1px solid rgba(255,255,255,.1); }
 .fc-stamina { position: absolute; bottom: 84px; left: 50%; transform: translateX(-50%);
   width: 152px; height: 6px; border-radius: 4px; background: rgba(5,12,18,.68);
   border: 1px solid rgba(255,255,255,.2); overflow: hidden; }
@@ -119,8 +116,9 @@ const css = `
 .fc-charge > i { display: block; height: 100%; background: linear-gradient(90deg,#d8ff3e,#ffd76a,#ff9a3d); }
 .fc-charge-l { position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%);
   text-align: center; font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: .14em; color: #d8ff3e; }
-.fc-ticker { position: absolute; left: 18px; bottom: 44px; display: flex; flex-direction: column;
-  gap: 4px; max-width: 340px; }
+.fc-ticker { position: absolute; left: max(18px, env(safe-area-inset-left, 0px)); bottom: calc(44px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column;
+  gap: 4px; max-width: 340px; transition: opacity .18s ease; }
+.fc-hud[data-goal-l3="1"] .fc-ticker { opacity: 0; pointer-events: none; visibility: hidden; }
 .fc-tick { font-family: var(--font-mono, "Monument Grotesk Mono", monospace); font-size: 12px; font-weight: 400; letter-spacing: .03em;
   color: #cfd6c8; background: rgba(7,16,22,.84); border-left: 2px solid rgba(216,255,62,.55);
   padding: 4px 10px; border-radius: 4px; opacity: 0; transform: translateX(-8px); line-height: 1.35;
@@ -176,11 +174,11 @@ const css = `
 .fc-ident b { padding: 6px 12px; font-size: 14px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #f3f0dc; }
 .fc-ident span { padding: 6px 12px; font-size: 12px; letter-spacing: .06em; color: #0b1f1c; background: #d8ff3e; font-weight: 600; }
 .fc-ident.show { opacity: 1; transform: translate(-50%, 0); }
-.fc-l3 { position: absolute; left: 18px; bottom: 96px; display: flex; flex-direction: column; min-width: 240px; opacity: 0;
-  transform: translateX(-16px); transition: opacity .25s, transform .3s; border-radius: 6px; overflow: hidden; }
-.fc-l3 b { padding: 6px 14px; background: #d8ff3e; color: #0b1f1c; font-size: 20px; font-weight: 600; letter-spacing: .12em; }
-.fc-l3 span { padding: 5px 14px; background: rgba(7,16,22,.94); color: #f3f0dc; font-size: 13px; font-weight: 500; letter-spacing: .05em; }
-.fc-l3.show { opacity: 1; transform: translateX(0); }
+.fc-l3, .fc-goal-l3 { position: absolute; left: max(18px, env(safe-area-inset-left, 0px)); bottom: calc(52px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; min-width: 240px; opacity: 0;
+  transform: translateX(-16px); transition: opacity .25s, transform .3s; border-radius: 6px; overflow: hidden; z-index: 34; }
+.fc-l3 b, .fc-goal-l3 b { padding: 6px 14px; background: #d8ff3e; color: #0b1f1c; font-size: 20px; font-weight: 600; letter-spacing: .12em; }
+.fc-l3 span, .fc-goal-l3 span { padding: 5px 14px; background: rgba(7,16,22,.94); color: #f3f0dc; font-size: 13px; font-weight: 500; letter-spacing: .05em; }
+.fc-l3.show, .fc-goal-l3.show { opacity: 1; transform: translateX(0); }
 .fc-bars { position: absolute; inset: 0; pointer-events: none; }
 .fc-bars::before, .fc-bars::after { content: ""; position: absolute; left: 0; right: 0; height: 0; background: #000; transition: height .35s; }
 .fc-bars::before { top: 0; } .fc-bars::after { bottom: 0; }
@@ -191,7 +189,7 @@ const css = `
 .fc-replay i { width: 9px; height: 9px; border-radius: 50%; background: #d8ff3e; font-style: normal; }
 .fc-replay.show { opacity: 1; transform: translateX(0); }
 /* 2D Broadcast Tactical Pitch Radar */
-.fc-radar { position: absolute; right: 18px; bottom: 38px; width: 148px; height: 92px; border-radius: 8px;
+.fc-radar { position: absolute; right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(38px + env(safe-area-inset-bottom, 0px)); width: 148px; height: 92px; border-radius: 8px;
   background: linear-gradient(180deg, rgba(8,22,18,.84), rgba(5,14,12,.88));
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(216,255,62,.28); box-shadow: 0 8px 22px rgba(0,0,0,.42); overflow: hidden; }
@@ -205,25 +203,26 @@ const css = `
 .fc-r-ball { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%;
   background: #d8ff3e; box-shadow: 0 0 8px rgba(216,255,62,.95); z-index: 3; transition: left .05s linear, top .05s linear; }
 @media (prefers-reduced-motion: reduce) { .fc-bars::before, .fc-bars::after, .fc-replay, .fc-r-dot, .fc-r-ball { transition: none; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .fc-ident, .fc-l3, .fc-banner { transition: opacity .15s; transform: none !important; } .fc-ident { transform: translateX(-50%) !important; } }
+@media (prefers-reduced-motion: reduce) { .fc-ident, .fc-l3, .fc-goal-l3, .fc-banner { transition: opacity .15s; transform: none !important; } .fc-ident { transform: translateX(-50%) !important; } }
 @media (max-width: 760px), (pointer: coarse) {
-  .fc-bug { top: calc(var(--a3d-bar-space, 44px) + 4px); left: 10px; }
-  .fc-bug .team { padding: 5px 7px; font-size: 12px; gap: 5px; }
-  .fc-bug .score { padding: 4px 9px; font-size: 17px; gap: 5px; }
-  .fc-bug .meta { padding: 3px 8px; }
+  .fc-bug { top: calc(var(--a3d-bar-space, 44px) + 4px); left: max(8px, env(safe-area-inset-left, 0px)); }
+  .fc-bug .team { padding: 4px 6px; font-size: 12px; gap: 4px; }
+  .fc-bug .score { padding: 3px 8px; font-size: 16px; gap: 4px; }
+  .fc-bug .meta { padding: 3px 7px; }
   .fc-bug .clock { font-size: 13px; }
-  .fc-poss-wrap { top: calc(var(--a3d-bar-space, 44px) + 54px); left: 10px; padding: 5px 8px 4px; }
-  .fc-poss { width: 146px; }
-  .fc-tag { top: calc(var(--a3d-bar-space, 44px) + 94px); left: 10px; }
-  .fc-radar { top: calc(var(--a3d-bar-space, 44px) + 4px); right: 10px; bottom: auto; width: 106px; height: 66px; }
+  .fc-poss-wrap { padding: 3px 7px 4px; }
+  .fc-poss-l { display: none; }
+  .fc-poss-row { justify-content: flex-end; margin-top: 2px; }
+  .fc-tag { top: calc(var(--a3d-bar-space, 44px) + 74px); left: max(8px, env(safe-area-inset-left, 0px)); }
+  .fc-radar { top: calc(var(--a3d-bar-space, 44px) + 4px); right: max(8px, env(safe-area-inset-right, 0px)); bottom: auto; width: 96px; height: 56px; }
   .fc-hud[data-right-card="1"] .fc-radar { display: none; }
-  .fc-stamina { bottom: 164px; width: 132px; }
-  .fc-stamina-l { bottom: 147px; }
-  .fc-charge { bottom: 190px; width: 156px; }
-  .fc-charge-l { bottom: 203px; }
-  .fc-l3 { bottom: 162px; left: 10px; min-width: 0; }
-  .fc-l3 b { font-size: 17px; }
-  .fc-ticker { bottom: 162px; left: 10px; max-width: 204px; }
+  .fc-stamina { bottom: calc(164px + env(safe-area-inset-bottom, 0px)); width: 124px; }
+  .fc-stamina-l { bottom: calc(147px + env(safe-area-inset-bottom, 0px)); }
+  .fc-charge { bottom: calc(190px + env(safe-area-inset-bottom, 0px)); width: 148px; }
+  .fc-charge-l { bottom: calc(203px + env(safe-area-inset-bottom, 0px)); }
+  .fc-l3, .fc-goal-l3 { bottom: calc(162px + env(safe-area-inset-bottom, 0px)); left: max(8px, env(safe-area-inset-left, 0px)); min-width: 0; }
+  .fc-l3 b, .fc-goal-l3 b { font-size: 17px; }
+  .fc-ticker { bottom: calc(162px + env(safe-area-inset-bottom, 0px)); left: max(8px, env(safe-area-inset-left, 0px)); max-width: 204px; }
   .fc-banner { font-size: 28px; white-space: normal; width: 92vw; line-height: 1.12; }
   .fc-banner.goal { font-size: 42px; }
 }
@@ -239,19 +238,19 @@ function el(tag: string, cls?: string, parent?: HTMLElement): HTMLElement {
 
 /** Broadcast phrasing for the recurring sim events; unknown labels upper-case. */
 const TICK_COPY: Record<string, string> = {
-  "slide tackle wins it": "SLIDE TACKLE — POSSESSION WON",
-  "slide tackle": "SLIDE TACKLE — CHALLENGE",
+  "slide tackle wins it": "CLEAN TACKLE — POSSESSION WON",
+  "slide tackle": "SLIDING CHALLENGE",
   "keeper save": "SAVE — KEEPER DENIES",
   "off the post": "OFF THE POST — INCHES AWAY",
   "off the bar": "OFF THE CROSSBAR — INCHES AWAY",
-  "off the boards": "OFF THE BOARDS — STILL LIVE",
-  "corner": "CORNER — SET-PIECE CHANCE",
+  "off the boards": "OFF THE BOARDS — PLAY ON",
+  "corner": "CORNER KICK — SET PIECE",
   "goal kick": "GOAL KICK — PLAY RESUMES",
   "kick-in": "KICK-IN — RESTART",
-  "bounce": "BOUNCE — LOOSE BALL",
-  "penalty taken": "PENALTY — TAKEN",
-  "step-over": "STEP-OVER — INTO SPACE",
-  "chop — cuts it back": "CHOP — CUTS IT BACK"
+  "bounce": "DEFLECTION — SECOND BALL",
+  "penalty taken": "SPOT KICK — TAKEN",
+  "step-over": "STEP-OVER — BEATS THE MARKER",
+  "chop — cuts it back": "CHOP — CUTS INSIDE"
 };
 
 function tickerText(ev: SimEvent): string {
@@ -263,26 +262,24 @@ export function createHud(host: HTMLElement): Hud {
   style.textContent = css;
   document.head.appendChild(style);
 
-  registerFcHudFonts();
   const root = el("div", "fc-hud") as HTMLElement;
   host.appendChild(root);
 
-  // score bug
+  // score bug with integrated possession sub-bar
   const bug = el("div", "fc-bug", root);
-  const homeT = el("span", "team", bug);
+  const bugMain = el("div", "fc-bug-main", bug);
+  const homeT = el("span", "team", bugMain);
   const homeKit = el("i", "kit", homeT) as HTMLElement;
   const homeName = el("b", "", homeT);
-  const scoreEl = el("span", "score", bug);
-  const awayT = el("span", "team", bug);
+  const scoreEl = el("span", "score", bugMain);
+  const awayT = el("span", "team", bugMain);
   const awayName = el("b", "", awayT);
   const awayKit = el("i", "kit", awayT) as HTMLElement;
-  const meta = el("span", "meta", bug);
+  const meta = el("span", "meta", bugMain);
   const clockEl = el("span", "clock", meta);
   const halfEl = el("span", "half", meta);
 
-  const tagEl = el("div", "fc-tag fc-hidden", root);
-
-  const possWrap = el("div", "fc-poss-wrap", root);
+  const possWrap = el("div", "fc-poss-wrap", bug);
   const poss = el("div", "fc-poss", possWrap);
   const possH = el("i", "", poss) as HTMLElement;
   const possA = el("i", "", poss) as HTMLElement;
@@ -291,6 +288,8 @@ export function createHud(host: HTMLElement): Hud {
   possL.textContent = "POSSESSION";
   const possPct = el("span", "fc-poss-pct", possRow);
   possPct.textContent = "50% · 50%";
+
+  const tagEl = el("div", "fc-tag fc-hidden", root);
 
   const stam = el("div", "fc-stamina", root);
   const stamFill = el("i", "", stam) as HTMLElement;
@@ -334,7 +333,7 @@ export function createHud(host: HTMLElement): Hud {
   const identEl = el("div", "fc-ident", root);
   const identVenue = el("b", "", identEl);
   const identTime = el("span", "", identEl);
-  const l3 = el("div", "fc-l3", root);
+  const l3 = el("div", "fc-l3 fc-goal-l3", root);
   const l3Title = el("b", "", l3);
   const l3Sub = el("span", "", l3);
   // FC47-C1: intro letterbox and the REPLAY stinger
@@ -400,8 +399,12 @@ export function createHud(host: HTMLElement): Hud {
       l3Title.textContent = "GOAL";
       l3Sub.textContent = `${club?.name ?? (team === 0 ? "Home" : "Away")}  ·  ${fmtClock(state)}  ·  ${state.score[0]} – ${state.score[1]}`;
       l3.classList.add("show");
+      root.dataset.goalL3 = "1";
       window.clearTimeout(l3Timer);
-      l3Timer = window.setTimeout(() => l3.classList.remove("show"), ms);
+      l3Timer = window.setTimeout(() => {
+        l3.classList.remove("show");
+        root.dataset.goalL3 = "0";
+      }, ms);
     },
     update(state, ctx) {
       lastClubs = { home: ctx.home, away: ctx.away };

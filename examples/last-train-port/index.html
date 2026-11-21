@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css" />
     <title>Lamplight Line</title>
@@ -23,7 +23,9 @@
       #top h1 { margin: 0 0 2px; font-size: 16px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.04em; }
       #stats { top: var(--a3d-bar-space, 12px); right: 12px; text-align: right; }
       #stats .big { font-size: 24px; font-weight: 500; line-height: 1.08; }
-      #status { bottom: 64px; left: 12px; right: 12px; display: flex; gap: 16px; justify-content: space-between; align-items: center; }
+      #status { bottom: 64px; left: 12px; right: 12px; display: flex; gap: 16px; justify-content: space-between; align-items: center; transition: opacity 0.45s ease; }
+      #status.faded { opacity: 0; pointer-events: none; }
+      @media (prefers-reduced-motion: reduce) { #status { transition: none; } }
       #riders { bottom: 116px; left: 12px; max-width: 360px; }
       #riders span { display: inline-block; margin: 0 8px 2px 0; }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0e1220; z-index: 5; }
@@ -45,14 +47,14 @@
       .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: baseline; }
       @media (max-width: 760px) {
         .panel { padding: 5px 8px; }
-        #top { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 8px; right: 52%; min-width: 0; }
-        #top h1 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #top { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 8px; right: 55%; min-width: 0; }
+        #top h1 { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #top .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #stats { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 50%; right: 8px; text-align: right; }
+        #stats { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 46%; right: 8px; text-align: right; }
         #stats .big { font-size: 18px; }
         #stats > .meta.num:not(.tele-row):not(.lean-row) { display: none; }
-        #stats .lean-row { justify-content: flex-end; gap: 4px; margin-top: 2px; flex-wrap: nowrap; white-space: nowrap; font-size: 11px; }
-        #lean { width: 48px; }
+        #stats .lean-row { justify-content: flex-end; gap: 5px; margin-top: 3px; flex-wrap: wrap; font-size: 11px; }
+        #lean { width: 112px; height: 10px; }
         #prompt { top: calc(var(--a3d-bar-space, max(8px, env(safe-area-inset-top))) + 98px); left: 8px; right: 8px; transform: none; max-width: none; min-width: 0; padding: 4px 10px; font-size: 13px; }
         #prompt .meta { display: none; }
         #toast { top: calc(var(--a3d-bar-space, max(8px, env(safe-area-inset-top))) + 134px); }

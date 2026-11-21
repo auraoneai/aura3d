@@ -1,4 +1,4 @@
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import type { SimState } from "./sim";
 
 /** The moving parts of one simulation step: the runner, enemies that approach or drop in, projectiles and shurikens. */
@@ -76,6 +76,10 @@ export function viewOf(z: SimState, shown: Shown): SimState {
   };
 }
 
-export function createNinjaPresenter(getState: () => SimState): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getState()), blend: blendShown });
+export function createNinjaPresenter(getState: () => SimState): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({
+    snapshot: () => shownOf(getState()),
+    blend: blendShown,
+    snap: { distance: SNAP_DISTANCE, position: (p) => p.s }
+  });
 }

@@ -15,5 +15,5 @@ export interface SaltwindOutput {
 
 export function outputFor(mode: "gu47" | "original"): SaltwindOutput {
   if (mode === "original") return { maxDpr: 1.5, pixelRatio: 1, output: { toneMapping: "aces", dither: false } };
-  return { maxDpr: 2, pixelRatio: { max: 2 }, output: { toneMapping: "aces", dither: true } };
+  return { maxDpr: 2, pixelRatio: { max: 2 }, output: { toneMapping: "agx", dither: true } };
 }

@@ -42,6 +42,10 @@ export function mountUI(host: HTMLElement): void {
       <span>Dodge cars and coupled trains, ride damp bark rafts across rivers, and keep moving before the hawk swoops.</span>
       <span id="ch-intro-keys"></span>
     </div>
+    <div id="ch-ghost-hint" class="ch-ghost-hint" aria-hidden="true">
+      <span class="ch-ghost-arrow">▲</span>
+      <span class="ch-ghost-label">Tap / Swipe to hop</span>
+    </div>
     <button id="ch-pause-btn" type="button" aria-label="Pause">II</button>
     <div id="ch-dpad" class="hidden" role="group" aria-label="Directional hop controls">
       <button type="button" class="ch-dpad-btn ch-dpad-up" data-hop="up" aria-label="Hop forward">▲</button>
@@ -90,6 +94,20 @@ export function mountUI(host: HTMLElement): void {
   root.querySelector("#ch-dpad")?.addEventListener("pointerdown", onDpadPointerDown);
   document.addEventListener("keydown", onKey);
   document.querySelector(".aura3d-top-bar")?.addEventListener("click", onBarClick);
+  const themeSel = document.getElementById("ch-theme-select") as HTMLSelectElement | null;
+  themeSel?.addEventListener("change", () => {
+    const val = themeSel.value;
+    themeSel.blur();
+    uiSound();
+    if (val === "quick") { panel = null; startRun("quick", null); }
+    else if (val.startsWith("theme:")) {
+      const i = parseInt(val.slice(6), 10);
+      panel = null;
+      startRun("tour", null, (i + 1) * 97777 + 13, i);
+    } else if (val === "panel:school") { endToTitle(); panel = "school"; renderSub(); }
+    else if (val === "panel:tour") { endToTitle(); panel = "tour"; renderSub(); }
+    else if (val === "panel:studio") { endToTitle(); panel = "studio"; renderSub(); }
+  });
 }
 
 const GAME_KEYS = new Set([" ", "Enter", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
@@ -230,6 +248,17 @@ export function tickUI(): void {
   (root.querySelector("#ch-pause-btn") as HTMLElement).classList.toggle("hidden", st.mode !== "run");
   (root.querySelector("#ch-paused") as HTMLElement).classList.toggle("hidden", !(st.paused && st.mode === "run"));
   (root.querySelector("#ch-dpad") as HTMLElement).classList.toggle("hidden", !(st.mode === "run" && !st.paused));
+  // Fade tap/swipe ghost hint cleanly on the first hop (and hide when paused/title/dead).
+  const ghostHint = root.querySelector("#ch-ghost-hint") as HTMLElement | null;
+  if (ghostHint) {
+    const showGhost = st.mode === "run" && !st.paused && !st.autopilot && st.playerRow === 0 && !st.hop.active;
+    ghostHint.classList.toggle("faded", !showGhost);
+  }
+  const themeSel = document.getElementById("ch-theme-select") as HTMLSelectElement | null;
+  if (themeSel && st.mode === "run") {
+    const targetVal = st.runKind === "tour" ? `theme:${st.themeIdx}` : "quick";
+    if (themeSel.value !== targetVal) themeSel.value = targetVal;
+  }
   const dead = root.querySelector("#ch-dead") as HTMLElement;
   const sub = root.querySelector("#ch-sub") as HTMLElement;
   if (panel === null || inRun) sub.classList.add("hidden");

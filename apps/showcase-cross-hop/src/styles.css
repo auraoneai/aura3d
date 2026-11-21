@@ -554,6 +554,66 @@ html, body {
   }
 }
 
+/* Compact theme/mode selector on narrow viewports (<640px) inside quickbar.css */
+.ch-theme-select {
+  display: none;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f4f8ff;
+  font: 500 12px/1 var(--font-ui);
+}
+
+/* Tap/swipe ghost hint: fades out immediately on first hop */
+.ch-ghost-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(34px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(9, 15, 26, 0.62);
+  border: 1px solid rgba(138, 240, 207, 0.34);
+  color: #e8fff6;
+  font: 500 12px/1 var(--font-ui);
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  opacity: 0.92;
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+.ch-ghost-hint.faded {
+  opacity: 0;
+  transform: translateX(-50%) translateY(6px);
+}
+.ch-ghost-arrow {
+  color: #2ee6a6;
+  font-size: 13px;
+}
+
+@media (max-width: 639px) {
+  .ch-desktop-themes {
+    display: none !important;
+  }
+  .ch-theme-select {
+    display: inline-block;
+  }
+  /* Keep center hopping lane unobstructed on narrow title screens (compact lower-left sheet). */
+  .ch-plaque {
+    top: auto;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    max-height: 54vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch-ghost-hint { transition: none; }
+}
+
 /* Tabletop HUD tint in opt-in ?look=diorama (uses licensed Whitney + DIN Pro stack, zero synthetic bold) */
 body.ch-diorama #ch-score-wrap {
   background: rgba(246, 239, 224, 0.94);

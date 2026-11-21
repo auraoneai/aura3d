@@ -1,4 +1,4 @@
-import { createFixedStepPresenter, createRecordBlend, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createRecordBlend, createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import type { MatchState } from "../contract";
 
 /** The continuous parts of one simulation step the renderer reads: the clock, the ball and the two actors' presentation drivers. */
@@ -58,6 +58,6 @@ export function viewOf<S extends Pick<MatchState, "time" | "ball" | "player" | "
   return { ...state, time: shown.time, ball: { ...state.ball, ...shown.ball }, player: { ...state.player, ...shown.player }, ai: { ...state.ai, ...shown.ai } };
 }
 
-export function createMatchPresenter(getState: () => Pick<MatchState, "time" | "ball" | "player" | "ai">): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getState()), blend: blendShown });
+export function createMatchPresenter(getState: () => Pick<MatchState, "time" | "ball" | "player" | "ai">): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({ snapshot: () => shownOf(getState()), blend: blendShown });
 }

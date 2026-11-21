@@ -189,9 +189,11 @@ void main() {
   if (roadSheen > 0.0) {
     vec3 Nf = normalize(vec3(N.x * 0.3, 1.0, N.z * 0.3));
     vec3 Rr = reflect(-V, Nf);
-    Rr.y = abs(Rr.y) + 0.02;
+    // Smooth hyperbolic fold around Rr.y = 0 avoids the hard crest reflection seam on rolling coastal hills.
+    Rr.y = sqrt(Rr.y * Rr.y + 0.012) + 0.02;
     float ndvS = clamp(dot(Nf, V), 0.0, 1.0);
-    float Fs = 0.04 + 0.96 * pow(1.0 - ndvS, 5.0);
+    float crestFade = smoothstep(0.0, 0.12, ndvS);
+    float Fs = (0.04 + 0.96 * pow(1.0 - ndvS, 5.0)) * crestFade;
     float gloss = clamp(1.0 - rough, 0.0, 1.0) * (1.0 - 0.7 * curb) * (1.0 - 0.6 * paint);
     vec3 Hs = normalize(sunDir + V);
     float glare = ggx(max(dot(Nf, Hs), 0.0), 0.32) * 0.25 * max(dot(Nf, sunDir), 0.0);

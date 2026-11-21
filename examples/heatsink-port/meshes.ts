@@ -499,7 +499,7 @@ export function archSlots(track: Track, every = 240): number[] {
   return out;
 }
 
-/** Dark bone-pipe gantry arches over the road every ~240 m, with a cyan neon strip under the beam. */
+/** Brushed-alloy gantry arches over the road every ~240 m, with bright cyan chase neon strips on the beam. */
 export function buildArches(track: Track, every = 240): { body: MeshData; neon: MeshData } {
   const body = emptyMesh();
   const neon = emptyMesh();
@@ -511,10 +511,28 @@ export function buildArches(track: Track, every = 240): { body: MeshData; neon: 
     const baseY = fr.y - 2;
     for (const side of [-1, 1]) appendBox(body, [fr.x + fr.rx * span * side, baseY + 6.2, fr.z + fr.rz * span * side], tan, up, rgt, 1.7, 6.2, 1.5);
     appendBox(body, [fr.x, baseY + 13.2, fr.z], tan, up, rgt, 1.9, 1.3, span + 1.6);
-    appendBox(neon, [fr.x, baseY + 11.7, fr.z], tan, up, rgt, 0.12, 0.08, span - 1.2);
-    appendBox(neon, [fr.x - 0 + fr.tx * 1.95, baseY + 13.2, fr.z + fr.tz * 1.95], tan, up, rgt, 0.05, 0.12, span * 0.85);
+    appendBox(neon, [fr.x, baseY + 11.7, fr.z], tan, up, rgt, 0.16, 0.12, span - 0.8);
+    appendBox(neon, [fr.x + fr.tx * 1.95, baseY + 13.2, fr.z + fr.tz * 1.95], tan, up, rgt, 0.1, 0.24, span * 0.96);
   }
   return { body, neon };
+}
+
+/** Pillar and aft/crown emissive chase strips for overhead track arches so arches never read as dark bars against twilight. */
+export function buildArchEdgeStrips(track: Track, every = 240): MeshData {
+  const strips = emptyMesh();
+  const up: V3 = [0, 1, 0];
+  for (const s of archSlots(track, every)) {
+    const fr = track.frame(s);
+    const tan: V3 = [fr.tx, 0, fr.tz], rgt: V3 = [fr.rx, 0, fr.rz];
+    const span = fr.hw + 2.4;
+    const baseY = fr.y - 2;
+    for (const side of [-1, 1]) {
+      appendBox(strips, [fr.x + fr.rx * (span - 1.56) * side, baseY + 6.6, fr.z + fr.rz * (span - 1.56) * side], tan, up, rgt, 0.14, 5.2, 0.1);
+    }
+    appendBox(strips, [fr.x - fr.tx * 1.95, baseY + 13.2, fr.z - fr.tz * 1.95], tan, up, rgt, 0.09, 0.22, span * 0.94);
+    appendBox(strips, [fr.x, baseY + 14.56, fr.z], tan, up, rgt, 0.14, 0.08, span * 0.88);
+  }
+  return strips;
 }
 
 /** Double-sided holographic race telemetry banners suspended beneath each gantry arch crossbeam. */

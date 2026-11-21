@@ -739,6 +739,128 @@ html, body {
   font-family: var(--pbl-font);
 }
 
+:root[data-pbl-look="diorama"] .pbl-panel {
+  background: linear-gradient(170deg, rgba(247, 236, 212, 0.96), rgba(235, 220, 188, 0.96));
+  color: var(--pbl-ink);
+  border-color: var(--pbl-parchment-edge);
+  box-shadow: 0 3px 0 rgba(62, 44, 30, 0.28), 0 22px 60px rgba(32, 22, 12, 0.36);
+}
+
+:root[data-pbl-look="diorama"] .pbl-panel h2 {
+  color: var(--pbl-toadstool);
+}
+
+:root[data-pbl-look="diorama"] .pbl-sub,
+:root[data-pbl-look="diorama"] .pbl-help,
+:root[data-pbl-look="diorama"] .pbl-stat,
+:root[data-pbl-look="diorama"] .pbl-studio-row .k {
+  color: rgba(61, 42, 23, 0.8);
+}
+
+:root[data-pbl-look="diorama"] .pbl-btns button {
+  background: rgba(107, 79, 48, 0.12);
+  color: var(--pbl-ink);
+  border-color: var(--pbl-parchment-edge);
+}
+
+:root[data-pbl-look="diorama"] .pbl-btns button:first-child {
+  background: var(--pbl-toadstool);
+  color: #fff6e6;
+  border-color: rgba(61, 42, 23, 0.35);
+}
+
+:root[data-pbl-look="diorama"] .pbl-atlas-card {
+  background: rgba(255, 249, 236, 0.72);
+  color: var(--pbl-ink);
+  border-color: var(--pbl-parchment-edge);
+}
+
+:root[data-pbl-look="diorama"] .pbl-atlas-card .s {
+  color: rgba(61, 42, 23, 0.72);
+}
+
+:root[data-pbl-look="diorama"] .pbl-atlas-card .n,
+:root[data-pbl-look="diorama"] .pbl-atlas-total {
+  color: var(--pbl-toadstool);
+}
+
+:root[data-pbl-look="diorama"] .aura3d-top-bar {
+  background: rgba(247, 236, 212, 0.92);
+  border-bottom-color: var(--pbl-parchment-edge);
+  color: var(--pbl-ink);
+}
+
+:root[data-pbl-look="diorama"] .aura3d-top-bar button {
+  color: rgba(61, 42, 23, 0.82);
+  background: rgba(61, 42, 23, 0.08);
+}
+
+:root[data-pbl-look="diorama"] .aura3d-top-bar button.active,
+:root[data-pbl-look="diorama"] .aura3d-top-bar button[aria-pressed="true"] {
+  background: var(--pbl-toadstool);
+  color: #fff6e6;
+}
+
+:root[data-pbl-look="diorama"] .aura3d-top-bar button.venue.active {
+  background: var(--pbl-moss);
+  color: #fff6e6;
+}
+
+:root[data-pbl-look="diorama"] .aura3d-top-bar .a3d-credit {
+  color: rgba(61, 42, 23, 0.78);
+}
+
+.pbl-world-select {
+  display: none;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid var(--a3d-edge);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--a3d-ink);
+  font: 500 12px/1 var(--font-ui);
+}
+
+:root[data-pbl-look="diorama"] .pbl-world-select {
+  background: rgba(61, 42, 23, 0.1);
+  color: var(--pbl-ink);
+  border-color: var(--pbl-parchment-edge);
+}
+
+/* Desktop left-docked modal card leaves 65% of the live meadow visible. */
+@media (min-width: 900px) {
+  .pbl-overlay {
+    justify-content: flex-start;
+    padding-left: clamp(24px, 4vw, 56px);
+  }
+  .pbl-panel {
+    text-align: left;
+  }
+  .pbl-btns {
+    justify-content: flex-start;
+  }
+}
+
+/* Collapse 6 world buttons into compact selector on narrow screens (<640px). */
+@media (max-width: 639px) {
+  .pbl-desktop-venues {
+    display: none !important;
+  }
+  .pbl-world-select {
+    display: inline-block;
+  }
+}
+
+/* Safe-area spacing for JUMP / DIVE / POUND touch targets (>= 48px, clear of credit strip). */
+.a3g-touch-safe {
+  inset: env(safe-area-inset-top, 0px) max(10px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 28px) max(10px, env(safe-area-inset-left, 0px)) !important;
+}
+
+.a3g-touch .a3g-tc-btn {
+  min-width: 52px;
+  min-height: 52px;
+}
+
 /* 390x844 mobile ergonomics & >= 44x44px coarse pointer touch pads */
 @media (pointer: coarse), (max-width: 760px) {
   .aura3d-controls-hint {

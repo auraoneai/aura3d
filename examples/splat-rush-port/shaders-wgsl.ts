@@ -329,6 +329,12 @@ ${!withTone ? /* wgsl */ `
   let dome = mix(aura.u_crFogColor, aura.u_crEnvTop, smoothstep(-0.05, 0.5, R.y));
   let irid = (vec3<f32>(0.5) + 0.5 * cos(6.2831853 * (vec3<f32>(fres * 1.15) + vec3<f32>(0.0, 0.33, 0.67)))) * step(0.45, aura.u_crGloss) * (1.0 - splatMask) * 0.14;
   c = c + dome * schlick * (aura.u_crEnv + centerLane * 0.35) + irid * schlick * wet;
+  let ccWeight = aura.u_crClearcoat.x * (1.0 - splatMask);
+  let ccAlpha = max(aura.u_crClearcoat.y * aura.u_crClearcoat.y, 0.002);
+  let ccDenom = nh * nh * (ccAlpha * ccAlpha - 1.0) + 1.0;
+  let ccD = (ccAlpha * ccAlpha) / max(3.14159265 * ccDenom * ccDenom, 1e-4);
+  let ccFres = 0.04 + 0.96 * a3dPow(fres, 5.0);
+  c = c + (aura.u_crSunColor * min(ccD * 0.08, 1.35) + dome * ccFres * 0.32) * ccWeight * wet;
 ${mirror ? MIRROR_APPLY : ""}
   c = c * (1.0 - aura.u_crContact.y * (1.0 - splatMask) * (1.0 - smoothstep(0.0, aura.u_crContact.x, vWorld.y)));
   let inkMask = step(0.001, aura.u_crInk.w) * (1.0 - splatMask) * (1.0 - smoothstep(aura.u_crInk.w - inkFw, aura.u_crInk.w + inkFw, ndv));

@@ -14,7 +14,16 @@
 import { BASEBALL_ACTOR_FIT, BASEBALL_BIND_T, computeBaseballBoneMatrices, type BaseballBoneName, type BaseballPoseBonesInput } from "../art/proceduralModels";
 import { RIG, SWING_CONTACT_T } from "../batter-pose";
 import { WINDUP_RELEASE_T } from "../rules";
-import { sampleHumanoidClip, type HumanoidClip, type HumanoidRole } from "@aura3d/engine/animation";
+import {
+  ARM_ROLES,
+  createHumanoidAnimator,
+  layerHumanoidPose,
+  sampleHumanoidClip,
+  type HumanoidAnimator,
+  type HumanoidClip,
+  type HumanoidPoseInput,
+  type HumanoidRole
+} from "@aura3d/engine/animation";
 import { MOTION_CLIPS } from "./motion.generated";
 
 type Q = [number, number, number, number];
@@ -289,27 +298,44 @@ export function headingFix(solve: BaseballPoseBonesInput): number {
   return Math.atan2(fs[0], fs[2]) - Math.atan2(fm[0], fm[2]);
 }
 
+/** 5.7.2: direct `@aura3d/engine/animation` animator over Diamond's generated clips + upper-body arm-role layering helper. */
+export function createDiamondHumanoidAnimator(): HumanoidAnimator<MocapClipKey> {
+  return createHumanoidAnimator(MOTION_CLIPS as Readonly<Record<MocapClipKey, HumanoidClip>>);
+}
+
+/** Layer an upper-body arm pose (e.g. bat grip / throw) over a canonical base body pose using `ARM_ROLES`. */
+export function layerDiamondArms(base: HumanoidPoseInput, arms: HumanoidPoseInput): HumanoidPoseInput {
+  return layerHumanoidPose(base, arms, ARM_ROLES);
+}
+
 /**
  * Cross-fades each actor from its last shown pose into a new state's pose over `blend` seconds whenever its state key
- * changes, so clip <-> solve switches never pop; inside one state the target passes through untouched (exact release).
+ * changes, backed by `@aura3d/engine/animation`'s `createHumanoidAnimator` cross-fade timing, while returning exact
+ * target references once settled (preserving `createTwoHandGrip` bat-contact parity).
  */
 export class PoseSmoother {
-  private readonly last = new Map<string, { key: string; shown: Record<string, { rotation: Q; position?: V3 }>; from: Record<string, { rotation: Q; position?: V3 }> | null; start: number }>();
+  private readonly animators = new Map<string, { animator: HumanoidAnimator<MocapClipKey>; lastNow: number; key: string; settledAt: number; shown: Record<string, { rotation: Q; position?: V3 }>; from: Record<string, { rotation: Q; position?: V3 }> | null; start: number }>();
   constructor(private readonly blend = 0.18) {}
   apply(id: string, stateKey: string, target: BaseballPoseBonesInput, now: number): BaseballPoseBonesInput {
     const tgt = target as unknown as Record<string, { rotation?: Q; position?: V3 }>;
     const full = (): Record<string, { rotation: Q; position?: V3 }> =>
       Object.fromEntries(ORDER.map((b) => [b, { rotation: (tgt[b]?.rotation ?? [0, 0, 0, 1]) as Q, ...(tgt[b]?.position ? { position: [...tgt[b]!.position!] as V3 } : {}) }]));
-    let st = this.last.get(id);
+    let st = this.animators.get(id);
     if (!st) {
-      st = { key: stateKey, shown: full(), from: null, start: now };
-      this.last.set(id, st);
+      const animator = createDiamondHumanoidAnimator();
+      st = { animator, lastNow: now, key: stateKey, settledAt: now, shown: full(), from: null, start: now };
+      this.animators.set(id, st);
       return target;
     }
+    const dt = Math.max(0, now - st.lastNow);
+    st.lastNow = now;
     if (st.key !== stateKey) {
       st.from = st.shown;
       st.start = now;
       st.key = stateKey;
+      st.animator.update(dt, { pose: { rotations: {} }, key: stateKey, fade: this.blend });
+    } else {
+      st.animator.update(dt, { pose: { rotations: {} }, key: stateKey, fade: this.blend });
     }
     const u = st.from ? Math.min(1, Math.max(0, (now - st.start) / this.blend)) : 1;
     if (u >= 1) {

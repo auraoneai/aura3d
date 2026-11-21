@@ -18,11 +18,13 @@ import {
   group,
   instances,
   material,
+  texture,
   type AuraCustomGeometrySpec,
   type AuraMaterialSpec,
   type AuraNodeBuilder,
   type AuraPrimitiveNode,
   type AuraSceneNode,
+  type AuraTextureRef,
   type AuraTransformSpec
 } from "@aura3d/engine";
 import {
@@ -412,17 +414,117 @@ export const MAT_BATCH_FOUNDRY_IRON: AuraMaterialSpec = material.metal({
   envMapIntensity: 1.45
 });
 
-export const MAT_BATCH_HOLO_FRAME: AuraMaterialSpec = material.emissive({
-  name: "td batched holo frame",
-  color: "#52ccff",
-  emissive: "#1caeff",
-  emissiveIntensity: 1.35,
-  roughness: 0.22,
-  metallic: 0.3,
-  clearcoat: 0,
-  sheen: 0,
-  practical: true
-});
+let cachedFoundryBillboardTexture: AuraTextureRef | null = null;
+
+/** Procedural foundry telemetry texture bound to trackside holo billboards (eliminates blank cyan slab). */
+export function createFoundryBillboardTexture(): AuraTextureRef {
+  if (cachedFoundryBillboardTexture) return cachedFoundryBillboardTexture;
+  const width = 512;
+  const height = 256;
+  if (typeof document !== "undefined") {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      const grad = ctx.createLinearGradient(0, 0, width, height);
+      grad.addColorStop(0, "#07131e");
+      grad.addColorStop(0.55, "#0b2030");
+      grad.addColorStop(1, "#1a1414");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      // Scanline grid
+      ctx.fillStyle = "rgba(53, 214, 255, 0.08)";
+      for (let y = 0; y < height; y += 8) ctx.fillRect(0, y, width, 2);
+      ctx.strokeStyle = "rgba(53, 214, 255, 0.25)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(10, 10, width - 20, height - 20);
+
+      // Header bar
+      ctx.fillStyle = "#ff8a1f";
+      ctx.fillRect(18, 18, 170, 8);
+      ctx.fillStyle = "#35d6ff";
+      ctx.fillRect(200, 18, width - 218, 8);
+
+      // Foundry telemetry typography
+      ctx.fillStyle = "#35d6ff";
+      ctx.font = '700 20px "DIN Pro", "Neue Haas Grotesk Text", Arial, sans-serif';
+      ctx.fillText("SECTOR 09 // FOUNDRY GRID TELEMETRY", 24, 58);
+
+      ctx.fillStyle = "#f4f2ec";
+      ctx.font = '700 44px "DIN Pro", "Neue Haas Grotesk Text", Arial, sans-serif';
+      ctx.fillText("THERMAL DRIFT", 24, 114);
+
+      ctx.fillStyle = "#ff8a1f";
+      ctx.font = '700 24px "DIN Pro", Arial, sans-serif';
+      ctx.fillText("CORE LIMIT 1200°C", 24, 154);
+      ctx.fillStyle = "#5be37d";
+      ctx.fillText("CRYO CELLS ACTIVE", 272, 154);
+
+      // Thermal bar & waveform graphic
+      ctx.fillStyle = "rgba(244, 242, 236, 0.14)";
+      ctx.fillRect(24, 176, width - 48, 18);
+      const barGrad = ctx.createLinearGradient(24, 0, width - 24, 0);
+      barGrad.addColorStop(0, "#35d6ff");
+      barGrad.addColorStop(0.65, "#ff8a1f");
+      barGrad.addColorStop(1, "#d2361c");
+      ctx.fillStyle = barGrad;
+      ctx.fillRect(24, 176, (width - 48) * 0.78, 18);
+
+      ctx.fillStyle = "#9ad9e6";
+      ctx.font = '600 17px "DIN Pro", Arial, sans-serif';
+      ctx.fillText("SLAG RUNWAY · BOOST PADS ARMED · KEEP CORE < 80%", 24, 224);
+
+      cachedFoundryBillboardTexture = texture.canvas({ canvas, colorSpace: "srgb" });
+      return cachedFoundryBillboardTexture;
+    }
+  }
+  const data = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    const header = y >= 18 && y < 26;
+    const meter = y >= 176 && y < 194;
+    const scan = (y & 7) < 2;
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      if (header) {
+        if (x < 190) { data[idx] = 255; data[idx + 1] = 138; data[idx + 2] = 31; }
+        else { data[idx] = 53; data[idx + 1] = 214; data[idx + 2] = 255; }
+      } else if (meter && x >= 24 && x < 410) {
+        const u = (x - 24) / 386;
+        data[idx] = Math.round(53 + u * 202);
+        data[idx + 1] = Math.round(214 - u * 140);
+        data[idx + 2] = Math.round(255 - u * 220);
+      } else if (x >= 24 && x < 470 && ((y >= 72 && y < 112) || (y >= 134 && y < 154)) && ((x >> 3) % 3 !== 0)) {
+        data[idx] = 224; data[idx + 1] = 244; data[idx + 2] = 255;
+      } else {
+        data[idx] = scan ? 16 : 9;
+        data[idx + 1] = scan ? 36 : 22;
+        data[idx + 2] = scan ? 54 : 36;
+      }
+      data[idx + 3] = 255;
+    }
+  }
+  cachedFoundryBillboardTexture = texture.data({ data, width, height, format: "rgba8", colorSpace: "srgb" });
+  return cachedFoundryBillboardTexture;
+}
+
+export const MAT_BATCH_HOLO_FRAME: AuraMaterialSpec = (() => {
+  const telemetry = createFoundryBillboardTexture();
+  return material.pbr({
+    name: "td batched holo frame",
+    color: "#e6f8ff",
+    texture: telemetry,
+    emissive: "#8ae0ff",
+    emissiveMap: telemetry,
+    emissiveIntensity: 1.45,
+    roughness: 0.24,
+    metalness: 0.18,
+    clearcoat: 0,
+    sheen: 0,
+    practical: true
+  });
+})();
 
 export const MAT_LASER_BOLT: AuraMaterialSpec = material.emissive({
   name: "td plasma laser bolt",

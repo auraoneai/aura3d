@@ -11,6 +11,7 @@ import {
   material,
   type AuraModelMaterialHandle,
   type AuraModelMaterialOverride,
+  type AuraOutputOptions,
   type AuraRuntimeNodeHandle,
   type AuraSceneSnapshot,
   type AuraTrailHandle,
@@ -40,7 +41,7 @@ import {
 import {
   ALL_FAR_PIECES, ammoGullLook, barrelNodeId, bladeNodeId, blastNodeId, blockLook, blockNodeId, buildScene,
   cliffRockMaterial, crateNodeId, debrisLook, debrisNodeId, dotNodeId, farPieceNodeId, gullPartId, millHubNodeId, millPoleNodeId,
-  plankNodeId, plumeNodeId, pooledNodeIds, projectileNodeId, PROP_IDS, POOL, SEA_LEVEL, seaGloss, SIEGE_DOF_NODE, SLING_IDS,
+  plankNodeId, plumeNodeId, pooledNodeIds, projectileNodeId, PROP_IDS, POOL, SEA_LEVEL, seaGloss, SLING_IDS,
   SOLID_BLOCK_MATERIALS, solidBlockMaterial
 } from "./game/stage";
 import { BlockInstancePool, PropInstancePool } from "./game/blockInstances";
@@ -55,9 +56,16 @@ import {
   INTRO_SECONDS, QA_WORLD_BOXES, bandChanged, boxCorners, introEnabled, introShot, releaseKick, screenCrop, tiltShiftBand,
   type QaCrop, type TiltShiftBand
 } from "./game/presentation";
-import { createImpactRig } from "../../showcase-port-shared/feel";
 import { installBlackFrameGuard } from "@aura3d/debug";
-import { createFixedStepPresenter, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
+import {
+  createAutoplayHarness,
+  createGradingLut,
+  createImpactRig,
+  createSnapshotInterpolator,
+  installGameBeacon,
+  readAutoplayFlag,
+  warmPrograms
+} from "@aura3d/engine/game";
 import { BIRD_NODES, WINDMILL_SAILS_ID, birdFlapAngle, birdWingIds, birdWingPoses, raiderWobble, windmillSailPose } from "./art/idolModels";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
@@ -68,8 +76,8 @@ installBlackFrameGuard();
 
 const params = new URLSearchParams(location.search);
 const DEMO = params.get("demo") === "1" || params.get("demo") === "true";
-// `?autoplay=1` (alias `?autopilot=1`): the computer plays hands-free and loops the campaign; O toggles it in play.
-let autoPlay = params.get("autoplay") === "1" || params.get("autopilot") === "1" || DEMO;
+// `?autoplay=1` (alias `?autopilot=1` / `?demo=1`): standardized 5.7.0 reader from `@aura3d/engine/game`.
+let autoPlay = readAutoplayFlag(params) || DEMO;
 let appReady = false;
 const SEED = (Number(params.get("seed")) || 0x51e9e) >>> 0;
 const START_LEVEL = Math.min(Math.max(0, Number(params.get("level")) || 0), LEVELS.length - 1);
@@ -117,13 +125,8 @@ const loadingCreep = window.setInterval(() => { loading.set(Math.min(0.9, loadin
 const runtimeOutputPreset = (post: ReturnType<typeof chapterLook>["post"]) =>
   post === "cinematic-film" ? "daylight-outdoor" : post;
 
-function stripGameplayDof<T extends { toJSON?: () => unknown }>(builtScene: T): T {
-  if (typeof builtScene.toJSON !== "function") return builtScene;
-  const snap = builtScene.toJSON() as { nodes?: readonly { name?: string }[] } & Record<string, unknown>;
-  if (!Array.isArray(snap.nodes)) return builtScene;
-  const filtered = { ...snap, nodes: snap.nodes.filter((n) => n.name !== SIEGE_DOF_NODE) };
-  return filtered as unknown as T;
-}
+const bootLook = chapterLook(chapter.id);
+const gradingLut = createGradingLut(bootLook.chapter === 3 || bootLook.chapter === 4 ? "cinema-warm" : "broadcast-crisp", 16);
 
 const IS_TOUCH = matchMedia("(pointer: coarse)").matches;
 const isDocumentHidden = (): boolean => document.visibilityState === "hidden" || document.hidden;
@@ -133,12 +136,13 @@ const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production", ...(LAB.renderer ?? {}) },
   output: {
-    preset: runtimeOutputPreset(chapterLook(chapter.id).post),
+    preset: runtimeOutputPreset(bootLook.post),
     toneMapping: "agx",
     exposure: 1.04,
     dither: true,
+    lut: { ...gradingLut, intensity: bootLook.chapter === 5 ? 0.14 : 0.24 },
     ...(LAB.output ?? {})
-  },
+  } as AuraOutputOptions,
   ...(LAB.worker ? { worker: LAB.worker } : {}),
   qualityRebuild: { flags: ["game"] },
   input: {
@@ -155,7 +159,7 @@ const gameApp = createGameApp("#app", {
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
   scene: ORIGINAL_LOOK
     ? buildSceneOriginal(chapter.id, { reducedMotion: REDUCED, ambientOcclusion: AO })
-    : stripGameplayDof(buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO, surfaceMaps: SURFACES }))
+    : buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO, surfaceMaps: SURFACES })
 });
 const app = gameApp.app;
 const input = gameApp.input;
@@ -358,7 +362,7 @@ function captureSimVisualSnapshot(): SimVisualSnapshot {
   return { updates, gulls, windmills };
 }
 
-const presenter = createFixedStepPresenter<SimVisualSnapshot>({
+const presenter = createSnapshotInterpolator<SimVisualSnapshot>({
   snapshot: captureSimVisualSnapshot,
   blend: (a, b, t) => {
     if (t <= 0) return a;
@@ -618,6 +622,7 @@ const ORBIT_PITCH_MIN = -0.18;
 const ORBIT_PITCH_MAX = 0.45;
 let camPos: [number, number, number] = [-2.5, 4.0, 15.5];
 let camTgt: [number, number, number] = [-0.5, 1.5, 0];
+let panToFort = false;
 let trauma = 0;
 let orbitT = 0;
 /** SS47-C1: the 3 s opening move (fort wide, cut to the sling); any key or pointer skips it. Camera only. */
@@ -700,13 +705,18 @@ function updateCamera(dt: number, elapsed: number): void {
     dp = [-2.5 + Math.sin(orbitT) * 1.6, 4.1 + Math.cos(orbitT * 0.7) * 0.3, 15.3 + Math.cos(orbitT) * 0.9];
     dtg = [-0.5, 1.5, 0];
   } else if (camState === "aim") {
-    dp = [-2.5 + Math.sin(elapsed * 0.3) * 0.4, 4.0, 15.5];
-    dtg = [-0.5, 1.5, 0];
+    if (panToFort) {
+      dp = [2.4, 3.6, 11.8];
+      dtg = [6.6, 1.7, 0];
+    } else {
+      dp = [-2.5 + Math.sin(elapsed * 0.3) * 0.4, 4.0, 15.5];
+      dtg = [-0.5, 1.5, 0];
+    }
   }
 
   // Portrait phones (390x844): auto-frame wide enough to keep BOTH launcher (x -7.8) and fortress (x +8.4) comfortably on screen.
   const aspect = (stageEl.clientWidth || 1) / (stageEl.clientHeight || 1);
-  if (camState === "aim" || camState === "orbit") {
+  if ((camState === "aim" && !panToFort) || camState === "orbit") {
     dtg = [0.2, 1.65, 0];
     dp = fitHalfWidth([dp[0] + 2.7, dp[1], dp[2]], dtg, 55, aspect, aspect < 1 ? 10.1 : 10.6, true);
   } else if (aspect < 1) {
@@ -1199,10 +1209,18 @@ function syncSling(dt: number): void {
     h.setRotation(pitch, yaw, 0);
     h.setScale([0.05 * taper, 0.05 * taper, len]);
   });
-  // power meter + trajectory preview while a draw is live
+  // power meter + live angle/power badge beside pouch + trajectory preview while a draw is live
   const sol = aimSolution();
   const drawing = aim.state === "dragging" && sol.drawT > 0.05;
-  hud.setShotMeter(drawing ? sol.drawT : 0);
+  if (drawing) {
+    const angleDeg = (Math.atan2(sol.dir[1], Math.max(0.05, sol.dir[0])) * 180) / Math.PI;
+    const sp = projectWorld(sol.pouch);
+    const w = stageEl.clientWidth || 1;
+    const h = stageEl.clientHeight || 1;
+    hud.setShotMeter(sol.drawT, angleDeg, sp.behind ? undefined : { x: (sp.x / w) * 100, y: (sp.y / h) * 100 });
+  } else {
+    hud.setShotMeter(0);
+  }
   const g = sim.level.gravity ?? [0, -9.81, 0];
   for (let i = 0; i < POOL.dots; i += 1) {
     const h = node(dotNodeId(i));
@@ -1391,10 +1409,18 @@ function updateMiniatureFocus(): void {
     if (!q.behind) ys.push(q.y / h);
   }
   const band = tiltShiftBand(ys, LOOK_ROW.dof.bandWidth);
-  // The 4.6.2 look has no tilt-shift node: never add one.
+  // The 4.6.2 look has no tilt-shift node; Low tier disables blur (`maxBlur: 0`), High/Ultra restores miniature tilt-shift.
+  const lowTier = params.get("tier") === "low" || app.quality?.tier === "low";
+  const dofBlur = lowTier ? 0 : LOOK_ROW.dof.maxBlur;
   if (!ORIGINAL_LOOK && bandChanged(lastBand, band)) {
     lastBand = band;
-    try { app.post?.setEffect("depthOfField", { enabled: false, maxBlur: 0 }); } catch { /* post is presentation only */ }
+    try {
+      app.post?.setEffectEnabled("depthOfField", dofBlur > 0);
+      app.post?.setEffect("depthOfField", {
+        maxBlur: dofBlur,
+        tiltShift: [band.bandCenter, band.bandWidth, 0]
+      });
+    } catch { /* post is presentation only */ }
   }
   const crops: QaCrop[] = [];
   const add = (c: QaCrop | null): void => { if (c) crops.push(c); };
@@ -1452,7 +1478,12 @@ const hud = new SiegeHud(document.getElementById("hud") ?? stageEl, {
     const rad = (angleDeg * Math.PI) / 180;
     if (sim.launch(ammo, [-7.4, 1.8, 0], [Math.cos(rad) * power, Math.sin(rad) * power, 0])) audio.cue("launch");
   },
-  onMuteToggle: () => { muted = !muted; audio.setMuted(muted); return muted; }
+  onMuteToggle: () => { muted = !muted; audio.setMuted(muted); return muted; },
+  onQuickPan: () => {
+    panToFort = !panToFort;
+    if (camState === "aim") cutNext = false;
+    hud.setPanLabel(panToFort);
+  }
 });
 hud.setMuted(muted);
 
@@ -1503,16 +1534,26 @@ const SANDBOX_LEVEL: LevelSpec = {
 
 // -------------------------------------------------------------- events --
 
+let chainCount = 0;
+let chainWindowT = 0;
+
 function consumeEvents(): void {
   for (const ev of sim.drainEvents()) {
     switch (ev.kind) {
       case "piece-broke": {
+        chainCount = chainWindowT > 0 ? chainCount + 1 : 1;
+        chainWindowT = 0.75;
+        const chainMult = chainCount >= 6 ? 3 : chainCount >= 3 ? 2 : 1;
         levelScore += ev.points;
         pulseNeighbours(ev.at);
         burst(breakPreset(ev.material), ev.at);
+        flipbooks.spawnPlume(ev.at, ev.material === "stone" || ev.material === "obsidian" ? 1.4 : 1.15);
         trauma = Math.min(1.4, trauma + 0.28);
         const sp = projectWorld(ev.at);
         hud.scorePopup(`+${ev.points}`, (sp.x / stageEl.clientWidth) * 100, (sp.y / stageEl.clientHeight) * 100);
+        if (chainCount === 3 || chainCount === 6) {
+          hud.toast(`×${chainMult} CHAIN!`, "gold");
+        }
         audio.cue(ev.material === "glass" || ev.material === "ice" ? "glass-shatter" : ev.material === "stone" || ev.material === "obsidian" ? "stone-thud" : "wood-crack");
         break;
       }
@@ -1523,11 +1564,16 @@ function consumeEvents(): void {
       case "gull-squashed": {
         levelScore += ev.points;
         burst(SIEGE_VFX.boarHit, ev.at);
+        flipbooks.spawnPlume(ev.at, 1.35);
+        flipbooks.spawnBlast(ev.at, ev.lastGull ? 1.85 : 1.45);
         trauma = Math.min(1.6, trauma + 0.5);
         const sp = projectWorld(ev.at);
         hud.scorePopup(`+${ev.points} SQUASHED!`, (sp.x / stageEl.clientWidth) * 100, (sp.y / stageEl.clientHeight) * 100, true);
         audio.cue("gull-squash");
-        if (ev.lastGull) hud.toast("LAST GULL!", "gold");
+        if (ev.lastGull) {
+          hud.toast("LAST RAIDER!", "gold");
+          impactRig.trigger({ freezeSeconds: 0.055, trauma: 0.45, fovKickDeg: 2.2 });
+        }
         break;
       }
       case "gull-scare": {
@@ -1536,14 +1582,20 @@ function consumeEvents(): void {
         break;
       }
       case "shot-fired": {
+        panToFort = false;
+        hud.setPanLabel(false);
+        chainCount = 0;
+        chainWindowT = 0;
         hud.toast(`${AMMO[ev.ammo].name} away!`);
         burst(SIEGE_VFX.launchDust, [SLING_REST[0], 0.62, 0]);
+        flipbooks.spawnPlume([SLING_REST[0], 0.72, 0], 0.9);
         kick = 1;
         startShotTrail(ev.ammo);
         break;
       }
       case "ability": {
         burst(abilityPreset(ev.ammo), ev.at);
+        flipbooks.spawnBlast(ev.at, ev.ammo === "ember" ? 2.1 : 1.35);
         const sp = projectWorld(ev.at);
         hud.scorePopup(AMMO[ev.ammo].abilityName.toUpperCase() + "!", (sp.x / stageEl.clientWidth) * 100, (sp.y / stageEl.clientHeight) * 100, true);
         break;
@@ -1551,6 +1603,8 @@ function consumeEvents(): void {
       case "windmill-smashed": {
         levelScore += ev.points;
         burst(SIEGE_VFX.windmillSmash, ev.at);
+        flipbooks.spawnPlume(ev.at, 1.5);
+        flipbooks.spawnBlast(ev.at, 1.5);
         trauma = Math.min(1.6, trauma + 0.45);
         audio.cue("windmill-snap");
         hud.toast("WINDMILL SMASHED +150");
@@ -1562,6 +1616,7 @@ function consumeEvents(): void {
         break;
       }
       case "slowmo": {
+        impactRig.trigger({ freezeSeconds: 0.05, trauma: 0.32, fovKickDeg: 1.8 });
         if (!REDUCED) hud.toast("SLOW-MO FINISH", "gold");
         break;
       }
@@ -1642,8 +1697,21 @@ const demoHooks = {
   }
 };
 
+/** Autoplay harness (`@aura3d/engine/game`) + level autopilot driver. */
+const autoplayHarness = createAutoplayHarness({
+  enabled: autoPlay || DEMO,
+  restartDelay: 3.2,
+  isFinished: () => resultOpen,
+  onRestart: () => {
+    if (resultWon) demoHooks.nextLevel();
+    else demoHooks.retryLevel();
+  }
+});
+
 function demoTick(dt: number): void {
+  autoplayHarness.enabled = autoPlay || DEMO;
   demo.tick(dt, sim, demoHooks);
+  autoplayHarness.tick(dt);
 }
 
 // --------------------------------------------------------------- evidence --
@@ -1819,9 +1887,12 @@ gameApp.onFrame(({ dt }) => {
     }
     justPressedKeys.clear();
 
+    lastImpactState = impactRig.step(dt);
+    if (chainWindowT > 0) chainWindowT = Math.max(0, chainWindowT - dt);
     if ((DEMO || autoPlay) && !paused) demoTick(dt);
     if (!paused) {
-      sim.update(dt);
+      sim.update(lastImpactState.simDt);
+      presenter.afterStep();
       consumeEvents();
       // Visual-only reads of the sim: end the shot ribbon before its node parks below the stage, splash the sea.
       if (shotTrail && !sim.activeProjectile()) stopShotTrail();

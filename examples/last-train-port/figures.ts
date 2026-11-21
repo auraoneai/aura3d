@@ -1,7 +1,7 @@
 /**
  * Lamplight Line rigged figures (owner rule: every human is rigged and animated). The motorman and the four rider temperaments
- * are rigged Idol GLBs (`rig: true`, T-pose) whose bones are driven every frame from code through
- * `apps/showcase-port-shared/idol/humanoid.ts` (`createHumanoidDriver` -> object-form quaternion `setAnimationPose`):
+ * are rigged Idol GLBs (`rig: true`, T-pose) whose bones are driven every frame from code through `@aura3d/engine/animation`
+ * (`createHumanoidAnimator` + `HumanoidDriver` -> object-form quaternion `setAnimationPose`):
  * - motorman: stands at the controller; the right hand works the controller with the tram's acceleration (throttle notch),
  *   the left hand eases the brake handle in when it slows, the head checks ahead and glances along the platform;
  * - riders: seated on the bench (hips and knees bent by code, hands on the lap), the torso swaying against the tram's
@@ -11,10 +11,12 @@
 import { model, type AuraNodeBuilder, type AuraSceneNode } from "@aura3d/engine";
 import { IDOL_ASSETS } from "../../apps/showcase-last-train-port/src/idol-assets";
 import {
+  createHumanoidAnimator,
   eulerZYX,
   loadIdolHumanoid,
   quatMul,
   type HumanoidAnimationPose,
+  type HumanoidAnimator,
   type HumanoidDriver,
   type HumanoidPoseInput,
   type Quat
@@ -181,4 +183,14 @@ export function seatedRiderInput(r: RiderInput): HumanoidPoseInput {
 /** One frame's bone pose for a driver (object-form quaternions, mode "replace"). */
 export function figurePose(driver: HumanoidDriver, input: HumanoidPoseInput): HumanoidAnimationPose {
   return driver.pose(input);
+}
+
+/** Stateful `@aura3d/engine/animation` animator for one tram crew or seated passenger figure (smooth cross-fade on state changes). */
+export function createFigureAnimator(): { update(dt: number, pose: HumanoidPoseInput, key: string, fade?: number): HumanoidPoseInput } {
+  const anim: HumanoidAnimator<never> = createHumanoidAnimator({} as Readonly<Record<never, never>>);
+  return {
+    update(dt, pose, key, fade = 0.16) {
+      return anim.update(dt, { pose, key, fade });
+    }
+  };
 }

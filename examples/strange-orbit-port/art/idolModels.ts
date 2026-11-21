@@ -104,8 +104,18 @@ export const WHEEL_BLUR_RATE = 25;
  */
 export const WHEEL_SPIN_SHOWN_MAX = 18;
 
+/** 5.7.1 clearcoat sheen override for the Idol bike fairings so painted shells catch the low grazing sun. */
+const IDOL_BIKE_CLEARCOAT_OVERRIDES = [{ clearcoat: 0.9, clearcoatRoughness: 0.12 }] as const;
+
 function bikeBodyModel(key: IdolBikeKey, name: string, opts: { readonly castShadow: boolean; readonly receiveShadow: boolean; readonly material?: AuraMaterialSpec }) {
-  return model(assets[key], { name, scaleMode: "world", ...bikeBodyTransform(key), castShadow: opts.castShadow, receiveShadow: opts.receiveShadow, ...(opts.material ? { material: opts.material } : {}) });
+  return model(assets[key], {
+    name,
+    scaleMode: "world",
+    ...bikeBodyTransform(key),
+    castShadow: opts.castShadow,
+    receiveShadow: opts.receiveShadow,
+    ...(opts.material ? { material: opts.material } : { materialOverrides: IDOL_BIKE_CLEARCOAT_OVERRIDES })
+  });
 }
 
 /** `rider-i-model`: the Idol bike body with its tucked rider (the wheels stay the separate spinning procedural parts). */

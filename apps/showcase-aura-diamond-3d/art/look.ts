@@ -536,6 +536,7 @@ export interface DiamondKeyShadow {
   readonly mapSize?: 1024 | 2048 | 4096;
   readonly filter?: "hard" | "pcf" | "pcss";
   readonly intensity?: number;
+  readonly softness?: number;
   readonly fit?: { readonly center: readonly [number, number, number]; readonly extent: number; readonly depth?: number };
 }
 
@@ -546,13 +547,17 @@ export interface DiamondKeyShadow {
 const DEFAULT_KEY_SHADOW = { bias: 0.0015, normalBias: 2 } as const;
 
 /**
- * GU47 phase 4: the key's shadow box. Round 1 kept camera cascades over 115 m and still showed no player shadow on
- * software WebGL2; a fixed box over the diamond (home plate to the outfielders, 96 m across, about 5 cm per texel at
- * 2048) puts every texel where the players stand, at full strength.
+ * 5.7.2: fixed diamond shadow box (home plate to outfielders, 96 m across, 160 m depth, ~5 cm/texel at 2048) with
+ * calibrated PCF softness (1.6 standard parks, 0.6 airless Lunar Park).
  */
-// 5.7.0 reads `shadow.fit`; this game shipped while it was ignored, so it is not passed and the camera-fit shadows it shipped with stay.
-// The box it was written with: `fit: { center: [0, 0, -24], extent: 48, depth: 160 }`.
-export const KEY_SHADOW_RANGE = { cascades: 1, mapSize: 2048, filter: "pcf", intensity: 1 } as const;
+export const KEY_SHADOW_RANGE = {
+  cascades: 1,
+  mapSize: 2048,
+  filter: "pcf",
+  intensity: 1,
+  softness: 1.6,
+  fit: { center: [0, 0, -24] as const, extent: 48, depth: 160 }
+} as const;
 
 const fogMaxOpacity = (intensity: number): number => Math.min(0.92, Math.max(0, 0.25 + 0.55 * intensity));
 
@@ -634,7 +639,7 @@ export function lookPlan(parkId: ParkId, variant: DiamondLookVariant, tier: Diam
     vignette: row.post.vignette,
     godRays: tier === "high" && row.godRays ? row.godRays : null,
     weather: row.weather ? (tier === "low" ? { ...row.weather, density: row.weather.density * 0.5 } : row.weather) : null,
-    keyShadow: { ...(row.sun.shadow ?? DEFAULT_KEY_SHADOW), ...KEY_SHADOW_RANGE },
+    keyShadow: { ...(row.sun.shadow ?? DEFAULT_KEY_SHADOW), ...KEY_SHADOW_RANGE, softness: parkId === "lunar" ? 0.6 : KEY_SHADOW_RANGE.softness },
     ssr: row.ssr ?? null
   };
 }

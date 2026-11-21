@@ -12,7 +12,7 @@ import {
   SPARK_CARD_FRAGMENT_WGSL, SPARK_CARD_VERTEX_WGSL
 } from "./shaders-wgsl";
 import { POINT_QUAD_SHADERS } from "./point-quads";
-import { createFlipbookAtlas, type FlipbookAtlasSpec } from "../../apps/showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, type FlipbookAtlasSpec } from "@aura3d/engine/game";
 
 export const FLANGE_SPARKS_ATLAS: FlipbookAtlasSpec = createFlipbookAtlas("sparks", [255, 208, 118]);
 

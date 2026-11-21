@@ -4,9 +4,10 @@
  */
 import { hexToLinear, sunDirection, type Rgb } from "../../../examples/shared/runner-kit/index";
 import type { SkyStop } from "../../../examples/shared/runner-kit/index";
-import { createGradingLut } from "../../showcase-port-shared/vfx-pack";
+import { createGradingLut } from "@aura3d/engine/game";
 
-export const BROADCAST_CRISP_LUT = createGradingLut("broadcast-crisp");
+export const CYBER_NEON_LUT = createGradingLut("cyber-neon", 16);
+export const BROADCAST_CRISP_LUT = createGradingLut("broadcast-crisp", 16);
 
 export const PALETTE = {
   skyZenith: "#0d0b2e",

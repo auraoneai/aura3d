@@ -11,6 +11,7 @@
  * collision in the lane it ends in, air left and a little showmanship (ramp launches, pickups), and plays the first
  * input of the best one. The prediction never touches the live sim, so normal play and replays are unchanged.
  */
+import { createAutoplayHarness, readAutoplayFlag, type AutoplayHarness } from "@aura3d/engine/game";
 import { clamp, clamp01, lerp, smoothstep01 } from "./math";
 import { PLAYER_BOX, emptyInput, laneX, type InputFrame } from "./constants";
 import { GANTRY_HALF_WIDTH, SIGN_BAND } from "./world";
@@ -443,6 +444,42 @@ class Planner {
     if (this.events.includes("rampLaunch")) bonus += 16;
     return { cost: cost + risk - bonus, risk, crashStep: -1 };
   }
+}
+
+/** Read the canonical `?autoplay=1` / `?autopilot=1` / `?demo` query flag via Aura3D's shared reader. */
+export function readRoadsterAutoplay(source?: string | { get(name: string): string | null }): boolean {
+  return readAutoplayFlag(source);
+}
+
+/**
+ * Wraps `createFreewayAutopilot` in Aura3D 5.7.2 `createAutoplayHarness` so hands-free QA shares the canonical
+ * 3-second results hold, restart loop, toggle state, and `diag()` telemetry while leaving the planner & sim untouched.
+ */
+export function createRoadsterAutoplayHarness(options: {
+  getGame: () => any;
+  enabled?: boolean;
+  restartDelay?: number;
+}): AutoplayHarness<void> {
+  const st: FreewayAutopilotState = { lastTickMs: 0, lastStuntMs: 0, gameOverSinceMs: 0 };
+  const plannerTick = createFreewayAutopilot(st);
+  let elapsedMs = 0;
+  return createAutoplayHarness<void>({
+    enabled: options.enabled ?? false,
+    restartDelay: options.restartDelay ?? 3,
+    isFinished: () => options.getGame()?.mode === "gameover",
+    onRestart: () => {
+      st.gameOverSinceMs = 0;
+      options.getGame()?.start?.();
+    },
+    bot: {
+      step(dt) {
+        elapsedMs += Math.max(0, dt) * 1000;
+        const g = options.getGame();
+        if (!g || g.mode === "gameover") return;
+        plannerTick(g, elapsedMs);
+      }
+    }
+  });
 }
 
 /** A stateful autopilot tick: call every rendered frame with the wall-clock (or simulated) time in ms. */

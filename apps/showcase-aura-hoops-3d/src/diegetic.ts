@@ -16,12 +16,12 @@ export function scoreboardText(home: number, away: number, lab: boolean): string
 export function scoreboardNode(text: string): AuraNodeBuilder<AuraSceneNode> {
   return text3D(text, {
     name: SCOREBOARD_NODE_ID,
-    size: 1.1,
-    depth: 0.02,
-    letterSpacing: 0.08,
+    size: 0.86,
+    depth: 0.018,
+    letterSpacing: 0.06,
     backend: "sdf",
-    material: material.emissive({ color: "#2a1606", emissive: "#ffb347", emissiveIntensity: 2.2 })
-  }).position(0, 5.2, -12.05) as unknown as AuraNodeBuilder<AuraSceneNode>;
+    material: material.emissive({ color: "#2c1705", emissive: "#ffd257", emissiveIntensity: 2.5, practical: true })
+  }).position(0, 5.4, -12.12) as unknown as AuraNodeBuilder<AuraSceneNode>;
 }
 
 export function courtNameNode(label: string, color: string, apronZ: number): AuraNodeBuilder<AuraSceneNode> {

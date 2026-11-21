@@ -3,7 +3,10 @@
  * a few nodes: a circuit change remounts the scene with its own sky, rig and post (GU47 HS-03, main.ts).
  */
 import type { AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import type { DroneId } from "./data";
+import { blendShown, createShown, SNAP_DISTANCE, writeShown, type Shown } from "./shown";
+import type { RaceState } from "./sim";
 
 function wrapRadians(angle: number): number {
   let a = (angle + Math.PI) % (Math.PI * 2);
@@ -182,4 +185,19 @@ export function slotRivals(drawn: readonly number[], bySlot: Map<number, DroneId
     out.set(free, rival);
   }
   return out;
+}
+
+/**
+ * Aura3D 5.7.2 fixed-step render interpolator over Thermal Drift's pooled `Shown` snapshot buffers.
+ * Snaps automatically on lap respawns/restarts beyond `SNAP_DISTANCE` so 120/144 Hz motion stays silky without smearing.
+ */
+export function createThermalSnapshotInterpolator(getRace: () => RaceState): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({
+    snapshot: () => {
+      const r = getRace();
+      return writeShown(r, createShown(r.rivals.length));
+    },
+    blend: blendShown,
+    snap: { distance: SNAP_DISTANCE, position: (s) => s.player[0]! }
+  });
 }

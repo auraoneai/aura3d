@@ -870,19 +870,10 @@ function buildLayer(layer: SceneryLayer): Geo {
   const tile = layer.tile, front = WRAP_BEHIND - tile;
   const at = (z: number): void => { g.anchor = z; };
   if (layer.id === "scenery-near") {
-    const rnd = prng(0x5eed01);
     const moduleLen = 24;
     for (let z = WRAP_BEHIND; z > front + 0.1; z -= moduleLen) { at(z - moduleLen / 2); roadModule(g, z, moduleLen); }
     for (let z = WRAP_BEHIND - 20; z > front; z -= 64) { at(z); arch(g, z); }
-    const count = 30;
-    for (let k = 0; k < count; k++) {
-      const pole = (k % 2 === 0 ? -1 : 1) as -1 | 1;
-      const z = WRAP_BEHIND - 4 - (k / count) * (tile - 8) - rnd() * 6;
-      const x = pole * (NEAR_DRESSING.island.minX + rnd() * 14);
-      at(z);
-      island(g, rnd, x, -3 - rnd() * 7, z, 2.6 + rnd() * 2.8, pole, true, 16);
-      if (rnd() < 0.6) island(g, rnd, x + pole * (4 + rnd() * 5), 1 + rnd() * 5, z - 6 - rnd() * 4, 0.7 + rnd() * 0.8, pole, false, 12);
-    }
+    // Near-corridor floating islands are owned by the textured Idol islands (`backdrop.ts`); low-poly clashing islands retired.
   } else if (layer.id === "scenery-mid") {
     const rnd = prng(0x5eed02);
     const count = 18;

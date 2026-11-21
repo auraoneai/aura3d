@@ -176,12 +176,12 @@ export const idolEnemyBarrelsId = (bodyId: string) => `${bodyId}-idol-barrels`;
 export const idolEnemyPackId = (bodyId: string) => `${bodyId}-idol-pack`;
 export const idolEnemyVisorId = (bodyId: string) => `${bodyId}-idol-visor`;
 
-/** Enemy kit colours: multiply tint that pulls the desert camo to dark slate, and the hostile accent (rim + visor). */
+/** Enemy kit colours: multiply tint that pulls the desert camo to dark `#525a64` slate armor, plus hostile red/amber optic rim. */
 export const ENEMY_KIT: Readonly<Record<EnemyKind, { readonly tint: string; readonly accent: string }>> = {
-  guard: { tint: "#6e7782", accent: "#ff3a2a" },
-  gunner: { tint: "#646b75", accent: "#ff7a1a" },
-  boss: { tint: "#77707c", accent: "#ff2050" },
-  dog: { tint: "#9aa0a8", accent: "#ff3a2a" }
+  guard: { tint: "#525a64", accent: "#ff3a2a" },
+  gunner: { tint: "#4c545e", accent: "#ff9a24" },
+  boss: { tint: "#525a64", accent: "#ff2050" },
+  dog: { tint: "#6b737e", accent: "#ff3a2a" }
 };
 export const idolEnemyGunId = (bodyId: string) => `${bodyId}-idol-gun`;
 
@@ -213,15 +213,15 @@ export function buildIdolEnemyNode(
       castShadow,
       receiveShadow: true,
       scale: (spec.scale ?? 1) * (BZ_IDOL_RIGS_SCENE_SCALE[spec.key] ?? 1),
-      // Readability (GPU QA: desert camo vanished into the beige walls): dark urban kit with a hostile red rim.
-      materialOverrides: [{ target: "*", color: ENEMY_KIT[kind].tint, colorMode: "multiply", rim: { color: ENEMY_KIT[kind].accent, intensity: 0.55, power: 2.4 } }]
+      // Readability (R23): dark `#525a64` slate armor with crisp hostile red/amber rim separation (`intensity: 0.85`).
+      materialOverrides: [{ target: "*", color: ENEMY_KIT[kind].tint, colorMode: "multiply", rim: { color: ENEMY_KIT[kind].accent, intensity: 0.85, power: 2.2 } }]
     } as never)
       .runtime(game.runtimeNode(idolEnemyBodyId(bodyId), { tags: ["enemy", kind, "idol"] })) as unknown as AuraSceneNode
   ];
   if (kind !== "dog") {
-    // Emissive visor lamp, posed onto the head each frame (poseIdolEnemy).
+    // Emissive optic visor slit, posed outside the brow in parent-local metres each frame (poseIdolEnemy).
     children.push(
-      primitives.box({ name: `${name} visor`, size: [0.17, 0.035, 0.03], material: material.emissive({ color: ENEMY_KIT[kind].accent, emissive: ENEMY_KIT[kind].accent, emissiveIntensity: 3.2, roughness: 0.4 }), castShadow: false, receiveShadow: false })
+      primitives.box({ name: `${name} visor`, size: [0.19, 0.038, 0.036], material: material.emissive({ color: ENEMY_KIT[kind].accent, emissive: ENEMY_KIT[kind].accent, emissiveIntensity: 3.6, roughness: 0.32 }), castShadow: false, receiveShadow: false })
         .runtime(game.runtimeNode(idolEnemyVisorId(bodyId), { tags: ["enemy", kind, "visor"] })) as unknown as AuraSceneNode
     );
   }
@@ -373,6 +373,11 @@ export function poseIdolEnemy(
     };
   }
   let solved = solveIdolPose(skel, drive);
+  // 5.7.0 parent-local attachment scale: `body` applies `BZ_IDOL_RIGS_SCENE_SCALE[spec.key] * (spec.scale ?? 1)` while
+  // `solved.worldT` is already in `skel.rootParent.s` space, so sibling attachments multiply by the exact ratio.
+  const bodyScale = (BZ_IDOL_RIGS_SCENE_SCALE[spec.key] ?? 1) * (spec.scale ?? 1);
+  const attachScale = bodyScale / Math.max(1e-3, skel.rootParent.s || 1);
+  const toParentLocal = (v: V3): V3 => mul(v, attachScale);
   const gunNode = getNode(idolEnemyGunId(bodyId));
   if (spec.gripFromShoulder && spec.supportOnGun) {
     // Two-handed hold: right hand on the grip in front of the chest, the gun aimed by the procedural right-arm pitch,
@@ -399,11 +404,12 @@ export function poseIdolEnemy(
     solved = solveIdolPose(skel, { ...drive, upperArmR: upperR, forearmR: foreR, handR: qMul(aim, HAND_FORWARD), upperArmL: upperL, forearmL: foreL, handL: foreL });
     if (gunNode && state === "dead") {
       // Dropped: the gun lies on its side on the floor beside the body.
-      gunNode.setPosition(grip[0], 0.05, Math.max(0.2, grip[2]));
+      const gPos = toParentLocal(grip);
+      gunNode.setPosition(gPos[0], 0.05, Math.max(0.2, gPos[2]));
       gunNode.setRotation(0, 0.4, Math.PI / 2);
     } else if (gunNode) {
       // The gun's pistol grip sits in the palm, a hand's width past the IK wrist.
-      const palm = add(r.hand, mul(fwd, 0.07 * k));
+      const palm = toParentLocal(add(r.hand, mul(fwd, 0.07 * k)));
       gunNode.setPosition(palm[0], palm[1], palm[2]);
       const e = eulerZYXFromQ(qNorm(aim));
       gunNode.setRotation(e[0], e[1], e[2]);
@@ -417,8 +423,9 @@ export function poseIdolEnemy(
   if (packNode && spec.pack) {
     const ro = skel.roles;
     const k = idolBind(skel).hipsY / 0.94;
-    const cR = solved.worldR[ro.chest]!;
-    const at = add(solved.worldT[ro.chest]!, mul(qRot(cR, spec.pack.offset), k));
+    // Use `drive.chest` (character frame: +Z forward, +Y up) so the pack always rides on the dorsal -Z back.
+    const cR = drive.chest;
+    const at = toParentLocal(add(solved.worldT[ro.chest]!, mul(qRot(cR, spec.pack.offset), k)));
     packNode.setPosition(at[0], at[1], at[2]);
     const e = eulerZYXFromQ(qNorm(qMul(cR, qEulerZYX([pose.specRot[0], 0, 0]))));
     packNode.setRotation(e[0], e[1], e[2]);
@@ -427,10 +434,12 @@ export function poseIdolEnemy(
   if (visor) {
     const ro = skel.roles;
     const k = idolBind(skel).hipsY / 0.94;
-    const hR = solved.worldR[ro.head]!;
-    const at = add(solved.worldT[ro.head]!, mul(qRot(hR, [0, 0.07, 0.11]), k));
+    // Use `drive.head` (character +Z forward, +Y up) rather than raw Idol bone `worldR` (whose local +Z points -X)
+    // and place the optic slit at `z: +0.13` cleanly outside the helmet brow.
+    const hR = drive.head;
+    const at = toParentLocal(add(solved.worldT[ro.head]!, mul(qRot(hR, [0, 0.08, 0.13]), k)));
     visor.setPosition(at[0], at[1], at[2]);
-    const e = eulerZYXFromQ(hR);
+    const e = eulerZYXFromQ(qNorm(hR));
     visor.setRotation(e[0], e[1], e[2]);
   }
   body.setAnimationPose({ bones: solved.bones, mode: "replace" });
@@ -439,7 +448,7 @@ export function poseIdolEnemy(
 
 /**
  * The hound: Idol's quadruped rig ships idle/walk/run clips; the sim state picks the clip and the procedural rig pose
- * still drives the whole-body lunge, flinch and death roll on the model node.
+ * drives bounded whole-body lunge, flinch and death roll without double-offsetting Y/Z in parent-local space.
  */
 function poseIdolHound(
   body: { setPosition(x: number, y: number, z: number): unknown; setRotation(x: number, y: number, z: number): unknown; setAnimation?: (a: unknown) => unknown },
@@ -447,7 +456,9 @@ function poseIdolHound(
   state: string
 ) {
   const restY = ENEMY_REST_Y.dog;
-  body.setPosition(pose.rigPos[0], Math.max(0, pose.rigPos[1] - restY), pose.rigPos[2]);
+  const localY = Math.max(0, Math.min(0.18, pose.rigPos[1] - restY));
+  const localZ = Math.max(-0.18, Math.min(0.28, pose.rigPos[2]));
+  body.setPosition(0, state === "dead" ? 0 : localY, state === "dead" ? 0 : localZ);
   const q = qMul(qEulerZYX(pose.rigRot), qEulerZYX([pose.torsoRot[0] * 0.5, 0, 0]));
   const e = eulerZYXFromQ(q);
   body.setRotation(e[0], e[1], e[2]);

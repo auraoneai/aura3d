@@ -242,19 +242,17 @@ let heroDriver: IdolRigDriver | null = null;
 const driver = (): IdolRigDriver => (heroDriver ??= createIdolRigDriver((IDOL_RIGS as Record<string, IdolRigData>).bkHero!));
 
 /**
- * The Idol Bellkeeper as two top-level scene nodes:
- * - `group`: the `hero` group the world moves every frame, carrying the bell-staff (`hero-staff`, chime and ribbon);
- * - `body`: the rigged Idol Bellkeeper (`hero-idol`). A skinned node nested under a moving group renders in world space
- *   and ignores the group's transform (owner bug: only the staff and kite showed at the player, the hooded body stood at
- *   the world origin), so the body is a top-level node whose world transform `syncIdolBellkeeperBody` writes every frame
- *   from the `hero` group's pose.
+ * The Idol Bellkeeper on Aura3D 5.7.0+ parent-local nested handles:
+ * - `group`: the `hero` group the world moves every frame, carrying BOTH the rigged Idol Bellkeeper (`hero-idol`) and
+ *   the bell-staff (`hero-staff`, chime and ribbon) as direct children in parent-local space so body, staff and kite
+ *   stay locked together with zero matrix lag or world-space sync drift.
  */
 export function createIdolBellkeeperNode(opts: {
   readonly name: string; readonly id: string; readonly castShadow: boolean; readonly receiveShadow: boolean;
   /** The procedural staff, chime and ribbon parts in right-arm space (`proceduralModels.ts`). */
   readonly staff: AuraNodeBuilder<AuraSceneNode>; readonly chime: AuraNodeBuilder<AuraSceneNode>; readonly ribbon: AuraNodeBuilder<AuraSceneNode>;
   readonly chimeOffset: V3; readonly ribbonOffset: V3;
-}): { readonly group: AuraNodeBuilder<AuraSceneNode>; readonly body: AuraNodeBuilder<AuraSceneNode> } | null {
+}): { readonly group: AuraNodeBuilder<AuraSceneNode>; readonly body: AuraNodeBuilder<AuraSceneNode>; readonly nested: true } | null {
   const ref = idolAsset("bkHero");
   if (!ref || !("bkHero" in IDOL_RIGS)) return null;
   const off = (v: V3): V3 => [v[0] - PROC_GRIP[0], v[1] - PROC_GRIP[1], v[2] - PROC_GRIP[2]];
@@ -263,29 +261,31 @@ export function createIdolBellkeeperNode(opts: {
     group("hero-staff-chime", [opts.chime], { position: off(opts.chimeOffset) }).runtime({ id: "hero-staff-chime" }),
     group("hero-staff-ribbon", [opts.ribbon], { position: off(opts.ribbonOffset) }).runtime({ id: "hero-staff-ribbon" })
   ]).runtime({ id: "hero-staff" });
+  const body = asNode(model(ref, { name: "hero-idol", role: "primaryCharacter", scaleMode: "world", castShadow: opts.castShadow, receiveShadow: opts.receiveShadow }).runtime({ id: "hero-idol" }));
   return {
-    group: asNode(group(opts.name, [staffGroup]).runtime({ id: opts.id })),
-    body: asNode(model(ref, { name: "hero-idol", role: "primaryCharacter", scaleMode: "world", castShadow: opts.castShadow, receiveShadow: opts.receiveShadow }).runtime({ id: "hero-idol" }))
+    group: asNode(group(opts.name, [body, staffGroup]).runtime({ id: opts.id })),
+    body,
+    nested: true
   };
 }
 
-/** World pose of the `hero` group (set by the world every frame) and the body's hips lift above it (set by the posers). */
+/** World pose of the `hero` group (set by the world every frame) and the body's local hips lift above it. */
 const heroWorld = { p: [0, 0, 0] as [number, number, number], r: [0, 0, 0] as [number, number, number], lift: 0, placed: false };
-/** The rigged body's world transform: the `hero` group's pose plus the poser's hips lift (rotated by the group's pitch/roll). */
+/** The rigged body's resolved world transform (parent `hero` world pose composed with parent-local `[0, lift, 0]`). */
 export function idolBellkeeperBodyWorld(): { readonly position: V3; readonly rotation: V3; readonly placed: boolean } {
   const [rx, ry, rz] = heroWorld.r;
-  // the engine's Euler (applied Z, then Y, then X on the column vector... composed as Rz*Ry*Rx in matrixToEulerZYX): up axis column
+  // the engine's Euler (composed as Rz*Ry*Rx in matrixToEulerZYX): up axis column
   const cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry), cz = Math.cos(rz), sz = Math.sin(rz);
   const up: V3 = [cz * sy * sx - sz * cx, sz * sy * sx + cz * cx, cy * sx];
   const l = heroWorld.lift;
   return { position: [heroWorld.p[0] + up[0] * l, heroWorld.p[1] + up[1] * l, heroWorld.p[2] + up[2] * l], rotation: [rx, ry, rz], placed: heroWorld.placed };
 }
 const writeBody = (h: PoseHandle): void => {
-  const w = idolBellkeeperBodyWorld();
-  h.setPosition(w.position[0], w.position[1], w.position[2]);
-  h.setRotation(w.rotation[0], w.rotation[1], w.rotation[2]);
+  // 5.7.0 parent-local nested handle: `hero-idol` inherits `hero`'s transform and only carries its local hips lift.
+  h.setPosition(0, heroWorld.lift, 0);
+  h.setRotation(0, 0, 0);
 };
-/** Called by the world right after it moves the `hero` group: the top-level rigged body follows it. */
+/** Records the `hero` group's world pose and keeps `hero-idol`'s parent-local transform synced. */
 export function syncIdolBellkeeperBody(getNode: (id: string) => unknown, position: V3, rotation: V3): void {
   heroWorld.p = [position[0], position[1], position[2]];
   heroWorld.r = [rotation[0], rotation[1], rotation[2]];

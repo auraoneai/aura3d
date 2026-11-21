@@ -82,12 +82,15 @@ export const SKY_FRAGMENT_WGSL = wgslStage([POW, SKY_NOISE], /* wgsl */ `
 }`);
 
 export const SKY_INK_FRAGMENT_WGSL = wgslStage([POW, SKY_NOISE], /* wgsl */ `
-@fragment fn fs_main(@location(0) skyDirection: vec3<f32>) -> @location(0) vec4<f32> {
+@fragment fn fs_main(@builtin(position) fragCoord: vec4<f32>, @location(0) skyDirection: vec3<f32>) -> @location(0) vec4<f32> {
   let dir = normalize(skyDirection);
   let sd = normalize(aura.u_sunDir);
   let h = smoothstep(-0.08, 0.72, dir.y);
+  let grain = (noise(dir.xz * 24.0 + vec2<f32>(dir.y * 19.0, 4.3)) - 0.5) * 0.045;
+  let ySmooth = clamp(dir.y + grain * (0.4 + 0.6 * smoothstep(0.1, 0.7, dir.y)), -0.2, 1.0);
   let midBand = mix(aura.u_skyBottom * vec3<f32>(1.08, 0.94, 0.82), aura.u_skyTop, vec3<f32>(0.44));
-  var c = mix(mix(aura.u_skyBottom, midBand, vec3<f32>(smoothstep(-0.06, 0.24, dir.y))), aura.u_skyTop, vec3<f32>(smoothstep(0.18, 0.76, dir.y)));
+  var c = mix(mix(aura.u_skyBottom, midBand, vec3<f32>(smoothstep(-0.08, 0.30, ySmooth))), aura.u_skyTop, vec3<f32>(smoothstep(0.14, 0.88, ySmooth)));
+  c = c + vec3<f32>((hash(floor(fragCoord.xy)) - 0.5) * (1.5 / 255.0));
   let cosA = dot(dir, sd);
   let mie = a3dPow(max(0.0, cosA), 7.0) * exp(-max(0.0, dir.y) * 5.2) * aura.u_skyGlow * 0.42;
   let glow = a3dPow(max(0.0, cosA), 26.0) * aura.u_skyGlow + a3dPow(max(0.0, cosA), 4.0) * aura.u_skyGlow * 0.22 * (1.0 - h) + mie;

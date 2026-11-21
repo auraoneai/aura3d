@@ -86,12 +86,12 @@ describe("splat turf ?autoplay=1", () => {
     expect(a.traceRow(a.traceLength - 1)).toEqual(b.traceRow(b.traceLength - 1));
   });
 
-  it("main.ts wires ?autoplay=1 with the old aliases and KeyO; the controls hint lists it", () => {
+  it("main.ts wires ?autoplay=1 via readAutoplayFlag + createAutoplayHarness and KeyO; the controls hint lists it", () => {
     const main = readFileSync(new URL("../../../apps/showcase-splat-turf/src/main.ts", import.meta.url), "utf8");
     const html = readFileSync(new URL("../../../apps/showcase-splat-turf/index.html", import.meta.url), "utf8");
-    expect(main).toMatch(/autoplay: \{ type: "flag" \}/);
-    expect(main).toMatch(/config\.autoplay \|\| config\.autopilot \|\| config\.autostart/);
-    expect(main).toMatch(/pilot\.next\(sim\)/);
+    expect(main).toMatch(/readAutoplayFlag\(/);
+    expect(main).toMatch(/createAutoplayHarness</);
+    expect(main).toMatch(/\.next\(sim\)/);
     expect(main).toMatch(/e\.code === "KeyO"/);
     expect(html).toMatch(/O autopilot/);
   });

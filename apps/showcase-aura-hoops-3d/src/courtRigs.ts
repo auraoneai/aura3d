@@ -223,6 +223,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     // GU47 phase 3: the two camera-facing flood flares are off (they veiled the chase frame; blind panel).
     lensFlare: [],
     preethamSky: false,
+    gradientSky: { zenith: "#0c1934", horizon: "#2e466e", ground: "#151a24", horizonGlow: 0.32 },
     water: "none",
     skylineDistance: 92,
     backdrop: "brick walk-ups behind a 4 m chain-link fence",
@@ -423,7 +424,16 @@ export const courtRig = (id: CourtId): CourtRig => COURT_RIGS[id];
  * readable cast shadow in the software WebGL2 captures (4.7.1: blob discs only; same finding in lane g21), and three
  * cascades over the default far plane spread the 2048 map over 240 m.
  */
-export const COURT_KEY_SHADOW = { cascades: 1, filter: "pcf", mapSize: 2048, maxDistance: 44, intensity: 1, normalBias: 0.02, softness: 1.2 } as const;
+export const COURT_KEY_SHADOW = {
+  cascades: 1,
+  filter: "pcf",
+  mapSize: 2048,
+  maxDistance: 44,
+  intensity: 1,
+  normalBias: 0.02,
+  softness: 1.6,
+  fit: { center: [0, 0, 4] as [number, number, number], extent: 18, depth: 48 }
+} as const;
 
 /**
  * GU47 phase 4: the shadow-casting key never sits below this elevation. Rucker (7) and Venice (5) threw every
@@ -544,9 +554,21 @@ export function courtPracticalNodes(rig: CourtRig, photometric?: unknown): AuraN
 export const LAMP_EMISSIVE = 6.5;
 
 /**
+ * In-frame sodium stanchion/gantry luminaire heads on Rucker Park (y = 4.2–6.2 m) so a lit sodium fixture always
+ * projects inside the 1280x720 broadcast frustum (`publishQaCrops()` `crop:lamp`).
+ */
+export const RUCKER_STANCHION_LAMPS: readonly AuraVec3[] = [
+  [-3.65, 4.35, -12.1],
+  [3.65, 4.35, -12.1],
+  [0, 4.25, -1.35],
+  [-8.8, 4.3, -6.4],
+  [8.8, 4.3, -6.4]
+];
+
+/**
  * Lamp-head geometry for the practicals (H47-L2): one instanced draw of emissive sodium panels under the Rucker flood
- * heads, or one draw of tungsten bulbs plus one of the two bulb strings at Manila. WP-36 replaces them with the flood
- * head and bulb-string models.
+ * heads (plus lower in-frame stanchion/gantry luminaire bars so the broadcast view always catches a hot sodium head),
+ * or one draw of tungsten bulbs plus one of the two bulb strings at Manila.
  */
 export function courtLampNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
   if (rig.id === "rucker") {
@@ -555,7 +577,12 @@ export function courtLampNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] 
       rotation: [0, Math.atan2(-p.position[0], COURT_CENTRE[2] - p.position[2]), 0] as AuraVec3,
       scale: [1.5, 0.22, 0.5] as AuraVec3
     }));
-    return [instances.box({ name: "rucker-flood-heads", transforms: panels, castShadow: false, material: material.emissive({ color: "#3a2a12", emissive: SODIUM, emissiveIntensity: LAMP_EMISSIVE, bloom: 2, practical: true }) }) as AuraNodeBuilder<AuraSceneNode>];
+    const stanchionLamps = RUCKER_STANCHION_LAMPS.map((pos) => ({
+      position: pos,
+      rotation: [0, Math.atan2(-pos[0], COURT_CENTRE[2] - pos[2]), 0] as AuraVec3,
+      scale: [0.95, 0.18, 0.28] as AuraVec3
+    }));
+    return [instances.box({ name: "rucker-flood-heads", transforms: [...panels, ...stanchionLamps], castShadow: false, material: material.emissive({ color: "#3a2a12", emissive: SODIUM, emissiveIntensity: LAMP_EMISSIVE, bloom: 2, practical: true }) }) as AuraNodeBuilder<AuraSceneNode>];
   }
   if (rig.id === "manila") {
     return buildManilaFestoonLampNodes(MANILA_BULBS, LAMP_EMISSIVE);
@@ -568,14 +595,28 @@ export function courtLensFlareNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNod
   return rig.lensFlare.map((f) => lights.lensFlare({ name: f.name, position: f.position, intensity: f.intensity, occlusion: "frustum", edgeFade: 0.2 }) as unknown as AuraNodeBuilder<AuraSceneNode>);
 }
 
-/** H47-E4 (C): Preetham sky on the two daylight courts, sun matched to the key; the HDRI keeps lighting the scene. */
+/** Per-court grading LUT preset (`@aura3d/engine/game` `createGradingLut`). */
+export function courtLutPreset(id: CourtId): "cinema-warm" | "broadcast-crisp" | "cyber-neon" {
+  if (id === "shanghai" || id === "orbit") return "cyber-neon";
+  if (id === "athens") return "broadcast-crisp";
+  return "cinema-warm";
+}
+
+/** H47-E4 (C): Preetham sky on Venice; 5.7.2 stylized sky.gradient on Rucker / Shanghai / Athens; HDRI keeps lighting. */
 export function courtSkyNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
   const g = rig.gradientSky;
   if (g) {
     return [sky.gradient({
-      name: `${rig.id}-gradient-sky`, zenith: g.zenith, horizon: g.horizon, ground: g.ground, horizonGlow: g.horizonGlow,
+      name: `${rig.id}-gradient-sky`,
+      style: "stylized",
+      zenith: g.zenith,
+      horizon: g.horizon,
+      ground: g.ground,
+      haze: { color: g.horizon, intensity: Math.min(0.45, g.horizonGlow), falloff: 7.5 },
+      dither: true,
       ...(g.clouds ? { clouds: { coverage: g.clouds, speed: 0.01, color: "#ffffff" } } : {}),
-      captureEnvironment: false, affectsFog: true
+      captureEnvironment: false,
+      affectsFog: true
     }) as unknown as AuraNodeBuilder<AuraSceneNode>];
   }
   if (!rig.preethamSky) return [];
@@ -742,7 +783,7 @@ export function courtOverheadBeamNodes(rig: CourtRig): AuraNodeBuilder<AuraScene
         position: p.position,
         direction: [dx / len, dy / len, dz / len],
         color: p.color,
-        intensity: 0.08,
+        intensity: 0.14,
         length: 8.4,
         coneAngle: p.angle * 0.68,
         softness: 0.85

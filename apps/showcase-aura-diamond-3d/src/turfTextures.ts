@@ -5,7 +5,7 @@
  * where there is no DOM (unit tests), and the field falls back to plain colours.
  */
 import { texture } from "@aura3d/engine";
-import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, type FlipbookAtlasSpec } from "@aura3d/engine/game";
 import { TURF_LAYOUT, bladeNormalTexels, clayNormalTexels, clayRoughnessTexels, hash01, mowMaskTexels, tileRepeat, type TexelBlock } from "../art/turf";
 
 export interface TurfTextures {
@@ -197,7 +197,19 @@ export function baseballSeamTextures(): BaseballSeamMaps | null {
   }
 }
 
-/** Converts a shared 8x4 procedural flipbook (`dust` or `sparks`) into an in-memory PNG data URL for `effects.flipbook`. */
+const cachedFlipbookAtlases = new Map<"dust" | "sparks", FlipbookAtlasSpec>();
+
+/** 5.7.2 live procedural flipbook atlas (`@aura3d/engine/game`) passed directly to `effects.flipbook({ texture })`. */
+export function flipbookAtlasSpec(kind: "dust" | "sparks"): FlipbookAtlasSpec {
+  let atlas = cachedFlipbookAtlases.get(kind);
+  if (!atlas) {
+    atlas = createFlipbookAtlas(kind, kind === "dust" ? [220, 197, 166] : [255, 225, 166]);
+    cachedFlipbookAtlases.set(kind, atlas);
+  }
+  return atlas;
+}
+
+/** Legacy helper kept for callers expecting a PNG data URL. */
 export function flipbookAtlasDataUrl(kind: "dust" | "sparks"): string | null {
   if (cachedFlipbookUrls.has(kind)) return cachedFlipbookUrls.get(kind) ?? null;
   if (typeof document === "undefined") {

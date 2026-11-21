@@ -1,9 +1,24 @@
 import "../../showcase-port-shared/hud-tokens.css";
-import { camera, createAuraApp, createFixedStepLoop, installQaHooks, material, type AuraModelMaterialHandle, type AuraRuntimeNodeHandle, type AuraTransformSpec, type AuraVec3 } from "@aura3d/engine";
+import "../../showcase-port-shared/quickbar.css";
+import { camera, createAuraApp, createFixedStepLoop, installQaHooks, material, type AuraModelMaterialHandle, type AuraOutputOptions, type AuraRuntimeNodeHandle, type AuraTransformSpec, type AuraVec3 } from "@aura3d/engine";
 import { installBlackFrameGuard, installSafetyNet } from "@aura3d/debug";
-import { createCameraShake, createFixedStepPresenter, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
+import {
+  createAutoplayHarness,
+  createCameraShake,
+  createGradingLut,
+  createHitStop,
+  createImpactRig,
+  createSnapshotInterpolator,
+  drainPopups,
+  HUD_THEMES,
+  hudThemeFontFaces,
+  installGameBeacon,
+  POPUP_LIMIT,
+  readAutoplayFlag,
+  registerGameFonts,
+  warmPrograms
+} from "@aura3d/engine/game";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
-import { createImpactRig } from "../../showcase-port-shared/feel";
 import { labAppOptions, readLabFlags, resolveLabBackend } from "../../showcase-port-shared/lab-flags";
 import { createGridAudio } from "./audio";
 import { createTrafficContacts } from "./collision";
@@ -61,7 +76,6 @@ import {
   ROAD_STRIPS,
   WEATHER,
   beaconEnergyMaterial,
-  beaconRippleMaterial,
   buildGridDispatchScene,
   buildingLayoutLeft,
   buildingLayoutRight,
@@ -81,7 +95,7 @@ import { BOOT_SKY, SKY_LOOKS, nextSky, skyFromParam } from "./look";
 import { computeUrbanCommuterPose } from "./art/proceduralModels";
 import { COMMUTER_CLIPS, COMMUTER_SCENE_SCALE, PLAYER_BODY, RIVAL_BODY, TREE_BASE_Y, commuterHailOverlay, idolBodyTopY, idolWheelLayout, parkedInstanceTransform, streetTreeInstanceTransform, trafficBody } from "./art/idolModels";
 import { MAX_WHEEL_STEER, WHEELS_NODE, WHEEL_CAPACITY, shownWheelDistance, vehicleWheels } from "./wheels";
-import { SIDEWALK_Y, WALKERS, walkerNodeId, walkerPose } from "./walkers";
+import { SIDEWALK_Y, WALKERS, WALKER_KEYS, WALKER_SCENE_SCALE, createWalkerAnimator, walkerClipSpeed, walkerNodeId, walkerPose, walkerStrideTime } from "./walkers";
 
 /** Wheel layout of each road user in `S.users` order (traffic slots, then rivals). */
 /** Rival tag anchor height: the rival's procedural box height (the Idol body is fitted to it) + its wheel lift + 0.45 m. */
@@ -102,6 +116,35 @@ import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 export type { AutopilotLevel, PlayableCarId, WeatherPreset } from "./rules";
 
 installBlackFrameGuard();
+
+/** Apply Aura3D `HUD_THEMES["sci-fi-telemetry"]` tokens accented with Grid Dispatch teal & amber + load licensed WOFF2 cuts. */
+function installGridHudTheme(): void {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  for (const [k, v] of Object.entries(HUD_THEMES["sci-fi-telemetry"])) {
+    root.style.setProperty(k, v);
+  }
+  root.style.setProperty("--a3g-accent", "#3fd6c6");
+  root.style.setProperty("--a3g-accent2", "#ffb347");
+  root.style.setProperty("--a3g-bg", "rgba(8, 11, 17, 0.88)");
+  if (typeof window !== "undefined" && "FontFace" in window && document.fonts) {
+    const registry = { fonts: document.fonts, FontFace: window.FontFace } as unknown as Parameters<typeof registerGameFonts>[1];
+    const baseUrl = (import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? "/";
+    void registerGameFonts(`${baseUrl}gd-fonts/`, registry, hudThemeFontFaces("sci-fi-telemetry"));
+  }
+}
+installGridHudTheme();
+
+/** Compact assist badge string for mobile viewports (`390x844`) so text never clips past the right edge. */
+function mobileAssistBadge(level: AutopilotLevel): string {
+  switch (level) {
+    case "MAN": return "MAN · EV";
+    case "L3": return "L3 · BRAKE";
+    case "L4": return "L4 · LANE";
+    case "L5": return "L5 · AUTO";
+    case "L5 MAX": return "L5+ · FAST";
+  }
+}
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
@@ -161,7 +204,7 @@ function initSpeedometerDial(isIce: boolean): void {
     const pOuter = polar(81, deg);
     svg += `<line class="tick${major ? "" : " min"}" x1="${pInner[0]}" y1="${pInner[1]}" x2="${pOuter[0]}" y2="${pOuter[1]}"/>`;
     if (major) {
-      const pNum = polar(isIce ? 64 : 63, deg);
+      const pNum = polar(isIce ? 66 : 67, deg);
       svg += `<text class="num${isIce && v >= 8000 ? " r" : ""}" x="${pNum[0]}" y="${pNum[1]}">${isIce ? v / 1000 : v}</text>`;
     }
   }
@@ -212,6 +255,7 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     beaconRing: req("taxi-beacon-ring"),
     beaconDisc: req("taxi-beacon-disc"),
     beaconRipple: req("taxi-beacon-ripple"),
+    beaconRippleDrop: req("taxi-beacon-ripple-drop"),
     beaconBeam: req("taxi-beacon-beam"),
     beaconCore: req("taxi-beacon-core"),
     passenger: req(PASSENGER_NODE),
@@ -268,6 +312,8 @@ async function bootGridDispatch(): Promise<void> {
   const userWheelDistance: number[] = [];
   /** Clip each sidewalk walker is playing (cleared on remount so it is re-sent). */
   const walkerClips: (string | null)[] = WALKERS.map(() => null);
+  const walkerAnimators = WALKERS.map(() => createWalkerAnimator());
+  const commuterAnimator = createWalkerAnimator();
   /** Clip the Idol commuter is playing (reset when it hides or the scene remounts, so the clip is re-sent). */
   let passengerClip: string | null = null;
   // GD-05/GD-09: the sensor pass (marine deck aloft + LiDAR scan pulse); registered once, it survives sky remounts.
@@ -275,26 +321,38 @@ async function bootGridDispatch(): Promise<void> {
   /** Low post tier (phones, E-G post-only tier): the scan ring runs at half strength. Read once the renderer is up. */
   let lowTier = false;
   let presentClock = 0;
-  /**
-   * GD-08 / lane 521: set after every setScene. The per-sky `output` in look.ts (AgX at exposure 3.8 on Marine dusk,
-   * ACES 1.15-2.3 elsewhere) never reached the post chain through 4.7.18 (app.setOutput did not feed the LegacyPost
-   * route), so every sky shipped and was judged at the engine default: ACES, exposure 1. 5.0 forwards setOutput to the
-   * post chain, which washed the street out (5.0.3 mean 34 -> 84 once AgX rendered correctly). The output stays pinned
-   * to the 4.x frames; the look table keeps the per-sky values for a deliberate re-tune. The engine's A/B query
-   * (`?aura3d-tonemap=` / `?tm=`) keeps its operator: only the exposure is set then.
-   */
+  const gradingLuts = {
+    "cinema-warm": createGradingLut("cinema-warm", 16),
+    "broadcast-crisp": createGradingLut("broadcast-crisp", 16)
+  } as const;
   const tonemapQuery = params.has("aura3d-tonemap") || params.has("tm");
   const applySkyOutput = (): void => {
-    const out = skyOutput(SKY_LOOKS[weather]);
-    auraApp.setOutput?.(tonemapQuery ? { exposure: out.exposure, dither: true } : { toneMapping: out.toneMapping, exposure: out.exposure, dither: true });
+    const look = SKY_LOOKS[weather];
+    const out = skyOutput(look);
+    const lut = gradingLuts[look.lut.preset];
+    const outputPatch = (
+      tonemapQuery
+        ? { exposure: out.exposure, dither: true, lut: { ...lut, intensity: look.lut.intensity } }
+        : { toneMapping: out.toneMapping, exposure: out.exposure, dither: true, lut: { ...lut, intensity: look.lut.intensity } }
+    ) as unknown as AuraOutputOptions;
+    auraApp.setOutput?.(outputPatch);
   };
   applySkyOutput();
 
   // ---------------------------------------------------------------- simulation
   const hitStop = createHitStop();
   const cameraShake = createCameraShake({ maxOffset: 0.4 });
-  const impactRig = createImpactRig();
+  const impactRig = createImpactRig({ reducedMotion: !motionOk() });
   let dispatchPulse = 0.65;
+  interface SmoothPopup { readonly seq: number; readonly title: string; readonly detail: string; readonly tone: "good" | "bad" | "nfs" }
+  const microPopups: SmoothPopup[] = [];
+  let popupSeq = 1;
+  let drainedPopupSeq = 1;
+  let proxChimedKey = "";
+  const pushMicroPopup = (title: string, detail: string, tone: "good" | "bad" | "nfs" = "good"): void => {
+    microPopups.push({ seq: popupSeq++, title, detail, tone });
+    if (microPopups.length > POPUP_LIMIT) microPopups.shift();
+  };
   // GD-14: runtime VFX pack (E-F registerPreset). Sim callbacks queue world-space shots; present() fires them in view
   // space, so a burst lands where the street is drawn this frame.
   installGridVfx(auraApp.effects);
@@ -322,11 +380,16 @@ async function bootGridDispatch(): Promise<void> {
     { footprints: roadUserFootprints() }
   );
   const storage = (() => { try { return window.localStorage; } catch { return null; } })();
-  const autoplay = ["autoplay", "autopilot", "demo"].some((k) => params.get(k) === "1");
-  let autoplayResults = 0;
+  const autoplay = readAutoplayFlag(params);
   const sim = createSim(contacts, { level: autoplay ? "L5" : "MAN", career: loadCareer(storage) });
   sim.onCareer = (c) => saveCareer(storage, c);
   const S = sim.state;
+  const autoplayHarness = createAutoplayHarness({
+    enabled: autoplay,
+    restartDelay: 3.5,
+    isFinished: () => S.phase === "results" && isAutonomous(S.level),
+    onRestart: () => retry()
+  });
   // Portrait phones start in the far chase camera so the car does not fill the screen.
   let camMode: CameraMode = window.innerWidth < window.innerHeight * 0.8 ? 1 : 0;
   let useMph = true;
@@ -415,6 +478,9 @@ async function bootGridDispatch(): Promise<void> {
         if (e.name === "pickup" || e.name === "dropoff") {
           vfx.objective(CURB_BEACON_X, S.ride.beaconZ);
           if (motionOk()) impactRig.trigger({ freezeSeconds: 0.018, trauma: 0.22, fovKickDeg: 1.6 });
+          if (S.ride.comfort >= 85) {
+            pushMicroPopup("SMOOTH STOP +$2.50", e.name === "pickup" ? "Clean kerb approach · passenger pleased" : "Velvet drop-off · 5-star braking", "good");
+          }
           dispatchPulse = 1;
         }
       }
@@ -525,8 +591,12 @@ async function bootGridDispatch(): Promise<void> {
       dockBtn.classList.toggle("active", level !== "MAN");
     }
     const gmode = $("gmode");
-    if (gmode) gmode.textContent = gmodeLabel(level, S.car);
+    if (gmode) {
+      const compact = typeof window !== "undefined" && window.innerWidth <= 760;
+      gmode.textContent = compact ? mobileAssistBadge(level) : gmodeLabel(level, S.car);
+    }
   }
+  window.addEventListener("resize", updateModeLabels);
 
   function setAutopilotLevel(level: AutopilotLevel): void {
     S.level = level;
@@ -656,8 +726,9 @@ async function bootGridDispatch(): Promise<void> {
   // ---------------------------------------------------------------- presentation
   interface Pose { px: number; pz: number; yaw: number; roll: number; pitch: number; uz: number[]; ux: number[] }
   const snapshot = (): Pose => ({ px: S.player.x, pz: S.player.z, yaw: S.player.yaw, roll: S.player.roll, pitch: S.player.pitch, uz: S.users.map((u) => u.z), ux: S.users.map((u) => u.laneX) });
-  const presenter = createFixedStepPresenter<Pose>({
+  const presenter = createSnapshotInterpolator<Pose>({
     snapshot,
+    snap: { distance: 30, position: (p) => p.pz },
     blend: (a, b, t) => ({
       px: lerp(a.px, b.px, t),
       pz: lerp(a.pz, b.pz, t),
@@ -722,7 +793,6 @@ async function bootGridDispatch(): Promise<void> {
     pickup: {
       ring: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.2 }),
       disc: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.45 }),
-      ripple: beaconRippleMaterial("pickup"),
       beam: beaconEnergyMaterial("pickup", 0.72),
       core: material.emissive({ color: "#ffffff", emissive: "#a5f3fc", emissiveIntensity: 2.4 }),
       ribbons: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.9 })
@@ -730,7 +800,6 @@ async function bootGridDispatch(): Promise<void> {
     dropoff: {
       ring: material.emissive({ color: "#ffb347", emissive: "#ffb347", emissiveIntensity: 2.2 }),
       disc: material.emissive({ color: "#ffb347", emissive: "#ffb347", emissiveIntensity: 1.45 }),
-      ripple: beaconRippleMaterial("dropoff"),
       beam: beaconEnergyMaterial("dropoff", 0.72),
       core: material.emissive({ color: "#ffffff", emissive: "#fde68a", emissiveIntensity: 2.4 }),
       ribbons: material.emissive({ color: "#ffb347", emissive: "#ffb347", emissiveIntensity: 1.9 })
@@ -745,7 +814,6 @@ async function bootGridDispatch(): Promise<void> {
     const preset = BEACON_MAT_PRESETS[mode];
     N.beaconRing.setMaterial(preset.ring);
     N.beaconDisc.setMaterial(preset.disc);
-    N.beaconRipple.setMaterial(preset.ripple);
     N.beaconBeam.setMaterial(preset.beam);
     N.beaconCore.setMaterial(preset.core);
     N.ribbons.setMaterial(preset.ribbons);
@@ -809,9 +877,12 @@ async function bootGridDispatch(): Promise<void> {
     }
     // Sensor pass: the deck follows the eye height (roof and bumper cameras), the ring leaves the car (presentation clock).
     presentClock += frameSeconds;
-    // Autoplay (owner standard, Nov 18): hold the shift results ~3.5 s, then start the next shift hands-free, forever
-    autoplayResults = autoplay && S.phase === "results" && isAutonomous(S.level) ? autoplayResults + frameSeconds : 0;
-    if (autoplayResults > 3.5) { autoplayResults = 0; retry(); }
+    // Autoplay (5.7.2 createAutoplayHarness): hold shift results 3.5 s, then restart hands-free forever
+    if (autoplay) autoplayHarness.tick(frameSeconds);
+    // Drain smoothness micro-reward popups via `@aura3d/engine/game` `drainPopups`
+    const drained = drainPopups(microPopups, drainedPopupSeq);
+    drainedPopupSeq = drained.nextSeq;
+    for (const pop of drained.fresh) hud.popup(pop.title, pop.detail, pop.tone);
     const skyLook = SKY_LOOKS[weather];
     sensor.update({
       look: skyLook,
@@ -896,29 +967,48 @@ async function bootGridDispatch(): Promise<void> {
     // Idol wow pass: the Idol tree carries its own canopy; the procedural crown pool is kept mounted but never shown.
     N.crowns.setVisible(false);
 
-    // Idol sidewalk walkers: deterministic strolls recycled around the car (presentation clock; clip re-sent on change)
+    // Idol sidewalk walkers: deterministic strolls paced via `createHumanoidAnimator` + `humanoidLocomotionTime`
     WALKERS.forEach((w, k) => {
       const p = walkerPose(w, presentClock, pose.pz);
       const h = N.walkers[k]!;
+      const scale = WALKER_SCENE_SCALE[WALKER_KEYS[w.variant]!];
+      const anim = walkerAnimators[k]!;
+      if (p.clip === "walk") {
+        anim.update(frameSeconds, { clip: "walk", time: walkerStrideTime(presentClock * w.speed, scale) });
+      } else {
+        anim.update(frameSeconds, { clip: "idle", rate: motionOk() ? 1 : 0 });
+      }
       h.setPosition(rx(p.x), ry(SIDEWALK_Y), rz(p.z)).setRotation(0, p.yaw, 0).setVisible(true);
       if (walkerClips[k] !== p.clip) {
         walkerClips[k] = p.clip;
-        h.setAnimation({ clip: p.clip, loop: true, speed: motionOk() ? 1 : 0 });
+        h.setAnimation({ clip: p.clip, loop: true, speed: p.clip === "walk" ? walkerClipSpeed(w.speed, scale, motionOk()) : motionOk() ? 1 : 0 });
       }
     });
 
     // Beacon, passenger and route ribbon
     const r = S.ride;
-    beaconMaterials(r.state === "offer" || r.state === "boarding" ? "pickup" : "dropoff");
+    const beaconMode: "pickup" | "dropoff" = r.state === "offer" || r.state === "boarding" ? "pickup" : "dropoff";
+    beaconMaterials(beaconMode);
     const t = S.time;
-    const pulse = motionOk() ? 0.5 + 0.5 * Math.sin(t * 3.8) : 0.5;
+    const dzBeaconNow = pose.pz - r.beaconZ;
+    const proxKey = `${r.fareIndex}:${r.state}`;
+    if ((r.state === "offer" || r.state === "ride") && dzBeaconNow > 0 && dzBeaconNow < 22 && proxChimedKey !== proxKey) {
+      proxChimedKey = proxKey;
+      audio?.play("pickup", 0.35);
+    }
+    const nearKerb = (r.state === "offer" || r.state === "ride") && Math.abs(dzBeaconNow) < 12;
+    const pulse = motionOk() ? 0.5 + 0.5 * Math.sin(t * (nearKerb ? 6.5 : 3.8)) : 0.5;
     const bx = rx(CURB_BEACON_X);
     const bz = rz(r.beaconZ);
     const beaconOn = r.state !== "summary" && S.phase === "driving";
-    const ringScale = beaconOn ? 1 + 0.08 * pulse : 0.0001;
+    const ringScale = beaconOn ? (nearKerb ? 1.08 + 0.14 * pulse : 1 + 0.08 * pulse) : 0.0001;
     N.beaconRing.setPosition(bx, ry(0.08), bz).setRotation(Math.PI * 0.5, motionOk() ? t * 1.4 : 0, 0).setScale([ringScale, ringScale, 1]).setVisible(beaconOn);
     N.beaconDisc.setPosition(bx, ry(0.04), bz).setVisible(beaconOn);
-    N.beaconRipple.setPosition(bx, ry(0.048), bz).setScale(beaconOn ? [1 + pulse * 0.12, 1 + pulse * 0.12, 1] : HIDDEN_SCALE).setVisible(beaconOn);
+    const rippleScale = 1 + pulse * (nearKerb ? 0.22 : 0.12);
+    const pickupRippleOn = beaconOn && beaconMode === "pickup";
+    const dropoffRippleOn = beaconOn && beaconMode === "dropoff";
+    N.beaconRipple.setPosition(pickupRippleOn ? bx : HIDDEN_POS[0], pickupRippleOn ? ry(0.24) : HIDDEN_POS[1], pickupRippleOn ? bz : HIDDEN_POS[2]).setScale(pickupRippleOn ? [rippleScale, rippleScale, rippleScale] : HIDDEN_SCALE).setVisible(pickupRippleOn);
+    N.beaconRippleDrop.setPosition(dropoffRippleOn ? bx : HIDDEN_POS[0], dropoffRippleOn ? ry(0.24) : HIDDEN_POS[1], dropoffRippleOn ? bz : HIDDEN_POS[2]).setScale(dropoffRippleOn ? [rippleScale, rippleScale, rippleScale] : HIDDEN_SCALE).setVisible(dropoffRippleOn);
     N.beaconBeam.setPosition(bx, ry(17), bz).setScale([0.92 + pulse * 0.14, 1, 0.92 + pulse * 0.14]).setVisible(beaconOn);
     N.beaconCore.setPosition(bx, ry(18), bz).setVisible(beaconOn);
     const showPassenger = r.state === "offer" || r.state === "boarding" || r.state === "alighting";
@@ -935,8 +1025,13 @@ async function bootGridDispatch(): Promise<void> {
         .setRotation(0, PASSENGER_YAW + rigPose.yawOffset, 0)
         .setScale([s * COMMUTER_SCENE_SCALE, s * COMMUTER_SCENE_SCALE, s * COMMUTER_SCENE_SCALE])
         .setVisible(true);
-      // Idol rigged commuter: idle clip with the hail wave layered on the right arm; walk clip while boarding/alighting.
+      // Idol rigged commuter: distance-locked humanoid animator pacing + hail wave overlay on the right arm.
       const clip = mode === "hail" ? COMMUTER_CLIPS.idle : COMMUTER_CLIPS.walk;
+      if (clip === COMMUTER_CLIPS.walk) {
+        commuterAnimator.update(frameSeconds, { clip: "walk", time: walkerStrideTime(Math.abs(worldX - 11.35), COMMUTER_SCENE_SCALE) });
+      } else {
+        commuterAnimator.update(frameSeconds, { clip: "idle", rate: motionOk() ? 1 : 0 });
+      }
       if (clip !== passengerClip) {
         passengerClip = clip;
         N.passenger.setAnimation({ clip, loop: true, speed: motionOk() ? 1 : 0 });
@@ -1183,6 +1278,7 @@ async function bootGridDispatch(): Promise<void> {
       signal: S.signal,
       wrongWay: S.wrongWay,
       touchControls: touch.visible,
+      autoplay: autoplayHarness.diag(),
       muted: audio?.muted ?? false,
       player: { position: [Number(p.x.toFixed(2)), 0, Number(p.z.toFixed(2))], speedMps: Number(p.speed.toFixed(2)), speedMph: Math.round(p.speed * 2.23694) },
       peers: RIVALS.map((rv, k) => {

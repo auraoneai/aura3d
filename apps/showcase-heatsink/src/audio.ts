@@ -63,6 +63,7 @@ export interface EngineFrame {
   readonly racing: boolean;
   readonly speedKmh: number;
   readonly boosting: boolean;
+  readonly heat01?: number;
 }
 
 export interface ThermalDriftAudio {
@@ -114,11 +115,14 @@ export function createThermalDriftAudio(onMuteChange?: (muted: boolean) => void)
       ensureEngine();
       if (!engine.running) return;
       const rev = Math.min(1.6, Math.max(0.6, frame.speedKmh / 560));
+      const heat = Math.min(1, Math.max(0, frame.heat01 ?? 0));
+      // Escalate turbine whine across 70-95% core heat so imminent thermal overload is audible before the redline.
+      const heatWhine = heat > 0.7 ? Math.min(1, (heat - 0.7) / 0.25) : 0;
       engine.set({
-        pitch: rev,
-        cutoff: 500 + rev * 900 + (frame.boosting ? 600 : 0),
-        gain: frame.racing ? 0.05 + rev * 0.03 : 0.0001,
-        noiseGain: frame.racing && frame.boosting ? 0.035 : 0
+        pitch: rev + heatWhine * 0.34,
+        cutoff: 500 + rev * 900 + (frame.boosting ? 600 : 0) + heatWhine * 950,
+        gain: frame.racing ? 0.05 + rev * 0.03 + heatWhine * 0.015 : 0.0001,
+        noiseGain: frame.racing && (frame.boosting || heatWhine > 0.2) ? 0.035 + heatWhine * 0.02 : 0
       }, 0.08);
       if (frame.racing && frame.boosting && !boostWas) bank.play("whoosh");
       boostWas = frame.racing && frame.boosting;

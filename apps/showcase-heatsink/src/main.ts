@@ -1,11 +1,20 @@
+import "../../showcase-port-shared/hud-tokens.css";
 import "../../showcase-port-shared/quickbar.css";
 import { readLabFlags, labAppOptions } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
-import { createImpactRig } from "../../showcase-port-shared/feel";
-import { createGradingLut } from "../../showcase-port-shared/vfx-pack";
 import { createAuraApp, createFixedStepLoop, type AuraOutputOptions, type AuraRuntimeNodeHandle } from "@aura3d/engine";
 import { installBlackFrameGuard } from "@aura3d/debug";
-import { createFixedStepPresenter, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
+import {
+  createAutoplayHarness,
+  createGradingLut,
+  createImpactRig,
+  HUD_THEMES,
+  hudThemeFontFaces,
+  installGameBeacon,
+  readAutoplayFlag,
+  registerGameFonts,
+  warmPrograms
+} from "@aura3d/engine/game";
 import { createThermalDriftAudio } from "./audio";
 import { ChaseCamera, projectToScreen, type CameraShot, type ScreenPoint } from "./camera";
 import { CIRCUITS, DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, TOTAL_LAPS, type CircuitId, type DroneId, type ModeId } from "./data";
@@ -13,7 +22,7 @@ import { createInputs } from "./input";
 import { createHud } from "./hud";
 import { CIRCUIT_LOOKS, circuitFromParam } from "./look";
 import { HeatHazeController, hazeQaCrops, type GameQaCrop } from "./heatHaze";
-import { droneEulerZYX, InstanceWriter, slotRivals } from "./view";
+import { createThermalSnapshotInterpolator, droneEulerZYX, InstanceWriter, slotRivals } from "./view";
 import { exhaustNodeId, fanSpinAngle, IDOL_FANS, IDOL_NOZZLES } from "./art/idolModels";
 import {
   anchorPosition,
@@ -54,7 +63,6 @@ import {
 } from "./scene";
 import {
   CHEVRON_HEAT_UNIFORM,
-  FLIPBOOK_BURST_UNIFORM,
   quantisedHeat,
   THRUSTER_BOOST_UNIFORM,
   THRUSTER_HEAT_UNIFORM
@@ -75,12 +83,29 @@ import {
   type SimEvent,
   type SimInput
 } from "./sim";
-import { createShown, blendShown, writeShown, type Shown } from "./shown";
 import { loadRecord, saveRecord } from "./records";
 import { TrackView, sectorNameAt, type TrackPose } from "./track";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
 
 installBlackFrameGuard();
+
+/** Apply Aura3D `HUD_THEMES["sci-fi-telemetry"]` tokens accented with foundry soot/amber/cyan + load licensed WOFF2 cuts. */
+function installTelemetryHudTheme(): void {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  for (const [k, v] of Object.entries(HUD_THEMES["sci-fi-telemetry"])) {
+    root.style.setProperty(k, v);
+  }
+  root.style.setProperty("--a3g-accent", "#ff8a1f");
+  root.style.setProperty("--a3g-accent2", "#35d6ff");
+  root.style.setProperty("--a3g-bg", "rgba(12, 11, 10, 0.8)");
+  if (typeof window !== "undefined" && "FontFace" in window && document.fonts) {
+    const registry = { fonts: document.fonts, FontFace: window.FontFace } as unknown as Parameters<typeof registerGameFonts>[1];
+    const baseUrl = (import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? "/";
+    void registerGameFonts(`${baseUrl}td-fonts/`, registry, hudThemeFontFaces("sci-fi-telemetry"));
+  }
+}
+installTelemetryHudTheme();
 
 /** A rival closer than this to the chase camera is hidden (it would fill the lens). */
 const NEAR_LENS_METRES = 5.5;
@@ -102,7 +127,7 @@ const audio = createThermalDriftAudio((muted) => hud.setMuted(muted));
 let selectedDrone: DroneId = "orion";
 let selectedCircuit: CircuitId = circuitFromParam(params.get("circuit")) ?? "grand";
 let selectedMode: ModeId = "race";
-let autopilotOn = ["autoplay", "autopilot", "demo"].some((k) => params.get(k) === "1");
+let autopilotOn = readAutoplayFlag(params);
 let started = autopilotOn;
 let ready = false;
 
@@ -398,20 +423,27 @@ async function boot(): Promise<void> {
   const inputs = createInputs({
     stage: document.getElementById("app"),
     touchRoot: document.getElementById("touch"),
-    onAction: (action) => { if (race.phase === "racing") pendingActions.push(action); },
-    onStart: () => startRace(),
-    onConfirm: () => { if (race.phase === "results") restart(); else startRace(); },
-    onRestart: () => restart(),
-    onToggleAutopilot: () => setAutopilot(!autopilotOn),
-    onToggleMute: () => audio.toggleMute(),
-    onDrone: (id) => selectDrone(id),
-    onGesture: () => audio.unlock()
+    onAction: (action) => { hud.noteUserInput(); if (race.phase === "racing") pendingActions.push(action); },
+    onStart: () => { hud.noteUserInput(); startRace(); },
+    onConfirm: () => { hud.noteUserInput(); if (race.phase === "results") restart(); else startRace(); },
+    onRestart: () => { hud.noteUserInput(); restart(); },
+    onToggleAutopilot: () => { hud.noteUserInput(); setAutopilot(!autopilotOn); },
+    onToggleMute: () => { hud.noteUserInput(); audio.toggleMute(); },
+    onDrone: (id) => { hud.noteUserInput(); selectDrone(id); },
+    onGesture: () => { hud.noteUserInput(); audio.unlock(); }
   });
   audio.install();
-  document.getElementById("start")?.addEventListener("pointerdown", (ev) => { ev.preventDefault(); audio.unlock(); startRace(); });
+  document.getElementById("start")?.addEventListener("pointerdown", (ev) => { ev.preventDefault(); hud.noteUserInput(); audio.unlock(); startRace(); });
 
   // ------------------------------------------------------------------------------------------ race control
-  const presenter = createFixedStepPresenter<Shown>({ snapshot: () => writeShown(race, createShown(race.rivals.length)), blend: blendShown });
+  const presenter = createThermalSnapshotInterpolator(() => race);
+  const autoplayHarness = createAutoplayHarness<ReturnType<typeof autopilot>>({
+    enabled: autopilotOn,
+    restartDelay: 3.5,
+    isFinished: () => started && race.phase === "results",
+    onRestart: () => restart(),
+    bot: { step: () => autopilot(race) }
+  });
   const loop = createFixedStepLoop({ step: simStep, stepSeconds: STEP, manual: qaManual, isActive: () => ready && started });
 
   function resetView(): void {
@@ -455,6 +487,7 @@ async function boot(): Promise<void> {
 
   function setAutopilot(on: boolean): void {
     autopilotOn = on;
+    autoplayHarness.enabled = on;
     hud.setAutopilot(on);
   }
 
@@ -505,7 +538,11 @@ async function boot(): Promise<void> {
         case "finish": hud.showResults(e.result, race); break;
         case "takedown":
           impactRig.trigger({ freezeSeconds: 0.035, trauma: 0.32, fovKickDeg: 3 });
+          hud.flashHit();
           hud.banner(`${e.by === "missile" ? "MISSILE " : e.by === "shock" ? "EMP " : e.by === "mine" ? "MINE " : ""}TAKEDOWN · ${e.name.toUpperCase()}`);
+          break;
+        case "hit":
+          hud.flashHit();
           break;
         case "incoming": hud.banner(`${e.name.toUpperCase()} FIRED`); break;
         case "evaded": hud.banner("MISSILE EVADED"); break;
@@ -585,7 +622,7 @@ async function boot(): Promise<void> {
     let input: SimInput = manualInput;
     let actions: readonly Action[] = pendingActions;
     if (autopilotOn) {
-      const auto = autopilot(race);
+      const auto = autoplayHarness.step(STEP) ?? autopilot(race);
       input = auto.input;
       actions = pendingActions.length ? [...auto.actions, ...pendingActions] : auto.actions;
     } else {
@@ -863,23 +900,20 @@ async function boot(): Promise<void> {
       setNodeVisible(ringHandle, true);
     } else setNodeVisible(ringHandle, false);
 
-    // Procedural 8x4 sprite-sheet flipbook bursts (`createFlipbookAtlas("plasma")` & `createFlipbookAtlas("sparks")`)
+    // Aura3D 5.7.0 live `effects.flipbook` bursts (`createFlipbookAtlas("plasma")` & `createFlipbookAtlas("sparks")`)
     if (plasmaBurst.active) {
       plasmaBurst.age += frameSeconds;
-      if (plasmaBurst.age >= plasmaBurst.duration || p.respawn > 0) {
+      if (plasmaBurst.age >= plasmaBurst.duration || p.respawn > 0 || reduced) {
         plasmaBurst.active = false;
+        plasmaBurstHandle.setPosition(0, -60, 0);
         setNodeVisible(plasmaBurstHandle, false);
       } else {
         const t = plasmaBurst.age / plasmaBurst.duration;
-        const frameIdx = Math.min(31, Math.floor(t * 32));
-        const opacity = (1 - Math.pow(t, 1.7)) * (reduced ? 0.45 : 1);
         const s = 0.85 + t * 0.65;
         plasmaBurstHandle
           .setPosition(dronePos[0], dronePos[1] + 0.12, dronePos[2] + 1.35)
-          .setRotation(0, 0, 0)
-          .setScale([s, s, 1]);
+          .setScale([s, s, s]);
         setNodeVisible(plasmaBurstHandle, true);
-        plasmaBurstHandle.setUniform?.(FLIPBOOK_BURST_UNIFORM, [frameIdx, opacity, 2.8, 0]);
       }
     } else {
       setNodeVisible(plasmaBurstHandle, false);
@@ -887,20 +921,17 @@ async function boot(): Promise<void> {
 
     if (sparksBurst.active) {
       sparksBurst.age += frameSeconds;
-      if (sparksBurst.age >= sparksBurst.duration || p.respawn > 0) {
+      if (sparksBurst.age >= sparksBurst.duration || p.respawn > 0 || reduced) {
         sparksBurst.active = false;
+        sparksBurstHandle.setPosition(0, -60, 0);
         setNodeVisible(sparksBurstHandle, false);
       } else {
         const t = sparksBurst.age / sparksBurst.duration;
-        const frameIdx = Math.min(31, Math.floor(t * 32));
-        const opacity = (1 - Math.pow(t, 1.5)) * (reduced ? 0.45 : 1);
         const s = 0.8 + t * 0.5;
         sparksBurstHandle
           .setPosition(dronePos[0] + sparksBurst.side * 1.35, dronePos[1] - 0.08, dronePos[2] - 0.25)
-          .setRotation(0, 0, 0)
-          .setScale([s, s, 1]);
+          .setScale([s, s, s]);
         setNodeVisible(sparksBurstHandle, true);
-        sparksBurstHandle.setUniform?.(FLIPBOOK_BURST_UNIFORM, [frameIdx, opacity, 3.1, 0]);
       }
     } else {
       setNodeVisible(sparksBurstHandle, false);
@@ -929,8 +960,8 @@ async function boot(): Promise<void> {
     track.place(18, shown.player[1]! * 0.4, 1.8, pose2);
     const aspect = (auraApp.canvas?.clientWidth || innerWidth) / Math.max(1, auraApp.canvas?.clientHeight || innerHeight);
     if (race.phase === "results") resultsSeconds += frameSeconds; else resultsSeconds = 0;
-    // Autoplay (owner standard, Nov 18): hold the results ~3.5 s, then race again hands-free, forever
-    if (autopilotOn && started && race.phase === "results" && resultsSeconds > 3.5) restart();
+    // Autoplay (5.7.2 createAutoplayHarness): hold results 3.5 s, then restart hands-free forever
+    if (autopilotOn) autoplayHarness.tick(frameSeconds);
     const shot: CameraShot = !started ? { kind: "title" }
       : race.phase === "countdown" ? { kind: "countdown", digit: Math.ceil(race.countdown) }
       : race.phase === "results" ? { kind: "results", seconds: resultsSeconds }
@@ -1001,7 +1032,7 @@ async function boot(): Promise<void> {
       reducedMotion: reduced,
       boosting: isBoosting
     }, hudSeconds);
-    audio.update({ racing: isBoosting || (race.phase === "racing" && p.respawn <= 0), speedKmh: p.speedKmh, boosting: isBoosting });
+    audio.update({ racing: isBoosting || (race.phase === "racing" && p.respawn <= 0), speedKmh: p.speedKmh, boosting: isBoosting, heat01 });
     publish(false);
   }
 
@@ -1028,6 +1059,7 @@ async function boot(): Promise<void> {
     result: race.result,
     modelNodeCount: MODEL_NODE_COUNT,
     admittedAssetKeyCount: 26,
+    autoplay: autoplayHarness.diag(),
     vfx: { fired: vfxLedger.total, byKind: { ...vfxLedger.fired }, live: auraApp.effects?.liveCount ?? 0 }
   });
   function publish(force: boolean): void {

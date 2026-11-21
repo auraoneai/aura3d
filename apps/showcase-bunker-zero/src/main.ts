@@ -7,15 +7,26 @@
  * skill mode, pause, minimap, results panel, deterministic ?demo=1 playback,
  * JSON evidence on window.__gameEvidence.
  */
+import "../../showcase-port-shared/hud-tokens.css";
 import "../../showcase-port-shared/quickbar.css";
-import { createImpactRig, type ImpactRig } from "../../showcase-port-shared/feel";
 import { labAppOptions, readLabFlags, labCameraOptions } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import {
   camera, decals, defineAuraAssets, effects, environments, game, gameFeel, lights, material,
   primitives, resolveQrFlags, scene, text3D, type AuraNodeBuilder, type AuraSceneNode
 } from "@aura3d/engine";
-import { createGame, sfxUrl, warmPrograms, type ForwardAxis } from "@aura3d/engine/game";
+import {
+  HUD_THEMES,
+  createAutoplayHarness,
+  createGame,
+  createImpactRig,
+  createSnapshotInterpolator,
+  mixNumber,
+  sfxUrl,
+  warmPrograms,
+  type ForwardAxis,
+  type ImpactRig
+} from "@aura3d/engine/game";
 import { CELL, WALL_H, SILO_H, FLOORS, KILL_HOUSE, isSolid, type FloorDef } from "./maps";
 import {
   createSim, cellCenter, captureLoadout, defaultLoadout, drainEvents, ENEMIES, MAX_SUMMONS, WEAPONS,
@@ -40,6 +51,7 @@ import {
   buildTacticalWristCuffNode,
   formatTacticalFeed,
   viewmodelFraming,
+  VIEWMODEL_MUZZLE_OFFSET,
   VIEWMODEL_YAW_OFFSET,
   weaponHudLabel,
   bulletTracerVisible,
@@ -81,7 +93,7 @@ import { installBlackFrameGuard } from "@aura3d/debug";
 import {
   BZ_FOV, BZ_HATCH_CELLS, BZ_HATCH_FLOOR_ID, BZ_HDRI, BZ_HDRI_URL, BZ_OUTPUT_EXPOSURE, BZ_PALETTE, BZ_POST, BZ_STENCIL_COLOR, BZ_VARIANTS, bunkerSceneFog, lookOfSlot, parseFloorParam, underHatch
 } from "./art/look";
-import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
+import { BZ_MOON, buildLightRig, createLightRigDriver, hatchCentre, type QualityTierName, type RigLightHandle } from "./art/lightRig";
 import { BZ_FLOOR_TEXTURES, bunkerTexture, compensatedBase } from "./art/textures";
 import { createFloorSurfaceLoader, nextSlotOf, placeholderId, withoutMaps } from "./art/floorLoad";
 import { damageArcDeg, deathFade, deathRoll, descentSeconds, doorOffset, reloadDip, viewmodelSway } from "./art/motion";
@@ -94,6 +106,7 @@ import { BLUEPRINT, blueprintEdges, type Segment } from "./art/minimap";
 import { BZ_CA_PULSE, caPulseLevel, lutOfSlot, lutUrlOfSlot } from "./art/lut";
 import { HATCH_BACKDROP, HATCH_COLLAR, hatchBackdrop, hatchCeiling, hatchCollar, hatchShaftSpec, shaftOnSlot } from "./art/hatch";
 import {
+  BZ_MUZZLE_ATLAS,
   bunkerDampSeepageMaterial,
   bunkerExitLaserMaterial,
   bunkerMuzzleFlipbookMaterial,
@@ -403,13 +416,24 @@ function buildScene() {
         .runtime(staticNode(slot, "stencil")) as unknown as AuraNodeBuilder<AuraSceneNode>);
     }
     if (def.id === 5) {
-      // BZ-07: the olive steel collar lining the shaft and the night backdrop closing it (+2 draws on F6 only)
+      // BZ-07 + 5.7.2: the olive steel collar lining the shaft, night backdrop, and low-cost moonlight light-cone shaft through BZ_HATCH_CELLS.
+      const hc = hatchCentre(wallH + 1.8);
       nodes.push(
         primitives.box({ name: `f${slot} hatch collar`, instances: hatchCollar(wallH), material: material.brushedMetal({ color: HATCH_COLLAR.color, roughness: 0.42, metallic: 0.82 }) }).runtime(staticNode(slot, "hatch-collar")),
         primitives.box({
           name: `f${slot} hatch night backdrop`, instances: [hatchBackdrop(wallH)], castShadow: false, receiveShadow: false,
           material: material.emissive({ color: HATCH_BACKDROP.color, emissive: HATCH_BACKDROP.emissive, emissiveIntensity: HATCH_BACKDROP.emissiveIntensity, roughness: 1 })
         }).runtime(staticNode(slot, "hatch-backdrop")),
+        effects.lightCone({
+          name: `f${slot} hatch moonlight cone`,
+          position: [slot * FLOOR_SPAN + hc[0], hc[1], hc[2]],
+          direction: [0.06, -1, 0.04],
+          color: BZ_MOON.color,
+          intensity: 0.24,
+          length: wallH + 2.2,
+          coneAngle: 0.46,
+          softness: 0.72
+        }).runtime(staticNode(slot, "hatch-moon-cone")) as unknown as AuraNodeBuilder<AuraSceneNode>,
         primitives.plane({
           name: `f${slot} hatch rain seepage`, size: [8.4, 1, 8.4],
           position: [slot * FLOOR_SPAN + 11.5 * CELL, 0.014, 9.5 * CELL],
@@ -741,13 +765,7 @@ function buildScene() {
         );
       }
     }
-    // GU47 phase 6: every contact blob of the floor in one instanced draw (one draw per prop and hostile made F6 +11)
-    if (BLOB_INST[slot]!.length) {
-      nodes.push(primitives.cylinder({
-        name: `f${slot} contact blobs`, castShadow: false, receiveShadow: false, instances: BLOB_INST[slot]!,
-        material: material.pbr({ color: "#000000", roughness: 1, metalness: 0, opacity: BZ_BLOB.opacity })
-      }).runtime(staticNode(slot, "blobs")));
-    }
+    // 5.7.2: flat circular `addBlob` decals retired — screen-space `contactShadows` (`length: 0.35, intensity: 0.9`) grounds props and hostiles naturally.
   }
 
   // ---- player rig: WP-11 sculpted multi-material viewmodels + tactical sleeves/gloves + muzzle starburst ---------
@@ -784,7 +802,16 @@ function buildScene() {
       position: [0, -50, 0], material: bunkerMuzzleFlipbookMaterial()
     }).runtime(game.runtimeNode("muzzle-card", { tags: ["vfx"] })),
     effects.flipbook({
-      name: "muzzle sprite", sprite: "flame-loop", size: 0.16, frameRate: 36, intensity: 0.38, blend: "additive", position: [0, -50, 0]
+      name: "muzzle sprite",
+      texture: BZ_MUZZLE_ATLAS.texture,
+      spriteColumns: BZ_MUZZLE_ATLAS.columns,
+      spriteRows: BZ_MUZZLE_ATLAS.rows,
+      size: 0.16,
+      frameRate: 48,
+      intensity: 0.45,
+      color: "#ffd99c",
+      blend: "additive",
+      position: [0, -50, 0]
     }).runtime(game.runtimeNode("muzzle-sprite", { tags: ["vfx"] })) as unknown as AuraNodeBuilder<AuraSceneNode>,
     // C27: the Iron Warden's vent glows + paired GLSL/WGSL containment aura while vulnerable (intensity capped)
     lights.point({ name: "warden vent light", color: "#ff5a1a", intensity: 2.2, distance: 7, decay: 1.8, position: [0, -50, 0] })
@@ -852,7 +879,7 @@ function buildScene() {
 
   return b.addMany(nodes)
     .add(effects.fog(bunkerSceneFog(boot)))
-    .add(effects.contactShadows({ length: 0.25, thickness: 0.05, steps: 16, intensity: 0.75, lights: "shadowed" }))
+    .add(effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 16, intensity: 0.9, lights: "shadowed" }))
     .add(effects.ambientOcclusion({ intensity: BZ_POST.ao.intensity, radius: BZ_POST.ao.radius, multiBounce: true }))
     .add(effects.cinematicBloom({ threshold: 1.15, intensity: 0.18, maxIntensity: 0.35, color: "#ffd59a", radius: 0.26, antiBlowout: true }))
     .add(effects.colorGrade({
@@ -1440,6 +1467,7 @@ function startFloor(idx: number, m: "descent" | "killhouse", opts: StartOptions 
   hideAllRuntime();
   bindFloor();
   applyFloorLook(activeSlot());
+  playerPresenter.reset();
   syncScenePose(NO_INPUT);
   setResultsVisible(false);
   lastHud = "";
@@ -1486,13 +1514,19 @@ const NO_INPUT: SimInput = { moveX: 0, moveZ: 0, turn: 0, pitchDelta: 0, fire: f
 
 // ---------------------------------------------------------------------------
 // HUD
+for (const [k, v] of Object.entries(HUD_THEMES["sci-fi-telemetry"])) {
+  document.documentElement.style.setProperty(k, v);
+}
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const elHud = $<HTMLElement>("bz-hud"), elHp = $("bz-hp"), elArmor = $("bz-armor"), elAmmo = $("bz-ammo"),
   elWeapon = $("bz-weapon-name"), elScore = $("bz-score"), elKills = $("bz-kills"), elTime = $("bz-time"),
   elVign = $("bz-vignette"), elBanner = $("bz-banner"), elTag = $("bz-floor-tag"), elFeed = $("bz-feed"),
   elCross = $("bz-crosshair"), elMenu = $("bz-menu"), elPause = $("bz-pause"), elResults = $("bz-results"),
   elIntro = $("bz-intro"), elMap = $<HTMLCanvasElement>("bz-map"), elVuln = $("bz-vulnerable"), elTouch = $("bz-touch"),
-  elArc = $("bz-damage-arc"), elCoords = document.getElementById("bz-coords");
+  elArc = $("bz-damage-arc"), elCoords = document.getElementById("bz-coords"),
+  elKeyCompass = document.getElementById("bz-key-compass"),
+  elFloorPickerBtn = document.getElementById("bz-floor-picker-btn"),
+  elFloorsStrip = document.getElementById("bz-floors-strip");
 let bannerT = 0;
 function banner(big: string, small = "") {
   elBanner.textContent = big;
@@ -1502,11 +1536,29 @@ function banner(big: string, small = "") {
   elBanner.classList.add("show");
   bannerT = 3;
 }
-const FEED: { text: string; warn: boolean }[] = [];
-function feed(s: string, warn = false) {
-  FEED.push({ text: formatTacticalFeed(s), warn });
-  if (FEED.length > 6) FEED.shift();
+const FEED_MAX = 3;
+const FEED_TTL_MS = 2500;
+const FEED: { text: string; warn: boolean; at: number }[] = [];
+function paintFeed() {
   elFeed.replaceChildren(...FEED.map((f) => { const d = document.createElement("div"); d.className = `bz-tick${f.warn ? " warn" : ""}`; d.textContent = f.text; return d; }));
+}
+function feed(s: string, warn = false) {
+  const text = formatTacticalFeed(s);
+  const now = performance.now();
+  const prev = FEED[FEED.length - 1];
+  // Deduplicate simultaneous pickup event + sim.state.msg pairs (e.g. "ammo collected" + "AMMO").
+  if (prev && prev.text === text && now - prev.at < 1500) {
+    prev.at = now;
+    return;
+  }
+  FEED.push({ text, warn, at: now });
+  while (FEED.length > FEED_MAX) FEED.shift();
+  paintFeed();
+}
+function pruneFeed(now: number) {
+  let dropped = false;
+  while (FEED.length > 0 && now - FEED[0]!.at > FEED_TTL_MS) { FEED.shift(); dropped = true; }
+  if (dropped) paintFeed();
 }
 
 // ---------------------------------------------------------------------------
@@ -1746,9 +1798,49 @@ function drawMap() {
 }
 
 // ---------------------------------------------------------------------------
+// Fixed-step render snapshot interpolator (`@aura3d/engine/game`) for silky 120/144 Hz camera motion.
+interface PlayerRenderSnap { x: number; z: number; yaw: number; pitch: number; ox: number }
+const playerPresenter = createSnapshotInterpolator<PlayerRenderSnap>({
+  create: () => ({ x: 4.5, z: 4.5, yaw: 0, pitch: 0, ox: 0 }),
+  snapshot: (out) => {
+    const s = out ?? { x: 4.5, z: 4.5, yaw: 0, pitch: 0, ox: 0 };
+    const pl = sim?.state.player;
+    s.x = pl?.x ?? 4.5;
+    s.z = pl?.z ?? 4.5;
+    s.yaw = pl?.yaw ?? 0;
+    s.pitch = pl?.pitch ?? 0;
+    s.ox = sim?.state.ox ?? 0;
+    return s;
+  },
+  blend: (a, b, t, out) => {
+    const s = out ?? { x: 4.5, z: 4.5, yaw: 0, pitch: 0, ox: 0 };
+    s.x = mixNumber(a.x, b.x, t);
+    s.z = mixNumber(a.z, b.z, t);
+    let dy = b.yaw - a.yaw;
+    while (dy > Math.PI) dy -= Math.PI * 2;
+    while (dy < -Math.PI) dy += Math.PI * 2;
+    s.yaw = a.yaw + dy * t;
+    s.pitch = mixNumber(a.pitch, b.pitch, t);
+    s.ox = b.ox;
+    return s;
+  },
+  snap: (a, b) => a.ox !== b.ox || Math.hypot(b.x - a.x, b.z - a.z) > 2.5
+});
+
+const autoplayHarness = createAutoplayHarness({
+  enabled: autoPilot || DEMO,
+  restartDelay: AUTOPLAY_RESULTS_HOLD,
+  isFinished: () => campaignDone,
+  onRestart: () => {
+    pending = null;
+    startFloor(0, "descent", { newRun: true });
+  }
+});
+
 // the camera, viewmodel, enemies and props follow the sim
-function syncScenePose(inp: SimInput) {
+function syncScenePose(inp: SimInput, renderAlpha = 1) {
   const p = sim.state.player;
+  const shown = playerPresenter.present(renderAlpha, !qaFrozen && !BOOT_FLOOR && !isPaused());
   poseDt = lastPoseTime < 0 ? 1 : Math.min(0.1, Math.max(0, sim.state.time - lastPoseTime));
   lastPoseTime = sim.state.time;
   const motion = motionScale();
@@ -1756,12 +1848,18 @@ function syncScenePose(inp: SimInput) {
   const framing = viewmodelFraming(aspect, BZ_FOV);
   const feelScale = qaFrozen || BOOT_FLOOR ? 0 : motion;
   // ---- camera: eye pose + shake + tactical flashlight tracking (C21: both scale down under reduced motion)
+  const introOpen = !elIntro.hidden && !qaFrozen && !BOOT_FLOOR;
+  const introPanYaw = introOpen && !reducedMotion() ? Math.sin(performance.now() * 0.00045) * 0.14 : 0;
   const shake = (sim.state.shake + (p.hurtT > 0 ? 0.3 : 0)) * motion;
   const shakeYaw = shake * Math.sin(sim.state.time * 91) * 0.012;
   const moveMag = Math.min(1, Math.abs(inp.moveZ) + Math.abs(inp.moveX));
   const eyeY = EYE + Math.sin(sim.state.time * 8.4) * 0.024 * moveMag * motion;
-  const ox = sim.state.ox;
-  const fx = Math.sin(p.yaw + shakeYaw), fz = -Math.cos(p.yaw + shakeYaw);
+  const ox = shown.ox;
+  const interpDx = shown.x - p.x;
+  const interpDz = shown.z - p.z;
+  const drawYaw = shown.yaw + introPanYaw;
+  const drawPitch = shown.pitch;
+  const fx = Math.sin(drawYaw + shakeYaw), fz = -Math.cos(drawYaw + shakeYaw);
   const impX = impactFrame.shakeOffset[0] * feelScale;
   const impY = impactFrame.shakeOffset[1] * feelScale;
   const impZ = impactFrame.shakeOffset[2] * feelScale;
@@ -1771,15 +1869,20 @@ function syncScenePose(inp: SimInput) {
   app.camera?.setPose({
     // +Y up every frame: setPose merges into the presented pose, so the overhead warm's up vector would otherwise persist
     up: [0, 1, 0],
-    position: [p.x + ox + impX, eyeY + p.pitch * 0.4 + impY, p.z + impZ],
-    target: [p.x + ox + impX + fx, eyeY + Math.tan(p.pitch) + impY, p.z + impZ + fz],
+    position: [p.x + ox + interpDx + impX, eyeY + drawPitch * 0.4 + impY, p.z + interpDz + impZ],
+    target: [p.x + ox + interpDx + impX + fx, eyeY + Math.tan(drawPitch) + impY, p.z + interpDz + impZ + fz],
     roll: deathRoll(sinceDeath, reducedMotion()) + impactFrame.shakeRoll * feelScale,
     fov: framing.fov + impactFrame.fovDeltaDeg * feelScale
   });
   deathFadeLevel = deathFade(sinceDeath, reducedMotion());
-  try { mg.sound?.setListener?.({ position: [p.x + ox, EYE, p.z], forward: [fx, 0, fz], up: [0, 1, 0] }); } catch { /* audio not ready */ }
+  try { mg.sound?.setListener?.({ position: [p.x + ox + interpDx, EYE, p.z + interpDz], forward: [fx, 0, fz], up: [0, 1, 0] }); } catch { /* audio not ready */ }
   // BZ-01: the rig follows the camera (carried lamp, fixture pool, flicker, F6 beacon); cosmetic, never the sim's RNG
-  lightRig.update({ x: p.x + ox, y: eyeY, z: p.z, fx, fz }, sim.state.time);
+  lightRig.update({ x: p.x + ox + interpDx, y: eyeY, z: p.z + interpDz, fx, fz }, sim.state.time);
+  // Dynamic 4-tick reticle spread driven by movement + weapon recoil kick.
+  if (elCross) {
+    const spreadPx = Math.round(5 + moveMag * 4 + recoilKick * 7 + (sim.state.muzzle > 0 ? 4 : 0));
+    elCross.style.setProperty("--bz-spread", `${spreadPx}px`);
+  }
 
   // ---- viewmodel + gloved tactical hands (with Hor+ portrait framing & crisp recoil kickback on fire)
   const bob = Math.sin(sim.state.time * 9) * 0.018 * moveMag * motion;
@@ -1878,22 +1981,24 @@ function syncScenePose(inp: SimInput) {
     for (const h of Object.values(vmHands)) parkViewmodel(h);
   }
 
-  // ---- compact off-center muzzle flash + dual-backend flipbook card + additive sprite; transient light via fireVfx (BZ-03)
-  if (sim.state.muzzle > 0) {
-    const mx = p.x + ox + fx * 0.84 + rx * (side * 1.04);
-    const my = EYE - 0.24 - framing.drop * 0.35;
-    const mz = p.z + fz * 0.84 + rz * (side * 1.04);
+  // ---- bore-aligned muzzle flash + flipbook card + live `effects.flipbook` atlas sprite; transient light via fireVfx (BZ-03)
+  if (sim.state.muzzle > 0 && p.weapon !== "knife") {
+    const tip = VIEWMODEL_MUZZLE_OFFSET[p.weapon];
+    const mx = vmx + fx * tip.forward + rx * tip.right;
+    const my = vmy + tip.up + Math.tan(p.pitch) * tip.forward * 0.35;
+    const mz = vmz + fz * tip.forward + rz * tip.right;
     muzzleFlash.setPosition(mx, my, mz);
     muzzleFlash.setRotation(0, -p.yaw + Math.PI / 2, sim.state.time * 25);
     // C17: cosmetic jitter comes from its own RNG, never the sim's seeded stream
     const flashJitter = fxRng();
-    muzzleFlash.setScale(0.46 + flashJitter * 0.16);
+    const s = tip.scale * (0.9 + flashJitter * 0.25);
+    muzzleFlash.setScale(s * 0.85);
     muzzleFlash.setVisible(true);
-    muzzleCard.setPosition(mx + fx * 0.03, my, mz + fz * 0.03);
+    muzzleCard.setPosition(mx + fx * 0.025, my, mz + fz * 0.025);
     muzzleCard.setRotation(0, -p.yaw, sim.state.time * 19);
-    muzzleCard.setScale(0.52 + flashJitter * 0.18);
+    muzzleCard.setScale(s * 1.15);
     muzzleCard.setVisible(true);
-    muzzleSprite.setPosition(mx, my, mz);
+    muzzleSprite.setPosition(mx + fx * 0.035, my, mz + fz * 0.035);
     muzzleSprite.setVisible(true);
     muzzleShown = true;
     if (!muzzleWasLit) fireVfx("player-fire", [mx, my, mz]);
@@ -2163,7 +2268,7 @@ function gatherInput(dt: number): SimInput {
 function stepSim(dt: number, inp: SimInput) {
   if (DEMO) {
     demoAcc += dt;
-    while (demoAcc >= 1 / 60) { lastAutoInput = autopilotInput(pilot, sim, 1 / 60); sim.tick(1 / 60, lastAutoInput); demoAcc -= 1 / 60; simSteps++; }
+    while (demoAcc >= 1 / 60) { lastAutoInput = autopilotInput(pilot, sim, 1 / 60); sim.tick(1 / 60, lastAutoInput); playerPresenter.afterStep(); demoAcc -= 1 / 60; simSteps++; }
     return;
   }
   const useAuto = autoPilot;
@@ -2185,6 +2290,7 @@ function stepSim(dt: number, inp: SimInput) {
       weaponDelta: firstSub ? inp.weaponDelta : 0
     };
     sim.tick(st, subInp);
+    playerPresenter.afterStep();
     remaining -= st;
     firstSub = false;
     simSteps++;
@@ -2255,9 +2361,12 @@ app.onFrame(({ dt }) => {
   const inp = paused ? (gatherInput(dt), NO_INPUT) : gatherInput(dt);
   if (!qaFrozen && !paused && !campaignDone) stepSim(dt, inp);
   drain();
-  try { syncScenePose(inp); } catch (e) { frameErrors++; lastFrameError = e instanceof Error ? e.message : String(e); }
+  autoplayHarness.enabled = autoPilot || DEMO;
+  autoplayHarness.tick(wallDt);
+  try { syncScenePose(inp, Math.min(1, dt * 60)); } catch (e) { frameErrors++; lastFrameError = e instanceof Error ? e.message : String(e); }
   if (!paused) { checkOutcome(); tickPending(wallDt); }
   renderHud();
+  pruneFeed(now);
   publishEvidence();
   feel.update(dt * 1000);
   bannerT -= wallDt;
@@ -2282,9 +2391,12 @@ function handleEvent(ev: string) {
         });
       }
       break;
-    case "hit": cue("hit"); elCross.classList.add("hit"); setTimeout(() => elCross.classList.remove("hit"), 90); break;
+    case "hit": cue("hit"); elCross.classList.remove("kill"); elCross.classList.add("hit"); setTimeout(() => elCross.classList.remove("hit"), 110); break;
     case "kill":
       cue("kill");
+      elCross.classList.remove("hit");
+      elCross.classList.add("kill");
+      setTimeout(() => elCross.classList.remove("kill"), 160);
       mg.juice?.fire("kill");
       recoilKick = Math.min(1.5, recoilKick + 0.32);
       impactRig.trigger({ freezeSeconds: 0.04, trauma: 0.22, fovKickDeg: 1.4 });
@@ -2379,13 +2491,28 @@ function renderHud() {
     // C26: the dog tag is text, never markup
     const small = document.createElement("small");
     if (mode === "killhouse") {
+      const pace = timeShown >= 40 ? "GOLD PACE" : timeShown >= 20 ? "SILVER PACE" : "BRONZE PACE";
       elTag.textContent = "SKILL LAB — KILL HOUSE";
-      small.textContent = `${dogtag} · clear the floor`;
+      small.textContent = `${dogtag} · ${pace}`;
     } else {
       elTag.textContent = `FLOOR ${floorIdx + 1} — ${sim.state.floor.name.toUpperCase()}`;
       small.textContent = `${p.key ? "key secured · the elevator is armed" : sim.state.floor.subtitle} · ${dogtag}`;
     }
     elTag.append(small);
+  }
+  // Subtle brass-key compass pip once >50% of floor hostiles are cleared and the key is still out there.
+  if (elKeyCompass) {
+    const keyPickup = !p.key && mode === "descent" && sim.state.totalEnemies > 0 && sim.state.kills * 2 >= sim.state.totalEnemies
+      ? sim.state.pickups.find((pk) => pk.kind === "key" && !pk.taken)
+      : undefined;
+    if (keyPickup && p.alive) {
+      const deg = damageArcDeg(p, { x: keyPickup.x, z: keyPickup.z });
+      const dir = Math.abs(deg) <= 32 ? "▲ AHEAD" : deg > 32 && deg < 148 ? "▸ RIGHT" : deg < -32 && deg > -148 ? "◂ LEFT" : "▼ BEHIND";
+      elKeyCompass.textContent = `BRASS KEY ${dir}`;
+      elKeyCompass.hidden = false;
+    } else {
+      elKeyCompass.hidden = true;
+    }
   }
   if (elCoords) {
     const cx = Math.max(0, cellOf(p.x)), cz = Math.max(0, cellOf(p.z));
@@ -2727,6 +2854,16 @@ function setModeButtons() {
   $("bz-btn-killhouse").classList.toggle("active", mode === "killhouse");
   document.querySelectorAll<HTMLButtonElement>(".floor-btn").forEach((b, i) =>
     b.classList.toggle("active", mode === "descent" && i === floorIdx));
+  if (elFloorPickerBtn) {
+    elFloorPickerBtn.textContent = mode === "killhouse" ? "Floor: KH ▾" : `Floor: F${floorIdx + 1} ▾`;
+  }
+}
+if (elFloorPickerBtn && elFloorsStrip) {
+  elFloorPickerBtn.addEventListener("click", () => {
+    const open = elFloorsStrip.getAttribute("data-open") !== "true";
+    elFloorsStrip.setAttribute("data-open", open ? "true" : "false");
+    elFloorPickerBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
 }
 function openMenu() { elMenu.classList.add("open"); setPaused("menu", true); if (pointerLocked) document.exitPointerLock(); renderRemap(); }
 function closeMenu() { elMenu.classList.remove("open"); setPaused("menu", false); }
@@ -2743,7 +2880,12 @@ $("bz-resume").addEventListener("click", () => resume());
 $("bz-results-restart").addEventListener("click", () => startFloor(0, "descent", { newRun: true }));
 $("bz-results-menu").addEventListener("click", () => openMenu());
 document.querySelectorAll<HTMLButtonElement>(".floor-btn").forEach((b) =>
-  b.addEventListener("click", () => { closeMenu(); startFloor(parseInt(b.dataset.auraFloor!, 10), "descent", { newRun: true }); }));
+  b.addEventListener("click", () => {
+    elFloorsStrip?.setAttribute("data-open", "false");
+    elFloorPickerBtn?.setAttribute("aria-expanded", "false");
+    closeMenu();
+    startFloor(parseInt(b.dataset.auraFloor!, 10), "descent", { newRun: true });
+  }));
 $<HTMLInputElement>("bz-dogtag").addEventListener("input", (e) => { dogtag = (e.target as HTMLInputElement).value.toUpperCase() || "RAZOR-6"; lastHud = ""; });
 // C22: the tint recolours the HUD accents (crosshair, frame, labels); the viewmodel keeps its textures
 function applyTint(tint: string) {

@@ -229,18 +229,20 @@ export function rivalDriverNodes(count: number) {
 }
 
 export function heroRoverNode() {
+  // Aura3D 5.7.0 parent-local nested driver rig: `hero-driver` sits directly inside `ink-rover-body`
+  // so it inherits kart roll, pitch, and scale in lockstep with zero matrix lag.
   return group("ink-rover-body", [
     model(TURF_IDOL_ASSETS.turfHeroKartShell, { name: "ink-rover-idol", scaleMode: "world", castShadow: true, receiveShadow: true })
       .position(0, HERO_ROVER_OFFSET.y, HERO_ROVER_OFFSET.z)
+      .rotation(0, Math.PI, 0),
+    model(TURF_IDOL_ASSETS.turfHeroDriverRig, { name: HERO_DRIVER_ID, scaleMode: "world", castShadow: true, receiveShadow: true, scale: DRIVER_RIG_SCALE.turfHeroDriverRig, visible: false })
+      .position(0, HERO_ROVER_OFFSET.y, HERO_ROVER_OFFSET.z)
       .rotation(0, Math.PI, 0)
+      .runtime({ id: HERO_DRIVER_ID })
   ]).runtime({ id: "ink-rover-body" });
 }
 
-/**
- * Rigged hero driver as a TOP-LEVEL node (like the rival drivers): world.ts gives it the kart's full world transform every
- * frame (kart pose · shell offset · seat). A runtime id nested inside the kart group was positioned in world space by
- * the runtime, which left the driver at road level beside the kart.
- */
+/** Legacy standalone hero driver helper (retained for compatibility; `heroRoverNode()` now nests `HERO_DRIVER_ID`). */
 export function heroDriverNode() {
   return model(TURF_IDOL_ASSETS.turfHeroDriverRig, { name: HERO_DRIVER_ID, scaleMode: "world", castShadow: true, receiveShadow: true, scale: DRIVER_RIG_SCALE.turfHeroDriverRig, visible: false })
     .position(0, -60, 0)
@@ -355,7 +357,7 @@ const ISLAND_DIMS: Record<TurfBackdropKind, readonly [number, number, number]> =
 };
 /** Largest extent of the former procedural island specs at instance scale 1 (keeps every island's on-screen size). */
 const PROCEDURAL_MAX_DIM: Record<TurfBackdropKind, number> = {
-  balloon: 5.8, easelIsland: 13.2, islandTower: 16.6, islandTree: 14.7, paintPotIsland: 12.9, paletteIsland: 11.9
+  balloon: 5.0, easelIsland: 13.2, islandTower: 16.6, islandTree: 14.7, paintPotIsland: 12.9, paletteIsland: 11.9
 };
 /** Fraction of the GLB height below the deck / balloon centre (`p.y` was the procedural deck top or envelope centre). */
 const ISLAND_ANCHOR: Record<TurfBackdropKind, number> = {
@@ -381,8 +383,10 @@ export function createIdolIslandNodes(pieces: readonly TurfBackdropPiece[], kind
     for (let tile = 0; tile < 2; tile++) {
       for (const p of groupPieces) {
         const s = (PROCEDURAL_MAX_DIM[kind] * (p.size / 10.5)) / glbMax;
+        // Widen hot-air balloon lateral clearance so balloons never clip the viewport margin on 1280x720 or 390x844.
+        const lateral = kind === "balloon" ? Math.max(23.5, p.offset + 6.5) : p.offset;
         transforms.push({
-          position: [p.side * p.offset, p.y - ISLAND_ANCHOR[kind] * dims[1] * s, near - p.z0 - tile * span] as const,
+          position: [p.side * lateral, p.y - ISLAND_ANCHOR[kind] * dims[1] * s, near - p.z0 - tile * span] as const,
           rotation: [0, p.z0 * 0.45, 0] as const,
           scale: s
         });

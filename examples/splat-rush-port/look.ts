@@ -64,6 +64,8 @@ export interface ToonLightRow {
   readonly contact: { readonly height: number; readonly strength: number };
   /** GU47 phase 4: enamel environment reflection (painted dome, Schlick fresnel) per surface family. */
   readonly env: { readonly rails: number; readonly ball: number; readonly gates: number };
+  /** 5.7.1 dielectric clearcoat gloss on player ball & gate frames (`clearcoat: 1.0, clearcoatRoughness: 0.06`). */
+  readonly clearcoat?: { readonly clearcoat: number; readonly clearcoatRoughness: number };
   /** GU47 phase 4: lacquered-deck planar reflection of the nearest gates and the ball (strength 0..1), the dome at grazing
    *  angles (strength), softened with height above the deck (fade height m). `null`: off. */
   readonly mirror: null | { readonly gates: number; readonly sky: number; readonly fadeHeight: number };
@@ -169,7 +171,8 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       canvas: { weave: 0.055, streak: 0.065 },
       skyReflect: 1.15,
       contact: { height: 0.8, strength: 0.46 },
-      env: { rails: 2.2, ball: 0.52, gates: 1.05 },
+      env: { rails: 2.2, ball: 0.62, gates: 1.15 },
+      clearcoat: { clearcoat: 1.0, clearcoatRoughness: 0.06 },
       mirror: { gates: 0.12, sky: 0.10, fadeHeight: 2.0 }
     },
     sky: {

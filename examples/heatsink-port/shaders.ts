@@ -346,28 +346,31 @@ void main() {
   vec2 pf = vWorld.xz;
   float flatness = smoothstep(0.35, 0.85, N0.y);
   vec2 pd = mix(vec2(vWorld.x + vWorld.z, vWorld.y * 1.6), pf, flatness);
-  float h0 = ridged(pd * 0.09);
+  float h0 = ridged(pd * 0.09) * 0.72 + ridged(pd * 0.24 + vec2(3.7, -5.1)) * 0.28;
   // bump mapping from screen-space derivatives of the height field (Mikkelsen)
   vec3 dpdx = dFdx(vWorld), dpdy = dFdy(vWorld);
   float dhx = dFdx(h0), dhy = dFdy(h0);
   vec3 r1 = cross(dpdy, N0), r2 = cross(N0, dpdx);
   float det = dot(dpdx, r1);
   vec3 grad = sign(det) * (dhx * r1 + dhy * r2);
-  float bumpK = 5.0 * (1.0 - smoothstep(25.0, 130.0, length(vWorld - cameraPosition))); // fade the bump with distance: no aliasing
+  float bumpK = 5.4 * (1.0 - smoothstep(45.0, 240.0, length(vWorld - cameraPosition))); // preserve distant canyon peak relief
   vec3 N = normalize(abs(det) * N0 - bumpK * grad);
   float n = fbm(pf * 0.020);
-  vec3 rock = mix(vec3(0.17, 0.21, 0.27), vec3(0.34, 0.40, 0.47), n) * (0.82 + 0.36 * n);
-  rock *= 0.72 + 0.56 * h0;                                     // ridged strata and crevices
+  vec3 rock = mix(vec3(0.16, 0.21, 0.28), vec3(0.36, 0.43, 0.52), n) * (0.82 + 0.36 * n);
+  rock *= 0.70 + 0.60 * h0;                                     // ridged strata and crevices
   rock *= 0.9 + 0.2 * vnoise(vWorld.xz * 1.9 + vWorld.y * 0.7);  // speckle
   float snow = smoothstep(0.55, 0.9, N0.y) * smoothstep(snowLine, snowLine + 90.0, vWorld.y);
   vec3 albedo = mix(rock, vec3(0.50, 0.56, 0.63), snow * 0.55) * terrainTint;
   float strata = 0.5 + 0.5 * sin(vWorld.y * 0.85 + n * 6.0);
-  albedo *= 0.9 + 0.1 * strata * (1.0 - N0.y);
+  float microStrata = 0.5 + 0.5 * sin(vWorld.y * 2.6 + h0 * 5.0);
+  albedo *= 0.86 + (0.14 * strata + 0.08 * microStrata) * (1.0 - N0.y);
   float cavity = smoothstep(0.35, 0.75, h0);
+  float slopeMask = pow(1.0 - clamp(N0.y, 0.0, 1.0), 1.8);
+  float bioVein = smoothstep(0.76, 0.93, h0) * smoothstep(0.55, 0.88, microStrata) * slopeMask;
   gSun = a3dSunShadowAuto(vWorld, N);
   gWorld = vWorld;
   vec3 color = lit(albedo, N) * 1.25 * (0.75 + 0.35 * cavity);
-  color += vec3(0.04, 0.16, 0.18) * pow(1.0 - clamp(N0.y, 0.0, 1.0), 2.0);
+  color += vec3(0.05, 0.20, 0.24) * slopeMask + vec3(0.08, 0.52, 0.58) * bioVein * 0.42;
   outColor = vec4(applyFog(color, vWorld), 1.0);
 }`;
 

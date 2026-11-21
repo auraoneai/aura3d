@@ -13,7 +13,7 @@
  * ambient particles one instanced batch (High only); Neon Bay's two light
  * cones two additive draws. The vignette node replaces the old blanket one.
  */
-import { effects, lights, looks, type AuraLookOverrides, type AuraSceneNode } from "@aura3d/engine";
+import { effects, lights, looks, sky, type AuraLookOverrides, type AuraSceneNode } from "@aura3d/engine";
 import { pondGeometry } from "./courses";
 import {
   CINDER_LAVA_LIGHT,
@@ -25,18 +25,102 @@ import {
   NEON_MAST_SPOTS,
   keyShadowTuning,
   type CourseLookRow,
+  type KeyShadowFit,
   type LinksTier
 } from "./lighting";
-import type { CourseSpec, HoleSpec, HoleTerrain, Vec3 } from "./types";
+import type { CourseId, CourseSpec, HoleSpec, HoleTerrain, Vec3 } from "./types";
+
+/** Per-course 5.7.2 grading LUT preset (`@aura3d/engine/game` `createGradingLut`). */
+export type LinksLutPreset = "broadcast-crisp" | "cinema-warm" | "cyber-neon";
+
+export const COURSE_LUT_PRESETS: Readonly<Record<CourseId, LinksLutPreset>> = {
+  stAuroras: "broadcast-crisp",
+  mapleHollow: "cinema-warm",
+  cinderRim: "cinema-warm",
+  cloudTerrace: "broadcast-crisp",
+  neonBay: "cyber-neon",
+  mareCourse: "broadcast-crisp"
+};
+
+export function courseLutPreset(course: CourseId): LinksLutPreset {
+  return COURSE_LUT_PRESETS[course];
+}
+
+/** 5.7.2 stylized sky-gradient backdrop spec for flat-horizon courses (`captureEnvironment: false, affectsFog: true`). */
+export interface LinksSkyGradientSpec {
+  readonly zenith: string;
+  readonly mid: { readonly color: string; readonly blend: readonly [number, number] };
+  readonly horizon: string;
+  readonly ground: string;
+  readonly zenithBlend: readonly [number, number];
+  readonly haze: { readonly color: string; readonly intensity: number; readonly falloff: number };
+  readonly sun?: {
+    readonly azimuthDeg: number;
+    readonly elevationDeg: number;
+    readonly color: string;
+    readonly glow: readonly { readonly exponent: number; readonly intensity: number }[];
+    readonly discIntensity: number;
+    readonly discSoftness: number;
+  };
+  readonly stars?: { readonly count: number; readonly brightness: number };
+}
+
+export const COURSE_SKY_GRADIENTS: Readonly<Partial<Record<CourseId, LinksSkyGradientSpec>>> = {
+  stAuroras: {
+    zenith: "#3d6b99",
+    mid: { color: "#88adc7", blend: [0.02, 0.24] },
+    horizon: "#d6dde2",
+    ground: "#5c7065",
+    zenithBlend: [0.2, 0.72],
+    haze: { color: "#b6cad6", intensity: 0.34, falloff: 7.2 },
+    sun: {
+      azimuthDeg: COURSE_LOOKS.stAuroras.sun.azimuthDeg,
+      elevationDeg: COURSE_LOOKS.stAuroras.sun.elevationDeg,
+      color: "#ffe4c4",
+      glow: [{ exponent: 18, intensity: 0.26 }],
+      discIntensity: 1.6,
+      discSoftness: 0.45
+    }
+  },
+  neonBay: {
+    zenith: "#070c24",
+    mid: { color: "#12214a", blend: [0.02, 0.24] },
+    horizon: "#23366a",
+    ground: "#0a132b",
+    zenithBlend: [0.18, 0.6],
+    haze: { color: "#2d437a", intensity: 0.32, falloff: 6.5 },
+    stars: { count: 900, brightness: 0.85 }
+  },
+  cloudTerrace: {
+    zenith: "#1c58b8",
+    mid: { color: "#5895df", blend: [0.03, 0.28] },
+    horizon: "#d2e5f8",
+    ground: "#7c9eb8",
+    zenithBlend: [0.22, 0.76],
+    haze: { color: "#dceafa", intensity: 0.26, falloff: 8.0 },
+    sun: {
+      azimuthDeg: COURSE_LOOKS.cloudTerrace.sun.azimuthDeg,
+      elevationDeg: COURSE_LOOKS.cloudTerrace.sun.elevationDeg,
+      color: "#fffbf2",
+      glow: [{ exponent: 32, intensity: 0.2 }],
+      discIntensity: 1.8,
+      discSoftness: 0.35
+    }
+  }
+};
 
 export interface CourseRigOptions {
   readonly tier: LinksTier;
   /** PRD §6.3: ambient emission halves */
   readonly reducedMotion?: boolean;
+  /** Optional texel-locked shadow box (`shadow.fit`) for an active tee/green lie. */
+  readonly shadowFit?: KeyShadowFit;
 }
 
 export interface CourseRig {
   readonly row: CourseLookRow;
+  /** Per-course 5.7.2 grading LUT preset (`createGradingLut`). */
+  readonly lutPreset: LinksLutPreset;
   /**
    * Nodes that must precede the look: the god-ray volume. With several fog nodes the last visible one is the scene
    * fog (LiveAtmosphere), so the look's own fog node, mounted after it, stays the course fog.
@@ -51,7 +135,7 @@ export interface CourseRig {
 }
 
 /** The row as E-A look overrides (every field is a merged GU47 E-A override key). */
-export function lookOverridesFor(row: CourseLookRow, tier: LinksTier): AuraLookOverrides {
+export function lookOverridesFor(row: CourseLookRow, tier: LinksTier, shadowFit?: KeyShadowFit): AuraLookOverrides {
   return {
     sun: { azimuthDeg: row.sun.azimuthDeg, elevationDeg: row.sun.elevationDeg },
     exposureEv: row.exposureEv,
@@ -60,7 +144,11 @@ export function lookOverridesFor(row: CourseLookRow, tier: LinksTier): AuraLookO
     hdri: row.hdri.id,
     environmentIntensity: row.hdri.intensity,
     environmentRotationDeg: hdriRotationDeg(row),
-    key: { color: row.key.color, intensity: row.key.intensity, shadow: { ...keyShadowFor(tier), ...keyShadowTuning(row.course) } },
+    key: {
+      color: row.key.color,
+      intensity: row.key.intensity,
+      shadow: { ...keyShadowFor(tier, row.course), ...keyShadowTuning(row.course, shadowFit) }
+    },
     rim: row.rim ? { color: row.rim.color, intensity: row.rim.intensity, azimuthDeg: row.rim.azimuthDeg } : false,
     ...(row.fog ? { fog: { color: row.fog.color, near: row.fog.near, far: row.fog.far, height: { ...row.fog } } } : {}),
     grade: { contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature, tint: row.grade.tint },
@@ -69,8 +157,8 @@ export function lookOverridesFor(row: CourseLookRow, tier: LinksTier): AuraLookO
 }
 
 /** The course look group node. */
-export function buildCourseLook(row: CourseLookRow, tier: LinksTier): AuraSceneNode {
-  return looks.preset(row.base, lookOverridesFor(row, tier)).toJSON();
+export function buildCourseLook(row: CourseLookRow, tier: LinksTier, shadowFit?: KeyShadowFit): AuraSceneNode {
+  return looks.preset(row.base, lookOverridesFor(row, tier, shadowFit)).toJSON();
 }
 
 /**
@@ -216,5 +304,35 @@ export function buildCourseRig(course: CourseSpec, hole: HoleSpec, terrain: Hole
     );
   }
 
-  return { row, before, look: buildCourseLook(row, tier), nodes, background: row.background };
+  // 5.7.2 stylized sky.gradient backdrop on flat-horizon courses (stAuroras sea-haar, neonBay indigo night, cloudTerrace alpine).
+  // `captureEnvironment: false` keeps each course's HDRI as its IBL authority while `affectsFog: true` blends horizon fog into the sky.
+  const skySpec = COURSE_SKY_GRADIENTS[course.id];
+  if (skySpec) {
+    nodes.push(
+      sky.gradient({
+        name: `links-sky-${course.id}`,
+        style: "stylized",
+        zenith: skySpec.zenith,
+        mid: skySpec.mid,
+        horizon: skySpec.horizon,
+        ground: skySpec.ground,
+        zenithBlend: skySpec.zenithBlend,
+        haze: skySpec.haze,
+        ...(skySpec.sun ? { sun: skySpec.sun } : {}),
+        ...(skySpec.stars ? { stars: skySpec.stars } : {}),
+        dither: true,
+        captureEnvironment: false,
+        affectsFog: true
+      } as any).toJSON()
+    );
+  }
+
+  return {
+    row,
+    lutPreset: courseLutPreset(course.id),
+    before,
+    look: buildCourseLook(row, tier, options.shadowFit),
+    nodes,
+    background: row.background
+  };
 }

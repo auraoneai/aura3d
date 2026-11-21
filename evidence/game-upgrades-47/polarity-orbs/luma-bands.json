@@ -1,0 +1,20 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "polarity-orbs",
+  "note": "WP-5 Aura3D 5.7.2 acceptance bands for Polarity Orbs (dual-tone warm-red / cool-blue dusk magnetosphere corridor with high-contrast orb silhouettes and ferrofluid deck).",
+  "default": {
+    "mean": [48, 128],
+    "p95": [165, null],
+    "darkFrac": [null, 0.35],
+    "clipFrac": [null, 0.04],
+    "spread": [130, null]
+  },
+  "variants": {
+    "default": {
+      "mean": [52, 122],
+      "p95": [170, null],
+      "darkFrac": [null, 0.30],
+      "clipFrac": [null, 0.03]
+    }
+  }
+}

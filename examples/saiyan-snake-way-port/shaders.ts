@@ -70,12 +70,12 @@ vec3 toonFigure(vec3 albedo, vec3 N, vec3 V, float rough) {
   vec3 sky = mix(vec3(0.68, 0.52, 0.60), vec3(1.0, 0.93, 0.90), N.y * 0.5 + 0.5);
   float facing = max(dot(N, V), 0.0);
   float gloss = clamp((0.72 - rough) / 0.56, 0.0, 1.0);
-  float rim = pow(1.0 - facing, 2.6);
-  float rimLight = rim * (0.36 + 0.64 * max(dot(N, SUN_DIR) * 0.5 + 0.5, 0.0));
+  float rim = pow(1.0 - facing, 2.3);
+  float rimLight = rim * (0.48 + 0.52 * max(dot(N, SUN_DIR) * 0.5 + 0.5, 0.0));
   float specPow = mix(12.0, 44.0, gloss);
   float spec = pow(max(dot(N, normalize(L + V)), 0.0), specPow) * gloss;
-  float weaveSheen = pow(1.0 - facing, 4.2) * mix(0.10, 0.04, gloss);
-  return albedo * (band * sky + weaveSheen) + vec3(1.0, 0.74, 0.62) * rimLight * mix(0.18, 0.34, gloss) + vec3(1.0, 0.93, 0.86) * spec * 0.20;
+  float weaveSheen = pow(1.0 - facing, 4.0) * mix(0.12, 0.05, gloss);
+  return albedo * (band * sky + weaveSheen) + vec3(0.95, 0.86, 1.0) * rimLight * mix(0.32, 0.48, gloss) + vec3(1.0, 0.93, 0.86) * spec * 0.22;
 }
 `;
 
@@ -500,6 +500,14 @@ void main() {
   float edge = smoothstep(2.6, 3.5, abs(vCross.x)) * top;
   float warn = gapWarn * edge * step(0.0, ahead) * (1.0 - smoothstep(0.0, 30.0, ahead));
   col = mix(col, vec3(1.0, 0.52, 0.32), clamp(warn, 0.0, 1.0) * 0.85);
+
+  // inverted roll transition telegraph: glowing animated edge chevrons 55 m ahead of each Frenet roll section
+  float rollAhead = rollAt - s;
+  float rollZone = abs(rollDir) * edge * step(-18.0, rollAhead) * (1.0 - smoothstep(0.0, 55.0, max(rollAhead, 0.0))) * lookMode;
+  float chevPhase = fract((s * 0.28 - roadTime * 2.2) + abs(vCross.x) * 0.35 * sign(vCross.x * rollDir + 1e-4));
+  float chev = smoothstep(0.18, 0.42, chevPhase) * (1.0 - smoothstep(0.58, 0.82, chevPhase));
+  vec3 rollTint = mix(vec3(0.45, 0.94, 0.82), vec3(1.0, 0.78, 0.32), step(0.0, rollDir));
+  col += rollTint * rollZone * (0.35 + 0.95 * chev) * 1.1;
 
   outColor = vec4(fogMix(col, dist), 1.0);
 }`;

@@ -21,11 +21,11 @@ export function mountExtraTouchButtons(
   const elements: HTMLElement[] = [];
   for (const b of buttons) {
     const el = doc.createElement("div");
-    el.className = "a3g-tc a3g-tc-btn ic-tc-extra";
+    el.className = `a3g-tc a3g-tc-btn ic-tc-extra ic-tc-${b.id}`;
     el.dataset.icTouch = b.id;
     el.setAttribute("role", "button");
     el.setAttribute("aria-label", b.label);
-    el.textContent = b.label;
+    el.textContent = b.id === "pause" ? "❚❚" : b.label;
     el.style.left = `${b.rect.x * 100}%`;
     el.style.top = `${b.rect.y * 100}%`;
     el.style.width = `${b.rect.w * 100}%`;

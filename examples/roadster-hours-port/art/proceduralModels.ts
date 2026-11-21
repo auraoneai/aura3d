@@ -101,11 +101,10 @@ export function createSaltwindMaterialPalette() {
     roughness: 0.14,
     metallic: 0.66,
     clearcoat: 1,
-    clearcoatRoughness: 0.055,
+    clearcoatRoughness: 0.06,
     envMapIntensity: 0.96
   });
   return {
-    // Hero & architectural finish presets (deep coastal sapphire-teal `#0e5d6a` `material.carPaint`)
     roadsterTeal: britishRacingTeal,
     roadsterCrimson: britishRacingTeal,
     trafficCarPaint: material.carPaint({
@@ -139,10 +138,11 @@ export function createSaltwindMaterialPalette() {
     }),
     anisotropicChrome: material.brushedMetal({
       color: "#e8eff7",
-      roughness: 0.15,
+      roughness: 0.12,
+      metallic: 0.96,
       anisotropy: 0.88,
       anisotropyRotation: 1.5708,
-      envMapIntensity: 1.05
+      envMapIntensity: 1.15
     }),
     machinedAlloy: material.studioMetal({
       color: "#b7c2cf",
@@ -213,9 +213,9 @@ export function createSaltwindMaterialPalette() {
       emissiveIntensity: 2.2
     }),
     taillampRuby: material.glowingEmissive({
-      color: "#5c0810",
+      color: "#6b0a12",
       emissive: "#e81922",
-      emissiveIntensity: 2.1
+      emissiveIntensity: 3.2
     }),
     fresnelBeaconGold: material.glowingEmissive({
       color: "#fff4d2",

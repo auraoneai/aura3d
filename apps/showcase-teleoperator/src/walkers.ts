@@ -1,4 +1,5 @@
 import { model } from "@aura3d/engine";
+import { createHumanoidAnimator, encodeHumanoidClip, humanoidLocomotionTime, type HumanoidAnimator, type HumanoidClip } from "@aura3d/engine/animation";
 import { assets } from "./aura-assets.route";
 
 /**
@@ -45,6 +46,30 @@ export const WALKERS: readonly Walker[] = Array.from({ length: WALKER_POOL }, (_
     variant: i % WALKER_KEYS.length
   };
 });
+
+/** Canonical humanoid locomotion clips for distance-locked stride pacing via `@aura3d/engine/animation`. */
+const WALKER_LOCOMOTION_CLIPS: Readonly<Record<"walk" | "idle", HumanoidClip>> = {
+  walk: encodeHumanoidClip("walk", 30, ["hips"], [{ rotations: {} }, { rotations: {} }], { loop: 1, groundSpeedHip: 1.48 }),
+  idle: encodeHumanoidClip("idle", 30, ["hips"], [{ rotations: {} }, { rotations: {} }], { loop: 1, groundSpeedHip: 0 })
+};
+
+/** Build a per-walker/commuter humanoid clip animator for cross-faded stride timing & planted-foot speed scaling. */
+export function createWalkerAnimator(): HumanoidAnimator<"walk" | "idle"> {
+  return createHumanoidAnimator(WALKER_LOCOMOTION_CLIPS);
+}
+
+/** Distance-driven stride phase (seconds) for a walker or kerbside commuter via `humanoidLocomotionTime`. */
+export function walkerStrideTime(metres: number, sceneScale: number): number {
+  return humanoidLocomotionTime(WALKER_LOCOMOTION_CLIPS.walk, metres, Math.max(0.5, sceneScale * 0.53));
+}
+
+/** Playback speed multiplier that locks a walker's embedded GLB walk clip to its ground travel speed. */
+export function walkerClipSpeed(speedMps: number, sceneScale: number, motionOk: boolean): number {
+  if (!motionOk) return 0;
+  const hipHeight = Math.max(0.5, sceneScale * 0.53);
+  const clipSpeed = Number(WALKER_LOCOMOTION_CLIPS.walk.meta?.groundSpeedHip ?? 1.48) * hipHeight;
+  return clipSpeed > 0 ? Math.max(0.5, Math.min(1.6, speedMps / clipSpeed)) : 1;
+}
 
 export interface WalkerPose {
   /** Sim-world x / z (the caller maps them through rx / rz like every other street object). */

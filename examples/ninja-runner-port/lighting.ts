@@ -53,6 +53,13 @@ export function initialKeyPosition(): [number, number, number] {
   return [d[0] * 100, d[1] * 100, d[2] * 100];
 }
 
+/** Runner-following shadow fit box (5.7.0 texel-locked ortho box: extent 28, depth 60). */
+export const RUNNER_SHADOW_FIT = {
+  center: [0, 1.5, 0] as readonly [number, number, number],
+  extent: 28,
+  depth: 60
+} as const;
+
 export function lightRig(o: RigOptions) {
   if (o.mode === "original") {
     return [
@@ -67,8 +74,8 @@ export function lightRig(o: RigOptions) {
   const village = DISTRICT_LOOKS[0]!;
   const shadow = o.shadow
     ? (o.quality === "low"
-      ? { cascades: 1, maxDistance: 60, filter: "pcf", bias: 0.0018, normalBias: 2.0 }
-      : { cascades: 2, maxDistance: 55, bias: 0.0018, normalBias: 2.0 })
+      ? { cascades: 1, maxDistance: 60, filter: "pcf", softness: 1.4, bias: 0.0018, normalBias: 2.0, fit: RUNNER_SHADOW_FIT }
+      : { cascades: 2, maxDistance: 55, filter: "pcf", softness: 1.6, bias: 0.0018, normalBias: 2.0, fit: RUNNER_SHADOW_FIT })
     : false;
   const tuned = shadow && o.shadowTune ? { ...shadow, ...o.shadowTune } : shadow;
   const pool = lanternPoolSize(o);

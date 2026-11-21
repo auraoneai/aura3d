@@ -28,20 +28,22 @@
   <body>
     <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0">Glint Courier — an Aura3D browser game</h1>
     <div class="aura3d-top-bar" role="toolbar" aria-label="Glint Courier shell">
-      <button type="button" id="dd-btn-play" class="active" title="Quick Play — Classic Grid, 3 lives">Quick Play</button>
-      <button type="button" id="dd-btn-school" title="Sentry Lab — practice at 0.6x speed, no catches, with live target-tile overlays">Sentry Lab</button>
-      <button type="button" id="dd-btn-circuit" title="Board Map — board select and high scores">Board Map</button>
-      <button type="button" id="dd-btn-studio" title="Courier Studio — core and trail colors">Courier Studio</button>
-      <span class="aura-sep" aria-hidden="true"></span>
-      <button type="button" data-venue="classic" class="venue active" title="Board 1 — Relay Grid">Relay</button>
-      <button type="button" data-venue="spiral" class="venue" title="Board 2 — Coil Loop">Coil</button>
-      <button type="button" data-venue="twin" class="venue" title="Board 3 — Twin Pylons">Pylons</button>
-      <button type="button" data-venue="garden" class="venue" title="Board 4 — Overgrowth">Overgrowth</button>
-      <button type="button" data-venue="foundry" class="venue" title="Board 5 — Smelter Rows">Smelter</button>
-      <button type="button" data-venue="zerocore" class="venue" title="Board 6 — Zero-Core (no edges)">Zero-Core</button>
-      <span class="aura-sep" aria-hidden="true"></span>
-      <button type="button" id="dd-btn-dash" class="toggle on" title="Dash toggle — Space burst (optional mechanic)">Dash ON</button>
-      <button type="button" id="dd-btn-cam" class="toggle" title="Camera toggle — tilted follow vs overhead">Tilt Cam</button>
+      <button type="button" id="dd-mobile-pill" class="dd-mobile-pill" aria-haspopup="dialog" title="Switch mode or board">Quick Play · Relay ▾</button>
+      <button type="button" id="dd-mobile-menu" class="dd-mobile-menu" title="Pause / Menu">Menu</button>
+      <button type="button" id="dd-btn-play" class="active dd-desk-btn" title="Quick Play — Classic Grid, 3 lives">Quick Play</button>
+      <button type="button" id="dd-btn-school" class="dd-desk-btn" title="Sentry Lab — practice at 0.6x speed, no catches, with live target-tile overlays">Sentry Lab</button>
+      <button type="button" id="dd-btn-circuit" class="dd-desk-btn" title="Board Map — board select and high scores">Board Map</button>
+      <button type="button" id="dd-btn-studio" class="dd-desk-btn" title="Courier Studio — core and trail colors">Courier Studio</button>
+      <span class="aura-sep dd-desk-btn" aria-hidden="true"></span>
+      <button type="button" data-venue="classic" class="venue active dd-desk-btn" title="Board 1 — Relay Grid">Relay</button>
+      <button type="button" data-venue="spiral" class="venue dd-desk-btn" title="Board 2 — Coil Loop">Coil</button>
+      <button type="button" data-venue="twin" class="venue dd-desk-btn" title="Board 3 — Twin Pylons">Pylons</button>
+      <button type="button" data-venue="garden" class="venue dd-desk-btn" title="Board 4 — Overgrowth">Overgrowth</button>
+      <button type="button" data-venue="foundry" class="venue dd-desk-btn" title="Board 5 — Smelter Rows">Smelter</button>
+      <button type="button" data-venue="zerocore" class="venue dd-desk-btn" title="Board 6 — Zero-Core (no edges)">Zero-Core</button>
+      <span class="aura-sep dd-desk-btn" aria-hidden="true"></span>
+      <button type="button" id="dd-btn-dash" class="toggle on dd-desk-btn" title="Dash toggle — Space burst (optional mechanic)">Dash ON</button>
+      <button type="button" id="dd-btn-cam" class="toggle dd-desk-btn" title="Camera toggle — tilted follow vs overhead">Tilt Cam</button>
       <a class="a3d-credit" href="/" title="Built with Aura3D">Built with Aura3D</a>
     </div>
 
@@ -60,7 +62,7 @@
         <div class="dd-tl">
           <div class="dd-header-strip">
             <span id="dd-mode-tag" class="dd-mode-tag">QUICK PLAY</span>
-            <span id="dd-rev-tag" class="dd-rev-tag">REV 5.5 · BD-01</span>
+            <span id="dd-rev-tag" class="dd-rev-tag">BD-01 · Relay Grid</span>
           </div>
           <div class="dd-row">
             <div class="dd-chip dd-score-chip"><span class="k">Score</span><span class="v dd-num" id="dd-score">000000</span></div>
@@ -100,6 +102,12 @@
         <div class="dd-panel">
           <h2>GLINT <span style="color:var(--dd-gold)">COURIER</span></h2>
           <p class="dd-sub">Six circuit boards. Four patrol sentries. One fast courier drone.</p>
+          <div class="dd-sentry-legend" aria-label="Patrol sentry silhouettes">
+            <span class="dd-sl-item"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon fill="#ff4d3d" points="12,1 14.3,6.4 19.8,4.2 17.6,9.7 23,12 17.6,14.3 19.8,19.8 14.3,17.6 12,23 9.7,17.6 4.2,19.8 6.4,14.3 1,12 6.4,9.7 4.2,4.2 9.7,6.4"/></svg><span>Hunter</span></span>
+            <span class="dd-sl-item"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon fill="#c47dff" points="12,1 16.2,7.8 23,12 16.2,16.2 12,23 7.8,16.2 1,12 7.8,7.8"/></svg><span>Ambusher</span></span>
+            <span class="dd-sl-item"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon fill="#a6ff3b" points="12,1 15.8,5.4 21.5,6.5 19.5,12 21.5,17.5 15.8,18.6 12,23 8.2,18.6 2.5,17.5 4.5,12 2.5,6.5 8.2,5.4"/></svg><span>Drifter</span></span>
+            <span class="dd-sl-item"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon fill="#ffc43d" points="12,1 15.2,7.5 22.5,8.6 17.2,13.7 18.5,21 12,17.5 5.5,21 6.8,13.7 1.5,8.6 8.8,7.5"/></svg><span>Skittish</span></span>
+          </div>
           <div class="dd-btns">
             <button type="button" id="dd-t-quick">Quick Play</button>
             <button type="button" id="dd-t-school">Sentry Lab</button>
@@ -115,6 +123,12 @@
         <div class="dd-panel">
           <h2>PAUSED</h2>
           <p class="dd-sub">The board hums on without you.</p>
+          <div class="dd-sentry-legend" aria-label="Patrol sentry silhouettes">
+            <span class="dd-sl-item"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon fill="#ff4d3d" points="12,1 14.3,6.4 19.8,4.2 17.6,9.7 23,12 17.6,14.3 19.8,19.8 14.3,17.6 12,23 9.7,17.6 4.2,19.8 6.4,14.3 1,12 6.4,9.7 4.2,4.2 9.7,6.4"/></svg><span>Hunter</span></span>
+            <span class="dd-sl-item"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon fill="#c47dff" points="12,1 16.2,7.8 23,12 16.2,16.2 12,23 7.8,16.2 1,12 7.8,7.8"/></svg><span>Ambusher</span></span>
+            <span class="dd-sl-item"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon fill="#a6ff3b" points="12,1 15.8,5.4 21.5,6.5 19.5,12 21.5,17.5 15.8,18.6 12,23 8.2,18.6 2.5,17.5 4.5,12 2.5,6.5 8.2,5.4"/></svg><span>Drifter</span></span>
+            <span class="dd-sl-item"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon fill="#ffc43d" points="12,1 15.2,7.5 22.5,8.6 17.2,13.7 18.5,21 12,17.5 5.5,21 6.8,13.7 1.5,8.6 8.8,7.5"/></svg><span>Skittish</span></span>
+          </div>
           <div class="dd-btns">
             <button type="button" id="dd-resume">Resume</button>
             <button type="button" id="dd-restart">Restart Board</button>

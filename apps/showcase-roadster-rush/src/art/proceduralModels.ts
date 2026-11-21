@@ -460,10 +460,19 @@ export const APEX_PROCEDURAL_MATERIALS = {
     }),
   heroTailLightbarMaterial: (hot: boolean): AuraMaterialSpec =>
     material.emissive({
-      color: "#ff1830",
-      emissive: hot ? "#ff384c" : "#ff1830",
-      emissiveIntensity: hot ? 2.8 : 1.85,
+      color: "#a81020",
+      emissive: hot ? "#ff2a3c" : "#e6162a",
+      emissiveIntensity: hot ? 3.4 : 2.15,
+      roughness: 0.14,
       practical: true
+    }),
+  heroTailHousingMaterial: (): AuraMaterialSpec =>
+    material.pbr({
+      color: "#11131a",
+      roughness: 0.24,
+      metalness: 0.2,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.1
     }),
   heroHeadlightBladeMaterial: () =>
     material.emissive({
@@ -1495,34 +1504,62 @@ export function buildHeroAeroSplitterNode(): AuraNodeBuilder<AuraPrimitiveNode> 
 }
 
 /**
- * Sculpted curved full-width wraparound crimson LED taillight blade (`player-lightbar`),
- * authored relative to `[0, 0.72, 2.12]` and dynamically driven by brake/boost state.
+ * Dark smoked recessed housing channel behind the hero taillight blades (`player-lightbar-housing`),
+ * seating the LED optics deep inside the rear diffuser fascia instead of floating proud of the body.
+ */
+export function buildHeroTaillightHousingNode(): AuraNodeBuilder<AuraPrimitiveNode> {
+  const spec = memoizeGeometry("rr:hero-lightbar-housing-v1", () => {
+    const channel = transformMesh(bevelBoxMesh(1.66, 0.115, 0.08, 0.016), { pos: [0, -0.012, -0.056] });
+    const leftPocket = transformMesh(bevelBoxMesh(0.46, 0.092, 0.055, 0.012), { pos: [-0.56, -0.01, -0.025], rot: [0, 0.12, 0] });
+    const rightPocket = transformMesh(bevelBoxMesh(0.46, 0.092, 0.055, 0.012), { pos: [0.56, -0.01, -0.025], rot: [0, -0.12, 0] });
+    return mergeRawMeshes([channel, leftPocket, rightPocket]);
+  });
+  return geometry
+    .custom(spec, {
+      name: "player-lightbar-housing",
+      material: APEX_PROCEDURAL_MATERIALS.heroTailHousingMaterial(),
+      position: [0, 0.72, 2.06],
+      castShadow: false,
+      receiveShadow: false
+    })
+    .runtime({ id: "player-lightbar-housing" });
+}
+
+/**
+ * Recessed twin-tier crimson LED taillight blades + segmented corner optic pods (`player-lightbar`),
+ * seated inside `player-lightbar-housing` and dynamically driven to HDR bloom under brake/boost.
  */
 export function buildHeroTaillightBarNode(): AuraNodeBuilder<AuraPrimitiveNode> {
-  const spec = memoizeGeometry("rr:hero-lightbar-v3", () => {
-    const upperCurve: V4[] = [
-      [-0.84, -0.022, -0.09, 0.02],
-      [-0.58, 0.01, -0.022, 0.025],
-      [-0.26, 0.018, 0.01, 0.024],
-      [0, 0.02, 0.018, 0.024],
-      [0.26, 0.018, 0.01, 0.024],
-      [0.58, 0.01, -0.022, 0.025],
-      [0.84, -0.022, -0.09, 0.02]
+  const spec = memoizeGeometry("rr:hero-lightbar-v4", () => {
+    const upperBlade: V4[] = [
+      [-0.78, -0.014, -0.078, 0.012],
+      [-0.54, 0.014, -0.036, 0.015],
+      [-0.24, 0.018, -0.016, 0.013],
+      [0, 0.019, -0.012, 0.012],
+      [0.24, 0.018, -0.016, 0.013],
+      [0.54, 0.014, -0.036, 0.015],
+      [0.78, -0.014, -0.078, 0.012]
     ];
-    const lowerRibbon: V4[] = [
-      [-0.7, -0.042, -0.045, 0.012],
-      [-0.36, -0.034, -0.008, 0.014],
-      [0, -0.032, 0.004, 0.014],
-      [0.36, -0.034, -0.008, 0.014],
-      [0.7, -0.042, -0.045, 0.012]
+    const lowerBlade: V4[] = [
+      [-0.68, -0.034, -0.058, 0.009],
+      [-0.36, -0.028, -0.028, 0.01],
+      [0, -0.026, -0.02, 0.009],
+      [0.36, -0.028, -0.028, 0.01],
+      [0.68, -0.034, -0.058, 0.009]
     ];
-    return mergeRawMeshes([smoothSplineTubeMesh(upperCurve, 5, 16), smoothSplineTubeMesh(lowerRibbon, 4, 14)]);
+    const pods = [-0.66, -0.52, -0.38, 0.38, 0.52, 0.66].map((x) =>
+      transformMesh(bevelBoxMesh(0.082, 0.036, 0.024, 0.007), {
+        pos: [x, -0.008, -0.028 - Math.abs(x) * 0.045],
+        rot: [0, x < 0 ? 0.1 : -0.1, 0]
+      })
+    );
+    return mergeRawMeshes([smoothSplineTubeMesh(upperBlade, 5, 16), smoothSplineTubeMesh(lowerBlade, 4, 14), ...pods]);
   });
   return geometry
     .custom(spec, {
       name: "player-lightbar",
       material: APEX_PROCEDURAL_MATERIALS.heroTailLightbarMaterial(false),
-      position: [0, 0.72, 2.12],
+      position: [0, 0.72, 2.06],
       castShadow: false,
       receiveShadow: false
     })

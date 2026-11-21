@@ -97,6 +97,7 @@ export class BeatHopperSound {
   private readonly bank: SynthCueBank<BeatSound>;
   private lastBeat = -1;
   private lastMult = 0;
+  private lastCombo = 0;
 
   constructor(options: { context?: SynthContext } = {}) {
     this.bank = createCueBank<BeatSound>({ cues: CUES, noiseSeed: 0x51a7b3, muteKey: false, ...(options.context ? { context: options.context } : {}) });
@@ -127,6 +128,7 @@ export class BeatHopperSound {
    */
   onFrame(prev: FrameState | null, next: FrameState): void {
     for (const event of diffSounds(prev, next)) this.play(event.sound, event.level);
+    this.lastCombo = next.combo;
     if (next.mult !== this.lastMult) {
       this.lastMult = next.mult;
       this.setMusicLevel(next.phase === "playing" || next.phase === "bursting" ? musicLevel(next.mult) : 0.02);
@@ -146,14 +148,23 @@ export class BeatHopperSound {
     this.lastBeat = next.beatIndex;
   }
 
-  /** One 8-step pattern position: bass always, arp from x1, octave layer from x3, fifth from x5. */
+  /**
+   * One 8-step 132 BPM pattern position: bass always, arp from x1, octave layer from x3, fifth from x5,
+   * plus progressive combo-milestone synth stems layered at 10x / 25x / 50x combos.
+   */
   private scheduleStep(beat: number, at: number): void {
     const step = ((beat % 8) + 8) % 8;
     const mult = Math.max(1, this.lastMult);
+    const combo = Math.max(0, this.lastCombo);
+    const arpSemi = ARP_STEPS[step] as number;
     this.bank.voice({ type: "sine", freq: bassNote(BASS_STEPS[step] as number), at, dur: CONFIG.BEAT * 0.85, gain: 0.1, bus: "music" });
-    this.bank.voice({ type: "triangle", freq: note(ARP_STEPS[step] as number), at, dur: CONFIG.BEAT * 0.5, gain: 0.05, bus: "music" });
-    if (mult >= 3) this.bank.voice({ type: "sine", freq: note((ARP_STEPS[step] as number) + 12), at, dur: CONFIG.BEAT * 0.4, gain: 0.03, bus: "music" });
-    if (mult >= 5) this.bank.voice({ type: "triangle", freq: note((ARP_STEPS[step] as number) + 7), at: at + CONFIG.BEAT / 2, dur: CONFIG.BEAT * 0.3, gain: 0.025, bus: "music" });
+    this.bank.voice({ type: "triangle", freq: note(arpSemi), at, dur: CONFIG.BEAT * 0.5, gain: 0.05, bus: "music" });
+    if (mult >= 3) this.bank.voice({ type: "sine", freq: note(arpSemi + 12), at, dur: CONFIG.BEAT * 0.4, gain: 0.03, bus: "music" });
+    if (mult >= 5) this.bank.voice({ type: "triangle", freq: note(arpSemi + 7), at: at + CONFIG.BEAT / 2, dur: CONFIG.BEAT * 0.3, gain: 0.025, bus: "music" });
+    // Progressive 132 BPM combo stems (10x warm syncopated chord pad, 25x bright lead counter-arp, 50x high shimmer).
+    if (combo >= 10) this.bank.voice({ type: "sawtooth", freq: bassNote((BASS_STEPS[step] as number) + 12), at: at + CONFIG.BEAT * 0.25, dur: CONFIG.BEAT * 0.35, gain: 0.022, bus: "music" });
+    if (combo >= 25) this.bank.voice({ type: "triangle", freq: note(arpSemi + 19), at: at + CONFIG.BEAT * 0.5, dur: CONFIG.BEAT * 0.28, gain: 0.024, bus: "music" });
+    if (combo >= 50) this.bank.voice({ type: "sine", freq: note(arpSemi + 24), at: at + CONFIG.BEAT * 0.75, dur: CONFIG.BEAT * 0.22, gain: 0.026, bus: "music" });
     this.beatsScheduled++;
   }
 

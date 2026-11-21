@@ -9,10 +9,9 @@
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, text3D, type AuraApp, type AuraPhotometricProfile } from "@aura3d/engine";
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import "../../apps/showcase-port-shared/quickbar.css";
-import { createCameraClearance, createFixedStepPresenter, drawCanvasMinimap, summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
-import { createImpactRig } from "../../apps/showcase-port-shared/feel";
-import { blendPresentedInto, createPresented, type Presented } from "./presentation";
-import { buildLook, coinMatInto, mat, matInto, type LookRig } from "./look";
+import { createCameraClearance, createImpactRig, createSnapshotInterpolator, drawCanvasMinimap, summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
+import { SNAP_DISTANCE, blendPresentedInto, createPresented, type Presented } from "./presentation";
+import { buildLook, coinMatInto, createShiftGradingLut, mat, matInto, type LookRig } from "./look";
 import { furnitureSolids } from "./city";
 import { createShift, formatClock, recordBest, stepShift, type ShiftEvent } from "./shift";
 import { mountTouchControls } from "./touch";
@@ -23,7 +22,7 @@ import { SkidMarks, COURIER_TEAL } from "./fx";
 import { beaconMaterial, createShiftRuntime, padMaterial, ringMaterial, shiftSceneNodes, type ShiftRuntime } from "./shiftRuntime";
 import { shiftCrops } from "./qa";
 import { createAudio } from "./audio";
-import { districtLayers, drawDial, slamStamp, ticketText } from "./hud";
+import { applyMotorsportHudTheme, districtLayers, drawDial, slamStamp, ticketText } from "./hud";
 import { BOARD, boardPose, textOrigin, textWidth } from "./board";
 import { bannerNodes } from "./banners";
 import { INTRO, SIDE_SHOT, headlightFlare, introPose, introWanted, orbitPose, sideShotPose, sideShotWanted, type CarPose } from "./cinema";
@@ -397,22 +396,20 @@ function onShiftEvent(e: ShiftEvent): void {
   else if (e.kind === "over") endShift();
 }
 
-/** Presented states live in a ring of three preallocated buffers: the presenter holds two, the third is written. */
-const presentedRing = [createPresented(traffic.length), createPresented(traffic.length), createPresented(traffic.length)];
-let presentedSlot = 0;
-function presentedNow(): Presented {
-  const out = presentedRing[presentedSlot]!;
-  presentedSlot = (presentedSlot + 1) % presentedRing.length;
-  const tr = out.traffic;
+/** Allocation-free 5.7.2 snapshot interpolator: pools 4 buffers and snaps cleanly across teleports/wraps. */
+function writePresented(out?: Presented): Presented {
+  const dst = out ?? createPresented(traffic.length);
+  const tr = dst.traffic;
   traffic.forEach((t, i) => { tr[3 * i] = t.x; tr[3 * i + 1] = t.z; tr[3 * i + 2] = t.yaw; });
-  const c = out.car;
+  const c = dst.car;
   c.x = car.x; c.z = car.z; c.heading = car.heading; c.lean = car.lean; c.steer = car.steer; c.speed = car.speed;
-  return out;
+  return dst;
 }
-const blended = createPresented(traffic.length);
-const presenter = createFixedStepPresenter<Presented>({
-  snapshot: presentedNow,
-  blend: (a, b, t) => blendPresentedInto(blended, a, b, t)
+const presenter = createSnapshotInterpolator<Presented>({
+  create: () => createPresented(traffic.length),
+  snapshot: writePresented,
+  blend: (a, b, t, out) => blendPresentedInto(out!, a, b, t),
+  snap: { distance: SNAP_DISTANCE, position: (p) => [p.car.x, p.car.z] }
 });
 
 function simulate(steps: number, input: Keys = keys): void {
@@ -704,6 +701,7 @@ const applyReducedMotion = (): void => {
   document.body.classList.toggle("reduced-motion", on);
 };
 applyReducedMotion();
+applyMotorsportHudTheme(document.documentElement);
 reducedMotionQuery?.addEventListener?.("change", applyReducedMotion);
 
 /** Floating score text over the car ('+120  x4', 'DELIVERED  +540'); at most six at a time. */
@@ -1139,13 +1137,20 @@ const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRe
 async function boot(): Promise<void> {
   mark("module");
   if (config.ies) iesProfile = (await import("./headlightProfile")).headlightProfile();
+  const gradingLut = shiftLook ? createShiftGradingLut() : null;
   // the engine owns the canvas size: CSS and backing store follow window resizes and phone rotation (lesson R1)
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
     pixelRatio: Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : mobileHandset || isCoarseMobile() ? 1.25 : 1.5),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...(config.ies ? { photometricProfiles: true } : {}), ...lab.renderer },
-    output: { toneMapping: config.tm as "agx", exposure: config.exposure, dither: true, ...lab.output },
+    output: {
+      toneMapping: config.tm as "agx",
+      exposure: config.exposure,
+      dither: true,
+      ...(gradingLut ? { lut: { texture: gradingLut.texture, size: gradingLut.size, intensity: 0.42 } } : {}),
+      ...lab.output
+    },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: buildScene()
   });

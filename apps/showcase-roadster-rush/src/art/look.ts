@@ -49,6 +49,15 @@ export const APEX_SUN = { elevationDeg: 7, azimuthDeg: 175 } as const;
  * sun is drawn). Per row: `key` below.
  */
 export const APEX_KEY = { elevationDeg: 21, azimuthDeg: 168 } as const;
+/** Aura3D 5.7.2 texel-locked directional shadow rig for APEX_KEY: calibrated PCF softness + road-ahead ortho fit. */
+export const APEX_KEY_SHADOW = {
+  cascades: 3,
+  maxDistance: 90,
+  filter: "pcss",
+  mapSize: 2048,
+  softness: 2.0,
+  fit: { center: [0, 0, -28] as const, extent: [26, 16] as const, depth: 48 }
+} as const;
 export const APEX_FOG_DENSITY_SCALE = 0.7;
 /** golden-hour fog range 30/180 divided by the 0.7 density scale (AO-E3: near 43, far 257). */
 export const APEX_FOG_RANGE = { near: 30 / APEX_FOG_DENSITY_SCALE, far: 180 / APEX_FOG_DENSITY_SCALE } as const;
@@ -62,8 +71,8 @@ export const APEX_SCENE_FOG_RANGE = {
 
 /** Own grade (AO-P1): one grade stage, written through the look's grade override. */
 export const APEX_GRADE = { contrast: 1.12, saturation: 1.08 } as const;
-/** Racer bloom (AO-P2): intensity / threshold / scatter for the corona, brake bars, plumes and lamps. */
-export const APEX_BLOOM = { intensity: 0.55, threshold: 0.85, scatter: 0.5 } as const;
+/** Racer bloom (AO-P2 / 5.7.2): tuned threshold & gain so wet asphalt glare stays crisp without blowout. */
+export const APEX_BLOOM = { intensity: 0.48, threshold: 0.92, scatter: 0.5 } as const;
 /** High-tier post (AO-P3, AO-P4): motion blur strength and god-ray density; both off on reduced motion or below High. */
 export const APEX_MOTION_BLUR = 0.12;
 export const APEX_GOD_RAY_DENSITY = 0.06;

@@ -42,7 +42,15 @@ export default defineArtDirection({
     exposureEV: 0
   },
   framing: { rig: "chase", subjectHeightFraction: [0.1, 0.28], fovDeg: [60, 70], mobile: "both" },
-  assets: [],
+  // 6 mounted Idol magnetosphere backdrop assets (`src/backdrop.ts` IDOL_BACKDROP_ASSETS).
+  assets: [
+    { role: "set-dressing", assetKey: "poResonanceCoil", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "poHorseshoeMagnet", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "poCrystalRed", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "poCrystalBlue", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "poIslandWarm", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "poIslandCool", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
+  ],
   vfx: [
     { event: "flip", kind: "shockwave-ring" },
     { event: "collect", kind: "burst" },

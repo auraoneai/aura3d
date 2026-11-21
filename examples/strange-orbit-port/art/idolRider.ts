@@ -1,18 +1,18 @@
 /**
  * Craterline GP moving-parts pass (Nov 2026): the riders are rigged Idol spacesuit racers (`cgRider*`, rig: true, T-pose,
- * tools/idol/specs/craterline-gp.json) seated on rider-less Idol bikes, their bones driven every frame through the shared
- * humanoid driver (apps/showcase-port-shared/idol/humanoid.ts) from a procedural racing-tuck pose:
+ * tools/idol/specs/craterline-gp.json) seated on rider-less Idol bikes, their bones driven every frame through
+ * `@aura3d/engine/animation` (`createHumanoidAnimator` + `HumanoidDriver`) from a procedural racing-tuck pose:
  * - seated tuck (thighs along the tank, shins back to the rear pegs, chest low over the tank, chin up to look down the road);
  * - lean into turns (the upper body rolls further into the bike's drawn lean) and a head turn toward the turn;
  * - a deeper tuck and lower head on boost;
  * - hands on the clip-on bars (the driver's two-bone IK lands each palm on its grip);
  * - a speed-scaled chassis buzz and breathing on a running clock, so the body is never frozen even on a straight.
- * Pure (no engine imports): tests/unit/strange-orbit-port/idol-rider.test.ts drives it with a real Idol skeleton.
+ * Pure (no renderer imports): tests/unit/strange-orbit-port/idol-rider.test.ts drives it with a real Idol skeleton.
  *
  * Frames: the rider model faces +Z (canonical humanoid frame, left = +X); the rig's bike frame faces +X with +Z on the
  * rider's right (`riderRig`), so the rider node turns +90 degrees about Y (`RIDER_LOCAL_YAW`).
  */
-import { eulerZYX, quatAxisAngle, quatMul, type HumanoidPoseInput, type Quat, type Vec3 } from "@aura3d/engine/animation";
+import { createHumanoidAnimator, eulerZYX, quatAxisAngle, quatMul, type HumanoidAnimator, type HumanoidPoseInput, type Quat, type Vec3 } from "@aura3d/engine/animation";
 
 export type RiderKey = "cgRiderCream" | "cgRiderCobalt" | "cgRiderCrimson2";
 
@@ -155,4 +155,15 @@ export const BOOST_TUCK = 0.45;
 /** Rig-frame position of the rider node so its rest hip joint sits just above the saddle. */
 export function riderNodePosition(hipHeight: number, scale: number, frame: RiderSeatFrame): Vec3 {
   return [frame.saddle[0], frame.saddle[1] + HIP_ABOVE_SADDLE - hipHeight * scale, frame.saddle[2]];
+}
+
+/** Stateful `@aura3d/engine/animation` humanoid animator for one seated Idol racer (cross-fades menu/cruise/boost states). */
+export function createIdolRiderAnimator(): { update(dt: number, s: RiderPoseState, hipHeight: number, scale: number, frame: RiderSeatFrame): HumanoidPoseInput } {
+  const anim: HumanoidAnimator<never> = createHumanoidAnimator({} as Readonly<Record<never, never>>);
+  return {
+    update(dt, s, hipHeight, scale, frame) {
+      const key = s.menu ? "menu" : s.boosting ? "boost" : "cruise";
+      return anim.update(dt, { pose: riderPose(s, hipHeight, scale, frame), key, fade: 0.14 });
+    }
+  };
 }

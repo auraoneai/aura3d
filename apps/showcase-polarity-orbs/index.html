@@ -123,12 +123,12 @@
         font-variant-numeric: tabular-nums;
       }
       #polarity-charge {
-        font-family: var(--font-metric);
-        font-weight: 400;
+        font-family: var(--font-ui);
+        font-weight: 600;
         font-size: 12px;
         line-height: 1;
-        color: rgba(246, 247, 255, 0.78);
-        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.08em;
+        color: var(--gold);
       }
 
       .hud-right {
@@ -375,6 +375,8 @@
         background: linear-gradient(90deg, var(--red), var(--blue));
         transition: width 120ms linear;
       }
+      #load-bar[hidden],
+      #load-label[hidden] { display: none; }
       #load-label { font-size: 12px; font-weight: 500; opacity: 0.86; }
       .settings { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; font-size: 13px; font-weight: 500; }
       .settings label { display: flex; gap: 7px; align-items: center; min-height: 44px; padding: 0 6px; cursor: pointer; }
@@ -549,18 +551,37 @@
       .screen-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; }
 
       @media (pointer: coarse), (max-width: 760px) {
-        #hud-score { font-size: 30px; }
-        .hud-left { padding: 8px 12px; }
-        #combo-tube { width: 84px; }
-        #btn-flip {
-          min-width: 84px;
-          height: 60px;
-          padding: 0 18px;
-          font-size: 14px;
+        #hud-score { font-size: 28px; }
+        .hud-left { padding: 7px 11px; }
+        #combo-tube { width: 72px; }
+        /* Separate Flip from Mute/Pause on mobile: utility buttons top-right, dedicated 76x76 circular Flip bottom-right */
+        #corner-buttons {
+          top: calc(10px + var(--safe-top));
+          bottom: auto;
+          right: calc(10px + var(--safe-right));
+          gap: 6px;
         }
         #corner-buttons button {
-          width: 46px;
-          height: 46px;
+          width: 44px;
+          height: 44px;
+        }
+        .hud-right {
+          margin-top: 52px;
+        }
+        #btn-flip {
+          right: calc(16px + var(--safe-right));
+          bottom: calc(18px + var(--safe-bottom) + var(--a3d-bar-space, 0px));
+          width: 76px;
+          height: 76px;
+          min-width: 76px;
+          padding: 0;
+          border-radius: 50%;
+          flex-direction: column;
+          gap: 2px;
+          font-size: 11px;
+        }
+        #btn-flip .flip-pole {
+          font-size: 24px;
         }
       }
       @media (max-width: 560px) {
@@ -591,8 +612,8 @@
         <div id="hud-best">best 0</div>
         <div class="combo-row">
           <div id="combo-tube"><div id="combo-fill"></div></div>
+          <div id="polarity-charge" aria-label="Combo pips">○ ○ ○</div>
           <div id="hud-mult">x1</div>
-          <div id="polarity-charge">0%</div>
         </div>
       </div>
       <div class="hud-right">
@@ -603,10 +624,10 @@
           <div id="polarity-icon" aria-label="Current polarity: red">+</div>
         </div>
         <div id="powerup-badges">
-          <span class="badge" id="badge-rainbow">rainbow</span>
-          <span class="badge" id="badge-shield">shield</span>
-          <span class="badge" id="badge-x2">x2</span>
-          <span class="badge" id="badge-magnet">magnet</span>
+          <span class="badge" id="badge-rainbow">★ rainbow</span>
+          <span class="badge" id="badge-shield">◆ shield</span>
+          <span class="badge" id="badge-x2">2× score</span>
+          <span class="badge" id="badge-magnet">◎ magnet</span>
         </div>
       </div>
     </div>

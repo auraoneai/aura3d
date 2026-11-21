@@ -9,7 +9,7 @@
     <style>
       :root { color-scheme: dark; --ink: #f6f0e4; --muted: #c4bcab; --panel: rgba(22, 20, 24, 0.7); --line: rgba(246, 240, 228, 0.18); --warm: #f0b980; --jade: #8fd9c6; --alert: #ff8a6a; --credit-gap: 0px; --hud-meta: 12px; --hud-title: 16px; }
       * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; background: #14161c; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
+      html, body { margin: 0; height: 100%; background: #14161c; color: var(--ink); font: 400 13px/1.45 var(--font-ui, "Whitney", sans-serif); font-synthesis: none; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
       .hidden { display: none !important; }
       .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; backdrop-filter: blur(6px); }
@@ -17,7 +17,7 @@
       body.text-large { --hud-meta: 15px; --hud-title: 20px; }
       body.text-large .card p, body.text-large table.controls { font-size: 16px; }
       .num { font-variant-numeric: tabular-nums; }
-      button { font: 500 13px/1 "Graphik Web", sans-serif; color: var(--ink); background: rgba(246, 240, 228, 0.08); border: 1px solid var(--line); border-radius: 6px; height: 32px; padding: 0 14px; cursor: pointer; }
+      button { font: 500 13px/1 var(--font-ui, "Whitney", sans-serif); color: var(--ink); background: rgba(246, 240, 228, 0.08); border: 1px solid var(--line); border-radius: 6px; height: 32px; padding: 0 14px; cursor: pointer; }
       button:hover, button:focus-visible { background: rgba(240, 185, 128, 0.22); border-color: var(--warm); outline: none; }
       button.primary { background: var(--warm); color: #231a12; border-color: var(--warm); height: 34px; }
       button.primary:hover, button.primary:focus-visible { background: #f7cda1; }
@@ -50,7 +50,7 @@
       .card h2 { margin: 0; font-size: 20px; font-weight: 500; }
       .card p { margin: 0; font-size: 14px; }
       .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-      .chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+      .chapters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
       .chapters button { height: 34px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       table.controls { border-collapse: collapse; width: 100%; font-size: 12px; }
       table.controls td { padding: 2px 6px 2px 0; color: var(--muted); }
@@ -60,16 +60,18 @@
       .stats .cell b { display: block; font-size: 20px; font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums; }
       .stats .cell.wide { grid-column: 1 / -1; }
       .stats .cell.wide b { color: var(--warm); }
-      @media (max-width: 560px) {
-        #objective-card { top: max(8px, env(safe-area-inset-top)); left: 8px; right: 92px; max-width: none; padding: 8px 10px; }
+      @media (max-width: 760px) {
+        #objective-card { top: max(8px, env(safe-area-inset-top)); left: 8px; right: 64px; max-width: none; padding: 8px 10px; }
         #objective { font-size: 14px; }
-        #compass-wrap { top: max(8px, env(safe-area-inset-top)); right: 8px; width: 72px; height: 72px; }
-        #compass { border-left-width: 11px; border-right-width: 11px; border-bottom-width: 33px; }
+        #compass-wrap { display: none; }
+        #toast { top: calc(max(12px, env(safe-area-inset-top)) + 168px); }
         #flight { left: 8px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + var(--credit-gap)); min-width: 170px; }
         #touch-hold { right: max(8px, env(safe-area-inset-right)); bottom: calc(max(8px, env(safe-area-inset-bottom)) + var(--credit-gap)); }
         #touch-boost { right: calc(max(8px, env(safe-area-inset-right)) + 84px); bottom: calc(max(8px, env(safe-area-inset-bottom)) + var(--credit-gap) + 8px); }
-        #touch-pause { right: max(8px, env(safe-area-inset-right)); top: calc(max(8px, env(safe-area-inset-top)) + 80px); }
+        #touch-pause { right: max(8px, env(safe-area-inset-right)); top: max(8px, env(safe-area-inset-top)); }
         #keys { display: none; }
+      }
+      @media (max-width: 560px) {
         .card h1 { font-size: 24px; }
       }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #14161c; z-index: 8; }

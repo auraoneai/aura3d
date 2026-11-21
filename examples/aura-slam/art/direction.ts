@@ -47,7 +47,7 @@ export default defineArtDirection({
     // Five venues are lit by one shadowed sun (view/look.ts VENUE_LOOKS[].sun); the hard court's key is the far floodlight pair.
     key: { type: "directional", colorTemperatureK: 5600, shadow: true },
     fill: "ibl",
-    practicals: 4,
+    practicals: 5,
     // Boot venue (hard court, New York night). The other five HDRIs are listed in evidence/game-upgrades-47/top-tennis/identity.md.
     environment: { hdri: "cobblestone_street_night", background: "hdri" },
     exposureEV: 0

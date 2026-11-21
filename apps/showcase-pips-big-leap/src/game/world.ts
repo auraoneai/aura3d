@@ -20,6 +20,7 @@ import {
   scene,
   type AuraSceneNode
 } from "@aura3d/engine";
+import { createFlipbookAtlas } from "@aura3d/engine/game";
 import { deriveWorldMotion, type WorldMotion } from "./motion.js";
 import { legacySlabGeometry, type SlabTransform as SlabTransformSpec } from "./legacySlab.js";
 import {
@@ -160,6 +161,8 @@ export const nodeName = {
   gateLock: "sun-gate-lock",
   hero: "pip",
   heroCape: "pip:cape",
+  dropShadow: "pbl-drop-shadow",
+  landingRing: "pbl-landing-ring",
   boss: "brambleback",
   bossSpike: (i: number) => `bramble-spike:${i}`,
   npc: (id: string) => `npc:${id}`,
@@ -570,11 +573,27 @@ function addOriginalAtmosphere(builder: SceneBuilder, spec: WorldSpec, options: 
  * vignette, the miniature DOF and the ambient emitter. The authored extra bloom is gone
  * (PBL-P1): the look's bloom is the only one.
  */
+const PIP_FLIPBOOK_ATLASES = {
+  dust: createFlipbookAtlas("dust", [228, 210, 174]),
+  sparks: createFlipbookAtlas("sparks", [255, 216, 98]),
+  ripple: createFlipbookAtlas("ripple", [255, 206, 86])
+} as const;
+
 function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: WorldLook, depth: number, options: BuildWorldOptions, scale: PresentationScale): number {
   const shafts = sunShaftsNode(look);
   if (shafts) builder.add(shafts);
   const base = dioramaBase(spec, look, depth, BASE_TILES[spec.id]);
-  const preset = looks.preset(look.baseLook, lookOverridesFor(look, base.top));
+  const course = courseBounds(spec);
+  const shadowFit = {
+    center: [
+      Number(((course.minX + course.maxX) * 0.5).toFixed(2)),
+      Number(((course.floorY + course.topY) * 0.5).toFixed(2)),
+      Number(((course.minZ + course.maxZ) * 0.5).toFixed(2))
+    ] as readonly [number, number, number],
+    extent: Math.max(24, Number((Math.max(course.maxX - course.minX, course.maxZ - course.minZ) * 0.54).toFixed(2))),
+    depth: 65
+  };
+  const preset = looks.preset(look.baseLook, lookOverridesFor(look, base.top, shadowFit));
   if (options.ambientOcclusion === false) {
     const group = preset.toJSON();
     builder.add({ ...group, children: group.children.filter((child) => (child as { readonly name?: string }).name !== "look ambient occlusion") });
@@ -585,8 +604,7 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
   for (const node of practicalNodes(look)) builder.add(node);
   const flare = lensFlareNode(look);
   if (flare) builder.add(flare);
-  const skyBounds = courseBounds(spec);
-  const sky = skyNode(look, [(skyBounds.minX + skyBounds.maxX) / 2, skyBounds.floorY, (skyBounds.minZ + skyBounds.maxZ) / 2]);
+  const sky = skyNode(look, [(course.minX + course.maxX) / 2, course.floorY, (course.minZ + course.maxZ) / 2]);
   if (sky) builder.add(sky);
   const aurora = auroraNode(spec, look, scale);
   if (aurora) builder.add(aurora);
@@ -602,10 +620,12 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
     const dustBase = effects
       .flipbook({
         name: dioramaName.flipbookDust(slot),
-        sprite: "smoke-a",
-        spriteColumns: 4,
-        spriteRows: 4,
-        size: 0.72,
+        texture: PIP_FLIPBOOK_ATLASES.dust.texture,
+        spriteColumns: PIP_FLIPBOOK_ATLASES.dust.columns,
+        spriteRows: PIP_FLIPBOOK_ATLASES.dust.rows,
+        frameRate: 30,
+        loop: false,
+        size: 0.78,
         opacity: 0.85,
         color: look.dust,
         blend: "alpha"
@@ -621,11 +641,13 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
     const sparksBase = effects
       .flipbook({
         name: dioramaName.flipbookSparks(slot),
-        sprite: "flare",
-        spriteColumns: 4,
-        spriteRows: 4,
-        size: 0.68,
-        opacity: 0.92,
+        texture: PIP_FLIPBOOK_ATLASES.sparks.texture,
+        spriteColumns: PIP_FLIPBOOK_ATLASES.sparks.columns,
+        spriteRows: PIP_FLIPBOOK_ATLASES.sparks.rows,
+        frameRate: 34,
+        loop: false,
+        size: 0.72,
+        opacity: 0.94,
         color: "#ffd96a",
         blend: "additive"
       })
@@ -634,6 +656,27 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
     builder.add(
       new (sparksBase.constructor as new (n: AuraSceneNode & { readonly visible?: boolean }) => typeof sparksBase)({
         ...sparksBase.toJSON(),
+        visible: false
+      })
+    );
+    const rippleBase = effects
+      .flipbook({
+        name: dioramaName.flipbookRipple(slot),
+        texture: PIP_FLIPBOOK_ATLASES.ripple.texture,
+        spriteColumns: PIP_FLIPBOOK_ATLASES.ripple.columns,
+        spriteRows: PIP_FLIPBOOK_ATLASES.ripple.rows,
+        frameRate: 30,
+        loop: false,
+        size: 1.05,
+        opacity: 0.92,
+        color: "#ffc23d",
+        blend: "additive"
+      })
+      .position(0, -120, 0)
+      .runtime(game.runtimeNode(dioramaName.flipbookRipple(slot), { tags: ["vfx"] }));
+    builder.add(
+      new (rippleBase.constructor as new (n: AuraSceneNode & { readonly visible?: boolean }) => typeof rippleBase)({
+        ...rippleBase.toJSON(),
         visible: false
       })
     );
@@ -918,6 +961,59 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     visible: false
   });
   builder.add(capeHidden);
+
+  // Airborne landing aid (diorama only): feathered altitude-scaled shadow disc + concentric gold landing ring
+  // projected directly onto the walkable slab below Pip whenever he leaps over a gap.
+  if (diorama) {
+    const dropShadowBase = primitives
+      .cylinder({
+        name: nodeName.dropShadow,
+        size: [0.68, 0.014, 0.68],
+        position: [spec.spawn[0], spec.spawn[1] + 0.015, spec.spawn[2]],
+        material: material.pbr({
+          color: "#1a130b",
+          roughness: 1,
+          metallic: 0,
+          alphaMode: "blend",
+          opacity: 0.28,
+          depthWrite: false
+        }),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .runtime(game.runtimeNode(nodeName.dropShadow, { tags: ["player", "vfx"] }));
+    builder.add(
+      new (dropShadowBase.constructor as new (n: AuraSceneNode & { readonly visible?: boolean }) => typeof dropShadowBase)({
+        ...dropShadowBase.toJSON(),
+        visible: false
+      })
+    );
+    const landingRingBase = primitives
+      .torus({
+        name: nodeName.landingRing,
+        size: [0.74, 0.74, 0.055],
+        position: [spec.spawn[0], spec.spawn[1] + 0.024, spec.spawn[2]],
+        rotation: [Math.PI / 2, 0, 0],
+        material: material.emissive({
+          color: "#ffcf4d",
+          emissive: "#ffc23d",
+          emissiveIntensity: 1.15,
+          practical: true,
+          alphaMode: "blend",
+          opacity: 0.72,
+          depthWrite: false
+        }),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .runtime(game.runtimeNode(nodeName.landingRing, { tags: ["player", "vfx"] }));
+    builder.add(
+      new (landingRingBase.constructor as new (n: AuraSceneNode & { readonly visible?: boolean }) => typeof landingRingBase)({
+        ...landingRingBase.toJSON(),
+        visible: false
+      })
+    );
+  }
 
   // Boss (W5) — articulated @aura3d/engine procedural Brambleback rig + 6 orbiting thorny crystal spikes.
   if (spec.boss) {

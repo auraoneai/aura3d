@@ -1,4 +1,4 @@
-import { createFixedStepPresenter, createRecordBlend, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createRecordBlend, createSnapshotInterpolator, type FixedStepPresenter } from "@aura3d/engine/game";
 import type { Game } from "./game";
 
 /** What the renderer reads of one simulation step: the runner's track position and the fall pose. */
@@ -51,5 +51,9 @@ export function viewOf(game: Game, shown: Shown): Game {
 }
 
 export function createGoPresenter(getGame: () => Pick<Game, "state" | "falling">): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getGame()), blend: blendShown });
+  return createSnapshotInterpolator<Shown>({
+    snapshot: () => shownOf(getGame()),
+    blend: blendShown,
+    snap: { distance: SNAP_DISTANCE, position: (p) => p.s }
+  });
 }

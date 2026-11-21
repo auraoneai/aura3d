@@ -287,7 +287,7 @@ export interface FacadeLayout {
  * layout as the albedo. Dry render 0.86 / 0; dark window glass 0.07 / 0.75, so the panes mirror the sky and the street
  * (rubric ibl_reflections 3.5: "the blue glass on the buildings is flat"); lit panes stay matte (they glow instead).
  */
-export const FACADE_ORM = { wall: "#ffdb00", glass: "#ff12bf", lit: "#ffc000" } as const;
+export const FACADE_ORM = { wall: "#ffdb00", glass: "#ff0fae", lit: "#ffc000" } as const;
 
 export function paintFacade(kind: FacadeKind, albedo: Ctx2D, emissive: Ctx2D, px: number, seed = 1, wallHex: string = WALL[kind], orm?: Ctx2D): FacadeLayout {
   const r = rng(0x7a11 + seed * 977 + kind.length * 131);
@@ -321,7 +321,7 @@ export function paintFacade(kind: FacadeKind, albedo: Ctx2D, emissive: Ctx2D, px
       const cx = x * c;
       const isLit = r() < (kind === "tower" ? 0.2 : kind === "apartment" ? 0.34 : 0.28);
       if (isLit) lit++;
-      const glass = isLit ? "#f4d9a4" : r() > 0.5 ? "#2e4260" : "#3a4f6e";
+      const glass = isLit ? "#f4d9a4" : r() > 0.5 ? "#4a6c8e" : "#5a7ea0";
       const drawWindow = (wx: number, wy: number, ww: number, wh: number, litHere: boolean): void => {
         albedo.fillStyle = shade(wallHex, 0.62);
         albedo.fillRect(wx - c * 0.035, wy - c * 0.035, ww + c * 0.07, wh + c * 0.07);
@@ -332,12 +332,17 @@ export function paintFacade(kind: FacadeKind, albedo: Ctx2D, emissive: Ctx2D, px
           orm.fillRect(wx, wy, ww, wh);
         }
         if (!litHere) {
-          const grad = albedo.createLinearGradient(wx, wy, wx + ww, wy + wh);
-          grad.addColorStop(0, "rgba(180,205,235,0.45)");
-          grad.addColorStop(0.5, "rgba(120,150,190,0.05)");
-          grad.addColorStop(1, "rgba(20,30,50,0.25)");
+          // Daylight sky-reflection Fresnel sweep + tinted interior depth so panes reflect sky rather than reading solid black.
+          const grad = albedo.createLinearGradient(wx, wy, wx + ww * 0.85, wy + wh);
+          grad.addColorStop(0, "rgba(214,234,252,0.72)");
+          grad.addColorStop(0.38, "rgba(154,192,226,0.34)");
+          grad.addColorStop(0.68, "rgba(74,104,136,0.22)");
+          grad.addColorStop(1, "rgba(42,60,84,0.38)");
           albedo.fillStyle = grad;
           albedo.fillRect(wx, wy, ww, wh);
+          // Warm interior curtain / blind strip along top edge for architectural depth
+          albedo.fillStyle = "rgba(244,232,210,0.24)";
+          albedo.fillRect(wx + ww * 0.06, wy + wh * 0.06, ww * 0.88, wh * 0.16);
         } else {
           emissive.fillStyle = "#ffd89a";
           emissive.fillRect(wx, wy, ww, wh);

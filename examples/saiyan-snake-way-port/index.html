@@ -109,6 +109,12 @@
       #count { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; font-size: 96px; font-weight: 500; letter-spacing: 0.08em; text-shadow: 0 6px 30px rgba(42, 27, 69, 0.8); }
 
       .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 40%, rgba(42, 27, 69, 0.35), rgba(42, 27, 69, 0.72)); z-index: 3; }
+      #title.overlay { place-items: end start; padding: clamp(20px, 4vw, 44px); padding-bottom: max(56px, calc(env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px) + 28px)); background: linear-gradient(90deg, rgba(28, 22, 64, 0.62) 0%, rgba(28, 22, 64, 0.16) 52%, transparent 100%); }
+      #title .card { width: min(440px, 90vw); }
+      #stage-pips { position: absolute; inset: 0; pointer-events: none; }
+      #stage-pips .stage-pip { position: absolute; top: 50%; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); background: rgba(255, 247, 241, 0.35); border: 1px solid rgba(28, 22, 64, 0.75); }
+      #stage-pips .stage-pip.done { background: var(--spark); }
+      #stage-pips .stage-pip.active { width: 8px; height: 8px; background: var(--gold); box-shadow: 0 0 6px rgba(242, 179, 61, 0.9); }
       .card { width: min(480px, 92vw); display: grid; gap: 12px; padding: 20px; background: var(--panel-hi); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(10px); box-shadow: 0 18px 60px rgba(20, 8, 40, 0.5); }
       .card h1 { font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: 0.1em; }
       .card h2 { font-size: 20px; line-height: 24px; font-weight: 500; letter-spacing: 0.06em; }
@@ -149,25 +155,26 @@
       @media (pointer: coarse) { .touch-guide { display: block; } }
       @media (pointer: coarse) and (max-width: 640px) { .keys { display: none; } }
       @media (max-width: 640px) {
-        #player { top: 10px; left: 10px; width: calc(100vw - 138px); max-width: 226px; padding: 7px 10px; grid-template-columns: 28px 1fr; gap: 2px 8px; }
+        #title.overlay { place-items: end center; padding: 12px; padding-bottom: max(56px, calc(env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px) + 12px)); }
+        #progress { top: max(6px, env(safe-area-inset-top, 0px)); bottom: auto; left: 10px; right: 10px; width: auto; transform: none; padding: 0; border: 0; background: transparent; }
+        #progress .rowp { display: none; }
+        #progress .track, .serpent-hud #progress .track { height: 4px; border-radius: 999px; border: 0; background: rgba(28, 22, 64, 0.72); }
+        #player { top: calc(18px + env(safe-area-inset-top, 0px)); left: 10px; width: calc(100vw - 138px); max-width: 226px; padding: 6px 10px; grid-template-columns: 28px 1fr; gap: 2px 8px; }
         #badge { width: 28px; height: 28px; }
         #player .pname { display: none; }
         .bar-row { grid-template-columns: 1fr 28px; gap: 6px; }
         .meter { height: 6px; }
         #charges:empty { display: none; }
-        #surge-chip { top: 90px; left: 10px; padding: 3px 9px; }
-        #side { top: 10px; right: 10px; width: 112px; gap: 5px; }
+        #surge-chip { top: calc(96px + env(safe-area-inset-top, 0px)); left: 10px; padding: 3px 9px; }
+        #side { top: calc(18px + env(safe-area-inset-top, 0px)); right: 10px; width: 112px; gap: 5px; }
         #side .card-hud { padding: 5px 8px; }
         #side .big { font-size: 22px; line-height: 24px; }
         #side .chip { display: none; }
         #side .score { font-size: 18px; line-height: 20px; }
-        #progress { top: auto; left: 10px; right: 10px; width: auto; transform: none; bottom: calc(72px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px)); padding: 6px 10px; border-radius: 6px; background: var(--panel); border: 1px solid var(--line); }
-        #progress .rowp { color: var(--ink); }
-        #progress .rowp .num { white-space: nowrap; }
         #banner { top: 17%; font-size: 24px; line-height: 28px; max-width: calc(100vw - 24px); overflow: hidden; text-overflow: ellipsis; }
         #sub { top: calc(17% + 34px); max-width: calc(100vw - 24px); overflow: hidden; text-overflow: ellipsis; }
         #mute-btn { width: 48px; padding: 0; font-size: 0; }
-        #prompt { bottom: calc(122px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px)); white-space: normal; width: max-content; max-width: calc(100vw - 24px); text-align: center; }
+        #prompt { bottom: calc(82px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px)); white-space: normal; width: max-content; max-width: calc(100vw - 24px); text-align: center; }
         .card { padding: 16px; gap: 10px; }
         .card h1 { font-size: 22px; line-height: 26px; }
         .results-grid { grid-template-columns: repeat(2, 1fr); }
@@ -242,7 +249,7 @@
       <div id="surge-chip" class="card-hud"><span class="label">SURGE</span> <span class="num" id="mult">×1</span></div>
       <div id="progress">
         <div class="rowp"><span>OUTBOUND — KM COVERED</span><span class="num" id="km">0</span></div>
-        <div class="track"><i id="km-fill"></i><b id="best-mark" class="hidden" title="best distance"></b></div>
+        <div class="track"><i id="km-fill"></i><div id="stage-pips" aria-hidden="true"></div><b id="best-mark" class="hidden" title="best distance"></b></div>
       </div>
       <div id="side">
         <div class="card-hud" id="days-card" role="status" aria-label="Days left: 365 days. Run active."><span class="tag" aria-hidden="true">DAYS LEFT</span><div aria-hidden="true"><span class="big num" id="days">365</span> <span class="unit">DAYS</span></div><span class="chip" aria-hidden="true">RUN ACTIVE</span></div>

@@ -14,8 +14,10 @@ export const APEX_RIVAL_TINT = "#4a4d56";
 function paintOverride(tint: string | null, rim: { color: string; power: number; intensity: number }): AuraModelMaterialOverride {
   const paint = material.carPaint({
     color: tint ?? APEX_PALETTE.cobalt,
-    clearcoatRoughness: 0.13,
-    envMapIntensity: 0.62
+    roughness: 0.24,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.06,
+    envMapIntensity: 0.68
   });
   return {
     ...(tint !== null ? { color: tint, colorMode: "multiply" as const } : {}),
@@ -41,17 +43,17 @@ export function apexRivalPaint(): readonly AuraModelMaterialOverride[] {
   return [paintOverride(APEX_RIVAL_TINT, { color: APEX_PALETTE.rival, power: 2.5, intensity: 1.2 })];
 }
 
-/** Automotive clearcoat lacquer overrides per highway traffic class (preserves baked GLB albedo maps, zero texture override). */
+/** Aura3D 5.7.1 dielectric automotive clearcoat lacquer overrides per highway traffic class (zero PBR_PAINT_METALLIC darkening). */
 const TRAFFIC_FINISH: Readonly<Record<string, { metallic: number; roughness: number; clearcoat: number; clearcoatRoughness: number; rimIntensity: number }>> = {
-  sedan: { metallic: 0.58, roughness: 0.26, clearcoat: 1, clearcoatRoughness: 0.06, rimIntensity: 0.34 },
-  hatch: { metallic: 0.52, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.07, rimIntensity: 0.32 },
-  suv: { metallic: 0.62, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.06, rimIntensity: 0.36 },
-  taxi: { metallic: 0.35, roughness: 0.24, clearcoat: 0.95, clearcoatRoughness: 0.08, rimIntensity: 0.3 },
-  van: { metallic: 0.28, roughness: 0.34, clearcoat: 0.82, clearcoatRoughness: 0.12, rimIntensity: 0.24 },
-  pickup: { metallic: 0.54, roughness: 0.3, clearcoat: 0.92, clearcoatRoughness: 0.09, rimIntensity: 0.3 },
-  boxtruck: { metallic: 0.22, roughness: 0.42, clearcoat: 0.65, clearcoatRoughness: 0.16, rimIntensity: 0.2 },
-  bus: { metallic: 0.34, roughness: 0.34, clearcoat: 0.8, clearcoatRoughness: 0.12, rimIntensity: 0.24 },
-  carrier: { metallic: 0.68, roughness: 0.32, clearcoat: 0.78, clearcoatRoughness: 0.14, rimIntensity: 0.32 }
+  sedan: { metallic: 0.04, roughness: 0.26, clearcoat: 1, clearcoatRoughness: 0.06, rimIntensity: 0.36 },
+  hatch: { metallic: 0.04, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.07, rimIntensity: 0.34 },
+  suv: { metallic: 0.05, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.06, rimIntensity: 0.38 },
+  taxi: { metallic: 0.02, roughness: 0.24, clearcoat: 1, clearcoatRoughness: 0.07, rimIntensity: 0.32 },
+  van: { metallic: 0.04, roughness: 0.34, clearcoat: 0.88, clearcoatRoughness: 0.1, rimIntensity: 0.26 },
+  pickup: { metallic: 0.06, roughness: 0.3, clearcoat: 0.94, clearcoatRoughness: 0.08, rimIntensity: 0.32 },
+  boxtruck: { metallic: 0.08, roughness: 0.42, clearcoat: 0.72, clearcoatRoughness: 0.14, rimIntensity: 0.22 },
+  bus: { metallic: 0.06, roughness: 0.34, clearcoat: 0.84, clearcoatRoughness: 0.11, rimIntensity: 0.26 },
+  carrier: { metallic: 0.38, roughness: 0.32, clearcoat: 0.82, clearcoatRoughness: 0.12, rimIntensity: 0.34 }
 };
 
 export function apexTrafficPaint(vehicleType: string): readonly AuraModelMaterialOverride[] {

@@ -1,0 +1,32 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "number-surge",
+  "note": "Aura3D 5.7.2 WP-4A acceptance bands for neon dusk arithmetic corridor (deep indigo-violet dusk sky + wet-lane reflections + luminous cyan/magenta gates and gold boss walls).",
+  "default": {
+    "mean": [
+      34,
+      108
+    ],
+    "std": [
+      28,
+      null
+    ],
+    "p95": [
+      140,
+      null
+    ],
+    "spread": [
+      115,
+      null
+    ],
+    "darkFrac": [
+      null,
+      0.55
+    ],
+    "clipFrac": [
+      null,
+      0.05
+    ]
+  },
+  "variants": {}
+}

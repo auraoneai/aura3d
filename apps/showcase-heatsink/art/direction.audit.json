@@ -327,7 +327,7 @@
       {
         "name": "td batched holo frame",
         "node": "batch-heatsinkHoloBillboard",
-        "emissiveIntensity": 1.35,
+        "emissiveIntensity": 1.45,
         "practical": true
       },
       {
@@ -392,6 +392,48 @@
         "practical": true
       },
       {
+        "name": "td drone nacelle ring",
+        "node": "drone-orion-nacelle-rings",
+        "emissiveIntensity": 3.8,
+        "practical": true
+      },
+      {
+        "name": "td drone nacelle ring",
+        "node": "drone-volt-nacelle-rings",
+        "emissiveIntensity": 3.8,
+        "practical": true
+      },
+      {
+        "name": "td drone nacelle ring",
+        "node": "drone-bastion-nacelle-rings",
+        "emissiveIntensity": 3.8,
+        "practical": true
+      },
+      {
+        "name": "td drone nacelle ring",
+        "node": "drone-spectre-nacelle-rings",
+        "emissiveIntensity": 3.8,
+        "practical": true
+      },
+      {
+        "name": "td drone nacelle ring",
+        "node": "drone-razor-nacelle-rings",
+        "emissiveIntensity": 3.8,
+        "practical": true
+      },
+      {
+        "name": "td drone nacelle ring",
+        "node": "drone-nighthawk-nacelle-rings",
+        "emissiveIntensity": 3.8,
+        "practical": true
+      },
+      {
+        "name": "td drone nacelle ring",
+        "node": "drone-wraith-nacelle-rings",
+        "emissiveIntensity": 3.8,
+        "practical": true
+      },
+      {
         "name": "td cryo coolant core",
         "node": "player-shockwave-ring",
         "emissiveIntensity": 1.7,
@@ -418,14 +460,6 @@
         "node": "incoming-missile-emissive-9",
         "emissiveIntensity": 1.65,
         "practical": true
-      },
-      {
-        "node": "vfx-plasma-flipbook",
-        "practical": false
-      },
-      {
-        "node": "vfx-sparks-flipbook",
-        "practical": false
       }
     ],
     "drawCalls": 0

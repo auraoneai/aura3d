@@ -52,7 +52,7 @@ export interface BandRow {
   readonly hemisphere: { readonly sky: string; readonly ground: string; readonly intensity: number };
   /** Crisp linear aerial perspective (`near: 260, far: 980, maxOpacity: 0.30`) keeping station cobbles, townhouses, and rails clear. */
   readonly fog: { readonly color: string; readonly near: number; readonly far: number; readonly maxOpacity: number; readonly density: number };
-  /** LT-07: exposure on the grade node (linear multiplier; output tone mapping is none since phase 2). */
+  /** LT-07: exposure on the grade node (linear multiplier paired with AgX tone mapping and cinema-warm strip LUT). */
   readonly exposure: number;
   readonly bloom: { readonly intensity: number; readonly threshold: number };
   /** LT-07: E-C S10 white balance (temperature/tint, -1..1) is the split tone: warm highlights in A/B, blue shadows in D/E. */

@@ -308,13 +308,19 @@ export function isLacquerSwatch(id: string): boolean {
  * silhouette separates from the dark venues (on top of the back-rim lights), and a clearcoat on the Gilded and
  * Crimson studio palettes. Visual only.
  */
-export function fighterSurface(palette: FighterPalette): {
+export function fighterSurface(palette: FighterPalette, fighterId?: FighterId): {
   readonly rim: { readonly color: string; readonly power: number; readonly intensity: number };
   readonly clearcoat?: { readonly clearcoat: number; readonly clearcoatRoughness: number };
 } {
   const lacquer = palette.lacquer === true;
+  // R23 silhouette separation: dark-armored fighters (`kenji`, `sovereign`) get a crisper back-rim Fresnel lift.
+  const darkBoost = fighterId === "kenji" || fighterId === "sovereign";
   return {
-    rim: { color: palette.emissive, power: 3.6, intensity: 0.32 },
+    rim: {
+      color: palette.emissive,
+      power: darkBoost ? 2.8 : 3.6,
+      intensity: darkBoost ? 0.56 : 0.32
+    },
     ...(lacquer ? { clearcoat: { clearcoat: 0.52, clearcoatRoughness: 0.24 } } : {})
   };
 }
@@ -508,7 +514,7 @@ export function createFighterNode(
   const side: "p1" | "cpu" = nodeId === "rival" ? "cpu" : "p1";
 
   if (idol) {
-    const surface = surfaceExtras ? fighterSurface(palette) : undefined;
+    const surface = surfaceExtras ? fighterSurface(palette, fighter.id) : undefined;
     const idolNode = buildIdolFighterNode({
       nodeId,
       label,

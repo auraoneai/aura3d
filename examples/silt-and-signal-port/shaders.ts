@@ -61,8 +61,12 @@ void main() {
   vec3 dir = normalize(skyDirection);
   vec3 sd = normalize(sunDir);
   float h = smoothstep(-0.08, 0.72, dir.y);
+  // Gouache paper-grain dither smooths the upper-dome zenith transition (eliminates circular color-step seam).
+  float grain = (noise(dir.xz * 24.0 + vec2(dir.y * 19.0, 4.3)) - 0.5) * 0.045;
+  float ySmooth = clamp(dir.y + grain * (0.4 + 0.6 * smoothstep(0.1, 0.7, dir.y)), -0.2, 1.0);
   vec3 midBand = mix(skyBottom * vec3(1.08, 0.94, 0.82), skyTop, 0.44);
-  vec3 c = mix(mix(skyBottom, midBand, smoothstep(-0.06, 0.24, dir.y)), skyTop, smoothstep(0.18, 0.76, dir.y));
+  vec3 c = mix(mix(skyBottom, midBand, smoothstep(-0.08, 0.30, ySmooth)), skyTop, smoothstep(0.14, 0.88, ySmooth));
+  c += (hash(floor(gl_FragCoord.xy)) - 0.5) * (1.5 / 255.0);
   float cosA = dot(dir, sd);
   // Mie forward-scattering golden aureole + broad sunset horizon airlight
   float mie = pow(max(0.0, cosA), 7.0) * exp(-max(0.0, dir.y) * 5.2) * skyGlow * 0.42;

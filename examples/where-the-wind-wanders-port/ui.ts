@@ -30,7 +30,16 @@ export const STORY = {
   ]
 } as const;
 
-const WAX_SEAL_SVG = `<svg class="wwui-seal" width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" fill="#a83b2c" stroke="#7c2419" stroke-width="1"/><circle cx="10" cy="10" r="5.6" fill="none" stroke="#f6dfc2" stroke-opacity="0.55" stroke-width="0.9"/><path d="M10 6.2 L12.4 11.8 L7.6 11.8 Z" fill="#f6dfc2" fill-opacity="0.85"/></svg>`;
+export const WAX_SEAL_SVG = `<svg class="wwui-seal" width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" fill="#a83b2c" stroke="#7c2419" stroke-width="1"/><circle cx="10" cy="10" r="5.6" fill="none" stroke="#f6dfc2" stroke-opacity="0.55" stroke-width="0.9"/><path d="M10 6.2 L12.4 11.8 L7.6 11.8 Z" fill="#f6dfc2" fill-opacity="0.85"/></svg>`;
+
+export function renderWaxSealPips(foundIndices: readonly number[], total = LETTERS.length): string {
+  const set = new Set(foundIndices);
+  let html = "";
+  for (let i = 0; i < total; i++) {
+    html += `<span class="wwui-pip${set.has(i) ? " lit" : ""}">${WAX_SEAL_SVG}</span>`;
+  }
+  return html;
+}
 
 const CSS = `
 html, body { font: 400 13px/1.45 var(--font-ui); font-synthesis: none; -webkit-font-smoothing: antialiased; }
@@ -48,6 +57,13 @@ html, body { font: 400 13px/1.45 var(--font-ui); font-synthesis: none; -webkit-f
 .wwui button:hover { background: #fff9e6; border-color: rgba(62, 48, 30, 0.4); }
 .wwui .hide { display: none !important; }
 .wwui-seal { vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+.wwui-seals { display: inline-flex; align-items: center; gap: 3px; }
+.wwui-pip { display: inline-flex; align-items: center; opacity: 0.28; filter: grayscale(0.7); transition: opacity 0.25s ease, transform 0.25s ease; }
+.wwui-pip.lit { opacity: 1; filter: none; }
+.wwui-pip .wwui-seal { margin-right: 0; }
+.wwui-controls-fold { margin: 0 0 14px; }
+.wwui-controls-fold summary { cursor: pointer; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; font-variant-caps: all-small-caps; color: #614728; list-style: none; display: none; margin-bottom: 6px; }
+.wwui-controls-fold summary::-webkit-details-marker { display: none; }
 .wwui #wwui-title { position: absolute; inset: 0; display: grid; align-items: end; justify-items: start; padding: 6vh 5vw; background: linear-gradient(180deg, rgba(20, 36, 28, 0) 38%, rgba(22, 32, 26, 0.48) 100%); }
 .wwui #wwui-title .card { max-width: 448px; padding: 20px 24px; background: rgba(253, 248, 236, 0.94); border-color: rgba(96, 72, 40, 0.24); }
 .wwui #wwui-title .eyebrow { display: flex; align-items: center; margin: 0 0 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; font-variant-caps: all-small-caps; color: #7a5530; }
@@ -85,6 +101,14 @@ html, body { font: 400 13px/1.45 var(--font-ui); font-synthesis: none; -webkit-f
 @media (max-width: 760px) {
   #quest { top: max(8px, calc(var(--a3d-bar-space, 0px) + 6px), env(safe-area-inset-top)); left: 8px; }
   #hint { display: none; }
+  #toast { bottom: calc(max(64px, var(--credit-gap, 52px)) + env(safe-area-inset-bottom, 0px)); }
+  .wwui #wwui-title { justify-items: stretch; padding: 12px 12px calc(max(56px, var(--credit-gap, 52px)) + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, rgba(20, 36, 28, 0) 54%, rgba(22, 32, 26, 0.54) 100%); }
+  .wwui #wwui-title .card { max-width: none; padding: 14px 16px; }
+  .wwui #wwui-title h1 { font-size: 22px; }
+  .wwui #wwui-title .sub { margin-bottom: 10px; font-size: 13px; }
+  .wwui-controls-fold summary { display: inline-flex; align-items: center; gap: 4px; }
+  .wwui-controls-fold:not([open]) table { display: none; }
+  .wwui #wwui-title .key-enter { display: none; }
   .wwui #wwui-bar { top: max(8px, calc(var(--a3d-bar-space, 0px) + 6px), env(safe-area-inset-top)); right: 8px; }
   .wwui #wwui-journal { top: calc(max(8px, calc(var(--a3d-bar-space, 0px) + 6px), env(safe-area-inset-top)) + 52px); right: 8px; left: 8px; width: auto; }
   .wwui #wwui-caption { top: calc(max(8px, calc(var(--a3d-bar-space, 0px) + 6px), env(safe-area-inset-top)) + 56px); }
@@ -138,16 +162,19 @@ export function createUi(): WindUi {
         <p class="eyebrow">${WAX_SEAL_SVG}Highland Sanctuary</p>
         <h1>The Bellkeeper's Walk</h1>
         <p class="sub">A slow walk through a painted valley. Find three letters, ring the bell.</p>
-        <table>
-          <tr><td>W A S D / arrows</td><td>walk</td></tr>
-          <tr><td>Space</td><td>hop</td></tr>
-          <tr><td>E</td><td>pick up, ring, look</td></tr>
-          <tr><td>J</td><td>journal</td></tr>
-          <tr><td>M / P (Esc)</td><td>sound / pause</td></tr>
-          <tr><td>O</td><td>autopilot (walks herself)</td></tr>
-        </table>
+        <details id="wwui-controls-fold" class="wwui-controls-fold" open>
+          <summary>Controls ▾</summary>
+          <table>
+            <tr><td>W A S D / arrows</td><td>walk</td></tr>
+            <tr><td>Space</td><td>hop</td></tr>
+            <tr><td>E</td><td>pick up, ring, look</td></tr>
+            <tr><td>J</td><td>journal</td></tr>
+            <tr><td>M / P (Esc)</td><td>sound / pause</td></tr>
+            <tr><td>O</td><td>autopilot (walks herself)</td></tr>
+          </table>
+        </details>
         <p class="sub" id="wwui-touch-help" style="display:none">On a touch screen: the pad walks, Hop and Act are on the right.</p>
-        <button id="wwui-begin" type="button">Begin the walk (Enter)</button>
+        <button id="wwui-begin" type="button">Begin the walk<span class="key-enter"> (Enter)</span></button>
       </div>
     </div>
     <div id="wwui-caption" class="p" role="status" aria-live="polite"></div>
@@ -173,6 +200,11 @@ export function createUi(): WindUi {
   const touch = $("wwui-touch"), prompt = $("wwui-prompt"), fadeEl = $("wwui-fade"), journalBtn = $("wwui-journal-btn"), actBtn = $("wwui-act");
   /** Touch controls only while walking: never over the title card's Begin button or the epilogue card. */
   const syncTouch = (): void => { touch.classList.toggle("hide", !coarse || !title.classList.contains("hide") || !epi.classList.contains("hide")); };
+  const controlsFold = $("wwui-controls-fold") as HTMLDetailsElement;
+  if (narrow()) {
+    controlsFold.open = false;
+    $("wwui-begin").textContent = "Begin the walk";
+  }
   if (coarse) {
     $("wwui-touch-help").style.display = "";
     $("wwui-pause-help").textContent = "Tap here or Pause to keep walking.";
@@ -180,7 +212,7 @@ export function createUi(): WindUi {
   }
 
   const renderJournal = (): void => {
-    journal.innerHTML = `<h2>${WAX_SEAL_SVG}Journal · <span class="hud-metric">${found.size} / ${LETTERS.length}</span> letters</h2>` + STORY.letters.map((l, i) => found.has(i)
+    journal.innerHTML = `<h2><span class="wwui-seals">${renderWaxSealPips([...found])}</span>&nbsp;Journal · <span class="hud-metric">${found.size} / ${LETTERS.length}</span> letters</h2>` + STORY.letters.map((l, i) => found.has(i)
       ? `<div class="entry"><div class="place">${l.place}</div><div>${l.text}</div></div>`
       : `<div class="entry dim"><div class="place">Somewhere in the valley</div><div>A letter waits here, unread.</div></div>`).join("");
   };

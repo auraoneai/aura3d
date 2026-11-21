@@ -4,7 +4,7 @@
  * Interpolated values are never fed back into the sim. The chase camera lives here (the sim has none):
  * 0.1-per-step lerp, look-ahead -10 z, 2 s intro ease; shake is a pure function of the sim clock.
  */
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import { drainPopups } from "../../../examples/shared/runner-kit/index";
 import type { ShapeShiftSim } from "./sim";
 
@@ -102,8 +102,15 @@ export function viewOf(sim: ShapeShiftSim, shown: Shown): ShapeShiftSim {
   }) as ShapeShiftSim;
 }
 
-export function createShapePresenter(snapshot: () => Shown): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot, blend: blendShown });
+export function createShapePresenter(snapshot: () => Shown): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({
+    snapshot,
+    blend: blendShown,
+    snap: (a, b) => {
+      const moved = b.distance - a.distance;
+      return moved < 0 || moved > SNAP_DISTANCE;
+    }
+  });
 }
 
 export { drainPopups };

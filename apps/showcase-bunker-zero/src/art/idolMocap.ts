@@ -8,8 +8,48 @@
  * owns position (root travel removed), and the two-handed gun hold is solved on top of this pose by the arm IK in
  * idolModels.ts (the recoil reaches the chest and head).
  */
+import {
+  createHumanoidAnimator,
+  type HumanoidAnimator,
+  type HumanoidClip,
+  type HumanoidPoseInput,
+  type HumanoidRole
+} from "@aura3d/engine/animation";
 import { MOCAP_BIND_DIRS, MOCAP_CLIPS, MOCAP_FPS, MOCAP_ROLES } from "./idol-mocap";
 import { idolBind, qConj, qFromTo, qMul, qNorm, qRot, qSlerp, type HumanoidDrive, type IdolSkeleton, type Q, type V3 } from "./idolHumanoid";
+
+const BZ_MOCAP_TO_HUMANOID: Readonly<Record<MocapRole, HumanoidRole>> = {
+  hips: "hips",
+  chest: "chest",
+  head: "head",
+  upperArmL: "leftUpperArm",
+  forearmL: "leftLowerArm",
+  handL: "leftHand",
+  upperArmR: "rightUpperArm",
+  forearmR: "rightLowerArm",
+  handR: "rightHand",
+  thighL: "leftUpperLeg",
+  shinL: "leftLowerLeg",
+  footL: "leftFoot",
+  thighR: "rightUpperLeg",
+  shinR: "rightLowerLeg",
+  footR: "rightFoot"
+};
+
+function toHumanoidPose(p: EnemyMocapPose): HumanoidPoseInput {
+  const rotations: Partial<Record<HumanoidRole, Q>> = {};
+  for (const role of MOCAP_ROLES) rotations[BZ_MOCAP_TO_HUMANOID[role]] = p.rot[role];
+  return { rotations, hipsOffset: p.hips };
+}
+
+function fromHumanoidPose(pose: HumanoidPoseInput): EnemyMocapPose {
+  const rot = {} as Record<MocapRole, Q>;
+  for (const role of MOCAP_ROLES) {
+    rot[role] = (pose.rotations[BZ_MOCAP_TO_HUMANOID[role]] as Q | undefined) ?? [0, 0, 0, 1];
+  }
+  const h = pose.hipsOffset;
+  return { rot, hips: h ? [h[0], h[1], h[2]] : [0, 0, 0] };
+}
 
 export type MocapRole = (typeof MOCAP_ROLES)[number];
 /** A pose already expressed as humanoid drive rotations for one skeleton (role -> world rotation), plus hips offset. */
@@ -148,10 +188,8 @@ export const BOSS_STATE_CLIP: Readonly<Record<string, string>> = {
 export const ENEMY_MOCAP_CROSSFADE = 0.15;
 
 interface BlendState {
-  clip: string;
-  since: number;
-  from: EnemyMocapPose | null;
-  last: EnemyMocapPose | null;
+  animator: HumanoidAnimator<never>;
+  lastTime: number;
 }
 const blends = new Map<string, BlendState>();
 
@@ -167,21 +205,15 @@ export function enemyClipTime(state: string, time: number, stateT: number, phase
   return { clip, t: time + phase, loop: true };
 }
 
-/** The enemy's mocap pose this frame, with a 0.15 s crossfade when the clip changes. */
+/** The enemy's mocap pose this frame, cross-faded (0.15 s) through `@aura3d/engine/animation` `createHumanoidAnimator`. */
 export function enemyMocapPose(skel: IdolSkeleton, id: string, state: string, time: number, stateT: number, phase: number, kind?: string): EnemyMocapPose {
   const sc = enemyClipTime(state, time, stateT, phase, kind);
   const pose = sampleEnemyMocap(skel, sc.clip, sc.t, sc.loop);
   let b = blends.get(id);
-  if (!b) blends.set(id, (b = { clip: sc.clip, since: time, from: null, last: null }));
-  if (b.clip !== sc.clip) {
-    b.from = b.last;
-    b.clip = sc.clip;
-    b.since = time;
-  }
-  const w = (time - b.since) / ENEMY_MOCAP_CROSSFADE;
-  const out = b.from && w >= 0 && w < 1 ? blendEnemyMocap(b.from, pose, w) : pose;
-  b.last = out;
-  return out;
+  if (!b) blends.set(id, (b = { animator: createHumanoidAnimator({} as Record<never, HumanoidClip>), lastTime: time }));
+  const dt = Math.max(0, time - b.lastTime);
+  b.lastTime = time;
+  return fromHumanoidPose(b.animator.update(dt, { pose: toHumanoidPose(pose), key: sc.clip, fade: ENEMY_MOCAP_CROSSFADE }));
 }
 
 // ---- joint limits (same rules as Iron Crown's idolMocap.ts) -------------------------------------------------------

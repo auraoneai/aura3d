@@ -5,7 +5,7 @@ import { defineAuraAssets } from "../../../packages/engine/src/agent-api/nodes/a
 import { model } from "../../../packages/engine/src/agent-api/nodes/model.js";
 import { scene } from "../../../packages/engine/src/agent-api/nodes/scene.js";
 import { createTypedGLBActor } from "../../../packages/engine/src/production-runtime/TypedGLBActor.js";
-import { createHumanoidDriver, parseGlbJson, readIdolSkeleton, type HumanoidDriver, type HumanoidPoseInput } from "../../../apps/showcase-port-shared/idol/humanoid";
+import { createHumanoidDriver, parseGlbJson, readIdolSkeleton, type HumanoidDriver, type HumanoidPoseInput } from "@aura3d/engine/animation";
 import { IDOL_TRAM } from "../../../examples/last-train-port/idolModels";
 import { FIGURE_KEYS, GUARD_ID, RIDER_FIGURE, figureBodyId, motormanPose, registerFigureDriver, seatedRiderInput, type FigureKey } from "../../../examples/last-train-port/figures";
 import type { RouteData, SimData, Tables } from "../../../examples/last-train-port/sim";

@@ -57,12 +57,12 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
   try {
     const backdropKey = spec.backdrops[0]?.asset ?? "verdant";
     const backdropAsset = assets.backdrop[backdropKey];
-    const worldAsset = backdropKey === "verdant" ? "showcaseKenneyVerdantPlatformerWorld"
-      : backdropKey === "cartoon" ? "showcaseCartoonPlatformWorld"
-      : backdropKey === "palace" ? "showcasePlatformerWorldLevel"
-      : backdropKey === "readable" ? "showcaseReadablePlatformLevel"
-      : backdropKey === "sidescroll" ? "showcaseSideScrollerPlatformLevel"
-      : "showcasePlatformerBasicPack";
+    const worldAsset = backdropKey === "verdant" ? "showcaseKenneyVerdantPlatformerWorld" // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
+      : backdropKey === "cartoon" ? "showcaseCartoonPlatformWorld" // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
+      : backdropKey === "palace" ? "showcasePlatformerWorldLevel" // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
+      : backdropKey === "readable" ? "showcaseReadablePlatformLevel" // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
+      : backdropKey === "sidescroll" ? "showcaseSideScrollerPlatformLevel" // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
+      : "showcasePlatformerBasicPack"; // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
     const unmountedBlocker = `world-asset-not-mounted:${worldAsset}`;
     notes.push(`Backdrop ${worldAsset} is not mounted; the authored course has no validated asset overlay.`);
     // Shared-catalog `hash` widened to `string | undefined` in the current

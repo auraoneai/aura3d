@@ -1,3 +1,4 @@
+import { createAutoplayHarness } from "@aura3d/engine/game";
 import { MENU_COURTS } from "../ui/venues";
 
 /**
@@ -40,16 +41,26 @@ export interface AutoplayLoop {
 export function createAutoplayLoop(options: { resultSeconds?: number; venues?: readonly string[] } = {}): AutoplayLoop {
   const hold = options.resultSeconds ?? AUTOPLAY_RESULT_SECONDS;
   const venues = options.venues ?? AUTOPLAY_VENUES;
-  let shown = 0;
+  let finished = false;
+  let currentVenue: string | undefined;
+  let nextMatch: AutoplayNext | null = null;
+  const harness = createAutoplayHarness({
+    isFinished: () => finished,
+    restartDelay: hold,
+    onRestart: () => {
+      nextMatch = { venue: nextAutoplayVenue(currentVenue, venues) };
+    }
+  });
   return {
-    get resultSeconds() { return shown; },
+    get resultSeconds() { return harness.holdSeconds; },
     step(state, dt, enabled) {
-      if (!enabled || state.mode !== "gameover") { shown = 0; return null; }
-      shown += dt;
-      if (shown + 1e-9 < hold) return null;
-      shown = 0;
-      return { venue: nextAutoplayVenue(state.venue, venues) };
+      harness.enabled = enabled;
+      finished = state.mode === "gameover";
+      currentVenue = state.venue;
+      nextMatch = null;
+      harness.tick(dt);
+      return nextMatch;
     },
-    reset() { shown = 0; }
+    reset() { harness.reset(); }
   };
 }

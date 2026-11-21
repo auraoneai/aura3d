@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { createHumanoidDriver, parseGlbJson, readIdolSkeleton } from "../../../apps/showcase-port-shared/idol/humanoid";
+import { createHumanoidDriver, parseGlbJson, readIdolSkeleton } from "@aura3d/engine/animation";
 import { HERO_BIKES, RIVAL_BIKES, bikeRiderFrame, riderKeyFor, riderScale } from "../../../examples/strange-orbit-port/art/idolModels";
 import { HIP_ABOVE_SADDLE, riderNodePosition } from "../../../examples/strange-orbit-port/art/idolRider";
 import { applyMat3, axisRotation, basisMatrix, multiplyMat3, type Mat3 } from "../../../examples/strange-orbit-port/orient";

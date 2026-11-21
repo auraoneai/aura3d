@@ -2,9 +2,11 @@
 // 0..1 to the canvas, origin top-left, projected from world boxes through the shown broadcast camera every time the
 // capture reads them. Read-only: positions come from the sim state and the camera director, nothing is written.
 
+import { VENUES } from "./content";
 import { PITCH_HX, PITCH_HZ } from "./dims";
 import { MAIN_FLOOD_TOWER } from "./look";
-import { FLOOD_TOWERS, mainFloodPosition } from "./scene";
+import { FASCIA_FLOOD_STRIPS, FLOOD_TOWERS, mainFloodPosition } from "./scene";
+import type { VenueId } from "./types";
 
 export type V3 = readonly [number, number, number];
 export interface QaCamera { readonly eye: V3; readonly target: V3; readonly fovDeg: number; readonly aspect: number }
@@ -45,10 +47,11 @@ export function projectBox(cam: QaCamera, min: V3, max: V3, name: string): QaCro
 
 /**
  * The crops the WP-19 acceptance lines name: `player` (controlled athlete, L3/M2), `ball`, `pitch` (centre circle
- * area, L1/M1), `crowd` (far stand, L3/AN1), `flood-bank` (main-stand flood head, P3), `sky` (top band above the far
- * stand, L1/S1/V2). At most 16; off-screen boxes are left out.
+ * area, L1/M1), `crowd` (far stand, L3/AN1), `flood-bank` (main-stand flood head, visible corner tower, or upper
+ * fascia floodlight strip on night venues, P3), `sky` (top band above the far stand, L1/S1/V2). At most 16; off-screen
+ * boxes are left out.
  */
-export function fcQaCrops(cam: QaCamera, player: { x: number; z: number } | null, ball: V3): QaCrop[] {
+export function fcQaCrops(cam: QaCamera, player: { x: number; z: number } | null, ball: V3, venue?: VenueId): QaCrop[] {
   const out: (QaCrop | null)[] = [];
   if (player) out.push(projectBox(cam, [player.x - 0.45, 0, player.z - 0.45], [player.x + 0.45, 1.9, player.z + 0.45], "player"));
   out.push(projectBox(cam, [ball[0] - 0.25, Math.max(0, ball[1] - 0.25), ball[2] - 0.25], [ball[0] + 0.25, ball[1] + 0.25, ball[2] + 0.25], "ball"));
@@ -63,6 +66,12 @@ export function fcQaCrops(cam: QaCamera, player: { x: number; z: number } | null
       if (i === MAIN_FLOOD_TOWER) continue;
       const hx = x * scale, hz = z * scale;
       const candidate = projectBox(cam, [hx - 1.2, fy - 0.8, hz - 1.2], [hx + 1.2, fy + 0.8, hz + 1.2], "flood-bank");
+      if (candidate && (!flood || candidate.w * candidate.h > flood.w * flood.h)) flood = candidate;
+    }
+  }
+  if (!flood && venue && VENUES[venue]?.night) {
+    for (const [sx, sy, sz] of FASCIA_FLOOD_STRIPS) {
+      const candidate = projectBox(cam, [sx - 1.8, sy - 0.14, sz - 0.16], [sx + 1.8, sy + 0.14, sz + 0.16], "flood-bank");
       if (candidate && (!flood || candidate.w * candidate.h > flood.w * flood.h)) flood = candidate;
     }
   }

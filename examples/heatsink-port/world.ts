@@ -4,11 +4,10 @@
  * checkpoint veils, cooling/boost pads, holographic gantry banners, pickups, barrels, articulated player ion craft,
  * plasma flipbooks, chase camera, SSR, contact shadows, AgX bloom and vignette.
  */
-import { createCameraShake } from "@aura3d/engine/game";
+import { createCameraShake, createImpactRig } from "@aura3d/engine/game";
 import { camera, cameras, effects, environments, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
-import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { CFG } from "./config";
-import { buildArches, buildDividers, buildGantryBanners, buildMedianCliff, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
+import { buildArchEdgeStrips, buildArches, buildDividers, buildGantryBanners, buildMedianCliff, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
 import { PLASMA_ATLAS, SPARKS_ATLAS, beaconSpec, blobSpec, flipbookBurstSpec, hologramBannerSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec } from "./materials";
 import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
 import { districtFog, fogApproach } from "./art/look";
@@ -215,8 +214,11 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   b.add(geometry.custom(dynamicFrom(rails.rails), { name: "rails", material: material.custom(railSpec) }).runtime({ id: fogTracked("rails", "rails") }));
   b.add(geometry.custom(dynamicFrom(rails.posts), { name: "rail-posts", material: material.custom(solidSpec(hexLinear("#225660"), hexLinear("#54f4ff"), 2.0)) }).runtime({ id: fogTracked("rail-posts", "rail-posts") }));
   const arches = buildArches(track);
-  b.add(geometry.custom(dynamicFrom(arches.body), { name: "arches", material: material.custom(solidSpec(hexLinear("#2a2a33"), hexLinear("#10141c"), 0.06)) }).runtime({ id: fogTracked("arches", "arches") }));
-  b.add(geometry.custom(dynamicFrom(arches.neon), { name: "arch-neon", material: material.custom(solidSpec(hexLinear("#bff8ff"), hexLinear("#80f4ff"), 2.2)) }).runtime({ id: fogTracked("arch-neon", "arch-neon") }));
+  b.add(geometry.custom(dynamicFrom(arches.body), { name: "arches", material: material.custom(look.wake.enabled ? solidSpec(hexLinear("#6c7d96"), hexLinear("#223a52"), 0.24) : solidSpec(hexLinear("#2a2a33"), hexLinear("#10141c"), 0.06)) }).runtime({ id: fogTracked("arches", "arches") }));
+  b.add(geometry.custom(dynamicFrom(arches.neon), { name: "arch-neon", material: material.custom(solidSpec(hexLinear("#c8fbff"), hexLinear("#40f4ff"), look.wake.enabled ? 2.8 : 2.2)) }).runtime({ id: fogTracked("arch-neon", "arch-neon") }));
+  if (look.wake.enabled) {
+    b.add(geometry.custom(dynamicFrom(buildArchEdgeStrips(track)), { name: "arch-edge-strips", material: material.custom(solidSpec(hexLinear("#c8fbff"), hexLinear("#40f4ff"), 2.4)), castShadow: false }).runtime({ id: "arch-edge-strips" }));
+  }
   if (look.wake.enabled) {
     b.add(geometry.custom(dynamicFrom(buildGantryBanners(track)), { name: "gantry-banners", material: material.custom(hologramBannerSpec([0.24, 0.90, 1.0], 1.65)), castShadow: false }).runtime({ id: "gantry-banners" }));
   }
@@ -248,7 +250,26 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
    * cascades off. Low tier: 1 cascade.
    */
   const shadowOff = typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0";
-  b.add(lights.directional({ name: "key", position: [...look.key.position], target: [0, 0, 0], intensity: look.key.intensity, color: look.key.color, shadow: (shadowOff ? false : { cascades: look.key.cascades, maxDistance: look.key.maxDistance, ...(look.key.mapSize ? { mapSize: look.key.mapSize } : {}) }) as never }));
+  const f0 = track.frame(0);
+  const trackAheadFit = look.wake.enabled
+    ? { center: [f0.x + f0.tx * 24, f0.y, f0.z + f0.tz * 24] as [number, number, number], extent: [28, 18] as [number, number], depth: 64 }
+    : undefined;
+  b.add(lights.directional({
+    name: "key",
+    position: [...look.key.position],
+    target: [0, 0, 0],
+    intensity: look.key.intensity,
+    color: look.key.color,
+    shadow: (shadowOff
+      ? false
+      : {
+        cascades: look.key.cascades,
+        maxDistance: look.key.maxDistance,
+        ...(look.key.softness !== undefined ? { softness: look.key.softness } : {}),
+        ...(trackAheadFit ? { fit: trackAheadFit } : {}),
+        ...(look.key.mapSize ? { mapSize: look.key.mapSize } : {})
+      }) as never
+  }));
   /* IC-02: moving points for the lit GLBs (twilight only, 1 on Low): controlled exhaust glow and nearest pad / gate pool */
   if (look.glow.points > 0) b.add(lights.point({ name: "drone-glow", position: [0, -500, 0], intensity: 2.1, distance: 11, color: "#40e0ff" }).runtime({ id: "drone-glow" }));
   if (look.glow.points > 1) b.add(lights.point({ name: "pool-glow", position: [0, -500, 0], intensity: 5.5, distance: 18, color: "#ffb02e" }).runtime({ id: "pool-glow" }));
@@ -333,9 +354,13 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     for (let i = 0; i < 4; i++) {
       b.add(droneRotor(i, models).runtime({ id: `drone-rotor-${i}` }));
     }
+    const thrusterCoreMat = material.glowingEmissive({ color: "#b8fbff", emissive: "#40f4ff", emissiveIntensity: 3.5, roughness: 0.14, practical: true });
+    for (let i = 0; i < 2; i++) {
+      b.add(primitives.sphere({ name: `drone-core-${i}`, size: 0.24, material: thrusterCoreMat, castShadow: false, receiveShadow: false }).runtime({ id: `drone-core-${i}` }));
+    }
     const billboardGeo = () => geometry.dynamic({ positions: f32(new Array<number>(12).fill(0)), uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]), indices: Uint32Array.from([0, 1, 2, 0, 2, 3]), bounds: courseBounds });
     for (let i = 0; i < 2; i++) {
-      b.add(geometry.custom(billboardGeo(), { name: `ion-plume-${i}`, material: material.custom(flipbookBurstSpec(PLASMA_ATLAS, [0.28, 0.88, 1.0], 1.05)), castShadow: false }).runtime({ id: `ion-plume-${i}` }));
+      b.add(geometry.custom(billboardGeo(), { name: `ion-plume-${i}`, material: material.custom(flipbookBurstSpec(PLASMA_ATLAS, [0.28, 0.88, 1.0], 1.65)), castShadow: false }).runtime({ id: `ion-plume-${i}` }));
     }
     for (let i = 0; i < SPARK_CARDS; i++) {
       b.add(geometry.custom(billboardGeo(), { name: `spark-card-${i}`, material: material.custom(flipbookBurstSpec(SPARKS_ATLAS, [1.0, 0.74, 0.28], 2.1)), castShadow: false }).runtime({ id: `spark-card-${i}` }));
@@ -736,11 +761,12 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       for (let k = 0; k < STREAKS; k++) {
         const dx = sPos[k * 3]! - eye[0], dy = sPos[k * 3 + 1]! - eye[1], dz = sPos[k * 3 + 2]! - eye[2];
         if (!streaksReady || dx * fdx + dy * fdy + dz * fdz < 4) {
-          const depth = 28 + rng() * 80, ang = rng() * Math.PI * 2, rad = 2.6 + Math.pow(rng(), 0.7) * 15;
+          // Keep streaks outside the central reticle cone (min radius 5.4 m) so aim clarity stays unobstructed.
+          const depth = 28 + rng() * 80, ang = rng() * Math.PI * 2, rad = 5.4 + Math.pow(rng(), 0.7) * 14;
           sPos[k * 3] = eye[0] + fdx * depth + (rx * Math.cos(ang) + upx * Math.sin(ang) * 0.8) * rad;
           sPos[k * 3 + 1] = eye[1] + fdy * depth + (upy * Math.sin(ang) * 0.8) * rad;
           sPos[k * 3 + 2] = eye[2] + fdz * depth + (rz * Math.cos(ang) + upz * Math.sin(ang) * 0.8) * rad;
-          sLen[k] = 10 + rng() * 24;
+          sLen[k] = 10 + rng() * 20;
         }
         const px = sPos[k * 3]!, py = sPos[k * 3 + 1]!, pz = sPos[k * 3 + 2]!;
         const vx = px - eye[0], vy = py - eye[1], vz = pz - eye[2];
@@ -760,7 +786,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       streaksReady = true;
       const sn = node("streaks");
       sn.updateAttribute?.("position", { array: sGeo, offset: 0 });
-      sn.setUniform?.("streakAlpha", (0.15 + 1.5 * Math.min(1, Math.max(0, (p.v - 30) / 80))) * (motion.reduced ? 0.5 : 1));
+      sn.setUniform?.("streakAlpha", (0.1 + 1.05 * Math.min(1, Math.max(0, (p.v - 34) / 84))) * (motion.reduced ? 0.5 : 1));
     }
 
     /* checkpoint, pad pulses from the sim's events */
@@ -1074,9 +1100,21 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       plumeTintNow[0] = plumeTintCool[0]! + (plumeTintHot[0]! - plumeTintCool[0]!) * hotBoostMix;
       plumeTintNow[1] = plumeTintCool[1]! + (plumeTintHot[1]! - plumeTintCool[1]!) * hotBoostMix;
       plumeTintNow[2] = plumeTintCool[2]! + (plumeTintHot[2]! - plumeTintCool[2]!) * hotBoostMix;
-      const basePlumeGain = 0.72 + 0.34 * speed01;
-      const plumeGain = basePlumeGain + (1.25 - basePlumeGain) * hotBoostMix;
+      const basePlumeGain = 1.05 + 0.45 * speed01;
+      const plumeGain = basePlumeGain + (1.75 - basePlumeGain) * hotBoostMix;
       for (let i = 0; i < 2; i++) {
+        const cn = node(`drone-core-${i}`);
+        cn.setVisible(!p.crashed);
+        if (!p.crashed) {
+          const [nx0, ny0, nz0] = NOZZLE_OFFSETS[i]!;
+          cn.setPosition(
+            p.position.x + R[0] * nx0 + R[1] * ny0 + R[2] * nz0,
+            p.position.y + R[3] * nx0 + R[4] * ny0 + R[5] * nz0,
+            p.position.z + R[6] * nx0 + R[7] * ny0 + R[8] * nz0
+          );
+          const coreScale = 0.88 + 0.34 * speed01 + 0.28 * hotBoostMix;
+          cn.setScale(coreScale);
+        }
         const pn = node(`ion-plume-${i}`);
         pn.setVisible(plumeVisible);
         if (!plumeVisible) continue;

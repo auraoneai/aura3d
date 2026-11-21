@@ -69,6 +69,8 @@ export type GolferVariant = "idol" | "athlete";
 let golferVariant: GolferVariant = "idol";
 let appliedVariant: string | null = null;
 let idolKey: IdolGolferKey = "linksIdolGolferBlue";
+/** true when GU47 real cast shadows (`turfOn`) are active so the legacy flat blob disc stays hidden */
+let realShadowsActive = false;
 /** true when the default (Idol GLB) golfer, caddie, bag and cart are mounted */
 export const idolGolferActive = (): boolean => golferVariant === "idol";
 const idolBind = (): IdolRigBind | undefined => IDOL_BINDS[idolKey];
@@ -164,6 +166,7 @@ export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
   const rt = (name: string) => game.runtimeNode(name);
   const v = VARIANTS[golferVariant];
   const idol = idolGolferActive();
+  realShadowsActive = refined;
   if (idol) {
     const want = idolGolferKeyFor(fit);
     idolKey = IDOL_BINDS[want] ? want : "linksIdolGolferBlue";
@@ -176,10 +179,12 @@ export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
       .cylinder({
         name: "golfer-shadow",
         size: [1, 0.01, 1],
-        material: material.pbr({ color: "#02040a", roughness: 1, opacity: 0.22 }),
+        material: material.pbr({ color: "#02040a", roughness: 1, opacity: refined ? 0 : 0.22 }),
         castShadow: false,
-        receiveShadow: false
-      })
+        receiveShadow: false,
+        visible: !refined
+      } as any)
+      .scale(refined ? HIDDEN : 1)
       .runtime(rt("golfer-shadow")),
     primitives
       .torus({
@@ -499,10 +504,17 @@ export function poseGolfer(
     .setVisible(true);
 
   const shadowW = W(STANCE_MID);
-  rig.shadow
-    .setPosition(shadowW[0], stanceGround + 0.07, shadowW[2])
-    .setScale([0.72, 1, 0.6])
-    .setVisible(true);
+  if (realShadowsActive) {
+    rig.shadow
+      .setPosition(shadowW[0], stanceGround + 0.07, shadowW[2])
+      .setScale([HIDDEN, HIDDEN, HIDDEN])
+      .setVisible(false);
+  } else {
+    rig.shadow
+      .setPosition(shadowW[0], stanceGround + 0.07, shadowW[2])
+      .setScale([0.72, 1, 0.6])
+      .setVisible(true);
+  }
   const atAddress = phase === "address" || phase === "idle" || phase === "putt" || phase === "putt-address";
   rig.ring
     .setPosition(at[0], at[1] + 0.02, at[2])

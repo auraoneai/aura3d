@@ -10,7 +10,7 @@
  * missiles, which travel in view space, draw `effects.trail` ribbons.
  */
 import type { AuraAppEffects, AuraBurstOptions, AuraTrailOptions, AuraVfxEffectSpec } from "@aura3d/engine";
-import { createFlipbookAtlas, type FlipbookAtlasSpec } from "../../showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, type FlipbookAtlasSpec } from "@aura3d/engine/game";
 import type { SimEvent } from "./sim";
 import { PALETTE } from "./look";
 

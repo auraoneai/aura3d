@@ -1,4 +1,5 @@
-import { effects, environments, game, material, primitives, scene, type AuraApp, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { effects, environments, game, material, primitives, scene, sky, type AuraApp, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { createFlipbookAtlas } from "@aura3d/engine/game";
 import {
   buildCenterStrapAnchorNode,
   buildFloodlightTowerNode,
@@ -94,6 +95,39 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       rotation: (look.environmentRotationDeg * Math.PI) / 180,
       background: look.background === "hdri"
     }));
+    // 5.7.2: stylized sky.gradient backdrop layer on hard/clay/beach (keeps HDRI IBL intact via captureEnvironment: false).
+    if (look.skyGradient) {
+      s.add(sky.gradient({
+        name: "venue-sky-gradient",
+        ...look.skyGradient,
+        captureEnvironment: false,
+        affectsFog: true
+      }));
+    }
+    // 5.7.2: direct @aura3d/engine/game flipbook atlases for court bounce dust and sweet-spot racket sparks.
+    const bounceFlip = createFlipbookAtlas("dust", [230, 224, 206]);
+    const sparkFlip = createFlipbookAtlas("sparks", [228, 255, 96]);
+    s.add(effects.flipbook({
+      name: "slam-bounce-flipbook",
+      texture: bounceFlip.texture,
+      spriteColumns: bounceFlip.columns,
+      spriteRows: bounceFlip.rows,
+      frameRate: 30,
+      size: 0.42,
+      loop: false,
+      position: [0, -20, 0]
+    }).runtime(game.runtimeNode("slam-bounce-flipbook")));
+    s.add(effects.flipbook({
+      name: "slam-spark-flipbook",
+      texture: sparkFlip.texture,
+      spriteColumns: sparkFlip.columns,
+      spriteRows: sparkFlip.rows,
+      frameRate: 36,
+      size: 0.34,
+      blend: "additive",
+      loop: false,
+      position: [0, -20, 0]
+    }).runtime(game.runtimeNode("slam-spark-flipbook")));
     // TT-E2: the venue's air (none on the Moon); linear near >= 72 m / far >= 285 m keeps court, baselines & stands crisp.
     if (look.fog) s.add(effects.fog({ color: look.fog.color, density: look.fog.density, near: look.fog.near, far: look.fog.far }));
     // TT-E2: a haze cone under each floodlight, shown on the night court only (venueRuntime.ts toggles them).

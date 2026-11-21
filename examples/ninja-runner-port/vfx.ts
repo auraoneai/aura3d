@@ -74,11 +74,11 @@ export function scaledPreset(spec: AuraVfxEffectSpec, scale: number): AuraVfxEff
   };
 }
 
-/** Scarf ribbon (NR-15): vermilion for the base form, the cyan twin for the Sage and Beast forms. */
+/** Scarf ribbon (NR-15): boosted vermilion (`width: 0.22`) for base form so hero reads unmistakably ahead of clones, cyan twin for spirit forms. */
 export const SCARF = {
   anchor: "hero-scarf",
-  width: 0.16,
-  life: 0.42,
+  width: 0.22,
+  life: 0.46,
   widthOverSpeed: [2, 14] as const,
   color: { base: PALETTE.persimmon, spirit: PALETTE.spiritCyan }
 } as const;

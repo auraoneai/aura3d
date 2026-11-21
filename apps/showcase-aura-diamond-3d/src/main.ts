@@ -33,19 +33,22 @@ import {
   createJuice,
   createHitStop,
   createOverlayDriver,
-  createFixedStepPresenter,
+  createSnapshotInterpolator,
   createRumbleDriver,
   createTweenEngine,
   createFxParticlePass,
   installGameBeacon,
   attachToBone,
   boneWorldPosition,
+  createImpactRig,
+  createGradingLut,
+  HUD_THEMES,
   type AttachableActor
 } from "@aura3d/engine/game";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
-import { createImpactRig } from "../../showcase-port-shared/feel";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
+import "../../showcase-port-shared/hud-tokens.css";
 import { assets } from "./aura-assets.route";
 import { batContact, boundedBlend } from "./contact";
 import { AUTOPLAY_MENU_SEC, AUTOPLAY_TOGGLE_KEY, AutoplayWatchdog, autoplayLeavesResults, autoplayRequested, finishAfterSec, nextAutoplayPark } from "./autoplay";
@@ -420,11 +423,30 @@ function boot(): void {
     reducedMotion: new URLSearchParams(bootSearch).has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false),
     coarsePointer: isCoarsePointer
   };
+  const DIAMOND_LUTS = {
+    "cinema-warm": createGradingLut("cinema-warm", 16),
+    "broadcast-crisp": createGradingLut("broadcast-crisp", 16),
+    "cyber-neon": createGradingLut("cyber-neon", 16)
+  } as const;
+  for (const lut of Object.values(DIAMOND_LUTS)) {
+    lut.texture.wrapS = "clamp";
+    lut.texture.wrapT = "clamp";
+    lut.texture.minFilter = "linear";
+    lut.texture.magFilter = "linear";
+  }
+  const parkLutFor = (id: ParkId) => {
+    const preset = id === "skyline" || id === "dome" || id === "lunar" ? "cyber-neon" : id === "ivy" || id === "canyon" ? "broadcast-crisp" : "cinema-warm";
+    return DIAMOND_LUTS[preset];
+  };
+  for (const [k, v] of Object.entries(HUD_THEMES["sports-broadcast"])) {
+    document.documentElement.style.setProperty(k, v);
+  }
   let auraApp: ReturnType<typeof createAuraApp>;
   const labFlags = readLabFlags();
   const lab = labAppOptions(labFlags, { backend: "auto", createWorker: createWorkerRendererWorker });
   try {
     const bootPlan = lookPlan(bootPark, sceneCtx.variant, sceneCtx.tier, sceneCtx.skyMode);
+    const bootLut = parkLutFor(bootPark);
     const bootOutput =
       lab.output ??
       (bootPlan.output
@@ -432,7 +454,8 @@ function boot(): void {
             preset: bootPlan.output.preset,
             toneMapping: bootPlan.output.toneMapping,
             exposure: bootPlan.output.exposure,
-            dither: true
+            dither: true,
+            lut: { texture: bootLut.texture, size: bootLut.size, intensity: 0.28 }
           } as any)
         : undefined);
     auraApp = createAuraApp("#app", {
@@ -465,11 +488,13 @@ function boot(): void {
     if (!plan.output) return;
     try {
       if (!lab.output) {
+        const parkLut = parkLutFor(id);
         const outSpec = {
           preset: plan.output.preset === "cinematic-film" ? ("daylight-outdoor" as const) : plan.output.preset,
           toneMapping: plan.output.toneMapping,
           exposure: plan.output.exposure,
-          dither: true
+          dither: true,
+          lut: { texture: parkLut.texture, size: parkLut.size, intensity: 0.28 }
         };
         if (typeof (app as any).output?.setOutput === "function") (app as any).output.setOutput(outSpec);
         else (app as any).setOutput?.(outSpec);
@@ -1181,7 +1206,8 @@ function boot(): void {
       item.className = `tick${severity === "success" ? " tick-success" : severity === "warning" ? " tick-warn" : ""}`;
       item.textContent = rec.label;
       t.prepend(item);
-      while (t.children.length > 5) t.lastElementChild?.remove();
+      const maxTicks = window.innerWidth <= 760 ? 2 : 4;
+      while (t.children.length > maxTicks) t.lastElementChild?.remove();
       requestAnimationFrame(() => item.classList.add("show"));
     }
   }
@@ -3465,11 +3491,12 @@ function boot(): void {
     if (G.phase === "between" || G.phase === "pitchSelect" || G.phase === "pitchMeter") return [0.3, MOUND_TOP + 1.1, MOUND_Z + 0.4]; // in the pitcher's glove
     return G.lastBallPos;
   }
-  const presenter = createFixedStepPresenter<{ ball: Vec3; pci: [number, number] }>({
+  const presenter = createSnapshotInterpolator<{ ball: Vec3; pci: [number, number] }>({
     snapshot: () => ({ ball: simBallWorld(), pci: [G.pci[0], G.pci[1]] }),
     // A jump of more than 4 m in one step is a new pitch or a reset: show it, do not smear across it.
+    snap: { distance: 4, position: (s) => s.ball },
     blend: (a, b, t) => ({
-      ball: Math.hypot(b.ball[0] - a.ball[0], b.ball[1] - a.ball[1], b.ball[2] - a.ball[2]) > 4 ? b.ball : mix3(a.ball, b.ball, t),
+      ball: mix3(a.ball, b.ball, t),
       pci: [lerp(a.pci[0], b.pci[0], t), lerp(a.pci[1], b.pci[1], t)]
     })
   });

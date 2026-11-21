@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { createHumanoidDriver, parseGlbJson, readIdolSkeleton, type Vec3 } from "../../../apps/showcase-port-shared/idol/humanoid";
+import { createHumanoidDriver, parseGlbJson, readIdolSkeleton, type Vec3 } from "@aura3d/engine/animation";
 import { createAuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/app/runtimeNodes.js";
 import { defineAuraAssets } from "../../../packages/engine/src/agent-api/nodes/assets.js";
 import { model } from "../../../packages/engine/src/agent-api/nodes/model.js";

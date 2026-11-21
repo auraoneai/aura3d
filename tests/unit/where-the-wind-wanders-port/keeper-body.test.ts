@@ -1,7 +1,6 @@
 /**
- * Owner bug (2026-11-18): at the player only the crook staff and the kite rendered; the rigged keeper body stood at the
- * world origin. A skinned node nested under the moving `hero` group renders in world space and ignores the group, so the
- * Idol body is a top-level scene node whose world transform follows the `hero` group every frame.
+ * Aura3D 5.7.0+ parent-local nested handles: the rigged Idol Bellkeeper (`hero-idol`) nests directly under the moving
+ * `hero` group alongside `hero-staff`, taking parent-local `[0, lift, 0]` so body, staff and kite move in lockstep.
  */
 import { describe, expect, it } from "vitest";
 import { scene } from "@aura3d/engine";
@@ -14,22 +13,22 @@ import { terrainHeight } from "../../../examples/where-the-wind-wanders-port/ter
 interface N { kind?: string; name?: string; children?: N[]; nodes?: N[] }
 
 describe("Bellkeeper body follows the player", () => {
-  it("the rigged hero-idol is a top-level scene node, not nested under the moving hero group", () => {
+  it("the rigged hero-idol is nested under the moving hero group using 5.7.0 parent-local coordinates", () => {
     const b = scene();
     mountProceduralAnimatedActors(b as never, { letter: false, wisp: false, boat: false, hero: true }, 0, false, false);
     const root = b.toJSON() as unknown as N;
     const top = root.nodes ?? root.children ?? [];
-    expect(top.map((n) => n.name)).toContain("hero-idol");
+    expect(top.map((n) => n.name)).not.toContain("hero-idol");
     expect(top.map((n) => n.name)).toContain("hero");
     const heroGroup = top.find((n) => n.name === "hero")!;
     const names: string[] = [];
     const walk = (n: N): void => { names.push(n.name ?? ""); for (const c of n.children ?? n.nodes ?? []) walk(c); };
     walk(heroGroup);
-    expect(names).not.toContain("hero-idol");
+    expect(names).toContain("hero-idol");
     expect(names).toContain("hero-staff");
   });
 
-  it("every frame of a walk the body's world position is the player's position (never the origin)", () => {
+  it("every frame of a walk hero-idol stays parent-local under hero while resolved world coordinates track the player", () => {
     const pos = new Map<string, [number, number, number]>();
     const handle = (id: string) => ({
       setPosition: (x: number, y: number, z: number) => { pos.set(id, [x, y, z]); return undefined; },
@@ -50,11 +49,15 @@ describe("Bellkeeper body follows the player", () => {
       syncIdolBellkeeperBody(get, [s.pos.x, y, s.pos.z], [0, 0.3, 0]);
       if (f % 2) applyIdolBellkeeperPose(get, sampleBellkeeperRigPose({ gait: "Walk", phaseSeconds: f / 60 }));
       else applyIdolBellkeeperMotion(get, motion.frame({ gait: "Walk", metres, dt: 1 / 60, hopPhase: "idle", ring: 0, lookYaw: 0, lookPitch: 0, onBoat: false }), idle, idle);
-      const p = pos.get("hero-idol")!;
-      expect(Math.hypot(p[0] - s.pos.x, p[2] - s.pos.z), `frame ${f}`).toBeLessThan(1e-6);
-      expect(Math.abs(p[1] - y), `frame ${f}`).toBeLessThan(0.3);
-      expect(Math.hypot(p[0], p[2]), "not at the world origin").toBeGreaterThan(1);
-      expect(idolBellkeeperBodyWorld().placed).toBe(true);
+      const local = pos.get("hero-idol")!;
+      expect(local[0], `frame ${f} local x`).toBe(0);
+      expect(local[2], `frame ${f} local z`).toBe(0);
+      expect(Math.abs(local[1]), `frame ${f} local lift`).toBeLessThan(0.3);
+      const world = idolBellkeeperBodyWorld();
+      expect(Math.hypot(world.position[0] - s.pos.x, world.position[2] - s.pos.z), `frame ${f}`).toBeLessThan(1e-6);
+      expect(Math.abs(world.position[1] - y), `frame ${f}`).toBeLessThan(0.3);
+      expect(Math.hypot(world.position[0], world.position[2]), "not at the world origin").toBeGreaterThan(1);
+      expect(world.placed).toBe(true);
     }
     expect(Math.hypot(s.pos.x - START.x, s.pos.z - START.z)).toBeGreaterThan(3);
   });

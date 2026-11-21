@@ -25,7 +25,7 @@ import { walkerNodes } from "./walkers";
 import { buildIdolCommuterNode, buildIdolFerryTerminalNode, buildIdolPyramidTowerNode, buildIdolParkedPool, buildIdolStreetTreePool, buildIdolPlayableCarNode, buildIdolRivalCarNode, buildIdolTrafficCarNode } from "./art/idolModels";
 import { BRAKE_RED, KEY_SHADOW, SODIUM, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
-import { MANHOLES, createBeaconRippleTexture } from "./vfx";
+import { MANHOLES, createBeaconRippleAtlas, createBeaconRippleTexture } from "./vfx";
 import { TAIL_TRAIL_CAPACITY, TAIL_TRAIL_ID, tailTrailMaterial } from "./tailTrails";
 import { CATENARY, CURB_BOLLARD_OFFSETS, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, TREE_CROWN_LOBES, crossStreetName, signNodeId } from "./dressing";
 import { CAR_DRAW_Z, CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_CAM_POS, SCENE_CAM_TARGET, type PlayableCarId, type Vec3, type WeatherPreset } from "./rules";
@@ -158,18 +158,27 @@ export function skyRig(look: SkyLook) {
  * The sun disc sits on the key light's ray. The HDRI stays the IBL (`captureEnvironment: false`).
  */
 export function skyNode(look: SkyLook) {
-  const sun = { elevationDeg: look.sun.elevationDeg, azimuthDeg: look.sun.azimuthDeg, color: look.sun.color, intensity: look.sun.intensity, discSize: look.sun.discSize };
+  const baseSun = { elevationDeg: look.sun.elevationDeg, azimuthDeg: look.sun.azimuthDeg, color: look.sun.color, intensity: look.sun.intensity, discSize: look.sun.discSize };
   const spec = look.sky;
   if (spec.model === "preetham") {
-    return sky.preetham({ name: "grid sky", sun, turbidity: spec.turbidity, rayleigh: spec.rayleigh, mieCoefficient: spec.mieCoefficient, mieDirectionalG: spec.mieDirectionalG, groundColor: spec.groundColor, captureEnvironment: false, affectsFog: true });
+    return sky.preetham({ name: "grid sky", sun: baseSun, turbidity: spec.turbidity, rayleigh: spec.rayleigh, mieCoefficient: spec.mieCoefficient, mieDirectionalG: spec.mieDirectionalG, groundColor: spec.groundColor, captureEnvironment: false, affectsFog: true });
   }
+  const sun = {
+    ...baseSun,
+    ...(spec.sunGlow ? { glow: spec.sunGlow } : {}),
+    ...(spec.sunDiscIntensity !== undefined ? { discIntensity: spec.sunDiscIntensity } : {})
+  };
   return sky.gradient({
     name: "grid sky",
+    style: spec.style,
     zenith: spec.zenith,
     horizon: spec.horizon,
     ground: spec.ground,
-    exponent: spec.exponent,
-    horizonGlow: spec.horizonGlow,
+    mid: spec.mid,
+    zenithBlend: spec.zenithBlend,
+    groundBlend: spec.groundBlend,
+    haze: spec.haze,
+    dither: spec.dither,
     ...(look.sun.intensity > 0 ? { sun } : {}),
     ...(spec.bands ? { bands: spec.bands } : {}),
     ...(spec.stars ? { stars: spec.stars } : {}),
@@ -283,10 +292,10 @@ export function headlightPose(side: -1 | 1, carX: number, noseZ: number, y = 0):
  * the rear lamps; the material changes only when the sim's read-only `brakeLamp` flag flips.
  * GU47(WP-36): swap to `materials.setEmissive("<rear-lamp material>", BRAKE_RED, ...)` on the retextured cars.
  */
-export const TAIL_LAMP = { size: [0.3, 0.08, 0.04] as [number, number, number], heightFrac: 0.52, spreadFrac: 0.36, tail: 0.9, brake: 3.4 } as const;
+export const TAIL_LAMP = { size: [0.3, 0.08, 0.04] as [number, number, number], heightFrac: 0.52, spreadFrac: 0.36, tail: 1.0, brake: 3.8 } as const;
 export function tailLampMaterial(look: SkyLook, braking: boolean) {
   const lit = braking ? TAIL_LAMP.brake : TAIL_LAMP.tail * Math.max(0.35, look.street.headlights);
-  return material.emissive({ color: BRAKE_RED, emissive: BRAKE_RED, emissiveIntensity: lit });
+  return material.emissive({ color: "#b81812", emissive: BRAKE_RED, emissiveIntensity: lit, roughness: 0.12, practical: true });
 }
 
 /** GD-03: the two headlight spots of one sky (none at noon: `street.headlights` is 0). */
@@ -338,20 +347,18 @@ type CarOverrides = readonly AuraModelMaterialOverride[];
  * to be whole-model swaps). The fare-lit teal strip needs a strip material on the pod: GU47(WP-36) pod retexture.
  */
 export const POD_MATERIALS: CarOverrides = [
-  // GU47 phase 3 round 3: glossier pearl with softened clearcoat MIP so sky HDRI reads cleanly without twig streaks.
-  { target: "veh-body", color: "#e4e8ec", colorMode: "replace", roughness: 0.2, metallic: 0.28, clearcoat: 1, clearcoatRoughness: 0.14 },
-  { target: "veh-glass", color: "#0d1218", colorMode: "replace", roughness: 0.12, metallic: 0.1, clearcoat: 1, clearcoatRoughness: 0.14 },
-  { target: ["veh-trim", "veh-cabin"], color: "#14171c", colorMode: "replace", roughness: 0.38, metallic: 0.2 }
+  // Aura3D 5.7.1 clearcoat dielectric pearl body + clean studioGlass roof (roughness: 0.08) so sky reflections stay sharp without IBL mottling.
+  { target: "veh-body", color: "#e4e8ec", colorMode: "replace", roughness: 0.2, metallic: 0.05, clearcoat: 1, clearcoatRoughness: 0.07, envMapIntensity: 0.72 },
+  { target: "veh-glass", color: "#0d1218", colorMode: "replace", roughness: 0.08, metallic: 0.04, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 0.62 },
+  { target: ["veh-trim", "veh-cabin"], color: "#14171c", colorMode: "replace", roughness: 0.36, metallic: 0.12 }
 ];
 /**
- * GU47 phase 4: the player pod wears its textured livery (one textured PBR material with its own metal/roughness
- * maps), so no colour replace: only a clearcoat layer so the sky's HDRI reads on the body.
+ * Aura3D 5.7.1: dielectric clearcoat parity on `gdCruiserPodW3` (clears 0.99 metallic darkening & mottled roof sheen).
  */
-// Round 4: the r3 judge read the livery as "flat matte white": roughness 0.28 / metallic 0.25 over the livery maps.
-export const POD_LIVERY: CarOverrides = [{ roughness: 0.28, metallic: 0.25, clearcoat: 1, clearcoatRoughness: 0.14 }];
-export const MUTED_CLEARCOAT: CarOverrides = [{ clearcoat: 0.45, clearcoatRoughness: 0.3, roughness: 0.48 }];
-export const TRUCK_STEEL: CarOverrides = [{ color: "#cbd5e1", colorMode: "multiply", metallic: 0.8, roughness: 0.22, clearcoat: 0.3, clearcoatRoughness: 0.2 }];
-export const RIVAL_CHAMPAGNE: CarOverrides = [{ color: "#e8c27a", colorMode: "multiply", metallic: 0.65, roughness: 0.26, clearcoat: 0.6, clearcoatRoughness: 0.12 }];
+export const POD_LIVERY: CarOverrides = [{ roughness: 0.22, metallic: 0.06, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 0.7 }];
+export const MUTED_CLEARCOAT: CarOverrides = [{ metallic: 0.06, clearcoat: 0.75, clearcoatRoughness: 0.1, roughness: 0.34 }];
+export const TRUCK_STEEL: CarOverrides = [{ color: "#cbd5e1", colorMode: "multiply", metallic: 0.72, roughness: 0.24, clearcoat: 0.45, clearcoatRoughness: 0.14 }];
+export const RIVAL_CHAMPAGNE: CarOverrides = [{ color: "#e8c27a", colorMode: "multiply", metallic: 0.18, roughness: 0.24, clearcoat: 0.95, clearcoatRoughness: 0.07 }];
 
 /** GD-11: overrides for one model asset key (`undefined`: leave the GLB as authored, e.g. the cable car). */
 export function carMaterialOverrides(asset: GridAssetKey, role: "player" | "rival" | "traffic", rivalIndex = -1): CarOverrides | undefined {
@@ -621,14 +628,41 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     }
   }
 
-  // 6. Kerb beacon (ring, floor disc, holographic energy beam, core, ripple flipbook), preserved rigged passenger and route ribbon
+  // 6. Kerb beacon (ring, floor disc, holographic energy beam, core, 5.7.2 ripple flipbooks), preserved rigged passenger and route ribbon
   const beaconTealMat = material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.1 });
   const beaconDiscMat = material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.35 });
+  const pickupRippleAtlas = createBeaconRippleAtlas([63, 214, 198]);
+  const dropoffRippleAtlas = createBeaconRippleAtlas([255, 179, 71]);
   s.addMany([
     instances.box({ name: "route-ribbons", size: [1.35, 0.03, 3.2], material: beaconTealMat, castShadow: false, receiveShadow: false, transforms: pool(PATH_RIBBON_COUNT) }).runtime(game.runtimeNode("route-ribbons")),
     geometry.custom(beaconRingGeometrySpec(), { name: "taxi-beacon-ring", material: beaconTealMat, castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 0.08, -38).runtime(game.runtimeNode("taxi-beacon-ring")),
     geometry.custom(beaconDiscGeometrySpec(), { name: "taxi-beacon-disc", material: beaconDiscMat, castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 0.04, -38).runtime(game.runtimeNode("taxi-beacon-disc")),
-    primitives.plane({ name: "taxi-beacon-ripple", size: [3.6, 3.6], material: beaconRippleMaterial("pickup"), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 0.048, -38).rotate(-Math.PI * 0.5, 0, 0).runtime(game.runtimeNode("taxi-beacon-ripple")),
+    effects.flipbook({
+      name: "taxi-beacon-ripple",
+      texture: pickupRippleAtlas.texture,
+      spriteColumns: pickupRippleAtlas.columns,
+      spriteRows: pickupRippleAtlas.rows,
+      size: 3.6,
+      frameRate: 18,
+      intensity: 1.45,
+      color: "#3fd6c6",
+      blend: "additive",
+      loop: true,
+      position: [CURB_BEACON_X, 0.24, -38]
+    }).runtime(game.runtimeNode("taxi-beacon-ripple")),
+    effects.flipbook({
+      name: "taxi-beacon-ripple-drop",
+      texture: dropoffRippleAtlas.texture,
+      spriteColumns: dropoffRippleAtlas.columns,
+      spriteRows: dropoffRippleAtlas.rows,
+      size: 3.6,
+      frameRate: 18,
+      intensity: 1.45,
+      color: "#ffb347",
+      blend: "additive",
+      loop: true,
+      position: [CURB_BEACON_X, -90, 140]
+    }).runtime(game.runtimeNode("taxi-beacon-ripple-drop")),
     primitives.cylinder({ name: "taxi-beacon-beam", size: [0.56, 34, 0.56], material: beaconEnergyMaterial("pickup", 0.72), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 17, -38).runtime(game.runtimeNode("taxi-beacon-beam")),
     primitives.cylinder({ name: "taxi-beacon-core", size: [0.16, 36, 0.16], material: material.emissive({ color: "#ffffff", emissive: "#8ff0e6", emissiveIntensity: 2.4 }), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 18, -38).runtime(game.runtimeNode("taxi-beacon-core")),
     // GD-16: sculpted multi-material procedural Urban Commuter Rig grounded on the sidewalk (`y = 0.18`), waving & boarding cleanly.

@@ -752,7 +752,7 @@
       },
       {
         "node": "pci-ring",
-        "emissiveIntensity": 1.1,
+        "emissiveIntensity": 1.05,
         "practical": true
       },
       {
@@ -767,7 +767,7 @@
       },
       {
         "node": "zone-frame",
-        "emissiveIntensity": 0.3,
+        "emissiveIntensity": 0.18,
         "practical": true
       }
     ],

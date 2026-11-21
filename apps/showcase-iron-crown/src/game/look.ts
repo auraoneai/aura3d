@@ -82,6 +82,13 @@ export function lightConeMinY(position: AuraVec3, direction: AuraVec3, length: n
  */
 export const ATMOSPHERE_FLOOR_CLEAR_Y = 1.2;
 
+/** Fight-lane shadow fit box (5.7.0 texel-locked ortho box across the combat plane so shadows never crawl). */
+export const FIGHT_LANE_SHADOW_FIT = {
+  center: [0, 1.5, 0] as AuraVec3,
+  extent: [6, 3.2] as readonly [number, number],
+  depth: 18
+} as const;
+
 export interface SunKey {
   readonly kind: "sun";
   readonly elevationDeg: number;
@@ -89,6 +96,7 @@ export interface SunKey {
   readonly color: AuraColor;
   readonly intensity: number;
   readonly filter: "pcf" | "pcss";
+  readonly softness?: number;
 }
 
 /** The Crown's key: one spot from the rig above the ring, aimed at the pair's midpoint every frame. */
@@ -229,7 +237,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
       penumbra: 0.34,
       distance: 16,
       decay: 1.3,
-      shadow: { filter: "pcss", mapSize: 2048, lightSize: 0.32, softness: 0.55, bias: -0.0004, normalBias: 0.02 }
+      shadow: { filter: "pcss", mapSize: 2048, lightSize: 0.32, softness: 1.2, bias: -0.0004, normalBias: 0.02 }
     },
     backRim: { ...RIM, intensity: 12 },
     panels: [],
@@ -264,7 +272,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     accent: "#ff3fa4",
     // Owner neutral-grade pass: a cool-neutral key (the sodium #ffad5c key turned the fighters orange); the sodium stays
     // in the flood shaft and the street lamps behind the lane.
-    key: { kind: "sun", elevationDeg: 52, azimuthDeg: 300, color: "#e6ecff", intensity: 2.8, filter: "pcf" },
+    key: { kind: "sun", elevationDeg: 52, azimuthDeg: 300, color: "#e6ecff", intensity: 2.8, filter: "pcf", softness: 1.6 },
     // The back rims' cone runs on past each fighter onto the wet floor in front of them, and its specular glare on
     // the clearcoat (plus its diffuse pool) read as white "floor steam" over the fighters' feet that moved with them.
     // A 5 m range (spot range window) ends the light just past the fighter; the intensity is raised so the rim on the
@@ -302,7 +310,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     accent: "#36c9a4",
     // Owner neutral-grade pass: a warm-neutral dusk key (was #ff9a52), a near-neutral grade and no dusk LUT (temperature
     // 0.3 plus the split-tone LUT washed the dock orange); the sunset stays in the drawn sky.
-    key: { kind: "sun", elevationDeg: 8, azimuthDeg: 235, color: "#ffdcbf", intensity: 3.2, filter: "pcf" },
+    key: { kind: "sun", elevationDeg: 8, azimuthDeg: 235, color: "#ffdcbf", intensity: 3.2, filter: "pcf", softness: 2.0 },
     backRim: { ...RIM, intensity: 18 },
     panels: [],
     fog: { color: "#c47a4e", near: 110, far: 360, maxOpacity: 0.16 },
@@ -326,7 +334,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     environmentRotationDeg: 60,
     background: "look",
     accent: "#e3b04b",
-    key: { kind: "sun", elevationDeg: 72, azimuthDeg: 25, color: "#fff4dc", intensity: 4.2, filter: "pcf" },
+    key: { kind: "sun", elevationDeg: 72, azimuthDeg: 25, color: "#fff4dc", intensity: 4.2, filter: "pcf", softness: 1.5 },
     backRim: { ...RIM, intensity: 9 },
     panels: [],
     fog: { color: "#c9a46a", near: 120, far: 380, maxOpacity: 0.16 },
@@ -349,7 +357,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     environmentRotationDeg: 285,
     background: "look",
     accent: "#3f8cff",
-    key: { kind: "sun", elevationDeg: 10, azimuthDeg: 255, color: "#ff8a4a", intensity: 3.2, filter: "pcf" },
+    key: { kind: "sun", elevationDeg: 10, azimuthDeg: 255, color: "#ff8a4a", intensity: 3.2, filter: "pcf", softness: 2.1 },
     backRim: { ...RIM, intensity: 12 },
     panels: [],
     fog: { color: "#b8724a", near: 115, far: 360, maxOpacity: 0.16 },
@@ -372,7 +380,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     environmentRotationDeg: 110,
     background: "look",
     accent: "#8fe3ff",
-    key: { kind: "sun", elevationDeg: 18, azimuthDeg: 110, color: "#ffd2a6", intensity: 3, filter: "pcf" },
+    key: { kind: "sun", elevationDeg: 18, azimuthDeg: 110, color: "#ffd2a6", intensity: 3, filter: "pcf", softness: 1.8 },
     backRim: { ...RIM, intensity: 6 },
     panels: [],
     fog: { color: "#b9c8d8", near: 105, far: 340, maxOpacity: 0.16 },
@@ -416,7 +424,11 @@ export function stageLookOverrides(row: StageLookRow): AuraLookOverrides {
     ...(key.kind === "sun"
       ? {
           sun: { elevationDeg: key.elevationDeg, azimuthDeg: key.azimuthDeg },
-          key: { color: key.color, intensity: key.intensity, shadow: { filter: key.filter, mapSize: 2048 } }
+          key: {
+            color: key.color,
+            intensity: key.intensity,
+            shadow: { filter: key.filter, mapSize: 2048, softness: key.softness ?? 1.8, fit: FIGHT_LANE_SHADOW_FIT }
+          }
         }
       : {}),
     rim: false,

@@ -5,8 +5,7 @@
  * chase camera and the post stack. The simulation (`sim.ts`) never imports this file.
  */
 import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, instances, lights, material, primitives, scene, text3D, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
-import { createCameraClearance } from "@aura3d/engine/game";
-import { createImpactRig } from "../../apps/showcase-port-shared/feel";
+import { createCameraClearance, createFlipbookAtlas, createImpactRig } from "@aura3d/engine/game";
 import { gapAhead } from "./hud";
 import { HERO_PARTS, IDENTITY, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartPose, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
 import { IDOL_RIGS } from "./art/idolRig.data";
@@ -24,7 +23,7 @@ import {
 } from "./materials";
 import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFrame, type V3 } from "./road";
 import { advanceRunPhase, stepChaseRig, withSample, type ChaseRig, type PresentSample } from "./presentation";
-import { ROAD_LENGTH, STAGES, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
+import { ROAD_LENGTH, ROLL_SECTIONS, STAGES, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
 import type { RunnerStyle } from "./styles";
 import { ENTITY_MODELS, ISLAND_COUNT, ISLAND_VARIANTS, LANTERN_COUNT, runnerModelForLook } from "./models";
 import {
@@ -488,11 +487,30 @@ export function buildWorld(options: WorldOptions = {}): World {
     .add(script && !envOverride()
       ? environments.preset("sunset", { name: "dusk sky probe", intensity: first.environmentIntensity, specularIntensity: 1.8, background: false })
       : environments.neutral({ intensity: script && !envOverride() ? first.environmentIntensity : environmentIntensity() }))
-    // GU47 SSR-03 / SSR-19: two cascades over 140 m with PCSS under the colour script on High; the second cascade drops on
-    // the Medium / Low tiers (an explicit cascade count is never capped by the tier, so it is chosen here).
-    .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: script ? first.sun.intensity : 2.2, color: script ? first.sun.color : "#fff0dc", shadow: (shadowOff() ? false : script ? { cascades: sunCascades(options.tier ?? autoTier()), maxDistance: 140, filter: "pcss", lightSize: 2 } : { cascades: 1, maxDistance: 80 }) as never }).runtime({ id: "sun" }));
+    // GU47 SSR-03 / SSR-19 + 5.7.2: runner-following soft shadow fit box keeps inverted Frenet rolls grounded without swimming.
+    .add(lights.directional({
+      name: "sun",
+      position: [-40, 60, -70],
+      target: [0, 0, 0],
+      intensity: script ? first.sun.intensity : 2.2,
+      color: script ? first.sun.color : "#fff0dc",
+      shadow: (shadowOff()
+        ? false
+        : script
+          ? {
+              cascades: sunCascades(options.tier ?? autoTier()),
+              maxDistance: 140,
+              filter: "pcss",
+              lightSize: 2,
+              softness: 1.6,
+              fit: { center: [0, 0, 0] as [number, number, number], extent: 18, depth: 50 }
+            }
+          : { cascades: 1, maxDistance: 80 }) as never
+    }).runtime({ id: "sun" }));
   if (script) {
     builder.add(lights.directional({ name: "fill", position: [0, 4, 20], target: [0, 1, 0], intensity: first.fill.intensity, color: first.fill.color, shadow: false }).runtime({ id: "fill" }));
+    // R23 stage-contrasting back-rim light separating the runner silhouette against bright golden clouds & sunburst horizons
+    builder.add(lights.directional({ name: "runner-rim", position: [14, 18, -32], target: [0, 1.5, 0], intensity: 0.92, color: "#7fe0c4", shadow: false }).runtime({ id: "runner-rim" }));
     builder.add(lights.point({ name: "title-head-key", position: [0, -500, 0], color: "#ffd494", intensity: 280, distance: 260, decay: 1.5, shadow: false }).runtime({ id: "title-head-key" }));
     builder.add(lights.point({ name: "title-head-rim", position: [0, -500, 0], color: "#7fe0c4", intensity: 210, distance: 240, decay: 1.5, shadow: false }).runtime({ id: "title-head-rim" }));
     builder.add(effects.contactShadows({ length: 0.34, thickness: 0.06, intensity: 0.85, lights: "sun" }));
@@ -691,6 +709,34 @@ export function buildWorld(options: WorldOptions = {}): World {
     for (let i = 0; i < VFX_DUST_SLOTS; i++) {
       builder.add(primitives.box({ name: `vfx-dust-${i}`, size: [3.6, 3.6, 0.02], material: material.custom(flipbookSpec("dust", [255, 226, 192], 0.25)), castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: `vfx-dust-${i}` }));
     }
+    const boostSparksAtlas = createFlipbookAtlas("sparks", [255, 220, 118]);
+    const boostPlasmaAtlas = createFlipbookAtlas("plasma", [127, 224, 196]);
+    builder.add(effects.flipbook({
+      name: "boost-sparks-fx",
+      texture: boostSparksAtlas.texture,
+      spriteColumns: boostSparksAtlas.columns,
+      spriteRows: boostSparksAtlas.rows,
+      frameRate: 32,
+      size: 2.2,
+      blend: "additive",
+      color: "#ffd676",
+      intensity: 1.4,
+      loop: false,
+      position: [0, -500, 0]
+    }).runtime({ id: "boost-sparks-fx" }));
+    builder.add(effects.flipbook({
+      name: "boost-plasma-fx",
+      texture: boostPlasmaAtlas.texture,
+      spriteColumns: boostPlasmaAtlas.columns,
+      spriteRows: boostPlasmaAtlas.rows,
+      frameRate: 30,
+      size: 2.5,
+      blend: "additive",
+      color: "#7fe0c4",
+      intensity: 1.3,
+      loop: false,
+      position: [0, -500, 0]
+    }).runtime({ id: "boost-plasma-fx" }));
     builder.add(effects.auroraRibbon({ name: "celestial-ribbon", color: "#7fe0c4", colorTop: "#ffd36e", intensity: 0.78, width: 210, height: 28, segments: 64, sway: 0.65, shimmer: 0.65 }).position(0, -500, 0).runtime({ id: "celestial-ribbon" }));
   }
 
@@ -796,6 +842,15 @@ export function buildWorld(options: WorldOptions = {}): World {
       const dustBursts: FlipbookSlot[] = Array.from({ length: VFX_DUST_SLOTS }, () => ({ active: false, at: [0, -500, 0], age: 0, life: 0.65, scale: 1, tint: [1, 1, 1] }));
       let plasmaCursor = 0;
       let dustCursor = 0;
+      let boostSparkLeft = 0;
+      let boostPlasmaLeft = 0;
+      let boostSparkPos: V3 = [0, -500, 0];
+      let boostPlasmaPos: V3 = [0, -500, 0];
+      let chainedBoosts = 0;
+      if (script) {
+        node("boost-sparks-fx").setVisible(false);
+        node("boost-plasma-fx").setVisible(false);
+      }
       const spawnFlipbook = (pool: FlipbookSlot[], cursor: number, at: V3, scale: number, life: number, tint: Rgb): number => {
         if (reducedMotion) return cursor;
         const slot = pool[cursor % pool.length]!;
@@ -834,10 +889,13 @@ export function buildWorld(options: WorldOptions = {}): World {
         node("sky").setPosition(frame.p[0], frame.p[1], frame.p[2]);
         node("sky").setUniform?.("skyTime", time);
 
-        /* C12: warm road edges before the next missing plate */
+        /* C12: warm road edges before the next missing plate + glowing edge chevrons ahead of inverted roll transitions */
         const gap = gapAhead(S);
         node("road").setUniform?.("gapAt", gap === null ? -1e6 : S.s + gap);
         node("road").setUniform?.("gapWarn", gap === null ? 0 : 1);
+        const nextRoll = ROLL_SECTIONS.find((sec) => S.s <= sec.from + 18 && sec.from - S.s <= 65);
+        node("road").setUniform?.("rollAt", nextRoll ? nextRoll.from : -1e6);
+        node("road").setUniform?.("rollDir", nextRoll ? nextRoll.dir : 0);
 
         /* runner: articulated parts posed in the road frame; flight lifts the whole figure */
         let pose = onRoad(frame, S.laneX, S.y);
@@ -1413,17 +1471,29 @@ export function buildWorld(options: WorldOptions = {}): World {
             prevImpact = { init: true, rung: S.auraRung, gateIdx, stumble: S.stumble, grounded: S.grounded, slide: S.sliding, pulse: S.kiPulse };
           } else {
             if (S.auraRung > prevImpact.rung) {
-              plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, toWorld([0, 1.15, 0]), 1.1, 0.52, [1.15, 1.02, 0.72]);
+              chainedBoosts = Math.min(4, chainedBoosts + 1);
+              const at = toWorld([0, 1.15, 0]);
+              plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, at, 1.1, 0.52, [1.15, 1.02, 0.72]);
+              boostSparkLeft = 0.45;
+              boostSparkPos = at;
+              if (!surging) impactRig.trigger({ fovKickDeg: 1.6 + chainedBoosts * 0.65, trauma: 0.08 });
             }
             if (gateIdx > prevImpact.gateIdx && S.s > 12 && ds > 0 && ds < 25) {
               const gs = gateIdx * gateSpan;
               if (!STAGE_BOARDS.some((b) => Math.abs(b.s - gs) < GATE_BOARD_CLEAR)) {
-                plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, onRoad(frameAt(samples, Math.min(gs, ROAD_LENGTH)), S.laneX * 0.5, 2.2), 1.3, 0.48, [0.85, 1.15, 1.02]);
+                const at = onRoad(frameAt(samples, Math.min(gs, ROAD_LENGTH)), S.laneX * 0.5, 2.2);
+                plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, at, 1.3, 0.48, [0.85, 1.15, 1.02]);
+                boostPlasmaLeft = 0.5;
+                boostPlasmaPos = at;
               }
             }
             if (S.kiPulse > prevImpact.pulse + 0.3 && S.kiChain > 0 && S.kiChain % 4 === 0) {
-              plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, toWorld([0, 1.05, -0.25]), 0.82, 0.42, [0.82, 1.18, 1.05]);
+              const at = toWorld([0, 1.05, -0.25]);
+              plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, at, 0.82, 0.42, [0.82, 1.18, 1.05]);
+              boostSparkLeft = Math.max(boostSparkLeft, 0.35);
+              boostSparkPos = at;
             }
+            if (S.auraRung === 0) chainedBoosts = 0;
             if (S.stumble > prevImpact.stumble + 0.25) {
               if (!surging) impactRig.trigger({ trauma: 0.22, fovKickDeg: -1.2 });
               dustCursor = spawnFlipbook(dustBursts, dustCursor, toWorld([0, 0.85, -0.3]), 1.05, 0.62, [1.08, 0.88, 0.76]);
@@ -1462,6 +1532,14 @@ export function buildWorld(options: WorldOptions = {}): World {
           };
           stepPool("vfx-plasma", plasmaBursts, 0.92);
           stepPool("vfx-dust", dustBursts, 0.72);
+          boostSparkLeft = Math.max(0, boostSparkLeft - dt);
+          boostPlasmaLeft = Math.max(0, boostPlasmaLeft - dt);
+          const showSparkFx = boostSparkLeft > 0 && !reducedMotion;
+          const showPlasmaFx = boostPlasmaLeft > 0 && !reducedMotion;
+          show("boost-sparks-fx", showSparkFx);
+          if (showSparkFx) node("boost-sparks-fx").setPosition(boostSparkPos[0], boostSparkPos[1], boostSparkPos[2]);
+          show("boost-plasma-fx", showPlasmaFx);
+          if (showPlasmaFx) node("boost-plasma-fx").setPosition(boostPlasmaPos[0], boostPlasmaPos[1], boostPlasmaPos[2]);
         }
 
         /* chase camera: elevated & pulled back so the ~1.95 m sky-runner occupies ~22-28% in the lower third with open forward sightlines */
@@ -1516,10 +1594,23 @@ export function buildWorld(options: WorldOptions = {}): World {
         cameraController.setPose({ position: eye, target: look, up, fov }, { cut: false });
         lastShot = shot;
 
-        /* GU47 SSR-01: stage colour script, read-only from the run's distance */
+        /* GU47 SSR-01: stage colour script, read-only from the run's distance + R23 runner-following sun/rim */
         if (lookDriver) {
           if (!lookShown) lookShown = lookAt(lookDistance(S.s, S.leg), lookConfig);
           lookDriver.apply(exposureBoost ? { ...lookShown, exposure: lookShown.exposure + exposureBoost } : lookShown, { forward: rig.f, time, eye, reducedMotion });
+          const sd = lookDriver.sunDir;
+          node("sun").setPosition(pose[0] + sd[0] * 70, pose[1] + sd[1] * 70, pose[2] + sd[2] * 70);
+          // Stage-contrasting back-rim light (R23): cool jade-cyan against warm golden/amber clouds, warm gold against dark storm/indigo stages
+          const warmStage = lookShown.stageIndex <= 3 || lookShown.stageIndex === 7;
+          const rimPos: V3 = [pose[0] + rig.f[0] * 26 + rig.u[0] * 14 - frame.R[0] * 10, pose[1] + rig.f[1] * 26 + rig.u[1] * 14 - frame.R[1] * 10, pose[2] + rig.f[2] * 26 + rig.u[2] * 14 - frame.R[2] * 10];
+          const rimDir: V3 = [-rig.f[0] * 0.78 - rig.u[0] * 0.42 + frame.R[0] * 0.35, -rig.f[1] * 0.78 - rig.u[1] * 0.42 + frame.R[1] * 0.35, -rig.f[2] * 0.78 - rig.u[2] * 0.42 + frame.R[2] * 0.35];
+          const rimLen = Math.hypot(rimDir[0], rimDir[1], rimDir[2]) || 1;
+          node("runner-rim").setLight?.({
+            position: rimPos,
+            direction: [rimDir[0] / rimLen, rimDir[1] / rimLen, rimDir[2] / rimLen],
+            color: warmStage ? "#66e8d4" : "#ffd68a",
+            intensity: warmStage ? 1.05 : 1.15
+          });
           const flare = show("sun-flare", false);
           void flare;
         }
@@ -1574,7 +1665,7 @@ export function buildWorld(options: WorldOptions = {}): World {
                 roughness: 0.84,
                 sheenColor: [sheen[0] * 0.45, sheen[1] * 0.45, sheen[2] * 0.45],
                 sheenRoughness: 0.36,
-                rim: { color: [1.0, 0.82, 0.56], power: 3.2, intensity: 0.28 }
+                rim: { color: [0.58, 0.94, 0.88], power: 2.8, intensity: 0.62 }
               }
             ]);
           } else {

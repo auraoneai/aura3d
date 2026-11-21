@@ -31,13 +31,17 @@ export const COURIER_REAR_PLATE: { readonly size: [number, number, number]; read
  * at the measured arches, see wheels.ts). Same runtime id and Euler order as `buildHeroCourierRigNode`, so
  * `place("car-rig", ...)` drives it unchanged.
  */
+/** 5.7.1 clearcoat sheen for the courier and harbor traffic fleet. */
+const COURIER_CLEARCOAT_OVERRIDES = [{ clearcoat: 0.92, clearcoatRoughness: 0.06 }] as const;
+const TRAFFIC_CLEARCOAT_OVERRIDES = [{ clearcoat: 0.92, clearcoatRoughness: 0.08 }] as const;
+
 export function idolCourierNode(id: string, castShadow: boolean, bodyOrder: "YXZ" | "ZYX" = "ZYX") {
   const lift = bodyLift(IDOL_WHEEL_LAYOUT.gcCourier);
   // Owner QA (Nov 18): the derived glass-roof body (roof parcel and roof skin cut out, see courierCabin.ts) + the cabin with
   // the seated driver, so the courier reads as driven from the bird's-eye chase. `?glassroof=0` shows the admitted body.
   const glassRoof = typeof location === "undefined" || new URLSearchParams(location.search).get("glassroof") !== "0";
   const asset = glassRoof ? { ...assets.gcCourier, ...COURIER_GLASS_ROOF } : assets.gcCourier;
-  const body = model(asset as typeof assets.gcCourier, { name: `${id}-idol`, scaleMode: "world", position: [0, lift, 0], castShadow, receiveShadow: true });
+  const body = model(asset as typeof assets.gcCourier, { name: `${id}-idol`, scaleMode: "world", position: [0, lift, 0], castShadow, receiveShadow: true, materialOverrides: COURIER_CLEARCOAT_OVERRIDES });
   const cabin = glassRoof ? courierCabinNodes(id, lift, castShadow) : [];
   if (!COURIER_REAR_PLATE) return withGroupRotationOrder(group(id, [body, ...cabin]), bodyOrder).runtime({ id });
   const plate = primitives.box({
@@ -98,7 +102,7 @@ export function buildIdolTrafficFleet(
       const lift = bodyLift(IDOL_WHEEL_LAYOUT[key]);
       for (const i of cars) carKeys[i] = key;
       const transforms: AuraTransformSpec[] = cars.map((i) => ({ position: [traffic[i]!.x, lift, traffic[i]!.z], rotation: [0, traffic[i]!.yaw, 0], scale: 1 }));
-      nodes.push(instances.model(assets[key] as typeof assets.gcSedanCoral, { name: id, scaleMode: "world", transforms, castShadow, receiveShadow: true }).runtime({ id }));
+      nodes.push(instances.model(assets[key] as typeof assets.gcSedanCoral, { name: id, scaleMode: "world", transforms, castShadow, receiveShadow: true, materialOverrides: TRAFFIC_CLEARCOAT_OVERRIDES }).runtime({ id }));
       groups.push({ id, kind, layerIds: [id], cars, scale: 1, lift });
     });
   }

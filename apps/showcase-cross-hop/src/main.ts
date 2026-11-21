@@ -1,14 +1,14 @@
 /** Cross Hop — endless lane-hopper showcase (PRD: docs/prd/cross-hop.md). */
 import { game, createFixedStepLoop } from "@aura3d/engine";
-import { createGame, sfxUrl, warmPrograms } from "@aura3d/engine/game";
+import { createGame, createGradingLut, createImpactRig, createProceduralSfx, sfxUrl, warmPrograms } from "@aura3d/engine/game";
 import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, setLookMode, setP4Dress, getLookMode, deathEffect, dioramaView, mountSpectators, setCameraImpact, SIM_STEP } from "./game/core";
 import { qaCrops } from "./game/qa";
 import { idolAssets } from "./aura-assets.idol";
 import { modelUrls, modelProgressFraction, modelLabel, watchModelDownloads, MODEL_PROGRESS_CEIL } from "./game/loadingUx";
 import { defaultLookFor, p4DressFor } from "./game/look";
 import { mountUI, tickUI, setUiSound, setUiHop, type HopAction } from "./game/ui";
+import "../../showcase-port-shared/hud-tokens.css";
 import "../../showcase-port-shared/quickbar.css";
-import { createImpactRig, createProceduralSfx } from "../../showcase-port-shared/feel";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { labAppOptions, parseLabFlags } from "../../showcase-port-shared/lab-flags";
 import "./styles.css";
@@ -95,10 +95,19 @@ function computeMaxPixelRatio(): number {
   return isCoarseViewport() ? 1.35 : 2;
 }
 
+const BROADCAST_CRISP_LUT = createGradingLut("broadcast-crisp", 16);
+
 const g = createGame({
   ...(labRenderer ? { renderer: labRenderer } : {}),
   pixelRatio: { max: computeMaxPixelRatio(), min: 1 },
-  output: { toneMapping: "agx", exposure: 1.02, dither: true, ...(labOutput ?? {}) },
+  output: {
+    toneMapping: "neutral",
+    neutralCurve: "khronos",
+    exposure: 1.0,
+    lut: { texture: BROADCAST_CRISP_LUT.texture, size: BROADCAST_CRISP_LUT.size, intensity: 0.24 },
+    dither: true,
+    ...(labOutput ?? {})
+  } as never,
   ...(labWorker ? { worker: labWorker } : {}),
   id: "cross-hop",
   target: "#app",

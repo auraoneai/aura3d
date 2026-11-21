@@ -7,7 +7,7 @@
  * Sun angles use the engine look basis (`agent-api/looks/looks.ts` sunPosition): azimuth 0 = +Z (toward the broadcast
  * camera), 90 = +X. `?look=original` keeps today's four-light rig, flat backdrop and post stack (the 4.6.1 frame).
  */
-import type { AuraColor, AuraHdriId, AuraPostPresetId, AuraVec3 } from "@aura3d/engine";
+import type { AuraColor, AuraHdriId, AuraPostPresetId, AuraSkyGradientMidBand, AuraSkyGradientHaze, AuraSkyGradientSunSpec, AuraVec3 } from "@aura3d/engine";
 import { VENUES, type VenueId } from "../contract/venues";
 import type { VenueHdriKey } from "./assets";
 
@@ -87,6 +87,17 @@ export interface VenueSignature {
   readonly markLifetime: number;
 }
 
+export interface VenueSkyGradient {
+  readonly zenith: AuraColor;
+  readonly horizon: AuraColor;
+  readonly ground: AuraColor;
+  readonly mid?: readonly AuraSkyGradientMidBand[];
+  readonly zenithBlend?: readonly [number, number];
+  readonly haze?: AuraSkyGradientHaze;
+  readonly sun?: AuraSkyGradientSunSpec;
+  readonly dither?: boolean;
+}
+
 export interface VenueLook {
   readonly id: VenueId;
   readonly city: string;
@@ -98,6 +109,10 @@ export interface VenueLook {
   readonly environmentRotationDeg: number;
   /** Background where the sky shows: the HDRI itself, or a solid colour. */
   readonly background: "hdri" | AuraColor;
+  /** 5.7.2 stylized sky.gradient backdrop layer (captureEnvironment: false, affectsFog: true) on hard/clay/beach. */
+  readonly skyGradient?: VenueSkyGradient;
+  /** R23 athlete back-rim directional tint & intensity for value separation against dark stands/court. */
+  readonly rimLight: { readonly color: AuraColor; readonly intensity: number };
   /** The sun; `null` on the night court. */
   readonly sun: VenueSun | null;
   /**
@@ -167,6 +182,16 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   hard: {
     id: "hard", city: "New York", timeOfDay: "floodlit night (21:30), cold-white floods on navy acrylic",
     hdri: "cobblestone_street_night", hdriSize: "1k", environmentIntensity: 0.5, environmentRotationDeg: 0, background: "hdri",
+    skyGradient: {
+      zenith: "#071022",
+      horizon: "#1d3557",
+      ground: "#081220",
+      mid: [{ color: "#122442", blend: [0.02, 0.28] }],
+      zenithBlend: [0.22, 0.78],
+      haze: { color: "#2b4d7c", intensity: 0.36, falloff: 7 },
+      dither: true
+    },
+    rimLight: { color: "#d6ebff", intensity: 0.45 },
     sun: null, nightKey: NIGHT_KEY,
     floodlights: FLOODLIGHTS,
     fog: { color: "#0b1426", density: 0.0028, near: 76, far: 300, volumetricAtHigh: false, lightCones: 4 },
@@ -177,6 +202,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   grass: {
     id: "grass", city: "London", timeOfDay: "late morning (11:00), soft sun on striped turf",
     hdri: "kloppenheim_02", hdriSize: "1k", environmentIntensity: 0.9, environmentRotationDeg: 0, background: "hdri",
+    rimLight: { color: "#fff7e2", intensity: 0.42 },
     sun: { elevationDeg: 40, azimuthDeg: 120, color: "#fff1dc", intensity: 2.6, lightSize: 0.9, colorTemperatureK: 5600 },
     floodlights: [],
     fog: { color: "#cfdbe6", density: 0.0021, near: 84, far: 320, volumetricAtHigh: false, lightCones: 0 },
@@ -187,6 +213,17 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   clay: {
     id: "clay", city: "Paris", timeOfDay: "late afternoon (18:30), 18-degree golden raking light on terracotta",
     hdri: "venice_sunset", hdriSize: "1k", environmentIntensity: 0.8, environmentRotationDeg: 0, background: "hdri",
+    skyGradient: {
+      zenith: "#34517a",
+      horizon: "#f2b87d",
+      ground: "#73422b",
+      mid: [{ color: "#b97f7c", blend: [0.04, 0.32] }],
+      zenithBlend: [0.24, 0.82],
+      haze: { color: "#f6c992", intensity: 0.32, falloff: 6.5 },
+      sun: { elevationDeg: 18, azimuthDeg: 250, color: "#ffd9a0", glow: [{ exponent: 10, intensity: 0.26 }, { exponent: 48, intensity: 0.36 }], discIntensity: 1.6, discSoftness: 0.45 },
+      dither: true
+    },
+    rimLight: { color: "#ffd29e", intensity: 0.45 },
     sun: { elevationDeg: 18, azimuthDeg: 250, color: "#ffc27a", intensity: 4.6, lightSize: 0.6, colorTemperatureK: 3400 },
     floodlights: [],
     fog: { color: "#e3a46a", density: 0.003, near: 74, far: 290, volumetricAtHigh: false, lightCones: 0 },
@@ -197,6 +234,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   desert: {
     id: "desert", city: "Dubai", timeOfDay: "noon (12:30), white-hot sun through dust haze",
     hdri: "outdoor-midday", hdriSize: "2k", environmentIntensity: 0.75, environmentRotationDeg: 0, background: "hdri",
+    rimLight: { color: "#fff2d6", intensity: 0.42 },
     // GU47 phase 4 (p4-r1 frame: the 72-degree sun behind the camera left the athletes without a visible shadow): a 52-degree
     // early-afternoon sun from beyond the far baseline throws short shadows toward the broadcast camera.
     sun: { elevationDeg: 52, azimuthDeg: 160, color: "#fffaf0", intensity: 4.6, lightSize: 0.4, colorTemperatureK: 6200 },
@@ -209,6 +247,17 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   beach: {
     id: "beach", city: "Tropical Beach", timeOfDay: "golden hour (18:00), warm sun on pale sand",
     hdri: "sunset-dramatic", hdriSize: "2k", environmentIntensity: 0.7, environmentRotationDeg: 0, background: "hdri",
+    skyGradient: {
+      zenith: "#1f6c8a",
+      horizon: "#f5cfa1",
+      ground: "#488f93",
+      mid: [{ color: "#68b0b8", blend: [0.02, 0.26] }],
+      zenithBlend: [0.22, 0.78],
+      haze: { color: "#fae1bf", intensity: 0.34, falloff: 7 },
+      sun: { elevationDeg: 22, azimuthDeg: 290, color: "#ffd8ab", glow: [{ exponent: 10, intensity: 0.24 }, { exponent: 54, intensity: 0.34 }], discIntensity: 1.5, discSoftness: 0.4 },
+      dither: true
+    },
+    rimLight: { color: "#ffe0bd", intensity: 0.45 },
     sun: { elevationDeg: 22, azimuthDeg: 290, color: "#ffc596", intensity: 3.8, lightSize: 0.6, colorTemperatureK: 3600 },
     floodlights: [],
     fog: { color: "#f2dcc0", density: 0.0025, near: 78, far: 305, volumetricAtHigh: false, lightCones: 0 },
@@ -219,6 +268,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   moon: {
     id: "moon", city: "The Moon", timeOfDay: "lunar day, one hard sun on grey regolith, Earth in view",
     hdri: "deep_space_starfield", hdriSize: "2k", environmentIntensity: 0.22, environmentRotationDeg: 0, background: "hdri",
+    rimLight: { color: "#b6d8ff", intensity: 0.35 },
     sun: { elevationDeg: 25, azimuthDeg: 60, color: "#fff6e8", intensity: 7, lightSize: 0.05, colorTemperatureK: 5600 },
     floodlights: [],
     fog: null,

@@ -17,7 +17,7 @@
  * light cones through the fight plane. Bounds pinned in tests/unit/iron-crown/neutral-grade.test.ts.
  */
 import type { AuraColor, AuraHdriId, AuraLookOverrides, AuraSceneNode } from "@aura3d/engine";
-import { NEUTRAL_BLOOM_TINT } from "./look";
+import { FIGHT_LANE_SHADOW_FIT, NEUTRAL_BLOOM_TINT } from "./look";
 import type { OriginalLook } from "./originalLook";
 import type { StageId } from "./stages";
 
@@ -70,13 +70,13 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
       environmentIntensity: 0.28,
       environmentRotationDeg: 330,
       sun: { elevationDeg: 34, azimuthDeg: -62 },
-      key: { color: "#fff6ee", intensity: 7.5, shadow: { filter: "pcf", mapSize: 2048 } },
+      key: { color: "#fff6ee", intensity: 7.5, shadow: { filter: "pcf", mapSize: 2048, softness: 1.6, fit: FIGHT_LANE_SHADOW_FIT } },
       grade: { contrast: 1.24, saturation: 1.12, temperature: 0, tint: 0 }
     },
     rim: { color: "#e2ecff", intensity: 16 },
     ringKey: { color: "#f7f3ee", intensity: 9 },
     ringFill: { color: "#dbe6ff", intensity: 6 },
-    spawnDisc: "#8d8274",
+    spawnDisc: "#9b8f80",
     contact: { intensity: 1, length: 0.45 },
     cones: false,
     vignette: 0.28,
@@ -99,7 +99,7 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
         height: { mode: "linear", near: 95, far: 300, maxOpacity: 0.16, affectsBackground: false }
       },
       environmentIntensity: 0.34,
-      key: { color: "#f3f5fa", intensity: 2.4, shadow: { filter: "pcf", mapSize: 2048 } },
+      key: { color: "#f3f5fa", intensity: 2.4, shadow: { filter: "pcf", mapSize: 2048, softness: 1.5, fit: FIGHT_LANE_SHADOW_FIT } },
       grade: { contrast: 1.26, saturation: 1.06, temperature: -0.06, tint: 0 }
     },
     rim: { color: "#dce9ff", intensity: 18 },
@@ -112,7 +112,7 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     bloom: { intensity: 0.14, threshold: 1.45 },
     followSpot: { color: "#f6f6f4", intensity: 30 },
     mirror: 0.16,
-    spawnDisc: "#28222b",
+    spawnDisc: "#4a434f",
     contact: { intensity: 1, length: 0.45 }
   },
   "desert-airbase": {
@@ -131,13 +131,13 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
       environmentIntensity: 0.46,
       environmentRotationDeg: 200,
       sun: { elevationDeg: 26, azimuthDeg: -64 },
-      key: { color: "#fff1e2", intensity: 4, shadow: { filter: "pcf", mapSize: 2048 } },
+      key: { color: "#fff1e2", intensity: 4, shadow: { filter: "pcf", mapSize: 2048, softness: 2.0, fit: FIGHT_LANE_SHADOW_FIT } },
       grade: { contrast: 1.24, saturation: 1.12, temperature: 0.02, tint: 0 }
     },
     rim: { color: "#e2ecff", intensity: 16 },
     ringKey: { color: "#f7f2ec", intensity: 8 },
     ringFill: { color: "#dbe6ff", intensity: 5 },
-    spawnDisc: "#9a8a72",
+    spawnDisc: "#a8977e",
     contact: { intensity: 1, length: 0.45 },
     cones: false,
     vignette: 0.28,
@@ -159,13 +159,13 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
       environmentIntensity: 0.46,
       environmentRotationDeg: 300,
       sun: { elevationDeg: 28, azimuthDeg: 58 },
-      key: { color: "#fff3e6", intensity: 4, shadow: { filter: "pcf", mapSize: 2048 } },
+      key: { color: "#fff3e6", intensity: 4, shadow: { filter: "pcf", mapSize: 2048, softness: 1.8, fit: FIGHT_LANE_SHADOW_FIT } },
       grade: { contrast: 1.22, saturation: 1.1, temperature: -0.04, tint: 0 }
     },
     rim: { color: "#e2ecff", intensity: 15 },
     ringKey: { color: "#f7f3ee", intensity: 8 },
     ringFill: { color: "#dbe6ff", intensity: 5 },
-    spawnDisc: "#8f949a",
+    spawnDisc: "#9ba1a8",
     contact: { intensity: 1, length: 0.45 },
     cones: false,
     vignette: 0.28,

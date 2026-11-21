@@ -367,7 +367,7 @@ fn ridged(p0: vec2<f32>) -> f32 {
   let pf = vWorld.xz;
   let flatness = smoothstep(0.35, 0.85, N0.y);
   let pd = mix(vec2<f32>(vWorld.x + vWorld.z, vWorld.y * 1.6), pf, flatness);
-  let h0 = ridged(pd * 0.09);
+  let h0 = ridged(pd * 0.09) * 0.72 + ridged(pd * 0.24 + vec2<f32>(3.7, -5.1)) * 0.28;
   let dpdx0 = dpdx(vWorld);
   let dpdy0 = dpdy(vWorld);
   let dhx = dpdx(h0);
@@ -376,21 +376,24 @@ fn ridged(p0: vec2<f32>) -> f32 {
   let r2 = cross(N0, dpdx0);
   let det = dot(dpdx0, r1);
   let grad = sign(det) * (dhx * r1 + dhy * r2);
-  let bumpK = 5.0 * (1.0 - smoothstep(25.0, 130.0, length(vWorld - aura.u_cameraPosition)));
+  let bumpK = 5.4 * (1.0 - smoothstep(45.0, 240.0, length(vWorld - aura.u_cameraPosition)));
   let N = normalize(abs(det) * N0 - bumpK * grad);
   let n = fbm(pf * 0.020);
-  var rock = mix(vec3<f32>(0.17, 0.21, 0.27), vec3<f32>(0.34, 0.40, 0.47), n) * (0.82 + 0.36 * n);
-  rock = rock * (0.72 + 0.56 * h0);
+  var rock = mix(vec3<f32>(0.16, 0.21, 0.28), vec3<f32>(0.36, 0.43, 0.52), n) * (0.82 + 0.36 * n);
+  rock = rock * (0.70 + 0.60 * h0);
   rock = rock * (0.9 + 0.2 * vnoise(vWorld.xz * 1.9 + vec2<f32>(vWorld.y * 0.7)));
   let snow = smoothstep(0.55, 0.9, N0.y) * smoothstep(aura.u_snowLine, aura.u_snowLine + 90.0, vWorld.y);
   var albedo = mix(rock, vec3<f32>(0.50, 0.56, 0.63), snow * 0.55) * aura.u_terrainTint;
   let strata = 0.5 + 0.5 * sin(vWorld.y * 0.85 + n * 6.0);
-  albedo = albedo * (0.9 + 0.1 * strata * (1.0 - N0.y));
+  let microStrata = 0.5 + 0.5 * sin(vWorld.y * 2.6 + h0 * 5.0);
+  albedo = albedo * (0.86 + (0.14 * strata + 0.08 * microStrata) * (1.0 - N0.y));
   let cavity = smoothstep(0.35, 0.75, h0);
+  let slopeMask = a3dPow(1.0 - clamp(N0.y, 0.0, 1.0), 1.8);
+  let bioVein = smoothstep(0.76, 0.93, h0) * smoothstep(0.55, 0.88, microStrata) * slopeMask;
   gSun = a3dSunShadowAuto(vWorld, N);
   gWorld = vWorld;
   var color = lit(albedo, N) * 1.25 * (0.75 + 0.35 * cavity);
-  color = color + vec3<f32>(0.04, 0.16, 0.18) * a3dPow(1.0 - clamp(N0.y, 0.0, 1.0), 2.0);
+  color = color + vec3<f32>(0.05, 0.20, 0.24) * slopeMask + vec3<f32>(0.08, 0.52, 0.58) * bioVein * 0.42;
   return vec4<f32>(applyFog(color, vWorld), 1.0);
 }`);
 

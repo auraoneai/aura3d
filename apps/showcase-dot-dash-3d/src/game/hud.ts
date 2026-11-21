@@ -35,6 +35,14 @@ export function mountUI(): void {
   $("dd-t-circuit").addEventListener("click", () => openCircuit());
   $("dd-t-studio").addEventListener("click", () => openStudio());
 
+  // ---- mobile compact bar pill + menu trigger
+  document.getElementById("dd-mobile-pill")?.addEventListener("click", () => openCircuit());
+  document.getElementById("dd-mobile-menu")?.addEventListener("click", () => {
+    if ($("dd-pause").hidden === false) setPaused(false);
+    else if (isPausable()) setPaused(true);
+    else openCircuit();
+  });
+
   // ---- top bar
   $("dd-btn-play").addEventListener("click", () => startRun("quick", "classic"));
   $("dd-btn-school").addEventListener("click", () => startRun("school", "classic"));
@@ -223,12 +231,15 @@ export function tickUI(): void {
   const inRun = st.mode !== "title";
   $("dd-hud").style.opacity = inRun ? "1" : "0.25";
 
-  // mode tag + silkscreen board rev + school legend
+  // mode tag + board identifier + school legend
   const boardIdx = MAZE_ORDER.indexOf(st.mazeId) + 1;
-  $("dd-mode-tag").textContent =
+  const modeLabel =
     st.runKind === "school" ? "Sentry Lab" : st.runKind === "circuit" ? "Board Map" : "Quick Play";
+  $("dd-mode-tag").textContent = modeLabel;
   const revEl = document.getElementById("dd-rev-tag");
-  if (revEl) revEl.textContent = `REV 5.5 · BD-0${boardIdx}`;
+  if (revEl) revEl.textContent = `BD-0${boardIdx} · ${st.maze.def.title}`;
+  const mobilePill = document.getElementById("dd-mobile-pill");
+  if (mobilePill) mobilePill.textContent = `${modeLabel} · ${st.maze.def.title} ▾`;
   $("dd-school-legend").hidden = !(st.school && inRun);
   if (st.school) {
     const rows = document.querySelectorAll("#dd-school-legend .dd-school-row");

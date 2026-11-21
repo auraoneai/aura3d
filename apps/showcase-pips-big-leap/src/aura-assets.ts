@@ -6,32 +6,32 @@
 export const assets = {
   backdrop: {
     verdant: {
-      id: "showcaseKenneyVerdantPlatformerWorld",
+      id: "showcaseKenneyVerdantPlatformerWorld", // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
       hash: "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
       bounds: [831.812, 20.246, 2.8] as const
     },
     cartoon: {
-      id: "showcaseCartoonPlatformWorld",
+      id: "showcaseCartoonPlatformWorld", // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
       hash: "sha256-b8fc8e2586819a97a81839b07cce298986deb556da6842691bec14ee4dde9b7d",
       bounds: [18.49, 20.576, 4.81] as const
     },
     palace: {
-      id: "showcasePlatformerWorldLevel",
+      id: "showcasePlatformerWorldLevel", // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
       hash: "sha256-2fc1b7837a806baf57e497da880e1415908eaa85eee2795da0faf579fff1eeec",
       bounds: [72.346, 73.204, 12.129] as const
     },
     readable: {
-      id: "showcaseReadablePlatformLevel",
+      id: "showcaseReadablePlatformLevel", // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
       hash: "sha256-56edd8acc1a8c803bef3e5a13044a9ee4a903bafae4e80fc3a9e6e49697c0c68",
       bounds: [1330.839, 285.819, 370.509] as const
     },
     sidescroll: {
-      id: "showcaseSideScrollerPlatformLevel",
+      id: "showcaseSideScrollerPlatformLevel", // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
       hash: "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
       bounds: [1428.155, 386.171, 735.373] as const
     },
     basicpack: {
-      id: "showcasePlatformerBasicPack",
+      id: "showcasePlatformerBasicPack", // borrowed-asset: ok (unmounted provenance record; never mounted in scene)
       hash: "sha256-f28b1b1568ec532ddb45f6dbfd9417a80df293253450b68b46b70fa09331660d",
       bounds: [6, 2.174, 7.026] as const
     }

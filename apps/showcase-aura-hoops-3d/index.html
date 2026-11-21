@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase</title>
     <meta name="description" content="Aura Hoops 3D: 5v5 streetball on the Aura3D engine — check ball, a timed shot meter, Jam Meter dunk packages, team kits, six world courts, Dunk Lab…" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -157,6 +157,10 @@
         color: var(--accent-2);
         font-weight: 600;
       }
+      body[data-menu-open="true"] .aura3d-controls-hint,
+      body:has(#menu-overlay.open) .aura3d-controls-hint {
+        display: none !important;
+      }
 
       /* ---------- HUD ---------- */
       #hud {
@@ -195,10 +199,10 @@
         display: flex;
         align-items: stretch;
         gap: 0;
-        background: rgba(8, 9, 12, 0.78);
-        border: 1px solid var(--rule);
-        border-radius: 6px;
-        backdrop-filter: blur(8px);
+        background: var(--a3g-bg, rgba(8, 14, 26, 0.85));
+        border: 1px solid var(--a3g-edge, var(--rule));
+        border-radius: var(--a3g-radius, 6px);
+        backdrop-filter: blur(10px);
       }
 
       .sb-team {
@@ -441,10 +445,17 @@
 
       .shot-meter .sm-perfect {
         position: absolute;
-        top: 0;
-        bottom: 0;
-        background: linear-gradient(180deg, #ffffff, #ffe49c);
-        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+        top: -1px;
+        bottom: -1px;
+        background: linear-gradient(180deg, #ffffff, #ffd257);
+        box-shadow: 0 0 12px rgba(255, 210, 87, 0.95);
+      }
+      .shot-meter[data-release="green"] {
+        border-color: rgba(102, 227, 127, 0.72);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.52), 0 0 16px rgba(102, 227, 127, 0.35);
+      }
+      .shot-meter[data-release="green"] .sm-label {
+        color: var(--ok);
       }
 
       .shot-meter .sm-needle {
@@ -1069,10 +1080,21 @@
           padding: 3px 7px;
         }
         .sb-mid .sb-venue {
-          max-width: 98px;
+          max-width: 112px;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+        }
+        .aura3d-top-bar .bar-label {
+          display: none;
+        }
+        .aura3d-top-bar button {
+          padding: 0 7px;
+          font-size: 11px;
+        }
+        .touch-btn {
+          min-width: 48px;
+          min-height: 48px;
         }
         .jam-meter-wrap {
           padding: 4px 8px;

@@ -95,7 +95,7 @@ describe("Apex Overdrive art direction (GU47 WP-12)", () => {
     expect(Math.round(APEX_FOG_RANGE.near)).toBe(43);
     expect(Math.round(APEX_FOG_RANGE.far)).toBe(257);
     expect(APEX_GRADE).toEqual({ contrast: 1.12, saturation: 1.08 });
-    expect(APEX_BLOOM).toEqual({ intensity: 0.55, threshold: 0.85, scatter: 0.5 });
+    expect(APEX_BLOOM).toEqual({ intensity: 0.48, threshold: 0.92, scatter: 0.5 });
     for (const row of APEX_LOOK) {
       expect(row.fill.intensity).toBeLessThanOrEqual(0.6);
       expect(row.sun.azimuthDeg).toBe(175);

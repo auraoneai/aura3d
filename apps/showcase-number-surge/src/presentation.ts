@@ -4,7 +4,7 @@
  * the sim. Entities live in a scrolling frame and are stepped back by the
  * unelapsed fraction of the last step (Splat pattern).
  */
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import { LOOK } from "./look";
 import type { GameState, NumberSurgeSim } from "./sim";
 
@@ -122,6 +122,13 @@ export function blendShown(a: Shown, b: Shown, t: number): Shown {
   };
 }
 
-export function createNumberSurgePresenter(getSim: () => NumberSurgeSim, getCam: () => CamPose): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getSim(), getCam()), blend: blendShown });
+export function createNumberSurgePresenter(getSim: () => NumberSurgeSim, getCam: () => CamPose): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({
+    snapshot: () => shownOf(getSim(), getCam()),
+    blend: blendShown,
+    snap: (a, b) => {
+      const moved = b.distance - a.distance;
+      return moved < 0 || moved > SNAP_DISTANCE;
+    }
+  });
 }

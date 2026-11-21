@@ -3,8 +3,16 @@
  * district-tinted GPS radar minimap). Pure helpers plus two small DOM writers; `?look=original` never calls them.
  * Licensed AuraOne fonts come from `hud-tokens.css` and `/fonts/local.css` (Whitney, DIN Pro, Monument Grotesk Mono).
  */
+import { HUD_THEMES } from "@aura3d/engine/game";
 import { BLOCK_HALF, type Block, type District } from "./world";
 import { COURIER_TEAL } from "./fx";
+
+/** Apply `HUD_THEMES["motorsport"]` tokens onto the root element (preserving cream-ticket & courier-teal accents). */
+export function applyMotorsportHudTheme(root: HTMLElement): void {
+  for (const [key, value] of Object.entries(HUD_THEMES.motorsport)) {
+    root.style.setProperty(key, value);
+  }
+}
 
 /** District paper tints on the minimap (the facade palette of GC-M2; courier teal stays reserved for car and drop-off). */
 export const DISTRICT_TINT: Readonly<Record<District, string>> = {

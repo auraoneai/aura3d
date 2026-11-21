@@ -128,4 +128,19 @@ describe("aura-fc-3d QA crops", () => {
     expect(FLOOD_TOWERS.map((_, index) => projectPoint(cam, floodHead(index)))).toEqual([null, null, null, null]);
     expect(fcQaCrops(cam, null, [0, 0.21, 0]).some((c) => c.name === "flood-bank")).toBe(false);
   });
+
+  it("publishes an upper fascia flood-bank strip in the 1280x720 broadcast frame across night venues", () => {
+    const pose = hybridBroadcastPose(0, 0, 0);
+    const cam: QaCamera = { eye: pose.eye, target: pose.target, fovDeg: pose.fov, aspect: 16 / 9 };
+    for (const venue of ["favela", "glacier", "kyoto", "munich"] as const) {
+      const flood = fcQaCrops(cam, null, [0, 0.21, 0], venue).find((c) => c.name === "flood-bank");
+      expect(flood, venue).toBeDefined();
+      expect(flood!.y, venue).toBeLessThan(0.15);
+      expect(flood!.w, venue).toBeGreaterThan(0.01);
+      expect(flood!.h, venue).toBeGreaterThan(0.004);
+    }
+    for (const dayVenue of ["lagos", "uyuni"] as const) {
+      expect(fcQaCrops(cam, null, [0, 0.21, 0], dayVenue).some((c) => c.name === "flood-bank"), dayVenue).toBe(false);
+    }
+  });
 });

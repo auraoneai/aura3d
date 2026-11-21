@@ -11,7 +11,7 @@ import {
   dualEnergyFieldSpec,
   type CustomMaterialSpec
 } from "../../../showcase-port-shared/dual-shaders";
-import { createFlipbookAtlas, type FlipbookAtlasSpec } from "../../../showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, type FlipbookAtlasSpec } from "@aura3d/engine/game";
 import { WGSL_CLIP, WGSL_COLOR, WGSL_MATH, wgslStage } from "../../../showcase-port-shared/wgsl-twins";
 
 const FLIPBOOK_VARYING_GLSL = /* glsl */ `

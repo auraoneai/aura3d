@@ -3,8 +3,7 @@ import { describe, expect, it } from "vitest";
 import { DIVE_CLIP_SIDE, KICK_CONTACT_FRAC, fcMotionRequest, type FcMotionState } from "../../../apps/showcase-aura-fc-3d/src/game/idolBodies";
 import { MOTION_CLIPS } from "../../../apps/showcase-aura-fc-3d/src/game/motion.generated";
 import { athleteAnimation } from "../../../apps/showcase-aura-fc-3d/src/game/locomotion";
-import { createHumanoidDriver, parseGlbJson, readIdolSkeleton } from "../../../apps/showcase-port-shared/idol/humanoid";
-import { createMotionAnimator, eventTime, locomotionTime } from "../../../apps/showcase-port-shared/idol/motion";
+import { createHumanoidDriver, parseGlbJson, readIdolSkeleton, createHumanoidAnimator, humanoidEventTime, humanoidLocomotionTime } from "@aura3d/engine/animation";
 
 const driver = createHumanoidDriver(readIdolSkeleton(parseGlbJson(readFileSync("apps/showcase-aura-fc-3d/assets/idol/fcIdolAwayA.glb"))));
 const HIP = driver.map.hipHeight;
@@ -38,9 +37,9 @@ describe("Aura FC 3D generated motion (fal hunyuan-motion): state -> clip", () =
     expect(Number(MOTION_CLIPS.Kick.meta!.footRPeakSpeed)).toBeGreaterThan(Number(MOTION_CLIPS.Kick.meta!.footLPeakSpeed)); // right-footed
     const k = req({ clip: "KickShot", phase: KICK_CONTACT_FRAC * 0.6, duration: 0.6 });
     expect("clip" in k && k.time).toBeCloseTo(contact, 6);
-    expect(eventTime(MOTION_CLIPS.Kick, 0.2, KICK_CONTACT_FRAC, "footRPeakTime")).toBeLessThan(contact);
+    expect(humanoidEventTime(MOTION_CLIPS.Kick, 0.2, KICK_CONTACT_FRAC, "footRPeakTime")).toBeLessThan(contact);
     // the kicking foot is ahead of the hips at contact
-    const pose = createMotionAnimator(MOTION_CLIPS).update(0, { clip: "Kick", time: contact, loop: false });
+    const pose = createHumanoidAnimator(MOTION_CLIPS).update(0, { clip: "Kick", time: contact, loop: false });
     expect(at(pose, "rightFoot")[2]).toBeGreaterThan(at(pose, "hips")[2]);
   });
 
@@ -49,7 +48,7 @@ describe("Aura FC 3D generated motion (fal hunyuan-motion): state -> clip", () =
       const k = req({ clip: "Jump_Loop", isKeeper: true, diveDir: dir, yaw: 0, phase: 0.5, duration: 0.64 });
       const want = dir > 0 ? "right" : "left";
       expect("clip" in k && Boolean(k.mirror)).toBe(want !== DIVE_CLIP_SIDE);
-      const pose = createMotionAnimator(MOTION_CLIPS).update(0, k);
+      const pose = createHumanoidAnimator(MOTION_CLIPS).update(0, k);
       // head leads the dive: the body's right is -X
       const head = at(pose, "head")[0] - at(pose, "hips")[0];
       expect(Math.sign(head)).toBe(want === "right" ? -1 : 1);
@@ -57,10 +56,10 @@ describe("Aura FC 3D generated motion (fal hunyuan-motion): state -> clip", () =
   });
 
   it("locomotion advances by distance, arms hang in idle, bones move over frame time", () => {
-    expect(locomotionTime(MOTION_CLIPS.Run, 0.6, HIP)).toBeGreaterThan(0);
-    const idle = createMotionAnimator(MOTION_CLIPS).update(0, req({}));
+    expect(humanoidLocomotionTime(MOTION_CLIPS.Run, 0.6, HIP)).toBeGreaterThan(0);
+    const idle = createHumanoidAnimator(MOTION_CLIPS).update(0, req({}));
     for (const s of ["left", "right"]) expect(at(idle, `${s}UpperArm`)[1] - at(idle, `${s}Hand`)[1]).toBeGreaterThan(0.3);
-    const anim = createMotionAnimator(MOTION_CLIPS);
+    const anim = createHumanoidAnimator(MOTION_CLIPS);
     const a = anim.update(1 / 60, req({ clip: "Run", metres: 0 })), b = anim.update(1 / 60, req({ clip: "Run", metres: 0.9 }));
     const moved = Math.max(...["leftFoot", "rightFoot", "leftHand", "rightHand"].map((k) => Math.hypot(...at(a, k).map((v, i) => v - at(b, k)[i]!))));
     expect(moved).toBeGreaterThan(0.1);

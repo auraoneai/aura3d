@@ -40,7 +40,7 @@ import { APEX_PLUMES, plumeSpec } from "./art/plume";
 import { CONTACT_SIZE, DECAL_CAPACITY, DECAL_KIND_CODE, DECAL_SIZE, DECAL_Y, contactScaleY, decalLayout, decalSpec } from "./render/decals";
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { FIXED_DT, POWERUP_SECONDS } from "./native/constants";
-import { createFreewayAutopilot } from "./native/autopilot";
+import { createRoadsterAutoplayHarness } from "./native/autopilot";
 import { GANTRY_COUNT, SIGN_BAND } from "./native/world";
 import { gantryBoxes, gantryGeometrySpecs } from "./render/gantry";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -62,6 +62,7 @@ import {
   buildCarrierRampRailSpec,
   buildHeroHeadlightNode,
   buildHeroTaillightBarNode,
+  buildHeroTaillightHousingNode,
   buildPowerupEmblemSpec,
   buildRoadsideBarrierPairSpec,
   buildRoadsideCorridorNode,
@@ -95,8 +96,6 @@ import {
   idolTrafficPaint
 } from "./render/idolFleet";
 import { WHEEL_MODELS, easeSteer, fanSpin, heroSteerTarget, mat3FromEulerZYX, shownRollDistance, vehicleWheelTransforms, wheelCount, wheelHubs, wheelLocalMat3, wheelRoll, type WheelTransform } from "./render/idolWheels";
-import { createImpactRig } from "../../showcase-port-shared/feel";
-import { createGradingLut } from "../../showcase-port-shared/vfx-pack";
 import { PYLON_ROWS, pylonGeometrySpecs, pylonLayout } from "./render/pylons";
 import {
   BILLBOARD_FACE_SIZE,
@@ -105,6 +104,7 @@ import {
   GANTRY_LABEL_OFFSET,
   RING_ROWS,
   SPAN_SLOTS,
+  billboardFaceMaterial,
   billboardLayout,
   ringLayout,
   skywayDressingSpecs,
@@ -112,7 +112,7 @@ import {
 } from "./render/dressing";
 import { TOWER_CAPACITY_PER_VARIANT, TOWER_CROWN_CAPACITY, TOWER_VARIANTS, bayRidgeTransforms, towerCrownLayout, towerGlassSpec, towerLayout, type TowerVariant } from "./render/towers";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
-import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
+import { createCameraShake, createGradingLut, createHitStop, createImpactRig, installGameBeacon, readAutoplayFlag, warmPrograms } from "@aura3d/engine/game";
 import {
   HERO_PLUME_LOCAL_MATS,
   bodyMatrixFromYXZ,
@@ -126,7 +126,7 @@ import {
 import { apexSpeedLines, apexVfxEvents, countSkyDodges, type ApexVfxFrame } from "./render/vfxDirector";
 import { APEX_CHASE_POSE, SLOW_MO_SECONDS, apexTitleDurationSeconds, apexTitleSequence, chaseCameraOffsets, createApexSlowMo } from "./render/cinematics";
 import { CHASE_CAMERA_BACK, CHASE_CAMERA_UP, createCameraClearance, type ClearanceVehicle } from "./render/cameraClearance";
-import { createApexSmokeAtlas, createApexSparkAtlas, flipbookBurstSpec, registerApexVfx } from "./art/vfx";
+import { createApexSmokeAtlas, createApexSparkAtlas, registerApexVfx } from "./art/vfx";
 import { InstancePool, parked } from "./render/instancePool";
 import { apexQaCrops, type QaCrop } from "./render/qa";
 import {
@@ -180,7 +180,8 @@ const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
 
 const urlParams = new URLSearchParams(window.location.search);
 /** Start the run at once only for demos and captures; everyone else gets the title card (audit RR-10). */
-const AUTOSTART = ["autoplay", "demo", "capture"].some((k) => urlParams.get(k) === "1");
+const AUTOPLAY_ON = readAutoplayFlag(urlParams);
+const AUTOSTART = AUTOPLAY_ON || urlParams.get("capture") === "1";
 const REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 /** `?tod=sunset|dusk|night|0..1` pins the presented time of day (capture variants); presentation only, like the quick bar. */
 const TOD_PARAM = parseTodParam(urlParams.get("tod"));
@@ -295,6 +296,7 @@ function rotateLocalOffset(
 interface PlayerHandles {
   car: AuraRuntimeNodeHandle;
   canopy: AuraRuntimeNodeHandle;
+  lightbarHousing: AuraRuntimeNodeHandle;
   lightbar: AuraRuntimeNodeHandle;
   headlightL: AuraRuntimeNodeHandle;
   headlightR: AuraRuntimeNodeHandle;
@@ -340,10 +342,8 @@ function apexLookNode(): AuraSceneNode {
       environmentIntensity: sunset.environmentIntensity,
       environmentRotationDeg: APEX_IBL_ROTATION_DEG,
       background: APEX_PALETTE.charcoal,
-      // AO-L4: 3 cascades with PCSS soft shadows (the tier table drops to 1 cascade / PCF on Low). GU47 phase 4: 140 -> 90 m,
-      // the reach of the shadow-casting near traffic pools (beyond 90 m the far LODs cast nothing), so the same 2048 map
-      // spends its texels where shadows exist; at 140 m the carrier's long shadow showed stair-steps in the glare.
-      key: { color: sunset.sun.color, intensity: sunset.sun.intensity, shadow: { cascades: 3, maxDistance: 90, filter: "pcss", mapSize: 2048 } },
+      // AO-L4 / 5.7.2: texel-locked road-ahead ortho fit + calibrated PCF softness eliminates cascade shimmer on the wet deck.
+      key: { color: sunset.sun.color, intensity: sunset.sun.intensity, shadow: { cascades: 3, maxDistance: 90, filter: "pcss", mapSize: 2048, softness: 2.0, fit: { center: [0, 0, -28], extent: [26, 16], depth: 48 } } },
       // Crisp skyway fog range: 38/196 under 0.4 density scale = near 95 / far 490; colour follows time of day
       fog: { color: sunset.fog.color, near: APEX_SCENE_FOG_PRESET.near, far: APEX_SCENE_FOG_PRESET.far },
       // AO-P1: the game's own grade replaces the look's (one grade stage); the white balance follows the time of day
@@ -360,7 +360,7 @@ function apexLookNode(): AuraSceneNode {
       return { ...child, intensity: 0.58, radius: 0.55 } as AuraSceneNode;
     }
     if (child.kind === "effect" && child.name === "look bloom") {
-      return { ...child, intensity: 0.36, threshold: 0.96, scatter: 0.38, radius: 0.32, antiBlowout: true, maxIntensity: 0.68 } as AuraSceneNode;
+      return { ...child, intensity: APEX_BLOOM.intensity, threshold: APEX_BLOOM.threshold, scatter: APEX_BLOOM.scatter, radius: 0.32, antiBlowout: true, maxIntensity: 0.68 } as AuraSceneNode;
     }
     if (child.kind === "effect" && child.name === "look fog") {
       return { ...child, mode: "linear", near: Math.max(150, APEX_SCENE_FOG_PRESET.near * 1.6), far: Math.max(520, APEX_SCENE_FOG_PRESET.far), maxOpacity: 0.26, affectsBackground: false } as unknown as AuraSceneNode; // fog `mode` is AuraHeightFogSpec["mode"] (engine FogNodeOptions), not the anti-alias mode AuraEffectNode declares
@@ -572,7 +572,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .custom(dressingSpecs.billboardFrame, { name: "billboard-frames", material: APEX_PROCEDURAL_MATERIALS.billboardSpaceFrame(), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
       .runtime(game.runtimeNode(poolId("billboard-frames"))),
     instances
-      .box({ name: "billboard-faces", size: [...BILLBOARD_FACE_SIZE], material: material.emissive({ color: "#ffb066", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.68, practical: true }), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
+      .box({ name: "billboard-faces", size: [...BILLBOARD_FACE_SIZE], material: billboardFaceMaterial(), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
       .runtime(game.runtimeNode(poolId("billboard-faces"))),
     // AO-A1: glass tower skyline rising from the haze, one instanced curtain-wall node per variant (3 draws). No shadows.
     ...TOWER_VARIANTS.map((variant) =>
@@ -615,6 +615,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     primitives
       .sphere({ name: "player-canopy-glass", size: [2, 2, 2], material: apexCanopyGlassMaterial(), castShadow: false, receiveShadow: false })
       .runtime({ id: "player-canopy-glass" }),
+    buildHeroTaillightHousingNode(),
     buildHeroTaillightBarNode(),
     buildHeroHeadlightNode("l"),
     buildHeroHeadlightNode("r"),
@@ -797,13 +798,35 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     instances
       .plane({ name: "wingtip-vortex-ribbons", material: material.custom(wakeSpec("#bae6fd", 0.12, [34, 84])), castShadow: false, receiveShadow: false, transforms: parked(APEX_WAKE_CAPACITY) })
       .runtime(game.runtimeNode(poolId("wingtip-vortices"))),
-    primitives
-      .plane({ name: "vfx-spark-burst", size: [2.1, 2.1], material: material.custom(flipbookBurstSpec(sparkAtlas, APEX_PALETTE.tangerine, true)), castShadow: false, receiveShadow: false })
-      .scale(HIDDEN_SCALE)
+    effects
+      .flipbook({
+        name: "vfx-spark-burst",
+        texture: sparkAtlas.texture,
+        spriteColumns: sparkAtlas.columns,
+        spriteRows: sparkAtlas.rows,
+        size: 2.1,
+        frameRate: 48,
+        intensity: 1.5,
+        color: APEX_PALETTE.tangerine,
+        blend: "additive",
+        loop: true,
+        position: [0, -50, 0]
+      })
       .runtime(game.runtimeNode("vfx-spark-burst")),
-    primitives
-      .plane({ name: "vfx-smoke-burst", size: [2.5, 1.8], material: material.custom(flipbookBurstSpec(smokeAtlas, "#dce6f5", false)), castShadow: false, receiveShadow: false })
-      .scale(HIDDEN_SCALE)
+    effects
+      .flipbook({
+        name: "vfx-smoke-burst",
+        texture: smokeAtlas.texture,
+        spriteColumns: smokeAtlas.columns,
+        spriteRows: smokeAtlas.rows,
+        size: 2.4,
+        frameRate: 36,
+        intensity: 0.85,
+        color: "#dce6f5",
+        blend: "alpha",
+        loop: true,
+        position: [0, -50, 0]
+      })
       .runtime(game.runtimeNode("vfx-smoke-burst"))
   ]);
 
@@ -899,6 +922,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const playerHandles: PlayerHandles = {
     car: req("player-roadster-car"),
     canopy: req("player-canopy-glass"),
+    lightbarHousing: req("player-lightbar-housing"),
     lightbar: req("player-lightbar"),
     headlightL: req("player-headlight-l"),
     headlightR: req("player-headlight-r"),
@@ -1102,7 +1126,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const smokeBurstHandle = req("vfx-smoke-burst");
   const wakeHandles = [req(poolId("player-wake")), req(poolId("rival-wakes")), req(poolId("tail-ribbons")), req(poolId("wingtip-vortices"))];
   const playerWakeOptions = { life: wakeLife(APEX_PLAYER_WAKE.life, REDUCED_MOTION), headWidth: APEX_PLAYER_WAKE.headWidth, tailWidth: APEX_PLAYER_WAKE.tailWidth };
-  const tailRibbonOptions = { life: wakeLife(0.24, REDUCED_MOTION), headWidth: 0.14, tailWidth: 0.03 };
+  const tailRibbonOptions = { life: wakeLife(0.22, REDUCED_MOTION), headWidth: 0.09, tailWidth: 0.02 };
   const wingtipVortexOptions = { life: wakeLife(0.3, REDUCED_MOTION), headWidth: 0.1, tailWidth: 0.02 };
   const rivalWakeLife = wakeLife(APEX_RIVAL_WAKE.life, REDUCED_MOTION);
   const wakeTrails = APEX_PLAYER_WAKE.nozzles.map(() => new WakeTrail(playerWakeOptions.life, APEX_PLAYER_WAKE.segments));
@@ -1122,11 +1146,15 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const farScratch: any[] = [];
 
   // State Tracking
-  let autopilot = urlParams.get("autoplay") === "1" || urlParams.get("demo") === "1";
+  let activeGameRef: any = null;
+  const autoplayHarness = createRoadsterAutoplayHarness({ getGame: () => activeGameRef, enabled: AUTOPLAY_ON });
+  let autopilot = autoplayHarness.enabled;
   let framesRendered = 0;
   let lastTodBucket = -1;
   let manualTodOverride: number | null = TOD_PARAM;
   let lastLightbarHot = false;
+  let lastChain = 0;
+  let lastClimbRate = 0;
 
   // Camera feel (audit RR-E2 / WP-06): real-dt `createImpactRig` + `createCameraShake` + `createHitStop` + 2-DOF visual chassis suspension.
   const shake = createCameraShake({ maxOffset: 0.22, maxRoll: 0.02, decayPerSecond: 1.8 });
@@ -1239,9 +1267,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     outerGroundHandle.setUniform?.("windowSpecks", round3(frame.signature.windowSpecks) as never);
   }
 
-  const freewayAutopilot = createFreewayAutopilot();
-  function runSmartFreewayAutopilot(g: any): void {
-    if (autopilot) freewayAutopilot(g, performance.now());
+  function runSmartFreewayAutopilot(g: any, dtSec: number): void {
+    activeGameRef = g;
+    autoplayHarness.enabled = autopilot;
+    if (!autopilot) return;
+    autoplayHarness.step(dtSec);
+    autoplayHarness.tick(dtSec);
   }
 
   let lastPz = 0;
@@ -1291,6 +1322,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     qaApex.post = postStates;
     qaApex.vfx = { presets: vfxKinds, fired: vfxFired, liveCount: auraApp.effects?.liveCount ?? 0, speedLinesAccepted, wakes: { ...wakeDrawn } };
     qaApex.cinematics = { slowMoTriggered: slowMo.triggered, introPlaying: cinematicPlayback !== null };
+    qaApex.autoplay = autoplayHarness.diag();
   };
 
   /** AO-V1 / AO-V2: fire the apex presets and speed lines from this frame's (read-only) simulation state. */
@@ -1323,7 +1355,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         fireVfx(kind, [carAt[0], carAt[1], carAt[2] + 2.6]);
       } else if (kind === "apex-skykill") {
         fireVfx(kind, [carAt[0], carAt[1] + 1.2, carAt[2] - 3]);
-        if (!real.manual) impactRig.trigger({ freezeSeconds: 0.032, trauma: 0.35, fovKickDeg: 3.5 });
+        if (!real.manual) impactRig.trigger({ freezeSeconds: 0.035, trauma: 0.36, fovKickDeg: 3.5 });
       } else {
         fireVfx(kind, carAt);
         if (kind === "apex-crash") {
@@ -1350,11 +1382,11 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     if (!real || !real.player) return;
     framesRendered += 1;
 
-    runSmartFreewayAutopilot(real);
-
     const nowMs = performance.now();
     const realDt = lastFrameMs ? clamp((nowMs - lastFrameMs) / 1000, 0, 0.1) : 1 / 60;
     lastFrameMs = nowMs;
+
+    runSmartFreewayAutopilot(real, realDt);
 
     const p = g.player;
     const px = Number(p.position?.x ?? 0);
@@ -1399,10 +1431,22 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     if (flipping && !lastFlipping && real.mode === "playing") {
       startSlowMo(nowMs);
       if (!real.manual) impactRig.trigger({ freezeSeconds: 0.035, trauma: 0.34, fovKickDeg: 5.5 });
+      suspPitchVel -= 0.28;
       sparkBurstAge = 0;
       sparkBurstPos = [px - chaseX, Math.max(0.45, py * 0.15 + 0.45 + camDrop) - camLift, 0.4];
     }
     lastFlipping = flipping;
+    const climbRate = Number(real.player._climbRate ?? 0);
+    if (climbRate > 1.8 && lastClimbRate <= 1.8 && real.mode === "playing" && !REDUCED_MOTION) {
+      // Carrier-ramp approach suspension pitch compression before cresting into flight
+      suspPitchVel += 0.24;
+    }
+    lastClimbRate = climbRate;
+    const chainNow = Number(real.chain ?? 0);
+    if (chainNow > lastChain && chainNow >= 2 && real.mode === "playing" && !real.manual) {
+      impactRig.trigger({ freezeSeconds: 0.035, trauma: 0.22, fovKickDeg: 2.2 });
+    }
+    lastChain = real.mode === "playing" ? chainNow : 0;
     lastRocketActive = rocketActive;
     updateFlash(nowMs);
     driveVfx(real, nowMs, realDt);
@@ -1634,7 +1678,11 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         .setVisible(true);
     }
 
-    const lbWorld = rotateOffsetByMat3(pRoot, bodyMat, [0, 0.72, 2.12]);
+    const lbWorld = rotateOffsetByMat3(pRoot, bodyMat, [0, 0.72, 2.06]);
+    playerHandles.lightbarHousing
+      .setPosition(lbWorld[0], lbWorld[1], lbWorld[2])
+      .setRotation(rotX, rotY, rotZ)
+      .setVisible(true);
     playerHandles.lightbar
       .setPosition(lbWorld[0], lbWorld[1], lbWorld[2])
       .setRotation(rotX, rotY, rotZ)
@@ -1910,18 +1958,14 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       sparkBurstAge += realDt;
       if (sparkBurstAge < 0.38 && !REDUCED_MOTION) {
         const t = sparkBurstAge / 0.38;
-        const frame = Math.min(31, Math.floor(t * 32));
-        const opacity = Math.sin(Math.PI * Math.min(1, t * 1.15)) * (1 - t * 0.35);
         const s = 0.75 + t * 0.65;
         sparkBurstHandle
           .setPosition(sparkBurstPos[0], sparkBurstPos[1], sparkBurstPos[2])
-          .setRotation(-0.22, 0, 0)
-          .setScale([s, s, 1])
+          .setScale([s, s, s])
           .setVisible(true);
-        sparkBurstHandle.setUniform?.("burstState", [frame, opacity, 2.2, 0] as never);
       } else {
         sparkBurstAge = -1;
-        sparkBurstHandle.setScale(HIDDEN_SCALE).setVisible(false);
+        sparkBurstHandle.setPosition(0, -50, 0).setVisible(false);
       }
     }
 
@@ -1929,18 +1973,14 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       smokeBurstAge += realDt;
       if (smokeBurstAge < 0.52 && !REDUCED_MOTION) {
         const t = smokeBurstAge / 0.52;
-        const frame = Math.min(31, Math.floor(t * 32));
-        const opacity = 0.72 * (1 - t);
         const s = 0.8 + t * 0.85;
         smokeBurstHandle
           .setPosition(smokeBurstPos[0], smokeBurstPos[1], smokeBurstPos[2])
-          .setRotation(-0.22, 0, 0)
-          .setScale([s, s, 1])
+          .setScale([s, s, s])
           .setVisible(true);
-        smokeBurstHandle.setUniform?.("burstState", [frame, opacity, 1.35, 0] as never);
       } else {
         smokeBurstAge = -1;
-        smokeBurstHandle.setScale(HIDDEN_SCALE).setVisible(false);
+        smokeBurstHandle.setPosition(0, -50, 0).setVisible(false);
       }
     }
 
@@ -2340,7 +2380,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       btnAuto.classList.toggle("active", autopilot);
       btnAuto.setAttribute("aria-pressed", String(autopilot));
       btnAuto.addEventListener("click", () => {
-        autopilot = !autopilot;
+        autopilot = autoplayHarness.toggle();
         btnAuto.classList.toggle("active", autopilot);
         btnAuto.setAttribute("aria-pressed", String(autopilot));
         if (autopilot) (window as any).__GAME__?.game?.markAssisted?.();

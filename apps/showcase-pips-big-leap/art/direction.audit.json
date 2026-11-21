@@ -393,6 +393,15 @@
             "practical": false
           },
           {
+            "node": "pbl-drop-shadow",
+            "practical": false
+          },
+          {
+            "node": "pbl-landing-ring",
+            "emissiveIntensity": 1.15,
+            "practical": true
+          },
+          {
             "name": "instanced felt",
             "node": "pbl-flora-clover",
             "practical": false
@@ -990,6 +999,15 @@
             "practical": false
           },
           {
+            "node": "pbl-drop-shadow",
+            "practical": false
+          },
+          {
+            "node": "pbl-landing-ring",
+            "emissiveIntensity": 1.15,
+            "practical": true
+          },
+          {
             "name": "instanced felt",
             "node": "pbl-flora-clover",
             "practical": false
@@ -1436,6 +1454,15 @@
             "practical": false
           },
           {
+            "node": "pbl-drop-shadow",
+            "practical": false
+          },
+          {
+            "node": "pbl-landing-ring",
+            "emissiveIntensity": 1.15,
+            "practical": true
+          },
+          {
             "name": "instanced felt",
             "node": "pbl-flora-clover",
             "practical": false
@@ -1858,6 +1885,15 @@
           {
             "node": "pip:cape",
             "practical": false
+          },
+          {
+            "node": "pbl-drop-shadow",
+            "practical": false
+          },
+          {
+            "node": "pbl-landing-ring",
+            "emissiveIntensity": 1.15,
+            "practical": true
           },
           {
             "name": "instanced felt",
@@ -2343,6 +2379,15 @@
             "practical": false
           },
           {
+            "node": "pbl-drop-shadow",
+            "practical": false
+          },
+          {
+            "node": "pbl-landing-ring",
+            "emissiveIntensity": 1.15,
+            "practical": true
+          },
+          {
             "name": "instanced felt",
             "node": "pbl-flora-clover",
             "practical": false
@@ -2798,6 +2843,15 @@
           {
             "node": "pip:cape",
             "practical": false
+          },
+          {
+            "node": "pbl-drop-shadow",
+            "practical": false
+          },
+          {
+            "node": "pbl-landing-ring",
+            "emissiveIntensity": 1.15,
+            "practical": true
           },
           {
             "name": "amanita crimson cap",
@@ -3305,6 +3359,15 @@
           {
             "node": "pip:cape",
             "practical": false
+          },
+          {
+            "node": "pbl-drop-shadow",
+            "practical": false
+          },
+          {
+            "node": "pbl-landing-ring",
+            "emissiveIntensity": 1.15,
+            "practical": true
           },
           {
             "name": "instanced felt",

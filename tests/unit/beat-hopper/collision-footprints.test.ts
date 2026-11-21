@@ -110,10 +110,10 @@ const CORRIDOR = { halfX: ROAD_WIDTH / 2, minY: 0, maxY: CONFIG.BIG_JUMP_HEIGHT 
 
 /** Top-level scene nodes that are the track itself, the hero, the hazards, or non-solid light / particle volumes. */
 const NOT_DECOR = new Set([
-  "stage-environment", "moon-key", "stage-gold-kicker", "stage-cyan-rim", "sky", "stage-floor", "stage-ridges",
+  "stage-environment", "moon-key", "stage-gold-kicker", "stage-cyan-rim", "sky", "bh-gradient-sky", "stage-floor", "stage-ridges",
   "girder", "underglow", "deck", "rails", "beat-pad-glass", "beat-pad-lacquer", "stripes", "lane-dashes",
   "player", "bot-skate-l", "bot-skate-r", "bot-wheels-l", "bot-wheels-r", "bot-boost-flare", "player-shadow",
-  "blocks", "block-chrome", "block-glow", "bar-posts", "bars", "gaps", "walls", "wall-truss", "wall-glow",
+  "blocks", "block-chrome", "block-glow", "jump-rims", "bar-posts", "bars", "duck-chevrons", "gaps", "walls", "wall-truss", "wall-glow",
   "orbs", "orb-glow", "rings", "vfx-ripples", "vfx-sparks", "particles", "stage-fog", "ao", "ssr", "grade", "vignette",
   "grp-motes", "grp-beams-l", "grp-beams-r"
 ]);

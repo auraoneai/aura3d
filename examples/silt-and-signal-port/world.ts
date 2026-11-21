@@ -23,8 +23,7 @@ import {
   SKY_INK_FRAGMENT_WGSL, SKY_VERTEX_WGSL, STRATA_CLIFF_FRAGMENT_WGSL, STRATA_CLIFF_VERTEX_WGSL, WATER_FRAGMENT_WGSL, WATER_VERTEX_WGSL
 } from "./shaders-wgsl";
 import { createSiltFx, type SiltFx } from "./fx";
-import { createImpactRig } from "../../apps/showcase-port-shared/feel";
-import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, createImpactRig } from "@aura3d/engine/game";
 import { waterGraphMaterial } from "./water-graph";
 import { portableWaterMaterial } from "./portable-water";
 import { readPortableFlag } from "../shared/portable-flag";
@@ -47,8 +46,8 @@ import {
   idolMesaBatch,
   idolPylonBatch
 } from "./art/idolModels";
-import { riderDriver, riderMotionPose } from "./art/idolRider";
-import { createOcclusionFade } from "./occlusionFade";
+import { createRiderAnimator, riderDriver } from "./art/idolRider";
+import { createColumnOcclusionFade, createOcclusionFade } from "./occlusionFade";
 import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type SiltLookMode } from "./art/look";
 import {
   DESERT_INST_MAT,
@@ -449,13 +448,14 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
     ? environments.hdri({ name: `silt ibl ${look.hdri}`, texture: hdri as unknown as Parameters<typeof environments.hdri>[0]["texture"], intensity: look.environmentIntensity, rotation: (look.environmentRotationDeg * Math.PI) / 180, background: false })
     : environments.neutral({ intensity: look.environmentIntensity }));
   const pcss = look.pcss && !options.low && (PCSS_OPT_IN || options.pcss === true);
+  const lowSun = look.key.elevationDeg <= 16;
   builder.add(lights.directional({
     name: "silt key",
     position: [dir[0] * 240, dir[1] * 240, dir[2] * 240],
     target: [0, 0, 0],
     intensity: look.key.intensity,
     color: look.key.color,
-    shadow: { ...keyShadow(options), ...(pcss ? { filter: "pcss" as const, lightSize: PCSS_LIGHT_SIZE } : {}) }
+    shadow: { ...keyShadow(options), ...(lowSun ? { softness: 2.0 } : {}), ...(pcss ? { filter: "pcss" as const, lightSize: PCSS_LIGHT_SIZE } : {}) }
   }).runtime({ id: "silt-key" }));
   // DG-L3: the rim sits opposite the key (mirrored azimuth, 25 deg up), never shadowed, always below the key
   builder.add(lights.directional({
@@ -689,7 +689,7 @@ export const RIDER_BLOB = { width: 1.5, length: 2.3, opacity: 0.55, maxSlide: 0.
  * its column at 45% width, and the waiting stone rings scaled by the same 48/66. Presentation only: the sim's radius
  * and every collider are unchanged. `?look=original` keeps 66 m.
  */
-export const INKED_BEACON = { diameter: 48, beamWidth: 0.06, waitingRingScale: 38 * (48 / 66) } as const;
+export const INKED_BEACON = { diameter: 48, beamWidth: 0.088, waitingRingScale: 38 * (48 / 66) } as const;
 /** Parked instances of the waiting-ring pool (one instanced node instead of eight model nodes). */
 const PARKED = { position: [...FAR] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: 0.001 };
 
@@ -958,13 +958,23 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     }));
   }
   if (props.stone.length) {
+    const pierMat = unnamed(pbr({ color: "#f0e3c9", texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 1, clearcoat: 0, sheen: 0, texTransforms: { baseColor: { scale: [3, 12] }, normal: { scale: [3, 12] }, metallicRoughness: { scale: [3, 12] } } }));
     builder.add(instances.custom(flutedStonePierSpec(), {
       name: "piers",
       transforms: columnTransforms(props.stone),
       castShadow: true,
       receiveShadow: true,
-      material: unnamed(pbr({ color: "#f0e3c9", texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 1, clearcoat: 0, sheen: 0, texTransforms: { baseColor: { scale: [3, 12] }, normal: { scale: [3, 12] }, metallicRoughness: { scale: [3, 12] } } }))
-    }));
+      material: pierMat
+    }).runtime({ id: "piers" }));
+    for (let k = 0; k < TREE_FADE_SLOTS; k++) {
+      builder.add(geometry.custom(flutedStonePierSpec(), {
+        name: `pier-fade-${k}`,
+        position: [...FAR],
+        castShadow: false,
+        receiveShadow: false,
+        material: { ...pierMat, opacity: 0.999 }
+      }).runtime({ id: `pier-fade-${k}` }));
+    }
   }
   if (props.brass.length) {
     builder.add(instances.custom(collaredBronzeMastSpec(), {
@@ -1302,6 +1312,32 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         }
       };
       const scenery = sceneryColumns(props);
+      // Stone pier / arch-column occlusion fade so foreground pillars never slice across the left/right third of the lens
+      const pierList = props.stone;
+      const pierBase = columnTransforms(pierList);
+      const pierFade = createColumnOcclusionFade(pierList, { maxFaded: TREE_FADE_SLOTS, pad: 2.1 });
+      let pierFadeOn = pierList.length > 0;
+      const applyPierFade = (changed: boolean): void => {
+        if (!pierFadeOn) return;
+        try {
+          if (changed) {
+            const hidden = new Set(pierFade.faded);
+            const transforms = pierBase.map((t, i) => (hidden.has(i) ? { ...t, scale: [1e-4, 1e-4, 1e-4] as [number, number, number] } : t));
+            node("piers").setInstances(transforms);
+          }
+          for (let k = 0; k < TREE_FADE_SLOTS; k++) {
+            const i = pierFade.faded[k];
+            const h = node(`pier-fade-${k}`);
+            if (i === undefined) { h.setPosition(...FAR); continue; }
+            const t = pierBase[i]!;
+            h.setPosition(t.position[0], t.position[1], t.position[2]).setScale([t.scale[0], t.scale[1], t.scale[2]]);
+            h.setOpacity?.(pierFade.opacity[i]!);
+          }
+        } catch {
+          pierFadeOn = false;
+        }
+      };
+      const riderAnim = createRiderAnimator();
       let cachedBlockedWorld: Sim["world"] | null = null;
       let cachedBlockedFn: ((x: number, y: number, z: number) => boolean) | null = null;
       const getBlockedFn = (w: Sim["world"]) => {
@@ -1327,6 +1363,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       let wasBoosting = false;
       let rippleLeft = 0;
       let rippleAt: AuraVec3 = [...FAR];
+      let jadePulseLeft = 0;
       const keyDir = keyDirection(look);
       // DG-P4: boost motion blur starts off (inked High only; DoF is absent so distant horizon dunes stay crisp)
       const toggles = inked && !buildOptions.low;
@@ -1473,6 +1510,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
                 rippleLeft = 0.55;
               }
               punchLeft = RING_PUNCH.seconds;
+              jadePulseLeft = 0.14;
               if (!cut) impactRig.trigger({ freezeSeconds: 0.02, trauma: 0.2, fovKickDeg: 2.6 });
             }
             if (lastPoint >= 0 && (state.point > lastPoint || state.objective !== lastObjective)) { oneShot = 0.9; playClip("walk"); }
@@ -1482,12 +1520,22 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             const rip = node("signal-ripple");
             if (rippleLeft > 0) {
               rippleLeft = Math.max(0, rippleLeft - dt);
-              const expand = 0.85 + (1 - rippleLeft / 0.55) * 0.95;
+              const expand = 0.62 + (1 - rippleLeft / 0.55) * 0.65;
               rip.setPosition(rippleAt[0], rippleAt[1], rippleAt[2]);
               rip.setRotation(0, state.yaw, 0);
               rip.setScale(expand);
             } else {
               rip.setPosition(...FAR);
+            }
+          }
+          if (inked && !options.reducedMotion) {
+            if (jadePulseLeft > 0) {
+              jadePulseLeft = Math.max(0, jadePulseLeft - dt);
+              const alpha = Math.min(0.24, (jadePulseLeft / 0.14) * 0.24);
+              app.output?.setOutputOverlay?.({ vignette: [0.16, 0.72, 0.56, alpha] });
+            } else if (jadePulseLeft === 0) {
+              jadePulseLeft = -1;
+              app.output?.setOutputOverlay?.({});
             }
           }
           if (oneShot > 0) oneShot = Math.max(0, oneShot - dt);
@@ -1559,11 +1607,10 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             surferParts.scarf.setRotation(scarfEuler[0], scarfEuler[1], scarfEuler[2]);
             const scarfTipEuler = mat3ToEulerZYX(mat3Mul(mat3RotY(scarfWave2), mat3RotX(0.05 + scarfFlutter * 0.85)));
             surferParts.scarfTip.setRotation(scarfTipEuler[0], scarfTipEuler[1], scarfTipEuler[2]);
-            // Idol wow pass: pose the rigged courier: fal motion clips (balance / lean / crouch) on the upper body, blended by
-            // carve and crouch, over the code stance that keeps the boots planted on the deck (art/idolRider.ts)
+            // Idol wow pass + Aura3D 5.7.2 createHumanoidAnimator: smooth cross-fading clips over planted foot stance
             const riderRig = riderDriver();
             if (riderRig) {
-              surferParts.body.setAnimationPose?.(riderRig.pose(riderMotionPose({ crouch, leanFwd, carve, air01, celebrate, breathe, armWave: armBalanceWave, time, motion, speed01 })));
+              surferParts.body.setAnimationPose?.(riderRig.pose(riderAnim.update(dt, { crouch, leanFwd, carve, air01, celebrate, breathe, armWave: armBalanceWave, time, motion, speed01 })));
             }
           }
 
@@ -1654,6 +1701,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           const safe = guardPose({ position: shown, target: [lookX, lookY, lookZ], up, fov: baseFov + kick }, lastGoodPose, { position: [sim.state.x, sim.state.y + 5, sim.state.z + 13], target: [sim.state.x, sim.state.y + 1.5, sim.state.z], up: [0, 1, 0], fov: baseFov });
           lastGoodPose = safe;
           applyTreeFade(treeFade.update(safe.position, [sim.state.x, sim.state.y - 0.6, sim.state.z], dt));
+          applyPierFade(pierFade.update(safe.position, [sim.state.x, sim.state.y + 0.4, sim.state.z], dt));
           if (safe.target[0] !== lookX || safe.target[1] !== lookY || safe.target[2] !== lookZ) { lookX = safe.target[0]; lookY = safe.target[1]; lookZ = safe.target[2]; }
           cameraController.setPose({ position: [...safe.position], target: [...safe.target], up: [...safe.up], fov: safe.fov }, { cut });
         },

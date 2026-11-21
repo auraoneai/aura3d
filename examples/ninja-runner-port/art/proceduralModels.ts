@@ -1702,7 +1702,7 @@ export function buildProceduralDistrictBatches(
     emitParts("proc-rooftopToroLantern", buildRooftopToroLanternParts(), accents.rooftopToroLanterns, false);
     emitParts("proc-rooftopShrineRailing", buildVermilionShrineRailingParts(), accents.rooftopShrineRailings, false);
     emitParts("proc-rooftopRidgeTile", buildRooftopRidgeTileParts(), accents.rooftopRidgeTiles, false);
-    emitParts("proc-sakuraMapleTree", getNormalizedPropParts("oak"), accents.sakuraMapleTrees, false);
+    emitParts("proc-blossomMapleTree", getNormalizedPropParts("oak"), accents.sakuraMapleTrees, false);
   }
 
   return nodes;

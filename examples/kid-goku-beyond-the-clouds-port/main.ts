@@ -9,7 +9,7 @@
  */
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, texture, type AuraApp } from "@aura3d/engine";
-import { hudThemeFontFaces, registerGameFonts, warmPrograms } from "@aura3d/engine/game";
+import { HUD_THEMES, createGradingLut, hudThemeFontFaces, readAutoplayFlag, registerGameFonts, warmPrograms } from "@aura3d/engine/game";
 import { ACTIVE_LOOK } from "./art/look";
 import { cumulusCrops } from "./art/qa";
 import { CUMULUS_RIDGE } from "./chapter";
@@ -28,8 +28,8 @@ const CH = CUMULUS_RIDGE;
 const STORE_KEY = "cloud-runner.v1";
 const params = new URLSearchParams(location.search);
 const manual = params.get("manual") === "1";
-/* `?autoplay=1` / `?autopilot=1`: the computer plays through the normal input path (autopilot.ts); O toggles it */
-const autopilot = createAutopilot(!manual && (params.get("autoplay") === "1" || params.get("autopilot") === "1"));
+/* `?autoplay=1` / `?autopilot=1` / `?demo=1`: the computer plays through the normal input path (`createAutoplayHarness` in autopilot.ts); O toggles it */
+const autopilot = createAutopilot(!manual && readAutoplayFlag(location.search));
 const canvas = document.getElementById("world") as HTMLCanvasElement;
 const hudEl = document.getElementById("hud") as HTMLElement | null;
 if (hudEl) hudEl.style.display = "none";
@@ -364,7 +364,10 @@ async function boot(): Promise<void> {
       else if (down) { if (game.phase === "paused") game.resume(); else if (key === "jump") oneShot.jump = true; else if (key === "pole") oneShot.pole = true; else oneShot.glider = true; }
     }
   }, { soundOn: saved.sound, reducedMotion: game.reducedMotion, difficulty: game.difficulty, best: saved.best, bestTime: saved.bestTime, bestPearls: saved.bestPearls, storm: STORM });
-  if (STORM) registerHudFonts();
+  if (STORM) {
+    for (const [k, v] of Object.entries(HUD_THEMES["sky-expedition"])) document.documentElement.style.setProperty(k, v);
+    registerHudFonts();
+  }
   /* A1: shared loading progress drives the title loader text (the loader is hidden by ui.ready()) */
   const progress = createLoadingProgress({ onProgress: (f) => ui?.progress(f) });
   /* flipY: false = the pixels 4.x uploaded. The loader decodes to an ImageBitmap, which WebGL cannot flip at upload (5.0.1+
@@ -377,11 +380,18 @@ async function boot(): Promise<void> {
   /* Lab flags (?backend=, ?gamut=) are parsed by the app wrapper (apps/showcase-cloud-runner-port/src/lab.ts); standalone defaults to WebGPU auto + AgX */
   const fallbackLab = labAppOptions(readLabFlags(), { backend: "auto" });
   const lab = (window as unknown as { __AURA_LAB_APP_OPTIONS__?: { renderer?: Record<string, unknown>; output?: Record<string, unknown>; worker?: { fallback: "main-thread"; createWorker?: () => Worker } } }).__AURA_LAB_APP_OPTIONS__ ?? fallbackLab;
+  const lut = STORM ? createGradingLut("cinema-warm", 16) : null;
   app = createAuraApp(canvas, {
     autoStart: false,
     pixelRatio: { max: computeMaxPixelRatio(), min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { toneMapping: "agx", exposure: 1.0, dither: true, ...lab.output },
+    output: {
+      toneMapping: "agx",
+      exposure: 1.0,
+      dither: true,
+      ...(lut ? { lut: { texture: lut.texture, size: lut.size, intensity: 0.22 } } : {}),
+      ...lab.output
+    },
     // `?worker=1` (lab, default off; the showcase wrapper supplies createWorker): render in a worker, fallback kept.
     // A worker fragment without createWorker (no wrapper) stays on the main thread.
     ...(lab.worker?.createWorker ? { worker: { fallback: lab.worker.fallback, createWorker: lab.worker.createWorker } } : {}),

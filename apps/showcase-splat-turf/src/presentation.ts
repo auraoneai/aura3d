@@ -3,7 +3,7 @@
  * stepped back by the unelapsed part of the last step while the ball and camera interpolate. The chase
  * camera lives here (presentation only): 0.1-per-step lerp, look-ahead -10 z, intro ease over the first 2 s.
  */
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import type { SplatTurfSim } from "./sim";
 
 export interface Shown {
@@ -34,8 +34,15 @@ export function blendShown(a: Shown, b: Shown, t: number): Shown {
   };
 }
 
-export function createTurfPresenter(getSim: () => Pick<SplatTurfSim, "o">): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getSim()), blend: blendShown });
+export function createTurfPresenter(getSim: () => Pick<SplatTurfSim, "o">): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({
+    snapshot: () => shownOf(getSim()),
+    blend: blendShown,
+    snap: (a, b) => {
+      const moved = b.distance - a.distance;
+      return moved < 0 || moved > SNAP_DISTANCE;
+    }
+  });
 }
 
 export interface CameraPose { x: number; y: number; z: number; lookX: number; lookY: number; lookZ: number }

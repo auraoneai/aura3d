@@ -1,19 +1,19 @@
 /**
  * Saltwind Highway driver (GPU QA F2, Nov 2026): under the Idol roadster body the procedural driver parts were skipped, so the
  * car drove itself. The driver is now a rigged Idol racer (`IDOL_DRIVER`, rig: true, T-pose, tools/idol/specs/
- * saltwind-highway.json) seated in the left seat of the Idol cockpit, its bones driven every frame through the shared
- * humanoid driver (apps/showcase-port-shared/idol/humanoid.ts) from this procedural seated-driving pose:
+ * saltwind-highway.json) seated in the left seat of the Idol cockpit, its bones driven every frame through
+ * `@aura3d/engine/animation` (`createHumanoidAnimator` + `HumanoidDriver`) from this procedural seated-driving pose:
  * - seated (thighs forward along the footwell, shins down to the pedals, back against the seat);
  * - both hands on the steering wheel rim (the driver's two-bone IK lands each palm on its grip), the grips turning with
  *   the wheel, which turns with the steering input (STEER_RATIO x the front-wheel angle);
  * - head turns into the turn, the torso sways against the cornering load, chassis buzz with speed, breathing on a clock.
- * Pure (no engine imports): tests/unit/roadster-hours-port/driver.test.ts drives it with the real Idol skeleton.
+ * Pure (no renderer imports): tests/unit/roadster-hours-port/driver.test.ts drives it with the real Idol skeleton.
  *
  * Frames: "chassis" is the car-body group's frame (origin ROADSTER_HALF_H above the road, front -Z, right +X). The Idol body
  * sits in it at IDOL_HERO_BODY_* (GLB +Z front, turned by pi). The driver model faces +Z (canonical humanoid frame, the
  * character's left = +X) and its node turns by pi too, so model +X (left) lands on chassis -X (the car's left).
  */
-import { eulerZYX, quatAxisAngle, quatMul, type HumanoidPoseInput, type Quat, type Vec3 } from "@aura3d/engine/animation";
+import { createHumanoidAnimator, eulerZYX, quatAxisAngle, quatMul, type HumanoidAnimator, type HumanoidPoseInput, type Quat, type Vec3 } from "@aura3d/engine/animation";
 import { IDOL_HERO_BODY_SCALE, IDOL_HERO_BODY_Y, IDOL_HERO_BODY_Z } from "./idol";
 
 /** Admitted key of the rigged driver. */
@@ -161,6 +161,16 @@ export function driverPose(s: DriverState, hipHeight: number, scale: number, fra
       // the character's left hand (model +X) takes the car's left grip (chassis -X)
       left: chassisToDriverModel(grips.left, node, scale),
       right: chassisToDriverModel(grips.right, node, scale)
+    }
+  };
+}
+
+/** Stateful `@aura3d/engine/animation` animator for `swDriver` (cross-fades idle, cruising, and nitro-boost posture). */
+export function createDriverAnimator(): { update(dt: number, pose: HumanoidPoseInput, key: string, fade?: number): HumanoidPoseInput } {
+  const anim: HumanoidAnimator<never> = createHumanoidAnimator({} as Readonly<Record<never, never>>);
+  return {
+    update(dt, pose, key, fade = 0.14) {
+      return anim.update(dt, { pose, key, fade });
     }
   };
 }

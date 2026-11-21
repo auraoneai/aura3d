@@ -9,6 +9,7 @@ import {
   camera, decals, effects, game, geometry, instances, lights, looks, material, primitives, scene, sky, surfaces as engineSurfaces,
   type AuraAssetRef, type AuraLookOverrides
 } from "@aura3d/engine";
+import { createFlipbookAtlas } from "@aura3d/engine/game";
 import { assets } from "../aura-assets-v2";
 import { VENUES, type VenueSpec } from "./content";
 import type { VenueId } from "./types";
@@ -65,10 +66,8 @@ import {
   poseArticulatedPitchFan
 } from "../art/proceduralModels";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
-import { createFlipbookAtlas } from "../../../showcase-port-shared/vfx-pack";
 import { WGSL_CLIP, WGSL_INSTANCE_INPUTS, wgslStage } from "../../../showcase-port-shared/wgsl-twins";
 import {
-  flipbookCardShaderSpec,
   goalNetShaderSpec,
   hexToLinearRgb,
   hoardingLedShaderSpec,
@@ -163,6 +162,17 @@ export const FLOOD_TOWERS: readonly (readonly [number, number])[] = [
 ];
 /** Lamp-head height of the flood banks (m). */
 const FLOOD_HEAD_Y = 12;
+/**
+ * Upper-fascia floodlight luminaire strip centres along the far stand/cage rail (`y = 4.6 m, z = -(PITCH_HZ + 5.4)`),
+ * positioned inside the top 15% of the 1280x720 broadcast frustum across night venues (`favela`, `glacier`, `kyoto`, `munich`)
+ * so `fcQaCrops` `crop:flood-bank` always captures a real lit fixture even when the 12 m corner towers sit above the frame.
+ */
+export const FASCIA_FLOOD_STRIPS: readonly (readonly [number, number, number])[] = [
+  [-22, 4.6, -(PITCH_HZ + 5.4)],
+  [-11, 4.6, -(PITCH_HZ + 5.4)],
+  [11, 4.6, -(PITCH_HZ + 5.4)],
+  [22, 4.6, -(PITCH_HZ + 5.4)]
+];
 /** The main-stand flood's lamp position: its spot, its cone and the haze-shaft light position share it. */
 export function mainFloodPosition(): [number, number, number] {
   const [x, z] = FLOOD_TOWERS[MAIN_FLOOD_TOWER];
@@ -237,19 +247,30 @@ export function hybridLookOverrides(venue: VenueId, gates: FcEngineGates = fcEng
     grade: { ...hl.grade, ...(gates.lut ? { lut: VENUE_LUT_ASSETS[venue] } : {}) },
     ...(hl.rim ? { rim: { ...hl.rim } } : {}),
     ...(hl.environmentIntensity !== undefined ? { environmentIntensity: hl.environmentIntensity } : {}),
-    // phase 4: a shadowed key that reads, its cascades fitted to the bowl so every player and goal frame is covered
+    // 5.7.2: texel-locked bowl shadow fit (`HYBRID_SHADOW_EXTENT`, depth 96) + calibrated PCF softness 1.5
     ...(k ? {
       ...(k.elevationDeg !== undefined || k.azimuthDeg !== undefined
         ? { sun: { ...(k.elevationDeg !== undefined ? { elevationDeg: k.elevationDeg } : {}), ...(k.azimuthDeg !== undefined ? { azimuthDeg: k.azimuthDeg } : {}) } }
         : {}),
-      key: { intensity: k.intensity, shadow: { cascades: 1, mapSize: 2048, filter: "pcf", softness: k.softness, intensity: 1, normalBias: 0.02 } }
+      key: {
+        intensity: k.intensity,
+        shadow: {
+          cascades: 1,
+          mapSize: 2048,
+          filter: "pcf",
+          softness: k.softness ?? 1.5,
+          intensity: 1,
+          normalBias: 0.02,
+          fit: { center: [0, 0, 0] as [number, number, number], extent: HYBRID_SHADOW_EXTENT, depth: 96 }
+        }
+      }
     } : {})
   };
 }
 
 /**
- * Phase 4: half-size (m) of the hybrid key's shadow box: the pitch, the goals and the first stand rows. Not passed as
- * `shadow.fit`: 5.7.0 reads `shadow.fit`; this game shipped while it was ignored, so it is not passed and the camera-fit shadows it shipped with stay.
+ * 5.7.2: half-size (m) of the hybrid key's texel-locked shadow box (`shadow.fit`): covers the pitch, goals, and
+ * front stand rows so boot shadows never shimmer on broadcast pan or zoom.
  */
 export const HYBRID_SHADOW_EXTENT = 34;
 
@@ -379,14 +400,26 @@ export function floodFlareNodes(venue: VenueId, mode?: FcLookMode): any[] {
 /** Night venues: intensity of the three secondary tower spots relative to the main-stand flood. */
 export const SECONDARY_FLOOD_SCALE = 0.6;
 
-/** The four corner tower structures (procedural: the Idol tower read thinner than the batched lattice; Nov 2026). */
-function floodTowerNodes(floodColor: string): any[] {
-  return [buildFloodlightTowersBatchedNode(FLOOD_TOWERS, floodColor, FLOOD_HEAD_Y)];
+/** The four corner tower structures plus far-fascia luminaire strips visible in the upper broadcast frustum. */
+function floodTowerNodes(v: VenueSpec, floodColor: string, includeFascia = false): any[] {
+  const nodes: any[] = [buildFloodlightTowersBatchedNode(FLOOD_TOWERS, floodColor, FLOOD_HEAD_Y)];
+  if (includeFascia && v.night) {
+    nodes.push(
+      (instances as any).box({
+        name: "fc-fascia-flood-strips",
+        size: [3.6, 0.24, 0.28],
+        transforms: FASCIA_FLOOD_STRIPS.map(([x, y, z]) => ({ position: [x, y, z] as [number, number, number] })),
+        castShadow: false,
+        material: material.emissive({ color: "#ffffff", emissive: floodColor, emissiveIntensity: 6.5, practical: true })
+      })
+    );
+  }
+  return nodes;
 }
 
 /** The 4.6.2 floods: one batched 4-corner floodlight tower assembly, four spots and cones (hybrid: spots x `scale`). */
-function originalFloodNodes(v: VenueSpec, scale = 1, coneIntensity = 0.3, pools = 0, shadowTower = -1): any[] {
-  const nodes: any[] = floodTowerNodes(v.floodColor);
+function originalFloodNodes(v: VenueSpec, scale = 1, coneIntensity = 0.3, pools = 0, shadowTower = -1, includeFascia = false): any[] {
+  const nodes: any[] = floodTowerNodes(v, v.floodColor, includeFascia);
   FLOOD_TOWERS.forEach(([x, z], i) => {
     nodes.push(
       lights.spot({ name: `flood-spot-${i}`, position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94], target: [0, 0, 0], angle: 0.52, penumbra: 0.5, intensity: ORIGINAL_LOOKS[v.id].flood * scale, color: v.floodColor, distance: 90,
@@ -416,10 +449,10 @@ function floodNodes(v: VenueSpec, gates: FcEngineGates, mode?: FcLookMode): any[
     // phase 3: at night the main-stand spot casts the players' shadows (PCSS 2048), so the flood reads as the key. The
     // engine defect behind the `spotShadow` gate is fixed in 90bbc7c2e, so the hybrid path opts in by default
     // (`?spotShadow=off` keeps the 4.6.2 shadowless spots).
-    return originalFloodNodes(v, hl.floodScale, hl.coneIntensity, v.night ? hl.pools : 0, v.night && hybridSpotShadow() ? MAIN_FLOOD_TOWER : -1);
+    return originalFloodNodes(v, hl.floodScale, hl.coneIntensity, v.night ? hl.pools : 0, v.night && hybridSpotShadow() ? MAIN_FLOOD_TOWER : -1, true);
   }
   const vl = VENUE_LOOKS[v.id];
-  const nodes: any[] = floodTowerNodes(vl.floodColor);
+  const nodes: any[] = floodTowerNodes(v, vl.floodColor, true);
   FLOOD_TOWERS.forEach(([x, z], i) => {
     if (vl.cones > 0) {
       nodes.push(
@@ -517,9 +550,27 @@ export function atmosphereNodes(venue: VenueId, opts: FcSceneOptions = {}): any[
   const mode = opts.lookMode ?? fcLookMode(venue);
   if (mode === "original") return VENUES[venue].aurora ? auroraNodes(reducedMotion) : [];
   if (mode === "hybrid") {
-    // hybrid: weather (no splash decals), aurora, and venue vignette / grain / CA; linear look fog (near >= 95, far >= 380)
-    // keeps the emerald pitch, crisp white touchlines, and floodlit stands vivid without near-field exp2 haze washout.
+    // 5.7.2 hybrid: stylized gradient night sky (Munich storm-navy, Kyoto plum-indigo, Favela dusk-amber, Glacier aurora-teal),
+    // weather (no splash decals), aurora, and venue vignette / grain / CA; linear look fog (near >= 180, far >= 540).
     const hl = HYBRID_LAYERS[venue];
+    if (hl.skyGradient) {
+      const g = hl.skyGradient;
+      nodes.push(
+        sky.gradient({
+          name: `fc-sky-${venue}`,
+          style: "stylized",
+          zenith: g.zenith,
+          ...(g.mid ? { mid: g.mid } : {}),
+          horizon: g.horizon,
+          ground: g.ground,
+          ...(g.zenithBlend ? { zenithBlend: g.zenithBlend } : {}),
+          ...(g.haze ? { haze: g.haze } : {}),
+          dither: true,
+          captureEnvironment: false,
+          affectsFog: true
+        } as any)
+      );
+    }
     nodes.push(...weatherNodes(hl.weather, reducedMotion, false));
     if (VENUES[venue].aurora) nodes.push(...auroraNodes(reducedMotion));
     nodes.push(effects.vignette({ name: "fc-vignette", intensity: hl.vignette }));
@@ -1253,35 +1304,46 @@ function ballNodes(hybrid = false): any[] {
     )
   ];
   if (hybrid) {
-    // WP-04 procedural 8x4 sprite-sheet flipbooks (`createFlipbookAtlas("dust")` turf spray & `"sparks"` goal bursts)
+    // 5.7.2 direct live-texture flipbooks (`createFlipbookAtlas` + `effects.flipbook({ texture })`)
+    const dust = turfDustAtlas();
+    const sparks = goalSparksAtlas();
     nodes.push(
-      withBuildVisible(
-        primitives.plane({
-          name: "fc-turf-spray-card",
-          size: [1.35, 1, 1.35],
-          material: material.custom(flipbookCardShaderSpec(turfDustAtlas(), false)),
-          castShadow: false
-        }).position(0, -20, 0).rotate(-0.62, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-turf-spray-card")),
-        false
-      ),
-      withBuildVisible(
-        primitives.plane({
-          name: "fc-goal-sparks-l",
-          size: [2.4, 1, 2.4],
-          material: material.custom(flipbookCardShaderSpec(goalSparksAtlas(), true)),
-          castShadow: false
-        }).position(0, -20, 0).rotate(Math.PI / 2, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-goal-sparks-l")),
-        false
-      ),
-      withBuildVisible(
-        primitives.plane({
-          name: "fc-goal-sparks-r",
-          size: [2.4, 1, 2.4],
-          material: material.custom(flipbookCardShaderSpec(goalSparksAtlas(), true)),
-          castShadow: false
-        }).position(0, -20, 0).rotate(Math.PI / 2, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-goal-sparks-r")),
-        false
-      )
+      effects.flipbook({
+        name: "fc-turf-spray-card",
+        texture: dust.texture,
+        spriteColumns: dust.columns,
+        spriteRows: dust.rows,
+        frameRate: 32,
+        size: 1.35,
+        loop: false,
+        blend: "alpha",
+        visible: false,
+        position: [0, -20, 0]
+      } as any).runtime(gameRuntime("fc-turf-spray-card")),
+      effects.flipbook({
+        name: "fc-goal-sparks-l",
+        texture: sparks.texture,
+        spriteColumns: sparks.columns,
+        spriteRows: sparks.rows,
+        frameRate: 28,
+        size: 2.4,
+        loop: false,
+        blend: "additive",
+        visible: false,
+        position: [0, -20, 0]
+      } as any).runtime(gameRuntime("fc-goal-sparks-l")),
+      effects.flipbook({
+        name: "fc-goal-sparks-r",
+        texture: sparks.texture,
+        spriteColumns: sparks.columns,
+        spriteRows: sparks.rows,
+        frameRate: 28,
+        size: 2.4,
+        loop: false,
+        blend: "additive",
+        visible: false,
+        position: [0, -20, 0]
+      } as any).runtime(gameRuntime("fc-goal-sparks-r"))
     );
   }
   return nodes;
@@ -1602,18 +1664,13 @@ export function tickWorld(
   if (g !== 0 && k > 0) {
     const r = 1 + (1 - k) * 7;
     h.goalRing?.setPosition(g * (PITCH_HX - 0.2), 1.2, 0).setRotation(0, Math.PI / 2, 0).setScale([r, r, r]).setVisible(true);
-    // Goal corner celebration flipbook sparks (`createFlipbookAtlas("sparks")`)
+    // Goal corner celebration flipbook sparks (`effects.flipbook({ texture })`)
     const sparkAge = (1 - k) * 2.8;
     if (sparkAge < 1.35) {
-      const frameIdx = Math.min(31, Math.floor((sparkAge / 1.35) * 32));
-      const sparkAlpha = Math.max(0, 1 - sparkAge / 1.35);
       const gx = g * (PITCH_HX + 0.5);
-      h.goalSparks?.[0]?.setPosition(gx, 1.9, -(GOAL_HALF_W + 0.8)).setRotation(Math.PI / 2, 0, 0).setScale([1 + sparkAge * 0.65, 1, 1 + sparkAge * 0.65]).setVisible(true);
-      h.goalSparks?.[1]?.setPosition(gx, 1.9, GOAL_HALF_W + 0.8).setRotation(Math.PI / 2, 0, 0).setScale([1 + sparkAge * 0.65, 1, 1 + sparkAge * 0.65]).setVisible(true);
-      try {
-        h.goalSparks?.[0]?.setUniform?.("burstState", [frameIdx, sparkAlpha, 1.8, 0]);
-        h.goalSparks?.[1]?.setUniform?.("burstState", [frameIdx, sparkAlpha, 1.8, 0]);
-      } catch { /* best-effort */ }
+      const sc = 1 + sparkAge * 0.45;
+      h.goalSparks?.[0]?.setPosition(gx, 1.9, -(GOAL_HALF_W + 0.8)).setScale([sc, sc, sc]).setVisible(true);
+      h.goalSparks?.[1]?.setPosition(gx, 1.9, GOAL_HALF_W + 0.8).setScale([sc, sc, sc]).setVisible(true);
     } else {
       for (const sp of h.goalSparks ?? []) sp?.setScale([HIDDEN, HIDDEN, HIDDEN]).setVisible(false);
     }
@@ -1622,16 +1679,13 @@ export function tickWorld(
     for (const sp of h.goalSparks ?? []) sp?.setScale([HIDDEN, HIDDEN, HIDDEN]).setVisible(false);
   }
 
-  // Turf spray flipbook burst (`createFlipbookAtlas("dust")`) on power strikes & slide tackles
+  // Turf spray flipbook burst (`effects.flipbook({ texture })`) on power strikes & slide tackles
   if (h.turfSprayCard) {
     const tb = opts.turfBurst;
     if (tb && tb.age >= 0 && tb.age < 0.55) {
       const u = tb.age / 0.55;
-      const frameIdx = Math.min(31, Math.floor(u * 32));
-      const alpha = (1 - u) * 0.82;
-      const sc = 0.72 + u * 1.15;
-      h.turfSprayCard.setPosition(tb.x, 0.34 + u * 0.24, tb.z).setRotation(-0.95, 0, 0).setScale([sc, 1, sc]).setVisible(true);
-      try { h.turfSprayCard.setUniform?.("burstState", [frameIdx, alpha, 1.25, 0]); } catch { /* best-effort */ }
+      const sc = 0.72 + u * 0.9;
+      h.turfSprayCard.setPosition(tb.x, 0.36 + u * 0.22, tb.z).setScale([sc, sc, sc]).setVisible(true);
     } else {
       h.turfSprayCard.setScale([HIDDEN, HIDDEN, HIDDEN]).setVisible(false);
     }

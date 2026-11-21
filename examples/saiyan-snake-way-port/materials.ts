@@ -8,7 +8,7 @@ import {
   createGradingLut,
   type FlipbookAtlasSpec,
   type FlipbookKind
-} from "../../apps/showcase-port-shared/vfx-pack";
+} from "@aura3d/engine/game";
 import { ORIGINAL_SUN_DIR, STAGE_LOOK, linearOf } from "./art/colorScript";
 import {
   AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, BOOST_GATE_FRAGMENT, BOOST_GATE_VERTEX,
@@ -151,6 +151,9 @@ export const roadSpec = (): CustomSpec => ({
     /** Road distance `s` of the next missing plate and the 0..1 strength of its edge warning (hud.ts `gapAhead`). */
     gapAt: { type: "f32", value: -1e6 },
     gapWarn: { type: "f32", value: 0 },
+    /** Road distance `s` of the next inverted roll transition and its telegraph direction (-1 / 0 / +1). */
+    rollAt: { type: "f32", value: -1e6 },
+    rollDir: { type: "f32", value: 0 },
     /** GU47 SSR-17: 0..1 cracked-plate glow (THE BROKEN SPINE; colour script `storm`). */
     roadCrack: { type: "f32", value: 0 },
     ...lookUniforms(),
@@ -257,7 +260,7 @@ export const boostGateSpec = (core: Rgb = hexLinear(0xfff2c4), edge: Rgb = hexLi
 const flipbookAtlasCache = new Map<string, FlipbookAtlasSpec>();
 let warmLutCache: ReturnType<typeof createGradingLut> | null = null;
 
-function cachedFlipbookAtlas(kind: FlipbookKind, tintRgb: readonly [number, number, number]): FlipbookAtlasSpec {
+export function cachedFlipbookAtlas(kind: FlipbookKind, tintRgb: readonly [number, number, number]): FlipbookAtlasSpec {
   const key = `${kind}:${tintRgb.join(",")}`;
   let hit = flipbookAtlasCache.get(key);
   if (!hit) {

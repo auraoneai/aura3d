@@ -73,11 +73,11 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     environmentIntensity: 0.9,
     environmentRotationDeg: 220,
     sun: { elevationDeg: 18, azimuthDeg: 220, color: "#ffd2a1", intensity: 2.6 },
-    hemi: { sky: "#cfe2f2", ground: "#7d8f5a", intensity: 0.35 },
+    hemi: { sky: "#cfe2f2", ground: "#697948", intensity: 0.28 },
     sky: { zenith: "#7fa6cf", horizon: "#f3d2b4", ground: "#a7b98a", horizonGlow: 0.55, clouds: { coverage: 0.12, speed: 0.4, color: "#fbe9db" } },
     fog: { mode: "linear", color: "#b9cfe0", near: 165, far: 460, maxOpacity: 0.18, heightFalloff: 0 },
     post: "daylight-outdoor",
-    grade: { contrast: 1.1, saturation: 1.16, temperature: 0.05 },
+    grade: { contrast: 1.16, saturation: 1.16, temperature: 0.05 },
     bloom: { intensity: 0.1, threshold: 1.4 },
     exposureEv: 0,
     tiltShift: { bandWidth: 0.34, maxBlur: 0 },
@@ -85,7 +85,7 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     lamps: { count: 0, colors: [], power: 0, distance: 0 },
     ambient: "pollen",
     dust: "#d9c7a0",
-    surfaces: { felt: "#8fc78a", asphalt: "#5a6270", dash: "#f4dc8a", water: "#4f9cc9", gravel: "#8a8072", rail: "#b7b9bd", lava: "#ff6a2a", lavaEmissive: 2.6 }
+    surfaces: { felt: "#8fc78a", asphalt: "#3f4652", dash: "#f4dc8a", water: "#367ba6", gravel: "#766d60", rail: "#b7b9bd", lava: "#ff6a2a", lavaEmissive: 2.6 }
   },
   {
     timeOfDay: "noon",
@@ -93,11 +93,11 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     environmentIntensity: 1.05,
     environmentRotationDeg: 30,
     sun: { elevationDeg: 55, azimuthDeg: 30, color: "#f4f1ea", intensity: 2.2 },
-    hemi: { sky: "#dde3ea", ground: "#8a8a80", intensity: 0.45 },
+    hemi: { sky: "#dde3ea", ground: "#72726a", intensity: 0.36 },
     sky: { zenith: "#9fb0c2", horizon: "#dfe3e6", ground: "#9aa08c", horizonGlow: 0.25, clouds: { coverage: 0.2, speed: 0.3, color: "#eef0f2" } },
     fog: { mode: "linear", color: "#d8d4c6", near: 175, far: 480, maxOpacity: 0.16, heightFalloff: 0 },
     post: "daylight-outdoor",
-    grade: { contrast: 1.08, saturation: 1.06, temperature: -0.04 },
+    grade: { contrast: 1.14, saturation: 1.08, temperature: -0.04 },
     bloom: { intensity: 0.06, threshold: 1.6 },
     exposureEv: 0,
     tiltShift: { bandWidth: 0.36, maxBlur: 0 },
@@ -105,7 +105,7 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     lamps: { count: 0, colors: [], power: 0, distance: 0 },
     ambient: "none",
     dust: "#b8b4aa",
-    surfaces: { felt: "#9cbf7a", asphalt: "#4f5d6b", dash: "#f4f1ea", water: "#6a8fa8", gravel: "#9a948a", rail: "#c4c6ca", lava: "#ff6a2a", lavaEmissive: 2.5 }
+    surfaces: { felt: "#9cbf7a", asphalt: "#38434f", dash: "#f4f1ea", water: "#4f7189", gravel: "#827c72", rail: "#c4c6ca", lava: "#ff6a2a", lavaEmissive: 2.5 }
   },
   {
     timeOfDay: "golden",
@@ -113,11 +113,11 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     environmentIntensity: 0.85,
     environmentRotationDeg: 250,
     sun: { elevationDeg: 10, azimuthDeg: 250, color: "#ffb064", intensity: 2.8 },
-    hemi: { sky: "#f3c99a", ground: "#6f6a3e", intensity: 0.3 },
+    hemi: { sky: "#f3c99a", ground: "#5c5731", intensity: 0.24 },
     sky: { zenith: "#5d78a6", horizon: "#ffb977", ground: "#8f8a54", horizonGlow: 0.85, clouds: { coverage: 0.1, speed: 0.35, color: "#ffd2a8" } },
     fog: { mode: "linear", color: "#e8b98a", near: 165, far: 455, maxOpacity: 0.20, heightFalloff: 0 },
     post: "cinematic-film",
-    grade: { contrast: 1.1, saturation: 1.14, temperature: 0.18 },
+    grade: { contrast: 1.16, saturation: 1.16, temperature: 0.18 },
     bloom: { intensity: 0.14, threshold: 1.2 },
     exposureEv: 0,
     tiltShift: { bandWidth: 0.32, maxBlur: 0 },
@@ -125,7 +125,7 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     lamps: { count: 0, colors: [], power: 0, distance: 0 },
     ambient: "fireflies",
     dust: "#d6b47e",
-    surfaces: { felt: "#a3b860", asphalt: "#5c5248", dash: "#f4dc8a", water: "#3f7fa6", gravel: "#8e7a62", rail: "#c9b89a", lava: "#ff6a2a", lavaEmissive: 2.6 }
+    surfaces: { felt: "#a3b860", asphalt: "#403932", dash: "#f4dc8a", water: "#2c6185", gravel: "#74624e", rail: "#c9b89a", lava: "#ff6a2a", lavaEmissive: 2.6 }
   },
   {
     timeOfDay: "dusk",
@@ -133,11 +133,11 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     environmentIntensity: 0.55,
     environmentRotationDeg: 280,
     sun: { elevationDeg: 6, azimuthDeg: 280, color: "#ff7a4a", intensity: 1.8 },
-    hemi: { sky: "#7a4a52", ground: "#3a2a24", intensity: 0.3 },
+    hemi: { sky: "#7a4a52", ground: "#2e201b", intensity: 0.24 },
     sky: { zenith: "#2c2240", horizon: "#d2553a", ground: "#3a2620", horizonGlow: 1.0 },
     fog: { mode: "linear", color: "#6b3a34", near: 155, far: 440, maxOpacity: 0.22, heightFalloff: 0 },
     post: "arena-fight",
-    grade: { contrast: 1.12, saturation: 1.12, temperature: 0.2 },
+    grade: { contrast: 1.16, saturation: 1.14, temperature: 0.2 },
     bloom: { intensity: 0.5, threshold: 0.75 },
     exposureEv: 0.1,
     tiltShift: { bandWidth: 0.32, maxBlur: 0 },
@@ -145,7 +145,7 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     lamps: { count: 12, colors: ["#ff6a2a", "#ff8a3d"], power: 260, distance: 7 },
     ambient: "embers",
     dust: "#5a4038",
-    surfaces: { felt: "#6a7356", asphalt: "#3a3330", dash: "#e8a05a", water: "#4a3a3a", gravel: "#4a3e38", rail: "#8a7a70", lava: "#ff5a1f", lavaEmissive: 3.0 }
+    surfaces: { felt: "#6a7356", asphalt: "#282220", dash: "#e8a05a", water: "#352828", gravel: "#382f2a", rail: "#8a7a70", lava: "#ff5a1f", lavaEmissive: 3.0 }
   },
   {
     timeOfDay: "night",
@@ -153,11 +153,11 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     environmentIntensity: 0.4,
     environmentRotationDeg: 340,
     sun: { elevationDeg: 35, azimuthDeg: 340, color: "#9fb4ff", intensity: 0.35 },
-    hemi: { sky: "#26304f", ground: "#141824", intensity: 0.25 },
+    hemi: { sky: "#26304f", ground: "#10131e", intensity: 0.2 },
     sky: { zenith: "#070b1a", horizon: "#1c2a4a", ground: "#10131c", horizonGlow: 0.35, stars: { count: 1400, brightness: 1.1 } },
     fog: { mode: "linear", color: "#1a2440", near: 150, far: 430, maxOpacity: 0.24, heightFalloff: 0 },
     post: "neon-night",
-    grade: { contrast: 1.12, saturation: 1.15, temperature: -0.2 },
+    grade: { contrast: 1.16, saturation: 1.16, temperature: -0.2 },
     bloom: { intensity: 0.45, threshold: 0.9 },
     exposureEv: 0.15,
     tiltShift: { bandWidth: 0.3, maxBlur: 0 },
@@ -165,7 +165,7 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     lamps: { count: 12, colors: ["#ffb347", "#37f5ff"], power: 320, distance: 8 },
     ambient: "rain",
     dust: "#3a4058",
-    surfaces: { felt: "#3f5a52", asphalt: "#22202e", dash: "#ffb347", water: "#24406a", gravel: "#2e2c3a", rail: "#6a7088", lava: "#ff4fd8", lavaEmissive: 2.5 }
+    surfaces: { felt: "#3f5a52", asphalt: "#181622", dash: "#ffb347", water: "#1b3152", gravel: "#22202c", rail: "#6a7088", lava: "#ff4fd8", lavaEmissive: 2.5 }
   },
   {
     timeOfDay: "studio",
@@ -173,11 +173,11 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     environmentIntensity: 1.0,
     environmentRotationDeg: 25,
     sun: { elevationDeg: 50, azimuthDeg: 25, color: "#fff4ea", intensity: 2.4 },
-    hemi: { sky: "#fbe8f2", ground: "#c6b6e0", intensity: 0.4 },
+    hemi: { sky: "#fbe8f2", ground: "#a696c2", intensity: 0.32 },
     sky: { zenith: "#bfd8f2", horizon: "#fbe3ee", ground: "#e2d6f2", horizonGlow: 0.3 },
     fog: null,
     post: "product-studio",
-    grade: { contrast: 1.06, saturation: 1.16, temperature: 0 },
+    grade: { contrast: 1.12, saturation: 1.18, temperature: 0 },
     bloom: { intensity: 0.08, threshold: 1.5 },
     exposureEv: 0,
     tiltShift: { bandWidth: 0.36, maxBlur: 0 },
@@ -185,7 +185,7 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     lamps: { count: 0, colors: [], power: 0, distance: 0 },
     ambient: "confetti",
     dust: "#f2d6e6",
-    surfaces: { felt: "#a8dcc4", asphalt: "#8c7fd0", dash: "#fff4ea", water: "#7fdbe8", gravel: "#b6a8d6", rail: "#f4f1ea", lava: "#ff8a5c", lavaEmissive: 2.5 }
+    surfaces: { felt: "#a8dcc4", asphalt: "#6c60ad", dash: "#fff4ea", water: "#5bb4c4", gravel: "#9486b8", rail: "#f4f1ea", lava: "#ff8a5c", lavaEmissive: 2.5 }
   }
 ];
 
@@ -285,69 +285,69 @@ export interface VividLook {
 }
 
 export const VIVID_LOOKS: readonly VividLook[] = [
-  { // 0 Meadow Roads: clear morning
-    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#ffe6c4", intensity: 1.9 },
-    hemi: { sky: "#cfe4ff", ground: "#5f8a45", intensity: 0.45 },
-    environmentIntensity: 0.5,
+  { // 0 Meadow Roads: clear morning — lowered hemisphere fill ~18% for crisp tonal spread >= 145
+    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#ffe6c4", intensity: 2.1 },
+    hemi: { sky: "#cfe4ff", ground: "#4c7236", intensity: 0.36 },
+    environmentIntensity: 0.44,
     sky: { zenith: "#2a64b8", horizon: "#78b0e4", ground: "#9fc4a0", horizonGlow: 0.25, glow: { elevationDeg: 3, azimuthDeg: 205, color: "#fff0c8", intensity: 0.6, discSize: 0 }, clouds: { coverage: 0.28, speed: 0.4, color: "#ffffff" } },
     fog: { mode: "linear", color: "#a8cbe8", density: 0, near: 175, far: 480, maxOpacity: 0.16 },
     floor: "#3f8a46",
-    grade: { contrast: 1.16, saturation: 1.18, temperature: 0.02 },
+    grade: { contrast: 1.22, saturation: 1.2, temperature: 0.02 },
     bloom: { intensity: 0.12, threshold: 0.95 },
     exposureEv: -0.1
   },
   { // 1 Downtown Trams: bright overcast noon
-    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#f6f2ea", intensity: 1.6 },
-    hemi: { sky: "#e4e9ef", ground: "#727866", intensity: 0.55 },
-    environmentIntensity: 0.55,
+    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#f6f2ea", intensity: 1.8 },
+    hemi: { sky: "#e4e9ef", ground: "#5c6252", intensity: 0.44 },
+    environmentIntensity: 0.46,
     sky: { zenith: "#3a6cb4", horizon: "#8cb4e2", ground: "#a2a898", horizonGlow: 0.15, glow: { elevationDeg: 4, azimuthDeg: 195, color: "#fbf7ee", intensity: 0.5, discSize: 0 }, clouds: { coverage: 0.42, speed: 0.3, color: "#f4f6f8" } },
     fog: { mode: "linear", color: "#b8cadc", density: 0, near: 180, far: 490, maxOpacity: 0.15 },
     floor: "#5f8a46",
-    grade: { contrast: 1.16, saturation: 1.16, temperature: -0.02 },
+    grade: { contrast: 1.22, saturation: 1.18, temperature: -0.02 },
     bloom: { intensity: 0.1, threshold: 1.0 },
     exposureEv: -0.1
   },
   { // 2 Riverbend: amber golden hour
-    sun: { elevationDeg: 30, azimuthDeg: -62, color: "#ffc583", intensity: 2.0 },
-    hemi: { sky: "#ffd9b0", ground: "#5f6a36", intensity: 0.45 },
-    environmentIntensity: 0.45,
+    sun: { elevationDeg: 30, azimuthDeg: -62, color: "#ffc583", intensity: 2.2 },
+    hemi: { sky: "#ffd9b0", ground: "#4c562a", intensity: 0.36 },
+    environmentIntensity: 0.38,
     sky: { zenith: "#3f62a6", horizon: "#ffa860", ground: "#b0a070", horizonGlow: 0.55, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ffb866", intensity: 0.8, discSize: 0 }, clouds: { coverage: 0.2, speed: 0.35, color: "#ffdcb8" } },
     fog: { mode: "linear", color: "#f2b884", density: 0, near: 170, far: 470, maxOpacity: 0.17 },
     floor: "#5e8f3e",
-    grade: { contrast: 1.16, saturation: 1.16, temperature: 0.06 },
+    grade: { contrast: 1.22, saturation: 1.18, temperature: 0.06 },
     bloom: { intensity: 0.16, threshold: 0.9 },
     exposureEv: -0.1
   },
   { // 3 Emberline: lava-lit dusk
-    sun: { elevationDeg: 26, azimuthDeg: -62, color: "#ff9a66", intensity: 1.7 },
-    hemi: { sky: "#b07a90", ground: "#4a3a30", intensity: 0.9 },
-    environmentIntensity: 0.55,
+    sun: { elevationDeg: 26, azimuthDeg: -62, color: "#ff9a66", intensity: 1.85 },
+    hemi: { sky: "#b07a90", ground: "#3b2c24", intensity: 0.72 },
+    environmentIntensity: 0.46,
     sky: { zenith: "#2c2850", horizon: "#ff8a52", ground: "#4a3028", horizonGlow: 1.0, glow: { elevationDeg: 2, azimuthDeg: 200, color: "#ff7a3c", intensity: 1.5, discSize: 0.07 } },
     fog: { mode: "linear", color: "#a85a44", density: 0.006, near: 155, far: 440, maxOpacity: 0.22 },
     floor: "#4e5548",
-    grade: { contrast: 1.12, saturation: 1.12, temperature: 0.1 },
+    grade: { contrast: 1.18, saturation: 1.14, temperature: 0.1 },
     bloom: { intensity: 0.32, threshold: 0.8 },
     exposureEv: 0.1
   },
   { // 4 Neon District: lamplit night under a blue moon
-    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#b4c4ff", intensity: 1.1 },
-    hemi: { sky: "#5a6ab0", ground: "#22263c", intensity: 0.85 },
-    environmentIntensity: 0.5,
+    sun: { elevationDeg: 40, azimuthDeg: -62, color: "#b4c4ff", intensity: 1.2 },
+    hemi: { sky: "#5a6ab0", ground: "#181c30", intensity: 0.68 },
+    environmentIntensity: 0.42,
     sky: { zenith: "#0a1236", horizon: "#4a3f96", ground: "#1c1a34", horizonGlow: 0.6, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ff5ad2", intensity: 0.9, discSize: 0 }, stars: { count: 1200, brightness: 1.1 } },
     fog: { mode: "linear", color: "#2e2c6e", density: 0.005, near: 150, far: 435, maxOpacity: 0.22 },
     floor: "#3f5a52",
-    grade: { contrast: 1.12, saturation: 1.18, temperature: -0.08 },
+    grade: { contrast: 1.18, saturation: 1.2, temperature: -0.08 },
     bloom: { intensity: 0.4, threshold: 0.82 },
     exposureEv: 0.2
   },
   { // 5 Critter Core: candy dusk (GU47 phase 6, panel g14p6r1 3/0/0; the phase-5 dusk sky and candy rafts on the vivid look)
-    sun: { elevationDeg: 26, azimuthDeg: -62, color: "#ffc4a4", intensity: 1.8 },
-    hemi: { sky: "#e0b8e4", ground: "#8a6aa8", intensity: 0.55 },
-    environmentIntensity: 0.5,
+    sun: { elevationDeg: 26, azimuthDeg: -62, color: "#ffc4a4", intensity: 1.95 },
+    hemi: { sky: "#e0b8e4", ground: "#6f538c", intensity: 0.44 },
+    environmentIntensity: 0.42,
     sky: { zenith: "#4b3a86", horizon: "#f2a07e", ground: "#c890a8", horizonGlow: 0.7, glow: { elevationDeg: 3, azimuthDeg: 200, color: "#ffb48a", intensity: 0.9, discSize: 0 }, clouds: { coverage: 0.25, speed: 0.3, color: "#ffc8b4" } },
     fog: { mode: "linear", color: "#e8a08c", density: 0, near: 170, far: 470, maxOpacity: 0.16 },
     floor: "#5e9a5a",
-    grade: { contrast: 1.16, saturation: 1.15, temperature: 0.06 },
+    grade: { contrast: 1.22, saturation: 1.18, temperature: 0.06 },
     bloom: { intensity: 0.2, threshold: 0.88 },
     exposureEv: 0
   }

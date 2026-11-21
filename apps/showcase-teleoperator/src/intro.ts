@@ -5,6 +5,7 @@
  * reduced motion, under `?intro=0`, in a QA/capture boot (`?qa`, `?autoplay`) or with an engine A/B query.
  */
 import type { AuraCameraPose } from "@aura3d/engine";
+import { readAutoplayFlag } from "@aura3d/engine/game";
 import { SCENE_CAM_FOV_DEG } from "./rules";
 
 export const INTRO_SHOT_S = 1.4;
@@ -22,7 +23,7 @@ export function introShots(carX: number, carZ: number): Partial<AuraCameraPose>[
 export function introEnabled(o: { readonly motionOk: boolean; readonly params: URLSearchParams }): boolean {
   if (!o.motionOk) return false;
   const p = o.params;
-  if (p.get("intro") === "0" || p.has("qa") || p.has("autoplay") || p.has("aura3d-tonemap") || p.has("tm")) return false;
+  if (p.get("intro") === "0" || p.has("qa") || readAutoplayFlag(p, { names: ["autoplay"] }) || p.has("aura3d-tonemap") || p.has("tm")) return false;
   return true;
 }
 

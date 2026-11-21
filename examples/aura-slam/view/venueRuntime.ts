@@ -16,8 +16,10 @@ import { EARTH, FLOODLIGHTS, FLOOD_CONES, sunPosition, type VenueLook } from "./
 export interface VenueRuntimePlan {
   readonly venue: string;
   readonly key: { readonly visible: boolean; readonly patch: { readonly color: string; readonly intensity: number; readonly position: AuraVec3 } };
+  readonly rim: { readonly visible: boolean; readonly patch: { readonly color: string; readonly intensity: number } };
   readonly floods: readonly { readonly id: string; readonly visible: boolean }[];
   readonly environment: { readonly hdri: string; readonly url: string; readonly intensity: number; readonly rotationDeg: number; readonly background: boolean };
+  readonly skyGradient: VenueLook["skyGradient"] | null;
   readonly fog: { readonly color: string; readonly density: number; readonly near: number; readonly far: number } | null;
   readonly volumetricFog: boolean;
   /** TT-E2: the floodlight haze cones (night court). */
@@ -46,6 +48,7 @@ export function venueRuntimePlan(look: VenueLook, tier: string | null = "high"):
   return {
     venue: look.id,
     key: { visible: true, patch: { color: key.color, intensity: key.intensity, position: sunPosition(key) } },
+    rim: { visible: true, patch: { color: look.rimLight.color, intensity: look.rimLight.intensity } },
     floods: FLOODLIGHTS.map((f) => ({ id: f.name, visible: night })),
     environment: {
       hdri: look.hdri,
@@ -54,6 +57,7 @@ export function venueRuntimePlan(look: VenueLook, tier: string | null = "high"):
       rotationDeg: look.environmentRotationDeg,
       background: look.background === "hdri"
     },
+    skyGradient: look.skyGradient ?? null,
     fog: look.fog ? { color: look.fog.color, density: look.fog.density, near: look.fog.near, far: look.fog.far } : null,
     volumetricFog: Boolean(look.fog?.volumetricAtHigh) && isHighTier(tier),
     cones: (look.fog?.lightCones ?? 0) > 0,
@@ -75,7 +79,10 @@ export function venueRuntimePlan(look: VenueLook, tier: string | null = "high"):
 export interface VenueRuntimeApp {
   readonly nodes: { get?(id: string): AuraRuntimeNodeHandle | undefined; require?(id: string): AuraRuntimeNodeHandle };
   readonly lighting?: { setEnvironment?(texture: AuraAssetRef<"texture">, opts?: { intensity?: number; background?: boolean; rotationDeg?: number; crossfadeSeconds?: number }): void };
-  readonly atmosphere?: { setFog?(spec: Record<string, unknown> | null, opts?: { transitionSeconds?: number; overrideSceneFog?: boolean }): void };
+  readonly atmosphere?: {
+    setFog?(spec: Record<string, unknown> | null, opts?: { transitionSeconds?: number; overrideSceneFog?: boolean }): void;
+    setSky?(spec: Record<string, unknown>, opts?: { transitionSeconds?: number; captureEnvironment?: boolean }): void;
+  };
   readonly post?: { setEffect?(name: string, patch: Record<string, number | string | boolean | number[]>): void; setEffectEnabled?(name: string, enabled: boolean): void };
   setOutput?(output: Record<string, unknown>): void;
 }
@@ -104,6 +111,11 @@ export function applyVenueRuntime(app: VenueRuntimeApp, plan: VenueRuntimePlan, 
     call(() => keyHandle.setVisible(plan.key.visible));
     call(() => (keyHandle as { setLight?: (p: VenueRuntimePlan["key"]["patch"]) => void }).setLight?.(plan.key.patch));
   }
+  const rimHandle = optionalNode(app, VENUE_LIGHT_IDS.rim);
+  if (rimHandle) {
+    call(() => rimHandle.setVisible(plan.rim.visible));
+    call(() => (rimHandle as { setLight?: (p: VenueRuntimePlan["rim"]["patch"]) => void }).setLight?.(plan.rim.patch));
+  }
   for (const flood of plan.floods) {
     const handle = optionalNode(app, flood.id);
     if (handle) call(() => handle.setVisible(flood.visible));
@@ -124,6 +136,11 @@ export function applyVenueRuntime(app: VenueRuntimeApp, plan: VenueRuntimePlan, 
       rotationDeg: plan.environment.rotationDeg,
       crossfadeSeconds: options.crossfadeSeconds ?? 0.5
     }));
+    if (plan.skyGradient) {
+      call(() => app.atmosphere?.setSky?.({ model: "gradient", style: "stylized", ...plan.skyGradient }, { transitionSeconds: 0.35, captureEnvironment: false }));
+    } else {
+      call(() => app.atmosphere?.setSky?.({ model: "hdri", texture, intensity: plan.environment.intensity }, { transitionSeconds: 0.35, captureEnvironment: false }));
+    }
     call(() => app.atmosphere?.setFog?.(plan.fog ? { color: plan.fog.color, density: plan.fog.density, near: plan.fog.near, far: plan.fog.far } : null, { overrideSceneFog: true }));
   }
   call(() => app.setOutput?.({ preset: plan.output.preset, toneMapping: plan.output.toneMapping, exposure: plan.output.exposure, dither: true }));

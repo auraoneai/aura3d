@@ -27,6 +27,10 @@ export interface HudElements {
   readonly btnJump?: HTMLElement | null;
   readonly btnBigJump?: HTMLElement | null;
   readonly btnDuck?: HTMLElement | null;
+  readonly beatRail?: HTMLElement | null;
+  readonly beatRailL?: HTMLElement | null;
+  readonly beatRailR?: HTMLElement | null;
+  readonly beatRailCore?: HTMLElement | null;
 }
 
 export function hudElements(doc: Document): HudElements {
@@ -51,7 +55,11 @@ export function hudElements(doc: Document): HudElements {
     actionPills: doc.getElementById("action-pills"),
     btnJump: doc.getElementById("btn-jump"),
     btnBigJump: doc.getElementById("btn-big-jump"),
-    btnDuck: doc.getElementById("btn-duck")
+    btnDuck: doc.getElementById("btn-duck"),
+    beatRail: doc.getElementById("beat-pulse-rail"),
+    beatRailL: doc.getElementById("beat-tick-l"),
+    beatRailR: doc.getElementById("beat-tick-r"),
+    beatRailCore: doc.getElementById("beat-rail-core")
   };
 }
 
@@ -79,6 +87,7 @@ export class Hud {
     if (this.changed("visible", String(inRun))) {
       this.els.root.classList.toggle("hidden", !inRun);
       this.els.actionPills?.classList.toggle("hidden", !inRun);
+      this.els.beatRail?.classList.toggle("hidden", !inRun);
     }
     const pillState = o.pose === "air" ? (o.bigJump ? "big" : "jump") : o.pose === "duck" ? "duck" : "none";
     if (this.changed("pillState", pillState)) {
@@ -117,6 +126,18 @@ export class Hud {
         const ringAlpha = (0.28 + 0.62 * p).toFixed(2);
         this.els.beatRing.style.transform = `scale(${ringScale})`;
         this.els.beatRing.style.opacity = ringAlpha;
+      }
+      if (this.els.beatRailCore) {
+        this.els.beatRailCore.style.transform = `translate(-50%, -50%) scale(${(0.92 + 0.42 * p).toFixed(3)})`;
+        this.els.beatRailCore.style.opacity = (0.55 + 0.45 * p).toFixed(2);
+      }
+    }
+    if (this.els.beatRailL && this.els.beatRailR) {
+      const phase = ((o.t / CONFIG.BEAT) % 1 + 1) % 1;
+      const pct = (phase * 50).toFixed(1);
+      if (this.changed("railPhase", pct)) {
+        this.els.beatRailL.style.left = `${pct}%`;
+        this.els.beatRailR.style.right = `${pct}%`;
       }
     }
     const drained = drainPopups(sim.popups, this.nextSeq);

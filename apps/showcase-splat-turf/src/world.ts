@@ -37,7 +37,7 @@ import {
   roadMesh,
   cylinderMesh,
   translateMesh,
-  sphereMesh,
+  teardropMesh,
   stripMesh,
   type MeshData
 } from "./meshes";
@@ -59,7 +59,6 @@ import {
   RIVAL_SEAT,
   rivalDriverId,
   rivalDriverNodes,
-  heroDriverNode,
   PAINT_BUCKET_KEYS,
   PAINT_BUCKET_NODE_IDS,
   TURF_IDOL_ASSETS,
@@ -77,6 +76,7 @@ import {
   inkFlipbookSpec,
   packInkBurstTone,
   paintRibbonMesh,
+  solventFoamSpec,
   wetInkRibbonSpec
 } from "./art/wet-ink";
 
@@ -260,6 +260,7 @@ export function allProgramSpecs(): readonly { readonly name: string; readonly sp
     { name: "cloud", spec: PROGRAMS.cloud() },
     { name: "far", spec: PROGRAMS.far() },
     { name: "glow", spec: PROGRAMS.glow() },
+    { name: "solvent-foam", spec: solventFoamSpec(linear(LOOK.solvent), NEAR_HAZE) },
     { name: "flat", spec: flatSpec(linear(LOOK.solvent), 0.58) }
   ];
 }
@@ -316,7 +317,7 @@ export function buildWorld(options: WorldOptions): World {
       target: [0, 0, -14],
       intensity: 2.35,
       color: "#fff7e4",
-      shadow: { cascades: 2, maxDistance: 88, mapSize: 2048 }
+      shadow: { cascades: 2, maxDistance: 88, mapSize: 2048, softness: 2.0 }
     })
   );
   builder.add(environments.studio({ preset: "softbox", name: "environment", intensity: 0.82, background: false }));
@@ -394,7 +395,6 @@ export function buildWorld(options: WorldOptions): World {
     { cast: true, receive: true }
   );
   builder.add(heroRoverNode());
-  builder.add(heroDriverNode());
   for (const n of rivalDriverNodes(CONFIG.POOL_BOTS)) builder.add(n);
   addMesh("ball-shadow", quadMesh(1.42, 1.48), material.custom(contactShadowSpec()));
   builder.add(finishGantryNode());
@@ -431,7 +431,7 @@ export function buildWorld(options: WorldOptions): World {
   const canHalos = new Batch(cylinderMesh(0.78, 0.02, 32), CONFIG.POOL_CANS, linear(LOOK.ball), RUN_FRAME_BOUNDS);
   const canBeacons = new Batch(translateMesh(cylinderMesh(0.07, 2.4, 10), 0, 1.2, 0), CONFIG.POOL_CANS, linear(LOOK.can), RUN_FRAME_BOUNDS);
   const bots = new IdolPool(CONFIG.POOL_BOTS);
-  const particles = new Batch(sphereMesh(0.12, 6, 6), CONFIG.POOL_PARTICLES, [1, 1, 1], RUN_FRAME_BOUNDS);
+  const particles = new Batch(teardropMesh(0.085, 0.24, 10, 8), CONFIG.POOL_PARTICLES, [1, 1, 1], RUN_FRAME_BOUNDS);
   const inkBursts = new Batch(billboardQuadMesh(1), INK_BURST_POOL, [1, 1, 1], {
     min: [-16, -8, -48],
     max: [16, 16, 16]
@@ -459,7 +459,7 @@ export function buildWorld(options: WorldOptions): World {
     { cast: false, receive: true }
   );
   PAINT_BUCKET_KEYS.forEach((key, v) => builder.add(idolInstancedNode(PAINT_BUCKET_NODE_IDS[v]!, TURF_IDOL_ASSETS[key], PROP_POOL_CAPACITY)));
-  addBatch("strips", strips, flatSpec(linear(LOOK.solvent), 0.62));
+  addBatch("strips", strips, solventFoamSpec(linear(LOOK.solvent), NEAR_HAZE));
   addBatch("can-halos", canHalos, glowSpec(2.6));
   addBatch("can-beacons", canBeacons, glowSpec(2.4));
   builder.add(idolInstancedNode("cans", TURF_IDOL_ASSETS.turfAerosolCan, CONFIG.POOL_CANS, { cast: true, receive: true }));
@@ -468,6 +468,24 @@ export function buildWorld(options: WorldOptions): World {
   builder.add(idolInstancedNode("bot-brushes", TURF_IDOL_ASSETS.turfScrubBrush, CONFIG.POOL_BOTS, { cast: true, receive: true }));
   addBatch("particles", particles, PROGRAMS.toonTone());
   addBatch("ink-bursts", inkBursts, inkFlipbookSpec(turfSplat.inkAtlas));
+  // 5.7.0 live-texture flipbook burst emitter (`effects.flipbook({ texture: turfSplat.inkAtlas.texture })`)
+  builder.add(
+    effects
+      .flipbook({
+        name: "ink-splash-flipbook",
+        texture: turfSplat.inkAtlas.texture,
+        spriteColumns: turfSplat.inkAtlas.columns,
+        spriteRows: turfSplat.inkAtlas.rows,
+        frameRate: 30,
+        size: 1.45,
+        intensity: 1.15,
+        color: LOOK.ball,
+        blend: "alpha",
+        loop: true,
+        position: [0, -60, 0]
+      })
+      .runtime({ id: "ink-splash-flipbook" })
+  );
 
   // Continuous pressurized paint-mist trailing the roller yoke while painting.
   builder.add(
@@ -539,6 +557,8 @@ export function buildWorld(options: WorldOptions): World {
       let burstCursor = 0;
       let burstSerial = 0;
       let lastBurstClock = 0;
+      let splashFlipbookLeft = 0;
+      let splashFlipbookAt: [number, number, number] = [0, -60, 0];
       let lastDistance = 0;
       let lastLane = Number.NaN;
       let lastTime = 0;
@@ -575,6 +595,8 @@ export function buildWorld(options: WorldOptions): World {
                   : LOOK.finish;
         const rgb = linear(baseHex);
         const laneX = Number.isFinite(lastLane) ? lastLane : 0;
+        splashFlipbookAt = [laneX, 0.72, -0.35];
+        splashFlipbookLeft = kind === "eraser" || kind === "finish" ? 0.44 : 0.34;
 
         for (let k = 0; k < count; k += 1) {
           const slot = bursts[burstCursor % INK_BURST_POOL]!;
@@ -617,6 +639,18 @@ export function buildWorld(options: WorldOptions): World {
           inkBursts.setTone(i, packInkBurstTone(frame, b.rgb));
         }
         inkBursts.flush(node("ink-bursts"), false);
+        const splashNode = app.nodes.get?.("ink-splash-flipbook");
+        if (splashNode) {
+          if (splashFlipbookLeft > 0 && !reduced) {
+            splashFlipbookLeft = Math.max(0, splashFlipbookLeft - (stepDt > 0 ? stepDt : 1 / 60));
+            splashNode.setVisible(true);
+            splashNode.setPosition(splashFlipbookAt[0], splashFlipbookAt[1], splashFlipbookAt[2]);
+          } else {
+            splashFlipbookLeft = 0;
+            splashNode.setVisible(false);
+            splashNode.setPosition(0, -60, 0);
+          }
+        }
       }
 
       function updatePaint(sim: SplatTurfSim, distance: number): void {
@@ -762,8 +796,8 @@ export function buildWorld(options: WorldOptions): World {
             }
             continue;
           }
-          const s = Math.max(0.2, p.life * 1.6);
-          particles.place(i, p.x, p.y, -p.z, 0, s, s, s);
+          const s = Math.max(0.22, p.life * 1.45);
+          particles.place(i, p.x, p.y, -p.z, 0, s * 0.85, s * 1.35, s * 0.85);
           particleShown[i] = true;
           if (particleKind[i] !== p.kind) {
             particleKind[i] = p.kind;
@@ -781,6 +815,7 @@ export function buildWorld(options: WorldOptions): World {
         edges.flush(node("edges"));
         propPools.forEach((pool, v) => pool.flush(node(PAINT_BUCKET_NODE_IDS[v]!), false, roadFrame));
         strips.flush(node("strips"), false);
+        node("strips").setUniform?.("foamTime", reduced ? 0 : time);
         canHalos.flush(node("can-halos"), false);
         canBeacons.flush(node("can-beacons"), false);
         cans.flush(node("cans"), false, roadFrame);
@@ -844,20 +879,20 @@ export function buildWorld(options: WorldOptions): World {
           const heroSteer = reduced ? 0 : Math.max(-0.4, Math.min(0.4, -lateral * 0.08));
           pushKartWheels(heroParent, HERO_KART_LAYOUT, distance / HERO_KART_LAYOUT.wheelRadius, heroSteer);
         }
-        // Hero driver: seated in the empty shell, hands on the turning wheel, torso and head leaning into the steer.
+        // Hero driver: nested under `ink-rover-body` (5.7.0 parent-local handle) with constant local seat transform so
+        // driver tracks kart pitch/roll/scale in lockstep with zero lag.
         const speedRatio = Math.max(0, Math.min(1, (o.speed - CONFIG.SPEED_INIT) / Math.max(1e-6, CONFIG.SPEED_INIT)));
         if (heroDriver) {
           const hs = DRIVER_RIG_SCALE.turfHeroDriverRig;
           const steerIn = reduced ? 0 : Math.max(-1, Math.min(1, -lateral * 0.2));
-          // world = kart pose · shell offset (Ry pi) · T(seat - scale * seated hips) · S(rig scale)
-          const seat = decompose(multiply(
-            multiply(trs([laneOffset, BALL_RADIUS * scale, 0], [roverPitch, yokeBank * 0.42, yokeBank * 0.65], scale), HERO_BODY_LOCAL),
+          const seatLocal = decompose(multiply(
+            HERO_BODY_LOCAL,
             trs([HERO_SEAT[0] - hs * heroHips[0], HERO_SEAT[1] - hs * heroHips[1], HERO_SEAT[2] - hs * heroHips[2]], [0, 0, 0], hs)
           ));
           node(HERO_DRIVER_ID)
-            .setPosition(seat.t[0], seat.t[1], seat.t[2])
-            .setRotation(seat.rot[0], seat.rot[1], seat.rot[2])
-            .setScale(seat.s)
+            .setPosition(seatLocal.t[0], seatLocal.t[1], seatLocal.t[2])
+            .setRotation(seatLocal.rot[0], seatLocal.rot[1], seatLocal.rot[2])
+            .setScale(seatLocal.s)
             .setVisible(!gone)
             .setAnimationPose?.(driverPose(heroDriver, { steer: steerIn, time, speed: speedRatio, reduced }).pose as never);
         }

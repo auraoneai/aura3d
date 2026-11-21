@@ -8,8 +8,7 @@ import {
   batched, camera, cameras, defineAuraAssets, effects, environments, geometry, group, instances, lights, lookHdriUrl, material, model, primitives, scene, text3D,
   type AuraApp, type AuraMaterialSpec, type AuraTrailOptions, type AuraTransformSpec
 } from "@aura3d/engine";
-import { createImpactRig } from "../../apps/showcase-port-shared/feel";
-import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, createImpactRig } from "@aura3d/engine/game";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 import { SALTWIND_LOOK, SALTWIND_PALETTE, directionFromAngles, lookModeFrom, type SaltwindLookRow } from "./art/look";
 import { SPRAY_POINTS, sprayAmount, sprayWind } from "./art/spray";
@@ -34,7 +33,7 @@ import {
 import {
   IDOL_DINER, IDOL_HERO_BODY, IDOL_HERO_BODY_SCALE, IDOL_HERO_BODY_Y, IDOL_HERO_BODY_Z, IDOL_HERO_WHEEL_SCALE, IDOL_LIGHTHOUSE, IDOL_LIGHTHOUSE_LANTERN, IDOL_TOWNHOUSES, IDOL_VIADUCT, IDOL_VILLAS, idolAsset, idolBounds, idolEnabled, idolVehicleKey, type IdolModelRef
 } from "./art/idol";
-import { DRIVER_HEIGHT, IDOL_DRIVER, STEERING_WHEEL_RADIUS, STEERING_WHEEL_TILT, driverPose, driverSeatFrame, driverWorldTransform, steeringWheelAngle } from "./art/driver";
+import { DRIVER_HEIGHT, IDOL_DRIVER, STEERING_WHEEL_RADIUS, STEERING_WHEEL_TILT, createDriverAnimator, driverPose, driverSeatFrame, driverWorldTransform, steeringWheelAngle } from "./art/driver";
 import { loadIdolHumanoid, type HumanoidDriver } from "@aura3d/engine/animation";
 import { quatMul as rigQuatMul, quatRotateVec, quaternionFromEulerZYX, quaternionToEulerZYX } from "./roadsterRig";
 import { SIGN_DEPTH, SIGN_DROP, SIGN_LETTER_SPACING, SIGN_SIZE, signOrigin, signSpan, signText } from "./art/signs";
@@ -770,8 +769,19 @@ export const ROUTE_LUT_URL = {
 /** Name of the route IBL node: the route and the catalogue file, so `diagnostics().lighting.environment.source` names both. */
 export const routeIblName = (row: SaltwindLookRow): string => `route IBL ${row.id} ${row.hdri}_1k`;
 
-/** Shadow of the GU47 key (RH47-03, phase 4): one PCSS cascade over the near 75 m (see `SHADOW` in art/look.ts); PCF on Low (PRD §6.4). */
-export const keyShadowFor = (row: SaltwindLookRow) => ({ cascades: row.shadow.cascades, maxDistance: row.shadow.maxDistance, filter: row.shadow.filter, mapSize: row.shadow.mapSize, softness: 1.2 });
+/** Shadow of the GU47 key (RH47-03 + 5.7.2): one soft PCSS cascade with a roadster-ahead fixed shadow fit box from `art/look.ts`. */
+export const keyShadowFor = (row: SaltwindLookRow, center: readonly [number, number, number] = row.shadow.fit.center) => ({
+  cascades: row.shadow.cascades,
+  maxDistance: row.shadow.maxDistance,
+  filter: row.shadow.filter,
+  mapSize: row.shadow.mapSize,
+  softness: row.shadow.softness,
+  fit: {
+    center: [center[0], center[1], center[2]] as [number, number, number],
+    extent: [row.shadow.fit.extent[0], row.shadow.fit.extent[1]] as [number, number],
+    depth: row.shadow.fit.depth
+  }
+});
 
 /** The relay gate glow per route (RH47-11: route-tinted gantries replace today's cyan emissive boxes). */
 export const gantryColours = (look: Look): { frame: Vec3; glow: Vec3; glowAmount: number } => {
@@ -798,7 +808,8 @@ export function buildWorld(
   if (row) {
     // RH47-02/03: the look row's one shadowed key (the same sun the GLSL surfaces read) and its one unshadowed fill.
     const fillDir = directionFromAngles(row.fill.elevationDeg, row.fill.azimuthDeg);
-    builder.add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: row.sun.intensity, color: row.sun.color, shadow: enabled("shadow") ? keyShadowFor(row) : false }));
+    const shadowAhead = roadPoint(level, 24, 0, 0);
+    builder.add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: row.sun.intensity, color: row.sun.color, shadow: enabled("shadow") ? keyShadowFor(row, shadowAhead) : false }));
     if (row.fill.kind === "city-glow") {
       builder.add(lights.hemisphere({ name: "city glow", skyColor: row.ambient.sky, groundColor: row.fill.color, intensity: row.fill.intensity }));
     } else {
@@ -954,10 +965,15 @@ export function buildWorld(
       playerIds.push(id);
     };
     if (heroIdol) {
-      // Idol body (empty wheel arches) in a runtime group posed like the chassis parts: the GLB is grounded at y = 0 and faces
-      // +Z, the chassis origin sits ROADSTER_HALF_H above the road and faces -Z.
+      // 5.7.1 automotive lacquer clearcoat + chrome roll-hoops (aligned to swRoadsterBodyB arches behind the seats) + HDR signal-red taillights.
+      const roadsterLacquerOverrides = [{ clearcoat: 1.0, clearcoatRoughness: 0.06, envMapIntensity: 1.35 }] as const;
+      const rollHoopMat = material.studioMetal({ color: "#eef4fa", metallic: 0.96, roughness: 0.12, envMapIntensity: 1.35 });
       builder.add(group("car-body", [
-        model(heroIdol, { scaleMode: "world", name: "car-body-idol", position: [0, IDOL_HERO_BODY_Y, IDOL_HERO_BODY_Z], rotation: [0, Math.PI, 0], scale: IDOL_HERO_BODY_SCALE, castShadow: true, receiveShadow: true })
+        model(heroIdol, { scaleMode: "world", name: "car-body-idol", position: [0, IDOL_HERO_BODY_Y, IDOL_HERO_BODY_Z], rotation: [0, Math.PI, 0], scale: IDOL_HERO_BODY_SCALE, castShadow: true, receiveShadow: true, materialOverrides: roadsterLacquerOverrides }),
+        primitives.torus({ name: "car-rollhoop-l", position: [-0.325, 0.72, 1.36], size: [0.38, 0.38, 0.05], material: rollHoopMat, castShadow: false }),
+        primitives.torus({ name: "car-rollhoop-r", position: [0.325, 0.72, 1.36], size: [0.38, 0.38, 0.05], material: rollHoopMat, castShadow: false }),
+        primitives.sphere({ name: "car-tail-l", position: [-0.62, 0.11, 2.15], scale: [1.3, 0.72, 0.4], size: 0.15, material: palette.taillampRuby, castShadow: false }),
+        primitives.sphere({ name: "car-tail-r", position: [0.62, 0.11, 2.15], scale: [1.3, 0.72, 0.4], size: 0.15, material: palette.taillampRuby, castShadow: false })
       ]).runtime({ id: "car-body" }));
       playerIds.push("car-body");
       idolModelNodes++;
@@ -1568,8 +1584,11 @@ export function buildWorld(
     }
     return { pool, index, box: unionBox(pieceSpec(def.piece, def.variant)!.boxes), wheels };
   };
+  const trafficClearcoatOverrides = [{ clearcoat: 0.96, clearcoatRoughness: 0.07, envMapIntensity: 1.3 }] as const;
+  const semiClearcoatMetallicOverrides = [{ roughness: 0.28, metallic: 0.32, clearcoat: 1.0, clearcoatRoughness: 0.06, envMapIntensity: 1.35 }] as const;
   for (const pool of idolPools.values()) {
-    builder.add(instances.model(pool.ref, { scaleMode: "world", name: pool.id, transforms: pool.specs as AuraTransformSpec[], castShadow: true, receiveShadow: true }).runtime({ id: pool.id }));
+    const isHeavyCab = /swSemi|swTractor/i.test(pool.id);
+    builder.add(instances.model(pool.ref, { scaleMode: "world", name: pool.id, transforms: pool.specs as AuraTransformSpec[], castShadow: true, receiveShadow: true, materialOverrides: isHeavyCab ? semiClearcoatMetallicOverrides : trafficClearcoatOverrides }).runtime({ id: pool.id }));
     geometryTotal++;
     idolModelNodes++;
   }
@@ -1577,7 +1596,15 @@ export function buildWorld(
   const rigDetail = new Map<VehicleDef, ReturnType<typeof rigParts>>();
   rigDefs.forEach((d, i) => rigDetail.set(d, rigParts(d.piece, pieceSpec(d.piece, d.variant)!.boxes, d.colour, CAB_COLOURS[i % CAB_COLOURS.length]!)));
   const rigPartTotal = [...rigDetail.values()].reduce((n, r) => n + r.parts.length, 0);
-  const rigs = batched.mesh({ name: "vehicles-rigs", maxInstances: rigPartTotal + 8, maxVertices: 64, maxIndices: 64, material: material.pbr({ color: "#ffffff", roughness: row ? 0.34 : 0.52, metallic: row ? 0.24 : 0.15 }) });
+  const rigs = batched.mesh({
+    name: "vehicles-rigs",
+    maxInstances: rigPartTotal + 8,
+    maxVertices: 64,
+    maxIndices: 64,
+    material: row
+      ? material.carPaint({ color: "#ffffff", roughness: 0.24, metallic: 0.48, clearcoat: 0.92, clearcoatRoughness: 0.07 })
+      : material.pbr({ color: "#ffffff", roughness: 0.52, metallic: 0.15 })
+  });
   const rigGeo = rigs.addGeometry("box");
   geometryTotal++;
   builder.add(rigs);
@@ -1775,6 +1802,7 @@ export function buildWorld(
       const steeringRim = heroDriver ? node("car-steering-rim") : null;
       const steeringSpoke = heroDriver ? node("car-steering-spoke") : null;
       const seat = driverSeatFrame();
+      const driverAnim = createDriverAnimator();
       let driverRig: HumanoidDriver | null = null;
       if (heroDriver && driverNode) {
         driverNode.setVisible(false);
@@ -2066,17 +2094,17 @@ export function buildWorld(
               const dw = driverWorldTransform(carP, { yaw: psi, pitch: chassisPitch, roll: chassisRoll }, hip, heroDriver.scale, seat);
               driverNode.setPosition(dw.position[0], dw.position[1], dw.position[2]).setRotation(dw.rotation[0], dw.rotation[1], dw.rotation[2]).setScale(dw.scale).setVisible(true);
               const racingNow = run.phase === "running";
-              // GPU QA (Nov 18): the role-keyed pose input went to the node as-is (the engine keys pose bones by GLB node
-              // name), so the driver sat in its rest pose, legs hanging through the floor and hands off the wheel; the
-              // humanoid driver resolves it to bone rotations (with the hand IK) first
-              driverNode.setAnimationPose?.(driverRig.pose(driverPose({
+              const boostingNow = racingNow && (run.boosting || run.nitro > 0);
+              const driverKey = !racingNow ? "idle" : boostingNow ? "boost" : "drive";
+              // 5.7.2: cross-faded humanoid animator (`createHumanoidAnimator`) resolves through `driverRig.pose(...)`
+              driverNode.setAnimationPose?.(driverRig.pose(driverAnim.update(realDt, driverPose({
                 steerYaw: driverSteer,
                 speed: run.v,
                 load: Math.max(-1, Math.min(1, -run.wheel * Math.min(1, run.v / 40))),
-                boosting: racingNow && (run.boosting || run.nitro > 0),
+                boosting: boostingNow,
                 time,
                 idle: !racingNow
-              }, hip, heroDriver.scale, seat)) as never);
+              }, hip, heroDriver.scale, seat), driverKey, 0.14)) as never);
             }
           }
           if (beaconBeam) beaconBeam.setRotation(0, time * (reducedMotionOn ? 0.12 : 0.42), 0);

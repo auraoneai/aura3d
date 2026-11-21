@@ -19,7 +19,7 @@ import {
   type AuraPhotometricProfile,
   type AuraSceneNode
 } from "@aura3d/engine";
-import { createFlipbookAtlas } from "../../../showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas } from "@aura3d/engine/game";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
 import { prayerFlagNodes } from "./ambientMotion";
 import { crownRuneWardMaterialSpec, dualFlipbookAtlasBurstSpec, parrySlashArcMaterialSpec } from "./dualShaders";
@@ -49,22 +49,92 @@ export const SLASH_ARC_IDS = {
 
 export const FLIPBOOK_VFX_IDS = {
   sparks: "ic-flipbook-sparks",
-  dust: "ic-flipbook-dust"
+  dust: "ic-flipbook-dust",
+  ripple: "ic-flipbook-ripple"
 } as const;
 
 let cachedFlipbooks: {
   sparks: ReturnType<typeof createFlipbookAtlas>;
   dust: ReturnType<typeof createFlipbookAtlas>;
+  ripple: ReturnType<typeof createFlipbookAtlas>;
+  flame: ReturnType<typeof createFlipbookAtlas>;
 } | null = null;
 
 function getFlipbooks() {
   if (!cachedFlipbooks) {
     cachedFlipbooks = {
-      sparks: createFlipbookAtlas("sparks", [255, 214, 128]),
-      dust: createFlipbookAtlas("dust", [214, 198, 176])
+      sparks: createFlipbookAtlas("sparks", [255, 206, 112]),
+      dust: createFlipbookAtlas("dust", [214, 198, 176]),
+      ripple: createFlipbookAtlas("ripple", [87, 208, 255]),
+      flame: createFlipbookAtlas("muzzle", [255, 134, 48])
     };
   }
   return cachedFlipbooks;
+}
+
+const BRAZIER_FLAME_POINTS: Readonly<Partial<Record<IronStage["id"], readonly { readonly pos: Vec3; readonly scale: number; readonly color: AuraColor }[]>>> = {
+  "crown-arena": [
+    { pos: [-3.45, 1.98, -1.65], scale: 0.72, color: "#ff7a2e" },
+    { pos: [3.45, 1.98, -1.65], scale: 0.72, color: "#ff7a2e" }
+  ],
+  "bangkok-dock": [
+    { pos: [-3.05, 1.82, -1.4], scale: 0.62, color: "#ff9b3d" },
+    { pos: [3.05, 1.82, -1.4], scale: 0.62, color: "#ff9b3d" }
+  ],
+  "colosseum-ruins": [
+    { pos: [-2.75, 1.78, -1.45], scale: 0.6, color: "#ff8c38" },
+    { pos: [2.75, 1.78, -1.45], scale: 0.6, color: "#ff8c38" }
+  ],
+  "himalayan-monastery": [
+    { pos: [-3.3, 1.66, -1.5], scale: 0.56, color: "#ffad4d" },
+    { pos: [3.3, 1.66, -1.5], scale: 0.56, color: "#ffad4d" }
+  ]
+};
+
+/** Layered additive `effects.flipbook` flame cards mounted above each venue's forged braziers. */
+export function brazierFlameNodes(stageId: IronStage["id"], reducedMotion: boolean): AuraSceneNode[] {
+  const points = BRAZIER_FLAME_POINTS[stageId];
+  if (!points || points.length === 0) return [];
+  const { flame, sparks } = getFlipbooks();
+  const rate = reducedMotion ? 8 : 18;
+  const out: AuraSceneNode[] = [];
+  points.forEach((p, index) => {
+    out.push(
+      effects
+        .flipbook({
+          name: `${stageId}-brazier-flame-core-${index}`,
+          texture: flame.texture,
+          spriteColumns: flame.columns,
+          spriteRows: flame.rows,
+          frameRate: rate,
+          loop: true,
+          prewarm: index * 0.43,
+          color: p.color,
+          intensity: 0.85,
+          size: [p.scale * 0.76, p.scale * 1.05],
+          blend: "additive"
+        })
+        .position(p.pos[0], p.pos[1], p.pos[2])
+        .toJSON(),
+      effects
+        .flipbook({
+          name: `${stageId}-brazier-flame-lick-${index}`,
+          texture: sparks.texture,
+          spriteColumns: sparks.columns,
+          spriteRows: sparks.rows,
+          frameRate: reducedMotion ? 6 : 14,
+          loop: true,
+          prewarm: 0.25 + index * 0.37,
+          color: "#ffd68a",
+          intensity: 0.55,
+          size: [p.scale * 0.55, p.scale * 0.88],
+          blend: "additive"
+        })
+        .position(p.pos[0], p.pos[1] + 0.12, p.pos[2] + 0.02)
+        .toJSON()
+    );
+  });
+  return out;
 }
 
 export interface ArenaOptions {
@@ -117,7 +187,7 @@ function spawnRing(id: string, x: number, color: AuraColor, disc: AuraColor = OR
     primitives
       .cylinder({
         name: `${id}-inner`,
-        material: material.pbr({ color: disc, roughness: 0.7 }),
+        material: material.pbr({ color: disc, roughness: 0.86, metallic: 0.04 }),
         castShadow: false,
         receiveShadow: true
       })
@@ -184,24 +254,35 @@ function combatOverlayNodes(liveFlipbooks: boolean): AuraSceneNode[] {
       primitives
         .plane({
           name: "steel clash sparks flipbook",
-          material: material.custom(dualFlipbookAtlasBurstSpec(atlases.sparks, { tint: [1.0, 0.88, 0.56], emissiveGain: 1.55, additive: true })),
+          material: material.custom(dualFlipbookAtlasBurstSpec(atlases.sparks, { tint: [1.0, 0.86, 0.52], emissiveGain: 1.05, additive: true })),
           castShadow: false,
           receiveShadow: false
         })
         .position(0, -40, 0)
-        .scale([1.05, 1.05, 1])
+        .scale([0.92, 0.92, 1])
         .runtime({ id: FLIPBOOK_VFX_IDS.sparks })
         .toJSON(),
       primitives
         .plane({
           name: "arena footwork dust flipbook",
-          material: material.custom(dualFlipbookAtlasBurstSpec(atlases.dust, { tint: [0.88, 0.82, 0.72], emissiveGain: 0.92 })),
+          material: material.custom(dualFlipbookAtlasBurstSpec(atlases.dust, { tint: [0.88, 0.82, 0.72], emissiveGain: 0.88 })),
           castShadow: false,
           receiveShadow: false
         })
         .position(0, -40, 0)
-        .scale([1.22, 1.22, 1])
+        .scale([1.18, 1.18, 1])
         .runtime({ id: FLIPBOOK_VFX_IDS.dust })
+        .toJSON(),
+      primitives
+        .plane({
+          name: "hex guard ripple flipbook",
+          material: material.custom(dualFlipbookAtlasBurstSpec(atlases.ripple, { tint: [0.42, 0.86, 1.0], emissiveGain: 1.05, additive: true })),
+          castShadow: false,
+          receiveShadow: false
+        })
+        .position(0, -40, 0)
+        .scale([1.15, 1.15, 1])
+        .runtime({ id: FLIPBOOK_VFX_IDS.ripple })
         .toJSON()
     );
   }
@@ -382,6 +463,7 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
     .addMany([
       ...lightNodes,
       ...weatherNodes,
+      ...brazierFlameNodes(s.id, o.reducedMotion),
       ...(look.prayerFlags ? prayerFlagNodes(s.id, o.reducedMotion) : []),
       koScorchNode(),
       effects.ambientOcclusion({ name: "iron crown gtao", intensity: 0.56, radius: 0.5, falloff: 0.6 }).toJSON(),
@@ -425,6 +507,7 @@ export function buildArenaScene(o: ArenaOptions) {
       ...stageLightNodes(row, rims, { p1: o.playerStart[0], p2: o.playerStart[0] === o.rivalStart[0] ? 2.2 : o.rivalStart[0] }),
       ...arenaShaftNodes(row),
       ...arenaWeatherNodes(row, o.reducedMotion, o.lowTier === true),
+      ...brazierFlameNodes(s.id, o.reducedMotion),
       ...prayerFlagNodes(s.id, o.reducedMotion),
       ...stageFlareNodes(row, o.lowTier === true),
       koScorchNode(),

@@ -7,14 +7,27 @@ import { NODE_IDS, buildWorld } from "../../../apps/showcase-polarity-orbs/src/w
 import {
   arenaBezelRailMesh,
   crownPrismGemMesh,
-  dipoleCollectorOrbMesh
+  dipoleCollectorOrbMesh,
+  orbMinusHaloMesh,
+  orbPlusCoronaMesh
 } from "../../../apps/showcase-polarity-orbs/src/art/proceduralModels";
+import { IDOL_BACKDROP_ASSETS } from "../../../apps/showcase-polarity-orbs/src/backdrop";
 import { LOOK } from "../../../apps/showcase-polarity-orbs/src/look";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
+const collectNodes = (list: readonly Record<string, unknown>[]): Record<string, unknown>[] => {
+  const acc: Record<string, unknown>[] = [];
+  for (const n of list) {
+    acc.push(n);
+    if (Array.isArray(n.children)) acc.push(...collectNodes(n.children as Record<string, unknown>[]));
+  }
+  return acc;
+};
+const modelKey = (n: Record<string, unknown>): string => String((n.asset as { id?: string } | undefined)?.id ?? "");
+
 /**
  * Expected in-play draws: sky, cloud sea, 4 scenery layers, hero 5-node orb assembly, shadow, shield, shockwave +
- * merged gameplay batches + multi-material procedural Tokamak / Magnetic Lab backdrop assemblies (zero `.glb` models).
+ * merged gameplay batches (including dual-coded +/- orb silhouettes & contact shadows) + 6 mounted Idol backdrop groups.
  */
 const DRAWS_ESTIMATE = 42;
 
@@ -23,17 +36,24 @@ describe("polarity orbs art direction", () => {
     const sim = new PolarityOrbsSim(7);
     const world = buildWorld({ sim, aspect: 16 / 9 });
     const nodes = world.scene.toJSON().nodes as unknown as Record<string, unknown>[];
+    const allNodes = collectNodes(nodes);
     const lights = nodes
       .filter((n) => n.kind === "light")
       .map((n) => ({ type: String(n.light), shadow: Boolean(n.shadow), intensity: Number(n.intensity ?? 1) }));
     const env = nodes.find((n) => n.kind === "environment");
-    expect(nodes.filter((n) => n.kind === "model")).toHaveLength(0);
+    const mountedModels = allNodes
+      .filter((n) => n.kind === "model")
+      .map((n) => ({ assetKey: modelKey(n), triangles: 0, textures: 3, unlit: false, overridesTextures: false }));
+    const expectedAssetKeys = Object.values(IDOL_BACKDROP_ASSETS)
+      .map((a) => String((a as { id?: string }).id ?? ""))
+      .sort();
+    expect(new Set(mountedModels.map((m) => m.assetKey))).toEqual(new Set(expectedAssetKeys));
     expect(webgpuCustomShaderGap(world.scene.toJSON())).toBeUndefined();
     const snapshot: ArtDirectionSnapshot = {
       lights,
       hasAmbient: lights.some((l) => l.type === "ambient"),
       environment: { kind: env?.environment === "hdri" ? "hdri" : env ? "preset" : "none", background: env?.background === true },
-      models: [],
+      models: mountedModels,
       drawCalls: DRAWS_ESTIMATE
     };
     expect(lights.filter((l) => l.shadow)).toHaveLength(1);
@@ -54,10 +74,19 @@ describe("polarity orbs art direction", () => {
     expect(direction.lighting.environment.background).toBe("sky");
   });
 
-  it("preserves all 30 runtime NODE_IDS and builds finite procedural Tokamak & gameplay meshes", () => {
-    expect(NODE_IDS).toHaveLength(30);
-    expect(direction.assets).toEqual([]);
-    for (const mesh of [arenaBezelRailMesh(2), dipoleCollectorOrbMesh(0.45), crownPrismGemMesh(0.4)]) {
+  it("preserves runtime NODE_IDS, syncs all 6 mounted Idol assets, and builds finite dual-coded orb & Tokamak meshes", () => {
+    expect(NODE_IDS).toHaveLength(34);
+    const expectedAssetKeys = Object.values(IDOL_BACKDROP_ASSETS)
+      .map((a) => String((a as { id?: string }).id ?? ""))
+      .sort();
+    expect(direction.assets.map((a) => a.assetKey).sort()).toEqual(expectedAssetKeys);
+    for (const mesh of [
+      arenaBezelRailMesh(2),
+      dipoleCollectorOrbMesh(0.45),
+      orbPlusCoronaMesh(0.45),
+      orbMinusHaloMesh(0.45),
+      crownPrismGemMesh(0.4)
+    ]) {
       expect(mesh.positions.length).toBeGreaterThan(24);
       expect(mesh.normals.length).toBe(mesh.positions.length);
       expect(mesh.indices.length).toBeGreaterThan(12);

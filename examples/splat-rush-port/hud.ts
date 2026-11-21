@@ -12,7 +12,7 @@ export const HUD_PAPER = "#fdf0e0";
 export const HUD_CARNIVAL_CLASS = "look-carnival";
 
 /** Colour-blind shape glyphs matching `SYMBOL_FOR_COLOR` (red circle, yellow triangle, blue square, purple cross). */
-export const SHAPE_GLYPHS = ["\u25CF", "\u25B2", "\u25A0", "\u271A"] as const;
+export const SHAPE_GLYPHS = ["\u25CF", "\u25B2", "\u25A0", "\u2715"] as const;
 
 /* Crisp 1.5px-stroke inline SVGs replacing raw OS emojis across buttons, pills, and cards */
 export const ICON_SOUND_ON =
@@ -88,26 +88,37 @@ export function upgradeRuntimeHudDom(): void {
       .pu-shield, .pu-x2 { color: #2b1630; text-shadow: none; }
       .look-carnival .hud-text { display: inline-flex; align-items: baseline; font-weight: 600; font-size: clamp(18px, 3.8vh, 26px); padding: 5px 14px 6px; background: rgba(253, 240, 224, 0.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 2px solid #3b1f3f; border-radius: 12px; box-shadow: 0 4px 14px rgba(34, 14, 42, 0.18), 2px 3px 0 #3b1f3f; letter-spacing: 0; }
       .look-carnival #hud-combo { gap: 6px; font-size: clamp(16px, 3.2vh, 22px); padding: 4px 12px 5px; }
-      .look-carnival #hud-swatch { display: flex; align-items: center; justify-content: center; color: #fdf0e0; font-size: 14px; font-weight: 600; text-shadow: 0 1px 2px rgba(28, 10, 32, 0.72); }
-      .look-carnival .overlay-card { max-width: 368px; padding: clamp(18px, 3.6vh, 30px) clamp(20px, 4vw, 30px); border: 2.5px solid rgba(59, 31, 63, 0.9); border-radius: 20px; background: rgba(253, 240, 224, 0.92); backdrop-filter: blur(14px) saturate(135%); -webkit-backdrop-filter: blur(14px) saturate(135%); box-shadow: 0 18px 42px rgba(22, 10, 30, 0.34), 0 4px 0 #3b1f3f; -webkit-mask: none; mask: none; }
-      .look-carnival .overlay-card h1 { font-family: var(--font-ui); font-weight: 600; font-size: clamp(30px, 7vh, 46px) !important; letter-spacing: 0.04em; -webkit-text-stroke: 0 !important; text-shadow: 0 2px 0 rgba(59, 31, 63, 0.18) !important; margin: 0 0 8px !important; }
+      .look-carnival #hud-swatch { display: flex; align-items: center; justify-content: center; color: #fdf0e0; font-size: 14px; font-weight: 600; text-shadow: 0 1px 2px rgba(28, 10, 32, 0.72); transition: transform 180ms cubic-bezier(0.2, 1.3, 0.4, 1); }
+      .look-carnival #hud-swatch.swatch-pop { animation: swatch-pop 240ms cubic-bezier(0.2, 1.35, 0.4, 1); }
+      @keyframes swatch-pop { 0% { transform: scale(1); } 45% { transform: scale(1.24); } 100% { transform: scale(1); } }
+      .look-carnival .overlay-card { max-width: 344px; padding: clamp(14px, 2.8vh, 24px) clamp(18px, 3.4vw, 26px); border: 2.5px solid rgba(59, 31, 63, 0.9); border-radius: 18px; background: rgba(253, 240, 224, 0.92); backdrop-filter: blur(14px) saturate(135%); -webkit-backdrop-filter: blur(14px) saturate(135%); box-shadow: 0 18px 42px rgba(22, 10, 30, 0.34), 0 4px 0 #3b1f3f; -webkit-mask: none; mask: none; }
+      .look-carnival .overlay-card h1 { font-family: var(--font-ui); font-weight: 600; font-size: clamp(28px, 6.2vh, 42px) !important; letter-spacing: 0.04em; -webkit-text-stroke: 0 !important; text-shadow: 0 2px 0 rgba(59, 31, 63, 0.18) !important; margin: 0 0 6px !important; }
       .look-carnival .btn { font-weight: 600; font-size: clamp(16px, 2.8vh, 20px); letter-spacing: 0.05em; padding: 11px 32px; min-height: 44px; border-width: 2.5px; border-radius: 999px; box-shadow: 0 4px 0 #3b1f3f, 0 10px 20px rgba(59, 31, 63, 0.24); text-shadow: 0 1px 1px rgba(42, 16, 46, 0.35); }
       .look-carnival .btn-gold { color: #3b1f3f; text-shadow: none; }
       .look-carnival .toggle { font-weight: 500; font-size: 12px; min-height: 36px; padding: 7px 13px; border-width: 1.5px; }
-      .look-carnival .hint { font-weight: 500; font-size: 12px; line-height: 1.4; opacity: 0.78; margin: 10px 0 0; }
+      .look-carnival .hint { font-weight: 500; font-size: 12px; line-height: 1.4; opacity: 0.78; margin: 8px 0 0; }
       .look-carnival #final-stats { font-weight: 500; font-size: 13px; font-variant-numeric: tabular-nums; margin: 0 0 14px; }
-      .look-carnival #splash-best { font-family: var(--font-ui); font-weight: 600; font-size: 15px; margin: 0 0 10px; min-height: 20px; }
-      .splash-copy { font-size: 14px !important; font-weight: 500 !important; line-height: 1.45 !important; color: #3b1f3f !important; margin: 0 0 10px !important; }
+      .look-carnival #splash-best { font-family: var(--font-ui); font-weight: 600; font-size: 14px; margin: 0 0 8px; min-height: 18px; }
+      .splash-copy { font-size: 13px !important; font-weight: 500 !important; line-height: 1.4 !important; color: #3b1f3f !important; margin: 0 0 8px !important; }
       .splash-legend { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 6px 0 2px; }
       .legend-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; background: rgba(59, 31, 63, 0.08); border: 1px solid rgba(59, 31, 63, 0.2); font-size: 12px; font-weight: 500; color: #3b1f3f; }
       #steer-cue { position: fixed; left: 50%; bottom: max(108px, calc(var(--a3d-bar-space, 48px) + 58px + env(safe-area-inset-bottom))); transform: translateX(-50%); z-index: 5; pointer-events: none; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: rgba(253, 240, 224, 0.9); border: 1.5px solid rgba(59, 31, 63, 0.65); box-shadow: 0 6px 18px rgba(24, 10, 30, 0.2); color: #3b1f3f; font-family: var(--font-ui); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.05em; transition: opacity 260ms ease, transform 260ms ease; }
       #steer-cue[data-hidden="true"] { opacity: 0; transform: translateX(-50%) translateY(8px); }
       @media (pointer: coarse), (max-width: 760px) {
         .toggle, .btn, .icon-btn { min-height: 44px; min-width: 44px; touch-action: manipulation; }
+        .hint { display: none; }
+        .look-carnival #hud { height: 40px; padding: 0 10px !important; top: max(8px, env(safe-area-inset-top)) !important; left: max(8px, env(safe-area-inset-left)) !important; right: max(8px, env(safe-area-inset-right)) !important; background: rgba(253, 240, 224, 0.9); backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%); border: 2px solid #3b1f3f; border-radius: 12px; box-shadow: 0 4px 12px rgba(28, 12, 36, 0.22); gap: 8px; }
+        .look-carnival #hud .hud-text { background: transparent; border: 0; box-shadow: none; padding: 0; backdrop-filter: none; -webkit-backdrop-filter: none; font-size: 17px; }
+        .look-carnival #hud-score { margin-left: auto; }
+        .look-carnival #hud-combo { position: static !important; font-size: 14px !important; padding: 2px 8px !important; border-radius: 999px; background: rgba(59, 31, 63, 0.1); }
+        .look-carnival .life-icon { width: 16px; height: 16px; margin: 0 2px; border-width: 2px; }
+        .look-carnival #hud-paint { top: calc(max(8px, env(safe-area-inset-top)) + 46px); left: max(10px, env(safe-area-inset-left)); gap: 6px; }
+        .look-carnival #hud-swatch { width: 28px; height: 28px; font-size: 13px; border-width: 2px; }
+        .look-carnival #hud-tube { width: 68px !important; height: 12px; border-width: 2px; }
         .icon-btn { bottom: max(60px, calc(var(--a3d-bar-space, 48px) + 12px + env(safe-area-inset-bottom))); }
         #hud-powerups { bottom: max(116px, calc(var(--a3d-bar-space, 48px) + 66px + env(safe-area-inset-bottom))) !important; }
       }
-      @media (prefers-reduced-motion: reduce) { #steer-cue { transition: none; } }
+      @media (prefers-reduced-motion: reduce) { #steer-cue, .look-carnival #hud-swatch, .look-carnival #hud-swatch.swatch-pop { transition: none; animation: none; } }
     `;
     document.head.appendChild(style);
   }

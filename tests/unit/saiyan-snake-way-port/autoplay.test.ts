@@ -42,8 +42,9 @@ describe("Serpentine autoplay", () => {
 
   it("main.ts drives autoplay through the normal input path and restarts after the results card", () => {
     const src = readFileSync("examples/saiyan-snake-way-port/main.ts", "utf8");
-    expect(src).toContain("return autoplayOn ? autoplay.next(state) : human;");
-    expect(src).toMatch(/autoplayOn && resultsShown && !config\.manual && \(resultsT \+= dt\) > AUTOPLAY_RESULTS_SECONDS\) startRun\(false\)/);
+    expect(src).toContain("createAutoplayHarness");
+    expect(src).toContain("autoplayHarness.enabled ? (autoplayHarness.step(STEP) ?? {}) : human");
+    expect(src).toContain("autoplayHarness.tick(dt)");
     expect(src).toContain('"KeyO"');
     for (const page of ["examples/saiyan-snake-way-port/index.html", "apps/showcase-serpentine-sky-run-port/index.html"]) {
       expect(readFileSync(page, "utf8")).toContain("<kbd>O</kbd></span><span>autoplay");

@@ -240,8 +240,8 @@ function pantographMeshes(baseY: number): { iron: RawMesh; brass: RawMesh; ceram
   return { iron: join(iron), brass: join(brass), ceramic: join(ceramic) };
 }
 
-/** Saloon interior fitted inside the Idol shell: floor, two longitudinal benches with backs, ceiling, dome lamps and a sill glow. */
-function saloonMeshes(): { wood: RawMesh; ceiling: RawMesh; brass: RawMesh; glow: RawMesh } {
+/** Saloon interior fitted inside the Idol shell: floor, two longitudinal benches with backs, ceiling, dome lamps, and clean studioGlass window glazing. */
+function saloonMeshes(): { wood: RawMesh; ceiling: RawMesh; brass: RawMesh; glow: RawMesh; glass: RawMesh } {
   const t = IDOL_TRAM;
   const hw = t.innerHalfWidth, hl = t.saloonHalfLength;
   const box = (w: number, h: number, d: number, pos: V3, r = 0.012): RawMesh => transformMesh(bevelBoxMesh(w, h, d, r), { pos });
@@ -249,11 +249,18 @@ function saloonMeshes(): { wood: RawMesh; ceiling: RawMesh; brass: RawMesh; glow
   const wood = [box(hw * 2, 0.08, hl * 2 + 0.6, [0, fy, 0])];
   const benchX = Math.min(1.0, hw - 0.33);
   const brass: RawMesh[] = [];
+  const glass: RawMesh[] = [];
   for (const side of [-1, 1] as const) {
     wood.push(box(0.62, 0.11, hl * 1.6, [side * benchX, fy + 0.5, 0], 0.022));
     wood.push(box(0.09, 0.56, hl * 1.6, [side * (hw - 0.04), fy + 0.82, 0], 0.02));
     brass.push(tubeSweepMesh([[side * 0.56, t.ceilingY - 0.18, -hl * 0.78, 0.016], [side * 0.56, t.ceilingY - 0.18, hl * 0.78, 0.016]], 5));
     for (const z of [-hl * 0.6, 0, hl * 0.6]) brass.push(tubeSweepMesh([[side * 0.56, fy + 0.04, z, 0.02], [side * 0.56, t.ceilingY - 0.18, z, 0.02]], 6));
+    // Clean recessed glazing panes spanning the side window band (replaces jagged alpha-mask fringes)
+    glass.push(box(0.024, 0.96, hl * 2.02, [side * (hw + 0.03), fy + 1.34, 0], 0.004));
+  }
+  // Front & rear cab glazing panes inset cleanly behind the curved windscreens
+  for (const end of [-1, 1] as const) {
+    glass.push(box(hw * 1.68, 0.92, 0.024, [0, fy + 1.34, end * (hl + 0.62)], 0.004));
   }
   const ceiling = [box(hw * 2 - 0.04, 0.06, hl * 2 + 0.4, [0, t.ceilingY, 0])];
   const glow: RawMesh[] = [];
@@ -262,14 +269,17 @@ function saloonMeshes(): { wood: RawMesh; ceiling: RawMesh; brass: RawMesh; glow
     const spec = mergeRawMeshes(list);
     return { positions: Array.from(spec.positions as Float32Array), normals: Array.from((spec.normals ?? new Float32Array(spec.positions.length)) as Float32Array), uvs: Array.from((spec.uvs ?? new Float32Array((spec.positions.length / 3) * 2)) as Float32Array), indices: Array.from(spec.indices as Uint16Array | Uint32Array) };
   };
-  return { wood: join(wood), ceiling: join(ceiling), brass: join(brass), glow: join(glow) };
+  return { wood: join(wood), ceiling: join(ceiling), brass: join(brass), glow: join(glow), glass: join(glass) };
 }
+
+/** 5.7.1 clearcoat enamel body finish for the heritage red-and-cream Idol tram. */
+const TRAM_ENAMEL_OVERRIDES: readonly AuraModelMaterialOverride[] = [{ clearcoat: 0.85, clearcoatRoughness: 0.08 }];
 
 let cachedTramParts: { readonly panto: ReturnType<typeof pantographMeshes>; readonly saloon: ReturnType<typeof saloonMeshes>; readonly bogies: RawMesh; readonly cowcatcher: RawMesh } | null = null;
 
 const rawGeom = (m: RawMesh) => mergeRawMeshes([m]);
 
-/** `tram-body`: the Idol streetcar + saloon interior + pantograph + lamp lenses, in the procedural streetcar's frame. */
+/** `tram-body`: the Idol streetcar (5.7.1 clearcoat enamel + clean studioGlass window glazing) + saloon interior + pantograph + lamp lenses. */
 export function buildIdolTramNode(name: string, bulbIntensity: number, castShadow: boolean): AuraNodeBuilder<AuraGroupNode> {
   if (!cachedTramParts) cachedTramParts = { panto: pantographMeshes(IDOL_TRAM.roofY), saloon: saloonMeshes(), bogies: bogieFrameMesh(), cowcatcher: cowcatcherMesh() };
   const { panto, saloon, bogies, cowcatcher } = cachedTramParts;
@@ -277,7 +287,13 @@ export function buildIdolTramNode(name: string, bulbIntensity: number, castShado
   const custom = (id: string, mesh: RawMesh, mat: AuraMaterialSpec, cast = false) =>
     geometry.custom(rawGeom(mesh), { name: `${name} ${id}`, material: mat, castShadow: castShadow && cast, receiveShadow: true });
   return group(name, [
-    model(idol("llTram"), { scaleMode: "world", name: `${name} idol`, position: [0, IDOL_TRAM.wheelY, 0], castShadow, receiveShadow: true }),
+    model(idol("llTram"), { scaleMode: "world", name: `${name} idol`, position: [0, IDOL_TRAM.wheelY, 0], castShadow, receiveShadow: true, materialOverrides: TRAM_ENAMEL_OVERRIDES }),
+    geometry.custom(rawGeom(saloon.glass), {
+      name: `${name} window glass`,
+      material: unnamed(material.studioGlass({ color: "#d8ebf7", opacity: 0.28, roughness: 0.08, clearcoat: 0.9, clearcoatRoughness: 0.04 })),
+      castShadow: false,
+      receiveShadow: false
+    }),
     custom("saloon wood", saloon.wood, unnamed(material.pbr({ color: "#684128", roughness: 0.58, clearcoat: 0.18, clearcoatRoughness: 0.28 }))),
     custom("saloon ceiling", saloon.ceiling, unnamed(material.lacquer({ color: "#f5ebd6", roughness: 0.32, clearcoat: 0.5, clearcoatRoughness: 0.1 }))),
     custom("saloon brass", saloon.brass, unnamed(material.studioMetal({ color: "#dbb056", roughness: 0.21, metallic: 0.93, envMapIntensity: 1.05 }))),

@@ -119,20 +119,14 @@
       #combo-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: #f7c531; transition: width 0.16s ease-out; }
       #streak-wrap { display: inline-flex; align-items: baseline; gap: 4px; font-size: 13px; }
 
-      #shape-meter { display: flex; align-items: center; gap: 8px; }
+      #shape-meter { display: flex; align-items: center; gap: 7px; }
       #shape-chip {
         width: 22px; height: 22px;
-        border: 2.5px solid #1f2a44;
-        background: #e8453c;
+        border: 0;
+        background: transparent;
         display: inline-flex; align-items: center; justify-content: center;
-        color: #fff6e8; font-size: 13px;
       }
-      #shape-chip[data-shape="sphere"] { border-radius: 50%; }
-      #shape-chip[data-shape="cube"] { border-radius: 4px; }
-      #shape-chip[data-shape="cone"] { border-radius: 50% 50% 4px 4px; clip-path: polygon(50% 0, 100% 100%, 0 100%); border-width: 0; outline: 2.5px solid #1f2a44; }
-      .symbols-on #shape-chip::after { content: "●"; }
-      .symbols-on #shape-chip[data-shape="cube"]::after { content: "■"; }
-      .symbols-on #shape-chip[data-shape="cone"]::after { content: "▲"; }
+      #shape-chip svg { display: block; width: 20px; height: 20px; }
       #shape-name {
         font-family: var(--font-ui);
         font-size: 14px;
@@ -495,10 +489,26 @@
       .hidden { display: none !important; }
       @media (max-width: 560px) {
         .overlay-card { width: calc(100vw - 24px); max-width: calc(100vw - 24px); padding-left: 16px; padding-right: 16px; }
-        #combo-tube { width: 54px; }
-        #score { font-size: clamp(19px, 5.2vw, 25px); }
-        #world-tag { display: none; }
-        #popups { top: calc(var(--a3d-bar-space, env(safe-area-inset-top, 0px)) + 138px); }
+        /* Compact single 40px top strip on 390x844 pairing Score/Combo + SVG active-form badge */
+        #hud {
+          padding: max(8px, var(--a3d-bar-space, env(safe-area-inset-top, 0px))) max(10px, env(safe-area-inset-right, 0px)) 0 max(10px, env(safe-area-inset-left, 0px));
+          align-items: center;
+          gap: 6px;
+        }
+        #hud-left, #hud-right { flex-direction: row; align-items: center; gap: 6px; }
+        #telemetry-row, #world-tag, #streak-wrap, #shape-name { display: none; }
+        .chip { min-height: 36px; padding: 3px 8px; display: inline-flex; align-items: center; }
+        #combo-tube { width: 38px; height: 10px; }
+        #score { font-size: 20px; }
+        #mult { font-size: 15px; }
+        #lives { padding: 3px 7px; gap: 4px; }
+        .pip { width: 12px; height: 12px; }
+        #status-line {
+          position: fixed;
+          top: calc(max(8px, var(--a3d-bar-space, env(safe-area-inset-top, 0px))) + 44px);
+          right: max(10px, env(safe-area-inset-right, 0px));
+        }
+        #popups { top: calc(max(8px, var(--a3d-bar-space, env(safe-area-inset-top, 0px))) + 52px); }
         #form-selector {
           left: calc(114px + env(safe-area-inset-left, 0px));
           right: calc(12px + env(safe-area-inset-right, 0px));
@@ -507,7 +517,8 @@
         }
         .form-btn {
           flex: 1 1 0;
-          min-width: 44px;
+          min-width: 48px;
+          min-height: 48px;
           padding: 4px 6px;
           gap: 4px;
           font-size: 12px;
@@ -548,7 +559,7 @@
           <span id="combo-tube"><span id="combo-fill"></span></span>
           <span id="streak-wrap"><span class="hud-lbl">stk</span><span id="hud-streak" class="hud-num">0</span></span>
         </div>
-        <div id="shape-meter" class="chip"><span id="shape-chip" data-shape="sphere"></span><span id="shape-name">sphere</span></div>
+        <div id="shape-meter" class="chip"><span id="shape-chip" data-shape="sphere"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="#e8453c" stroke="#1f2a44" stroke-width="2"/></svg></span><span id="shape-name">sphere</span></div>
         <div id="status-line" class="chip hidden"></div>
       </div>
     </div>

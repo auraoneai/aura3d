@@ -12,6 +12,7 @@
 import {
   game, lights, effects, scene, camera, environments, defineAuraAssets, primitives, material, type AuraApp
 } from "@aura3d/engine";
+import { createFlipbookAtlas, createGradingLut, createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import { BONUS_RELIC_KINDS, buildBonusArcadeRelicNode } from "../art/proceduralModels.js";
 import { ARCADE_CAPS, COURIER_FRAME, buildArcadePoolNodes, neonSegments, type ArcadePoolKey } from "../art/arcadeActors.js";
 import { idx, type ParsedMaze } from "./grid.js";
@@ -23,8 +24,7 @@ import { hexToRgb } from "./palette.js";
 import { ARCADE, FRAME_PULL_BACK, LOOK_HDRI } from "./look.js";
 import { REDUCED_AMPLITUDE, stepCourierPose, type CourierPose } from "./motion.js";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
-import { createFlipbookAtlas, createGradingLut } from "../../../showcase-port-shared/vfx-pack";
-import { dualEnergyFieldSpec, dualSparkFlipbookSpec } from "./shaders.js";
+import { dualEnergyFieldSpec } from "./shaders.js";
 
 /** Procedural cyber-neon grading LUT (vfx-pack): reported in the evidence payload. */
 export const CYBER_NEON_LUT = createGradingLut("cyber-neon");
@@ -57,7 +57,7 @@ export const ACTOR = {
   sentry: 1.1,
   sentryHeight: 0.36,
   /** Soft glow disc under each actor (diameter). */
-  courierGlow: 2.0,
+  courierGlow: 1.35,
   sentryGlow: 1.55,
   /** Big eyes: each white is this fraction of the sentry diameter, pupils half of that. */
   eye: 0.3,
@@ -188,7 +188,14 @@ export function buildScene(): unknown {
     // Low IBL fill (never drawn) so the relic models keep their shape; one overhead key casts the only shadows.
     .add(environments.hdri({ name: "arcade ibl", texture: lookAssets.workshopHdr, intensity: ARCADE.ibl, rotation: 0, background: false })
       .runtime(game.runtimeNode("workshop-ibl")))
-    .add(lights.directional({ name: "arcade key", position: [...ARCADE.key.position], target: [0, 0, 0], color: ARCADE.key.color, intensity: ARCADE.key.intensity, shadow: true }))
+    .add(lights.directional({
+      name: "arcade key",
+      position: [...ARCADE.key.position],
+      target: [0, 0, 0],
+      color: ARCADE.key.color,
+      intensity: ARCADE.key.intensity,
+      shadow: { softness: ARCADE.key.shadowSoftness }
+    }))
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: pose.position as [number, number, number], target: pose.target as [number, number, number], fov: pose.fov }));
 
   const doorMat = material.custom(dualEnergyFieldSpec({ coreColor: [1.0, 0.45, 0.78], edgeColor: [1.0, 0.85, 0.95], pulseSpeed: 3.4, scanScale: 15.0, opacity: 0.85 }));
@@ -213,9 +220,19 @@ export function buildScene(): unknown {
         .runtime(game.runtimeNode(`portal-${i}`))
     ),
     ...Array.from({ length: SPARK_POOL_SIZE }, (_, i) =>
-      primitives.plane({ name: `spark-burst-${i}`, size: [1, 1], material: material.custom(dualSparkFlipbookSpec(SPARKS_ATLAS)), castShadow: false, receiveShadow: false })
-        .position(0, -999, 0).rotate(-Math.PI / 2, 0, 0)
-        .runtime(game.runtimeNode(`spark-burst-${i}`))
+      effects.flipbook({
+        name: `spark-burst-${i}`,
+        texture: SPARKS_ATLAS.texture,
+        spriteColumns: SPARKS_ATLAS.columns,
+        spriteRows: SPARKS_ATLAS.rows,
+        frameRate: 30,
+        size: 0.9,
+        intensity: 1.35,
+        color: "#ffd27a",
+        blend: "additive",
+        loop: true,
+        position: [0, -999, 0]
+      }).runtime(game.runtimeNode(`spark-burst-${i}`))
     )
   ]);
   return s.toJSON();
@@ -266,12 +283,8 @@ function syncSparkBursts(dt: number): void {
     h.setVisible(true);
     h.setPosition(slot.x, slot.y, slot.z);
     const s = slot.scale * (0.72 + 0.52 * Math.sin(Math.min(1, t * 1.4) * Math.PI * 0.5));
-    h.setScale([s, s, s]);
-    try {
-      h.setUniform?.("frame", Math.min(31, Math.floor(t * 32)));
-      h.setUniform?.("tint", [...slot.tint]);
-      h.setUniform?.("opacity", calmFlash ? (1 - t) * 0.55 : 1 - t * t);
-    } catch { /* custom uniform optional */ }
+    const fade = calmFlash ? (1 - t) * 0.55 : 1 - t * t;
+    h.setScale([s * Math.max(0.15, fade), s * Math.max(0.15, fade), s * Math.max(0.15, fade)]);
   }
 }
 
@@ -378,8 +391,10 @@ export function snapshotActors(): ActorBlendState {
   return { mazeId: st.mazeId, courier: { x: pp.x, y: pp.y }, ghosts };
 }
 
+export const WRAP_SNAP_DISTANCE = 2.4;
+
 function lerpActor(a: ActorPoseSample | undefined, b: ActorPoseSample, t: number): ActorPoseSample {
-  if (!a || Math.hypot(b.x - a.x, b.y - a.y) > 2.4) return b;
+  if (!a || Math.hypot(b.x - a.x, b.y - a.y) > WRAP_SNAP_DISTANCE) return b;
   return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
 }
 
@@ -391,6 +406,17 @@ export function blendActors(a: ActorBlendState, b: ActorBlendState, t: number): 
     if (target) ghosts[id] = lerpActor(a.ghosts[id], target, t);
   }
   return { mazeId: b.mazeId, courier: lerpActor(a.courier, b.courier, t), ghosts };
+}
+
+/** Fixed-step render interpolator on Aura3D 5.7.2 `createSnapshotInterpolator` (preserving wrap-tunnel snap `2.4`). */
+export function createActorInterpolator(): SnapshotInterpolator<ActorBlendState> {
+  return createSnapshotInterpolator<ActorBlendState>({
+    snapshot: snapshotActors,
+    blend: blendActors,
+    snap: (prev, next) =>
+      prev.mazeId !== next.mazeId ||
+      Math.hypot(next.courier.x - prev.courier.x, next.courier.y - prev.courier.y) > WRAP_SNAP_DISTANCE
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -457,14 +483,17 @@ function syncActors(dt: number, blend: ActorBlendState | undefined, pp: { x: num
   const breathe = moving ? 0 : Math.sin(st.time * 3) * 0.03 * amp;
   const gulp = 1 + collectPulse * 0.16 * amp + breathe;
   // death: the courier spins down and shrinks to nothing while a red shock ring spreads from it
+  const dashing = st.player.dashT > 0 && !dead;
+  const dashStretch = dashing && !calmMotion ? 1.18 : 1;
+  const dashSquash = dashing && !calmMotion ? 0.88 : 1;
   const s = COURIER_SCALE * gulp * (dead ? Math.max(0.04, deathK) : 1);
   const spinYaw = dead && !calmMotion ? yaw + (1 - deathK) * 9 : yaw;
   const y = -COURIER_FRAME.bottom * s + 0.03;
   const visor = collectPulse > 0.75 ? "#ffffff" : st.profile.orbColor || "#18f0ff";
   const drawCourier = (x: number, z: number): void => {
-    glowDisc(x, z, ACTOR.courierGlow * (dead ? deathK : 1), ARCADE.courierGlow, 1);
-    inst("courier", x, y, z, s, s, s, ARCADE.courier, spinYaw);
-    inst("courierVisor", x, y, z, s, s, s, visor, spinYaw);
+    glowDisc(x, z, ACTOR.courierGlow * (dead ? deathK : 1), dashing ? "#5ff3ff" : ARCADE.courierGlow, dashing ? 1.1 : 0.85);
+    inst("courier", x, y, z, s * dashSquash, s * dashSquash, s * dashStretch, ARCADE.courier, spinYaw);
+    inst("courierVisor", x, y, z, s * dashSquash, s * dashSquash, s * dashStretch, visor, spinYaw);
   };
   const cx = wx(pp.x), cz = wz(pp.y);
   // trail (newest first), sampled every 40 ms while moving; cleared on wrap jumps and respawns
@@ -479,7 +508,13 @@ function syncActors(dt: number, blend: ActorBlendState | undefined, pp: { x: num
   if (!dead) {
     for (let i = 1; i < trail.length; i++) {
       const t = trail[i]!, f = 1 - i / TRAIL_LEN;
-      inst("glow", t.x, 0.011, t.z, 0.95 * f + 0.2, 1, 0.95 * f + 0.2, st.profile.trailColor || ARCADE.courierGlow, 0, 1.2 * f);
+      const trailCol = dashing ? "#5ff3ff" : (st.profile.trailColor || ARCADE.courierGlow);
+      inst("glow", t.x, 0.011, t.z, (dashing ? 1.15 : 0.9) * f + 0.2, 1, (dashing ? 1.15 : 0.9) * f + 0.2, trailCol, 0, (dashing ? 1.25 : 0.95) * f);
+    }
+    // subtle 1-tile queued-turn indicator when a buffered turn differs from current travel heading
+    const want = st.player.want;
+    if (!st.autopilot && st.player.wantT > 0 && (want.x !== st.player.dir.x || want.z !== st.player.dir.z)) {
+      inst("glow", cx + want.x * 0.72, 0.014, cz + want.z * 0.72, 0.34, 1, 0.34, "#5ff3ff", 0, 0.72);
     }
   }
   drawCourier(cx, cz);
@@ -509,7 +544,15 @@ function syncActors(dt: number, blend: ActorBlendState | undefined, pp: { x: num
       const h = ACTOR.sentryHeight * k;
       const hover = 0.06 + Math.sin(st.time * 6 + g.px) * 0.02 * amp;
       const spin = st.time * SENTRY_SPIN[g.id] * (calmMotion ? 0.25 : frightened ? 0.5 : 1);
-      glowDisc(x, z, ACTOR.sentryGlow * k, col, frightened ? 0.35 : 0.45);
+      if (frightened) {
+        // pulsing cyan/white halo separates deep indigo-violet frightened sentries from blue neon walls
+        const pulseRate = st.fright < 1.8 ? (calmFlash ? 4 : 16) : (calmFlash ? 2 : 7);
+        const hp = 0.5 + 0.5 * Math.sin(st.time * pulseRate);
+        const haloCol = mixHex(ARCADE.frightenedHalo, ARCADE.frightenedFlash, hp);
+        glowDisc(x, z, ACTOR.sentryGlow * k * (1.04 + 0.1 * hp * amp), haloCol, 0.65 + 0.35 * hp);
+      } else {
+        glowDisc(x, z, ACTOR.sentryGlow * k, col, 0.45);
+      }
       inst(SENTRY_POOL[g.id], x, hover + h / 2, z, size, h, size, col, spin);
       drawEyes(x, hover + h + 0.012, z, gyaw, size, frightened ? "fright" : "look");
     };
@@ -642,7 +685,15 @@ function applyBoardLook(): boolean {
   if (!app?.nodes) return false;
   try { (app as unknown as { setClearColor?(c: string): void }).setClearColor?.(ARCADE.background); } catch { /* optional */ }
   if (!toneMapSet) {
-    try { app?.output?.setOutput({ toneMapping: ARCADE.toneMapping, exposure: ARCADE.exposure, dither: true }); toneMapSet = true; } catch { /* output optional */ }
+    try {
+      app?.output?.setOutput({
+        toneMapping: ARCADE.toneMapping,
+        neutralCurve: ARCADE.neutralCurve,
+        exposure: ARCADE.exposure,
+        dither: true
+      });
+      toneMapSet = true;
+    } catch { /* output optional */ }
   }
   return true;
 }

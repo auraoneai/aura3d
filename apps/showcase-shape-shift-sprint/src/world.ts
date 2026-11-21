@@ -9,7 +9,8 @@
  * - Crisp studio post-processing (`contactShadows` + `ambientOcclusion` + `screenSpaceReflections` + `cinematicBloom` + `godRays`, zero `depthOfField`),
  * - 6 Milestone Toybox Worlds smoothly blended via dual-backend GLSL + WGSL uniforms.
  */
-import { camera, effects, environments, geometry, group, lights, material, model, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, group, lights, material, model, primitives, scene, sky, type AuraApp } from "@aura3d/engine";
+import { createFlipbookAtlas } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
@@ -18,6 +19,7 @@ import {
   GameRng,
   OPEN_BOUNDS,
   Slots,
+  gradientSkyOptions,
   hexToLinear,
   scrollFrameZ,
   shadowSpec,
@@ -25,7 +27,6 @@ import {
   type MeshData,
   type Rgb
 } from "../../../examples/shared/runner-kit/index";
-import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
 import { POOL, judgeRow, type Segment, type ShapeShiftSim, type Token, type WallRow } from "./sim";
 import {
   LOOK,
@@ -96,6 +97,8 @@ export const BATCH_IDS = ["road", "walls", "rims", "tokens", "particles", "cloud
 export const PLAYER_IDS = ["player-0", "player-1", "player-2"] as const;
 
 const MORPH_PLASMA_ATLAS = createFlipbookAtlas("plasma", [255, 236, 178]);
+const MORPH_SPARKS_ATLAS = createFlipbookAtlas("sparks", [255, 224, 108]);
+const MORPH_RIPPLE_ATLAS = createFlipbookAtlas("ripple", [132, 234, 255]);
 
 /** Vertical XY billboard quad facing +Z toward the chase camera (for plasma flipbook bursts). */
 function billboardQuad(w: number, h: number): MeshData {
@@ -310,9 +313,16 @@ export function buildWorld(options: WorldOptions): World {
     builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec), ...shadowFlags(spec, cast, receive) }).runtime({ id }));
   };
 
+  // 5.7.2 stylized sky.gradient via runner-kit `gradientSkyOptions` (haze + dither) alongside the milestone sky dome.
+  builder.add(
+    sky.gradient({
+      name: "sss-gradient-sky",
+      ...gradientSkyOptions(LOOK.skyStops, { haze: { intensity: 0.18 }, dither: true })
+    })
+  );
   add("sky", sphereMesh(280, 32, 20), toySkySpec());
 
-  // Studio hero IBL + single 2-cascade 2048 shadowed sun key + cool sky rim fill (ZERO lights.ambient).
+  // Studio hero IBL + single shadowed sun key with 5.7.2 `softness: 1.8` & corridor `shadow.fit` + cool sky rim fill.
   builder.add(environments.productHero({ name: "world-environment", intensity: 0.95, background: false }));
   builder.add(lights.directional({
     name: "sun-key",
@@ -320,7 +330,13 @@ export function buildWorld(options: WorldOptions): World {
     target: [0, 0, -8],
     intensity: 1.85,
     color: "#fff6e0",
-    shadow: { cascades: 2, mapSize: 2048, maxDistance: 120 }
+    shadow: {
+      cascades: 2,
+      mapSize: 2048,
+      maxDistance: 120,
+      softness: 1.8,
+      fit: { center: [0, 0, -14], extent: 16, depth: 46 }
+    }
   }));
   builder.add(lights.directional({
     name: "sky-rim-fill",
@@ -349,7 +365,27 @@ export function buildWorld(options: WorldOptions): World {
 
   const tokenMeshes = [tokenMesh(0), tokenMesh(1), tokenMesh(2), tokenMesh(3)] as const;
   const tokens = new Batch(tokenMeshes[0], POOL.tokens, [1, 1, 1], SCROLL_BOUNDS);
-  addBatch("tokens", tokens, toyToonSpec([1, 1, 1], { tone: true, rim: 0.36, clearcoat: 0.68, fogStart: GAME_FOG_START }), false, false);
+  addBatch("tokens", tokens, toyToonSpec([1, 1, 1], { tone: true, rim: 0.36, clearcoat: 1.0, fogStart: GAME_FOG_START }), false, false);
+
+  // Rotating clearcoat holographic mini-preview inside the nearest morph pickup ring showing the next target form.
+  for (const sIdx of [0, 1, 2] as const) {
+    const previewColor = LOOK.shapes[sIdx]!;
+    const previewMat = material.clearcoatPaint({
+      name: `morph-preview-${sIdx}`,
+      color: previewColor,
+      roughness: 0.12,
+      metallic: 0,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.08,
+      emissive: previewColor,
+      emissiveIntensity: 0.65
+    });
+    const prim =
+      sIdx === 0 ? primitives.sphere({ name: `morph-preview-${sIdx}`, size: [0.34, 0.34, 0.34], material: previewMat, castShadow: false, receiveShadow: false })
+      : sIdx === 1 ? primitives.roundedBox({ name: `morph-preview-${sIdx}`, size: [0.3, 0.3, 0.3], params: { radius: 0.05 }, material: previewMat, castShadow: false, receiveShadow: false })
+      : primitives.cone({ name: `morph-preview-${sIdx}`, size: [0.34, 0.38, 0.34], material: previewMat, castShadow: false, receiveShadow: false });
+    builder.add(prim.position(0, -50, -60).runtime({ id: `morph-preview-${sIdx}` }));
+  }
 
   // Morph mascot forms (owner review): one gel creature whose body is the gate shape it matches: red ball
   // (`player-0`), yellow block (`player-1`), blue cone (`player-2`), with eyes and running feet
@@ -380,6 +416,32 @@ export function buildWorld(options: WorldOptions): World {
   add("shield", sphereMesh(1, 24, 16), bubbleShieldSpec(hexToLinear(LOOK.tokenColors.shield), 0.52));
   add("wildcard-ring", groundQuad(2.05, 2.05), ringSpec(hexToLinear(LOOK.tokenColors.wildcard), 0.88));
   add("morph-plasma", billboardQuad(2.7, 2.7), morphPlasmaSpec(MORPH_PLASMA_ATLAS));
+  builder.add(
+    effects.flipbook({
+      name: "morph-sparks-fb",
+      texture: MORPH_SPARKS_ATLAS.texture,
+      spriteColumns: MORPH_SPARKS_ATLAS.columns,
+      spriteRows: MORPH_SPARKS_ATLAS.rows,
+      frameRate: 34,
+      loop: false,
+      size: 1.55,
+      color: "#ffe474",
+      blend: "additive"
+    }).position(0, -50, -60).runtime({ id: "morph-sparks-fb" })
+  );
+  builder.add(
+    effects.flipbook({
+      name: "morph-ripple-fb",
+      texture: MORPH_RIPPLE_ATLAS.texture,
+      spriteColumns: MORPH_RIPPLE_ATLAS.columns,
+      spriteRows: MORPH_RIPPLE_ATLAS.rows,
+      frameRate: 30,
+      loop: false,
+      size: 1.85,
+      color: "#7aefff",
+      blend: "additive"
+    }).position(0, -50, -60).runtime({ id: "morph-ripple-fb" })
+  );
 
   builder.add(
     effects.auroraRibbon({
@@ -649,8 +711,11 @@ export function buildWorld(options: WorldOptions): World {
             }
             const fits = hole.shapeIndex === o.shapeIndex || o.wildcardTimer > 0;
             const matched = row.resolved && row.matchedLane === i;
+            // Highlight matching cutout edges brightly once within 18 m ahead of the runner.
+            const within18m = !row.resolved && row.z <= p.z + 1 && row.z >= p.z - 18;
+            const proximityBoost = fits && within18m ? 0.42 * (1 - Math.max(0, p.z - row.z) / 18) : 0;
             const pulse = fits && !reduced ? 0.14 * (0.5 + 0.5 * Math.sin(elapsed * 7.5)) : 0;
-            const glow = matched ? LOOK.rimGlowMatched : fits ? LOOK.rimGlow + pulse : 0;
+            const glow = matched ? LOOK.rimGlowMatched : fits ? LOOK.rimGlow + proximityBoost + pulse : 0;
             const key = hole.shapeIndex * 200 + Math.round(glow * 50);
             if (rimKey[idx] !== key) {
               rims.setTone(idx, scaled(SHAPE_LINEAR[hole.shapeIndex] as Rgb, 1 + glow));
@@ -668,22 +733,38 @@ export function buildWorld(options: WorldOptions): World {
         contact.flush(node("wall-contact"), false);
         rims.flush(node("rims"));
 
-        /* sculpted 3D pickup medallions (scrolling frame with gentle spin + bob) */
+        /* sculpted 3D pickup medallions + rotating holographic next-shape mini-preview inside morph rings */
+        let nearestMorph: Token | null = null;
         tokenSlots.retain(simNow.tokens, (slot) => { tokens.collapse(slot); tokenKey[slot] = ""; });
         for (const t of simNow.tokens) {
           const { slot, fresh } = tokenSlots.use(t);
           if (slot < 0) continue;
+          if (t.type === "morph" && !t.taken && t.z <= p.z + 1 && (!nearestMorph || t.z > nearestMorph.z)) {
+            nearestMorph = t;
+          }
           const variant = TOKEN_VARIANT_INDEX[t.type];
           const bob = reduced ? 0 : Math.sin(elapsed * 4.2 + t.z * 0.25) * 0.09;
           const yaw = reduced ? 0 : elapsed * 2.4 + t.z * 0.15;
           if (fresh || (!reduced && dt > 0)) {
             tokens.place(slot, t.laneX, t.baseY + bob, scrollFrameZ(t.z, scroll), yaw, 1, 1, 1, tokenMeshes[variant]);
           }
-          const morphIndex = Math.floor(elapsed * 2.5) % 3;
+          const morphIndex = (o.shapeIndex + 1 + (Math.floor(elapsed * 1.4) % 2)) % 3;
           const key = t.type === "morph" ? `morph${morphIndex}` : t.type;
           if (tokenKey[slot] !== key) {
             tokens.setTone(slot, t.type === "morph" ? (SHAPE_LINEAR[morphIndex] as Rgb) : TOKEN_LINEAR[t.type]);
             tokenKey[slot] = key;
+          }
+        }
+        const nextPreviewShape = (o.shapeIndex + 1) % 3;
+        for (const sIdx of [0, 1, 2] as const) {
+          const ph = node(`morph-preview-${sIdx}`);
+          const showPreview = nearestMorph !== null && sIdx === nextPreviewShape && o.phase === "playing";
+          ph.setVisible(showPreview);
+          if (showPreview && nearestMorph) {
+            const bob = reduced ? 0 : Math.sin(elapsed * 4.2 + nearestMorph.z * 0.25) * 0.09;
+            ph.setPosition(nearestMorph.laneX, nearestMorph.baseY + bob + 0.36, nearestMorph.z);
+            ph.setRotation(reduced ? 0 : elapsed * 1.4, reduced ? 0 : elapsed * 2.8, 0);
+            ph.setScale(0.92 + (reduced ? 0 : 0.08 * Math.sin(elapsed * 6)));
           }
         }
         node("tokens").setPosition(0, 0, scroll);
@@ -803,10 +884,12 @@ export function buildWorld(options: WorldOptions): World {
             .setScale(1.04 + 0.08 * Math.sin(elapsed * 6));
         }
 
-        /* 8x4 plasma flipbook burst + aurora shockwave ribbon on morph / PERFECT */
+        /* 8x4 live-texture flipbook bursts (`sparks` + `ripple`) + plasma + aurora shockwave ribbon on morph / PERFECT */
         const plasmaOn = !reduced && plasmaTimer > 0 && o.phase === "playing";
         const plasmaNode = node("morph-plasma").setVisible(plasmaOn);
         const ribbonNode = node("morph-ribbon").setVisible(plasmaOn);
+        const sparksFb = node("morph-sparks-fb").setVisible(plasmaOn);
+        const rippleFb = node("morph-ripple-fb").setVisible(plasmaOn);
         if (plasmaOn) {
           const progress = Math.min(0.999, Math.max(0, 1 - plasmaTimer / 0.42));
           const burstScale = p.scale * (0.95 + 0.85 * progress);
@@ -815,6 +898,12 @@ export function buildWorld(options: WorldOptions): World {
             .setScale(burstScale);
           plasmaNode.setUniform?.("progress", progress);
           plasmaNode.setUniform?.("tintColor", [...plasmaTint]);
+          sparksFb
+            .setPosition(p.x, playerCenterY + 0.2, p.z + 0.08)
+            .setScale(p.scale * (0.85 + 0.65 * progress));
+          rippleFb
+            .setPosition(p.x, playerCenterY + 0.08, p.z - 0.08)
+            .setScale(p.scale * (0.75 + 0.95 * progress));
           ribbonNode
             .setPosition(p.x, playerCenterY + 0.15, p.z - 0.15)
             .setScale(0.65 + 0.55 * progress);
@@ -882,7 +971,11 @@ export function buildWorld(options: WorldOptions): World {
       }
 
       const batches = [road, walls, rims, tokens, particles, clouds, contact];
-      const warmIds = ["shield", "wildcard-ring", "hydro-glow", "morph-plasma", "morph-ribbon", "gate-portal-0", "gate-portal-1", "rival-0", "rival-1", ...PLAYER_IDS];
+      const warmIds = [
+        "shield", "wildcard-ring", "hydro-glow", "morph-plasma", "morph-sparks-fb", "morph-ripple-fb",
+        "morph-preview-0", "morph-preview-1", "morph-preview-2",
+        "morph-ribbon", "gate-portal-0", "gate-portal-1", "rival-0", "rival-1", ...PLAYER_IDS
+      ];
       function warm(on: boolean): void {
         const parkY = -50, parkZ = -60;
         for (const id of warmIds) {

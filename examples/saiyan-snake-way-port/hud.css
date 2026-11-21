@@ -137,14 +137,77 @@ kbd {
   }
 }
 
-/* Un-crowded 390x844 mobile portrait top telemetry strip (<= 86px tall) */
+/* Off-center desktop title card so the sweeping sky ribbon stays open in view */
+#title.overlay {
+  place-items: end start;
+  padding: clamp(20px, 4vw, 44px);
+  padding-bottom: max(56px, calc(env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px) + 28px));
+}
+#title .card {
+  width: min(440px, 90vw);
+}
+
+/* 8-stage progress pips along the progress track */
+#stage-pips {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+#stage-pips .stage-pip {
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 247, 241, 0.35);
+  border: 1px solid rgba(28, 22, 64, 0.75);
+}
+#stage-pips .stage-pip.done {
+  background: var(--spark);
+}
+#stage-pips .stage-pip.active {
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  box-shadow: 0 0 6px rgba(242, 179, 61, 0.9);
+}
+
+/* Un-crowded 390x844 mobile portrait top telemetry strip + 4 px top hairline stage progress */
 @media (max-width: 640px) {
+  #title.overlay {
+    place-items: end center;
+    padding: 12px;
+    padding-bottom: max(56px, calc(env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px) + 12px));
+  }
+  #progress {
+    top: max(6px, env(safe-area-inset-top, 0px));
+    bottom: auto;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    transform: none;
+    padding: 0;
+    gap: 2px;
+    border: 0;
+    background: transparent;
+  }
+  #progress .rowp {
+    display: none;
+  }
+  #progress .track,
+  .serpent-hud #progress .track {
+    height: 4px;
+    border-radius: 999px;
+    border: 0;
+    background: rgba(28, 22, 64, 0.72);
+  }
   #player {
-    top: 10px;
+    top: calc(18px + env(safe-area-inset-top, 0px));
     left: 10px;
     width: calc(100vw - 138px);
     max-width: 226px;
-    padding: 7px 10px;
+    padding: 6px 10px;
     grid-template-columns: 28px 1fr;
     gap: 2px 8px;
   }
@@ -166,12 +229,12 @@ kbd {
     display: none;
   }
   #surge-chip {
-    top: 90px;
+    top: calc(96px + env(safe-area-inset-top, 0px));
     left: 10px;
     padding: 3px 9px;
   }
   #side {
-    top: 10px;
+    top: calc(18px + env(safe-area-inset-top, 0px));
     right: 10px;
     width: 112px;
     gap: 5px;
@@ -190,18 +253,6 @@ kbd {
     font-size: 18px;
     line-height: 20px;
   }
-  #progress {
-    top: auto;
-    left: 10px;
-    right: 10px;
-    width: auto;
-    transform: none;
-    bottom: calc(72px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px));
-    padding: 6px 10px;
-    border-radius: 6px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-  }
   #banner {
     top: 17%;
     font-size: 24px;
@@ -217,14 +268,14 @@ kbd {
     text-overflow: ellipsis;
   }
   #prompt {
-    bottom: calc(122px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px));
+    bottom: calc(82px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px));
     max-width: calc(100vw - 24px);
     white-space: normal;
     text-align: center;
   }
   #toast {
     left: 12px;
-    bottom: calc(154px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px));
+    bottom: calc(114px + env(safe-area-inset-bottom, 0px) + var(--a3d-bar-space, 0px));
   }
   #mute-btn {
     width: 48px;

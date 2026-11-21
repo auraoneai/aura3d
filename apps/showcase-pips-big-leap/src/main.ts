@@ -15,11 +15,21 @@ import {
   type AuraRuntimeNodeHandle,
   type AuraSceneSnapshot
 } from "@aura3d/engine";
-import { createFixedStepPresenter, createGame, createRecordBlend, HUD_THEMES, hudThemeFontFaces, registerGameFonts, sfxUrl, warmPrograms } from "@aura3d/engine/game";
+import {
+  createGame,
+  createImpactRig,
+  createRecordBlend,
+  createSnapshotInterpolator,
+  HUD_THEMES,
+  hudThemeFontFaces,
+  registerGameFonts,
+  sfxUrl,
+  warmPrograms,
+  type ImpactRig
+} from "@aura3d/engine/game";
 import { createLocomotionKit } from "@aura3d/animation";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
-import { createImpactRig, type ImpactRig } from "../../showcase-port-shared/feel.js";
 import { BOSS_CLIPS, PIP_CLIPS } from "./aura-assets.js";
 import { BOSS_IDOL_PIVOT_Y, BOSS_SCENE_SCALE, PIP_IDOL_PIVOT_Y, hawkPartNames } from "./art/idolModels.js";
 import { poseIdolBoss, poseIdolPip, resetIdolPoses } from "./game/idolPose.js";
@@ -1212,6 +1222,13 @@ function bindShell(): void {
       loadWorld(id, run.mode === "trial" ? "trial" : "quick");
     });
   });
+  const worldSelect = document.getElementById("aura-world-select") as HTMLSelectElement | null;
+  worldSelect?.addEventListener("change", () => {
+    const id = worldSelect.value as WorldId;
+    worldSelect.blur();
+    if (id === "academy") loadWorld("academy", "academy");
+    else loadWorld(id, run.mode === "trial" ? "trial" : "quick");
+  });
   bind("pbl-resume", () => setPaused(false));
   bind("pbl-restart", () => { setPaused(false); loadWorld(run.world); });
   // Opening Atlas/Studio from Pause keeps the run paused behind them.
@@ -1319,9 +1336,11 @@ let frameInput = { moveX: 0, moveZ: 0, jumpHeld: false, orbitRate: 0 };
 // Pip's drawn pose blends the last two sim steps (loop.alpha), so a 60 Hz sim
 // still moves every frame on a 120/144 Hz display. Teleports (respawn) snap.
 interface PipPose { x: number; y: number; z: number; yaw: number; camYaw: number }
-const pipPresenter = createFixedStepPresenter<PipPose>({
+const pipPoseBlend = createRecordBlend<PipPose>({ angleKeys: ["yaw", "camYaw"] });
+const pipPresenter = createSnapshotInterpolator<PipPose>({
   snapshot: () => ({ x: run.player.x, y: run.player.y, z: run.player.z, yaw: run.player.yaw, camYaw: run.player.camYaw }),
-  blend: createRecordBlend<PipPose>({ angleKeys: ["yaw", "camYaw"], snapDistance: 2, position: (p) => [p.x, p.y, p.z] })
+  blend: (a, b, t) => pipPoseBlend(a, b, t),
+  snap: { distance: 2, position: (p) => [p.x, p.y, p.z] }
 });
 const drawnPlayer = { ...run.player } as PlayerState;
 

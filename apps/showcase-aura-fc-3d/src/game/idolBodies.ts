@@ -11,14 +11,14 @@
 import { game, model } from "@aura3d/engine";
 import { assets } from "../aura-assets.route";
 import {
-  createMotionAnimator,
+  createHumanoidAnimator,
   eulerZYX,
-  humanoidEventTime as eventTime,
-  humanoidLocomotionTime as locomotionTime,
+  humanoidEventTime,
+  humanoidLocomotionTime,
   loadIdolHumanoid,
-  type HumanoidAnimator as MotionAnimator,
+  type HumanoidAnimator,
   type HumanoidDriver,
-  type HumanoidMotionRequest as MotionRequest,
+  type HumanoidMotionRequest,
   type HumanoidPoseInput
 } from "@aura3d/engine/animation";
 import type { FootballerJointPose } from "../art/proceduralModels";
@@ -145,7 +145,7 @@ export function recordFootballerPose(id: string, write: (lookup: (nodeId: string
 
 /* ---- text-to-motion animation (fal.ai hunyuan-motion, tools/idol/motion-specs/aura-fc-3d.json -> motion.generated.ts) ---- */
 
-type FcRequest = MotionRequest<MotionClipName>;
+type FcRequest = HumanoidMotionRequest<MotionClipName>;
 const C = MOTION_CLIPS;
 
 /** Sim fraction of a kick swing at which the boot meets the ball (sim.ts KICK_CONTACT_FRAC). */
@@ -181,11 +181,11 @@ export function fcMotionRequest(m: FcMotionState, bodyHipHeight: number): FcRequ
   const celebrating = (m.celebrateT ?? 0) > 0.2;
   const walk: MotionClipName = m.referee ? "RefWalk" : "Walk";
   switch (m.clip) {
-    case "Walk_Loop": return { clip: walk, time: locomotionTime(C[walk], m.metres, bodyHipHeight) };
-    case "Run": return { clip: "Run", time: locomotionTime(C.Run, m.metres, bodyHipHeight) };
-    case "Sprint_Loop": return { clip: "Sprint", time: locomotionTime(C.Sprint, m.metres, bodyHipHeight) };
+    case "Walk_Loop": return { clip: walk, time: humanoidLocomotionTime(C[walk], m.metres, bodyHipHeight) };
+    case "Run": return { clip: "Run", time: humanoidLocomotionTime(C.Run, m.metres, bodyHipHeight) };
+    case "Sprint_Loop": return { clip: "Sprint", time: humanoidLocomotionTime(C.Sprint, m.metres, bodyHipHeight) };
     case "KickTap": case "KickPass": case "KickShot":
-      return { clip: "Kick", time: eventTime(C.Kick, u, KICK_CONTACT_FRAC, "footRPeakTime"), loop: false, fade: 0.08 };
+      return { clip: "Kick", time: humanoidEventTime(C.Kick, u, KICK_CONTACT_FRAC, "footRPeakTime"), loop: false, fade: 0.08 };
     case "Jump_Loop": {
       if (m.isKeeper && !celebrating) {
         // procedural roll sign: dir * facing > 0 tilts toward the body's right (-X)
@@ -208,10 +208,10 @@ export function fcMotionRequest(m: FcMotionState, bodyHipHeight: number): FcRequ
   }
 }
 
-const animators = new WeakMap<object, { anim: MotionAnimator<MotionClipName>; lastT: number }>();
+const animators = new WeakMap<object, { anim: HumanoidAnimator<MotionClipName>; lastT: number }>();
 function animatorFor(handle: object, t: number) {
   let st = animators.get(handle);
-  if (!st) { st = { anim: createMotionAnimator(MOTION_CLIPS), lastT: t }; animators.set(handle, st); }
+  if (!st) { st = { anim: createHumanoidAnimator(MOTION_CLIPS), lastT: t }; animators.set(handle, st); }
   const dt = t - st.lastT;
   st.lastT = t;
   return { anim: st.anim, dt };

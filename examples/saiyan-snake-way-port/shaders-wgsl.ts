@@ -130,12 +130,12 @@ fn toonFigure(albedo: vec3<f32>, N: vec3<f32>, V: vec3<f32>, rough: f32) -> vec3
   let sky = mix(vec3<f32>(0.68, 0.52, 0.60), vec3<f32>(1.0, 0.93, 0.90), N.y * 0.5 + 0.5);
   let facing = max(dot(N, V), 0.0);
   let gloss = clamp((0.72 - rough) / 0.56, 0.0, 1.0);
-  let rim = a3dPow(1.0 - facing, 2.6);
-  let rimLight = rim * (0.36 + 0.64 * max(dot(N, SUN_DIR) * 0.5 + 0.5, 0.0));
+  let rim = a3dPow(1.0 - facing, 2.3);
+  let rimLight = rim * (0.48 + 0.52 * max(dot(N, SUN_DIR) * 0.5 + 0.5, 0.0));
   let specPow = mix(12.0, 44.0, gloss);
   let spec = a3dPow(max(dot(N, normalize(L + V)), 0.0), specPow) * gloss;
-  let weaveSheen = a3dPow(1.0 - facing, 4.2) * mix(0.10, 0.04, gloss);
-  return albedo * (bandK * sky + weaveSheen) + vec3<f32>(1.0, 0.74, 0.62) * rimLight * mix(0.18, 0.34, gloss) + vec3<f32>(1.0, 0.93, 0.86) * spec * 0.20;
+  let weaveSheen = a3dPow(1.0 - facing, 4.0) * mix(0.12, 0.05, gloss);
+  return albedo * (bandK * sky + weaveSheen) + vec3<f32>(0.95, 0.86, 1.0) * rimLight * mix(0.32, 0.48, gloss) + vec3<f32>(1.0, 0.93, 0.86) * spec * 0.22;
 }
 `;
 
@@ -517,6 +517,14 @@ export const ROAD_FRAGMENT_WGSL = stage([MATH, NOISE, ATMOSPHERE_LIVE, SUN_SHADO
   let edge = smoothstep(2.6, 3.5, abs(vCross.x)) * top;
   let warn = aura.u_gapWarn * edge * step(0.0, ahead) * (1.0 - smoothstep(0.0, 30.0, ahead));
   col = mix(col, vec3<f32>(1.0, 0.52, 0.32), clamp(warn, 0.0, 1.0) * 0.85);
+
+  let rollAhead = aura.u_rollAt - s;
+  let rollZone = abs(aura.u_rollDir) * edge * step(-18.0, rollAhead) * (1.0 - smoothstep(0.0, 55.0, max(rollAhead, 0.0))) * aura.u_lookMode;
+  let chevSign = select(-1.0, 1.0, vCross.x * aura.u_rollDir + 1e-4 >= 0.0);
+  let chevPhase = fract((s * 0.28 - aura.u_roadTime * 2.2) + abs(vCross.x) * 0.35 * chevSign);
+  let chev = smoothstep(0.18, 0.42, chevPhase) * (1.0 - smoothstep(0.58, 0.82, chevPhase));
+  let rollTint = mix(vec3<f32>(0.45, 0.94, 0.82), vec3<f32>(1.0, 0.78, 0.32), step(0.0, aura.u_rollDir));
+  col = col + rollTint * rollZone * (0.35 + 0.95 * chev) * 1.1;
 
   return vec4<f32>(fogMix(col, dist), 1.0);
 }`);

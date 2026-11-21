@@ -1,0 +1,32 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "beat-hopper",
+  "note": "Aura3D 5.7.2 WP-4A acceptance bands for concert-stage neon night corridor (deep indigo-violet sky + acrylic equalizer deck + #00f2ff Jump rims / #ff3b5c Duck laser chevrons / #ffbe2e PERFECT bursts).",
+  "default": {
+    "mean": [
+      26,
+      96
+    ],
+    "std": [
+      24,
+      null
+    ],
+    "p95": [
+      128,
+      null
+    ],
+    "spread": [
+      105,
+      null
+    ],
+    "darkFrac": [
+      null,
+      0.6
+    ],
+    "clipFrac": [
+      null,
+      0.05
+    ]
+  },
+  "variants": {}
+}

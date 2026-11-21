@@ -480,6 +480,11 @@
         "practical": true
       },
       {
+        "node": "fc-fascia-flood-strips",
+        "emissiveIntensity": 6.5,
+        "practical": true
+      },
+      {
         "node": "fc-flood-pools",
         "practical": false
       },

@@ -4,8 +4,8 @@
  * corridor ribbon backed by `createGpuSplatMap` (`texture.data` RGBA8) and paired GLSL 300 es + WGSL stages.
  */
 import { texture } from "@aura3d/engine";
+import { createFlipbookAtlas, createGradingLut, type FlipbookAtlasSpec } from "@aura3d/engine/game";
 import { dualWetInkSurfaceSpec } from "../../../showcase-port-shared/dual-shaders";
-import { createFlipbookAtlas, createGradingLut, type FlipbookAtlasSpec } from "../../../showcase-port-shared/vfx-pack";
 import {
   WGSL_CLIP,
   WGSL_POW,
@@ -240,11 +240,16 @@ void main() {
   float dy = dFdy(thickness);
   vec3 N = normalize(vNormal + vec3(-dx * 3.35, 0.0, -dy * 3.35));
 
-  // Sunlit primed gesso deck with subtle woven mineral grain + crisp dashed lane guides on unpainted concrete.
+  // Sunlit primed gesso deck with subtle woven mineral grain, 6-lane expansion joints & 25 m gold chalk stretch markers.
   float grain = (h21(floor(vLocal.xz * 26.0)) - 0.5) * 0.032;
-  float laneSeam = 1.0 - smoothstep(0.012, 0.032, abs(abs(laneFrac) - 0.5));
-  float dash = step(0.58, fract(-vLocal.z * 0.25));
-  vec3 dryGesso = clamp(gessoColor + vec3(grain) - vec3(0.075, 0.08, 0.095) * (laneSeam * dash), vec3(0.0), vec3(1.0));
+  float laneSeam = 1.0 - smoothstep(0.012, 0.034, abs(abs(laneFrac) - 0.5));
+  float dash = 0.28 + 0.72 * step(0.56, fract(-vLocal.z * 0.25));
+  float expDist = abs(fract(-vLocal.z * 0.2 + 0.5) - 0.5) * 5.0;
+  float expJoint = 1.0 - smoothstep(0.015, 0.045, expDist);
+  float stretchDist = abs(fract(-vLocal.z * 0.04 + 0.5) - 0.5) * 25.0;
+  float stretchLine = (1.0 - smoothstep(0.09, 0.17, stretchDist)) * step(0.5, -vLocal.z);
+  vec3 dryBase = clamp(gessoColor + vec3(grain) - vec3(0.075, 0.08, 0.095) * (laneSeam * dash) - vec3(0.055, 0.058, 0.068) * expJoint, vec3(0.0), vec3(1.0));
+  vec3 dryGesso = mix(dryBase, vec3(0.92, 0.66, 0.12), stretchLine * 0.78);
 
   // Slightly thicker pigment absorption along the raised meniscus lip.
   float lipRim = clamp(abs(dx) + abs(dy), 0.0, 1.0);
@@ -329,9 +334,14 @@ fn gradeBroadcastLut(lin: vec3<f32>) -> vec3<f32> {
   let N = normalize(vNormal + vec3<f32>(-dx * 3.35, 0.0, -dy * 3.35));
 
   let grain = (h21(floor(vec2<f32>(vLocal.x, vLocal.z) * 26.0)) - 0.5) * 0.032;
-  let laneSeam = 1.0 - smoothstep(0.012, 0.032, abs(abs(laneFrac) - 0.5));
-  let dash = step(0.58, fract(-vLocal.z * 0.25));
-  let dryGesso = clamp(aura.u_gessoColor + vec3<f32>(grain) - vec3<f32>(0.075, 0.08, 0.095) * (laneSeam * dash), vec3<f32>(0.0), vec3<f32>(1.0));
+  let laneSeam = 1.0 - smoothstep(0.012, 0.034, abs(abs(laneFrac) - 0.5));
+  let dash = 0.28 + 0.72 * step(0.56, fract(-vLocal.z * 0.25));
+  let expDist = abs(fract(-vLocal.z * 0.2 + 0.5) - 0.5) * 5.0;
+  let expJoint = 1.0 - smoothstep(0.015, 0.045, expDist);
+  let stretchDist = abs(fract(-vLocal.z * 0.04 + 0.5) - 0.5) * 25.0;
+  let stretchLine = (1.0 - smoothstep(0.09, 0.17, stretchDist)) * step(0.5, -vLocal.z);
+  let dryBase = clamp(aura.u_gessoColor + vec3<f32>(grain) - vec3<f32>(0.075, 0.08, 0.095) * (laneSeam * dash) - vec3<f32>(0.055, 0.058, 0.068) * expJoint, vec3<f32>(0.0), vec3<f32>(1.0));
+  let dryGesso = mix(dryBase, vec3<f32>(0.92, 0.66, 0.12), vec3<f32>(stretchLine * 0.78));
 
   let lipRim = clamp(abs(dx) + abs(dy), 0.0, 1.0);
   let wetPigment = inkLinear * (0.9 + 0.14 * thickness - 0.12 * lipRim);
@@ -473,4 +483,87 @@ export function packInkBurstTone(frame: number, rgb: Rgb): Rgb {
   const clampedFrame = Math.min(31, Math.max(0, Math.floor(frame)));
   const r = Math.min(0.985, Math.max(0.015, rgb[0]));
   return [clampedFrame + r, rgb[1], rgb[2]];
+}
+
+const SOLVENT_FOAM_VERTEX_GLSL = /* glsl */ `
+out vec2 vUv;
+out vec3 vWorld;
+void main() {
+  vUv = uv;
+  vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+const SOLVENT_FOAM_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
+struct SolventFoamVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vUv: vec2<f32>,
+  @location(1) vWorld: vec3<f32>,
+};
+@vertex fn vs_main(
+  @location(0) a_position: vec3<f32>,
+  @location(2) a_uv: vec2<f32>
+) -> SolventFoamVarying {
+  var out: SolventFoamVarying;
+  out.vUv = a_uv;
+  out.vWorld = (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)).xyz;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
+
+const SOLVENT_FOAM_FRAGMENT_GLSL = /* glsl */ `
+in vec2 vUv;
+in vec3 vWorld;
+out vec4 outColor;
+void main() {
+  float xEdge = abs(vUv.x - 0.5) * 2.0;
+  float zEdge = abs(vUv.y - 0.5) * 2.0;
+  float border = max(smoothstep(0.76, 0.92, xEdge), smoothstep(0.93, 0.985, zEdge));
+  // Animated foaming-solvent caution chevrons flowing down the strip.
+  float chevWave = fract(vUv.y * 9.0 + abs(vUv.x - 0.5) * 2.1 - foamTime * 1.15);
+  float chevron = smoothstep(0.35, 0.48, chevWave) * (1.0 - smoothstep(0.68, 0.80, chevWave));
+  float bubbles = 0.5 + 0.5 * sin(vUv.x * 26.0 + foamTime * 4.2) * cos(vUv.y * 54.0 - foamTime * 3.1);
+  float foam = smoothstep(0.58, 0.92, bubbles) * (0.45 + 0.55 * chevron);
+  vec3 col = mix(solventColor * 0.85, foamColor, clamp(chevron * 0.65 + foam * 0.55, 0.0, 1.0));
+  col = mix(col, borderColor, border * 0.9);
+  float dist = length(cameraPosition - vWorld);
+  float hz = smoothstep(hazeRange.x, hazeRange.y, dist) * hazeRange.z;
+  outColor = vec4(mix(col, hazeColor, hz), mix(0.82, 0.96, max(border, chevron * 0.5)));
+}`;
+
+const SOLVENT_FOAM_FRAGMENT_WGSL = wgslStage([], /* wgsl */ `
+@fragment fn fs_main(
+  @location(0) vUv: vec2<f32>,
+  @location(1) vWorld: vec3<f32>
+) -> @location(0) vec4<f32> {
+  let xEdge = abs(vUv.x - 0.5) * 2.0;
+  let zEdge = abs(vUv.y - 0.5) * 2.0;
+  let border = max(smoothstep(0.76, 0.92, xEdge), smoothstep(0.93, 0.985, zEdge));
+  let chevWave = fract(vUv.y * 9.0 + abs(vUv.x - 0.5) * 2.1 - aura.u_foamTime * 1.15);
+  let chevron = smoothstep(0.35, 0.48, chevWave) * (1.0 - smoothstep(0.68, 0.80, chevWave));
+  let bubbles = 0.5 + 0.5 * sin(vUv.x * 26.0 + aura.u_foamTime * 4.2) * cos(vUv.y * 54.0 - aura.u_foamTime * 3.1);
+  let foam = smoothstep(0.58, 0.92, bubbles) * (0.45 + 0.55 * chevron);
+  var col = mix(aura.u_solventColor * 0.85, aura.u_foamColor, vec3<f32>(clamp(chevron * 0.65 + foam * 0.55, 0.0, 1.0)));
+  col = mix(col, aura.u_borderColor, vec3<f32>(border * 0.9));
+  let dist = length(aura.u_cameraPosition - vWorld);
+  let hz = smoothstep(aura.u_hazeRange.x, aura.u_hazeRange.y, dist) * aura.u_hazeRange.z;
+  return vec4<f32>(mix(col, aura.u_hazeColor, vec3<f32>(hz)), mix(0.82, 0.96, max(border, chevron * 0.5)));
+}`);
+
+/** Animated foaming-solvent hazard strip shader (bubbling cyan-white chevrons + dark plum caution border). */
+export function solventFoamSpec(solventColor: Rgb, haze: Haze): CustomSpec {
+  return {
+    glsl: { vertex: SOLVENT_FOAM_VERTEX_GLSL, fragment: SOLVENT_FOAM_FRAGMENT_GLSL },
+    wgsl: { vertex: SOLVENT_FOAM_VERTEX_WGSL, fragment: SOLVENT_FOAM_FRAGMENT_WGSL },
+    uniforms: {
+      solventColor: { type: "color3", value: [...solventColor] },
+      foamColor: { type: "color3", value: [0.84, 0.98, 1.0] },
+      borderColor: { type: "color3", value: [0.09, 0.04, 0.14] },
+      foamTime: { type: "f32", value: 0 },
+      hazeColor: { type: "color3", value: [...haze.color] },
+      hazeRange: { type: "vec3", value: [haze.near, haze.far, haze.max] }
+    },
+    transparent: true,
+    depthWrite: false
+  };
 }

@@ -1,4 +1,5 @@
-/* Aura Slam 3D UI styles: brand, AuraOne licensed WOFF2 fonts (Whitney, DIN Pro, Monument Grotesk Mono), game shell, menu, HUD and controls dialog. */
+/* Aura Slam 3D UI styles: brand, AuraOne licensed WOFF2 fonts (hud-tokens.css), game shell, menu, HUD and controls dialog. */
+@import "../../../apps/showcase-port-shared/hud-tokens.css";
 
 /* ---- brand.css ---- */
 body :is(.wordmark, .brand, .menu-wordmark, .footer-brand, .scoreboard-brand, .app-splash strong) {
@@ -17,95 +18,6 @@ body :is(.wordmark, .brand, .menu-wordmark, .footer-brand, .scoreboard-brand, .a
   margin-left: .14em;
 }
 
-/* ---- AuraOne Licensed Self-Hosted WOFF2 Fonts ---- */
-@font-face {
-  font-family: "Whitney";
-  src: url("../../../apps/showcase-port-shared/fonts/whitney-regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Whitney";
-  src: url("../../../apps/showcase-port-shared/fonts/whitney-medium.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Whitney";
-  src: url("../../../apps/showcase-port-shared/fonts/whitney-semibold.woff2") format("woff2");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Whitney";
-  src: url("../../../apps/showcase-port-shared/fonts/whitney-regular-italic.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Whitney";
-  src: url("../../../apps/showcase-port-shared/fonts/whitney-semibold-italic.woff2") format("woff2");
-  font-weight: 600;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "DIN Pro";
-  src: url("../../../apps/showcase-port-shared/fonts/dinpro-regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
-}
-@font-face {
-  font-family: "DIN Pro";
-  src: url("../../../apps/showcase-port-shared/fonts/dinpro-medium.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0020, U+0024-0025, U+0028-0029, U+002B-003A, U+0041-005A, U+0061-007A, U+00A3, U+00A5, U+00B7, U+2013, U+2212, U+20AC, U+2192;
-}
-@font-face {
-  font-family: "Monument Grotesk Mono";
-  src: url("../../../apps/showcase-port-shared/fonts/monument-mono.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Whitney Fallback";
-  src: local("Arial"), local("ArialMT"), local("Helvetica Neue"), local("Helvetica");
-  font-weight: 100 600;
-  font-style: normal;
-  size-adjust: 93.6%;
-  ascent-override: 102.6%;
-  descent-override: 25.6%;
-  line-gap-override: 0%;
-}
-@font-face {
-  font-family: "DIN Pro Fallback";
-  src: local("Arial"), local("ArialMT"), local("Helvetica Neue"), local("Helvetica");
-  font-weight: 100 600;
-  font-style: normal;
-  size-adjust: 95.9%;
-  ascent-override: 108.6%;
-  descent-override: 24.7%;
-  line-gap-override: 1.0%;
-}
-@font-face {
-  font-family: "Monument Grotesk Mono Fallback";
-  src: local("Menlo"), local("Courier New"), local("Liberation Mono");
-  font-weight: 400;
-  font-style: normal;
-  size-adjust: 103.3%;
-  ascent-override: 103.8%;
-  descent-override: 28%;
-  line-gap-override: 0%;
-}
 html {
   font-synthesis: none;
   font-synthesis-weight: none;
@@ -118,6 +30,11 @@ html {
   --font-mono: "Monument Grotesk Mono", "Monument Grotesk Mono Fallback", monospace;
   --font-sans: var(--font-ui);
   --font-display: var(--font-metric);
+  --a3g-bg: rgba(8, 14, 26, 0.85);
+  --a3g-edge: rgba(255, 255, 255, 0.28);
+  --a3g-fg: #ffffff;
+  --a3g-fg-dim: #cfd8e3;
+  --a3g-accent: #d7f55b;
   /* Menu type, spacing and column tokens. The menu rules below read these; an undefined one drops the whole declaration (no padding, inherited type). */
   --text-small: 13px;
   --text-body: 14px;
@@ -253,9 +170,11 @@ h1,h2{margin:20px 0 0;color:#f2f1e7;font-size:56px;font-weight:600;line-height:1
 @media(pointer:coarse),(max-width:760px){.touch-controls:not([hidden]){display:block}.speedometer{display:none}}
 @media(pointer:coarse),(max-width:760px){
 .game-shell{--control-space:112px}
-#game{height:calc(100% - var(--control-space) - env(safe-area-inset-bottom))}
+#game{width:100%;height:100dvh;margin-top:0}
 .touch-controls{padding-bottom:env(safe-area-inset-bottom)}
-.touch-controls::before{content:'';position:absolute;bottom:0;left:0;right:0;height:calc(var(--control-space) + env(safe-area-inset-bottom));background:linear-gradient(110deg,#0c202b,#142e39);border-top:1px solid #ffffff18}
+.touch-controls::before{content:'';position:absolute;bottom:0;left:0;right:0;height:calc(var(--control-space) + env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent 0%,rgba(7,18,28,0.52) 42%,rgba(7,18,28,0.82) 100%);pointer-events:none}
+.touch-power-serve{min-height:48px;min-width:48px}
+.touch-lob{min-width:54px;min-height:54px}
 body:has(.game-shell[data-mode=playing]) #feedback-widget-button{display:none!important}
 }
 @media(pointer:coarse) and (orientation:landscape),(max-width:760px) and (orientation:landscape){
@@ -268,10 +187,10 @@ body:has(.game-shell[data-mode=playing]) #feedback-widget-button{display:none!im
 .game-shell[data-mode=playing] .power-hud{top:132px;bottom:auto}
 }
 
-/* Portrait phones have separate score, court, and control areas. */
+/* Portrait phones overlay score and translucent touch controls over full-bleed 100dvh court. */
 @media(max-width:760px) and (orientation:portrait),(pointer:coarse) and (orientation:portrait){
 .game-shell{--score-space:120px;background:#0c202b}
-#game{margin-top:calc(var(--score-space) + env(safe-area-inset-top));height:calc(100% - var(--score-space) - var(--control-space) - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+#game{margin-top:0;height:100dvh}
 .scoreboard,.practice-hud{top:calc(6px + var(--quick-bar-space,0px) + env(safe-area-inset-top));left:8px;width:calc(100% - 68px);box-shadow:none}
 .scoreboard-topline{height:18px;padding:0 8px}.scoreboard-brand{font-size:8px}
 .score-table thead{height:16px;font-size:7px}.score-table th:first-child{padding-left:8px}
@@ -780,6 +699,21 @@ body:has(.game-shell[data-mode=playing]) #feedback-widget-button{display:none!im
 .coach-card strong{display:block;margin-bottom:6px;color:#d8ff3e;font-size:10px;letter-spacing:.14em}
 .coach-card ol{margin:0 0 10px;padding-left:18px}
 .coach-card button{padding:6px 14px;border:1px solid #d8ff3e;border-radius:4px;background:transparent;color:#d8ff3e;font:inherit;font-weight:700;cursor:pointer}
+/* 5.7.2: Left-docked Grand Slam broadcast title panel (leaves 60%+ of the live court unobstructed on desktop; compact bottom sheet on 390x844). */
+@media(min-width:761px){
+  .mode-menu{left:0;right:auto;width:min(440px,38vw);background:linear-gradient(155deg,rgba(8,14,26,0.92),rgba(8,22,30,0.84));border-right:1px solid var(--a3g-edge);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:calc(var(--a3d-bar-space,40px) + 18px) 28px 22px}
+  .mode-menu .menu-location{position:static;margin:0;align-self:flex-start}
+  .mode-menu .mode-picker{grid-template-columns:1fr}
+  .mode-menu .mode-choice{min-height:112px;padding:18px 20px}
+  .mode-menu .mode-choice.featured{background:linear-gradient(135deg,rgba(215,245,91,0.16),rgba(16,42,52,0.92));color:var(--mp-paper);border:1.5px solid var(--mp-lime)}
+  .mode-menu .mode-choice.featured .mode-number,.mode-menu .mode-choice.featured .mode-description{color:var(--mp-muted)}
+  .mode-menu .mode-choice.featured strong{color:var(--mp-lime)}
+  .mode-menu .mode-choice.featured:hover,.mode-menu .mode-choice.featured:focus-visible{background:linear-gradient(135deg,rgba(215,245,91,0.24),rgba(20,52,64,0.96))}
+}
+@media(max-width:760px){
+  .mode-menu{top:auto;bottom:0;left:0;right:0;height:auto;max-height:76dvh;border-top:1px solid var(--a3g-edge);border-radius:18px 18px 0 0;background:linear-gradient(180deg,rgba(8,14,26,0.9),rgba(7,20,28,0.96));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
+  .mode-menu .mode-choice{min-height:92px}
+}
 /* GU47 TT-H1: World Tour scorebug additions (ui/broadcast.ts): venue chip + set label in the top line, serve-speed strip over the footer. */
 .slam-venue-chip{margin-left:auto;margin-right:8px;padding:2px 6px;border-radius:2px;background:var(--slam-venue-accent,#d7f55b);color:#0d2032;font-family:var(--font-display);font-size:8px;font-weight:700;letter-spacing:.1em;white-space:nowrap}
 .slam-set-label{margin-right:8px;color:#e5f3ff;font-family:var(--font-display);font-size:8px;font-weight:700;letter-spacing:.12em}

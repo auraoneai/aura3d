@@ -105,9 +105,9 @@ describe("aura-slam view: scene composition", () => {
     expect(QUALITY_REBUILD.flags).toEqual(["game"]);
   });
 
-  it("GU47 TT-L1: the World Tour rig has no ambient, hemisphere or point light (one key + four floodlights)", () => {
+  it("GU47 TT-L1: the World Tour rig has no ambient, hemisphere or point light (one key + R23 back-rim + four floodlights)", () => {
     const kinds = sceneLights().map((l) => (l.toJSON() as { light?: string }).light);
-    expect(kinds).toEqual(["directional", "spot", "spot", "spot", "spot"]);
+    expect(kinds).toEqual(["directional", "directional", "spot", "spot", "spot", "spot"]);
     expect(postEffects().length).toBeGreaterThanOrEqual(3);
   });
 });

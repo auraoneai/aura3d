@@ -74,6 +74,9 @@ export const dioramaName = {
   heatShimmer: "pbl-heat-shimmer",
   flipbookDust: (slot: number) => `pbl-flip-dust:${slot}`,
   flipbookSparks: (slot: number) => `pbl-flip-sparks:${slot}`,
+  flipbookRipple: (slot: number) => `pbl-flip-ripple:${slot}`,
+  dropShadow: "pbl-drop-shadow",
+  landingRing: "pbl-landing-ring",
   flora: (layer: string) => `pbl-flora-${layer}`
 } as const;
 

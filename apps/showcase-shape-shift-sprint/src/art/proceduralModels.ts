@@ -1955,8 +1955,8 @@ export function buildMorphPlayerNode(
     transformMesh(transformMesh(transformMesh(shell, { pos: [0, -cy, 0] }), { scale: k }), { pos: [0, cy, 0] });
   const mats: readonly AuraMaterialSpec[] = [
     material.studioGlass({
-      name: `morph gel ${shapeIndex}`, tint: color, color, roughness: 0.05, ior: 1.45, thickness: 0.6,
-      clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 0.9, emissive: color, emissiveIntensity: 0.3
+      name: `morph gel ${shapeIndex}`, tint: color, color, roughness: 0.08, ior: 1.45, thickness: 0.6,
+      clearcoat: 1.0, clearcoatRoughness: 0.08, envMapIntensity: 1.05, emissive: color, emissiveIntensity: 0.3
     }),
     material.glowingEmissive({ name: `morph core ${shapeIndex}`, color, emissive: color, emissiveIntensity: 2.2, roughness: 0.3 })
   ];

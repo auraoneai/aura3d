@@ -10,10 +10,9 @@
  */
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, effects, installQaHooks, type AuraApp } from "@aura3d/engine";
-import { updateCompass, warmPrograms } from "@aura3d/engine/game";
+import { createGradingLut, readAutoplayFlag, updateCompass, warmPrograms } from "@aura3d/engine/game";
 import { preloadRiderDriver } from "./art/idolRider";
 import { DUNE_IDOL } from "../../apps/showcase-silt-and-signal-port/src/idol-assets";
-import { createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
 import { createSiltPresenter, viewOf } from "./presentation";
 import { CHAPTERS } from "./chapters-data";
 import { AUTOPLAY_CARD_MS, autopilot, autoplayChapterSearch, autoplayPilot, createAutoplayWatchdog } from "./autopilot";
@@ -37,10 +36,9 @@ const intParam = (key: string, fallback: number, lo: number, hi: number): number
 const config = {
   chapter: intParam("chapter", 0, 0, 6),
   objective: intParam("objective", 0, 0, 5),
-  /** owner standard: `?autoplay=1` is the hands-free viewer mode (title skipped, the reference controller flies, scenes and
-   *  results auto-advance, the journey loops); `?autopilot=1` stays the QA flight mode */
-  autoplay: params.get("autoplay") === "1",
-  autopilot: params.get("autopilot") === "1" || params.get("autoplay") === "1",
+  /** owner standard: `?autoplay=1` / `?demo=1` is hands-free viewer mode; `?autopilot=1` stays QA flight mode */
+  autoplay: readAutoplayFlag(params, { names: ["autoplay", "demo"] }),
+  autopilot: readAutoplayFlag(params),
   manual: params.get("manual") === "1",
   /** `norig=1` skips the animation controller (rider stays in the model's rest pose): an A/B for animation problems */
   norig: params.get("norig") === "1",
@@ -153,6 +151,7 @@ function setMode(next: Mode): void {
   mode = next;
   for (const id of Object.values(SCREENS)) $(id).classList.toggle("hidden", SCREENS[next as Exclude<Mode, "play">] !== id);
   $("hud").classList.toggle("hidden", next === "title");
+  $("objective-card").classList.toggle("hidden", next === "scene");
   if (next !== "play") {
     playHintElapsed = 0;
     document.getElementById("keys")?.classList.remove("silt-faded");
@@ -499,7 +498,8 @@ function updateHud(): void {
   const t = targetOf(state);
   const dist = Math.hypot(state.x - t.x, state.z - t.z);
   $("chapter").textContent = chapterName(state.chapter);
-  $("objective").textContent = state.completed ? "The journey is complete" : state.scene ? "…" : objectiveTitle(o.id, o.title);
+  $("objective-card").classList.toggle("hidden", mode === "scene" || Boolean(state.scene));
+  $("objective").textContent = state.completed ? "The journey is complete" : objectiveTitle(o.id, o.title);
   $("distance").textContent = `${dist.toFixed(0)} m`;
   $("steps").textContent = `${state.objective + 1}/${ch.objectives.length} · relay ${state.point + 1}/${o.points.length}`;
   $("speed").textContent = `${Math.abs(flight.speed).toFixed(0)}`;
@@ -524,7 +524,7 @@ function updateHud(): void {
     const tapeDist = document.getElementById("silt-tape-dist");
     if (tapeDist) tapeDist.textContent = `${dist.toFixed(0)} m`;
     const freq = document.getElementById("silt-freq");
-    if (freq) freq.textContent = `CH${state.chapter + 1} · R${String(state.point + 1).padStart(2, "0")} · ${(142.1 + state.chapter * 0.4 + state.point * 0.1).toFixed(1)}MHZ`;
+    if (freq) freq.textContent = `SIGNAL · R${String(state.point + 1).padStart(2, "0")} · ${(142.1 + state.chapter * 0.4 + state.point * 0.1).toFixed(1)}MHz`;
     const cardinal = document.querySelector(".silt-tape-cardinal");
     if (cardinal) cardinal.textContent = Math.abs(bearing) < 0.14 ? "On bearing" : bearing > 0 ? "Starboard" : "Port";
   }

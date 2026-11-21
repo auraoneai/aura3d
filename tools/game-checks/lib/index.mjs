@@ -1079,24 +1079,14 @@ function checkNoRemoved50Apis({ game, src }) {
  * stale entry).
  */
 export const AUTOPLAY_INLINE_ALLOWLIST = Object.freeze({
-  "roadster-rush": "autoplay/demo only when === \"1\"; the same list with capture=1 also autostarts, and the native shell skips its blur pause on autoplay=1",
-  heatsink: "autoplay/autopilot/demo only when === \"1\"; the original A/B build (src/original) accepts autoplay/demo only",
-  teleoperator: "autoplay/autopilot/demo only when === \"1\"; any autoplay param (has) also skips the boot intro",
   "pips-big-leap": "autoplay/autopilot/demo only when === \"1\"",
-  "slingshot-siege": "demo accepts \"1\" or \"true\" and autoplay/autopilot only \"1\"; demo also drives the scripted intro",
   "dot-dash-3d": "autoplay/autopilot/demo only when === \"1\"; autoplay/demo also turn the camera cinematics off",
   "cross-hop": "autoplay/autopilot/demo only when === \"1\"",
   "strange-orbit-port": "autoplay=1 splits into the port's autostart and autopilot config switches, each also settable alone",
   "drift-and-deliver-port": "autoplay/autopilot/demo only when === \"1\"; folded into autostart together with autostart=1 and manual=1",
   "roadster-hours-port": "autoplay=1 splits into the port's autostart and autopilot config switches",
-  "where-the-wind-wanders-port": "autoplay/autopilot only when === \"1\", and manual=1 overrides both",
-  "silt-and-signal-port": "autoplay=1 sets both the port's autoplay and autopilot config; autopilot alone is a QA mode",
-  "cloud-runner-port": "autoplay/autopilot only when === \"1\", and manual=1 overrides both",
   "shape-shift-sprint": "readQaParams flag schema (autoplay, with autopilot and autostart as aliases), not the shared reader",
-  "number-surge": "readQaParams flag schema (autoplay, with autostart and autopilot as aliases), not the shared reader",
-  "splat-turf": "readQaParams flag schema (autoplay, with autopilot and autostart as aliases), not the shared reader",
-  "polarity-orbs": "readQaParams flag schema; autoplay or autostart skips the title and starts the looping attract pilot",
-  "splat-rush-port": "main.ts reads autoplay (alias autopilot) through the readQaParams flag schema; autoplay.ts re-exports readAutoplayFlag as autoplayRequested, but the page does not call it"
+  "number-surge": "readQaParams flag schema (autoplay, with autostart and autopilot as aliases), not the shared reader"
 });
 
 /** A game "uses the reader" when any of its sources imports, re-exports or calls readAutoplayFlag. */

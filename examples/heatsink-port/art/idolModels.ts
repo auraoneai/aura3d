@@ -21,9 +21,13 @@ export const IDOL_HULL_BELLY_Y = -0.21;
 const heightOf = (asset: Asset): number => (asset as { readonly bounds?: readonly number[] }).bounds?.[1] ?? 1;
 const glb = (asset: Asset, name: string, castShadow = false) => model(asset, { name, scaleMode: "world", role: "setDressing", castShadow, receiveShadow: true });
 
+/** 5.7.1 clearcoat sheen + crisp rim separation for the player ion craft and strike targets. */
+const DRONE_CLEARCOAT_OVERRIDES = [{ clearcoat: 0.94, clearcoatRoughness: 0.06, rim: { color: "#40e0ff", power: 2.8, intensity: 0.95 } }] as const;
+const TARGET_CLEARCOAT_OVERRIDES = [{ clearcoat: 0.9, clearcoatRoughness: 0.08, rim: { color: "#ff7252", power: 2.6, intensity: 0.85 } }] as const;
+
 /** Player craft hull (`drone-hull`): world.ts sets its position/rotation every frame (and the 8-step heat emissive). */
 export function idolDroneHull(casts: boolean): Node {
-  return model(assets.ioncDrone, { name: "drone-hull", scaleMode: "world", role: "primaryCharacter", castShadow: casts, receiveShadow: true }) as unknown as Node;
+  return model(assets.ioncDrone, { name: "drone-hull", scaleMode: "world", role: "primaryCharacter", castShadow: casts, receiveShadow: true, materialOverrides: DRONE_CLEARCOAT_OVERRIDES }) as unknown as Node;
 }
 
 /**
@@ -36,7 +40,7 @@ function target(asset: Asset, id: number, generatedMaxDim: number, span: number,
   const fans = targetFanPlacements(ducts, k, drop).map((f, j) =>
     group(`target-${id}-fan-${j}`, [buildTargetFanNode(`target-${id}-fan-${j}-mesh`)], { position: f.position }).scale(f.scale).runtime({ id: `target-${id}-fan-${j}`, mutable: true })
   );
-  return group(`target-${id}`, [glb(asset, `target-${id}-idol`).position(0, drop, 0).scale([k, k, k]), ...fans]) as Node;
+  return group(`target-${id}`, [model(asset, { name: `target-${id}-idol`, scaleMode: "world", role: "setDressing", castShadow: false, receiveShadow: true, materialOverrides: TARGET_CLEARCOAT_OVERRIDES }).position(0, drop, 0).scale([k, k, k]), ...fans]) as Node;
 }
 
 /**

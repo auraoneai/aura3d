@@ -76,13 +76,13 @@ import {
   SET_PIECE_ISLETS,
   type SetPieceKey
 } from "./art/idolModels";
-import { riderNodePosition, riderPose, type RiderKey, type RiderSeatFrame } from "./art/idolRider";
+import { createIdolRiderAnimator, riderNodePosition, type RiderKey, type RiderSeatFrame } from "./art/idolRider";
 import type { IdolBikeKey } from "./art/idolFit";
 import { loadIdolHumanoid, type HumanoidDriver } from "@aura3d/engine/animation";
+import { createFlipbookAtlas } from "@aura3d/engine/game";
 import { EXHAUST_FLAME, EXHAUST_SMOKE, ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
 import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import { quadGeometryInput, quadUpdater } from "./point-quads";
-import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
 
 /**
  * `effects.flipbook` copies every option onto the effect node and the runtime node handle reads `node.visible`, so a
@@ -376,7 +376,12 @@ export function buildWorld(options: WorldOptions): World {
         target: [0, 0, 0],
         intensity: row.key.intensity,
         color: row.key.color,
-        shadow: shadowOff ? false : { cascades: high ? row.key.cascades : 1, maxDistance: row.key.maxDistance, filter: high ? row.key.filter : "pcf" }
+        shadow: shadowOff ? false : {
+          cascades: high ? row.key.cascades : 1,
+          maxDistance: row.key.maxDistance,
+          filter: high ? row.key.filter : "pcf",
+          softness: high ? row.key.softness : Math.min(row.key.softness, 0.8)
+        }
       }).runtime({ id: "key" }));
     if (row.fill) builder.add(lights.directional({ name: "fill", position: [...row.fill.position], target: [0, 0, 0], intensity: row.fill.intensity, color: row.fill.color, shadow: false }));
     if (row.planetshine) builder.add(lights.directional({ name: "planetshine", position: [...row.planetshine.position], target: [0, 0, 0], intensity: row.planetshine.intensity, color: row.planetshine.color, shadow: false }));
@@ -535,12 +540,17 @@ export function buildWorld(options: WorldOptions): World {
     }
   }), { name: "stars-bright", material: spriteMaterial(true) }));
 
-  /* Idol set pieces stand beside the floating ribbon (|lateral| > 11.5 m) with nothing under them: each sits on a
-   * floating regolith islet like the opal islands (render only; colliders and placements unchanged). */
+  /* Idol set pieces stand beside the floating ribbon (|lateral| > 11.5 m) with nothing under them: each sits embedded
+   * 0.35 m into a grounded lunar contact plinth (`groundHeight(x, z) - 0.35`) so bases never float on title or race frames. */
   const isletMaterial = mineralMaterial(hexLinear("#b9c5e1"), true);
+  const groundedDropFor = (s: number, lateral: number, drop: number): number => {
+    const g = groundHeight(s, lateral, "main") ?? 0;
+    return Math.min(drop, g - 0.35);
+  };
   const addIslets = (key: SetPieceKey, name: string, position: [number, number, number], rotation: [number, number, number], scale: number, s: number): void => {
+    const collar = key === "cgGantry" ? -0.03 : 0.35 / Math.max(0.5, scale);
     SET_PIECE_ISLETS[key].forEach((islet, k) => {
-      builder.add(geometry.custom(dynamicFrom(buildIslet(islet.x, islet.z, islet.r, islet.r * 1.6, s, k + name.length), true), {
+      builder.add(geometry.custom(dynamicFrom(buildIslet(islet.x, islet.z, islet.r, islet.r * 1.6, s, k + name.length, collar), true), {
         name: `${name}-islet-${k}`, position, rotation, scale, material: isletMaterial, castShadow: false, receiveShadow: true
       }));
     });
@@ -643,7 +653,10 @@ export function buildWorld(options: WorldOptions): World {
   const dressSpires: { position: [number, number, number]; rotation: [number, number, number]; size: number }[] = [];
   dressingPlan().forEach((d) => {
     const f = mainFrame(d.s);
-    const p = f.p.clone().addScaledVector(f.side, d.lateral).addScaledVector(f.up, d.drop);
+    const drop = (d.kind === "lander" || d.kind === "observatory") && look === "gouache"
+      ? groundedDropFor(d.s, d.lateral, d.drop)
+      : d.drop;
+    const p = f.p.clone().addScaledVector(f.side, d.lateral).addScaledVector(f.up, drop);
     const base = multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("y", d.spin));
     if (d.kind === "lander") {
       const o = { name: d.name, position: [p.x, p.y, p.z] as [number, number, number], rotation: euler(base), size: d.size };
@@ -671,7 +684,8 @@ export function buildWorld(options: WorldOptions): World {
   if (look === "gouache" && !off.has("colony")) {
     for (const c of COLONY_STATIONS) {
       const f = mainFrame(c.s);
-      const p = f.p.clone().addScaledVector(f.side, c.lateral).addScaledVector(f.up, c.drop);
+      const drop = groundedDropFor(c.s, c.lateral, c.drop);
+      const p = f.p.clone().addScaledVector(f.side, c.lateral).addScaledVector(f.up, drop);
       const rot = euler(multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("y", c.yaw)));
       const opts = { name: c.name, position: [p.x, p.y, p.z] as [number, number, number], rotation: rot, scale: c.scale };
       // Idol pass: image-to-3D colony props (same names, placements and scales as the procedural outposts).
@@ -716,13 +730,13 @@ export function buildWorld(options: WorldOptions): World {
     }
   }), { name: "stardust", material: spriteMaterial(true) }).runtime({ id: "stardust" }));
 
-  /* ---- low-G regolith dust flipbook plume ---- */
+  /* ---- low-G regolith dust flipbook plume (5.7.0 live texture handle) ---- */
   const dustPlumeEnabled = look === "gouache" && !off.has("dustplume");
   if (dustPlumeEnabled) {
     const regolithDustAtlas = createFlipbookAtlas("dust", [219, 156, 114]);
     builder.add(flipbookWithVisibility({
       name: "regolith-dust-plume",
-      sprite: "smoke-a",
+      texture: regolithDustAtlas.texture,
       spriteColumns: regolithDustAtlas.columns,
       spriteRows: regolithDustAtlas.rows,
       frameRate: 24,
@@ -752,6 +766,8 @@ export function buildWorld(options: WorldOptions): World {
   const riders = Array.from({ length: 6 }, (_, i) => riderRig(i, vehicle, look));
   /** Idol pass: gouache bikes are wheel-less image-to-3D bike+rider bodies on the procedural spinning wheels (art/idolModels.ts). */
   const idolBikes = vehicle === "bike" && look === "gouache";
+  const plasmaHeroAtlas = idolBikes ? createFlipbookAtlas("plasma", [147, 234, 213]) : null;
+  const plasmaRivalAtlas = idolBikes ? createFlipbookAtlas("plasma", [255, 190, 115]) : null;
   const idolRiders: { bike: IdolBikeKey; rider: RiderKey }[] = [];
   riders.forEach((rig, i) => {
     const [bodyHex, accentHex] = i === 0 ? [RIDERS[rider]!.color, RIDERS[rider]!.accent] : RIVAL_COLORS[i - 1]!;
@@ -763,12 +779,26 @@ export function buildWorld(options: WorldOptions): World {
       const key = i === 0 ? HERO_BIKES[Math.max(0, Math.min(HERO_BIKES.length - 1, rider))]! : RIVAL_BIKES[i - 1]!;
       builder.add(createIdolBikeBodyNode({ id: rig.parts[0]!.id, key, castShadow: i === 0 }));
       idolRiders[i] = { bike: key, rider: riderKeyFor(key) };
+      const plumeAtlas = i === 0 ? plasmaHeroAtlas! : plasmaRivalAtlas!;
       for (const sub of rig.parts.slice(1)) {
         if (IDOL_COVERED_PARTS.has(sub.kind)) builder.add(createCoveredRiderPartNode(sub.id));
         else if (sub.kind === "wheelF" || sub.kind === "wheelR") builder.add(createIdolBikeWheelNode(sub.id));
         else if (sub.kind === "blurF" || sub.kind === "blurR") builder.add(createWheelBlurNode(sub.id));
         else if (sub.kind === "rider") builder.add(createIdolRiderNode(sub.id, idolRiders[i]!.rider, { castShadow: i === 0 }));
-        else builder.add(createRiderSubPartNode({ id: sub.id, kind: sub.kind, vehicle, liveryColor: primaryColor, accentColor: accentHex, suitColor, isHero: i === 0 }));
+        else if (sub.kind === "coneL" || sub.kind === "coneR") {
+          builder.add(flipbookWithVisibility({
+            name: sub.id,
+            texture: plumeAtlas.texture,
+            spriteColumns: plumeAtlas.columns,
+            spriteRows: plumeAtlas.rows,
+            frameRate: 28,
+            size: i === 0 ? 0.56 : 0.44,
+            color: i === 0 ? "#93ead5" : "#ffbe73",
+            blend: "additive",
+            visible: false,
+            prewarm: sub.kind === "coneL" ? 0 : 0.35
+          }).runtime({ id: sub.id }));
+        } else builder.add(createRiderSubPartNode({ id: sub.id, kind: sub.kind, vehicle, liveryColor: primaryColor, accentColor: accentHex, suitColor, isHero: i === 0 }));
       }
       return;
     }
@@ -919,20 +949,22 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   const riderUp: Vec3[] = Array.from({ length: 7 }, () => new Vec3(0, 1, 0));
   const riderShown: boolean[] = Array.from({ length: 6 }, () => true);
   const wheelSpin = new Float32Array(6);
-  /* Idol riders: one humanoid driver per racer GLB (loaded once); a racer stays hidden until its skeleton is read. */
+  /* Idol riders: one humanoid driver per racer GLB + one createHumanoidAnimator per racer (cross-fades menu/cruise/boost). */
   const riderDrivers = new Map<RiderKey, HumanoidDriver>();
+  const riderAnimators = Array.from({ length: 7 }, () => createIdolRiderAnimator());
   const riderSeat: (RiderSeatFrame | null)[] = (input.idolRiders ?? []).map((r) => (r ? bikeRiderFrame(r.bike) : null));
   for (const key of new Set((input.idolRiders ?? []).map((r) => r.rider))) {
     void loadIdolHumanoid(riderUrl(key)).then((d) => { riderDrivers.set(key, d); }, (e: unknown) => console.warn(`[craterline] rider skeleton ${key}`, e));
   }
   /** Pose rider `index`'s racer node (rig frame); returns its rig-frame node offset and the extra node scale, or null. */
-  const poseIdolRider = (h: ReturnType<typeof node>, index: number, motion: RiderMotion): { offset: [number, number, number]; scale: number } | null => {
+  const poseIdolRider = (h: ReturnType<typeof node>, index: number, motion: RiderMotion, animSlot = index): { offset: [number, number, number]; scale: number } | null => {
     const ir = input.idolRiders?.[index], frame = riderSeat[index];
     const driver = ir ? riderDrivers.get(ir.rider) : undefined;
     if (!ir || !frame || !driver) return null;
     const rs = riderScale(ir.rider);
     const hip = driver.map.hipHeight;
-    h.setAnimationPose?.(driver.pose(riderPose({ lean: motion.lean, steer: motion.steer ?? 0, boosting: motion.boosting, speed: motion.speed, time: motion.time, menu: motion.menu }, hip, rs, frame)) as never);
+    const pose = riderAnimators[animSlot]!.update(motion.dt, { lean: motion.lean, steer: motion.steer ?? 0, boosting: motion.boosting, speed: motion.speed, time: motion.time, menu: motion.menu }, hip, rs, frame);
+    h.setAnimationPose?.(driver.pose(pose) as never);
     const o = riderNodePosition(hip, rs, frame);
     return { offset: [o[0], o[1], o[2]], scale: rs };
   };
@@ -1065,9 +1097,14 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
         h.setVisible(coneVisible);
         if (!coneVisible) continue;
         const flutter = input.reducedMotion ? 0 : 0.12 * Math.sin(motion.time * 44 + (part.kind === "coneL" ? 0 : 1.9));
-        const lenScale = Math.max(0.24, Math.min(1, motion.speed / 32) * 0.56 + (motion.boosting ? 0.82 + flutter : 0));
-        const radScale = motion.boosting ? 1.12 : 0.80;
-        partScale = [scale * radScale, scale * lenScale, scale * radScale];
+        if (input.idolRiders) {
+          const plumeScale = Math.max(0.45, Math.min(1, motion.speed / 32) * 0.72 + (motion.boosting ? 0.52 + flutter : 0));
+          partScale = scale * plumeScale;
+        } else {
+          const lenScale = Math.max(0.24, Math.min(1, motion.speed / 32) * 0.56 + (motion.boosting ? 0.82 + flutter : 0));
+          const radScale = motion.boosting ? 1.12 : 0.80;
+          partScale = [scale * radScale, scale * lenScale, scale * radScale];
+        }
       }
 
       const [ox, oy, oz] = computeRiderPartWorldOffset(base, [ox0, oy0, oz0], scale);
@@ -1209,7 +1246,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       // the ghost's rigged racer: same seat and pose code as the live riders, under the hologram material
       if (input.idolRiders) {
         const gr = node("ghost-rider-rider");
-        const placed = ghost && !menu ? poseIdolRider(gr, 0, { lean: 0, speed: 30, boosting: false, dt, time, menu: false }) : null;
+        const placed = ghost && !menu ? poseIdolRider(gr, 0, { lean: 0, speed: 30, boosting: false, dt, time, menu: false }, 6) : null;
         gr.setVisible(Boolean(placed));
         if (ghost && placed) {
           const pose = poseAt(ghost.s, ghost.lane, ghost.route, ghost.height, 0, 0);

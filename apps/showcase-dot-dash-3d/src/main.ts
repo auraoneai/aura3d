@@ -1,20 +1,21 @@
 /** Glint Courier — circuit-board chase (PRD: docs/prd/dot-dash-3d.md). */
 import { createFixedStepLoop, game, installQaHooks } from "@aura3d/engine";
-import { createFixedStepPresenter, createGame, sfxUrl, warmPrograms } from "@aura3d/engine/game";
+import {
+  createAutoplayHarness, createGame, createImpactRig, readAutoplayFlag, sfxUrl, warmPrograms
+} from "@aura3d/engine/game";
 import {
   buildScene, bindApp, syncVisuals, wx, wz, cameraPose, setMotionPrefs, tileToScreen,
-  CYBER_NEON_LUT, spawnSparkBurst, snapshotActors, blendActors
+  CYBER_NEON_LUT, spawnSparkBurst, createActorInterpolator
 } from "./game/world";
 import { ARCADE } from "./game/look";
 import { registerVfxPack, VFX_KINDS, type VfxPrefs } from "./game/vfx";
-import { st, frame, startRun, bootToTitle, evidenceExtra, GHOST_LABEL } from "./game/sim";
+import { st, frame, startRun, bootToTitle, evidenceExtra, GHOST_LABEL, AUTOPLAY_RESULTS_SECONDS } from "./game/sim";
 import { mountUI, tickUI, isPaused, autoPause } from "./game/hud";
-import { FRUIT_LABEL, type MazeId } from "./game/mazes";
+import { FRUIT_LABEL, MAZE_ORDER, type MazeId } from "./game/mazes";
 import type { FruitKind } from "./game/grid";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
-import { createImpactRig } from "../../showcase-port-shared/feel";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -66,7 +67,13 @@ const g = createGame({
   ...(() => {
     const { output, renderer } = labAppOptions(readLabFlags(), { backend: "auto" });
     return {
-      output: { toneMapping: ARCADE.toneMapping, exposure: ARCADE.exposure, dither: true, ...(output ?? {}) },
+      output: {
+        toneMapping: ARCADE.toneMapping,
+        neutralCurve: ARCADE.neutralCurve,
+        exposure: ARCADE.exposure,
+        dither: true,
+        ...(output ?? {})
+      },
       ...(renderer ? { renderer } : {})
     };
   })(),
@@ -125,7 +132,15 @@ let appReady = false;
 // A1: shared loading/readiness helper drives the engine shell loading progress.
 const loading = createLoadingProgress({ shell: g.shell });
 loading.set(0.1, "Building board");
-st.autopilot = params.get("autoplay") === "1" || params.get("autopilot") === "1" || params.get("demo") === "1";
+const autoplay = createAutoplayHarness({
+  enabled: readAutoplayFlag(window.location.search),
+  isFinished: () => st.mode === "gameover" || st.mode === "win",
+  restartDelay: AUTOPLAY_RESULTS_SECONDS,
+  onRestart: () => {
+    startRun("quick", st.mode === "win" ? MAZE_ORDER[0]! : st.mazeId);
+  }
+});
+st.autopilot = autoplay.enabled;
 bindApp(app);
 g.start();
 if (isPageHidden()) {
@@ -329,8 +344,8 @@ let lastMaze = st.mazeId;
 let humDucked = false;
 let simClockMs = 0;
 
-const impactRig = createImpactRig();
-const presenter = createFixedStepPresenter({ snapshot: snapshotActors, blend: blendActors });
+const impactRig = createImpactRig({ reducedMotion: () => vfxPrefs.reducedMotion });
+const presenter = createActorInterpolator();
 
 function handleStepEvents(): void {
   const ev = st.events;
@@ -399,10 +414,11 @@ const simLoop = createFixedStepLoop({
   step(stepSeconds) {
     // P toggles the computer player (autoplay); any direction key hands control back to the player
     if (consumeCode("autoplay")) {
-      st.autopilot = !st.autopilot;
+      st.autopilot = autoplay.toggle();
       if (st.autopilot && (st.mode === "gameover" || st.mode === "win")) st.endT = 0;
     }
     frame(stepSeconds, input);
+    if (autoplay.enabled !== st.autopilot) autoplay.enabled = st.autopilot;
     keysPressed.clear();
     handleStepEvents();
     presenter.afterStep();
@@ -427,6 +443,7 @@ app.onFrame(({ dt }) => {
       simClockMs += feel.simDt * 1000;
       simLoop.tick(simClockMs);
     }
+    autoplay.tick(d);
 
     const blended = presenter.present(simLoop, st.mode === "play" && !feel.frozen);
     syncVisuals(d, blended, { shakeOffset: feel.shakeOffset, fovDeltaDeg: feel.fovDeltaDeg });

@@ -19,7 +19,7 @@ import {
   WGSL_NOISE,
   wgslStage
 } from "../../../showcase-port-shared/wgsl-twins";
-import { createFlipbookAtlas, type FlipbookAtlasSpec } from "../../../showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, type FlipbookAtlasSpec } from "@aura3d/engine/game";
 import { sunDirection, type ChapterLook } from "./look";
 
 export function hexToRgb(hex: string): [number, number, number] {

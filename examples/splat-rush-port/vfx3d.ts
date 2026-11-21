@@ -5,7 +5,7 @@
  * the simulation and its random stream never see them. Reduced motion halves the particle count (PRD §6.3).
  */
 import type { AuraAppEffects, AuraVec3, AuraVfxEffectSpec } from "@aura3d/engine";
-import { createFlipbookAtlas, type FlipbookAtlasSpec } from "../../apps/showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, type FlipbookAtlasSpec } from "@aura3d/engine/game";
 import type { GameSound } from "./audio";
 import { GATE_COLORS } from "./look";
 
@@ -13,11 +13,21 @@ export const PAINT_SPLASH = "paint-splash";
 export const PAINT_SPLASH_RING = "paint-splash-ring";
 export const PAINT_MOTE = "paint-mote";
 
-/** Procedural 8x4 (32-frame) glossy ink-lobe flipbook sheet for chroma gate bursts (`world.ts`). */
+/** Procedural 8x4 (32-frame) glossy ink-lobe, spark & ripple flipbook sheets for `effects.flipbook({ texture })` (`world.ts`). */
 let cachedInkFlipbook: FlipbookAtlasSpec | null = null;
+let cachedSparksFlipbook: FlipbookAtlasSpec | null = null;
+let cachedRippleFlipbook: FlipbookAtlasSpec | null = null;
 export function createInkFlipbook(): FlipbookAtlasSpec {
   cachedInkFlipbook ??= createFlipbookAtlas("ink", [255, 255, 255]);
   return cachedInkFlipbook;
+}
+export function createSparksFlipbook(): FlipbookAtlasSpec {
+  cachedSparksFlipbook ??= createFlipbookAtlas("sparks", [255, 224, 132]);
+  return cachedSparksFlipbook;
+}
+export function createRippleFlipbook(): FlipbookAtlasSpec {
+  cachedRippleFlipbook ??= createFlipbookAtlas("ripple", [255, 240, 210]);
+  return cachedRippleFlipbook;
 }
 
 /** Wet paint drops + animated splash sheet thrown up and out, falling back under gravity (no camera layer: the game keeps its own shake). */

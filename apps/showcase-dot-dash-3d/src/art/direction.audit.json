@@ -37,7 +37,7 @@
       {
         "name": "actor glow disc",
         "node": "actor glow discs",
-        "emissiveIntensity": 1.2,
+        "emissiveIntensity": 0.95,
         "practical": true
       },
       {
@@ -49,13 +49,13 @@
       {
         "name": "data pellet",
         "node": "pellets",
-        "emissiveIntensity": 1.5,
+        "emissiveIntensity": 1.42,
         "practical": true
       },
       {
         "name": "power cell",
         "node": "power cells",
-        "emissiveIntensity": 2.2,
+        "emissiveIntensity": 2.1,
         "practical": true
       },
       {
@@ -73,37 +73,37 @@
       {
         "name": "courier gold dome",
         "node": "courier",
-        "emissiveIntensity": 2.6,
+        "emissiveIntensity": 2.35,
         "practical": true
       },
       {
         "name": "courier visor + nose",
         "node": "courier visor",
-        "emissiveIntensity": 2.2,
+        "emissiveIntensity": 2.15,
         "practical": true
       },
       {
         "name": "sentry drone shell",
         "node": "sentry blitz",
-        "emissiveIntensity": 1.9,
+        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
         "name": "sentry drone shell",
         "node": "sentry sly",
-        "emissiveIntensity": 1.9,
+        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
         "name": "sentry drone shell",
         "node": "sentry flick",
-        "emissiveIntensity": 1.9,
+        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
         "name": "sentry drone shell",
         "node": "sentry dim",
-        "emissiveIntensity": 1.9,
+        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
@@ -215,30 +215,6 @@
       },
       {
         "node": "wrap-portal-3",
-        "practical": false
-      },
-      {
-        "node": "spark-burst-0",
-        "practical": false
-      },
-      {
-        "node": "spark-burst-1",
-        "practical": false
-      },
-      {
-        "node": "spark-burst-2",
-        "practical": false
-      },
-      {
-        "node": "spark-burst-3",
-        "practical": false
-      },
-      {
-        "node": "spark-burst-4",
-        "practical": false
-      },
-      {
-        "node": "spark-burst-5",
         "practical": false
       }
     ],

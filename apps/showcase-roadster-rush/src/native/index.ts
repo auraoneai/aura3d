@@ -1,3 +1,4 @@
+import { HUD_THEMES, hudThemeFontFaces, readAutoplayFlag, registerGameFonts } from "@aura3d/engine/game";
 import { RoadsterAudio } from "./audio";
 import { RoadsterGame } from "./game";
 import { RoadsterHud } from "./hud";
@@ -5,7 +6,7 @@ import { KeyboardInput } from "./input";
 import { Player } from "./player";
 import { Traffic } from "./traffic";
 import { FreewayWorld } from "./world";
-import "../../../showcase-port-shared/hud-tokens.css";
+import "../../../showcase-port-shared/quickbar.css";
 import "./hud.css";
 
 export { RoadsterGame } from "./game";
@@ -52,8 +53,25 @@ function saveMuted(muted: boolean): void {
   }
 }
 
+/** Apply Aura3D `HUD_THEMES["motorsport"]` tokens (`National 2 Narrow` + `DIN Pro`) and register licensed WOFF2 cuts. */
+function installMotorsportHudTheme(root: HTMLElement | null | undefined): void {
+  if (typeof document === "undefined") return;
+  const target = root ?? document.documentElement;
+  if (target?.style?.setProperty) {
+    for (const [k, v] of Object.entries(HUD_THEMES.motorsport)) {
+      target.style.setProperty(k, v);
+    }
+  }
+  if (typeof window !== "undefined" && "FontFace" in window && document.fonts) {
+    const registry = { fonts: document.fonts, FontFace: window.FontFace } as unknown as Parameters<typeof registerGameFonts>[1];
+    const base = `${import.meta.env?.BASE_URL ?? "/"}rr-fonts/`;
+    void registerGameFonts(base, registry, hudThemeFontFaces("motorsport"));
+  }
+}
+
 /** Build the native Apex Overdrive game (simulation + HUD + audio + keyboard) and boot it into the title state. */
 export function createNativeRoadster(options: NativeRoadsterOptions = {}): RoadsterGame {
+  installMotorsportHudTheme(options.hudRoot);
   const player = new Player();
   const traffic = new Traffic();
   const world = new FreewayWorld();
@@ -101,7 +119,7 @@ function installAudioUnlock(audio: RoadsterAudio): void {
 /** Pause the run and suspend sound when the tab is hidden or the window loses focus (audit RR-9). */
 function installBackgroundPause(game: RoadsterGame, audio: RoadsterAudio, params: URLSearchParams): void {
   if (typeof document === "undefined") return;
-  const ignoreBlurPause = params.get("autoplay") === "1" || params.get("capture") === "1";
+  const ignoreBlurPause = readAutoplayFlag(params) || params.get("capture") === "1";
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       if (!game.manual) game.togglePause(true);

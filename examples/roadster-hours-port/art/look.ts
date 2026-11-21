@@ -98,18 +98,29 @@ export interface SaltwindLookRow {
     readonly vignette: number;
   };
   readonly grade: { readonly exposure: number; readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number };
-  readonly shadow: { readonly cascades: 1; readonly maxDistance: number; readonly filter: "pcss"; readonly mapSize: 2048 };
+  readonly shadow: {
+    readonly cascades: 1;
+    readonly maxDistance: number;
+    readonly filter: "pcss";
+    readonly mapSize: 2048;
+    readonly softness: number;
+    readonly fit: { readonly center: readonly [number, number, number]; readonly extent: readonly [number, number]; readonly depth: number };
+  };
   readonly spray: SprayLook;
   /** Wind across the road (x, z in world units per second) for clouds, whitecaps and spray. */
   readonly wind: readonly [number, number];
 }
 
-// phase 4 (4.7.2): one cascade over the near 110 m. The road, the flanks and the town are each one custom-shader draw, and
-// the forward pass picks one cascade per draw from the draw's world centre (hundreds of metres down the course), so with 3
-// cascades they sampled the far cascade, whose light volume does not hold the car: no car or roadside shadow ever reached
-// the asphalt (rubric shadows 3-4). One cascade holds every near receiver; 75 m keeps the car's shadow edge crisp (p4-r2 at
-// 110 m stair-stepped).
-const SHADOW = { cascades: 1, maxDistance: 75, filter: "pcss", mapSize: 2048 } as const;
+// phase 4 (4.7.2) + 5.7.2: one soft PCSS cascade with a roadster-ahead fit box. The road, the flanks and the town are each
+// one custom-shader draw, so one tight cascade keeps the car and roadside shadows crisp across the near 75 m.
+const SHADOW = {
+  cascades: 1,
+  maxDistance: 75,
+  filter: "pcss",
+  mapSize: 2048,
+  softness: 1.4,
+  fit: { center: [0, 0, -24], extent: [26, 16], depth: 48 }
+} as const;
 
 export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> = {
   sunbreak: {

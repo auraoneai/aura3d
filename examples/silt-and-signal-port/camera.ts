@@ -53,8 +53,11 @@ export const TREE_TRUNK_RADIUS = 0.22;
  */
 export const TREE_CAMERA_MARGIN = 0.6;
 
-/** A scenery column; `soft` ones (trees) only keep the eye out of the trunk, their crowns fade instead of blocking. */
-export type SceneryColumn = Column & { readonly soft?: boolean };
+/** A scenery column; `soft` ones (trees) only keep the eye out of the trunk, while `pier` columns get extra lateral lens clearance. */
+export type SceneryColumn = Column & { readonly soft?: boolean; readonly pier?: boolean };
+
+/** Extra lateral clearance on piers is handled by `createColumnOcclusionFade`; chase clearance keeps `CAMERA_MARGIN`. */
+export const PIER_CAMERA_MARGIN = CAMERA_MARGIN;
 
 /** Trees, rocks, houses and piers: a camera inside a trunk, boulder or roof fills the view with it, so model them as columns. */
 export function sceneryColumns(props: {
@@ -68,8 +71,8 @@ export function sceneryColumns(props: {
     ...props.trees.map((t) => ({ x: t.x, z: t.z, r: TREE_TRUNK_RADIUS * t.scale, bottom: t.y, top: t.y + TREE_HEIGHT * t.scale, soft: true })),
     ...props.rocks.map((r) => ({ x: r.x, z: r.z, r: ROCK_RADIUS * r.scale, bottom: r.y, top: r.y + ROCK_HEIGHT * r.scale })),
     ...(props.houses ?? []).map((h) => ({ x: h.x, z: h.z, r: HOUSE_RADIUS * h.scale, bottom: h.y, top: h.y + HOUSE_HEIGHT * h.scale })),
-    ...props.stone,
-    ...props.brass
+    ...props.stone.map((c) => ({ ...c, pier: true })),
+    ...props.brass.map((c) => ({ ...c, pier: true }))
   ];
 }
 
@@ -125,15 +128,16 @@ export function chaseEyeBlocked(world: Pick<Sim["world"], "colliders" | "floor">
       }
     }
     if (sceneryCells) {
-      const c0 = Math.floor((z - CAMERA_MARGIN) / SCENERY_CELL_Z);
-      const c1 = Math.floor((z + CAMERA_MARGIN) / SCENERY_CELL_Z);
+      const c0 = Math.floor((z - PIER_CAMERA_MARGIN) / SCENERY_CELL_Z);
+      const c1 = Math.floor((z + PIER_CAMERA_MARGIN) / SCENERY_CELL_Z);
       for (let cell = c0; cell <= c1; cell++) {
         const bucket = sceneryCells.get(cell);
         if (!bucket) continue;
         for (let i = 0; i < bucket.length; i++) {
           const c = bucket[i]!;
           if (y < c.bottom - 0.6 || y > c.top + 0.6) continue;
-          const dx = x - c.x, dz = z - c.z, reach = c.r + (c.soft ? TREE_CAMERA_MARGIN : CAMERA_MARGIN);
+          const margin = c.soft ? TREE_CAMERA_MARGIN : c.pier ? PIER_CAMERA_MARGIN : CAMERA_MARGIN;
+          const dx = x - c.x, dz = z - c.z, reach = c.r + margin;
           if (dx * dx + dz * dz < reach * reach) return true;
         }
       }
@@ -141,7 +145,8 @@ export function chaseEyeBlocked(world: Pick<Sim["world"], "colliders" | "floor">
     }
     for (const c of scenery) {
       if (y < c.bottom - 0.6 || y > c.top + 0.6) continue;
-      const dx = x - c.x, dz = z - c.z, reach = c.r + (c.soft ? TREE_CAMERA_MARGIN : CAMERA_MARGIN);
+      const margin = c.soft ? TREE_CAMERA_MARGIN : c.pier ? PIER_CAMERA_MARGIN : CAMERA_MARGIN;
+      const dx = x - c.x, dz = z - c.z, reach = c.r + margin;
       if (dx * dx + dz * dz < reach * reach) return true;
     }
     return false;

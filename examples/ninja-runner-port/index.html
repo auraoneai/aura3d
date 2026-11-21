@@ -90,11 +90,13 @@
       #abilities button small { font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--muted); }
       #abilities button.phone-only { display: none; }
       #abilities .short { display: none; }
-      #abilities button::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--cd, 0) * 100%); background: var(--cyan); }
+      #abilities button::after { content: ""; position: absolute; left: 0; bottom: 0; height: 4px; width: calc(var(--cd, 0) * 100%); background: var(--cyan); transition: width 80ms linear; }
+      #abilities button::before { content: ""; position: absolute; inset: 0; background: rgba(14, 22, 36, 0.34); transform-origin: 0 100%; transform: scaleY(var(--cd, 0)); pointer-events: none; }
       #abilities button.poor { opacity: 0.55; }
       #abilities button.live { border-color: var(--cyan); box-shadow: 0 0 12px rgba(81, 223, 255, 0.42); }
-      #announce { position: fixed; top: calc(var(--a3d-bar-space, 0px) + 74px); left: 0; right: 0; text-align: center; pointer-events: none; text-shadow: 0 1px 8px #000a; }
-      #announce strong { display: block; font-size: 22px; font-weight: 600; letter-spacing: 0.08em; }
+      #announce { position: fixed; top: calc(var(--a3d-bar-space, 0px) + 74px); left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 24px); text-align: center; pointer-events: none; text-shadow: 0 1px 8px #000a; }
+      #announce:has(#announce-title:not(:empty)) { padding: 5px 16px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+      #announce strong { display: block; font-size: 20px; font-weight: 600; letter-spacing: 0.08em; }
       #district-banner { position: fixed; left: 0; right: 0; top: 34%; text-align: center; pointer-events: none; font-size: 28px; letter-spacing: 0.18em; font-weight: 600; text-shadow: 0 2px 14px #000b; opacity: 0; transition: opacity 0.6s; }
       #district-banner.show { opacity: 0.95; }
       #hurt { position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 140px 30px rgba(255, 60, 40, 0.75); opacity: 0; transition: opacity 0.5s ease-out; }
@@ -103,9 +105,15 @@
       .reduced-motion #hurt.on { opacity: 0.4; }
       .reduced-motion #district-banner { transition: none; }
       #countdown { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; font-family: var(--font-metric); font-size: 112px; font-weight: 500; font-variant-numeric: tabular-nums; text-shadow: 0 4px 24px #000c; }
-      .overlay { position: fixed; inset: 0; display: grid; place-items: center; padding: 16px; background: radial-gradient(ellipse at center, rgba(10, 16, 28, 0.35), rgba(10, 16, 28, 0.78)); }
-      .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 22px 26px; max-width: 452px; width: 100%; display: grid; gap: 12px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-      .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 12px; }
+      .overlay { position: fixed; inset: 0; display: flex; align-items: flex-end; justify-content: flex-start; padding: calc(var(--a3d-bar-space, 0px) + 18px) max(20px, env(safe-area-inset-right, 0px)) max(22px, env(safe-area-inset-bottom, 0px)) max(22px, env(safe-area-inset-left, 0px)); background: linear-gradient(90deg, rgba(10, 16, 28, 0.54) 0%, rgba(10, 16, 28, 0.14) 52%, rgba(10, 16, 28, 0.04) 100%); }
+      #pause.overlay, #result.overlay { align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(10, 16, 28, 0.35), rgba(10, 16, 28, 0.78)); }
+      .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px; max-width: 368px; width: 100%; display: grid; gap: 10px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+      .keys-drawer { border-top: 1px solid var(--line); padding-top: 6px; }
+      .keys-drawer summary { cursor: pointer; list-style: none; font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--warm); min-height: 36px; display: flex; align-items: center; }
+      .keys-drawer summary::-webkit-details-marker { display: none; }
+      .keys-drawer summary::after { content: " ▾"; margin-left: 6px; }
+      .keys-drawer[open] summary::after { content: " ▴"; }
+      .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 6px 0 0; font-size: 12px; }
       .keys dt { color: var(--warm); font-weight: 600; white-space: nowrap; }
       .keys dd { margin: 0; color: var(--muted); }
       .row { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -119,11 +127,13 @@
 
       @media (pointer: coarse), (max-width: 760px) {
         kbd.desk-key { display: none; }
+        .keys-drawer { display: none; }
         .keys { display: none; }
+        .overlay { justify-content: center; padding: 12px max(12px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
         #vitals {
           top: calc(var(--a3d-bar-space, 0px) + max(8px, env(safe-area-inset-top)));
           left: max(8px, env(safe-area-inset-left));
-          width: 168px;
+          width: 164px;
           padding: 6px 9px;
         }
         .vital-label-health { display: none; }
@@ -131,17 +141,18 @@
         #stats {
           top: calc(var(--a3d-bar-space, 0px) + max(8px, env(safe-area-inset-top)));
           right: max(8px, env(safe-area-inset-right));
-          min-width: 148px;
+          min-width: 144px;
           padding: 6px 9px;
           gap: 2px;
         }
         #stats strong { font-size: 16px; }
+        /* Clear below #vitals/#stats with room for the top-offset district seals so "G" never clips behind #stats. */
         #progress {
-          top: calc(var(--a3d-bar-space, 0px) + max(112px, env(safe-area-inset-top) + 104px));
-          width: calc(100vw - 24px);
+          top: calc(var(--a3d-bar-space, 0px) + max(132px, env(safe-area-inset-top) + 124px));
+          width: calc(100vw - 36px);
         }
         #progress > span { display: none; }
-        #announce { top: calc(var(--a3d-bar-space, 0px) + max(136px, env(safe-area-inset-top) + 128px)); }
+        #announce { top: calc(var(--a3d-bar-space, 0px) + max(154px, env(safe-area-inset-top) + 146px)); }
         #forms { display: none; }
         #abilities {
           left: max(8px, env(safe-area-inset-left));
@@ -175,11 +186,10 @@
     </style>
     <style>
       /* GU47 NR-19 ink-scroll HUD (E-J theme "ink-scroll"): mist-paper panels, indigo ink text, vermilion seals, brush
-         district card, paired with AuraOne Whitney UI + DIN Pro tabular metrics (WP-23). Scoped to html.ink-scroll. */
-      .ink-scroll { --a3g-font: "A3G Suisse Works Italic", "Suisse Works", Georgia, serif; --a3g-font-display: "A3G Domaine Display", "Domaine Display", Georgia, serif;
-        --ink: #1f1d24; --muted: #524f5b; --panel: rgba(237, 230, 214, 0.93); --panel-solid: #ede6d6; --line: rgba(31, 29, 36, 0.42); --warm: #c23b22; --warm-deep: #9e2a16; --cyan: #1d8fb0; --danger: #9e1b1b; --indigo: #2b3550; }
+         district card, aligned directly with HUD_THEMES["ink-scroll"] tokens. Scoped to html.ink-scroll. */
+      .ink-scroll { --a3g-font: "A3G Suisse Works Italic", "Suisse Works", Georgia, serif; --a3g-font-display: "A3G Domaine Display", "Domaine Display", Georgia, serif; --a3g-fg: #1f1d24; --a3g-fg-dim: #524f5b; --a3g-accent: #c23b22; --a3g-accent2: #2b3550; --a3g-warn: #874610; --a3g-danger: #9e1b1b; --a3g-bg: rgba(237,230,214,0.94); --a3g-edge: rgba(31,29,36,0.6); --a3g-radius: 2px; --ink: var(--a3g-fg); --muted: var(--a3g-fg-dim); --panel: var(--a3g-bg); --panel-solid: #ede6d6; --line: var(--a3g-edge); --warm: var(--a3g-accent); --warm-deep: #9e2a16; --cyan: #1d8fb0; --danger: var(--a3g-danger); --indigo: var(--a3g-accent2); }
       .ink-scroll body { font-family: var(--font-ui); }
-      .ink-scroll .glass, .ink-scroll .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 4px 16px rgba(17, 22, 36, 0.24); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--ink); }
+      .ink-scroll .glass, .ink-scroll .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--a3g-radius); box-shadow: 0 4px 16px rgba(17, 22, 36, 0.24); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--ink); }
       .ink-scroll h1, .ink-scroll h2 { font-family: var(--font-ui); font-weight: 600; }
       .ink-scroll #stats strong, .ink-scroll #countdown, .ink-scroll #spirit, .ink-scroll #combo { font-family: var(--font-metric); font-weight: 500; font-variant-numeric: tabular-nums; }
       .ink-scroll button { font-family: var(--font-ui); font-weight: 500; color: var(--ink); background: rgba(31, 29, 36, 0.06); border-color: var(--line); border-radius: 5px; min-height: 44px; }
@@ -187,6 +197,7 @@
       .ink-scroll button.primary, .ink-scroll #forms button.selected { background: var(--warm); color: #f6efe0; font-weight: 600; border-color: var(--warm-deep); }
       .ink-scroll #forms button.selected small { color: #f6efe0; }
       .ink-scroll #abilities button::after { background: var(--indigo); }
+      .ink-scroll #abilities button::before { background: rgba(43, 53, 80, 0.2); }
       .ink-scroll #abilities button.live { border-color: var(--warm); box-shadow: 0 0 0 2px rgba(194, 59, 34, 0.42); }
       .ink-scroll .bar { background: rgba(31, 29, 36, 0.14); border-radius: 2px; }
       .ink-scroll .bar > i { background: linear-gradient(90deg, #2f7f9a, #51dfff); }
@@ -200,12 +211,13 @@
       .ink-scroll #progress > em { display: grid; place-items: center; position: absolute; top: -20px; width: 16px; height: 16px; transform: translateX(-50%); font: 600 12px/1 var(--font-ui); font-style: normal; color: var(--warm); border: 1px solid var(--warm); background: #ede6d6; border-radius: 2px; }
       .ink-scroll #progress > em.passed { color: #f6efe0; background: var(--warm); }
       /* the brush district card */
-      .ink-scroll #district-banner { left: 50%; right: auto; transform: translateX(-50%); padding: 10px 44px; font: 600 28px/1.15 var(--font-ui); letter-spacing: 0.16em; color: #1b2236; text-shadow: none;
-        background: linear-gradient(90deg, rgba(237, 230, 214, 0), rgba(237, 230, 214, 0.92) 14%, rgba(237, 230, 214, 0.92) 86%, rgba(237, 230, 214, 0)); border-top: 2px solid rgba(27, 34, 54, 0.75); border-bottom: 2px solid rgba(27, 34, 54, 0.75); }
-      .ink-scroll #announce { text-shadow: 0 1px 0 rgba(237, 230, 214, 0.9); color: #1b2236; }
-      .ink-scroll #announce strong { font-family: var(--font-ui); font-weight: 600; }
+      .ink-scroll #district-banner { left: 50%; right: auto; transform: translateX(-50%); padding: 10px 44px; font: 600 28px/1.15 var(--font-ui); letter-spacing: 0.16em; color: #1b2236; text-shadow: none; background: linear-gradient(90deg, rgba(237, 230, 214, 0), rgba(237, 230, 214, 0.92) 14%, rgba(237, 230, 214, 0.92) 86%, rgba(237, 230, 214, 0)); border-top: 2px solid rgba(27, 34, 54, 0.75); border-bottom: 2px solid rgba(27, 34, 54, 0.75); }
+      .ink-scroll #announce { text-shadow: none; color: #1b2236; }
+      .ink-scroll #announce:has(#announce-title:not(:empty)) { background: rgba(237, 230, 214, 0.94); border: 1px solid rgba(31, 29, 36, 0.55); box-shadow: 0 3px 12px rgba(17, 22, 36, 0.35); }
+      .ink-scroll #announce strong { font-family: var(--font-ui); font-weight: 600; color: #1b2236; }
       .ink-scroll #countdown { color: #ede6d6; text-shadow: 0 0 0 #1b2236, 0 3px 0 #1b2236; }
-      .ink-scroll .overlay { background: radial-gradient(ellipse at center, rgba(20, 28, 48, 0.28), rgba(14, 20, 36, 0.74)); }
+      .ink-scroll .overlay { background: linear-gradient(90deg, rgba(20, 28, 48, 0.45) 0%, rgba(20, 28, 48, 0.12) 52%, rgba(20, 28, 48, 0.02) 100%); }
+      .ink-scroll #pause.overlay, .ink-scroll #result.overlay { background: radial-gradient(ellipse at center, rgba(20, 28, 48, 0.28), rgba(14, 20, 36, 0.74)); }
       .ink-scroll .keys dt { color: var(--warm); }
       .ink-scroll #intro-card a { color: var(--indigo); }
       /* NR-18 shot bars on the title-to-chase blend and the win shots (set by world.ts; never with reduced motion) */
@@ -230,7 +242,7 @@
     <div id="district-banner"></div>
     <div id="countdown" class="hidden"></div>
     <div id="controls" class="hidden"><button id="pause-btn" class="glass" title="Pause (Esc)" aria-label="Pause">Pause</button><button id="mute" class="glass" title="Mute (M)" aria-pressed="false">Sound on</button></div>
-    <div id="overlay" class="overlay"><div class="card" id="intro-card"><h1>SHADOWSTEP GAUNTLET</h1><p class="goal">Reach the Valley Gate, 2,640 m.</p><p class="meta" id="loading-status">Loading the village&hellip;</p><div class="aura3d-loading" id="loading-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><button class="primary" id="start" disabled>Run the Village &rarr;</button><dl class="keys"><dt>A / D</dt><dd>change lane</dd><dt>W</dt><dd>jump</dd><dt>S</dt><dd>slide</dd><dt>1</dt><dd>echo clones</dd><dt>2</dt><dd>spiral orb</dd><dt>3</dt><dd>gale star</dd><dt>Shift</dt><dd>surge dash</dd><dt>Space</dt><dd>cycle form</dd><dt>Esc / M</dt><dd>pause / mute</dd><dt>P</dt><dd>autoplay</dd></dl><p class="meta">Touch: swipe to move, jump and slide; tap for the spiral orb.</p><p class="meta num" id="best"></p><p class="meta"><a id="daily" href="?daily=1">Play today's course</a><a id="lowq" class="hidden" href="?quality=low"> &middot; This device draws slowly: switch to low quality</a></p></div></div>
+    <div id="overlay" class="overlay"><div class="card" id="intro-card"><h1>SHADOWSTEP GAUNTLET</h1><p class="goal">Reach the Valley Gate, 2,640 m.</p><p class="meta" id="loading-status">Loading the village&hellip;</p><div class="aura3d-loading" id="loading-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><button class="primary" id="start" disabled>Run the Village &rarr;</button><details class="keys-drawer"><summary>Controls</summary><dl class="keys"><dt>A / D</dt><dd>change lane</dd><dt>W</dt><dd>jump</dd><dt>S</dt><dd>slide</dd><dt>1</dt><dd>echo clones</dd><dt>2</dt><dd>spiral orb</dd><dt>3</dt><dd>gale star</dd><dt>Shift</dt><dd>surge dash</dd><dt>Space</dt><dd>cycle form</dd><dt>Esc / M</dt><dd>pause / mute</dd><dt>P</dt><dd>autoplay</dd></dl></details><p class="meta">Touch: swipe to move, jump &amp; slide; tap for spiral orb.</p><p class="meta num" id="best"></p><p class="meta"><a id="daily" href="?daily=1">Play today's course</a><a id="lowq" class="hidden" href="?quality=low"> &middot; This device draws slowly: switch to low quality</a></p></div></div>
     <div id="pause" class="overlay hidden"><div class="card"><h2>Paused</h2><p class="meta">The run is held. Everything is where you left it.</p><div class="row"><button class="primary" id="resume">Resume</button></div></div></div>
     <div id="result" class="overlay hidden"><div class="card"><span class="meta" id="result-label">RUN REPORT</span><h2 id="result-title"></h2><p id="result-copy" class="meta"></p><div class="meta num" id="result-stats"></div><div class="meta num" id="result-best"></div><div class="row"><button class="primary" id="again">Run again</button></div></div></div>
     <script type="module" src="./main.ts"></script>

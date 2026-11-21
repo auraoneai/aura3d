@@ -17,10 +17,8 @@ import { hexLinear, type Rgb } from "./palette";
 import { LAYERS, buildProceduralCourseAccents, buildScenery, cameraEye, type LayerSpec, type ModelSink, type ShapeId, type SurfaceKey } from "./scenery";
 import { unitBox, unitCone, unitCrescentArc, unitCylinder, unitDisc, unitGable, unitHip, unitRock, unitSphere, type Shape } from "./shapes";
 import { normalFromHeight, paintBark, paintCobble, paintDirt, paintGrass, paintLeaf, paintPlanks, paintPlaster, paintTiles, type Raster } from "./textures";
-import type { CameraShake } from "@aura3d/engine/game";
+import { createFlipbookAtlas, type CameraShake, type ImpactRig } from "@aura3d/engine/game";
 import { Batch, CORRIDOR_BOUNDS } from "../shared/runner-kit";
-import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
-import type { ImpactRig } from "../../apps/showcase-port-shared/feel";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
 import { EVENING_SLOT_MODEL, EVENING_ENEMY_CLIPS, SLOT_MODEL, type CharacterId } from "./models";
@@ -570,10 +568,10 @@ export function buildWorld(options: WorldOptions): World {
   const slashBatch = new Batch(unitCrescentArc(20), SLASH_POOL, null, CORRIDOR_BOUNDS);
   builder.add(geometry.custom(slashBatch.geometry(), { name: "slash-arcs", material: material.custom(slashSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "slash-arcs" }));
 
-  // WP-23: Flipbook blade-deflect sparks (`createFlipbookAtlas("sparks")`) & smoke-step puffs (`createFlipbookAtlas("dust")`).
+  // WP-23 + 5.7.2: Flipbook blade-deflect sparks (`createFlipbookAtlas("sparks")`) & radial sumi-ink form/smoke bursts (`createFlipbookAtlas("ink")`).
   if (evening) {
     const sparksAtlas = createFlipbookAtlas("sparks", [255, 212, 124]);
-    const dustAtlas = createFlipbookAtlas("dust", [202, 216, 236]);
+    const inkAtlas = createFlipbookAtlas("ink", [210, 88, 62]);
     for (let i = 0; i < FLIPBOOK_POOL; i++) {
       builder.add(effects.flipbook({
         name: `spark-burst-${i}`,
@@ -590,13 +588,13 @@ export function buildWorld(options: WorldOptions): World {
       }).runtime({ id: `spark-burst-${i}` }));
       builder.add(effects.flipbook({
         name: `smoke-step-${i}`,
-        texture: dustAtlas.texture,
-        spriteColumns: dustAtlas.columns,
-        spriteRows: dustAtlas.rows,
+        texture: inkAtlas.texture,
+        spriteColumns: inkAtlas.columns,
+        spriteRows: inkAtlas.rows,
         frameRate: 26,
-        size: 1.65,
-        color: "#dce6f5",
-        intensity: 0.95,
+        size: 1.75,
+        color: "#e88a68",
+        intensity: 1.0,
         loop: false,
         position: [0, -500, 0]
       }).runtime({ id: `smoke-step-${i}` }));
@@ -1022,7 +1020,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
           lastFormShift = time;
           const p = groundFrame(s, state.x, 0.9);
           emit(p.x, p.y, p.z, 46, ev.form === "beast" ? [1, 0.7, 0.18] : [1, 0.62, 0.22], 7, 0.34, 0.9, -1.5);
-          fireSmokeFlipbook(p.x, p.y, p.z);
+          fireSmokeFlipbook(p.x, p.y + 0.15, p.z);
+          fireSparkFlipbook(p.x, p.y + 0.25, p.z);
         } else if (ev.type === "enemyAttack") { const p = at(ev.s as number, ev.lane as number, 1.2); emit(p[0], p[1], p[2], 8, [1, 0.5, 0.3], 3, 0.2, 0.35, 0); }
       }
       if (flamesDirty) { flames.updateAttribute?.("aAlive", { array: aliveFlags, offset: 0 }); flamesDirty = false; }
@@ -1075,13 +1074,13 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       }
       if (evening) applyLook(s, state.x, state.y, dt, state.form);
 
-      /* shadow clones */
+      /* shadow clones (R23 render-only widened lateral shoulder offsets so spectral clones frame rather than occlude the hero) */
       CLONE_SLOTS.forEach((slot, k) => {
         const show = state.clones > 0;
-        const lateral = [-1.5, 1.5, 0][k]!;
-        const behind = [0.6, 0.6, 2.4][k]!;
+        const lateral = [-2.05, 2.05, -1.05][k]!;
+        const behind = [1.05, 1.05, 2.85][k]!;
         setTint(slot, "clone", CLONE_TINT);
-        place(slot, { s: s - behind, x: state.x + lateral, y: state.y }, 0, 0.96, state.attack > 0 ? anim : { clip: grounded ? CLIPS.run : CLIPS.jump, rate: 1.15 * (1 + k * 0.07), vy: state.vy }, animDt, show);
+        place(slot, { s: s - behind, x: state.x + lateral, y: state.y }, 0, 0.92, state.attack > 0 ? anim : { clip: grounded ? CLIPS.run : CLIPS.jump, rate: 1.15 * (1 + k * 0.07), vy: state.vy }, animDt, show);
       });
 
       /* enemies: stable slot per entity while in window */
@@ -1138,14 +1137,22 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
             else if (kind === "scout") aim(`blade-${w}`, fore, hand, 0.5, 0.05);
             else if (kind === "heavy") aim(`club-${w}`, fore, hand, 1.2 * 1.3, 0.25);
           }
-          if (kind === "caster") {
-            const lh = boneWorld(slot, BONES.handL);
-            if (lh) { const o = node(`orb-${w}`); o.setVisible(true); o.setPosition(lh[0], lh[1] + 0.12, lh[2]); o.setScale(0.8 + 0.5 * (e.intent?.stage === "windup" ? 1 - e.intent.timer / Math.max(1e-3, e.intent.duration) : 0)); o.setUniform?.("ballTime", time + w); o.setUniform?.("ballOpacity", 0.95); }
+          if (kind === "caster" || (kind === "scout" && e.intent?.stage === "windup")) {
+            const lh = boneWorld(slot, kind === "caster" ? BONES.handL : BONES.handR);
+            const windup = e.intent?.stage === "windup" ? 1 - e.intent.timer / Math.max(1e-3, e.intent.duration) : 0;
+            if (lh) {
+              const o = node(`orb-${w}`);
+              o.setVisible(true);
+              o.setPosition(lh[0], lh[1] + 0.12, lh[2]);
+              o.setScale((kind === "caster" ? 0.85 : 0.45) + 0.65 * windup);
+              o.setUniform?.("ballTime", time + w);
+              o.setUniform?.("ballOpacity", kind === "caster" ? 0.95 : 0.72);
+            }
           }
         }
       });
 
-      /* threat marker: a calligraphy seal ring under the next rival in the hero's lane (the crosshair target), brighter as it closes in */
+      /* threat marker: pulsing calligraphy seal ring under the next rival in the hero's lane */
       const target = state.phase === "running" ? crosshairTarget(state) : null;
       threatShown = null;
       const marker = node("threat-0");
@@ -1153,10 +1160,11 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       marker.setVisible(show);
       if (target && show) {
         const f = groundFrame(target.s, target.lane * laneOffset(target.s), 0.06);
+        const pulse = options.reducedMotion ? 1.05 : 1.02 + 0.12 * Math.sin(time * 7.5);
         marker.setPosition(f.x, f.y, f.z);
-        marker.setScale([1.05, 1, 1.05]);
+        marker.setScale([pulse, 1, pulse]);
         threatShown = { target: target.id, from: +s.toFixed(2), to: +target.s.toFixed(2) };
-        marker.setUniform?.("glow", 0.5 + 1.2 * (1 - Math.min(1, (target.s - s) / 26)));
+        marker.setUniform?.("glow", 0.58 + 1.35 * (1 - Math.min(1, (target.s - s) / 26)));
         marker.setUniform?.("ringTime", time);
       }
 

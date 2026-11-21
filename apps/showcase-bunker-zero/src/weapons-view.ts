@@ -63,32 +63,51 @@ export function viewmodelFraming(aspect: number, baseFov: number): ViewmodelFram
   };
 }
 
+/** Per-weapon barrel tip offset from the viewmodel origin (`forward`, `right`, `up` in camera space metres). */
+export const VIEWMODEL_MUZZLE_OFFSET: Readonly<Record<WeaponId, { readonly forward: number; readonly right: number; readonly up: number; readonly scale: number }>> = {
+  knife: { forward: 0.24, right: 0.02, up: 0.04, scale: 0.2 },
+  pistol: { forward: 0.27, right: -0.008, up: 0.056, scale: 0.38 },
+  mg: { forward: 0.44, right: -0.01, up: 0.058, scale: 0.46 },
+  rocket: { forward: 0.5, right: 0.0, up: 0.065, scale: 0.62 }
+};
+
 const FEED_LABELS: Readonly<Record<string, string>> = {
   "treasure collected": "Silver Bullion +100",
+  "treasure +100": "Silver Bullion +100",
   "treasure-small collected": "Silver Bullion +100",
   "treasure-big collected": "Gold Bullion +500",
+  "big treasure +500": "Gold Bullion +500",
   "health collected": "Field Medkit +25 HP",
   "medkit collected": "Field Medkit +25 HP",
+  "medkit +25": "Field Medkit +25 HP",
   "plate collected": "Ration Tin +10 HP",
+  "field plate +10": "Ration Tin +10 HP",
   "kit collected": "Trauma Surplus Kit +100 HP",
+  "surplus kit": "Trauma Surplus Kit +100 HP",
   "ammo collected": "9mm Munitions Crate +24",
+  "ammo": "9mm Munitions Crate +24",
+  "mg ammo": "9mm Carbine Rounds +30",
   "armor collected": "Ballistic Plate +50 Armor",
+  "armor +50": "Ballistic Plate +50 Armor",
   "mg collected": "Machine Gun Acquired",
+  "machine gun acquired": "Machine Gun Acquired",
   "rocket collected": "Rocket Launcher Acquired",
+  "rocket launcher acquired": "Rocket Launcher Acquired",
   "brass key secured": "Brass Clearance Key Secured",
+  "brass key — the elevator is armed": "Brass Clearance Key Secured",
   "push-wall revealed a secret": "Secret Bulkhead Breached",
   "kill confirmed — guard": "Patrol Guard Neutralized",
   "kill confirmed — dog": "Armored Hound Neutralized",
   "kill confirmed — gunner": "Heavy Gunner Neutralized",
   "kill confirmed — boss": "Iron Warden Terminated",
-  "the Warden vents — VULNERABLE": "Warden Reactor Venting — Strike Now",
-  "the Warden calls reinforcements": "Warden Summoning Reinforcements"
+  "the warden vents — vulnerable": "Warden Reactor Venting — Strike Now",
+  "the warden calls reinforcements": "Warden Summoning Reinforcements"
 };
 
-/** Humanizes internal pickup/kill event strings into crisp tactical comms copy. */
+/** Humanizes internal pickup/kill event strings into crisp tactical comms copy (normalizing case so pickup+msg pairs deduplicate). */
 export function formatTacticalFeed(raw: string): string {
   const trimmed = raw.trim();
-  return FEED_LABELS[trimmed] ?? trimmed;
+  return FEED_LABELS[trimmed.toLowerCase()] ?? trimmed;
 }
 
 /**

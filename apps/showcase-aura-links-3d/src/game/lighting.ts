@@ -367,21 +367,39 @@ export const CINDER_LAVA_LIGHT = { color: "#ff6a2a", intensity: 2.2, distance: 1
 /** Presentation tier the game builds for (PRD §6.4): Low = 1 cascade PCF, no grain, no god rays, no flare, no particles. */
 export type LinksTier = "low" | "high";
 
-/** Key-light shadow per presentation tier (LINKS-01: PCSS with 3 cascades; PRD §6.4 Low: 1 cascade, PCF). */
-export function keyShadowFor(tier: LinksTier): { readonly filter: "pcss" | "pcf"; readonly cascades: 1 | 3; readonly mapSize: 1024 | 2048 } {
-  return tier === "low" ? { filter: "pcf", cascades: 1, mapSize: 1024 } : { filter: "pcss", cascades: 3, mapSize: 2048 };
+/** Optional light-space shadow box fit (5.7.2 `shadow.fit`, texel-locked to an active tee/green lie). */
+export interface KeyShadowFit {
+  readonly center: readonly [number, number, number];
+  readonly extent: number | readonly [number, number];
+  readonly depth?: number;
+}
+
+/** Key-light shadow per presentation tier (LINKS-01: PCSS with 3 cascades; PRD §6.4 Low: 1 cascade, PCF; 5.7.2 softness 1.5 / 0.4 lunar). */
+export function keyShadowFor(
+  tier: LinksTier,
+  course?: CourseId
+): { readonly filter: "pcss" | "pcf"; readonly cascades: 1 | 3; readonly mapSize: 1024 | 2048; readonly softness: number } {
+  const softness = course === "mareCourse" ? 0.4 : 1.5;
+  return tier === "low"
+    ? { filter: "pcf", cascades: 1, mapSize: 1024, softness }
+    : { filter: "pcss", cascades: 3, mapSize: 2048, softness };
 }
 
 /**
- * GU47 phase 3: the floodlit and lunar tees showed parallel shadow-acne bands across the flat tee deck and turf (Neon Bay
- * key 45 deg over 3 cascades to the camera far plane; Mare 25 deg; runs g10p3-r4-2 and g10p3-r8-2, software WebGL2).
- * Those two rows pull the cascades in to 140 m and double the normal offset (engine default 1.5 texels); the day courses
- * showed no acne and keep the engine defaults.
+ * GU47 phase 3 + 5.7.2: the floodlit and lunar tees showed parallel shadow-acne bands across the flat tee deck and turf
+ * (Neon Bay key 45 deg over 3 cascades to the camera far plane; Mare 25 deg; runs g10p3-r4-2 and g10p3-r8-2, software WebGL2).
+ * Those two rows pull the cascades in to 140 m and double the normal offset (engine default 1.5 texels); 5.7.2 adds explicit
+ * penumbra softness (`1.5` on Earth courses, crisp `0.4` on airless lunar `mareCourse`) and optional per-shot `fit`.
  */
-export function keyShadowTuning(course: CourseId): { readonly normalBias?: number; readonly maxDistance?: number } {
-  return course === "neonBay" || course === "mareCourse"
-    ? { normalBias: 3, maxDistance: 140 }
-    : { normalBias: 1.8, maxDistance: 140 };
+export function keyShadowTuning(
+  course: CourseId,
+  fit?: KeyShadowFit
+): { readonly normalBias?: number; readonly maxDistance?: number; readonly softness: number; readonly fit?: KeyShadowFit } {
+  const softness = course === "mareCourse" ? 0.4 : 1.5;
+  const base = course === "neonBay" || course === "mareCourse"
+    ? { normalBias: 3, maxDistance: 140, softness }
+    : { normalBias: 1.8, maxDistance: 140, softness };
+  return fit ? { ...base, fit } : base;
 }
 
 /** Light position from elevation/azimuth (same basis as the engine looks: azimuth clockwise from +Z, Y up). */

@@ -72,13 +72,15 @@ describe("splat turf moving parts and rigged drivers", () => {
     expect(basis(a.brushes!.subarray(0, 16))).not.toEqual(basis(b.brushes!.subarray(0, 16)));
     // drivers: object-form quaternions, and the pose changes over time
     const hero = calls.get("hero-driver")!;
+    const rover = calls.get("ink-rover-body")!;
     expect(hero.visible).toBe(true);
-    // seated in the hero kart: hips at seat height above the road, within the kart's footprint behind the ball
+    // 5.7.0 parent-local nested driver: `ink-rover-body` tracks `laneOffset` and `hero-driver` sits at its local seat offset inside it
     const lane = sim.o.laneOffset;
-    expect(Math.abs(hero.position![0]! - lane)).toBeLessThan(0.3);
+    expect(Math.abs(rover.position![0]! - lane)).toBeLessThan(0.05);
+    expect(Math.abs(hero.position![0]!)).toBeLessThan(0.2);
     expect(hero.position![2]!).toBeGreaterThan(0.3);
     expect(hero.position![2]!).toBeLessThan(2.4);
-    expect(hero.position![1]!).toBeGreaterThan(-0.6);
+    expect(hero.position![1]!).toBeGreaterThan(-0.8);
     const anyBone = Object.values(hero.pose!.bones)[0]!;
     expect(Object.keys(anyBone.rotation).sort()).toEqual(["w", "x", "y", "z"]);
     expect(a.heroPose).not.toEqual(b.heroPose);

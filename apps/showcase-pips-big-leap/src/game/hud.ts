@@ -216,6 +216,8 @@ export function createHud(): Hud {
     setVenue(id) {
       document.querySelectorAll("[data-aura-venue]").forEach((el) =>
         el.classList.toggle("active", (el as HTMLElement).dataset.auraVenue === id));
+      const worldSelect = document.getElementById("aura-world-select") as HTMLSelectElement | null;
+      if (worldSelect && worldSelect.value !== id) worldSelect.value = id;
     },
     setTopMode(mode) {
       const map: Record<ModeId, string> = {

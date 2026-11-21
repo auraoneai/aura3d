@@ -1,3 +1,4 @@
+import { HUD_THEMES } from "@aura3d/engine/game";
 import type { HudPort } from "../contract";
 import type { ControlsPort } from "./controls";
 import { byId, createTextWriter } from "./dom";
@@ -118,6 +119,12 @@ export function createHud(deps: HudDeps): Hud {
   const text = createTextWriter();
   const shot = deps.shot ?? SHOT_DEFAULTS;
   let broadcast: BroadcastHud | null = null;
+  if (typeof document !== "undefined") {
+    const rootStyle = document.documentElement?.style;
+    if (rootStyle) {
+      for (const [k, v] of Object.entries(HUD_THEMES["sports-broadcast"])) rootStyle.setProperty(k, v);
+    }
+  }
 
   function renderPractice(state: HudState): void {
     const drill = practiceOf(state);

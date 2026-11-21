@@ -6,6 +6,7 @@
  */
 import type { AuraPhotometricProfile } from "@aura3d/engine";
 import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, sky, texture } from "@aura3d/engine";
+import { createGradingLut } from "@aura3d/engine/game";
 import { CAR_KINDS, buildCarShell, buildProceduralTrafficFleet, type CarKind, type CarShell } from "./vehicles";
 import { planProps, propNodes, type PropPlan } from "./props";
 import { buildIdolTrafficFleet, idolPedestrianNodes } from "./idol";
@@ -309,13 +310,23 @@ export interface LookOptions {
  */
 export const SHIFT_ENV_TINT = "#9ec8ff";
 export const SHIFT_ROAD_ENV = 0.42;
-export const CINEMA_WARM_LUT_URL = new URL("./assets/luts/cinema-warm.cube", import.meta.url).pathname;
 
-/** GU47 WP-28 GC-L2: the shift look's key shadow per tier (High: 3 cascades over 220 m, PCSS; Mobile: 2 cascades PCF; Low: 1 cascade, PCF). */
-export function shiftShadow(quality: "high" | "low", mobileTrim = false) {
-  if (quality !== "high") return { cascades: 1 as const, maxDistance: 110, mapSize: 1024 as const, filter: "pcf" as const };
-  if (mobileTrim) return { cascades: 2 as const, maxDistance: 140, blend: 0.1, mapSize: 1024 as const, filter: "pcf" as const };
-  return { cascades: 3 as const, maxDistance: 220, blend: 0.12, mapSize: 2048 as const, filter: "pcss" as const, lightSize: 1.6 };
+/** 5.7.2 zero-asset cinema-warm strip LUT for the shift look (`@aura3d/engine/game`). */
+export const createShiftGradingLut = () => createGradingLut("cinema-warm", 16);
+
+/**
+ * 5.7.2 shift-look key shadow: PCF with `softness: 2.0`, calibrated depth/normal bias (eliminates diagonal road
+ * shadow-acne streaks), and a courier-ahead fixed light-space box (`fit`) so shadow texels stay rock-steady.
+ */
+export function shiftShadow(quality: "high" | "low", mobileTrim = false, center: { readonly x: number; readonly z: number } = { x: 0, z: 0 }) {
+  const fit = { center: [center.x, 0, center.z + 18] as [number, number, number], extent: [42, 24] as [number, number], depth: 52 };
+  if (quality !== "high") {
+    return { cascades: 1 as const, maxDistance: 110, mapSize: 1024 as const, filter: "pcf" as const, softness: 1.6, bias: 0.0022, normalBias: 2.2, fit };
+  }
+  if (mobileTrim) {
+    return { cascades: 1 as const, maxDistance: 140, mapSize: 1024 as const, filter: "pcf" as const, softness: 2.0, bias: 0.0022, normalBias: 2.2, fit };
+  }
+  return { cascades: 1 as const, maxDistance: 220, mapSize: 2048 as const, filter: "pcf" as const, softness: 2.0, bias: 0.0022, normalBias: 2.2, fit };
 }
 
 /** GC-P3: the title/results tilt-shift band (normalised screen height; the courier sits just under the middle). */
@@ -327,10 +338,12 @@ export const GOD_RAYS = { density: 0.012, color: "#f6f9ff", intensity: 0, godRay
 /** GC-V3: festoon bulb material at a festoon strength 0..1 (quantised). */
 export const festoonMaterial = (strength: number) => material.emissive({ color: FESTOON.color, emissive: FESTOON.color, emissiveIntensity: festoonIntensity(strength) });
 
-/** GC-M2: facade material at a window emissive intensity (0.15 by day to 1.4 at blue hour in the shift look). */
+/** GC-M2: facade material with glossy clearcoat sky-reflection glass panes (0.15 by day to 1.4 at blue hour). */
 export function facadeMaterial(tex: Textures, key: string, windows: number) {
   const f = tex.facade[key]!;
-  const glass = f.orm ? { roughness: 1, metallic: 1, roughnessMap: asRef(f.orm), metalnessMap: asRef(f.orm) } : { roughness: 0.82, metallic: 0.02 };
+  const glass = f.orm
+    ? { roughness: 1, metallic: 1, roughnessMap: asRef(f.orm), metalnessMap: asRef(f.orm), clearcoat: 0.58, clearcoatRoughness: 0.08, envMapIntensity: 1.48 }
+    : { roughness: 0.82, metallic: 0.02 };
   return material.pbr({ color: "#ffffff", ...glass, texture: asRef(f.albedo), emissiveMap: f.emissive, emissive: "#ffffff", emissiveIntensity: windows, textureAnisotropy: 8, ...(f.normal ? { normal: asRef(f.normal), normalScale: 1 } : {}) });
 }
 
@@ -381,7 +394,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     if (neutral > 0) b.add(environments.neutral({ name: "env-room", intensity: neutral }));
     const toKey = lightDir(row.key);
     const at = opts.start;
-    b.add(lights.directional({ name: "sun", position: [at.x + toKey[0] * KEY_DISTANCE, toKey[1] * KEY_DISTANCE, at.z + toKey[2] * KEY_DISTANCE], target: [at.x, 0, at.z], intensity: row.key.intensity * (opts.sun / 4.4), color: row.key.color, shadow: opts.shadow ? shiftShadow(opts.quality, mobileTrim) : false }).runtime({ id: "sun" }));
+    b.add(lights.directional({ name: "sun", position: [at.x + toKey[0] * KEY_DISTANCE, toKey[1] * KEY_DISTANCE, at.z + toKey[2] * KEY_DISTANCE], target: [at.x, 0, at.z], intensity: row.key.intensity * (opts.sun / 4.4), color: row.key.color, shadow: opts.shadow ? shiftShadow(opts.quality, mobileTrim, at) : false }).runtime({ id: "sun" }));
     if (!opts.env) b.add(lights.hemisphere({ name: "sky-fill", skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: skyFillIntensity(false, opts.skyFill) }).runtime({ id: "sky-fill" }));
     // GC-L4 sodium pool and GC-L5 headlight spot: placed by main.ts each frame, dark until sunset / headlights on
     for (let i = 0; i < SODIUM_POOL; i++) b.add(lights.point({ name: `sodium-${i}`, position: [at.x, -40, at.z], color: SODIUM_COLOR, intensity: 0, distance: SODIUM_RANGE }).runtime({ id: `sodium-${i}` }));

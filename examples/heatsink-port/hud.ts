@@ -213,24 +213,36 @@ export function projectTargetLock(race: Race, cam?: CameraPoseInput): TargetLock
   };
 }
 
-function objectiveLine(race: Race): string {
+export const OBJECTIVE_TOUCH_TEXT = `STRIKE: TAP FIRE ON DRONES & RED BARRELS · ${STRIKE.medals.bronze} BRONZE · ${STRIKE.medals.silver} SILVER · ${STRIKE.medals.gold}+ GOLD`;
+
+function objectiveLine(race: Race, touch = false): string {
   const o = race.ops;
-  if (race.state === "countdown") return OBJECTIVE_TEXT;
+  if (race.state === "countdown") return touch ? OBJECTIVE_TOUCH_TEXT : OBJECTIVE_TEXT;
   if (race.state !== "race") return "";
   const nearest = findNearestTargetAhead(race, 260);
-  const next = nearest
-    ? `NEXT TARGET: ${nearest.shortName} ${Math.max(0, Math.round(nearest.distance))} m [SHOOT: CLICK / F / J]`
-    : "NO TARGETS AHEAD [SHOOT DRONES & BARRELS: CLICK / F / J]";
   const medal = o.nextMedal();
-  const goal = medal ? `${medal.medal.toUpperCase()} AT ${medal.needed} KILLS${medal.medal === "gold" ? ` INSIDE ${GOLD_TIME_TEXT}` : ""}` : race.raceTime <= STRIKE.goldTime ? `GOLD PACE: FINISH INSIDE ${GOLD_TIME_TEXT}` : "SILVER SECURED";
-  return `${next}   ·   ${goal}`;
+  const goal = medal
+    ? `${o.kills}/${medal.needed} ${medal.medal.toUpperCase()}`
+    : race.raceTime <= STRIKE.goldTime
+      ? `GOLD <${GOLD_TIME_TEXT}`
+      : "SILVER";
+  if (touch) {
+    const next = nearest
+      ? `NEXT: ${nearest.shortName} ${Math.max(0, Math.round(nearest.distance))}m · TAP FIRE`
+      : "NO TARGETS AHEAD · TAP FIRE";
+    return `${next} · ${goal}`;
+  }
+  const next = nearest
+    ? `NEXT TARGET: ${nearest.shortName} ${Math.max(0, Math.round(nearest.distance))} m`
+    : "NO TARGETS AHEAD";
+  return `${next} · ${goal}`;
 }
 
 export class HudModel {
   /** the original's initial smoothing state */
   readonly sm = { speed: 0, ab: 0, heat: 0, shield: 1, gun: 0 };
 
-  update(dt: number, race: Race): HudValues {
+  update(dt: number, race: Race, touch = false): HudValues {
     const p = race.player;
     const n = this.sm;
     const rawLap = Math.min(race.laps, Math.max(1, Math.floor(p.dist / race.track.length) + 1));
@@ -262,7 +274,7 @@ export class HudModel {
       multiplier: `x${race.ops.multiplier}`,
       targets: `${race.ops.kills}/${race.ops.totalTargets}`,
       chain: race.ops.chain,
-      objective: objectiveLine(race),
+      objective: objectiveLine(race, touch),
       medal: race.ops.medal,
       gunLocked: p.gunLocked,
       coreTemp: String(Math.round(320 + Math.min(1, Math.max(0, n.heat)) * 620)),

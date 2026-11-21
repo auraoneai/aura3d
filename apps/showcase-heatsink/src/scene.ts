@@ -50,7 +50,6 @@ import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./loo
 import {
   chevronHeatMaterial,
   contactShadowMaterial,
-  flipbookBurstMaterial,
   moltenMaterial,
   rotorBlurMaterial,
   thrusterPlumeMaterial
@@ -111,8 +110,16 @@ export const HEADLIGHT_DIRECTION: readonly [number, number, number] = (() => {
 })();
 /** Where the key light aims: the road about 20 m ahead of the drone (the drone stays near the origin). */
 export const KEY_TARGET: [number, number, number] = [0, 0, -20];
-/** WP-07: tightened 2-cascade PCSS directional key (`mapSize: 2048, maxDistance: 65`) for crisp near-field drone & barrier shadows. */
-export const KEY_SHADOW = { filter: "pcss", cascades: 2, mapSize: 2048, maxDistance: 65, lightSize: 0.3 } as const;
+/** WP-07 / 5.7.2: tightened 2-cascade PCSS directional key with texel-locked road-ahead fit & calibrated PCF softness. */
+export const KEY_SHADOW = {
+  filter: "pcss",
+  cascades: 2,
+  mapSize: 2048,
+  maxDistance: 65,
+  lightSize: 0.3,
+  softness: 1.8,
+  fit: { center: [0, 0, -20] as const, extent: [24, 16] as const, depth: 44 }
+} as const;
 /** Screen-space contact shadows from the key (wall feet, props, drone undersides). */
 export const CONTACT_SHADOWS = { intensity: 0.78, length: 0.34, steps: 12 } as const;
 
@@ -322,13 +329,20 @@ export function circuitSky(look: CircuitLook): AuraNodeBuilder<AuraSceneNode> {
   }).runtime(game.runtimeNode(RIG_IDS.sky));
 }
 
-/** WP-07 procedural night-industrial / foundry / twilight sky dome per circuit (`captureEnvironment: false` keeps HDRI IBL). */
+/** WP-07 / 5.7.0 stylized procedural sky dome per circuit (`mid`, `haze`, `sun.glow`, `dither: true`; `captureEnvironment: false` keeps HDRI IBL). */
 export function circuitSkyDome(look: CircuitLook): AuraNodeBuilder<AuraSceneNode> {
   return sky.gradient({
     name: "td sky dome",
+    style: "stylized",
     zenith: look.sky.zenith,
     horizon: look.sky.horizon,
     ground: look.sky.ground,
+    mid: look.sky.mid,
+    zenithBlend: look.sky.zenithBlend,
+    groundBlend: look.sky.groundBlend,
+    haze: look.sky.haze,
+    sun: look.sky.sun,
+    dither: look.sky.dither,
     stars: look.sky.stars,
     clouds: look.sky.clouds,
     captureEnvironment: false,
@@ -525,14 +539,38 @@ export function buildThermalDriftScene(options: SceneOptions) {
   }
   // Transient visibility-toggling ordnance & VFX quads placed last so toggling `.setVisible()` never shifts UniformArena offsets of steady draws.
   s.add(buildIdolMineNode(IDS.mine) ?? buildProximityMineNode(IDS.mine));
+  const plasmaAtlas = getPlasmaFlipbookAtlas();
+  const sparksAtlas = getSparksFlipbookAtlas();
   s.addMany([
     buildShockwaveRingNode(IDS.ring),
     buildSeekerMissileNode(IDS.missile, false),
     buildSeekerMissileNode(IDS.incoming, true),
-    primitives.plane({ name: IDS.plasmaBurst, size: [3.2, 3.2, 0.02], material: flipbookBurstMaterial(getPlasmaFlipbookAtlas().texture), castShadow: false })
-      .position(0, -60, 0).runtime(game.runtimeNode(IDS.plasmaBurst)),
-    primitives.plane({ name: IDS.sparksBurst, size: [2.2, 2.2, 0.02], material: flipbookBurstMaterial(getSparksFlipbookAtlas().texture), castShadow: false })
-      .position(0, -60, 0).runtime(game.runtimeNode(IDS.sparksBurst))
+    effects.flipbook({
+      name: IDS.plasmaBurst,
+      texture: plasmaAtlas.texture,
+      spriteColumns: plasmaAtlas.columns,
+      spriteRows: plasmaAtlas.rows,
+      size: 3.2,
+      frameRate: 48,
+      intensity: 2.2,
+      color: "#5ce0ff",
+      blend: "additive",
+      loop: true,
+      position: [0, -60, 0]
+    }).runtime(game.runtimeNode(IDS.plasmaBurst)),
+    effects.flipbook({
+      name: IDS.sparksBurst,
+      texture: sparksAtlas.texture,
+      spriteColumns: sparksAtlas.columns,
+      spriteRows: sparksAtlas.rows,
+      size: 2.2,
+      frameRate: 48,
+      intensity: 2.4,
+      color: "#ffa848",
+      blend: "additive",
+      loop: true,
+      position: [0, -60, 0]
+    }).runtime(game.runtimeNode(IDS.sparksBurst))
   ]);
   return s;
 }

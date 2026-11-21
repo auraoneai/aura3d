@@ -46,7 +46,11 @@ import {
   createFootSlideMeter,
   createHitStop,
   createHandBounce,
-  handBounceOverlayAngles
+  handBounceOverlayAngles,
+  createImpactRig,
+  createFlipbookAtlas,
+  createGradingLut,
+  HUD_THEMES
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import { warmPrograms } from "@aura3d/engine/game";
@@ -55,12 +59,14 @@ import {
   COURT_RIGS,
   LIGHTNING_NODE_ID,
   LIGHTNING_PEAK,
+  RUCKER_STANCHION_LAMPS,
   courtAtmosphereNodes,
   courtWaterNodes,
   courtLampNodes,
   courtLensFlareNodes,
   courtLightningNodes,
   courtLookNodes,
+  courtLutPreset,
   courtPracticalNodes,
   courtSkyNodes,
   courtWeatherNodes,
@@ -78,8 +84,6 @@ import { JUICE_FX, ballTrailOptions, ballTrailWanted, hoopsBurstOptions, hoopsFx
 import "../../showcase-port-shared/hud-tokens.css";
 import "../../showcase-port-shared/quickbar.css";
 import "../../showcase-port-shared/diag";
-import { createImpactRig } from "../../showcase-port-shared/feel";
-import { createFlipbookAtlas, createGradingLut } from "../../showcase-port-shared/vfx-pack";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { labAppOptions, readLabFlags, labCameraOptions } from "../../showcase-port-shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
@@ -245,16 +249,42 @@ const BOARD_HALF_W = 0.9;
 const BOARD_Y0 = 2.82;
 const BOARD_Y1 = 3.9;
 const shotStats = { released: 0, made: 0, rimImpacts: 0, boardImpacts: 0, rimRolls: 0, swishes: 0, bankShots: 0 };
-const hoopsGradingLut = createGradingLut("cinema-warm", 16);
-hoopsGradingLut.texture.wrapS = "clamp";
-hoopsGradingLut.texture.wrapT = "clamp";
-hoopsGradingLut.texture.minFilter = "linear";
-hoopsGradingLut.texture.magFilter = "linear";
+const HOOPS_LUTS = {
+  "cinema-warm": createGradingLut("cinema-warm", 16),
+  "broadcast-crisp": createGradingLut("broadcast-crisp", 16),
+  "cyber-neon": createGradingLut("cyber-neon", 16)
+} as const;
+for (const lut of Object.values(HOOPS_LUTS)) {
+  lut.texture.wrapS = "clamp";
+  lut.texture.wrapT = "clamp";
+  lut.texture.minFilter = "linear";
+  lut.texture.magFilter = "linear";
+}
+function hoopsOutputForCourt(courtId: VenueId) {
+  const rigPost = COURT_RIGS[courtId].post;
+  const crispPostPreset = rigPost === "cinematic-film" ? "arena-fight" : rigPost;
+  const lut = HOOPS_LUTS[courtLutPreset(courtId)];
+  return {
+    preset: crispPostPreset,
+    toneMapping: (courtId === "athens" ? "neutral" : "agx") as "neutral" | "agx",
+    ...(courtId === "athens" ? { neutralCurve: "khronos" as const } : {}),
+    exposure: 1.02,
+    dither: true,
+    lut: { texture: lut.texture, size: lut.size, intensity: 0.28 }
+  };
+}
 const rimSparksAtlas = createFlipbookAtlas("sparks", [255, 206, 108]);
 rimSparksAtlas.texture.wrapS = "clamp";
 rimSparksAtlas.texture.wrapT = "clamp";
 rimSparksAtlas.texture.minFilter = "linear";
 rimSparksAtlas.texture.magFilter = "linear";
+const courtDustAtlas = createFlipbookAtlas("dust", [236, 212, 178]);
+if (typeof document !== "undefined") {
+  const rootStyle = document.documentElement?.style;
+  if (rootStyle) {
+    for (const [k, v] of Object.entries(HUD_THEMES["sports-broadcast"])) rootStyle.setProperty(k, v);
+  }
+}
 const impactRig = createImpactRig({
   reducedMotion: typeof window !== "undefined" && (new URLSearchParams(window.location.search).has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false))
 });
@@ -812,7 +842,17 @@ function buildHoopNodes(): any[] {
           castShadow: false,
           visible: false,
           material: material.custom(dualFlipbookBurstSpec(rimSparksAtlas, true))
-        } as any).position(RIM[0], RIM[1] - 0.08, RIM[2]).scale(HIDDEN).runtime(game.runtimeNode("rim-sparks-card"))
+        } as any).position(RIM[0], RIM[1] - 0.08, RIM[2]).scale(HIDDEN).runtime(game.runtimeNode("rim-sparks-card")),
+        effects.flipbook({
+          name: "court-dust-flipbook",
+          texture: courtDustAtlas.texture,
+          spriteColumns: courtDustAtlas.columns,
+          spriteRows: courtDustAtlas.rows,
+          frameRate: 28,
+          size: 0.45,
+          loop: false,
+          position: [0, -20, 0]
+        }).runtime(game.runtimeNode("court-dust-flipbook"))
       ]
       : []),
     // Quiet warm rim light in place of the old oversized emissive saucer.
@@ -1152,21 +1192,12 @@ const labFlags = readLabFlags();
 const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(labFlags, { backend: "auto", createWorker: createWorkerRendererWorker });
 try {
   const baseLookOpts = looks.appOptions(venue.look) as { renderer?: object; output?: object; pixelRatio?: number };
-  const rigPost = COURT_RIGS[venue.id].post;
-  // Swap "cinematic-film" -> "arena-fight" on output.preset because "cinematic-film" injects depth-of-field + chromatic-aberration blur.
-  const crispPostPreset = rigPost === "cinematic-film" ? "arena-fight" : rigPost;
   const isCoarsePointer = typeof window !== "undefined" && (window.matchMedia?.("(pointer: coarse)")?.matches ?? false);
   const maxDpr = isCoarsePointer ? 1.35 : 2;
   const nativeDpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, maxDpr) : maxDpr;
   const defaultHoopsOutput = LOOK_ORIGINAL
     ? baseLookOpts.output
-    : {
-      preset: crispPostPreset,
-      toneMapping: "agx" as const,
-      exposure: 1.02,
-      dither: true,
-      lut: { texture: hoopsGradingLut.texture, size: hoopsGradingLut.size, intensity: 0.28 }
-    };
+    : hoopsOutputForCourt(venue.id);
   auraApp = createAuraApp("#app", {
     scene: buildScene(venue),
     ...baseLookOpts,
@@ -1896,6 +1927,8 @@ function setMenuOpen(open: boolean, autoStart = true): void {
   menuOverlay.classList.toggle("open", open);
   menuOverlay.toggleAttribute("inert", !open);
   menuOverlay.setAttribute("aria-hidden", open ? "false" : "true");
+  document.body.dataset.menuOpen = open ? "true" : "false";
+  if (controlsHint) controlsHint.hidden = open;
   if (open) (menuOverlay.querySelector("button") as HTMLButtonElement | null)?.focus({ preventScroll: true });
   if (!open && autoStart && game_.phase === "menu") {
     // closing the boot menu starts the mode it was showing instead of leaving a phase nothing advances
@@ -3687,7 +3720,17 @@ function syncHud(): void {
     const ss = Math.floor(game_.matchT % 60).toString().padStart(2, "0");
     setText(hudClock, game_.phase === "check" ? "CHECK" : game_.phase === "shot" ? "SHOT" : game_.phase === "score" ? "BUCKET" : game_.phase === "gameover" ? "FINAL" : game_.phase === "menu" ? "STREET" : `${mm}:${ss}`);
   }
-  setText(hudVenue, venue.label);
+  // Short venue subtitle for compact mobile scorebug (avoids `RUCKER PARK · H..` truncation at 390x844).
+  const SHORT_COURT_LABELS: Readonly<Record<VenueId, string>> = {
+    rucker: "RUCKER · NYC",
+    venice: "VENICE · LA",
+    athens: "ATHENS",
+    manila: "MANILA",
+    shanghai: "SHANGHAI",
+    orbit: "ORBIT · LEO"
+  };
+  const compactVenue = typeof window !== "undefined" && window.innerWidth <= 760;
+  setText(hudVenue, compactVenue ? SHORT_COURT_LABELS[venue.id] : venue.label);
   setText(hudCourtChip?.firstChild, `${venue.label}`);
   setText(hudLookChip, venue.lookLabel);
   setStyle(jamFill, "width", `${Math.round(game_.jam * 100)}%`);
@@ -3712,7 +3755,9 @@ function syncHud(): void {
   setStyle(smGreen, "left", `${sm.g0 * 100}%`); setStyle(smGreen, "width", `${(sm.g1 - sm.g0) * 100}%`);
   setStyle(smPerfect, "left", `${(sm.perfect - 0.012) * 100}%`); setStyle(smPerfect, "width", "2.4%");
   setStyle(smNeedle, "left", `${clamp(sm.t, 0, 1) * 100}%`);
-  setText(smLabel, sm.active ? (sm.t < sm.g0 ? "CHARGING…" : sm.t <= sm.g1 ? "RELEASE NOW" : "LATE") : "RELEASE IN THE GREEN");
+  const inGreen = sm.active && sm.t >= sm.g0 && sm.t <= sm.g1;
+  if (shotMeter) shotMeter.dataset.release = inGreen ? "green" : sm.active && sm.t > sm.g1 ? "late" : "charge";
+  setText(smLabel, sm.active ? (sm.t < sm.g0 ? "CHARGING…" : sm.t <= sm.g1 ? "GREEN! RELEASE" : "LATE") : "RELEASE IN THE GREEN");
 }
 
 /** Where a bone-relative point of an athlete really is in the world (sockets are in the model's native space, whose origin is 0.96 m above the grounded feet). */
@@ -3777,13 +3822,18 @@ function publishQaCrops(): void {
   if (me) subjects.push({ name: "feet", at: [me.x, 0.15, me.z], half: [0.6, 0.25] });
   const canvas = document.querySelector<HTMLCanvasElement>("#app canvas");
   const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
-  // The lamp crop is the nearest practical on screen (practicals[0] stands behind the broadcast eye at Rucker, so its
-  // crop was never published); the rect hugs the lamp head itself.
+  // The lamp crop is the nearest practical on screen, falling back to Rucker's in-frame stanchion/gantry sodium
+  // luminaires (y = 4.25–4.35 m) so `crop:lamp` always lands inside the 1280x720 broadcast frustum.
   if (!LOOK_ORIGINAL) {
-    const lamp = COURT_RIGS[venue.id].practicals
-      .map((p) => ({ name: "lamp", at: p.position, half: [0.8, 0.3] as const }))
-      .filter((sub) => projectCrops(drawnPose.eye, drawnPose.target, drawnPose.fov, aspect, [sub]).length > 0)
-      .sort((a, b) => Math.hypot(a.at[0] - drawnPose.eye[0], a.at[1] - drawnPose.eye[1], a.at[2] - drawnPose.eye[2]) - Math.hypot(b.at[0] - drawnPose.eye[0], b.at[1] - drawnPose.eye[1], b.at[2] - drawnPose.eye[2]))[0];
+    const practicalCandidates = COURT_RIGS[venue.id].practicals.map((p) => ({ name: "lamp", at: p.position, half: [0.8, 0.3] as const }));
+    const stanchionCandidates = venue.id === "rucker"
+      ? RUCKER_STANCHION_LAMPS.map((at) => ({ name: "lamp", at, half: [0.65, 0.28] as const }))
+      : [];
+    const pickNearest = (list: readonly QaCropSubject[]) =>
+      list
+        .filter((sub) => projectCrops(drawnPose.eye, drawnPose.target, drawnPose.fov, aspect, [sub]).length > 0)
+        .sort((a, b) => Math.hypot(a.at[0] - drawnPose.eye[0], a.at[1] - drawnPose.eye[1], a.at[2] - drawnPose.eye[2]) - Math.hypot(b.at[0] - drawnPose.eye[0], b.at[1] - drawnPose.eye[1], b.at[2] - drawnPose.eye[2]))[0];
+    const lamp = pickNearest(practicalCandidates) ?? pickNearest(stanchionCandidates);
     if (lamp) subjects.push(lamp);
   }
   const w = window as unknown as { __AURA_QA__?: Record<string, unknown> };
@@ -4363,6 +4413,9 @@ function setVenue(vId: VenueId, silent = false): void {
     try {
       sprayTags.clear();
       auraApp.setScene(buildScene(venue));
+      if (!LOOK_ORIGINAL) {
+        try { (auraApp as any).setOutput?.({ ...hoopsOutputForCourt(vId), ...(labOutput ?? {}) }); } catch { /* output swap best-effort */ }
+      }
       disableBlurPostEffects();
       resolveHandles();
       mountCourtFx();

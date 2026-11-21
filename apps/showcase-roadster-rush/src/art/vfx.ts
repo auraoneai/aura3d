@@ -6,7 +6,7 @@
  * + skykill 14 + rocket 18 = 78), and reduced motion halves every emission (PRD §6.3).
  */
 import type { AuraVfxEffectSpec, AuraTrailOptions, material } from "@aura3d/engine";
-import { createFlipbookAtlas, type FlipbookAtlasSpec } from "../../../showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, type FlipbookAtlasSpec } from "@aura3d/engine/game";
 import { APEX_PALETTE, hexToUnit } from "./look";
 import { WGSL_CLIP, WGSL_COLOR, WGSL_MATH, wgslStage } from "./wgsl";
 

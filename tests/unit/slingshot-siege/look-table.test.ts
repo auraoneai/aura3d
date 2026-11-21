@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { CHAPTERS } from "../../../apps/showcase-slingshot-siege/src/game/levels";
 import { CHAPTER_LOOKS, SIEGE_PALETTE, chapterLook, sunDirection } from "../../../apps/showcase-slingshot-siege/src/game/look";
-import { SIEGE_AO_NODE, SIEGE_DOF_NODE, SOLID_BLOCK_MATERIALS, buildStage } from "../../../apps/showcase-slingshot-siege/src/game/stage";
+import { ISLAND_SHADOW_FIT, SIEGE_AO_NODE, SIEGE_DOF_NODE, SOLID_BLOCK_MATERIALS, buildStage } from "../../../apps/showcase-slingshot-siege/src/game/stage";
 import { AMMO_TRAIL_COLOR, SIEGE_VFX, abilityPreset, breakPreset, siegeVfxPresets } from "../../../apps/showcase-slingshot-siege/src/game/vfx";
 
 type Node = { kind?: string; name?: string; light?: string; effect?: string; shadow?: unknown; spec?: { model?: string }; children?: readonly Node[]; [key: string]: unknown };
@@ -92,9 +92,12 @@ describe("slingshot-siege stage per chapter (SS47-L1, L2, L3, E1, E2, E3, P1)", 
       const shadowed = lights.filter((l) => l.shadow);
       expect(shadowed, `ch${c.id}`).toHaveLength(1);
       expect(shadowed[0]!.name).toBe("look key light");
-      expect(shadowed[0]!.shadow).toMatchObject({ filter: "pcss", cascades: 2 });
-      // 5.7.0 reads `shadow.fit`; the game keeps the camera-fit cascades it shipped with, so it passes no box.
-      expect((shadowed[0]!.shadow as { fit?: unknown }).fit).toBeUndefined();
+      expect(shadowed[0]!.shadow).toMatchObject({
+        filter: "pcss",
+        cascades: 2,
+        fit: ISLAND_SHADOW_FIT,
+        softness: Number((CHAPTER_LOOKS[c.id]!.shadowSoftness * 1.8).toFixed(2))
+      });
     }
   });
 

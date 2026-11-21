@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Thermal Drift — Combat Drone Racer | Aura3D</title>
     <meta name="description" content="Cyberpunk anti-gravity combat drone racing through a rain-soaked megacity with 7 playable drones, twin laser cannons, thermal overdrive management, and 3…" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -33,7 +33,7 @@
         --cyan: #35d6ff;
         --danger: #ff2952;
         --ok: #5be37d;
-        --font-sans: var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif);
+        --font-sans: var(--a3g-font, var(--font-ui, "A3G Neue Haas Grotesk Text", "Whitney", "Graphik", sans-serif));
         --font-display: var(--font-metric, "DIN Pro", "Whitney", sans-serif);
         --font-mono: "Monument Grotesk Mono", monospace;
       }
@@ -145,8 +145,8 @@
       .bar-label { font-family: var(--font-ui); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.1em; color: var(--muted); margin-right: 3px; }
       .bar-sep { width: 1px; height: 16px; background: rgba(244, 242, 236, 0.14); margin: 0 2px; }
 
-      /* Compact setup drawer on narrow/tablet/mobile viewports: keeps 17 pills from crowding the race header */
-      @media (max-width: 1120px) {
+      /* Compact setup drawer below 1440px so RESTART never clips at 1280px */
+      @media (max-width: 1440px) {
         .aura3d-top-bar .setup-toggle { display: inline-flex; align-items: center; justify-content: center; }
         .aura3d-top-bar:not(.setup-open) #drone-bar,
         .aura3d-top-bar:not(.setup-open) #circuit-bar,
@@ -710,6 +710,17 @@
         transform: translate(-50%, -50%);
         border: 1px solid rgba(244, 242, 236, 0.24);
         border-radius: 50%;
+        transition: border-color 0.08s ease, box-shadow 0.08s ease;
+      }
+
+      .hud-r6 .xhair.hit-confirm {
+        border-color: var(--accent-2);
+        box-shadow: 0 0 0 4px rgba(255, 184, 0, 0.26), inset 0 0 8px rgba(255, 184, 0, 0.3);
+      }
+
+      .hud-r6 .xhair.hit-damage {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 6px rgba(210, 54, 28, 0.34);
       }
 
       .hud-r6 .xhair::before,
@@ -893,6 +904,12 @@
         letter-spacing: 0.08em;
         color: var(--muted);
         pointer-events: auto;
+        transition: opacity 0.35s ease;
+      }
+
+      .controls-strip.idle-hidden {
+        opacity: 0;
+        pointer-events: none;
       }
 
       .controls-strip b {
@@ -949,7 +966,7 @@
       @media (pointer: coarse), (max-width: 760px) {
         :root { --a3d-bar-h: 48px; }
         .aura3d-top-bar button { min-height: 44px; min-width: 44px; padding: 0 10px; }
-        .controls-strip .autopilot-badge { min-height: 44px; padding: 0 12px; }
+        .controls-strip { display: none; }
       }
       @media (pointer: coarse) {
         .touch-controls { display: block; position: fixed; inset: auto 0 0 0; height: 0; z-index: 30; pointer-events: none; }
@@ -1023,27 +1040,36 @@
         *, *::before, *::after { transition: none !important; animation: none !important; }
         .speed-lines { display: none; }
       }
-      /* 390x844 mobile portrait: clean non-overlapping HUD layout at >= 12px without sub-pixel scale down */
+      /* 390x844 mobile portrait: clean non-overlapping HUD layout at >= 12px, banners clear of TIME/HULL, slim 2-column bottom telemetry pill */
       @media (max-width: 640px) {
-        .hud-r6 .r6-top-left { left: 8px; max-width: calc(100vw - 122px); }
-        .hud-r6 .r6-row { flex-wrap: wrap; gap: 4px; }
-        .hud-r6 .r6-chip { padding: 4px 8px; }
-        .hud-r6 .r6-chip .pos-num { font-size: 24px; }
-        .hud-r6 .r6-chip .v { font-size: 16px; }
-        .hud-r6 .r6-hull .bar { width: 72px; }
-        .hud-r6 .r6-top-right { right: 8px; }
+        .hud-r6 .r6-top-left { left: max(8px, env(safe-area-inset-left)); max-width: calc(100vw - 118px); gap: 4px; }
+        .hud-r6 .r6-mode-tag { display: none; }
+        .hud-r6 .r6-row { flex-wrap: nowrap; gap: 4px; }
+        .hud-r6 .r6-chip { padding: 4px 7px; }
+        .hud-r6 .r6-chip .pos-num { font-size: 22px; }
+        .hud-r6 .r6-chip .v { font-size: 15px; }
+        .hud-r6 .r6-chip .sub { display: none; }
+        .hud-r6 .r6-hull { padding: 4px 8px; gap: 6px; }
+        .hud-r6 .r6-hull .bar { width: 68px; }
+        .hud-r6 .r6-top-right { right: max(8px, env(safe-area-inset-right)); }
         .hud-r6 .r6-top-right > :not(.radar-wrap) { display: none; }
-        .hud-r6 .radar-wrap { width: 100px; padding: 4px 5px 5px; }
-        .hud-r6 #minimap { width: 88px; height: 88px; }
+        .hud-r6 .radar-wrap { width: 96px; padding: 4px 5px 5px; }
+        .hud-r6 #minimap { width: 84px; height: 84px; }
         .hud-r6 .radar-legend { display: none; }
-        .hud-r6 .r6-bot-left { left: 8px; bottom: 10px; }
-        .hud-r6 .r6-item { min-width: 128px; padding: 5px 8px; }
+        .hud-r6 .banner, .hud-r6 .incoming { top: calc(var(--a3d-bar-space) + 128px); white-space: nowrap; max-width: calc(100vw - 24px); overflow: hidden; text-overflow: ellipsis; }
+        .hud-r6 .r6-bot-left { left: max(8px, env(safe-area-inset-left)); bottom: calc(134px + env(safe-area-inset-bottom)); }
+        .hud-r6 .r6-item { min-width: 112px; padding: 4px 8px; }
         .hud-r6 .r6-item .v { font-size: 13px; }
         .hud-r6 .r6-abilities { display: none; }
-        .hud-r6 .r6-bot-right { right: 8px; bottom: 10px; gap: 8px; padding: 7px 10px; }
-        .hud-r6 .r6-speed .num { font-size: 30px; min-width: 56px; }
-        .hud-r6 .r6-bars { width: 122px; gap: 4px; }
+        .hud-r6 .r6-bot-right { right: max(8px, env(safe-area-inset-right)); bottom: calc(194px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: auto auto; align-items: center; gap: 4px 10px; padding: 6px 10px; border-radius: 6px; }
+        .hud-r6 .r6-speed .num { font-size: 26px; min-width: 48px; }
+        .hud-r6 .r6-bars { width: auto; gap: 3px; }
+        .hud-r6 .r6-bars .b-row:not(:has(.thermal)) { display: none; }
+        .hud-r6 .r6-bars .b-row { grid-template-columns: 1fr; }
+        .hud-r6 .r6-bars .b-row .k { display: none; }
+        .hud-r6 .r6-bars .bar.thermal { width: 88px; height: 6px; }
         .hud-r6 .r6-core .v { font-size: 16px; }
+        .hud-r6 .r6-core .pct { display: none; }
         .aura3d-top-bar .bar-label, .aura3d-top-bar .brand-tag { display: none; }
       }
     </style>

@@ -36,11 +36,17 @@ export interface SkyRgbGrade {
 export type SkyNodeSpec =
   | {
       readonly model: "gradient";
+      readonly style: "stylized";
       readonly zenith: string;
       readonly horizon: string;
       readonly ground: string;
-      readonly exponent: number;
-      readonly horizonGlow: number;
+      readonly mid: { readonly color: string; readonly blend: readonly [number, number] };
+      readonly zenithBlend: readonly [number, number];
+      readonly groundBlend: readonly [number, number];
+      readonly haze: { readonly color: string; readonly intensity: number; readonly falloff: number };
+      readonly sunGlow?: readonly { readonly exponent: number; readonly intensity: number }[];
+      readonly sunDiscIntensity?: number;
+      readonly dither: true;
       readonly bands?: readonly { readonly elevationDeg: number; readonly widthDeg: number; readonly color: string; readonly intensity: number }[];
       readonly stars?: { readonly count: number; readonly brightness: number };
     }
@@ -81,6 +87,8 @@ export interface SkyLook {
   readonly output: { readonly toneMapping: "agx" | "aces"; readonly fallback: "aces"; readonly exposure: number };
   readonly bloom: { readonly intensity: number; readonly threshold: number; readonly radius: number };
   readonly grade: SkyRgbGrade;
+  /** Aura3D 5.7.2 zero-asset strip grading LUT preset (`createGradingLut`) and blend strength per sky. */
+  readonly lut: { readonly preset: "cinema-warm" | "broadcast-crisp"; readonly intensity: number };
   readonly vignette: number;
   /** GD-06: god rays down the avenue (dusk and fog only; High tier). */
   readonly godRays: { readonly density: number; readonly color: string; readonly intensity: number } | null;
@@ -116,7 +124,20 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     label: "Marine dusk",
     timeOfDay: "dusk, sun 9 deg above the bay",
     hdri: { id: "belfast_sunset_puresky", intensity: 0.2, rotationDeg: 145 },
-    sky: { model: "gradient", zenith: "#2b3a55", horizon: "#f2a65e", ground: "#1d222b", exponent: 1.6, horizonGlow: 0.85 },
+    sky: {
+      model: "gradient",
+      style: "stylized",
+      zenith: "#2b3a55",
+      horizon: "#f2a65e",
+      ground: "#1d222b",
+      mid: { color: "#687b92", blend: [0.04, 0.28] },
+      zenithBlend: [0.22, 0.72],
+      groundBlend: [0.02, 0.22],
+      haze: { color: MARINE_FOG, intensity: 0.42, falloff: 6.5 },
+      sunGlow: [{ exponent: 10, intensity: 0.34 }, { exponent: 48, intensity: 0.32 }],
+      sunDiscIntensity: 2.4,
+      dither: true
+    },
     sun: { elevationDeg: 9, azimuthDeg: 145, color: "#ffb070", intensity: 1.2, discSize: 0.035 },
     key: { color: "#ffb070", intensity: 5.5 },
     hemisphere: { sky: "#6a7488", ground: "#3a2c22", intensity: 0.22 },
@@ -126,6 +147,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     output: { toneMapping: "agx", fallback: "aces", exposure: 1.24 },
     bloom: { intensity: 0.28, threshold: 0.84, radius: 0.45 },
     grade: { contrast: 1.15, saturation: 1.12, temperature: 0.18, tint: -0.02 },
+    lut: { preset: "cinema-warm", intensity: 0.26 },
     vignette: 0.22,
     godRays: { density: 0.08, color: "#ffb878", intensity: 0.06 },
     grain: 0.03,
@@ -147,6 +169,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     // GD-08: threshold 0.95 keeps the white pod out of the bloom (no halo).
     bloom: { intensity: 0.18, threshold: 0.95, radius: 0.35 },
     grade: { contrast: 1.15, saturation: 1.08, temperature: 0.02, tint: 0 },
+    lut: { preset: "broadcast-crisp", intensity: 0.22 },
     vignette: 0.18,
     godRays: null,
     grain: 0.025,
@@ -158,7 +181,18 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     label: "Marine fog",
     timeOfDay: "grey morning under a low marine layer",
     hdri: { id: "autumn_field_puresky", intensity: 0.6, rotationDeg: 170 },
-    sky: { model: "gradient", zenith: "#8193a0", horizon: "#b3c0c6", ground: "#59686f", exponent: 1.0, horizonGlow: 0.1 },
+    sky: {
+      model: "gradient",
+      style: "stylized",
+      zenith: "#8193a0",
+      horizon: "#b3c0c6",
+      ground: "#59686f",
+      mid: { color: "#98aab5", blend: [0.04, 0.35] },
+      zenithBlend: [0.28, 0.82],
+      groundBlend: [0.02, 0.25],
+      haze: { color: "#8fa2ae", intensity: 0.62, falloff: 5.0 },
+      dither: true
+    },
     sun: { elevationDeg: 38, azimuthDeg: 170, color: "#dfe8ee", intensity: 0, discSize: 0.03 },
     key: { color: "#dfe8ee", intensity: 0.8 },
     hemisphere: { sky: "#b8c6ce", ground: "#4a565d", intensity: 0.55 },
@@ -167,6 +201,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     output: { toneMapping: "aces", fallback: "aces", exposure: 1.08 },
     bloom: { intensity: 0.1, threshold: 0.9, radius: 0.4 },
     grade: { contrast: 1.06, saturation: 0.88, temperature: -0.06, tint: 0 },
+    lut: { preset: "broadcast-crisp", intensity: 0.18 },
     vignette: 0.2,
     godRays: { density: 0.08, color: "#dfe8ee", intensity: 0.11 },
     grain: 0.04,
@@ -179,7 +214,18 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     timeOfDay: "night, moon behind a thin marine layer lit sodium from below",
     hdri: { id: "cobblestone_street_night", intensity: 0.45, rotationDeg: 210 },
     sky: {
-      model: "gradient", zenith: "#060a14", horizon: "#1b2638", ground: "#0b0e14", exponent: 1.8, horizonGlow: 0.2,
+      model: "gradient",
+      style: "stylized",
+      zenith: "#060a14",
+      horizon: "#1b2638",
+      ground: "#0b0e14",
+      mid: { color: "#111b2c", blend: [0.03, 0.28] },
+      zenithBlend: [0.22, 0.68],
+      groundBlend: [0.02, 0.22],
+      haze: { color: "#2e3542", intensity: 0.46, falloff: 7.5 },
+      sunGlow: [{ exponent: 18, intensity: 0.16 }],
+      sunDiscIntensity: 0.9,
+      dither: true,
       bands: [{ elevationDeg: 2, widthDeg: 6, color: SODIUM, intensity: 0.35 }],
       stars: { count: 220, brightness: 0.7 }
     },
@@ -191,6 +237,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     output: { toneMapping: "aces", fallback: "aces", exposure: 1.16 },
     bloom: { intensity: 0.55, threshold: 0.72, radius: 0.55 },
     grade: { contrast: 1.18, saturation: 1.08, temperature: 0.08, tint: 0 },
+    lut: { preset: "cinema-warm", intensity: 0.28 },
     vignette: 0.22,
     godRays: null,
     grain: 0.055,
@@ -236,7 +283,16 @@ export function hazeAt(look: SkyLook, distance: number): number {
  * texels around the pod on the software WebGL2 runner; the PCF kernel keeps the edge soft without it.
  */
 /** GU47 phase 4: maxDistance 120 -> 90 and split lambda 0.85 put more texels near the car (the pod's shadow drew in blocky texels). */
-export const KEY_SHADOW = { mapSize: 2048, cascades: 3, filter: "pcf", maxDistance: 90, splitLambda: 0.85, softness: 0.3 } as const;
+/** Aura3D 5.7.2: texel-locked road-ahead ortho fit + calibrated softness 1.4 eliminates mid-road shadow cascade seam. */
+export const KEY_SHADOW = {
+  mapSize: 2048,
+  cascades: 3,
+  filter: "pcf",
+  maxDistance: 90,
+  splitLambda: 0.85,
+  softness: 1.4,
+  fit: { center: [0, 0, -28] as const, extent: [28, 18] as const, depth: 56 }
+} as const;
 
 /** Next sky in the `T` key cycle. */
 export const nextSky = (sky: SkyId): SkyId => SKY_ORDER[(SKY_ORDER.indexOf(sky) + 1) % SKY_ORDER.length]!;

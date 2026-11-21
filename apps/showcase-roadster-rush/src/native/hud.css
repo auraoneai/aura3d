@@ -1,13 +1,16 @@
-/* Apex Overdrive HUD — AuraOne licensed typography (Whitney UI/prose, DIN Pro standalone metrics, Monument Grotesk Mono IDs).
+/* Apex Overdrive HUD — Aura3D 5.7.2 HUD_THEMES["motorsport"] (`National 2 Narrow` + `DIN Pro`) with Whitney UI fallback.
    Identity palette: charcoal #22232a, cobalt #1f3fa8, cyan #4df0ff, tangerine #ff8a3d, bolt gold #ffc61f. Zero rival red. */
-.rr-hud { position: fixed; inset: 0; pointer-events: none; z-index: 40; font-family: var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif); font-variant-numeric: tabular-nums; color: #f4f6fb; }
+.rr-hud { position: fixed; inset: 0; pointer-events: none; z-index: 40; font-family: var(--a3g-font, var(--font-ui, "A3G National 2 Narrow", "Whitney", sans-serif)); font-variant-numeric: tabular-nums; color: var(--a3g-fg, #f4f6fb); }
 .rr-hud.rr-idle .rr-run, .rr-hud.rr-idle .rr-right { opacity: 0; }
 .rr-hud .rr-hidden { display: none !important; }
-.rr-card { background: rgba(18, 21, 31, 0.8); border: 1px solid rgba(31, 63, 168, 0.58); border-top: 2px solid rgba(255, 138, 61, 0.88); border-radius: 10px; backdrop-filter: blur(12px) saturate(135%); -webkit-backdrop-filter: blur(12px) saturate(135%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 10px 28px rgba(0, 0, 0, 0.42); }
-.rr-micro { font-family: var(--font-ui, "Whitney", sans-serif); font-size: 12px; font-weight: 500; line-height: 1.15; font-variant-caps: all-small-caps; font-variant-numeric: tabular-nums; letter-spacing: 0.035em; color: #9fb4c8; }
-.rr-kicker { font-family: var(--font-ui, "Whitney", sans-serif); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.06em; color: #4df0ff; text-align: center; }
-.rr-left { position: absolute; top: max(56px, calc(env(safe-area-inset-top) + 48px)); left: max(14px, env(safe-area-inset-left)); display: flex; flex-direction: column; gap: 8px; width: 224px; }
+.rr-card { background: var(--a3g-bg, rgba(14, 17, 26, 0.82)); border: 1px solid rgba(31, 63, 168, 0.58); border-top: 2px solid rgba(255, 138, 61, 0.9); border-radius: 8px; backdrop-filter: blur(12px) saturate(135%); -webkit-backdrop-filter: blur(12px) saturate(135%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 10px 28px rgba(0, 0, 0, 0.42); }
+.rr-micro { font-family: var(--a3g-font, var(--font-ui, "Whitney", sans-serif)); font-size: 12px; font-weight: 500; line-height: 1.15; font-variant-caps: all-small-caps; font-variant-numeric: tabular-nums; letter-spacing: 0.04em; color: var(--a3g-fg-dim, #9fb4c8); }
+.rr-kicker { font-family: var(--a3g-font, var(--font-ui, "Whitney", sans-serif)); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: #4df0ff; text-align: left; }
+.rr-left { position: absolute; top: max(52px, calc(env(safe-area-inset-top) + 44px)); left: max(14px, env(safe-area-inset-left)); display: flex; flex-direction: column; gap: 8px; width: 224px; }
 .rr-score-card { padding: 10px 12px; }
+.rr-cluster-card { padding: 8px 12px 10px; }
+.rr-mobile-bolts { display: none; align-items: baseline; gap: 4px; margin-left: auto; }
+.rr-bolts-inline { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 14px; font-weight: 500; color: #ffc61f; font-variant-numeric: tabular-nums; }
 .rr-head { display: flex; justify-content: space-between; align-items: baseline; }
 .rr-mult { font-family: var(--font-metric, "DIN Pro", sans-serif); font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; color: #9fb4c8; }
 .rr-mult.rr-hot { color: #ff8a3d; }
@@ -103,14 +106,14 @@
 .boot-pct { font-family: var(--font-metric, "DIN Pro", sans-serif); font-weight: 500; }
 @keyframes boot-fill { from { transform: scaleX(0.1); } to { transform: scaleX(1); } }
 
-/* Title card (audit RR-10): goal, controls for the current input, best score. */
-.rr-title-card { max-width: 420px; text-align: left; align-items: stretch; }
-.rr-title-card h2 { text-align: center; }
-.rr-title-card .rr-btn { align-self: center; }
-.rr-title-card small, .rr-title-card .title-best { text-align: center; }
+/* Title card anchored lower-left so the backlit Interceptor owns the center-right sunset skyway frame. */
+.rr-title { align-items: flex-end; justify-content: flex-start; padding: max(18px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(48px, calc(env(safe-area-inset-bottom) + 34px)) max(24px, env(safe-area-inset-left)); background: linear-gradient(90deg, rgba(10, 12, 20, 0.52) 0%, rgba(10, 12, 20, 0.14) 48%, rgba(10, 12, 20, 0) 100%); cursor: pointer; }
+.rr-title-card { max-width: 390px; text-align: left; align-items: stretch; padding: 20px 22px; }
+.rr-title-card h2 { text-align: left; font-family: var(--a3g-font-display, var(--font-ui, "A3G National 2 Narrow", "Whitney", sans-serif)); font-size: 28px; letter-spacing: 0.01em; }
+.rr-title-card .rr-btn { align-self: flex-start; }
+.rr-title-card small, .rr-title-card .title-best { text-align: left; }
 .rr-controls { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 13px; color: #cdd8e4; }
 .rr-controls b { color: #f4f6fb; font-weight: 600; }
-.rr-title { cursor: pointer; }
 
 /* Speed (in the AO-H2 arc gauge) and the next-kilometre bar (audit RR-E5). */
 .rr-mile { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 4px 6px; margin-top: 6px; }
@@ -137,21 +140,32 @@
   .boot-line i { animation: none; }
 }
 
-/* AO-H2 / WP-06 on 390x844 phones (last, so it wins over the base rules above): compact top-left cluster leaving the lanes clear. */
+/* AO-H2 / 5.7.2 on 390x844 phones (last, so it wins over the base rules above): slim top score strip + bottom-center speed/AIR cluster between >= 48px touch pads. */
 @media (max-width: 760px) {
-  .rr-left { top: max(48px, calc(env(safe-area-inset-top) + 40px)); left: 8px; width: 172px; gap: 6px; }
-  .rr-right { top: max(48px, calc(env(safe-area-inset-top) + 40px)); right: 8px; gap: 6px; }
-  .rr-score-card { padding: 7px 9px; }
-  .rr-score { font-size: 24px; }
-  .rr-combo { margin: 4px 0; }
+  .rr-left { position: static; width: auto; }
+  .rr-score-card { position: fixed; top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left)); right: max(112px, calc(env(safe-area-inset-right) + 108px)); padding: 6px 10px; display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 2px 8px; border-radius: 10px; }
+  .rr-score-card .rr-head { grid-column: 1 / -1; gap: 6px; }
+  .rr-score { font-size: 20px; line-height: 1; }
+  .rr-sub { font-size: 12px; align-items: baseline; }
+  .rr-dist { font-size: 13px; }
+  .rr-mobile-bolts { display: inline-flex; }
+  .rr-combo { grid-column: 1 / -1; margin: 3px 0 0; height: 2px; }
+  .rr-mile { display: none; }
+  .rr-right { top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); gap: 6px; }
+  .rr-right .rr-bolts { display: none; }
+  .rr-powerups { position: fixed; top: max(68px, calc(env(safe-area-inset-top) + 60px)); left: max(10px, env(safe-area-inset-left)); max-width: 180px; }
+  .rr-cluster-card { position: fixed; bottom: max(12px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); padding: 6px 8px; border-radius: 10px; z-index: 42; }
+  .rr-cluster { margin-top: 0; gap: 4px 6px; align-items: center; }
   .rr-gauge { width: 84px; height: 67px; }
   .rr-gauge .rr-speed { top: 24px; font-size: 19px; }
-  .rr-gauge-unit { top: 46px; }
-  .rr-rung { width: 20px; height: 4px; }
-  .rr-telemetry { gap: 4px; padding-top: 4px; }
-  .rr-gear-val, .rr-rpm-val, .rr-time-val { font-size: 12px; }
-  .rr-mile { margin-top: 4px; gap: 2px 6px; }
+  .rr-gauge-unit { top: 46px; font-size: 11px; }
+  .rr-rung { width: 18px; height: 4px; }
+  .rr-rungs .rr-rung:nth-child(n + 7) { display: none; }
+  .rr-telemetry { display: none; }
   .rr-objective { display: none; }
-  .rr-touch-left, .rr-touch-right { max-width: 42%; }
+  .rr-title { align-items: flex-end; justify-content: center; padding: 12px max(12px, env(safe-area-inset-right)) max(20px, calc(env(safe-area-inset-bottom) + 12px)) max(12px, env(safe-area-inset-left)); }
+  .rr-title-card { max-width: 100%; padding: 16px 18px; }
+  .rr-title-card .rr-controls { display: none; }
+  .rr-touch-left, .rr-touch-right { max-width: 32%; }
 }
 .rr-hud button, .aura3d-top-bar button { font-family: inherit; }

@@ -4,12 +4,19 @@
  * Uses strictly AuraOne licensed self-hosted font tokens (`var(--font-ui)` Whitney, `var(--font-metric)` DIN Pro,
  * `var(--font-mono)` Monument Grotesk Mono) with zero synthetic weights and `>= 44x44px` touch ergonomics.
  */
+import { HUD_THEMES } from "@aura3d/engine/game";
+
+const MOTORSPORT_THEME_CSS = Object.entries(HUD_THEMES.motorsport)
+  .map(([k, v]) => `  ${k}: ${v};`)
+  .join("\n");
+
 const CSS = /* css */ `
 :root {
-  --ink: #eef3fa;
-  --muted: #a8b6ca;
-  --panel: rgba(9, 13, 24, 0.80);
-  --line: rgba(255, 255, 255, 0.15);
+${MOTORSPORT_THEME_CSS}
+  --ink: var(--a3g-fg, #f5f7fa);
+  --muted: var(--a3g-fg-dim, #aab4c0);
+  --panel: var(--a3g-bg, rgba(10, 12, 16, 0.78));
+  --line: var(--a3g-edge, rgba(255, 207, 63, 0.36));
   --warm: #f3e4c6;
   --jade: #7fe0cf;
   --ember: #f0a56b;
@@ -124,7 +131,7 @@ button[aria-pressed="true"] { border-color: var(--warm); background: rgba(243, 2
   bottom: calc(var(--a3d-bar-space, 0px) + max(12px, env(safe-area-inset-bottom)));
 }
 
-/* Unified orbital telemetry cluster (.gouache-hud) */
+/* Unified orbital telemetry cluster (.gouache-hud): always bottom-docked so sky/gas-giant/horizon stay clear. */
 .gouache-hud {
   position: absolute;
   right: max(12px, env(safe-area-inset-right));
@@ -136,8 +143,8 @@ button[aria-pressed="true"] { border-color: var(--warm); background: rgba(243, 2
   pointer-events: none;
 }
 body.touch-on .gouache-hud {
-  bottom: auto;
-  top: 236px;
+  top: auto;
+  bottom: calc(var(--a3d-bar-space, 0px) + max(12px, env(safe-area-inset-bottom)) + 178px);
 }
 .gouache-telemetry {
   display: flex;
@@ -247,43 +254,49 @@ body.touch-on .gouache-hud {
     right: max(8px, env(safe-area-inset-right));
     gap: 6px;
   }
-  #hud .top .block { min-width: 0; flex: 1 1 0; padding: 6px 8px; }
-  #hud .top .value { font-size: 17px; white-space: nowrap; }
-  #hud .meta { font-size: 12px; }
-  #hud-tools { top: 72px; left: max(8px, env(safe-area-inset-left)); gap: 6px; }
+  #hud .top .block { min-width: 0; flex: 1 1 0; padding: 5px 8px; }
+  #hud .top .value { font-size: 16px; white-space: nowrap; }
+  #hud .meta { font-size: 11px; }
+  #best-lap { display: none; }
+  #hud-tools { top: calc(max(8px, env(safe-area-inset-top)) + 56px); left: max(8px, env(safe-area-inset-left)); gap: 6px; }
   #order {
-    top: 72px;
+    top: calc(max(8px, env(safe-area-inset-top)) + 56px);
     right: max(8px, env(safe-area-inset-right));
-    min-width: 126px;
-    padding: 5px 8px;
+    min-width: 0;
+    padding: 6px 10px;
   }
-  #order li { line-height: 1.45; }
+  #order li { line-height: 1.4; }
   #order li:nth-child(n+4):not(.you) { display: none; }
   #banner {
-    top: 122px;
-    left: max(8px, env(safe-area-inset-left));
-    transform: none;
-    max-width: calc(100% - 148px);
-    font-size: 15px;
+    top: calc(max(8px, env(safe-area-inset-top)) + 108px);
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: calc(100% - 24px);
+    font-size: 14px;
+    white-space: nowrap;
   }
-  .gouache-hud, body.touch-on .gouache-hud {
-    top: 156px;
-    bottom: auto;
+  .gouache-hud {
+    top: auto;
+    bottom: calc(var(--a3d-bar-space, 0px) + max(10px, env(safe-area-inset-bottom)) + 36px);
     left: max(8px, env(safe-area-inset-left));
     right: max(8px, env(safe-area-inset-right));
     justify-content: space-between;
     gap: 8px;
     padding: 6px 10px;
   }
-  .gouache-telemetry { align-items: flex-start; text-align: left; min-width: 0; flex: 1 1 auto; }
-  .gouache-gauge { width: 74px; height: 74px; }
-  .gouache-gauge svg { width: 74px; height: 74px; }
-  .gouache-speed-num { font-size: 21px; }
-  .gouache-map { width: 62px; height: 62px; }
+  body.touch-on .gouache-hud {
+    top: auto;
+    bottom: calc(var(--a3d-bar-space, 0px) + max(10px, env(safe-area-inset-bottom)) + 172px);
+  }
+  .gouache-telemetry { align-items: flex-start; text-align: left; min-width: 0; flex: 1 1 auto; gap: 3px; }
+  .gouache-gauge { width: 64px; height: 64px; }
+  .gouache-gauge svg { width: 64px; height: 64px; }
+  .gouache-speed-num { font-size: 19px; }
+  .gouache-map { width: 54px; height: 54px; }
   #notice, body.touch-on #notice {
-    top: 246px;
+    top: calc(max(8px, env(safe-area-inset-top)) + 136px);
     bottom: auto;
-    font-size: 15px;
+    font-size: 14px;
     max-width: 90vw;
   }
   #hud > .bottom {
@@ -306,6 +319,28 @@ body.touch-on .gouache-hud {
   }
   .orbit-tag { display: none; }
   .orbit-brand { left: max(12px, env(safe-area-inset-left)); }
+}
+
+/* Compact single-pill leaderboard on phones (<640px) so the sky, gas giant, and crater road stay 100% unobstructed. */
+@media (max-width: 640px) {
+  #order {
+    border-radius: 999px;
+    padding: 6px 11px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+  }
+  #order:empty { display: none; }
+  #order li:not(.you) { display: none; }
+  #order li.you {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  #order li.you span:first-child::after { content: "/6 ·"; margin-left: 1px; color: var(--muted); font-weight: 400; }
+  #order li.you span:nth-child(2) { display: none; }
 }
 
 /* Portrait phones (SO-5): the menu sits at the top and the menu camera frames the riders in the lower third. */

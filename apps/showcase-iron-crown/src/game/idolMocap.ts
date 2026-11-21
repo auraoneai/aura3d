@@ -9,8 +9,61 @@
  * set); attack clips are time-warped so the clip's strike frame lands on the sim's first active frame; crossfades are
  * 0.12 s; root travel is removed (the sim owns position). Pure functions plus a small per-fighter blend state.
  */
+import {
+  createHumanoidAnimator,
+  humanoidEventTime,
+  layerHumanoidPose,
+  type HumanoidAnimator,
+  type HumanoidClip,
+  type HumanoidPoseInput,
+  type HumanoidRole
+} from "@aura3d/engine/animation";
 import { MOCAP_BIND_DIRS, MOCAP_CLIPS, MOCAP_FPS, MOCAP_ROLES } from "./idol-mocap";
 import { idolBind, qConj, qFromTo, qMul, qNorm, qRot, qSlerp, type HumanoidDrive, type IdolSkeleton, type Q, type V3 } from "./idolHumanoid";
+
+const MOCAP_TO_HUMANOID: Readonly<Record<MocapRole, HumanoidRole>> = {
+  hips: "hips",
+  chest: "chest",
+  head: "head",
+  upperArmL: "leftUpperArm",
+  forearmL: "leftLowerArm",
+  handL: "leftHand",
+  upperArmR: "rightUpperArm",
+  forearmR: "rightLowerArm",
+  handR: "rightHand",
+  thighL: "leftUpperLeg",
+  shinL: "leftLowerLeg",
+  footL: "leftFoot",
+  thighR: "rightUpperLeg",
+  shinR: "rightLowerLeg",
+  footR: "rightFoot"
+};
+
+const UPPER_HUMANOID_ROLES: readonly HumanoidRole[] = [
+  "chest",
+  "head",
+  "leftUpperArm",
+  "leftLowerArm",
+  "leftHand",
+  "rightUpperArm",
+  "rightLowerArm",
+  "rightHand"
+];
+
+function sampleToHumanoidPose(sample: MocapSample): HumanoidPoseInput {
+  const rotations: Partial<Record<HumanoidRole, Q>> = {};
+  for (const role of MOCAP_ROLES) rotations[MOCAP_TO_HUMANOID[role]] = sample.rot[role];
+  return { rotations, hipsOffset: sample.hips };
+}
+
+function humanoidPoseToSample(pose: HumanoidPoseInput): MocapSample {
+  const rot = {} as Record<MocapRole, Q>;
+  for (const role of MOCAP_ROLES) {
+    rot[role] = (pose.rotations[MOCAP_TO_HUMANOID[role]] as Q | undefined) ?? [0, 0, 0, 1];
+  }
+  const h = pose.hipsOffset;
+  return { rot, hips: h ? [h[0], h[1], h[2]] : [0, 0, 0] };
+}
 
 export type MocapRole = (typeof MOCAP_ROLES)[number];
 export interface MocapSample {
@@ -102,13 +155,9 @@ export function blendMocap(a: MocapSample, b: MocapSample, w: number): MocapSamp
   return { rot, hips: [a.hips[0] + (b.hips[0] - a.hips[0]) * w, a.hips[1] + (b.hips[1] - a.hips[1]) * w, a.hips[2] + (b.hips[2] - a.hips[2]) * w] };
 }
 
-const UPPER: ReadonlySet<MocapRole> = new Set(["chest", "head", "upperArmL", "forearmL", "handL", "upperArmR", "forearmR", "handR"]);
-
-/** Upper body from `top`, hips and legs from `base` (attack layered over locomotion). */
+/** Upper body from `top`, hips and legs from `base` (delegated to `@aura3d/engine/animation` `layerHumanoidPose`). */
 export function layerMocap(base: MocapSample, top: MocapSample): MocapSample {
-  const rot = {} as Record<MocapRole, Q>;
-  for (const role of MOCAP_ROLES) rot[role] = UPPER.has(role) ? top.rot[role] : base.rot[role];
-  return { rot, hips: base.hips };
+  return humanoidPoseToSample(layerHumanoidPose(sampleToHumanoidPose(base), sampleToHumanoidPose(top), UPPER_HUMANOID_ROLES));
 }
 
 // ---- retarget onto an Idol skeleton --------------------------------------------------------------------------
@@ -350,14 +399,14 @@ export function fighterClip(fighter: string | undefined, state: StateClipName): 
 }
 
 /**
- * Clip time for an attack: piecewise-linear event timing, so the clip's strike frame (`contact`) lands on the sim's
- * hit fraction of the hold (the same mapping as eventTime in apps/showcase-port-shared/idol/motion.ts).
+ * Clip time for an attack: piecewise-linear event timing via `@aura3d/engine/animation` `humanoidEventTime`, so the
+ * clip's strike frame (`contact`) lands on the sim's hit fraction of the hold.
  */
 export function attackClipTime(kind: MocapAttack, progress: number, hitFraction?: number, fighter?: string): number {
   const c = mocapClip(fighterClip(fighter, kind));
-  const p = Math.max(0, Math.min(1, progress));
   const h = Math.max(0.05, Math.min(0.95, hitFraction ?? SIM_HIT_FRACTION[kind]));
-  return p <= h ? (p / h) * c.contact : c.contact + ((p - h) / (1 - h)) * (c.duration - c.contact);
+  const stubClip = { duration: c.duration, meta: { contact: c.contact } } as unknown as HumanoidClip;
+  return humanoidEventTime(stubClip, progress, h, "contact");
 }
 
 /** Into a hold (crouch, guard): play to the settled frame, then drift slowly through the rest of the clip. */
@@ -402,20 +451,28 @@ export function stateClip(input: FighterMocapInput): { readonly clip: string; re
   }
 }
 
-/** Per-fighter crossfade state (0.12 s between clips). */
+/** Per-fighter crossfade state backed by `@aura3d/engine/animation` `createHumanoidAnimator` (0.12 s crossfades). */
 export interface MocapBlendState {
   key: string;
   from: MocapSample | null;
   since: number;
+  lastTime: number;
+  animator: HumanoidAnimator<never>;
 }
 
 export const MOCAP_CROSSFADE = 0.12;
 
 export function createMocapBlend(): MocapBlendState {
-  return { key: "", from: null, since: 0 };
+  return {
+    key: "",
+    from: null,
+    since: 0,
+    lastTime: Number.NaN,
+    animator: createHumanoidAnimator({} as Record<never, HumanoidClip>)
+  };
 }
 
-/** Sample the fighter's state (with attack layering and crossfade) for this frame. */
+/** Sample the fighter's state (with attack layering and `createHumanoidAnimator` crossfade) for this frame. */
 export function fighterMocapSample(input: FighterMocapInput, blend?: MocapBlendState): MocapSample {
   const sc = stateClip(input);
   let s = sampleMocap(sc.clip, sc.t, sc.loop);
@@ -424,13 +481,14 @@ export function fighterMocapSample(input: FighterMocapInput, blend?: MocapBlendS
   }
   if (!blend) return s;
   const key = `${sc.clip}|${input.layerAttack ?? ""}`;
+  const dt = Number.isFinite(blend.lastTime) ? Math.max(0, input.time - blend.lastTime) : 0;
+  blend.lastTime = input.time;
   if (key !== blend.key) {
-    blend.from = blend.key ? (blend as { last?: MocapSample }).last ?? null : null;
     blend.key = key;
     blend.since = input.time;
   }
-  const w = (input.time - blend.since) / MOCAP_CROSSFADE;
-  const out = blend.from && w < 1 ? blendMocap(blend.from, s, Math.max(0, w)) : s;
-  (blend as { last?: MocapSample }).last = out;
+  const pose = blend.animator.update(dt, { pose: sampleToHumanoidPose(s), key, fade: MOCAP_CROSSFADE });
+  const out = humanoidPoseToSample(pose);
+  blend.from = out;
   return out;
 }

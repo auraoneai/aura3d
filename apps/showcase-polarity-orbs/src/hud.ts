@@ -31,9 +31,13 @@ export class Hud {
     }
     const pct = Math.round(comboTubeFill(o.combo, o.mult, CONFIG.MAX_MULT, CONFIG.COMBO_PER_MULT) * 100);
     const fill = `${pct}%`;
-    if (this.changed("tube", fill)) {
+    const filledPips = o.mult >= CONFIG.MAX_MULT
+      ? CONFIG.COMBO_PER_MULT
+      : o.combo % CONFIG.COMBO_PER_MULT;
+    const pipText = `${"● ".repeat(filledPips)}${"○ ".repeat(Math.max(0, CONFIG.COMBO_PER_MULT - filledPips))}`.trim();
+    if (this.changed("tube", `${fill}|${pipText}`)) {
       $("combo-fill").style.width = fill;
-      $("polarity-charge").textContent = fill;
+      $("polarity-charge").textContent = pipText;
     }
     if (this.changed("mult", String(o.mult))) $("hud-mult").textContent = `x${o.mult}`;
 

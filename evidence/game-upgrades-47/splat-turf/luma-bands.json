@@ -1,0 +1,20 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "splat-turf",
+  "note": "WP-5 Aura3D 5.7.2 acceptance bands for Splat Turf (sunlit cobalt-to-cream acrylic splat carnival over primed gesso deck). Named crops come from apps/showcase-splat-turf/src/look.ts QA_CROPS (sky, road, player, entity).",
+  "default": {
+    "mean": [110, 178],
+    "p95": [195, null],
+    "darkFrac": [null, 0.08],
+    "clipFrac": [null, 0.04],
+    "spread": [120, null]
+  },
+  "variants": {
+    "default": {
+      "mean": [118, 172],
+      "p95": [200, null],
+      "darkFrac": [null, 0.05],
+      "clipFrac": [null, 0.03]
+    }
+  }
+}

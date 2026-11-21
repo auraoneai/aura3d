@@ -122,7 +122,7 @@ export const ARCADE_FOV = 34;
 /** NDC margins the maze must fit inside: x (both sides), top (under the HUD bar) and bottom (above the controls hint). */
 export interface ArcadeMargins { readonly x: number; readonly top: number; readonly bottom: number; readonly shiftX: number }
 export function arcadeMargins(aspect: number): ArcadeMargins {
-  if (aspect < 0.82) return { x: 0.975, top: 0.6, bottom: 0.74, shiftX: 0 };          // portrait: fit width, below the HUD rows
+  if (aspect < 0.82) return { x: 0.975, top: 0.76, bottom: 0.66, shiftX: 0 };          // portrait: fill ~60% height cleanly above touch controls
   if (aspect < 1.3) return { x: 0.9, top: 0.84, bottom: 0.86, shiftX: 0 };
   return { x: 0.94, top: 0.86, bottom: 0.88, shiftX: -0.45 };                           // desktop: fill the height, clear the HUD
 }

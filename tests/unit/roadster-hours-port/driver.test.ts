@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { createHumanoidDriver, parseGlbJson, readIdolSkeleton, type Vec3 } from "../../../apps/showcase-port-shared/idol/humanoid";
+import { createHumanoidDriver, parseGlbJson, readIdolSkeleton, type Vec3 } from "@aura3d/engine/animation";
 import {
   DRIVER_HEIGHT,
   STEERING_WHEEL_RADIUS,
@@ -105,7 +105,7 @@ describe("Saltwind Highway rigged Idol driver", () => {
     // GPU QA (Nov 18): world.ts passed driverPose(...) straight to setAnimationPose (keyed by role, the engine keys by GLB
     // node name), so the driver stayed in its rest pose with the legs through the floor and the hands off the wheel
     const src = readFileSync("examples/roadster-hours-port/world.ts", "utf8");
-    expect(src).toMatch(/setAnimationPose\?\.\(driverRig\.pose\(driverPose\(/);
+    expect(src).toMatch(/setAnimationPose\?\.\(driverRig\.pose\((?:driverAnim\.update\([^,]+,\s*)?driverPose\(/);
     const solved = driver.pose(pose(0.2));
     expect(Object.keys(solved.bones).every((b) => /^bone_\d+$/.test(b))).toBe(true);
     expect(Object.keys(solved.bones)).toEqual(expect.arrayContaining([driver.map.roles.leftLowerLeg!, driver.map.roles.rightLowerArm!]));

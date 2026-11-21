@@ -8,7 +8,7 @@
 import { camera, cameras, defineAuraAssets, effects, geometry, lights, looks, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import type { Chapter } from "./chapter";
 import { at, frameAt, type V3 } from "./course";
-import { createCameraClearance, createLocomotion } from "@aura3d/engine/game";
+import { createCameraClearance, createImpactRig, createLocomotion } from "@aura3d/engine/game";
 import { Fx } from "./fx";
 import type { Game } from "./game";
 import { appendGroundShadows, BOULDER_SHADOW, TREE_SHADOW } from "./groundShadows";
@@ -47,7 +47,6 @@ import { chasePose, launchFovKick, titleFlyover, titleOrbit, traumaFor } from ".
 import { IDOL_FLYER_SCALE, flyerPose } from "./art/flyerPath";
 import { CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, CUMULUS_MOTION_BLUR, applyCumulusPostPlan, cumulusPostPlan, type CumulusMoment } from "./art/post";
 import { CUMULUS_GLIDER_TRAIL, FALLS_SPRAY_PERIOD, FALLS_SPRAY_RANGE, createSkyFlipbookAtlas, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
-import { createImpactRig } from "../../apps/showcase-port-shared/feel";
 import { Mesh, box, cylinder, hex, icosphere, mix3 } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
@@ -245,7 +244,19 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
     ...(row.environmentIntensity !== null ? { environmentIntensity: row.environmentIntensity } : {}),
     ...(row.environmentRotationDeg !== null ? { environmentRotationDeg: row.environmentRotationDeg } : {}),
     background: row.fog.color,
-    key: { color: row.sun.color, intensity: row.sun.intensity, shadow: { cascades: row.sun.cascades, maxDistance: row.sun.maxDistance, filter: row.sun.filter, blend: 0.14, ...SHADOW_DEV } },
+    key: {
+      color: row.sun.color,
+      intensity: row.sun.intensity,
+      shadow: {
+        cascades: row.sun.cascades,
+        maxDistance: row.sun.maxDistance,
+        filter: row.sun.filter,
+        blend: 0.14,
+        softness: 1.8,
+        fit: { center: [0, 0, -8] as [number, number, number], extent: 22, depth: 60 },
+        ...SHADOW_DEV
+      }
+    },
     rim: row.rim ? { color: row.rim.color, intensity: row.rim.intensity, azimuthDeg: row.rim.azimuthDeg } : false,
     fogDensityScale: 0,
     post: { bloom: false }
@@ -495,8 +506,11 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
 
   b.add(geometry.custom(spritePoolGeometry(ORB_CAP, quads), { name: "orbs", material: material.custom(glowSpec(quads)) }).runtime({ id: "orbs" }));
   if (ACTIVE_LOOK.id === "storm-washed") {
+    // R23 duel back-rim spotlight that lifts hero & Storm Tyrant silhouettes during the dark storm duel
+    b.add(lights.directional({ name: "duel-back-rim", position: [-18, 20, -28], target: [0, 2, 0], color: "#b6dcff", intensity: 0, shadow: false }).runtime({ id: "duel-back-rim" }));
     const dustAtlas = createSkyFlipbookAtlas("dust", [238, 245, 255]);
     const sparkAtlas = createSkyFlipbookAtlas("sparks", [255, 198, 92]);
+    const plasmaAtlas = createSkyFlipbookAtlas("plasma", [159, 200, 255]);
     b.add(flipbookWithVisibility({
       name: "vfx-cloud-wake", texture: dustAtlas.texture, spriteColumns: dustAtlas.columns, spriteRows: dustAtlas.rows,
       frameRate: 28, size: 1.9, color: "#eef3f8", intensity: 0.95, blend: "alpha", position: [0, -1000, 0], visible: false
@@ -505,6 +519,14 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
       name: "vfx-orb-spark", texture: sparkAtlas.texture, spriteColumns: sparkAtlas.columns, spriteRows: sparkAtlas.rows,
       frameRate: 34, size: 2.1, color: "#ffb347", intensity: 1.45, blend: "additive", position: [0, -1000, 0], visible: false
     }).runtime({ id: "vfx-orb-spark" }));
+    b.add(flipbookWithVisibility({
+      name: "vfx-duel-plasma", texture: plasmaAtlas.texture, spriteColumns: plasmaAtlas.columns, spriteRows: plasmaAtlas.rows,
+      frameRate: 32, size: 2.6, color: "#9fc8ff", intensity: 1.55, blend: "additive", position: [0, -1000, 0], visible: false
+    }).runtime({ id: "vfx-duel-plasma" }));
+    b.add(flipbookWithVisibility({
+      name: "vfx-log-dust", texture: dustAtlas.texture, spriteColumns: dustAtlas.columns, spriteRows: dustAtlas.rows,
+      frameRate: 24, size: 2.2, color: "#e5cf9f", intensity: 0.85, blend: "alpha", position: [0, -1000, 0], visible: false
+    }).runtime({ id: "vfx-log-dust" }));
   }
   const fx = new Fx(quads);
   fx.addTo(b);
@@ -547,8 +569,14 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   const impactRig = createImpactRig({ reducedMotion: false });
   const wakeFlipbook = cinematic ? app.nodes.get("vfx-cloud-wake") : undefined;
   const sparkFlipbook = cinematic ? app.nodes.get("vfx-orb-spark") : undefined;
-  let wakeTimer = 0, sparkTimer = 0;
+  const plasmaFlipbook = cinematic ? app.nodes.get("vfx-duel-plasma") : undefined;
+  const logDustFlipbook = cinematic ? app.nodes.get("vfx-log-dust") : undefined;
+  const duelRimLight = cinematic ? app.nodes.get("duel-back-rim") : undefined;
+  let wakeTimer = 0, sparkTimer = 0, plasmaTimer = 0;
   let sparkAnchor: V3 = [0, -1000, 0];
+  let plasmaAnchor: V3 = [0, -1000, 0];
+  let lastDuelRim = -1;
+  let logDustClock = 0;
   const fallsLip = waterfallLip(ch);
   let sprayT = 0;
   /* CD-09 / CD-11: god rays and glider motion blur on High/Ultra only, never on a phone (zero DOF blur); the plan is
@@ -636,10 +664,11 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         if (!g.reducedMotion) impactRig.trigger({ freezeSeconds: 0.035, trauma: 0.24, fovKickDeg: 3.2 });
       }
       else if (e === "strike") fx.burst([p[0] + f.forward[0] * 2, p[1] + 1.2, p[2] + f.forward[2] * 2], up, "#fff0b0", 12, 1.1);
-      else if (e === "strike-hit" || e === "duel-won") {
+      else if (e === "strike-hit" || e === "duel-won" || e === "trex-struck") {
         fx.burst(chest, up, "#ffe27a", e === "duel-won" ? 40 : 22, e === "duel-won" ? 2.2 : 1.6); fx.ring(p, up, "#ffffff", e === "duel-won" ? 2.6 : 1.8);
         sparkTimer = Math.max(sparkTimer, 0.52); sparkAnchor = chest;
-        if (!g.reducedMotion) impactRig.trigger({ freezeSeconds: e === "duel-won" ? 0.045 : 0.028, trauma: e === "duel-won" ? 0.34 : 0.22, fovKickDeg: e === "duel-won" ? 3.5 : 2.0 });
+        plasmaTimer = Math.max(plasmaTimer, e === "duel-won" ? 0.65 : 0.48); plasmaAnchor = [chest[0] + f.forward[0] * 1.4, chest[1] + 0.3, chest[2] + f.forward[2] * 1.4];
+        if (!g.reducedMotion) impactRig.trigger({ freezeSeconds: e === "duel-won" ? 0.045 : 0.04, trauma: e === "duel-won" ? 0.34 : 0.26, fovKickDeg: e === "duel-won" ? 3.5 : 2.2 });
       }
       else if (e === "skypearl") {
         fx.burst(chest, up, "#ffb347", 28, 1.7); fx.ring(p, up, "#ffd27a", 1.5);
@@ -677,7 +706,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
     get footsteps() { return footsteps; },
     post: () => ({ ...postStates }),
     vfx: () => ({ registered: vfxMotion !== null, fired: { ...vfxFired }, trail: gliderTrail !== null, liveCount: app.effects?.liveCount ?? 0 }),
-    cutCamera() { eye = null; look = null; chase.reset(); finaleClear.reset(); impactRig.reset(); wakeTimer = 0; sparkTimer = 0; },
+    cutCamera() { eye = null; look = null; chase.reset(); finaleClear.reset(); impactRig.reset(); wakeTimer = 0; sparkTimer = 0; plasmaTimer = 0; },
     update(g, dt, aspect, events) {
       clock += dt;
       const feel = impactRig.step(dt);
@@ -784,8 +813,30 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         const sLog = s.s < ch.log ? s.s : ch.log + (s.s - ch.log) * 0.35;
         const show = sLog - s.s > -30 && phase !== "falling";
         lg.setVisible(show);
-        if (show) { const lp = at(sLog, s.s < ch.log ? s.lane : 0, 1.0); lg.setPosition(lp[0], lp[1], lp[2]); lg.setRotation(-(sLog * 1.0), yawOf(frameAt(sLog).forward), 0); view.log = lp; }
-        else view.log = null;
+        if (show) {
+          const lp = at(sLog, s.s < ch.log ? s.lane : 0, 1.0);
+          lg.setPosition(lp[0], lp[1], lp[2]);
+          lg.setRotation(-(sLog * 1.0), yawOf(frameAt(sLog).forward), 0);
+          view.log = lp;
+          // Rolling-log ground dust trail & flipbook telegraph ahead of the spinning trunk
+          if (phase === "playing" && !g.reducedMotion && s.s < ch.log + 6) {
+            const lf = frameAt(sLog);
+            if (logDustFlipbook) {
+              logDustFlipbook.setVisible(true);
+              logDustFlipbook.setPosition(lp[0] + lf.forward[0] * 1.6, lp[1] - 0.55, lp[2] + lf.forward[2] * 1.6);
+            }
+            logDustClock += dt;
+            if (logDustClock >= 0.14) {
+              logDustClock = 0;
+              fx.dust([lp[0] + lf.forward[0] * 1.4, lp[1] - 0.85, lp[2] + lf.forward[2] * 1.4], lf.up, 2, "#e5cf9f", 0.75, 0.85);
+            }
+          } else if (logDustFlipbook) {
+            logDustFlipbook.setVisible(false);
+          }
+        } else {
+          view.log = null;
+          logDustFlipbook?.setVisible(false);
+        }
       }
 
       {
@@ -825,6 +876,12 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         const showSpark = sparkTimer > 0 && phase === "playing" && !g.reducedMotion;
         sparkFlipbook.setVisible(showSpark);
         if (showSpark) sparkFlipbook.setPosition(sparkAnchor[0], sparkAnchor[1], sparkAnchor[2]);
+      }
+      if (plasmaFlipbook) {
+        plasmaTimer = Math.max(0, plasmaTimer - dt);
+        const showPlasma = plasmaTimer > 0 && phase === "playing" && !g.reducedMotion;
+        plasmaFlipbook.setVisible(showPlasma);
+        if (showPlasma) plasmaFlipbook.setPosition(plasmaAnchor[0], plasmaAnchor[1], plasmaAnchor[2]);
       }
 
       /* ---- staff over a gorge ---- */
@@ -991,6 +1048,19 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
             body.setRotation(stunned ? 0.18 : lunge * 0.28, yaw0 + Math.PI * REX_FACING, stunned ? 0.08 : swipe * 0.18);
           }
           body.setScale(sc);
+        }
+        // R23 back-rim boost during the Storm Tyrant chase & duel so hero and tyrant silhouettes stay razor-clear
+        if (duelRimLight) {
+          const duelActive = present && (!!s.janken || g.chase);
+          const wantRim = duelActive ? (s.janken ? 1.65 : 1.15) : 0;
+          if (Math.abs(wantRim - lastDuelRim) > 0.02) {
+            lastDuelRim = wantRim;
+            duelRimLight.setLight?.({
+              color: s.janken ? "#ffd99a" : "#b6dcff",
+              intensity: wantRim,
+              direction: [-f.forward[0] * 0.72 - f.right[0] * 0.32, -0.52, -f.forward[2] * 0.72 - f.right[2] * 0.32]
+            });
+          }
         }
         rexAttacks.forEach((a, i) => {
           const wz = node(`warn-rex-${i}`), tstate = trexState.attacks.find((x) => x.s === a.s);

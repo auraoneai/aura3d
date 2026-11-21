@@ -479,6 +479,38 @@ html, body {
 }
 @keyframes dd-pop-fade { from { opacity: 1; } to { opacity: 0; } }
 
+.dd-mobile-pill,
+.dd-mobile-menu {
+  display: none;
+}
+
+.dd-sentry-legend {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: rgba(6, 12, 10, 0.72);
+  border: 1px solid rgba(255, 178, 62, 0.22);
+}
+.dd-sl-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  color: var(--dd-ink);
+}
+.dd-sl-item svg {
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.22));
+}
+
 @media (max-width: 1100px) {
   .dd-tl { max-width: min(390px, 48vw); }
 }
@@ -511,31 +543,41 @@ html, body {
   }
 }
 
-@media (max-width: 680px) {
-  .dd-tl {
-    flex-direction: row;
-    flex-wrap: wrap;
+@media (max-width: 760px) {
+  /* Collapse 13-button desktop bar into a compact mode/board pill + menu trigger so nothing clips on 390px */
+  .aura3d-top-bar .dd-desk-btn { display: none; }
+  .aura3d-top-bar .dd-mobile-pill,
+  .aura3d-top-bar .dd-mobile-menu {
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-    max-width: calc(100vw - 72px);
-    left: max(10px, env(safe-area-inset-left, 0px));
-  }
-  .dd-row { display: contents; }
-  .dd-header-strip, .dd-hi-chip, #dd-fruit-chip { display: none; }
-  .dd-chip { padding: 4px 8px; gap: 5px; border-radius: 5px; }
-  .dd-chip .k { font-size: 12px; }
-  .dd-chip .v { font-size: 14px; }
-  .dd-score-chip .v { font-size: 22px; }
-  .dd-lives { font-size: 18px !important; }
-  .dd-orb-track, .dd-dash-track { width: 44px; height: 7px; }
-  .dd-objective {
-    flex-basis: 100%;
-    max-width: none;
-    font-size: 12px;
+    flex: 0 0 auto;
     white-space: nowrap;
+  }
+  .aura3d-top-bar .dd-mobile-pill {
+    max-width: calc(100vw - 210px);
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  /* Single compact HUD bar across the top on portrait phones */
+  .dd-tl {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 5px;
+    max-width: calc(100vw - 68px);
+    left: max(10px, env(safe-area-inset-left, 0px));
+    overflow: hidden;
+  }
+  .dd-row { display: contents; }
+  .dd-header-strip, .dd-hi-chip, #dd-fruit-chip, .dd-mult-chip, .dd-dash-chip, .dd-objective { display: none; }
+  .dd-chip { padding: 4px 7px; gap: 4px; border-radius: 5px; flex: 0 0 auto; }
+  .dd-chip .k { font-size: 10px; }
+  .dd-chip .v { font-size: 14px; }
+  .dd-score-chip .v { font-size: 18px; }
+  .dd-lives { font-size: 15px !important; letter-spacing: 0.1em; }
+  .dd-orb-track { width: 38px; height: 7px; }
   .dd-school-legend { display: none; }
   .aura3d-controls-hint { display: none; }
+  .dd-help { display: none; }
+  .dd-sentry-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

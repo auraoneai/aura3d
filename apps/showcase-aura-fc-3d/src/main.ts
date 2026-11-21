@@ -14,19 +14,19 @@ import {
   createAuraApp, createGameAudio, game, installQaHooks, looks
 } from "@aura3d/engine";
 import {
-  createFixedStepPresenter, createJuice, createOverlayDriver, createRumbleDriver, createTweenEngine,
-  createFxParticlePass,
-  installGameBeacon
+  createGradingLut, createImpactRig, createJuice, createOverlayDriver, createRumbleDriver,
+  createSnapshotInterpolator, createTweenEngine, createFxParticlePass,
+  HUD_THEMES, installGameBeacon, warmPrograms
 } from "@aura3d/engine/game";
+import "../../showcase-port-shared/hud-tokens.css";
 import "../../showcase-port-shared/quickbar.css";
-import { createImpactRig } from "../../showcase-port-shared/feel";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R, SIM_DT } from "./game/sim";
 import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_LOOKS, withoutLookAo, applyPostAccessibility } from "./game/scene";
-import { ORIGINAL_LOOKS, fcLookMode, usesOriginalBase } from "./game/look";
+import { HYBRID_LAYERS, ORIGINAL_LOOKS, fcLookMode, usesOriginalBase } from "./game/look";
 import { mountFcTouch } from "./game/touch";
 import { fireFcVfx, registerFcVfxPack, type FcVfxEvent } from "./game/vfx";
 import { fcQaCrops } from "./game/qaCrops";
@@ -43,7 +43,6 @@ import { createVenueTransition, venueCardColors } from "./game/venueTransition";
 import type { UserInputFrame, PlayerState, SimEvent, VenueId } from "./game/types";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
-import { warmPrograms } from "@aura3d/engine/game";
 import { idolBodiesEnabled, preloadIdolDrivers } from "./game/idolBodies";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
@@ -117,7 +116,38 @@ function boot(): void {
   loadingBar.style.cssText = "position:fixed;left:50%;bottom:21%;width:min(260px,60vw);transform:translateX(-50%);color:#d8ff3e;z-index:60;pointer-events:none";
   document.body.appendChild(loadingBar);
   const loading = createLoadingProgress({ element: loadingBar, onProgress: (fraction) => { document.body.dataset.aura3dLoading = fraction.toFixed(2); } });
+  const FC_LUTS = {
+    "cinema-warm": createGradingLut("cinema-warm", 16),
+    "broadcast-crisp": createGradingLut("broadcast-crisp", 16),
+    "cyber-neon": createGradingLut("cyber-neon", 16)
+  } as const;
+  for (const lut of Object.values(FC_LUTS)) {
+    lut.texture.wrapS = "clamp";
+    lut.texture.wrapT = "clamp";
+    lut.texture.minFilter = "linear";
+    lut.texture.magFilter = "linear";
+  }
+  const outputForVenue = (venue: VenueId, baseOutput: Record<string, unknown> = {}) => {
+    const mode = fcLookMode(venue);
+    const presetOutput = usesOriginalBase(mode) || bootParams.get("outputPreset") === "off" ? undefined : { preset: VENUE_LOOKS[venue].post };
+    const lut = FC_LUTS[HYBRID_LAYERS[venue].lutPreset];
+    const lutEnabled = mode !== "original" && bootParams.get("lut") !== "off";
+    const useKhronos = mode === "hybrid" && venue === "uyuni";
+    return {
+      ...baseOutput,
+      toneMapping: (useKhronos ? "neutral" : "agx") as "neutral" | "agx",
+      ...(useKhronos ? { neutralCurve: "khronos" as const } : {}),
+      dither: true,
+      ...(lutEnabled ? { lut: { texture: lut.texture, size: lut.size, intensity: 0.28 } } : {}),
+      ...(presetOutput ?? {})
+    };
+  };
+  for (const [k, v] of Object.entries(HUD_THEMES["sports-broadcast"])) {
+    if (k === "--a3g-font" || k === "--a3g-font-display") continue;
+    document.documentElement.style.setProperty(k, v);
+  }
   let app: ReturnType<typeof createAuraApp>;
+  let labOutputOverride: Record<string, unknown> | undefined;
   try {
     // Lab flags: `?worker=1` carries createWorkerRendererWorker; the renderer/output fragments merge over the look's renderer and the venue output
     // preset instead of being overwritten by them, so `?backend=` / `?gamut=` reach the engine.
@@ -126,12 +156,11 @@ function boot(): void {
       backend: "auto",
       createWorker: createWorkerRendererWorker
     });
+    labOutputOverride = labOutput as Record<string, unknown> | undefined;
     const isCoarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
     const rawDpr = typeof window.devicePixelRatio === "number" && window.devicePixelRatio > 0 ? window.devicePixelRatio : 1;
     const cappedPixelRatio = isCoarsePointer ? Math.min(rawDpr, 1.35) : Math.min(rawDpr, 2);
     const lookOptions = looks.appOptions(bootOriginal ? ORIGINAL_LOOKS[bootVenue].look : VENUE_LOOKS[bootVenue].look) as { renderer?: object; output?: object };
-    // FC47-P1 + WP-04: AgX HDR tone mapping + dithering across every stadium venue, preserving QA `?outputPreset=off`.
-    const presetOutput = bootOriginal || bootParams.get("outputPreset") === "off" ? undefined : { preset: VENUE_LOOKS[bootVenue].post };
     app = createAuraApp("#app", {
       scene: sceneFor(bootVenue),
       ...(labWorker ? { worker: labWorker } : {}),
@@ -143,10 +172,7 @@ function boot(): void {
         ...(labRenderer ?? {})
       },
       output: {
-        ...lookOptions.output,
-        toneMapping: "agx",
-        dither: true,
-        ...(presetOutput ?? {}),
+        ...outputForVenue(bootVenue, (lookOptions.output ?? {}) as Record<string, unknown>),
         ...(labOutput ?? {})
       },
       qualityRebuild: { flags: ["game"] }
@@ -235,6 +261,11 @@ function boot(): void {
     const seq = appReady ? showVenueCard(venue, fixture) : -1;
     try {
       (app as any).setScene(sceneFor(venue));
+      if (!labOutputOverride) {
+        const nextOut = outputForVenue(venue);
+        if (typeof (app as any).output?.setOutput === "function") (app as any).output.setOutput(nextOut);
+        else (app as any).setOutput?.(nextOut);
+      }
       applyPostAccessibility(app, reducedMotion);
       registerFcVfxPack((app as any).effects, venue, vfxOpts);
       world = resolveWorld(app);
@@ -603,7 +634,7 @@ function boot(): void {
     if (d < -Math.PI) d += Math.PI * 2;
     return a + d * t;
   };
-  const presenter = createFixedStepPresenter<PresentedMatch>({
+  const presenter = createSnapshotInterpolator<PresentedMatch>({
     snapshot: () => ({
       players: (sim.state.players as PlayerState[]).map((p) => ({ ...p })),
       ball: {
@@ -615,6 +646,7 @@ function boot(): void {
         rotZ: sim.state.ball.rotZ ?? 0
       }
     }),
+    snap: { distance: 6, position: (s) => [s.ball.x, s.ball.y, s.ball.z] },
     blend: (a, b, alpha) => {
       if (a.players.length !== b.players.length) return b;
       const bDist2 = (b.ball.x - a.ball.x) ** 2 + (b.ball.z - a.ball.z) ** 2;
@@ -1069,7 +1101,7 @@ function boot(): void {
         const s = sim.state;
         const me = (s.players as PlayerState[]).find((p) => p.id === s.controlledId) ?? null;
         const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
-        return fcQaCrops({ eye: cam.shownEye, target: cam.target, fovDeg: cam.shownFov, aspect }, me, [s.ball.x, s.ball.y, s.ball.z]);
+        return fcQaCrops({ eye: cam.shownEye, target: cam.target, fovDeg: cam.shownFov, aspect }, me, [s.ball.x, s.ball.y, s.ball.z], s.venue);
       }
     };
   }

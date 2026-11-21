@@ -35,13 +35,22 @@
       <button type="button" id="aura-btn-atlas" title="Vale Atlas — world map with seed counts">Vale Atlas</button>
       <button type="button" id="aura-btn-studio" title="Player Studio — cape colour">Player Studio</button>
       <button type="button" id="aura-btn-trial" title="Time Trial — race the medal clocks">Time Trial</button>
-      <span class="aura-sep" aria-hidden="true"></span>
-      <button type="button" data-aura-venue="w1" class="venue active" title="World 1 — Whispering Forest">Forest</button>
-      <button type="button" data-aura-venue="w2" class="venue" title="World 2 — Sunmill Wharf">Wharf</button>
-      <button type="button" data-aura-venue="w3" class="venue" title="World 3 — Cloudspan Wharf">Clouds</button>
-      <button type="button" data-aura-venue="w4" class="venue" title="World 4 — Ember Cellar">Ember</button>
-      <button type="button" data-aura-venue="w5" class="venue" title="World 5 — Hollow Palace">Palace</button>
-      <button type="button" data-aura-venue="w6" class="venue" title="World 6 — Starfall Garden">Starfall</button>
+      <span class="aura-sep pbl-desktop-venues" aria-hidden="true"></span>
+      <select id="aura-world-select" class="pbl-world-select" aria-label="Select World">
+        <option value="w1">World 1: Forest</option>
+        <option value="w2">World 2: Wharf</option>
+        <option value="w3">World 3: Clouds</option>
+        <option value="w4">World 4: Ember</option>
+        <option value="w5">World 5: Palace</option>
+        <option value="w6">World 6: Starfall</option>
+        <option value="academy">Jump Academy</option>
+      </select>
+      <button type="button" data-aura-venue="w1" class="venue active pbl-desktop-venues" title="World 1 — Whispering Forest">Forest</button>
+      <button type="button" data-aura-venue="w2" class="venue pbl-desktop-venues" title="World 2 — Sunmill Wharf">Wharf</button>
+      <button type="button" data-aura-venue="w3" class="venue pbl-desktop-venues" title="World 3 — Cloudspan Wharf">Clouds</button>
+      <button type="button" data-aura-venue="w4" class="venue pbl-desktop-venues" title="World 4 — Ember Cellar">Ember</button>
+      <button type="button" data-aura-venue="w5" class="venue pbl-desktop-venues" title="World 5 — Hollow Palace">Palace</button>
+      <button type="button" data-aura-venue="w6" class="venue pbl-desktop-venues" title="World 6 — Starfall Garden">Starfall</button>
       <span class="aura-sep" aria-hidden="true"></span>
       <button type="button" id="aura-btn-auto" aria-pressed="false" title="AI Autopilot demo (O toggles; yields on first key press; ?autoplay=1)">Auto</button>
       <a class="a3d-credit" href="/" title="Built with Aura3D">Built with Aura3D</a>

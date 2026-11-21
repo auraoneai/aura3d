@@ -16,9 +16,9 @@
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import "./hud.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
-import { createFixedStepPresenter, warmPrograms } from "@aura3d/engine/game";
+import { HUD_THEMES, createAutoplayHarness, warmPrograms } from "@aura3d/engine/game";
 import {
-  RUNGS, STEP, ROAD_LENGTH, KM_TOTAL, createRun, expandScript, qaSnapshot, stepRun, type InputSegment, type RunInput, type RunState
+  RUNGS, STEP, ROAD_LENGTH, KM_TOTAL, STAGES, createRun, expandScript, qaSnapshot, stepRun, type InputSegment, type RunInput, type RunState
 } from "./sim";
 import { DROWSE_ALERT, daysStatusLabel, drowseCue, finalScore, gapAhead, gustCue, onboardingPrompt } from "./hud";
 import { createRunInput } from "./input";
@@ -26,7 +26,7 @@ import { autoplayRequested, createAutoplay } from "./autoplay";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { labAppOptions, labRenderWorker, readLabFlags } from "../shared/lab-flags";
 import { createRenderGuard } from "./renderGuard";
-import { blendSamples, sampleOf, type PresentSample } from "./presentation";
+import { createSerpentPresenter } from "./presentation";
 import { createSfx } from "./sfx";
 import { hexCss, runnerIndexForLook, runnerStylesForLook } from "./styles";
 import { buildWorld, loadRunner, type WorldRuntime } from "./world";
@@ -39,13 +39,19 @@ export const QA_HOOK_NAME = "serpentine-sky-run";
 const params = new URLSearchParams(location.search);
 const config = { autostart: params.get("autostart") === "1" || autoplayRequested(location.search), manual: params.get("manual") === "1" };
 /** Autoplay (`?autoplay=1` / `?autopilot=1`, O toggles it): the computer plays through the normal input path. */
-let autoplayOn = autoplayRequested(location.search);
 const autoplay = createAutoplay();
-/** Seconds the results card has been up (autoplay restarts the run after AUTOPLAY_RESULTS_SECONDS). */
-let resultsT = 0;
 const AUTOPLAY_RESULTS_SECONDS = 3;
+const autoplayHarness = createAutoplayHarness<RunInput>({
+  bot: { step: () => autoplay.next(state) },
+  isFinished: () => resultsShown && !config.manual,
+  restartDelay: AUTOPLAY_RESULTS_SECONDS,
+  onRestart: () => startRun(false),
+  enabled: autoplayRequested(location.search)
+});
 const look = lookParams(location.search);
 const runnerStyles = runnerStylesForLook(look.mode);
+// Adopt `HUD_THEMES["sky-expedition"]` custom properties alongside `hud-tokens.css` (Canela display override preserved below)
+for (const [k, v] of Object.entries(HUD_THEMES["sky-expedition"])) document.documentElement.style.setProperty(k, v);
 // GU47 SSR-16: the indigo lacquer HUD theme follows the colour script; `?look=original` keeps the old HUD
 if (look.mode === "script") document.documentElement.classList.add("serpent-hud");
 
@@ -64,10 +70,7 @@ let ready = false;
 let started = config.autostart;
 let paused = false;
 let renderTime = 0;
-const presenter = createFixedStepPresenter<PresentSample>({
-  snapshot: () => sampleOf(state),
-  blend: blendSamples
-});
+const presenter = createSerpentPresenter(() => state);
 let last = 0;
 let rafId = 0;
 let steps = 0;
@@ -156,7 +159,7 @@ addEventListener("keydown", (e) => {
   e.preventDefault();
   sfx.unlock();
   if (e.code === "KeyM") { toggleMute(); return; }
-  if (e.code === "KeyO") { autoplayOn = !autoplayOn; autoplay.reset(); input.clear(); if (autoplayOn && !started) startRun(false); return; }
+  if (e.code === "KeyO") { const on = autoplayHarness.toggle(); autoplay.reset(); input.clear(); if (on && !started) startRun(false); return; }
   if (e.code === "Escape" || e.code === "KeyP") { if (started && !resultsShown && counting <= 0) paused = !paused; return; }
   if (!started && (e.code === "ArrowLeft" || e.code === "KeyA")) { selectRunner(runnerIndex - 1); return; }
   if (!started && (e.code === "ArrowRight" || e.code === "KeyD")) { selectRunner(runnerIndex + 1); return; }
@@ -210,7 +213,7 @@ for (const [id, key] of [["t-surge", "ShiftLeft"], ["t-fly", "KeyE"], ["t-slide"
 
 function takeInput(): RunInput {
   const human = input.take();
-  return autoplayOn ? autoplay.next(state) : human;
+  return autoplayHarness.enabled ? (autoplayHarness.step(STEP) ?? {}) : human;
 }
 
 /* ------------------------------------------------------------------ mute */
@@ -275,7 +278,28 @@ function showResults(): void {
 function updateHud(): void {
   const rung = RUNGS[state.auraRung] as { mult: number };
   setText("km", fmt(distanceKm()));
-  ($("km-fill") as HTMLElement).style.width = `${Math.round(Math.max(0, Math.min(1, state.s / ROAD_LENGTH)) * 100)}%`;
+  const progressPct = Math.round(Math.max(0, Math.min(1, state.s / ROAD_LENGTH)) * 100);
+  ($("km-fill") as HTMLElement).style.width = `${progressPct}%`;
+  const pipsHost = document.getElementById("stage-pips");
+  if (pipsHost) {
+    if (pipsHost.childElementCount === 0) {
+      for (const stage of STAGES) {
+        const pip = document.createElement("span");
+        pip.className = "stage-pip";
+        pip.style.left = `${(stage.from / ROAD_LENGTH) * 100}%`;
+        pip.setAttribute("data-from", String(stage.from));
+        pipsHost.appendChild(pip);
+      }
+    }
+    const stageIdx = STAGES.reduce((acc, st, i) => (state.s >= st.from ? i : acc), 0);
+    if (cache.get("stage-pips") !== String(stageIdx)) {
+      cache.set("stage-pips", String(stageIdx));
+      Array.from(pipsHost.children).forEach((el, i) => {
+        el.classList.toggle("done", i < stageIdx);
+        el.classList.toggle("active", i === stageIdx);
+      });
+    }
+  }
   setText("ki-num", String(Math.round(Math.max(0, Math.min(1, state.ki / state.kiMax)) * 100)));
   setText("strain-num", String(Math.round(state.strain * 100)));
   setText("days", fmt(state.days));
@@ -420,9 +444,9 @@ function tick(now: number): void {
     renderTime += dt;
   } else if (!stepping() && !paused) renderTime += dt;
   if (started && !paused && counting <= 0 && state.phase !== "run" && !config.manual) outroT += dt;
-  if (started && !resultsShown && state.phase !== "run" && outroT > (RESULT_DELAY[state.phase] ?? 1.5)) { showResults(); resultsT = 0; }
-  // autoplay loops forever: the results card shows for ~3 s, then a fresh run starts
-  if (autoplayOn && resultsShown && !config.manual && (resultsT += dt) > AUTOPLAY_RESULTS_SECONDS) startRun(false);
+  if (started && !resultsShown && state.phase !== "run" && outroT > (RESULT_DELAY[state.phase] ?? 1.5)) { showResults(); autoplayHarness.reset(); }
+  // autoplay loops forever: the results card shows for ~3 s, then a fresh run starts via `createAutoplayHarness`
+  if (!config.manual) autoplayHarness.tick(dt);
   cues();
   if (stepping()) agePrompt(dt);
   render(dt, stepping());
@@ -441,6 +465,7 @@ function begin(): void {
   outroT = 0;
   resultsShown = false;
   autoplay.reset();
+  autoplayHarness.reset();
   runtime?.resetCamera();
 }
 

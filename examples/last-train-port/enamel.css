@@ -7,15 +7,23 @@
 @font-face { font-family: "Lamplight Narrow"; src: url("./fonts/national-2-narrow-700.woff2") format("woff2"); font-weight: 700 900; font-style: normal; font-display: swap; }
 
 html.enamel {
+  --a3g-fg: #f2ead9;
+  --a3g-fg-dim: #b9ab8d;
+  --a3g-accent: #ffc77a;
+  --a3g-accent2: #d4a94f;
+  --a3g-warn: #e0a63f;
+  --a3g-danger: #e0523f;
+  --a3g-bg: rgba(24, 18, 10, 0.8);
+  --a3g-edge: rgba(212, 169, 79, 0.45);
   --enamel: #141f38;
-  --enamel-ring: #e9dfc8;
+  --enamel-ring: var(--a3g-fg, #e9dfc8);
   --brass-hi: #f1d38b;
-  --brass: #b98a3e;
+  --brass: var(--a3g-accent2, #b98a3e);
   --brass-lo: #6f4f1f;
-  --lamp: #ffc77a;
+  --lamp: var(--a3g-accent, #ffc77a);
   --board: #0d1220;
-  --muted: #cfc6b4;
-  --warm: #ffc77a;
+  --muted: var(--a3g-fg-dim, #cfc6b4);
+  --warm: var(--a3g-accent, #ffc77a);
   font-synthesis: none;
 }
 html.enamel body {
@@ -180,17 +188,17 @@ html.enamel #results .row-btns button { border-color: var(--brass); font: 500 14
 
 @media (max-width: 760px) {
   html.enamel .panel { padding: 5px 8px; border-width: 1px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); }
-  html.enamel #top { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 8px; right: 51%; min-width: 0; }
-  html.enamel #top h1 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.enamel #top { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 8px; right: 55%; min-width: 0; }
+  html.enamel #top h1 { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   html.enamel #top .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  html.enamel #stats { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 50%; right: 8px; text-align: right; display: block; }
+  html.enamel #stats { top: var(--a3d-bar-space, max(8px, env(safe-area-inset-top))); left: 46%; right: 8px; text-align: right; display: block; }
   html.enamel #speed { font-size: 20px; }
   html.enamel #stats > .meta.num:not(.tele-row):not(.lean-row) { display: none; }
-  html.enamel #stats .lean-row { justify-content: flex-end; gap: 4px; margin-top: 2px; }
-  html.enamel #lean { width: 68px; height: 12px; }
-  html.enamel #prompt { top: calc(var(--a3d-bar-space, max(8px, env(safe-area-inset-top))) + 68px); left: 8px; right: 8px; transform: none; max-width: none; min-width: 0; padding: 4px 10px; font-size: 13px; }
+  html.enamel #stats .lean-row { justify-content: flex-end; gap: 5px; margin-top: 3px; flex-wrap: wrap; }
+  html.enamel #lean { width: 112px; height: 12px; }
+  html.enamel #prompt { top: calc(var(--a3d-bar-space, max(8px, env(safe-area-inset-top))) + 96px); left: 8px; right: 8px; transform: none; max-width: none; min-width: 0; padding: 4px 10px; font-size: 13px; }
   html.enamel #prompt .meta { display: none; }
-  html.enamel #toast { top: calc(var(--a3d-bar-space, max(8px, env(safe-area-inset-top))) + 102px); }
+  html.enamel #toast { top: calc(var(--a3d-bar-space, max(8px, env(safe-area-inset-top))) + 132px); }
   html.enamel #status { display: none; }
   html.enamel #riders { bottom: calc(max(36px, calc(env(safe-area-inset-bottom) + 30px)) + 64px); left: 8px; max-width: calc(100vw - 16px); padding: 4px 8px; }
   html.enamel #riders .rider { display: none; }

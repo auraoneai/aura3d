@@ -131,8 +131,9 @@ describe("Splat ?autoplay=1 (hands-free loop)", () => {
     expect(autoplayRequested("?autopilot=1")).toBe(true);
     expect(autoplayRequested("?seed=3")).toBe(false);
     const main = readFileSync("examples/splat-rush-port/main.ts", "utf8");
-    expect(main).toContain("const AUTOPLAY = config.autoplay || config.autopilot;");
+    expect(main).toContain("const AUTOPLAY = readAutoplayFlag(");
     expect(main).toContain('if (e.code === "KeyO" && !config.manual && !e.repeat)');
+    expect(readFileSync("examples/splat-rush-port/autoplay.ts", "utf8")).toContain("createAutoplayHarness");
     for (const page of ["examples/splat-rush-port/index.html", "apps/showcase-splat-rush-port/index.html"]) expect(readFileSync(page, "utf8")).toContain("O autoplay");
   });
 

@@ -2,7 +2,7 @@
  * Fixed-step presentation: the sim scrolls obstacles toward the hopper; the hopper's lane x, y and the chase camera
  * interpolate between the last two steps on high-refresh displays. Interpolated values never feed back into the sim.
  */
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import { CONFIG, type BeatHopperSim, type Judgement, type Pose } from "./sim";
 
 export interface CameraPose {
@@ -99,8 +99,15 @@ export function blendShown(a: Shown, b: Shown, t: number): Shown {
   };
 }
 
-export function createBeatPresenter(snapshot: () => Shown): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot, blend: blendShown });
+export function createBeatPresenter(snapshot: () => Shown): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({
+    snapshot,
+    blend: blendShown,
+    snap: (a, b) => {
+      const moved = b.dist - a.dist;
+      return moved < 0 || moved > SNAP_DISTANCE || b.t < a.t;
+    }
+  });
 }
 
 /** Title/results poses (presentation only): a slow orbit around the hopper on the results card. */

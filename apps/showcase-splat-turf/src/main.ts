@@ -9,20 +9,18 @@
  */
 import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
-import { warmPrograms } from "@aura3d/engine/game";
+import { AUTOPLAY_FLAG_NAMES, createAutoplayHarness, createImpactRig, drainPopups, readAutoplayFlag, warmPrograms } from "@aura3d/engine/game";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
-import { createImpactRig } from "../../showcase-port-shared/feel";
-import { drainPopups } from "../../../examples/shared/runner-kit/index";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import { CONFIG, IDLE, SplatTurfSim, TRACE_COLUMNS, coverageGrade, expandScript, parseScript, replay, type Input, type Phase } from "./sim";
 import { ChaseCamera, createTurfPresenter } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
 import { LOOK, QA_CROPS } from "./look";
-import { HudWriter, coveragePercent } from "./hud";
+import { HudWriter, TANK_LOW_PERCENT, coveragePercent, tankPercent } from "./hud";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { createTurfSound, diffSounds, type FrameState } from "./audio";
-import { AutoplayDriver, TurfAutopilot } from "./autopilot";
+import { AutoplayDriver, RESULTS_HOLD_SECONDS, TurfAutopilot } from "./autopilot";
 import { HOWTO_SEEN_KEY, createHowto } from "./howto";
 
 const config = readQaParams({
@@ -50,9 +48,19 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let steps = 0;
-/** `?autoplay=1` = today's `?autostart=1&autopilot=1`; either old flag alone still turns autoplay on. */
-const autoplay = config.autoplay || config.autopilot || config.autostart;
+/** `?autoplay=1` / `?autopilot=1` / `?demo=1` / `?autostart=1` via Aura3D 5.7.2 `readAutoplayFlag` + `createAutoplayHarness`. */
+const autoplay = readAutoplayFlag(location.search, { names: [...AUTOPLAY_FLAG_NAMES, "autostart"] });
 let pilot: AutoplayDriver | null = autoplay ? new AutoplayDriver() : null;
+const autoplayHarness = createAutoplayHarness<Input>({
+  enabled: autoplay,
+  idle: IDLE,
+  bot: { step: () => (pilot ?? (pilot = new AutoplayDriver())).next(sim) },
+  isFinished: () => sim.o.phase === "gameOver" || sim.o.phase === "finished",
+  restartDelay: RESULTS_HOLD_SECONDS,
+  onRestart: () => {
+    pending.start = true;
+  }
+});
 let renderFailed = false;
 const pending: Input = { ...IDLE };
 let nextPopupSeq = 0;
@@ -198,8 +206,9 @@ function reactToFrame(): void {
     }
   }
   prevFrame = frame;
-  // Combo vignette capped at x2.5 (opacity <= ~0.2): at x4-x5 the full pink vignette washed the whole frame out.
-  fx.vignette(Math.min(o.mult, 2.5), false, LOOK.ball, o.time, reducedMotion);
+  // Low-ink crimson vignette pulse when tank <= 25%; otherwise combo vignette capped at x2.5.
+  const lowTank = o.phase === "playing" && tankPercent(o) <= TANK_LOW_PERCENT;
+  fx.vignette(lowTank ? 2.4 : Math.min(o.mult, 2.5), lowTank, lowTank ? "#d92626" : LOOK.ball, o.time, reducedMotion);
 }
 
 /* ------------------------------------------------------------------ frame */
@@ -247,7 +256,7 @@ const loop = createFixedStepLoop({
       if (!keyDragging) { pending.down = true; keyDragging = true; }
       pending.dx += steerDir * 0.2;
     }
-    const input: Input = pilot ? pilot.next(sim) : { ...pending };
+    const input: Input = autoplayHarness.enabled ? (autoplayHarness.step(1 / 60) ?? IDLE) : { ...pending };
     pending.start = pending.down = pending.up = false;
     pending.dx = 0;
     advance(input);
@@ -307,14 +316,16 @@ async function boot(): Promise<void> {
   runtime.warm(false);
   ready = true;
   loading.done();
+  $("load-bar").hidden = true;
   startButton.disabled = false;
   startButton.textContent = "play now";
   startButton.removeAttribute("aria-busy");
   $("splash-best").textContent = `best coverage ${best}%`;
-  if (config.autostart || config.autoplay) {
+  if (autoplay) {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);
     steps = 0;
     pilot = new AutoplayDriver();
+    autoplayHarness.enabled = true;
   }
   render();
   updateHud();
@@ -500,7 +511,8 @@ $("btn-restart").addEventListener("click", () => {
 /** KeyO: hand the run to the autopilot (it also restarts after each results card) or take it back. */
 function toggleAutopilot(): void {
   dropInput();
-  pilot = pilot ? null : new AutoplayDriver();
+  const next = autoplayHarness.toggle();
+  pilot = next ? new AutoplayDriver() : null;
 }
 
 const KEY_DIR: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 };

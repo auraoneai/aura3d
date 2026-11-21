@@ -9,8 +9,7 @@
 import { IDOL_MODELS, idolBellkeeperRightHand, idolSailsNode, syncIdolBellkeeperBody } from "./art/idolModels";
 import { buildSceneColliders } from "./colliders";
 import { camera, effects, environments, geometry, lights, material, scene, type AuraActorAnimationApi, type AuraApp } from "@aura3d/engine";
-import { createImpactRig } from "../../apps/showcase-port-shared/feel";
-import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, createImpactRig } from "@aura3d/engine/game";
 import { ENV_ASSETS, VALLEY_IBL_INTENSITY } from "./env-assets";
 import { createWindVfx } from "./vfx";
 import { FOLLOW_ZOOM, FOLLOW_ZOOM_Y, createCameraSequencer, type SequenceId } from "./camera-seq";
@@ -446,8 +445,9 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
    * reflection and the kite. Every boot view takes them except the bell dusk view, which lost the blind panel with them
    * (g23p4r4b, 0/3/0) and so boots exactly as in 4.7.1.
    */
-  const phase4 = !original && DAYLIGHT_KEYS[options.daylightKey ?? 0]?.id !== "bell";
-  const heroShadow = shadows && phase4 ? 0.85 : 0;
+  const bellKey = DAYLIGHT_KEYS[options.daylightKey ?? 0]?.id === "bell";
+  const phase4 = !original && !bellKey;
+  const heroShadow = shadows ? (phase4 ? 0.85 : bellKey ? 0.45 : 0) : 0;
   /** Reduced motion: smaller bell swing, slower grass and leaf sway, a gentler voyage camera. */
   const motion = (): number => (options.reducedMotion?.() ? 0.3 : 1);
   const rand = lehmer(20261022);
@@ -470,16 +470,14 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       target: [START.x, 0, START.z],
       color: linearToHex(k0.sunColor),
       intensity: k0.engineSunIntensity,
-      // GU47 phase 4: one cascade. With two, a single wide draw (the terrain, the merged grass, the scenery batch) picks its
-      // cascade from its world centre, lands in the far split and samples outside that split's light volume near the camera,
-      // so the meadow around the traveller received no sun shadow at all.
-      shadow: shadows ? (phase4 ? { cascades: 1, mapSize: 2048, filter: "pcss", maxDistance: 60 } : { cascades: 2, mapSize: 2048, filter: "pcss", maxDistance: 70 }) : false
+      // GU47 phase 4: one cascade with calibrated 5.7.2 softness (2.2 texels) for painterly penumbra.
+      shadow: shadows ? (phase4 ? { cascades: 1, mapSize: 2048, filter: "pcss", softness: 2.2, maxDistance: 60 } : { cascades: 2, mapSize: 2048, filter: "pcss", softness: 2.2, maxDistance: 70 }) : false
     }).runtime({ id: "sun" }));
     builder.add(lights.hemisphere({ name: "valley sky fill", skyColor: linearToHex(k0.hemiSky), groundColor: linearToHex(k0.hemiGround), intensity: HEMI_INTENSITY }).runtime({ id: "sky-fill" }));
     builder.add(environments.hdri({ name: "valley ibl", texture: ENV_ASSETS.valleyIbl as never, intensity: VALLEY_IBL_INTENSITY, background: false }));
     sc.lanterns.forEach((p, i) => builder.add(lights.point({ name: `lantern ${i}`, position: [p.x, p.y, p.z], color: "#ffbf66", intensity: 0, distance: LANTERN_RANGE }).runtime({ id: `lantern-light-${i}` })));
     builder.add(lights.point({ name: "traveller fill", position: [START.x, 2.3, START.z + TRAVELLER_FILL.toward], color: TRAVELLER_FILL.color, intensity: isDuskKey(options.daylightKey ?? 0) ? 0 : TRAVELLER_FILL.intensity, distance: TRAVELLER_FILL.distance }).runtime({ id: "traveller-fill" }));
-    builder.add(lights.point({ name: "bell brass", position: [sc.bellHang.x, sc.bellHang.y - 0.45, sc.bellHang.z + 0.25], color: "#ffcf7a", intensity: 0, distance: 6 }).runtime({ id: "bell-light" }));
+    builder.add(lights.point({ name: "bell brass", position: [sc.bellHang.x, sc.bellHang.y - 0.45, sc.bellHang.z + 0.25], color: "#ffd488", intensity: 0, distance: 7.5 }).runtime({ id: "bell-light" }));
   }
 
   /* ---- terrain with baked shadows ---- */
@@ -1206,7 +1204,25 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           // WW47-C2 (part): a storybook 40-degree lens on landscape; portrait keeps 50 so the traveller stays in frame
           const follow = { position: cp, target: followTarget, fov: framing ? framing.fov : aspect < 1 ? PORTRAIT_FOLLOW_FOV : 43 };
           const shownSeq = sequencer.update(dt, follow) ?? follow;
-          const shown = CAPTURE_CAMVIEW ? captureView(CAPTURE_CAMVIEW, x, y + hop, z) : shownSeq;
+          // Presentation-only title framing: shift target gently left/down so the Bellkeeper frames unobstructed beside
+          // the desktop card and above the compact mobile bottom-sheet card while titleVisible() is true.
+          const onTitle = Boolean(options.titleVisible?.()) && !CAPTURE_CAMVIEW;
+          const titlePose = onTitle
+            ? {
+                position: [
+                  shownSeq.position[0] + (aspect < 1 ? 0.35 : -1.15),
+                  shownSeq.position[1] + (aspect < 1 ? 0.35 : -0.18),
+                  shownSeq.position[2]
+                ] as [number, number, number],
+                target: [
+                  shownSeq.target[0] + (aspect < 1 ? 0.2 : -1.45),
+                  shownSeq.target[1] + (aspect < 1 ? -0.65 : -0.25),
+                  shownSeq.target[2]
+                ] as [number, number, number],
+                fov: shownSeq.fov
+              }
+            : shownSeq;
+          const shown = CAPTURE_CAMVIEW ? captureView(CAPTURE_CAMVIEW, x, y + hop, z) : titlePose;
           const eyePos: [number, number, number] = impact && !CAPTURE_CAMVIEW
             ? [shown.position[0] + impact.shakeOffset[0] * 0.35, shown.position[1] + impact.shakeOffset[1] * 0.35, shown.position[2] + impact.shakeOffset[2] * 0.35]
             : shown.position;

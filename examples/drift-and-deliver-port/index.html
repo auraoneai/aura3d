@@ -9,11 +9,19 @@
     <style>
       :root {
         color-scheme: dark;
+        --a3g-fg: #f5f7fa;
+        --a3g-fg-dim: #aab4c0;
+        --a3g-accent: #ffcf3f;
+        --a3g-accent2: #22c3c9;
+        --a3g-warn: #ff9f1c;
+        --a3g-danger: #ef233c;
+        --a3g-bg: rgba(10, 12, 16, 0.78);
+        --a3g-edge: rgba(255, 207, 63, 0.45);
         --ink: #f7f1e6;
-        --muted: rgba(239, 227, 207, 0.72);
-        --panel: rgba(20, 18, 22, 0.82);
-        --panel-strong: rgba(16, 15, 19, 0.9);
-        --line: rgba(247, 241, 230, 0.14);
+        --muted: rgba(239, 227, 207, 0.74);
+        --panel: rgba(14, 15, 20, 0.80);
+        --panel-strong: rgba(12, 13, 18, 0.90);
+        --line: rgba(247, 241, 230, 0.16);
         --warm: #f5a623;
         --teal: #22c3c9;
         --danger: #ff6b57;
@@ -34,7 +42,7 @@
       }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
       .hidden { display: none !important; }
-      h1 { margin: 0; font-family: var(--font-ui); font-size: 24px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+      :is(h1, .a3d-h1) { margin: 0; font-family: var(--font-ui); font-size: 24px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
       .meta { font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
       button {
         min-height: 44px;
@@ -62,6 +70,14 @@
         background: rgba(16, 14, 18, 0.56);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
+      }
+      /* Left-docked title card over live harbor view — zero full-screen blur curtain. */
+      #splash.overlay {
+        place-items: center start;
+        padding: calc(var(--a3d-bar-space, 40px) + 16px) 16px calc(36px + env(safe-area-inset-bottom, 0px)) clamp(16px, 5vw, 56px);
+        background: linear-gradient(90deg, rgba(12, 13, 18, 0.84) 0%, rgba(12, 13, 18, 0.42) 44%, rgba(12, 13, 18, 0) 76%);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
       }
       .aura3d-loading { color: var(--warm); background: rgba(255, 246, 230, 0.14); height: 6px; border-radius: 999px; }
       .panel {
@@ -187,7 +203,7 @@
         color: #ffe08a;
       }
 
-      /* Top-center shift countdown & dispatch ticket — cleared below Aura3D top bar */
+      /* Top-center shift countdown; dispatch ticket docked top-left off the road vanishing point */
       #clock {
         position: absolute;
         top: calc(var(--a3d-bar-space, 40px) + 8px);
@@ -208,8 +224,8 @@
       #job {
         position: absolute;
         top: calc(var(--a3d-bar-space, 40px) + 48px);
-        left: 50%;
-        transform: translateX(-50%);
+        left: 20px;
+        transform: none;
         font-family: var(--font-mono);
         font-size: 13px;
         font-weight: 400;
@@ -383,9 +399,11 @@
       body.dispatch #speedbox .meta { position: relative; font-size: 12px; line-height: 1.05; margin-top: 1px; }
       body.dispatch #job {
         top: calc(var(--a3d-bar-space, 40px) + 50px);
+        left: 20px;
+        transform: none;
         padding: 6px 14px 7px;
         min-width: 168px;
-        text-align: center;
+        text-align: left;
         color: #1f242b;
         font-family: var(--font-mono);
         font-size: 13px;
@@ -404,17 +422,17 @@
       body.dispatch #job.low { color: #b2321f; }
       body.dispatch #stamp {
         position: absolute;
-        top: calc(var(--a3d-bar-space, 40px) + 46px);
-        left: 50%;
+        top: calc(var(--a3d-bar-space, 40px) + 54px);
+        left: 20px;
         display: block;
         opacity: 0;
-        transform: translateX(-50%) rotate(-8deg);
+        transform: rotate(-7deg);
         padding: 4px 12px;
         border: 2.5px solid #d9765f;
         border-radius: 4px;
         color: #d9765f;
         font-family: var(--font-ui);
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 600;
         line-height: 1.1;
         letter-spacing: 0.12em;
@@ -424,10 +442,10 @@
       body.dispatch.reduced-motion #stamp.on { animation-name: stamp-fade; }
       @media (prefers-reduced-motion: reduce) { body.dispatch #stamp.on { animation-name: stamp-fade; } }
       @keyframes stamp {
-        0% { opacity: 0; transform: translateX(-50%) rotate(-8deg) scale(1.65); }
-        14% { opacity: 1; transform: translateX(-50%) rotate(-8deg) scale(1); }
+        0% { opacity: 0; transform: rotate(-7deg) scale(1.55); }
+        14% { opacity: 1; transform: rotate(-7deg) scale(1); }
         75% { opacity: 1; }
-        100% { opacity: 0; transform: translateX(-50%) rotate(-8deg) scale(1); }
+        100% { opacity: 0; transform: rotate(-7deg) scale(1); }
       }
       @keyframes stamp-fade { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
       body.dispatch #minimap {
@@ -440,43 +458,65 @@
         button, .tbtn { min-width: 48px; min-height: 48px; }
       }
       @media (max-width: 760px) {
-        #score-box { top: calc(var(--a3d-bar-space, 40px) + 8px); right: 12px; padding: 6px 10px; }
-        #score { font-size: 22px; }
+        #splash.overlay {
+          place-items: end center;
+          padding: calc(var(--a3d-bar-space, 40px) + 12px) 12px calc(44px + env(safe-area-inset-bottom, 0px));
+          background: linear-gradient(0deg, rgba(12, 13, 18, 0.86) 0%, rgba(12, 13, 18, 0.36) 48%, rgba(12, 13, 18, 0) 80%);
+        }
+        #splash .title { width: min(400px, calc(100vw - 24px)); padding: 14px 16px; gap: 9px; }
+        #splash .title h1 { font-size: 24px; }
+        /* Compact 1-line TIPS pill above the 96x96 minimap */
+        #score-box {
+          top: calc(var(--a3d-bar-space, 40px) + 8px);
+          right: 12px;
+          padding: 5px 10px;
+          display: flex;
+          align-items: baseline;
+          gap: 7px;
+          border-radius: 999px;
+        }
+        #score-box .score-caption { font-size: 11px; }
+        #score { font-size: 19px; line-height: 1; }
+        #count { display: none; }
+        #streak:empty, #drift-row[style*="opacity: 0"] { display: none; }
         #mute { top: calc(var(--a3d-bar-space, 40px) + 8px); left: 12px; }
-        #clock { top: calc(var(--a3d-bar-space, 40px) + 62px); left: 12px; transform: none; font-size: 20px; padding: 4px 11px; }
+        #clock { top: calc(var(--a3d-bar-space, 40px) + 46px); left: 12px; transform: none; font-size: 19px; padding: 4px 11px; }
+        body.touch #clock { top: calc(var(--a3d-bar-space, 40px) + 60px); }
         #job, body.dispatch #job {
-          top: calc(var(--a3d-bar-space, 40px) + 100px);
+          top: calc(var(--a3d-bar-space, 40px) + 84px);
           left: 12px;
           transform: none;
           min-width: 0;
-          font-size: 12px;
-          padding: 5px 11px 6px;
+          font-size: 11px;
+          padding: 4px 10px 5px;
         }
-        body.dispatch #stamp { top: calc(var(--a3d-bar-space, 40px) + 98px); left: 12px; transform: rotate(-8deg); font-size: 16px; }
+        body.touch #job, body.dispatch.touch #job { top: calc(var(--a3d-bar-space, 40px) + 98px); }
+        body.dispatch #stamp { top: calc(var(--a3d-bar-space, 40px) + 84px); left: 12px; transform: rotate(-7deg); font-size: 15px; }
         #minimap, body.touch #minimap {
-          top: calc(var(--a3d-bar-space, 40px) + 116px);
+          top: calc(var(--a3d-bar-space, 40px) + 46px);
           bottom: auto;
           right: 12px;
           width: 96px;
           height: 96px;
         }
-        #nitro { left: 12px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 152px; padding: 8px 10px; }
-        body.touch #nitro { left: 14px; bottom: calc(176px + env(safe-area-inset-bottom, 0px)); width: 146px; }
+        /* Keep bottom pods clear of the bottom-docked Aura3D credit pill (credit stays at bottom edge, never mid-road). */
+        #nitro { left: 12px; bottom: calc(44px + env(safe-area-inset-bottom, 0px)); width: 146px; padding: 7px 10px; }
+        body.touch #nitro { left: 14px; bottom: calc(176px + env(safe-area-inset-bottom, 0px)); width: 144px; }
         #speedbox, body.dispatch #speedbox {
           left: auto;
           right: 12px;
-          bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+          bottom: calc(44px + env(safe-area-inset-bottom, 0px));
           transform: none;
-          width: 112px;
-          height: 108px;
+          width: 108px;
+          height: 102px;
           padding: 3px 4px 6px;
         }
         body.touch #speedbox, body.dispatch.touch #speedbox {
           right: 12px;
           bottom: calc(194px + env(safe-area-inset-bottom, 0px));
         }
-        body.dispatch #dial { width: 98px; height: 98px; margin: 0 auto -35px; }
-        #speed, body.dispatch #speed { font-size: 22px; }
+        body.dispatch #dial { width: 92px; height: 92px; margin: 0 auto -32px; }
+        #speed, body.dispatch #speed { font-size: 21px; }
       }
     </style>
   </head>
@@ -530,14 +570,14 @@
     </div>
     <div id="pause" class="overlay hidden">
       <div class="panel">
-        <h1>Shift Paused</h1>
+        <div role="heading" aria-level="2" class="a3d-h1">Shift Paused</div>
         <div class="meta">Dispatch timer held. Press P or Esc, or tap Resume, to continue your run.</div>
         <button id="resume">Resume Shift</button>
       </div>
     </div>
     <div id="results" class="overlay hidden">
       <div class="panel results" role="dialog" aria-labelledby="r-title">
-        <h1 id="r-title">Shift Complete</h1>
+        <div role="heading" aria-level="2" class="a3d-h1" id="r-title">Shift Complete</div>
         <dl class="meta">
           <dt>Total Tips</dt><dd id="r-score">0</dd>
           <dt>Shift Best</dt><dd id="r-best">0</dd>
@@ -551,7 +591,7 @@
     </div>
     <div id="loading" class="overlay">
       <div class="panel">
-        <h1 id="loading-title">Preparing Downtown Grid</h1>
+        <div role="heading" aria-level="2" class="a3d-h1" id="loading-title">Preparing Downtown Grid</div>
         <div class="aura3d-loading" id="loading-bar" role="progressbar" aria-labelledby="loading-title" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
         <div class="meta" id="loading-status">Building blocks, buildings and traffic.</div>
       </div>

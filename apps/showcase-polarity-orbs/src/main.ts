@@ -9,12 +9,10 @@
  */
 import "../../showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
-import { warmPrograms } from "@aura3d/engine/game";
-import { drainPopups } from "../../../examples/shared/runner-kit/popups";
+import { AUTOPLAY_FLAG_NAMES, createAutoplayHarness, createImpactRig, drainPopups, readAutoplayFlag, warmPrograms } from "@aura3d/engine/game";
 import { createLoadingProgress } from "../../../examples/shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
-import { createImpactRig } from "../../showcase-port-shared/feel";
 import { IDLE, PolarityOrbsSim, TRACE_COLUMNS, replay, type Input, type Phase } from "./sim";
 import { CameraRig, createPolarityPresenter, viewOf } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
@@ -53,11 +51,21 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let steps = 0;
-/** `?autoplay=1` == `?autostart=1&autopilot=1`; either alias alone turns the looping attract pilot on too. */
-const autoStart = config.autoplay || config.autostart;
-const autoPilot = autoStart || config.autopilot;
+/** `?autoplay=1` / `?autopilot=1` / `?demo=1` / `?autostart=1` via Aura3D 5.7.2 `readAutoplayFlag` + `createAutoplayHarness`. */
+const autoStart = readAutoplayFlag(location.search, { names: ["autoplay", "demo", "autostart"] });
+const autoPilot = readAutoplayFlag(location.search, { names: [...AUTOPLAY_FLAG_NAMES, "autostart"] });
 const makePilot = (): Autopilot => new Autopilot({ restartAfterSteps: AUTOPLAY_RESULTS_STEPS });
 let pilot: Autopilot | null = autoPilot ? makePilot() : null;
+const autoplayHarness = createAutoplayHarness<Input>({
+  enabled: autoPilot,
+  idle: IDLE,
+  bot: { step: () => (pilot ?? (pilot = makePilot())).next(sim, steps) },
+  isFinished: () => sim.o.phase === "gameOver",
+  restartDelay: AUTOPLAY_RESULTS_STEPS / 60,
+  onRestart: () => {
+    pending.start = true;
+  }
+});
 let renderFailed = false;
 const pending: Input = { ...IDLE };
 let nextPopupSeq = 0;
@@ -164,7 +172,8 @@ function reactToFrame(): void {
       if (event.sound === "flip") impactRig.trigger({ trauma: 0.14, fovKickDeg: 1.4 });
       else if (event.sound === "collect" && o.mult >= 3) impactRig.trigger({ trauma: 0.08, fovKickDeg: 0.65 });
       else if (event.sound === "powerup" || event.sound === "milestone") impactRig.trigger({ freezeSeconds: 0.028, trauma: 0.28, fovKickDeg: 2.6 });
-      else if (event.sound === "block" || event.sound === "wrong") impactRig.trigger({ freezeSeconds: 0.042, trauma: 0.5, fovKickDeg: -2.2 });
+      else if (event.sound === "block") impactRig.trigger({ freezeSeconds: 0.026, trauma: 0.28, fovKickDeg: 1.2 });
+      else if (event.sound === "wrong") impactRig.trigger({ freezeSeconds: 0.048, trauma: 0.56, fovKickDeg: -2.6 });
       else if (event.sound === "burst") impactRig.trigger({ freezeSeconds: 0.052, trauma: 0.65, fovKickDeg: 3.2 });
     }
   }
@@ -223,7 +232,7 @@ const loop = createFixedStepLoop({
       if (!keyDragging) { pending.down = true; keyDragging = true; }
       pending.dx += keyDir * 12;
     }
-    const input: Input = pilot ? pilot.next(sim, steps) : { ...pending };
+    const input: Input = autoplayHarness.enabled ? (autoplayHarness.step(1 / 60) ?? IDLE) : { ...pending };
     pending.start = pending.down = pending.up = false;
     pending.dx = 0;
     pending.tap = false;
@@ -298,7 +307,8 @@ async function boot(): Promise<void> {
   runtime.warm(false);
   ready = true;
   loading.done();
-  $("load-label").textContent = "Ready";
+  $("load-bar").hidden = true;
+  $("load-label").hidden = true;
   startButton.disabled = false;
   startButton.textContent = "PLAY NOW";
   startButton.removeAttribute("aria-busy");
@@ -307,6 +317,7 @@ async function boot(): Promise<void> {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);
     steps = 0;
     if (!pilot) pilot = makePilot();
+    autoplayHarness.enabled = true;
   }
   if (!isPageHidden() || config.manual) render();
   updateHud();
@@ -493,12 +504,14 @@ const held = new Set<string>();
 /** KeyO: hand the ball to the autopilot (looping attract play) or take it back mid-run. */
 function toggleAutopilot(): void {
   dropInput();
-  if (pilot) {
+  if (autoplayHarness.enabled) {
+    autoplayHarness.enabled = false;
     pilot = null;
     pending.up = true;
     return;
   }
   pilot = makePilot();
+  autoplayHarness.enabled = true;
   if (paused) setPaused(false);
 }
 

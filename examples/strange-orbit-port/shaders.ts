@@ -119,8 +119,8 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
-/** GU47 phase 4: strength of the glazed racing line's sky / gas giant reflection (gouache). */
-export const TRACK_GLAZE = 0.94;
+/** GU47 phase 4: strength of the glazed racing line's sky / gas giant reflection (gouache; softened in 5.7.2 to cut specular glare). */
+export const TRACK_GLAZE = 0.72;
 export const EARTHRISE_RADIUS = 95;
 /** Cosine of the gas giant's angular radius seen from the orbit ring (520 m across, about 890 m out). */
 const GIANT_COS = Math.cos(Math.atan(LOOKS.gouache.planet.size / 2 / Math.hypot(GIANT_POSITION[0], GIANT_POSITION[2])));
@@ -209,7 +209,7 @@ void main() {
   refl = mix(refl, vec3(0.46, 0.78, 1.0), smoothstep(EARTHRISE_COS - 0.005, EARTHRISE_COS + 0.005, ed) * 0.85);
   vec3 sunDir = normalize(u_a3dSunDirection);
   float sunVis = a3dSunShadowAuto(vWorld, N);
-  refl += normalize(u_a3dSunColor + 1e-4) * pow(max(dot(Rg, sunDir), 0.0), 260.0) * 5.0 * sunVis;
+  refl += normalize(u_a3dSunColor + 1e-4) * pow(max(dot(Rg, sunDir), 0.0), 260.0) * 3.2 * sunVis;
   lit += refl * fres * polish * GLAZE;
   // Voronoi lunar regolith glass-bead micro-sparkle (agglutinates glinting under grazing 18-degree sun on dusty shoulders).
   vec4 cell = regolithVoronoi(vWorld.xz * 24.0 + vec2(vWorld.y * 11.0, vWorld.x * 3.0));

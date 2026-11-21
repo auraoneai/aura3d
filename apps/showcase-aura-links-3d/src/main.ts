@@ -35,11 +35,14 @@ import {
   world
 } from "@aura3d/engine";
 import {
-  createFixedStepPresenter,
+  HUD_THEMES,
+  createFlipbookAtlas,
+  createGradingLut,
+  createImpactRig,
   createJuice,
   createOverlayDriver,
-  createRecordBlend,
   createRumbleDriver,
+  createSnapshotInterpolator,
   createTweenEngine,
   createFxParticlePass,
   mountTouchControls,
@@ -47,11 +50,11 @@ import {
   sfxUrl,
   installGameBeacon,
   warmPrograms,
+  type GradingLutPreset
 } from "@aura3d/engine/game";
+import "../../showcase-port-shared/hud-tokens.css";
 import "../../showcase-port-shared/quickbar.css";
 import { dualAnimatedWaterSpec } from "../../showcase-port-shared/dual-shaders";
-import { createImpactRig } from "../../showcase-port-shared/feel";
-import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
 import { labAppOptions, readLabFlags, labCameraOptions } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { formatBackendSelection, publishBackendReport } from "../../showcase-port-shared/backend-report";
@@ -105,7 +108,7 @@ import { applyGolferFit, buildGolferNodes, golferTelemetry, golferVariantFromSea
 import { sweptClubContact, type ClubContact } from "./game/contact";
 import { commitStroke } from "./game/strokeCommit";
 import { COURSE_LOOKS, contactShadowIntensity, courseFill, flagFlutterAmplitude, hasBlackSky, type LinksTier } from "./game/lighting";
-import { buildCourseRig } from "./game/lookRig";
+import { buildCourseRig, courseLutPreset } from "./game/lookRig";
 import { landingVfxFor, registerLinksVfx, type LinksVfxId } from "./game/vfx";
 import { IMPACT_FOV_KICK_DEG, cupCamPose, flyoverAllowed, flyoverShots, tracerCamPose, wantsCupCam, wantsTracerCam } from "./game/broadcast";
 import { linksQaCrops } from "./game/qaCrops";
@@ -999,15 +1002,57 @@ let impactFrameState: ReturnType<typeof impactRig.step> = {
   shakeRoll: 0,
   fovDeltaDeg: 0
 };
-const ballPresenter = createFixedStepPresenter<{ pos: Vec3 }>({
-  snapshot: () => ({
-    pos: state.ball
-      ? ([state.ball.pos[0], state.ball.pos[1], state.ball.pos[2]] as Vec3)
-      : state.round
-        ? ([state.round.ballPos[0], state.round.ballPos[1], state.round.ballPos[2]] as Vec3)
-        : ([0, 0, 0] as Vec3)
-  }),
-  blend: createRecordBlend<{ pos: Vec3 }>({ snapDistance: 8, position: (s) => s.pos })
+const LINKS_LUTS = {
+  "broadcast-crisp": createGradingLut("broadcast-crisp", 16),
+  "cinema-warm": createGradingLut("cinema-warm", 16),
+  "cyber-neon": createGradingLut("cyber-neon", 16)
+} as const satisfies Record<GradingLutPreset, ReturnType<typeof createGradingLut>>;
+for (const lut of Object.values(LINKS_LUTS)) {
+  lut.texture.wrapS = "clamp";
+  lut.texture.wrapT = "clamp";
+  lut.texture.minFilter = "linear";
+  lut.texture.magFilter = "linear";
+}
+let labOutputOverride: Record<string, unknown> | undefined;
+
+function outputOptionsForCourse(course: CourseSpec, baseOutput: Record<string, unknown> = {}): Record<string, unknown> {
+  const lutEnabled = lookMode !== "original" && presentationParams.get("lut") !== "off";
+  const lut = LINKS_LUTS[courseLutPreset(course.id)];
+  return {
+    ...baseOutput,
+    toneMapping: "agx",
+    dither: true,
+    ...(lutEnabled ? { lut: { texture: lut.texture, size: lut.size, intensity: 0.28 } } : {}),
+    ...(labOutputOverride ?? {})
+  };
+}
+
+function applyCourseOutput(course: CourseSpec): void {
+  if (!auraApp || labOutputOverride) return;
+  try {
+    const baseAppOpts = looks.appOptions(course.look) as Record<string, any>;
+    (auraApp as any).setOutput?.(outputOptionsForCourse(course, (baseAppOpts.output ?? {}) as Record<string, unknown>));
+  } catch { /* fallback if output surface is unavailable */ }
+}
+
+const ballPresenter = createSnapshotInterpolator<{ pos: [number, number, number] }>({
+  create: () => ({ pos: [0, 0, 0] }),
+  snapshot: (out) => {
+    const src = state.ball ? state.ball.pos : state.round ? state.round.ballPos : ([0, 0, 0] as Vec3);
+    const dst = out ?? { pos: [0, 0, 0] as [number, number, number] };
+    dst.pos[0] = src[0];
+    dst.pos[1] = src[1];
+    dst.pos[2] = src[2];
+    return dst;
+  },
+  blend: (a, b, t, out) => {
+    const dst = out ?? { pos: [0, 0, 0] as [number, number, number] };
+    dst.pos[0] = lerp(a.pos[0], b.pos[0], t);
+    dst.pos[1] = lerp(a.pos[1], b.pos[1], t);
+    dst.pos[2] = lerp(a.pos[2], b.pos[2], t);
+    return dst;
+  },
+  snap: { distance: 8, position: (s) => s.pos }
 });
 const isCoarseViewport = (): boolean =>
   (window.matchMedia?.("(pointer: coarse)")?.matches ?? false) || (window.innerWidth > 0 && window.innerWidth <= 760);
@@ -2147,24 +2192,62 @@ function advanceHole(): void {
   startHole(next);
 }
 
-/** closing scorecard (audit C19): hole-by-hole strokes against par, totals, and the skins result in Skins mode */
+/** closing scorecard (audit C19 + 5.7.2): frosted Masters-grade card with par symbols, totals, stats and PLAY NEXT COURSE CTA */
 function renderFinalCard(title: string, foot: string): void {
   const card = state.card;
   const box = $("final-card");
   if (!card || !box) return;
   const holes = card.holes;
+  const scoreClass = (h: (typeof holes)[number]): string => {
+    if (!holePlayed(h)) return "";
+    const diff = h.strokes - h.par;
+    if (diff <= -2) return "under eagle";
+    if (diff === -1) return "under birdie";
+    if (diff === 0) return "even";
+    if (diff === 1) return "over bogey";
+    return "over double";
+  };
   const cells = (pick: (h: (typeof holes)[number]) => string, cls?: (h: (typeof holes)[number]) => string) =>
-    holes.map((h) => `<td${cls ? ` class="${cls(h)}"` : ""}>${pick(h)}</td>`).join("");
+    holes.map((h) => `<td${cls && cls(h) ? ` class="${cls(h)}"` : ""}>${pick(h)}</td>`).join("");
   const tp = card.toPar === 0 ? "E" : card.toPar > 0 ? `+${card.toPar}` : `${card.toPar}`;
+  const played = holes.filter(holePlayed);
+  const totalPutts = played.reduce((s, h) => s + h.putts, 0);
+  const underCount = played.filter((h) => h.strokes < h.par).length;
+  const parCount = played.filter((h) => h.strokes === h.par).length;
   $("fc-title")!.textContent = title;
+  const tpBadge = $("fc-topar");
+  if (tpBadge) {
+    tpBadge.textContent = tp;
+    tpBadge.classList.toggle("good", card.toPar <= 0);
+    tpBadge.classList.toggle("bad", card.toPar > 0);
+  }
+  const sub = $("fc-sub");
+  if (sub) sub.textContent = `${state.course.name} · ${card.totalStrokes} STROKES (${playedPar(card)} PAR)`;
   $("fc-table")!.innerHTML =
     `<tr><th>HOLE</th>${holes.map((h) => `<th>${h.hole}</th>`).join("")}<th>TOT</th></tr>` +
     // the PAR total sums only the holes played, so it matches the YOU total beside it (par 12 over 3 holes, not 36)
     `<tr><td>PAR</td>${cells((h) => String(h.par))}<td>${playedPar(card)}</td></tr>` +
     // a hole not played this round (started mid-round with ?hole=N) reads "–", not a 0 under par
-    `<tr><td>YOU</td>${cells((h) => (holePlayed(h) ? String(h.strokes) : "–"), (h) => (!holePlayed(h) ? "" : h.strokes < h.par ? "under" : h.strokes > h.par ? "over" : ""))}<td>${card.totalStrokes}</td></tr>`;
+    `<tr><td>YOU</td>${cells((h) => (holePlayed(h) ? `<span class="fc-mark">${h.strokes}</span>` : "–"), scoreClass)}<td>${card.totalStrokes}</td></tr>`;
+  const stats = $("fc-stats");
+  if (stats) {
+    stats.innerHTML =
+      `<span><b>${underCount}</b> BIRDIE+</span>` +
+      `<span><b>${parCount}</b> PARS</span>` +
+      `<span><b>${totalPutts}</b> PUTTS</span>`;
+  }
   $("fc-foot")!.textContent = `${state.course.name.toUpperCase()} · ${tp} · ${foot}`;
+  const nextBtn = $("fc-next-course");
+  if (nextBtn) {
+    const nextCourse = COURSES[nextAutoplayCourse(COURSE_ORDER, state.courseId)];
+    nextBtn.textContent = state.mode === "tour" && !tourFinished(state.tour)
+      ? "NEXT CIRCUIT ROUND"
+      : `PLAY NEXT COURSE · ${nextCourse?.shortName ?? "NEXT"}`;
+  }
   box.classList.add("show");
+  // The frosted scorecard replaces bare floating text over the clubhouse facade
+  $("msg")?.classList.remove("show");
+  msgTimer = 0;
 }
 
 function hideFinalCard(): void {
@@ -2181,32 +2264,28 @@ function finishRound(): void {
     renderBracket();
     const t = state.tour;
     if (!t.playerAlive) {
-      showMsg("CUT — CIRCUIT OVER", `finished ${toPar >= 0 ? "+" : ""}${toPar} · field advanced`, 4000);
       pushEvent("tour", "missed the cut — circuit over", "warning");
     } else if (t.round === "champion") {
-      showMsg("PRO CIRCUIT CHAMPION", `${toPar >= 0 ? "+" : ""}${toPar} through the final`, 5200);
       pushEvent("tour", "pro circuit champion!", "success");
       void audio?.cue("win");
     } else {
-      showMsg(`ADVANCE — ${t.round.toUpperCase()}`, `carded ${toPar >= 0 ? "+" : ""}${toPar}`, 3400);
       pushEvent("tour", `advanced to ${t.round}`, "success");
       state.tourHoleStart += 9;
     }
     updateModeChips();
-    renderFinalCard(`PRO CIRCUIT · ${t.playerAlive ? (t.round === "champion" ? "CHAMPION" : t.round.toUpperCase()) : "CUT"}`, t.playerAlive && t.round !== "champion" ? "MENU — NEXT ROUND" : "MENU — NEW CIRCUIT");
+    renderFinalCard(`PRO CIRCUIT · ${t.playerAlive ? (t.round === "champion" ? "CHAMPION" : t.round.toUpperCase()) : "CUT"}`, t.playerAlive && t.round !== "champion" ? "NEXT CIRCUIT ROUND" : "NEW CIRCUIT");
+  } else if (state.mode === "skins") {
     const r = state.round!;
     // a pot still carried after hole 9 is shown, not silently dropped (audit C19)
     const pot = r.skinsPot > 0 ? ` · ${r.skinsPot} carried, unclaimed` : "";
-    showMsg("SKINS MATCH OVER", `${r.skinsWon} of 9 skins won${pot} · ${toPar >= 0 ? "+" : ""}${toPar}`, 4000);
     renderFinalCard("SKINS MATCH OVER", `SKINS WON ${r.skinsWon} OF 9${r.skinsPot > 0 ? ` · ${r.skinsPot} UNCLAIMED` : ""}`);
     pushEvent("skins", `match over — ${r.skinsWon} skins won${pot}`, "info");
   } else {
-    showMsg("ROUND COMPLETE", `${card.totalStrokes} strokes · ${toPar >= 0 ? "+" : ""}${toPar} vs par ${playedPar(card)}`, 4200);
-    renderFinalCard("ROUND COMPLETE", `${card.totalStrokes} STROKES · MENU FOR A NEW ROUND`);
+    renderFinalCard("ROUND COMPLETE", `${card.totalStrokes} STROKES · ${toPar >= 0 ? "+" : ""}${toPar} VS PAR ${playedPar(card)}`);
     pushEvent("round", `round complete: ${toPar >= 0 ? "+" : ""}${toPar}`, toPar <= 0 ? "success" : "info");
     if (toPar < 0) void audio?.cue("win");
   }
-  setPrompt("MENU — NEW ROUND");
+  setPrompt(null);
 }
 
 /* ------------------------------------------------------------------ *
@@ -2259,7 +2338,7 @@ function continueAfterRound(): void {
   else setMode(state.mode === "menu" ? "quick" : state.mode);
 }
 
-/** highlight the current course in the top bar and the menu (also on boot, so ?course= is reflected) */
+/** highlight the current course in the top bar, mobile picker, and the menu (also on boot, so ?course= is reflected) */
 function syncCourseButtons(): void {
   const id = state.courseId;
   for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-course]"))) {
@@ -2269,6 +2348,8 @@ function syncCourseButtons(): void {
   for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-course-menu]"))) {
     b.classList.toggle("active", b.dataset.courseMenu === id);
   }
+  const picker = $<HTMLSelectElement>("course-select");
+  if (picker && picker.value !== id) picker.value = id;
 }
 
 function selectCourse(id: CourseId, restart = true): void {
@@ -2276,6 +2357,7 @@ function selectCourse(id: CourseId, restart = true): void {
   state.courseId = id;
   state.course = COURSES[id]!;
   applyCourseAccent();
+  applyCourseOutput(state.course);
   syncCourseButtons();
   if (restart) {
     startRound();
@@ -2295,10 +2377,10 @@ function syncMobileDock(): void {
   const active = state.phase === "address" || state.phase === "swing";
   dock.classList.toggle("active", active);
   if (state.phase === "address") {
-    swingBtn.textContent = "SWING";
+    swingBtn.textContent = "TAP TO SWING";
   } else if (state.phase === "swing") {
     const ph = state.swing.state().phase;
-    swingBtn.textContent = ph === "power" ? "LOCK PWR" : ph === "accuracy" ? "ACCURACY" : "STRIKE";
+    swingBtn.textContent = ph === "power" ? "LOCK POWER" : ph === "accuracy" ? "LOCK SNAP" : "STRIKE";
   }
 }
 
@@ -2323,6 +2405,7 @@ function updateShotTelemetry(): void {
 
 function updateSwingMeter(): void {
   const s = state.swing.state();
+  const meter = $("swing-meter");
   const fill = $("sw-fill"), needle = $("sw-needle"), green = $("sw-green"), perfect = $("sw-perfect");
   const label = $("sw-label");
   const rl = $("sw-readout-l"), rr = $("sw-readout-r");
@@ -2332,13 +2415,14 @@ function updateSwingMeter(): void {
   green.style.left = `${(0.5 - gz) * 100}%`;
   green.style.width = `${gz * 2 * 100}%`;
   perfect.style.left = "calc(50% - 2px)";
+  if (meter) meter.dataset.stage = s.phase;
   if (s.phase === "power") {
     fill.style.width = `${s.meter * 100}%`;
     needle.style.left = `${s.meter * 100}%`;
-    green.style.opacity = "0";
-    perfect.style.opacity = "0";
-    if (label) label.textContent = touch ? "TAP — LOCK POWER" : "SPACE — SET POWER";
-    if (rl) rl.textContent = "";
+    green.style.opacity = "0.28";
+    perfect.style.opacity = "0.4";
+    if (label) label.textContent = touch ? "2. TAP — LOCK POWER" : "2. SPACE — LOCK POWER";
+    if (rl) rl.textContent = "POWER";
     if (rr) rr.textContent = `${Math.round(s.meter * 100)}%`;
   } else if (s.phase === "accuracy") {
     fill.style.width = `${(s.power ?? 0) * 100}%`;
@@ -2346,14 +2430,14 @@ function updateSwingMeter(): void {
     needle.style.left = `${((1 - s.meter) / 2) * 100}%`;
     green.style.opacity = "1";
     perfect.style.opacity = "1";
-    if (label) label.textContent = touch ? "TAP — LOCK ACCURACY · CENTER = PURE" : "SPACE — SET ACCURACY · CENTER = PURE";
-    if (rl) rl.textContent = "◀ DRAW";
-    if (rr) rr.textContent = "FADE ▶";
+    if (label) label.textContent = touch ? "3. TAP — SNAP ON PERFECT" : "3. SPACE — SNAP ON PERFECT";
+    if (rl) rl.textContent = "◀ DRAW · SNAP";
+    if (rr) rr.textContent = "PERFECT · FADE ▶";
   } else if (s.phase === "committed") {
     const spin = s.spin ?? 0;
-    if (label) label.textContent = spin < -0.25 ? "DRAW" : spin > 0.25 ? "FADE" : "PURE CONTACT";
-    if (rl) rl.textContent = `PWR ${Math.round((s.power ?? 0) * 100)}%`;
-    if (rr) rr.textContent = `ACC ${Math.round((s.accuracy ?? 0) * 100)}`;
+    if (label) label.textContent = spin < -0.25 ? "LOCKED · DRAW" : spin > 0.25 ? "LOCKED · FADE" : "LOCKED · PERFECT";
+    if (rl) rl.textContent = `POWER ${Math.round((s.power ?? 0) * 100)}%`;
+    if (rr) rr.textContent = `SNAP ${Math.round((s.accuracy ?? 0) * 100)}`;
   }
   syncMobileDock();
 }
@@ -2937,10 +3021,29 @@ function bindUi(): void {
       setMode(m as GameModeId);
     });
   }
-  // course switcher
+  // course switcher (desktop buttons + compact mobile picker)
   for (const btn of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-course]"))) {
     btn.addEventListener("click", () => selectCourse(btn.dataset.course as CourseId));
   }
+  $<HTMLSelectElement>("course-select")?.addEventListener("change", (ev) => {
+    const val = (ev.target as HTMLSelectElement).value as CourseId;
+    if (COURSES[val]) selectCourse(val);
+    (ev.target as HTMLSelectElement).blur?.();
+  });
+  // closing scorecard actions (PLAY NEXT COURSE + REPLAY)
+  $("fc-next-course")?.addEventListener("click", () => {
+    hideFinalCard();
+    if (state.mode === "tour" && !tourFinished(state.tour)) {
+      continueAfterRound();
+      return;
+    }
+    selectCourse(nextAutoplayCourse(COURSE_ORDER, state.courseId), false);
+    continueAfterRound();
+  });
+  $("fc-replay")?.addEventListener("click", () => {
+    hideFinalCard();
+    continueAfterRound();
+  });
   // menu overlay
   for (const card of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-start]"))) {
     card.addEventListener("click", () => startModeFromMenu(card.dataset.start!));
@@ -3339,6 +3442,11 @@ function boot(): void {
   state.reducedMotion = params.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
   state.reducedFlash = params.has("reducedFlash") || (window.matchMedia?.("(prefers-reduced-flash: reduce)")?.matches ?? false);
   impactRig = createImpactRig({ reducedMotion: state.reducedMotion });
+  // Align HUD CSS vars with HUD_THEMES["sports-broadcast"] while keeping Whitney + DIN Pro fonts
+  for (const [k, v] of Object.entries(HUD_THEMES["sports-broadcast"])) {
+    if (k === "--a3g-font" || k === "--a3g-font-display") continue;
+    document.documentElement.style.setProperty(k, v);
+  }
   // LINKS-14: the course accent, and the lower third without its fade and rise under reduced motion
   applyCourseAccent();
   const holeCardEl = $("hole-card");
@@ -3350,18 +3458,14 @@ function boot(): void {
   const lab = readLabFlags();
   // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out.
   const labFragment = labAppOptions(lab, { backend: "auto", createWorker: createWorkerRendererWorker });
+  labOutputOverride = labFragment.output as Record<string, unknown> | undefined;
   const baseAppOpts = looks.appOptions(state.course.look) as Record<string, any>;
   const coarsePixelRatio = (window.matchMedia?.("(pointer: coarse)")?.matches ?? false)
     ? Math.min(window.devicePixelRatio || 1, 1.35)
     : undefined;
   const labOptions: Record<string, unknown> = {
     ...(coarsePixelRatio !== undefined ? { pixelRatio: coarsePixelRatio } : {}),
-    output: {
-      ...(baseAppOpts.output ?? {}),
-      toneMapping: "agx",
-      dither: true,
-      ...(labFragment.output ?? {})
-    }
+    output: outputOptionsForCourse(state.course, (baseAppOpts.output ?? {}) as Record<string, unknown>)
   };
   if (labFragment.renderer || coarsePixelRatio !== undefined) {
     labOptions.renderer = {
@@ -3378,6 +3482,7 @@ function boot(): void {
     ...(labFragment.worker ? { worker: labFragment.worker } : {}),
     qualityRebuild: { flags: ["game"] }
   } as any);
+  applyCourseOutput(state.course);
   // GU47 LINKS-11: runtime VFX are on again (E-F root-caused and fixed the floating dots in the engine; `?vfx=off` still
   // turns them off). The Links preset pack registers on the app's effects surface.
   registerLinksVfx((auraApp as any).effects, { reducedMotion: state.reducedMotion, reducedFlash: state.reducedFlash });

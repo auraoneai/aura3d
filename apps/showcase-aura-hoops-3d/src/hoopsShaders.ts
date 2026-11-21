@@ -8,7 +8,7 @@
  *     in `a3dRasterPosition(...)`.
  */
 import type { AuraTextureMagFilter, AuraTextureMinFilter, AuraTextureWrapMode, material } from "@aura3d/engine";
-import type { FlipbookAtlasSpec } from "../../showcase-port-shared/vfx-pack";
+import type { FlipbookAtlasSpec } from "@aura3d/engine/game";
 
 declare module "@aura3d/engine" {
   interface AuraTextureDataOptions {

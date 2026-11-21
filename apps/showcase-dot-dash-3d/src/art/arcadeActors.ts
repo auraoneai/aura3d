@@ -29,6 +29,7 @@ import {
   latheMesh,
   mergeRawMeshes,
   mergeRawMeshesToRaw,
+  paintMeshColors,
   transformMesh,
   type RawMesh
 } from "../../../showcase-port-shared/proceduralKernel";
@@ -121,11 +122,20 @@ function domeHeight(r: number): number {
 function courierBodySpec(): AuraCustomGeometrySpec {
   const R = COURIER_FRAME.bodyRadius, B = COURIER_FRAME.bottom;
   // bottom centre -> rim -> dome top (lathe order gives outward normals)
-  const dome = latheMesh([[0, B], [R - 0.03, B], [R, B + 0.04], [R, 0], [0.37, 0.08], [0.3, 0.15], [0.2, 0.185], [0, COURIER_FRAME.top]], 40, false);
+  const dome = paintMeshColors(
+    latheMesh([[0, B], [R - 0.03, B], [R, B + 0.04], [R, 0], [0.37, 0.08], [0.3, 0.15], [0.2, 0.185], [0, COURIER_FRAME.top]], 40, false),
+    [1, 1, 1]
+  );
+  // darker metallic bezel framing the cyan visor arc so bloom never bleeds gold over the visor
+  const bevelAngle = (61 * Math.PI) / 180;
+  const visorBevel = paintMeshColors(
+    domeArc(0.175, 0.365, -bevelAngle, bevelAngle, domeHeight(0.175) + 0.006, domeHeight(0.365) + 0.006, 22),
+    [0.14, 0.16, 0.24]
+  );
   // two short side fins (delivery-drone arms) so the silhouette is a rounded "cross", never a wedge
-  const finL = prismXZ([[-0.36, -0.1], [-0.36, 0.1], [-0.46, 0.07], [-0.46, -0.07]], -0.08, 0.02);
-  const finR = prismXZ([[0.36, 0.1], [0.36, -0.1], [0.46, -0.07], [0.46, 0.07]], -0.08, 0.02);
-  return mergeRawMeshes([dome, finL, finR]);
+  const finL = paintMeshColors(prismXZ([[-0.36, -0.1], [-0.36, 0.1], [-0.46, 0.07], [-0.46, -0.07]], -0.08, 0.02), [0.92, 0.9, 0.86]);
+  const finR = paintMeshColors(prismXZ([[0.36, 0.1], [0.36, -0.1], [0.46, -0.07], [0.46, 0.07]], -0.08, 0.02), [0.92, 0.9, 0.86]);
+  return mergeRawMeshes([dome, visorBevel, finL, finR]);
 }
 
 function courierVisorSpec(): AuraCustomGeometrySpec {
@@ -202,7 +212,7 @@ const glow = (name: string, emissiveIntensity: number, roughness = 0.35, extra: 
   material.pbr({ name, color: "#ffffff", emissive: "#ffffff", emissiveIntensity, roughness, metalness: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.1, practical: true, ...extra });
 
 /** Emissive strengths: the courier is the brightest thing on screen, then the sentries, then pellets, then the walls. */
-export const ARCADE_EMISSIVE = { courier: 2.6, sentry: 1.9, eye: 1.4, cell: 2.2, dot: 1.5, neon: 1.15, glow: 1.2 } as const;
+export const ARCADE_EMISSIVE = { courier: 2.35, sentry: 1.85, eye: 1.4, cell: 2.1, dot: 1.42, neon: 1.15, glow: 0.95 } as const;
 
 export const ARCADE_MATERIALS = {
   neon: glow("maze neon outline", ARCADE_EMISSIVE.neon, 0.5),
@@ -211,12 +221,12 @@ export const ARCADE_MATERIALS = {
   marker: glow("school target reticle", 0.9, 0.5),
   eye: glow("sentry eyes", ARCADE_EMISSIVE.eye, 0.3),
   courier: glow("courier gold dome", ARCADE_EMISSIVE.courier, 0.3),
-  courierVisor: glow("courier visor + nose", 2.2, 0.2),
+  courierVisor: glow("courier visor + nose", 2.15, 0.2),
   sentry: glow("sentry drone shell", ARCADE_EMISSIVE.sentry, 0.4),
   gem: glow("relic plinth", 0.8, 0.2),
   glowDisc: material.pbr({
     name: "actor glow disc", color: "#ffffff", emissive: "#ffffff", emissiveIntensity: ARCADE_EMISSIVE.glow, roughness: 1, metalness: 0,
-    opacity: 0.6, blend: "additive", depthWrite: false, clearcoat: 0, sheen: 0, practical: true
+    opacity: 0.32, blend: "additive", depthWrite: false, clearcoat: 0, sheen: 0, practical: true
   })
 } as const;
 

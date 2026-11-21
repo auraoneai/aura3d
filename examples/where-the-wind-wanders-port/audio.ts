@@ -5,6 +5,7 @@
  * cues here are the port's own recipes. Nothing starts until the first user gesture.
  */
 import { AudioContextManager } from "@aura3d/engine/audio";
+import { gustAt } from "./wind";
 
 export interface WindAudio {
   /** Call from a user gesture (key, click, tap). Idempotent. */
@@ -149,7 +150,9 @@ export function createAudio(enabled: boolean): WindAudio {
     update(pos, time) {
       if (!ctx || !windGain || !seaGain || !windFilter) return;
       const shore = Math.max(0, Math.min(1, (-5 - pos.z) / 10));
-      windGain.gain.setTargetAtTime(0.1 + 0.035 * Math.sin(time * 0.37) + 0.03 * Math.sin(time * 0.91), ctx.currentTime, 0.4);
+      const gust = gustAt(pos.x, pos.z, time);
+      windGain.gain.setTargetAtTime(0.08 + 0.065 * gust + 0.02 * Math.sin(time * 0.91), ctx.currentTime, 0.35);
+      windFilter.frequency.setTargetAtTime(420 + 260 * gust, ctx.currentTime, 0.35);
       seaGain.gain.setTargetAtTime(0.025 + 0.11 * shore, ctx.currentTime, 0.6);
     },
     footstep() {

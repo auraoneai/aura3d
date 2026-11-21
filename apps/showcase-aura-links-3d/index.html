@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase</title>
     <meta name="description" content="Aura Links 3D: three-click arcade golf on the Aura3D engine — six storybook courses from Scottish dunes to a lunar crater, Range &amp; Putting Labs, and a…" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -29,20 +29,28 @@
       :root {
         --bg: #08110c;
         --turf: #12251a;
-        --ink: #f2f6ea;
+        --ink: var(--a3g-fg, #f2f6ea);
         --muted: #9eb0a6;
         --faint: #3f4f45;
-        --rule: rgba(242, 246, 234, 0.14);
-        --rule-strong: rgba(242, 246, 234, 0.3);
+        --rule: rgba(242, 246, 234, 0.16);
+        --rule-strong: var(--a3g-edge, rgba(242, 246, 234, 0.3));
         --accent: #ffd257;
-        --accent-2: #9be84e;
+        --accent-2: var(--a3g-accent, #9be84e);
         --cyan: #63e2ff;
-        --danger: #ff5c5c;
+        --danger: var(--a3g-danger, #ff5c5c);
         --ok: #7de37f;
-        --font-display: var(--font-metric, "DIN Pro", sans-serif);
+        --hud-radius: var(--a3g-radius, 6px);
+        --font-display: var(--font-metric, "DIN Pro", "DIN Pro Fallback", "Whitney", sans-serif);
         --font-sans: var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif);
-        --font-mono: "Monument Grotesk Mono", monospace;
-        --font-figures: var(--font-ui, "Whitney", "Whitney Fallback", "Graphik", sans-serif);
+        --font-mono: "Monument Grotesk Mono", "Monument Grotesk Mono Fallback", monospace;
+        --font-figures: var(--font-metric, "DIN Pro", "DIN Pro Fallback", "Whitney", sans-serif);
+      }
+
+      html {
+        font-synthesis: none;
+        font-synthesis-weight: none;
+        font-synthesis-style: none;
+        font-synthesis-small-caps: none;
       }
 
       *,
@@ -149,6 +157,36 @@
       .aura3d-controls-hint b {
         color: var(--accent);
         font-weight: 600;
+      }
+
+      /* Hide desktop controls hint whenever the title/modes modal or final scorecard is open */
+      body:has(#menu-overlay.open) .aura3d-controls-hint,
+      body:has(#final-card.show) .aura3d-controls-hint {
+        display: none;
+      }
+
+      /* Compact mobile course picker (hidden on desktop; replaces clipped 6-course strip on <= 760px) */
+      .course-pick {
+        display: none;
+      }
+      .course-pick .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
+      .course-pick select {
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--rule-strong);
+        border-radius: 6px;
+        padding: 0 8px;
+        height: 26px;
+        max-width: 112px;
       }
 
       /* ---------- HUD ---------- */
@@ -418,55 +456,202 @@
         margin-top: 3px;
       }
 
-      /* Closing scorecard (round over): hole-by-hole strokes against par, totals, skins */
+      /* Closing scorecard (round over): Masters-grade frosted panel readable over the clubhouse facade */
       .final-card {
         position: absolute;
-        top: 44%;
+        top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         display: none;
-        padding: 10px 12px 9px;
-        background: rgba(6, 11, 8, 0.86);
-        border: 1px solid var(--rule-strong);
-        backdrop-filter: blur(8px);
-        max-width: calc(100vw - 20px);
+        width: min(560px, calc(100vw - 24px));
+        padding: 18px 20px 16px;
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(8, 18, 13, 0.94), rgba(6, 12, 9, 0.96));
+        border: 1px solid rgba(255, 210, 87, 0.34);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 24px 64px rgba(0, 0, 0, 0.68);
+        backdrop-filter: blur(16px) saturate(140%);
+        -webkit-backdrop-filter: blur(16px) saturate(140%);
+        pointer-events: auto;
+        z-index: 32;
       }
       .final-card.show {
         display: block;
       }
+      .final-card .fc-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid var(--rule);
+      }
       .final-card .fc-title {
-        font-family: var(--font-display);
-        font-size: 13px;
-        letter-spacing: 0.2em;
+        font-family: var(--font-ui);
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
         color: var(--accent);
-        margin-bottom: 6px;
+        text-transform: uppercase;
+      }
+      .final-card .fc-sub {
+        font-family: var(--font-ui);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        margin-top: 2px;
+        text-transform: uppercase;
+      }
+      .final-card .fc-topar {
+        font-family: var(--font-metric);
+        font-size: 28px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+        padding: 6px 12px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--rule);
+        color: var(--ink);
+      }
+      .final-card .fc-topar.good {
+        color: var(--accent-2);
+        border-color: rgba(155, 232, 78, 0.42);
+      }
+      .final-card .fc-topar.bad {
+        color: var(--danger);
+        border-color: rgba(255, 92, 92, 0.42);
+      }
+      .final-card .fc-table-wrap {
+        overflow-x: auto;
+        border-radius: 8px;
+        background: rgba(4, 9, 6, 0.72);
+        border: 1px solid var(--rule);
       }
       .final-card table {
+        width: 100%;
         border-collapse: collapse;
-        font-family: var(--font-mono);
-        font-size: 11px;
+        font-family: var(--font-metric);
+        font-variant-numeric: tabular-nums;
+        font-size: 13px;
         color: var(--ink);
       }
       .final-card th,
       .final-card td {
-        padding: 2px 5px;
+        padding: 6px 6px;
         text-align: center;
         border-left: 1px solid var(--rule);
+      }
+      .final-card tr + tr td {
+        border-top: 1px solid var(--rule);
+      }
+      .final-card th {
+        font-family: var(--font-ui);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.04);
       }
       .final-card th:first-child,
       .final-card td:first-child {
         border-left: none;
         text-align: left;
+        padding-left: 10px;
+        font-family: var(--font-ui);
+        font-size: 11px;
+        font-weight: 600;
         color: var(--muted);
         letter-spacing: 0.12em;
       }
+      .final-card .fc-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 4px;
+        line-height: 1;
+      }
       .final-card td.under { color: var(--ok); }
+      .final-card td.birdie .fc-mark {
+        border-radius: 999px;
+        border: 1.5px solid var(--ok);
+        background: rgba(125, 227, 127, 0.14);
+      }
+      .final-card td.eagle .fc-mark {
+        border-radius: 999px;
+        border: 1.5px solid var(--accent);
+        box-shadow: 0 0 0 2px rgba(255, 210, 87, 0.35);
+        color: var(--accent);
+      }
       .final-card td.over { color: var(--danger); }
-      .final-card .fc-foot {
-        margin-top: 6px;
-        font-size: 10px;
-        letter-spacing: 0.18em;
+      .final-card td.bogey .fc-mark {
+        border-radius: 3px;
+        border: 1.5px solid var(--danger);
+        background: rgba(255, 92, 92, 0.12);
+      }
+      .final-card td.double .fc-mark {
+        border-radius: 3px;
+        border: 1.5px solid var(--danger);
+        box-shadow: 0 0 0 2px rgba(255, 92, 92, 0.35);
+      }
+      .final-card .fc-stats {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 7px 10px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--rule);
+        font-family: var(--font-ui);
+        font-size: 11px;
+        letter-spacing: 0.12em;
         color: var(--muted);
+      }
+      .final-card .fc-stats b {
+        font-family: var(--font-metric);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ink);
+        margin-right: 4px;
+      }
+      .final-card .fc-foot {
+        margin-top: 8px;
+        font-family: var(--font-ui);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      .final-card .fc-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .final-card .fc-cta {
+        appearance: none;
+        border: none;
+        border-radius: 9px;
+        min-height: 40px;
+        padding: 0 18px;
+        font-family: var(--font-ui);
+        font-size: 13px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--accent-2), var(--accent));
+        color: #0e1d0b;
+      }
+      .final-card .fc-cta.ghost {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--rule-strong);
+        color: var(--ink);
+        font-weight: 500;
       }
 
       .action-prompt {
@@ -510,27 +695,57 @@
         opacity: 1;
       }
 
-      /* ---------- Three-click swing meter ---------- */
+      /* ---------- Three-click swing meter (frosted dark-emerald glass capsule) ---------- */
       .swing-meter {
         position: absolute;
-        bottom: 74px;
+        bottom: 64px;
         left: 50%;
         transform: translateX(-50%);
-        width: 300px;
+        width: min(368px, calc(100vw - 24px));
+        padding: 10px 14px 10px;
+        border-radius: 14px;
+        background: rgba(8, 16, 12, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 14px 36px rgba(2, 8, 5, 0.58);
+        backdrop-filter: blur(12px) saturate(135%);
+        -webkit-backdrop-filter: blur(12px) saturate(135%);
         opacity: 0;
-        transition: opacity 0.1s ease;
+        transition: opacity 0.12s ease;
       }
 
       .swing-meter.show {
         opacity: 1;
       }
 
+      .swing-meter .sm-zones {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-family: var(--font-ui);
+        font-size: 11px;
+        font-weight: 600;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+      }
+
+      .swing-meter .sm-zones .sm-z-perfect {
+        color: var(--accent);
+      }
+
+      .swing-meter[data-stage="power"] .sm-zones .sm-z-power,
+      .swing-meter[data-stage="accuracy"] .sm-zones .sm-z-snap,
+      .swing-meter[data-stage="accuracy"] .sm-zones .sm-z-perfect {
+        color: var(--ink);
+      }
+
       .swing-meter .sm-track {
         position: relative;
-        height: 16px;
-        background: rgba(6, 11, 8, 0.85);
+        height: 18px;
+        background: rgba(4, 10, 7, 0.94);
         border: 1px solid var(--rule-strong);
-        border-radius: 3px;
+        border-radius: 6px;
         overflow: hidden;
       }
 
@@ -547,9 +762,9 @@
         position: absolute;
         top: 0;
         bottom: 0;
-        background: linear-gradient(180deg, rgba(125, 227, 127, 0.75), rgba(125, 227, 127, 0.4));
-        border-left: 1px solid var(--ok);
-        border-right: 1px solid var(--ok);
+        background: linear-gradient(180deg, rgba(125, 227, 127, 0.78), rgba(125, 227, 127, 0.42));
+        border-left: 1.5px solid var(--ok);
+        border-right: 1.5px solid var(--ok);
       }
 
       .swing-meter .sm-perfect {
@@ -557,7 +772,8 @@
         top: 0;
         bottom: 0;
         width: 4px;
-        background: rgba(255, 255, 255, 0.85);
+        background: #ffd257;
+        box-shadow: 0 0 10px rgba(255, 210, 87, 0.95);
       }
 
       .swing-meter .sm-needle {
@@ -566,8 +782,8 @@
         bottom: -2px;
         width: 3px;
         left: 0%;
-        background: var(--ink);
-        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+        background: #ffffff;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.95);
       }
 
       .swing-meter .sm-spin-draw,
@@ -576,36 +792,74 @@
         top: 0;
         bottom: 0;
         width: 22%;
-        opacity: 0.5;
+        opacity: 0.52;
       }
 
       .swing-meter .sm-spin-draw {
         left: 0;
-        background: linear-gradient(90deg, rgba(99, 226, 255, 0.5), transparent);
+        background: linear-gradient(90deg, rgba(99, 226, 255, 0.55), transparent);
       }
 
       .swing-meter .sm-spin-fade {
         right: 0;
-        background: linear-gradient(270deg, rgba(255, 157, 61, 0.5), transparent);
+        background: linear-gradient(270deg, rgba(255, 157, 61, 0.55), transparent);
       }
 
-      .swing-meter .sm-label {
-        text-align: center;
-        font-size: 9px;
-        letter-spacing: 0.2em;
-        color: var(--muted);
-        margin-top: 5px;
-        text-transform: uppercase;
+      .swing-meter .sm-ticks {
+        position: relative;
+        height: 6px;
+        margin-top: 3px;
+      }
+
+      .swing-meter .sm-ticks i {
+        position: absolute;
+        top: 0;
+        width: 1px;
+        height: 4px;
+        background: rgba(242, 246, 234, 0.32);
+      }
+
+      .swing-meter .sm-ticks i.center {
+        left: 50%;
+        width: 2px;
+        height: 6px;
+        transform: translateX(-50%);
+        background: #ffd257;
       }
 
       .swing-meter .sm-readout {
         display: flex;
         justify-content: space-between;
-        font-size: 9px;
-        letter-spacing: 0.12em;
+        font-family: var(--font-metric);
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.08em;
         color: var(--accent);
-        margin-top: 3px;
-        min-height: 12px;
+        margin-top: 2px;
+        min-height: 15px;
+      }
+
+      .swing-meter .sm-label {
+        text-align: center;
+        font-family: var(--font-ui);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        color: var(--ink);
+        margin-top: 4px;
+        text-transform: uppercase;
+      }
+
+      .swing-meter .sm-steps {
+        text-align: center;
+        font-family: var(--font-ui);
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+        margin-top: 2px;
+        text-transform: uppercase;
       }
 
       /* ---------- Menu overlay ---------- */
@@ -1052,7 +1306,28 @@
       }
 
       @media (pointer: coarse), (max-width: 760px) {
-        /* phones & touch tablets: dedicated golf caddy dock replaces desktop keyboard hints & generic dpad */
+        /* phones & touch tablets: compact top bug, Course picker pill, and isolated >= 54px TAP TO SWING dock */
+        .aura3d-top-bar {
+          gap: 4px;
+          padding-left: max(8px, env(safe-area-inset-left, 0px));
+          padding-right: max(8px, env(safe-area-inset-right, 0px));
+        }
+        .aura3d-top-bar .bar-label,
+        .aura3d-top-bar .aura-sep,
+        .aura3d-top-bar button.venue,
+        .aura3d-top-bar .a3d-credit {
+          display: none;
+        }
+        .aura3d-top-bar button.bar-mode {
+          padding: 0 7px;
+          font-size: 11px;
+          height: 26px;
+        }
+        .course-pick {
+          display: inline-flex;
+          align-items: center;
+          margin-left: auto;
+        }
         body[data-look="gu47"] .hole-card {
           display: none;
         }
@@ -1064,68 +1339,108 @@
           display: none !important;
         }
         .hud-top-left {
-          left: 12px;
-          gap: 4px;
+          top: calc(var(--a3d-bar-space) + 2px);
+          left: max(8px, env(safe-area-inset-left, 0px));
+          right: max(8px, env(safe-area-inset-right, 0px));
+          gap: 3px;
+        }
+        .hud-mode-tag {
+          display: none;
+        }
+        .card-box {
+          border-radius: var(--hud-radius);
+          overflow: hidden;
         }
         .cb-cell {
-          padding: 5px 10px;
-          min-width: 56px;
+          flex: 1 1 0;
+          padding: 4px 6px 3px;
+          min-width: 0;
+        }
+        .cb-cell .cb-k {
+          font-size: 10px;
+          letter-spacing: 0.08em;
         }
         .cb-cell .cb-v {
-          font-size: 22px;
+          font-size: 18px;
+          line-height: 1.05;
+        }
+        .cb-cell .cb-s {
+          font-size: 9px;
+          height: 12px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100%;
         }
         .shot-strip {
-          gap: 7px;
-          padding: 5px 9px;
+          gap: 6px;
+          padding: 4px 8px;
+          border-radius: var(--hud-radius);
+          justify-content: space-between;
+          flex-wrap: nowrap;
+          overflow: hidden;
+        }
+        .shot-strip .k {
+          font-size: 10px;
+          letter-spacing: 0.06em;
+        }
+        .shot-strip .v,
+        #h-wind-speed,
+        #h-pin-dist {
+          font-size: 12px;
+        }
+        .shot-strip .sep {
+          height: 14px;
         }
         .action-prompt {
-          bottom: 146px;
-          font-size: 12px;
-          padding: 5px 12px;
+          bottom: calc(max(12px, env(safe-area-inset-bottom)) + 124px);
+          font-size: 11px;
+          padding: 4px 12px;
           white-space: nowrap;
         }
         .swing-meter {
-          width: min(342px, calc(100vw - 28px));
-          bottom: 92px;
+          width: min(354px, calc(100vw - 20px));
+          bottom: calc(max(12px, env(safe-area-inset-bottom)) + 122px);
+          padding: 9px 12px 9px;
         }
         .swing-meter .sm-track {
           height: 22px;
         }
         .shot-telemetry {
-          right: 12px;
-          bottom: 18px;
+          right: max(10px, env(safe-area-inset-right, 0px));
+          bottom: calc(max(12px, env(safe-area-inset-bottom)) + 10px);
         }
         .mobile-golf-dock.active {
           position: absolute;
-          left: 12px;
-          right: 12px;
+          left: max(10px, env(safe-area-inset-left, 0px));
+          right: max(10px, env(safe-area-inset-right, 0px));
           bottom: max(12px, env(safe-area-inset-bottom));
           display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
           pointer-events: none;
         }
         .mobile-golf-dock .mgd-caddy {
-          display: flex;
-          align-items: center;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
           gap: 6px;
           pointer-events: auto;
         }
         .mobile-golf-dock .mgd-btn {
           appearance: none;
-          min-width: 50px;
-          min-height: 48px;
-          padding: 0 10px;
+          min-width: 44px;
+          min-height: 44px;
+          padding: 0 6px;
           border-radius: 10px;
           border: 1px solid var(--rule-strong);
-          background: rgba(6, 11, 8, 0.88);
+          background: rgba(8, 16, 12, 0.88);
           color: var(--ink);
           font-family: var(--font-ui);
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 600;
           font-variant-caps: all-small-caps;
-          letter-spacing: 0.08em;
+          letter-spacing: 0.06em;
           backdrop-filter: blur(8px);
           touch-action: manipulation;
           cursor: pointer;
@@ -1133,32 +1448,44 @@
         .mobile-golf-dock .mgd-swing {
           appearance: none;
           pointer-events: auto;
-          min-width: 118px;
-          min-height: 64px;
-          padding: 0 18px;
+          width: 100%;
+          min-height: 58px;
+          padding: 0 20px;
           border-radius: 14px;
           border: 1px solid var(--accent);
           background: linear-gradient(135deg, var(--accent-2), var(--accent));
-          color: #10200a;
+          color: #0e1d0b;
           font-family: var(--font-ui);
           font-size: 16px;
           font-weight: 600;
           font-variant-caps: all-small-caps;
-          letter-spacing: 0.12em;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+          letter-spacing: 0.14em;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.48);
           touch-action: manipulation;
           cursor: pointer;
         }
+        .final-card {
+          padding: 14px 14px 12px;
+        }
+        .final-card th,
+        .final-card td {
+          padding: 4px 3px;
+          font-size: 11px;
+        }
+        .final-card .fc-actions {
+          flex-direction: column-reverse;
+          align-items: stretch;
+        }
         .banner {
-          top: calc(var(--a3d-bar-space) + 156px);
+          top: calc(var(--a3d-bar-space) + 106px);
         }
         .center-msg {
-          top: calc(var(--a3d-bar-space) + 214px);
+          top: calc(var(--a3d-bar-space) + 162px);
           width: max-content;
           max-width: calc(100vw - 24px);
         }
         .center-msg .big {
-          font-size: 28px;
+          font-size: 26px;
           white-space: nowrap;
         }
         .center-msg .small {
@@ -1202,6 +1529,17 @@
         <button type="button" class="venue" data-course="cloudTerrace">CLOUD</button>
         <button type="button" class="venue" data-course="neonBay">NEON BAY</button>
         <button type="button" class="venue" data-course="mareCourse">MARE</button>
+        <label class="course-pick">
+          <span class="sr">Course</span>
+          <select id="course-select" aria-label="Select course">
+            <option value="stAuroras" selected>St. Auroras</option>
+            <option value="mapleHollow">Maple Hollow</option>
+            <option value="cinderRim">Cinder Rim</option>
+            <option value="cloudTerrace">Cloud Terrace</option>
+            <option value="neonBay">Neon Bay</option>
+            <option value="mareCourse">Mare Course</option>
+          </select>
+        </label>
         <a class="a3d-credit" href="https://aura3d.auraone.ai/" target="_blank" rel="noopener">Built with Aura3D</a>
       </nav>
 
@@ -1268,14 +1606,32 @@
           <div class="small" id="msg-sub">SIX COURSES · ONE CARD UNDER PAR</div>
         </div>
         <div class="final-card" id="final-card" role="dialog" aria-label="Closing scorecard">
-          <div class="fc-title" id="fc-title">ROUND COMPLETE</div>
-          <table id="fc-table"></table>
+          <div class="fc-head">
+            <div>
+              <div class="fc-title" id="fc-title">ROUND COMPLETE</div>
+              <div class="fc-sub" id="fc-sub">NINE-HOLE CHAMPIONSHIP CARD</div>
+            </div>
+            <div class="fc-topar good" id="fc-topar">E</div>
+          </div>
+          <div class="fc-table-wrap">
+            <table id="fc-table"></table>
+          </div>
+          <div class="fc-stats" id="fc-stats"></div>
           <div class="fc-foot" id="fc-foot"></div>
+          <div class="fc-actions">
+            <button type="button" class="fc-cta ghost" id="fc-replay">REPLAY COURSE</button>
+            <button type="button" class="fc-cta" id="fc-next-course">PLAY NEXT COURSE</button>
+          </div>
         </div>
         <div class="banner" id="banner">BIRDIE</div>
         <div class="action-prompt" id="prompt">SPACE — START SWING</div>
 
-        <div class="swing-meter" id="swing-meter">
+        <div class="swing-meter" id="swing-meter" data-stage="power">
+          <div class="sm-zones" aria-hidden="true">
+            <span class="sm-z-power">POWER</span>
+            <span class="sm-z-perfect">◆ PERFECT ◆</span>
+            <span class="sm-z-snap">SNAP</span>
+          </div>
           <div class="sm-track">
             <div class="sm-spin-draw"></div>
             <div class="sm-spin-fade"></div>
@@ -1284,8 +1640,14 @@
             <div class="sm-perfect" id="sw-perfect"></div>
             <div class="sm-needle" id="sw-needle"></div>
           </div>
+          <div class="sm-ticks" aria-hidden="true">
+            <i style="left:25%"></i>
+            <i class="center"></i>
+            <i style="left:75%"></i>
+          </div>
           <div class="sm-readout"><span id="sw-readout-l"></span><span id="sw-readout-r"></span></div>
-          <div class="sm-label" id="sw-label">SPACE ×3 — POWER · ACCURACY · SPIN</div>
+          <div class="sm-label" id="sw-label">SPACE ×3 — POWER · SNAP · PERFECT</div>
+          <div class="sm-steps">1. START → 2. POWER → 3. SNAP PERFECT</div>
         </div>
 
         <aside class="shot-telemetry" id="shot-telemetry" aria-label="Ball flight telemetry">
@@ -1313,7 +1675,7 @@
             <button type="button" class="mgd-btn" id="mob-club" aria-label="Next club">CLUB</button>
             <button type="button" class="mgd-btn" id="mob-pin" aria-label="Aim at pin">PIN</button>
           </div>
-          <button type="button" class="mgd-swing" id="mobile-swing-btn" aria-label="Swing or lock meter">SWING</button>
+          <button type="button" class="mgd-swing" id="mobile-swing-btn" aria-label="Swing or lock meter">TAP TO SWING</button>
         </div>
       </div>
 

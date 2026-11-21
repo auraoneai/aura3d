@@ -46,7 +46,7 @@ const css = `
 .fc-touch-btn[data-fc-touch="shoot"] { background: rgba(216,255,62,.82); color: #0b1f1c; border-color: #d8ff3e; }
 .fc-touch-btn[data-fc-touch="pass"] { background: rgba(125,252,255,.68); color: #04161a; border-color: #7dfcff; }
 .fc-touch-btn.down { transform: scale(.94); filter: brightness(1.22); }
-.fc-touch-top { position: absolute; right: calc(10px + env(safe-area-inset-right, 0px)); top: calc(var(--a3d-bar-space, 44px) + 78px); pointer-events: none; }
+.fc-touch-top { position: absolute; right: calc(10px + env(safe-area-inset-right, 0px)); top: calc(var(--a3d-bar-space, 44px) + 66px); pointer-events: none; }
 `;
 
 export function mountFcTouch(input: TouchSink, host: HTMLElement, opts: { coarse: () => boolean }): FcTouch {

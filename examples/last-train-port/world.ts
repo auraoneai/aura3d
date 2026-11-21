@@ -61,7 +61,7 @@ export function clearOfPoles(x: number, z: number, fx: number, fz: number, poles
 export const BUSH_RADIUS = 1.28;
 /** Freight crates on the platform: lateral (m) and along (+-m); their turned footprint half-diagonal (m). */
 export const PLATFORM_CRATES = { lateral: 4.6, along: 12.5, half: Math.hypot(1.98, 1.811) / 2 } as const;
-import { GUARD_ID, RIDER_FIGURE, buildRiggedFigure, tramGuardPose, figureBodyId, figureDriver, figureReady, motormanPose, seatedRiderInput } from "./figures";
+import { GUARD_ID, RIDER_FIGURE, buildRiggedFigure, createFigureAnimator, tramGuardPose, figureBodyId, figureDriver, figureReady, motormanPose, seatedRiderInput } from "./figures";
 import { IDOL_SINK, groundedBase } from "./grounding";
 import { FOLK_KEYS, HOUSE_KEYS, IDOL_ART, IDOL_TRAM, idolHalfFootprint, landmarkSlim, IDOL_TRAM_RIDER_DROP, RIDER_ORIGIN_ABOVE_FEET, RIDER_KEYS, TRAM_WHEEL_IDS, advanceWheelSpin, buildTramWheelNodes, idolReady, tramWheelTransforms, buildIdolClockTowerNode, buildIdolCratesNode, buildIdolLandmarkNode, buildIdolLighthouseNode, buildIdolMotormanNode, buildIdolPassengerNode, buildIdolTramNode, createFolkInstancer, createHouseInstancer } from "./idolModels";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
@@ -75,14 +75,12 @@ import { sampleRoute, type SimData, type SimState, type Temperament } from "./si
 import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import { guardPose, type GuardPose } from "../shared/camera-guard";
 import { quadGeometryInput, quadUpdater, skipUnchangedUpdates } from "./point-quads";
-import { createImpactRig } from "../../apps/showcase-port-shared/feel";
-import { createFlipbookAtlas, createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
+import { createFlipbookAtlas, createGradingLut, createImpactRig } from "@aura3d/engine/game";
 
 type Scene = ReturnType<typeof scene>;
 
-/** Pre-baked 16^3 cinema-warm LUT (both texture spec and served .cube asset for S10b display grading) + flange spark sheet. */
+/** Pre-baked 16^3 cinema-warm LUT (`@aura3d/engine/game`) + flange spark sheet. */
 export const CINEMA_WARM_LUT = createGradingLut("cinema-warm");
-const CINEMA_WARM_CUBE_URL = new URL("./assets/cinema-warm.cube", import.meta.url).href;
 export const SPARK_SHEET_PREVIEW = createFlipbookAtlas("sparks", [255, 208, 118]);
 
 function sparkBillboardQuad(half: number) {
@@ -420,16 +418,34 @@ export const GRAIN = 0.03;
 /** GU47 LT-06: subtle golden-hour shaft density in band B without washing town facades in haze. */
 export const GOD_RAY_DENSITY = 0.006;
 
-/** GU47 bands A-E (bands.ts): band HDRI, PCF key (phase 3: PCSS drew no readable shadow in software WebGL2), hemisphere bounce, the practical pool (C/D/E), fog and the band's post. */
+/** GU47 bands A-E (bands.ts): band HDRI, 5.7.2 soft PCF key with station shadow fit, hemisphere bounce, practical pool (C/D/E), fog and post. */
 function addBandLighting(b: Scene, data: SimData, band: BandId, includeProbes: boolean): void {
   const row = BANDS[band];
+  const s0 = sampleRoute(data.route, 0, 0);
   b.add(FX.has("nohdri") ? environments.neutral({ intensity: row.envIntensity }) : environments.hdri({ name: "env-sky", texture: BAND_HDRI[row.hdri], intensity: row.envIntensity, rotation: envRotationRad(row), background: false }));
-  b.add(lights.directional({ name: row.key.name, position: keyPosition(row), target: [0, 0, 0], intensity: row.key.intensity, color: row.key.color, shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 80, splitLambda: 0.8, mapSize: 2048, blend: 0.12, filter: FX.has("pcss") ? "pcss" : "pcf", intensity: 1 } }));
+  b.add(lights.directional({
+    name: row.key.name,
+    position: keyPosition(row),
+    target: [0, 0, 0],
+    intensity: row.key.intensity,
+    color: row.key.color,
+    shadow: FX.has("noshadow") ? false : {
+      cascades: 3,
+      maxDistance: 80,
+      splitLambda: 0.8,
+      mapSize: 2048,
+      blend: 0.12,
+      filter: FX.has("pcss") ? "pcss" : "pcf",
+      softness: 1.8,
+      fit: { center: [s0.x, s0.y, s0.z], extent: 26, depth: 65 },
+      intensity: 1
+    }
+  }));
   b.add(lights.hemisphere({ name: BOUNCE_ID, skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }).runtime({ id: BOUNCE_ID }));
   if (row.practicals.platformPoint > 0) {
     const at = platformLightPositions(data, 0);
     PLATFORM_LIGHT_IDS.forEach((id, i) => b.add(lights.point({ name: id, position: at[i]!, intensity: row.practicals.platformPoint, distance: PLATFORM_LIGHT_RANGE, decay: 2, color: PLATFORM_LIGHT_COLOR, shadow: false }).runtime({ id })));
-    const s0 = sampleRoute(data.route, 0, 0), pose = headlampPose(s0, dockForward(data, 0, 0));
+    const pose = headlampPose(s0, dockForward(data, 0, 0));
     // The art direction allows one shadowed light (the key, lesson R22), so the headlamp spot is unshadowed (LT-02 partial).
     b.add(lights.spot({ name: HEADLAMP_ID, position: pose.position, target: pose.target, angle: 0.42, penumbra: 0.55, distance: 70, decay: 2, intensity: row.practicals.headlamp, color: HEADLAMP_COLOR, shadow: false }).runtime({ id: HEADLAMP_ID }));
   }
@@ -443,8 +459,8 @@ function addBandLighting(b: Scene, data: SimData, band: BandId, includeProbes: b
   // GU47 LT-07: GTAO default-on in the band look (`?fx=noao` drops it); the engine drops it on the Low tier.
   if (!FX.has("noao")) b.add(effects.ambientOcclusion({ name: "ao" }));
   if (!FX.has("nobloom")) b.add(effects.cinematicBloom({ name: "bloom", color: "#fff6ea", intensity: row.bloom.intensity * 0.58, threshold: Math.max(0.92, row.bloom.threshold), radius: 0.4, antiBlowout: true, maxIntensity: 0.72 }));
-  // GU47 LT-07 + WP-24: E-C white balance + cinema-warm 3D display LUT (`assets/cinema-warm.cube`) moderated so cream/crimson tram lacquer stays crisp without warm sunlight washout.
-  if (!FX.has("nograde")) b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, exposure: Math.min(1.16, row.exposure * 0.84), temperature: row.grade.temperature * 0.65, tint: row.grade.tint, ...(!FX.has("nolut") ? { lut: CINEMA_WARM_CUBE_URL, lutIntensity: 0.24 } : {}) }));
+  // GU47 LT-07 + 5.7.2: E-C white balance paired with zero-asset `CINEMA_WARM_LUT` bound on `app` output.
+  if (!FX.has("nograde")) b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, exposure: Math.min(1.16, row.exposure * 0.84), temperature: row.grade.temperature * 0.65, tint: row.grade.tint }));
   if (!FX.has("novignette")) b.add(effects.vignette({ name: "vignette", intensity: row.vignette, smoothness: 0.7 }));
   if (!FX.has("nograin")) b.add(effects.filmGrain({ name: "grain", intensity: GRAIN }));
   // GU47 LT-06: subtle god rays in band B only (High tier); no tilt-shift DoF blur and no sun-flare tint ring over the train.
@@ -914,6 +930,9 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   /** Idol walkers: station frames per town and the clip each pooled slot plays (cleared when a band swap remounts). */
   const walkerFrames = towns.map((_, i) => townFrame(data, i));
   const walkerClips: (string | null)[] = Array.from({ length: WALKER_POOL }, () => null);
+  /** 5.7.2 humanoid animators (`@aura3d/engine/animation`) for the motorman, rear guard, and 12 seated passenger slots. */
+  const crewAnim = { motor: createFigureAnimator(), guard: createFigureAnimator() };
+  const seatAnims = Array.from({ length: SEATS.length }, () => createFigureAnimator());
   const rand = lehmer(4242);
   const seeds = Array.from({ length: WEATHER_COUNT }, () => [rand(), rand(), rand(), rand()] as const);
   const moteSeeds = Array.from({ length: MOTE_COUNT }, () => [rand(), rand(), rand(), rand()] as const);
@@ -1038,7 +1057,10 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     if (figureReady("llMotorman")) {
       const md = figureDriver("llMotorman");
       conductor.setVisible(md !== undefined);
-      if (md) node(figureBodyId("a3g-fx-tram-conductor")).setAnimationPose(md.pose(motormanPose({ t: seconds, accel: accelSmooth, speed: sim.speed })) as never);
+      if (md) {
+        const mKey = accelSmooth > 0.3 ? "throttle" : accelSmooth < -0.5 ? "brake" : "coast";
+        node(figureBodyId("a3g-fx-tram-conductor")).setAnimationPose(md.pose(crewAnim.motor.update(dt, motormanPose({ t: seconds, accel: accelSmooth, speed: sim.speed }), mKey, 0.12)) as never);
+      }
       if (idolReady("llTram")) {
         /* the guard at the rear controller of the double-ended car: the cab the chase camera looks into is never empty */
         const guard = node(GUARD_ID);
@@ -1046,7 +1068,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
         guard.setPosition(here.x + rearPos[0], here.y + rearPos[1] + 0.2 + bob, here.z + rearPos[2]);
         guard.setRotation(conductorEuler[0], conductorEuler[1], conductorEuler[2]);
         guard.setVisible(md !== undefined);
-        if (md) node(figureBodyId(GUARD_ID)).setAnimationPose(md.pose(tramGuardPose(seconds, sim.speed)) as never);
+        if (md) node(figureBodyId(GUARD_ID)).setAnimationPose(md.pose(crewAnim.guard.update(dt, tramGuardPose(seconds, sim.speed), "guard", 0.16)) as never);
       }
     }
     if (shownBand !== null && !idolReady("llTram")) {
@@ -1074,7 +1096,8 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
           h.setPosition(here.x + seatedPos[0], here.y + seatedPos[1] + 0.2 + bob, here.z + seatedPos[2]);
           h.setRotation(paxEuler[0], paxEuler[1], paxEuler[2]);
           const sway = Math.max(-0.22, Math.min(0.22, accelSmooth * 0.05)) * (seat[0] < 0 ? -1 : 1) * (rm ? 0.3 : 1);
-          node(figureBodyId(`pax-${i}-${t}`)).setAnimationPose(driver.pose(seatedRiderInput({ kind: t, seat: i, t: seconds, sway, pitch: sp.pitch, gaze: sp.yawOffset })) as never);
+          const posed = seatAnims[i]!.update(dt, seatedRiderInput({ kind: t, seat: i, t: seconds, sway, pitch: sp.pitch, gaze: sp.yawOffset }), `${t}-${trip?.id ?? i}`, 0.16);
+          node(figureBodyId(`pax-${i}-${t}`)).setAnimationPose(driver.pose(posed) as never);
         } else if (on) {
           if (shownBand !== null) {
             const sp = seatedRiderPose(i, seat[0], t, seconds, riderLean, rm);

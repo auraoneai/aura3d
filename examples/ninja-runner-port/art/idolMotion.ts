@@ -12,7 +12,7 @@
  *   Idol rig driver (`idolRig.ts`) solves, so weapon / orb / scarf sockets keep reading the posed skeleton.
  */
 import {
-  createMotionAnimator,
+  createHumanoidAnimator,
   humanoidAirTime as airTime,
   humanoidLocomotionTime as locomotionTime,
   quatMul,
@@ -235,7 +235,7 @@ export const RUN_CADENCE_MIN = 2.6;
 export const RUN_CADENCE_MAX = 3.0;
 export const runCadence = (speed: number): number => RUN_CADENCE_MIN + (RUN_CADENCE_MAX - RUN_CADENCE_MIN) * Math.max(0, Math.min(1, (speed - 2) / 18));
 
-export const createSlotMotion = (): SlotMotion => ({ anim: createMotionAnimator(MOTION_CLIPS), walked: 0, stride: 0, speed: 0, capped: false, plant: 1, lastTravel: null, lockX: 0, lockFoot: -1, lockPrevX: 0 });
+export const createSlotMotion = (): SlotMotion => ({ anim: createHumanoidAnimator(MOTION_CLIPS), walked: 0, stride: 0, speed: 0, capped: false, plant: 1, lastTravel: null, lockX: 0, lockFoot: -1, lockPrevX: 0 });
 
 /**
  * The animator request for this frame. `hipHeight` is the drawn body's hip height in metres (rig hips x node scale).

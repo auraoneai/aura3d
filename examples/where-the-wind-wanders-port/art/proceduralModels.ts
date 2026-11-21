@@ -3558,8 +3558,8 @@ export function mountProceduralAnimatedActors(
         chimeOffset: [...R.staffChimeOffset], ribbonOffset: [...R.staffRibbonOffset]
       })
       : null;
-    // the rigged body is its own top-level node (skinned nodes ignore a moving parent group; idolModels.ts)
-    if (idolHero) { builder.add(idolHero.group); builder.add(idolHero.body); }
+    // 5.7.0 parent-local nested rig: `hero-idol` and `hero-staff` both mount under `hero`
+    if (idolHero) { builder.add(idolHero.group); }
     else builder.add(createBellkeeperWandererNode({ name: "hero", id: "hero", castShadow, receiveShadow }));
   }
   if (flags.letter) {

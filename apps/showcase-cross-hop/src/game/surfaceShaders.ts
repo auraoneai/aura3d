@@ -4,8 +4,8 @@
  * natively on WebGPU and WebGL2 with zero fallback warnings.
  */
 import { defineAuraAssets, material, type AuraAssetRef } from "@aura3d/engine";
+import { createFlipbookAtlas, createGradingLut, type FlipbookKind } from "@aura3d/engine/game";
 import { dualAnimatedWaterSpec, type DualAnimatedWaterOptions } from "../../../showcase-port-shared/dual-shaders";
-import { createFlipbookAtlas, createGradingLut, type FlipbookKind } from "../../../showcase-port-shared/vfx-pack";
 import {
   WGSL_CLIP,
   WGSL_COLOR,

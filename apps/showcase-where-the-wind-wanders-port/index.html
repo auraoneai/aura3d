@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css?v=678426714795" />
       <meta name="theme-color" content="#0b1020" />
@@ -23,24 +23,29 @@
     <meta name="twitter:description" content="Meadow walk: collect three letters and ring the bell, with a boat epilogue, a journal and audio." />
 
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"The Bellkeeper's Walk","url":"https://aura3d.auraone.ai/apps/the-bellkeepers-walk/","description":"Meadow walk collecting three letters and ringing a bell; the walking trajectory matches the recorded reference within 1e-9 over 2,098 steps.","genre":"Arcade and exploration","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/where-the-wind-wanders-port.jpg?v=72f57b9322ce","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.7.2"}</script>
-
     <style>
-      :root { color-scheme: light; --ink: #2b2a24; --panel: rgba(255, 252, 240, 0.82); --line: rgba(43, 42, 36, 0.18); }
+      :root { color-scheme: light; --ink: #2b2a24; --panel: rgba(255, 252, 240, 0.86); --line: rgba(43, 42, 36, 0.18); --credit-gap: 52px; }
       * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; background: #c9dfe9; color: var(--ink); font: 400 13px/1.45 "A3G GT Walsheim", "Aeonik Pro", sans-serif; overflow: hidden; }
+      html, body { margin: 0; height: 100%; background: #c9dfe9; color: var(--ink); font: 400 13px/1.45 var(--font-ui, "Whitney", sans-serif); font-synthesis: none; overflow: hidden; }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
       .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(6px); }
       #hud { position: fixed; inset: 0; pointer-events: none; }
-      #quest { position: absolute; top: 12px; left: 12px; font-weight: 500; }
-      #toast { position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); max-width: min(560px, 90vw); text-align: center; opacity: 0; transition: opacity 0.25s; }
+      #quest { position: absolute; top: 12px; left: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+      #toast { position: absolute; left: 50%; bottom: calc(max(52px, var(--credit-gap, 52px)) + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); max-width: min(560px, 90vw); text-align: center; opacity: 0; transition: opacity 0.25s; }
       #toast.on { opacity: 1; }
       #hint { position: absolute; top: 12px; right: 12px; font-size: 12px; color: #4b4a40; }
       @media (max-width: 560px) {
         #quest { top: max(8px, env(safe-area-inset-top)); left: 8px; }
         #hint { top: calc(max(8px, env(safe-area-inset-top)) + 44px); left: 8px; right: 8px; }
+        #toast { bottom: calc(max(64px, var(--credit-gap, 52px)) + env(safe-area-inset-bottom, 0px)); }
+      }
+      @media (max-width: 760px) {
+        #quest { top: max(8px, env(safe-area-inset-top)); left: 8px; }
+        #hint { display: none; }
+        #toast { bottom: calc(max(64px, var(--credit-gap, 52px)) + env(safe-area-inset-bottom, 0px)); }
       }
       /* touch: no keyboard hint; the toast sits above the touch pad, its buttons and the reach prompt (ui.ts) */
-      @media (pointer: coarse) { #hint { display: none; } #toast { bottom: calc(256px + env(safe-area-inset-bottom)); } }
+      @media (pointer: coarse) { #hint { display: none; } #toast { bottom: calc(256px + env(safe-area-inset-bottom, 0px)); } }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #c9dfe9; }
       .hidden { display: none !important; }
     </style>
@@ -49,7 +54,7 @@
     <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0">The Bellkeeper's Walk — an Aura3D browser game</h1>
     <canvas id="world" tabindex="0"></canvas>
     <div id="hud">
-      <div id="quest" class="panel"><span id="found">0 / 3 discovered</span><span id="complete" class="hidden"> · the bell has sung</span></div>
+      <div id="quest" class="panel"><span id="seals" class="wwui-seals" aria-hidden="true"></span><span id="found">0 / 3 discovered</span><span id="complete" class="hidden"> · the bell has sung</span></div>
       <div id="hint" class="panel">WASD or arrows to walk · Space to hop · E to interact · O autopilot</div>
       <div id="toast" class="panel"></div>
     </div>

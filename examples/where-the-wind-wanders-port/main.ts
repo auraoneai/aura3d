@@ -13,14 +13,14 @@
  */
 import "../../apps/showcase-port-shared/hud-tokens.css";
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
-import { warmPrograms } from "@aura3d/engine/game";
+import { readAutoplayFlag, warmPrograms } from "@aura3d/engine/game";
 import { CAMERA_FOLLOW, CAMERA_OFFSET, LETTERS, VIRTUAL_STEP_MS, createState, expandScript, nearbyInteraction, stepFrame, type Action, type FrameInput, type ScriptSegment, type WindState } from "./sim";
 import { createCaptionQueue } from "./captions";
 import { footstepCell } from "./locomotion";
 import { createWindPresenter, viewOf } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
 import { createAudio } from "./audio";
-import { STORY, createUi } from "./ui";
+import { STORY, createUi, renderWaxSealPips } from "./ui";
 import { lookPostFor, parseFoundParam, resolveLook } from "./daylight";
 import { PAPER_PASS_NAME, paperPass, paperScale, warmGradingLut } from "./paper-pass";
 import { createAutopilot, createAutoplaySession } from "./autopilot";
@@ -58,8 +58,8 @@ let pendingAct: Action = null;
 let toastTimer = 0;
 let journalTimer = 0;
 let touchKeys = "";
-/** Autoplay: `?autoplay=1` (alias `?autopilot=1`) starts straight into a hands-free walk; key O toggles it in play. */
-let autopilotOn = !manual && (params.get("autoplay") === "1" || params.get("autopilot") === "1");
+/** Autoplay: `?autoplay=1` (alias `?autopilot=1`, `?demo=1`) starts straight into a hands-free walk; key O toggles it in play. */
+let autopilotOn = !manual && readAutoplayFlag(location.search);
 const pilot = createAutopilot();
 const autoSession = createAutoplaySession({ resultsSeconds: 3, voyageSeconds: 9 });
 let started = manual || params.get("start") === "1" || autopilotOn;
@@ -105,25 +105,32 @@ function showToast(text: string): void {
 }
 
 function handleMessage(m: string): void {
-  showToast(MESSAGES[m] ?? m);
   if (m.startsWith("letter:")) {
     const index = LETTERS.findIndex((l) => `letter:${l.id}` === m);
     if (index >= 0) {
       ui.addLetter(index);
       // autoplay: the journal never stays open over the walk (closes ~4 s after a letter)
       if (autopilotOn) { window.clearTimeout(journalTimer); journalTimer = window.setTimeout(() => { if (autopilotOn) ui.toggleJournal(false); }, 4000); }
+      // #wwui-caption narrates the letter discovery; suppress duplicate #toast for the same event
       captions.say(STORY.letters[index]!.text, 11);
       audio.chime(index);
     }
-  } else if (m === "bell:locked") captions.say(STORY.locked, 4);
-  else if (m === "bell:complete") {
+  } else if (m === "bell:locked") {
+    // #wwui-caption displays STORY.locked; skip redundant #toast
+    captions.say(STORY.locked, 4);
+  } else if (m === "bell:complete") {
+    // #wwui-caption displays STORY.complete; skip redundant #toast
     captions.say(STORY.complete, 9);
     audio.bell();
+  } else {
+    showToast(MESSAGES[m] ?? m);
   }
 }
 
 function updateHud(): void {
   const bells = state.complete ? 1 : 0;
+  const sealsEl = document.getElementById("seals");
+  if (sealsEl) sealsEl.innerHTML = renderWaxSealPips(state.found, LETTERS.length);
   $("found").innerHTML = `<span class="hud-metric">${state.found.length} / ${LETTERS.length}</span> discovered · <span class="hud-metric">${bells} / 1</span> bell`;
   $("complete").classList.toggle("hidden", !state.complete);
   for (const m of state.messages) handleMessage(m);

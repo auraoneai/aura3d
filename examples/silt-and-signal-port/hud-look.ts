@@ -48,17 +48,17 @@ html[data-silt-look="inked"] #keys { bottom: calc(12px + var(--silt-bar-gap)); f
 html[data-silt-look="inked"] #keys.silt-faded { opacity: 0; transform: translateY(6px); pointer-events: none; }
 html[data-silt-look="inked"] #compass-wrap { width: 86px; height: 86px; border-radius: 50%; background: radial-gradient(circle, rgba(48, 34, 22, 0.92) 0 56%, rgba(120, 84, 42, 0.85) 57% 63%, rgba(26, 18, 13, 0.94) 64%); box-shadow: 0 0 0 2px #c89448, 0 0 0 5px rgba(30, 20, 14, 0.88), 0 8px 22px rgba(0, 0, 0, 0.48); }
 html[data-silt-look="inked"] #compass { border-bottom-color: ${SILT_PALETTE.jade}; filter: drop-shadow(0 0 5px rgba(79, 214, 172, 0.68)); }
-html[data-silt-look="inked"] #silt-horizon-tape { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 252px; padding: 7px 12px 8px; display: grid; gap: 4px; pointer-events: none; }
-html[data-silt-look="inked"] .silt-tape-top, html[data-silt-look="inked"] .silt-tape-bot { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-html[data-silt-look="inked"] #silt-freq { font-family: var(--font-mono); font-size: 13px; font-weight: 400; color: ${SILT_PALETTE.jadeWhite}; opacity: 0.92; }
-html[data-silt-look="inked"] .silt-tape-cardinal { font-family: var(--font-ui); font-size: 13px; font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: 0.06em; color: var(--muted); }
-html[data-silt-look="inked"] #silt-tape-dist { font-size: 14px; color: ${SILT_PALETTE.bone}; }
+html[data-silt-look="inked"] #silt-horizon-tape { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 268px; padding: 7px 12px 8px; display: grid; gap: 4px; pointer-events: none; }
+html[data-silt-look="inked"] .silt-tape-top, html[data-silt-look="inked"] .silt-tape-bot { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; white-space: nowrap; }
+html[data-silt-look="inked"] #silt-freq { font-family: var(--font-mono); font-size: 13px; font-weight: 400; color: ${SILT_PALETTE.jadeWhite}; opacity: 0.92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html[data-silt-look="inked"] .silt-tape-cardinal { font-family: var(--font-ui); font-size: 13px; font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: 0.06em; color: var(--muted); white-space: nowrap; }
+html[data-silt-look="inked"] #silt-tape-dist { font-size: 14px; color: ${SILT_PALETTE.bone}; white-space: nowrap; }
 html[data-silt-look="inked"] .silt-tape-rail { position: relative; height: 8px; border-radius: 999px; background: rgba(244, 234, 213, 0.1); border: 1px solid rgba(218, 168, 106, 0.24); overflow: hidden; }
 html[data-silt-look="inked"] .silt-tape-ticks { position: absolute; inset: 1px 6px; background: repeating-linear-gradient(90deg, rgba(218, 168, 106, 0.42) 0 1px, transparent 1px 14px); opacity: 0.75; }
 html[data-silt-look="inked"] #silt-tape-pip { position: absolute; top: 0; bottom: 0; left: 50%; width: 10px; margin-left: -5px; border-radius: 999px; background: ${SILT_PALETTE.jadeWhite}; box-shadow: 0 0 8px ${SILT_PALETTE.jade}; transition: left 70ms linear; }
 html[data-silt-look="inked"] .screen { background: radial-gradient(ellipse at 50% 42%, rgba(22, 14, 10, 0.08), rgba(14, 10, 8, 0.64)); }
-html[data-silt-look="inked"] #title-screen .card { width: min(448px, 100%); gap: 10px; padding: 16px 18px; }
-html[data-silt-look="inked"] .chapters { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 6px; }
+html[data-silt-look="inked"] #title-screen .card { width: min(520px, 100%); gap: 10px; padding: 16px 18px; }
+html[data-silt-look="inked"] .chapters { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 html[data-silt-look="inked"] button { font-weight: 500; font-size: 13px; border-radius: 7px; background: rgba(244, 234, 213, 0.08); border-color: rgba(218, 168, 106, 0.34); transition: background 140ms ease, border-color 140ms ease; }
 html[data-silt-look="inked"] button.primary { background: linear-gradient(180deg, #e8b36d, #cf9147); border-color: #ebc083; color: #22140b; font-weight: 600; }
 html[data-silt-look="inked"] button.primary:hover, html[data-silt-look="inked"] button.primary:focus-visible { background: linear-gradient(180deg, #f1c282, #dca055); }
@@ -72,12 +72,16 @@ html[data-silt-look="inked"] #touch-boost { bottom: calc(max(12px, env(safe-area
 html[data-silt-look="inked"] #touch-pause { font-size: 13px; }
 @media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] { --hud-meta: 13px; --hud-title: 15px; } }
 @media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] button, html[data-silt-look="inked"] .chapters button, html[data-silt-look="inked"] .silt-controls-drawer summary { min-height: 44px; min-width: 44px; } }
-@media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] #touch-pause { min-width: 48px; min-height: 48px; width: 48px; height: 48px; font-size: 13px; top: calc(max(8px, env(safe-area-inset-top)) + 84px); } }
+@media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] #compass-wrap { display: none; } }
+@media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] #objective-card { right: 64px; max-width: none; } }
+@media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] #touch-pause { min-width: 48px; min-height: 48px; width: 48px; height: 48px; font-size: 13px; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); } }
 @media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] #touch-boost { min-width: 60px; min-height: 60px; width: 60px; height: 60px; bottom: calc(max(10px, env(safe-area-inset-bottom)) + var(--silt-bar-gap) + 8px); } }
 @media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] #touch-hold { min-width: 76px; min-height: 76px; width: 76px; height: 76px; bottom: calc(max(10px, env(safe-area-inset-bottom)) + var(--silt-bar-gap)); } }
 @media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] #flight { left: 8px; bottom: calc(max(10px, env(safe-area-inset-bottom)) + var(--silt-bar-gap)); min-width: 168px; padding: 8px 11px; } }
-@media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] #silt-horizon-tape { top: calc(max(8px, env(safe-area-inset-top)) + 90px); left: 8px; transform: none; width: 204px; padding: 6px 10px; } }
+@media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] #silt-horizon-tape { top: calc(max(8px, env(safe-area-inset-top)) + 90px); left: 8px; right: 8px; transform: none; width: auto; max-width: 268px; padding: 6px 10px; } }
+@media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] #toast { top: calc(max(12px, env(safe-area-inset-top)) + 168px); } }
 @media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] #title-screen .card { max-height: calc(100vh - 28px - var(--silt-bar-gap)); overflow-y: auto; padding: 14px; } }
+@media (pointer: coarse), (max-width: 760px) { html[data-silt-look="inked"] .chapters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 `;
 
 /** Mount the inked HUD: scope attribute, stylesheet, compact controls drawer, horizon relay tape, and licensed faces. */

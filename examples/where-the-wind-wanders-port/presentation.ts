@@ -1,4 +1,4 @@
-import { createFixedStepPresenter, createRecordBlend, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createRecordBlend, createSnapshotInterpolator, type SnapshotInterpolator } from "@aura3d/engine/game";
 import type { WindState } from "./sim";
 
 /** What the renderer reads of one simulation step that moves continuously: the walker's position, stride and hop height. */
@@ -23,6 +23,10 @@ export function viewOf(state: WindState, shown: Shown): WindState {
   return { ...state, pos: { x: shown.x, z: shown.z }, stride: shown.stride, hop: { ...state.hop, height: shown.hopHeight } };
 }
 
-export function createWindPresenter(getState: () => WindState): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getState()), blend: blendShown });
+export function createWindPresenter(getState: () => WindState): SnapshotInterpolator<Shown> {
+  return createSnapshotInterpolator<Shown>({
+    snapshot: () => shownOf(getState()),
+    blend: blendShown,
+    snap: { distance: SNAP_DISTANCE, position: (p) => [p.x, p.z] }
+  });
 }

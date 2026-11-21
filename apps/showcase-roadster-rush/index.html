@@ -20,18 +20,19 @@
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Apex Overdrive","url":"https://aura3d.auraone.ai/apps/showcase-roadster-rush/","description":"High-speed sunset freeway & sky-lane combat racer — fly the Apex Interceptor over gridlocked traffic with cold-gas thrusters, barrel rolls, carrier ramps…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/roadster-rush.jpg?v=72be74148b53","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.7.2"}</script>
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2e3f768c44d3" />
-    <link rel="preload" href="/rr-fonts/whitney-regular.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/rr-fonts/whitney-medium.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="/rr-fonts/rr-fonts.css" />
     <style>
       :root, html {
         font-synthesis: none;
-        --font-ui: "Whitney", "Whitney Fallback", "Graphik", sans-serif;
-        --font-metric: "DIN Pro", "DIN Pro Fallback", "Whitney", "Graphik", sans-serif;
+        --font-ui: "A3G National 2 Narrow", "Whitney", "Whitney Fallback", "Graphik", sans-serif;
+        --font-metric: "DIN Pro", "DIN Pro Fallback", "A3G National 2 Narrow", "Whitney", sans-serif;
         --font-mono: "Monument Grotesk Mono", "Monument Grotesk Mono Fallback", monospace;
         --font-sans: var(--font-ui);
-        --font-display: var(--font-metric);
+        --font-display: var(--font-ui);
         --font: var(--font-ui);
+        --a3d-accent: #ff8a3d;
+        --a3d-accent-ink: #22232a;
+        --a3d-accent-2: #4df0ff;
+        --a3d-accent-2-ink: #091018;
       }
       body, html {
         margin: 0;
@@ -48,6 +49,13 @@
         position: fixed;
         top: max(10px, env(safe-area-inset-top));
         left: max(12px, env(safe-area-inset-left));
+        right: auto;
+        height: auto;
+        padding: 0;
+        background: transparent;
+        border-bottom: 0;
+        backdrop-filter: none;
+        overflow: visible;
         z-index: 60;
         display: flex;
         flex-direction: column;

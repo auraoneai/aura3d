@@ -16,11 +16,14 @@ import {
   lights,
   material,
   model,
+  primitives,
   scene,
+  sky,
   texture,
   type AuraApp,
   type AuraTransformSpec
 } from "@aura3d/engine";
+import { createFlipbookAtlas } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
@@ -29,6 +32,7 @@ import {
   Slots,
   scrollFrameZ,
   flatSpec,
+  gradientSkyOptions,
   shadowSpec,
   skySpec,
   gradientSkyFragment,
@@ -38,7 +42,6 @@ import {
   type MeshData,
   type Rgb
 } from "../../../examples/shared/runner-kit/index";
-import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
 import {
   SURGE_MATERIALS,
   bossWallSawRollerHazardMeshData,
@@ -390,10 +393,16 @@ export function buildWorld(options: WorldOptions): World {
     );
   };
 
-  // Synthwave arcade skyway dome (deep midnight-violet sky, striped dusk sun, twinkling starfield) sized inside the far plane.
+  // 5.7.2 stylized dusk corridor sky.gradient via runner-kit `gradientSkyOptions` + synthwave skyway dome.
+  builder.add(
+    sky.gradient({
+      name: "ns-gradient-sky",
+      ...gradientSkyOptions(look.skyStops, { haze: { intensity: 0.16 }, dither: true })
+    })
+  );
   add("sky", sphereMesh(360, 48, 24), synthSkySpec());
 
-  // Studio skyway lighting rig: 1 shadowed 1-cascade key + 1 cool skyway hemisphere fill + studio softbox IBL (zero ambient).
+  // Studio skyway lighting rig: 1 shadowed key with 5.7.2 `softness: 2.0` + corridor `shadow.fit` + hemisphere + studio IBL.
   builder
     .add(
       lights.key({
@@ -402,7 +411,13 @@ export function buildWorld(options: WorldOptions): World {
         target: [...KEY_TARGET],
         color: "#ffe6c8",
         intensity: 2.8,
-        shadow: { cascades: 1, maxDistance: 68, mapSize: 1024 }
+        shadow: {
+          cascades: 1,
+          maxDistance: 68,
+          mapSize: 1024,
+          softness: 2.0,
+          fit: { center: [0, 0, -16], extent: 18, depth: 52 }
+        }
       })
     )
     .add(lights.hemisphere({ name: "skyway-hemi", skyColor: "#6e7bff", groundColor: "#0d0820", intensity: 0.5 }))
@@ -416,11 +431,58 @@ export function buildWorld(options: WorldOptions): World {
   addBatch("edges", edges, stripSpec(LINEAR.roadEdge, 1.95, 0.95));
   addBatch("dashes", dashes, stripSpec(LINEAR.roadStripe, 1.65, 0.85));
 
-  // Refractive holographic gate panels + lattice-truss alloy math-gate gantries.
+  // Wet-lane glossy specular reflection strips down the dusk corridor so cyan/magenta gates reflect along both lanes.
+  const wetStripMat = material.clearcoatPaint({
+    name: "ns-wet-lane-specular",
+    color: "#151238",
+    roughness: 0.12,
+    metallic: 0.1,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.06,
+    envMapIntensity: 1.55,
+    alphaMode: "blend",
+    opacity: 0.34,
+    depthWrite: false
+  });
+  for (const laneX of CONFIG.GATE_LANES) {
+    builder.add(
+      primitives.plane({
+        name: `wet-lane-${laneX < 0 ? "l" : "r"}`,
+        size: [2.25, 1, 170],
+        position: [laneX, 0.012, -74],
+        material: wetStripMat,
+        castShadow: false,
+        receiveShadow: true
+      })
+    );
+  }
+
+  // Refractive holographic gate panels + lattice-truss alloy math-gate gantries + dual-coded silhouette caps:
+  // upward bright chevron caps on `+`/`×` gates vs jagged crimson hazard bars on `−`/`÷` gates.
   const panels = new Batch(gatePanelMesh(), CONFIG.GATES, LINEAR.gateGood, CORRIDOR_BOUNDS);
   const frames = new Batch(highwayGateGantryFrameMeshData(GATE_FRAME_SIDES), CONFIG.GATES, LINEAR.gateFrame, CORRIDOR_BOUNDS);
   addBatch("gate-panels", panels, frostedGateSpec());
   addBatch("gate-frames", frames, stanchionSpec(KEY_SUN_DIR), true);
+  builder.add(
+    instances.cone({
+      name: "gate-good-caps",
+      size: [0.55, 0.34, 0.22],
+      material: material.emissive({ color: "#3ef2ff", emissive: "#5cf7ff", emissiveIntensity: 1.65, roughness: 0.2 }),
+      transforms: parkedTransforms(CONFIG.GATES),
+      castShadow: false,
+      receiveShadow: false
+    }).runtime({ id: "gate-good-caps" })
+  );
+  builder.add(
+    instances.box({
+      name: "gate-bad-hazards",
+      size: [2.5, 0.16, 0.18],
+      material: material.emissive({ color: "#ff335a", emissive: "#ff2d55", emissiveIntensity: 1.75, roughness: 0.25 }),
+      transforms: parkedTransforms(CONFIG.GATES * 2),
+      castShadow: false,
+      receiveShadow: false
+    }).runtime({ id: "gate-bad-hazards" })
+  );
 
   const opCanvases = Array.from({ length: CONFIG.GATES }, () => makeCanvas(256, 160));
   const opTextures = opCanvases.map(({ canvas }) => texture.canvas({ canvas, colorSpace: "linear" }));
@@ -472,9 +534,36 @@ export function buildWorld(options: WorldOptions): World {
   const shards = new Batch(shardMesh(), CONFIG.SHARDS, LINEAR.shard, CORRIDOR_BOUNDS);
   addBatch("shards", shards, toonSpec([1, 1, 1], undefined, [0.05, 0.02, 0.1], true));
 
-  // Procedural `createFlipbookAtlas("sparks")` gate-shatter / wall-smash burst + cyan speed ribbon.
+  // Procedural `createFlipbookAtlas("sparks" | "plasma")` + live `effects.flipbook({ texture })` for boss smashes + cyan speed ribbon.
   const sparksAtlas = createFlipbookAtlas("sparks", [255, 220, 118]);
+  const smashPlasmaAtlas = createFlipbookAtlas("plasma", [255, 198, 72]);
   add("sparks-burst", quadMesh(2.9, 2.9), sparksFlipbookSpec(sparksAtlas.texture, sparksAtlas.columns, sparksAtlas.rows));
+  builder.add(
+    effects.flipbook({
+      name: "smash-flipbook-sparks",
+      texture: sparksAtlas.texture,
+      spriteColumns: sparksAtlas.columns,
+      spriteRows: sparksAtlas.rows,
+      frameRate: 34,
+      loop: false,
+      size: 2.6,
+      color: "#ffd84d",
+      blend: "additive"
+    }).position(0, -50, -60).runtime({ id: "smash-flipbook-sparks" })
+  );
+  builder.add(
+    effects.flipbook({
+      name: "smash-flipbook-plasma",
+      texture: smashPlasmaAtlas.texture,
+      spriteColumns: smashPlasmaAtlas.columns,
+      spriteRows: smashPlasmaAtlas.rows,
+      frameRate: 30,
+      loop: false,
+      size: 3.1,
+      color: "#ff9d3b",
+      blend: "additive"
+    }).position(0, -50, -60).runtime({ id: "smash-flipbook-plasma" })
+  );
   builder.add(
     effects.trail({
       name: "ball-trail",
@@ -539,6 +628,8 @@ export function buildWorld(options: WorldOptions): World {
       const segmentJ = new Array<number>(CONFIG.SEGMENTS).fill(Number.NaN);
       const hazardSawScratch = parkedTransforms(CONFIG.WALLS * 2);
       const bossGuardScratch = parkedTransforms(CONFIG.WALLS * 3);
+      const goodCapScratch = parkedTransforms(CONFIG.GATES);
+      const badHazardScratch = parkedTransforms(CONFIG.GATES * 2);
 
       let roadAnchor = 0;
       let lastNumber = -1;
@@ -566,6 +657,10 @@ export function buildWorld(options: WorldOptions): World {
         node(`boss-guards-${i}-body`).setAnimation({ clip: "idle", loop: true, speed: 1, duration: 2.533, startTime: (i * 0.71) % 2.533 });
       }
       node("sparks-burst").setVisible(false);
+      node("smash-flipbook-sparks").setVisible(false);
+      node("smash-flipbook-plasma").setVisible(false);
+      node("gate-good-caps");
+      node("gate-bad-hazards");
       node("underlay");
       node("shield").setVisible(false);
       for (let i = 0; i < CONFIG.GATES; i++) node(`op-label-${i}`).setVisible(false);
@@ -605,8 +700,16 @@ export function buildWorld(options: WorldOptions): World {
           dashes.place(slot, 0, 0.02, z, 0, 1, 1, 1);
         }
 
-        /* holographic gates + beveled chrome stanchions */
+        /* holographic gates + beveled chrome stanchions + dual-coded arch caps */
         const liveGates = o.gates.filter((g) => g.active && !o.rows[g.row]?.resolved);
+        for (let i = 0; i < CONFIG.GATES; i += 1) {
+          const gc = goodCapScratch[i]!;
+          gc.position[0] = 0; gc.position[1] = -40; gc.position[2] = -60; gc.scale = 0.001;
+          for (let k = 0; k < 2; k += 1) {
+            const bh = badHazardScratch[i * 2 + k]!;
+            bh.position[0] = 0; bh.position[1] = -40; bh.position[2] = -60; bh.scale = 0.001;
+          }
+        }
         gateSlots.retain(liveGates, (slot) => {
           panels.collapse(slot);
           frames.collapse(slot);
@@ -618,15 +721,31 @@ export function buildWorld(options: WorldOptions): World {
           const { slot, fresh } = gateSlots.use(gate);
           if (slot < 0) continue;
           const runZ = -(gate.z + o.distance);
+          const negative = gate.kind === "sub" || gate.kind === "div2";
           if (fresh || gateRunZ[slot] !== runZ) {
             gateRunZ[slot] = runZ;
             const z = scrollFrameZ(runZ, roadAnchor);
             panels.place(slot, gate.x, 0, z, 0, 1, 1, 1);
             frames.place(slot, gate.x, 0, z, gateFrameYaw(gate.x), 1, 1, 1);
-            const negative = gate.kind === "sub" || gate.kind === "div2";
             const bright = negative ? LINEAR.gateBad : LINEAR.gateGood;
             panels.setTone(slot, bright);
             frames.setTone(slot, bright);
+          }
+          const worldGateZ = -(gate.z + back);
+          if (negative) {
+            // Jagged crimson double-chevron hazard bars across the arch header (high above the ball).
+            const bhA = badHazardScratch[slot * 2]!;
+            const bhB = badHazardScratch[slot * 2 + 1]!;
+            bhA.position[0] = gate.x; bhA.position[1] = 2.86; bhA.position[2] = worldGateZ + 0.08;
+            bhA.rotation[0] = 0; bhA.rotation[1] = 0; bhA.rotation[2] = 0.14; bhA.scale = 1;
+            bhB.position[0] = gate.x; bhB.position[1] = 2.86; bhB.position[2] = worldGateZ + 0.08;
+            bhB.rotation[0] = 0; bhB.rotation[1] = 0; bhB.rotation[2] = -0.14; bhB.scale = 1;
+          } else {
+            // Upward bright cyan chevron cap above `+` / `×` gates.
+            const gc = goodCapScratch[slot]!;
+            const lift = view.reducedMotion ? 0 : 0.07 * Math.sin(time * 5.2 + slot);
+            gc.position[0] = gate.x; gc.position[1] = 2.98 + lift; gc.position[2] = worldGateZ + 0.08;
+            gc.rotation[0] = 0; gc.rotation[1] = 0; gc.rotation[2] = 0; gc.scale = 1;
           }
           const text = opLabel(gate.kind, gate.n);
           if (gateText[slot] !== text) {
@@ -634,8 +753,10 @@ export function buildWorld(options: WorldOptions): World {
             paintOpLabel(opCanvases[slot]!.g, text);
             opTextures[slot]!.needsUpdate = true;
           }
-          node(`op-label-${slot}`).setVisible(true).setPosition(gate.x, 0, -(gate.z + back));
+          node(`op-label-${slot}`).setVisible(true).setPosition(gate.x, 0, worldGateZ);
         }
+        node("gate-good-caps").setInstances(goodCapScratch);
+        node("gate-bad-hazards").setInstances(badHazardScratch);
 
         /* segmented crystal-masonry boss walls + spinning flank buzzsaws + live breakRatio fissure shader */
         const liveWalls = o.walls.filter((w) => w.active);
@@ -781,6 +902,9 @@ export function buildWorld(options: WorldOptions): World {
         }
         const burstAge = time - burstStartTime;
         const sparksHandle = node("sparks-burst");
+        const smashSparksFb = node("smash-flipbook-sparks");
+        const smashPlasmaFb = node("smash-flipbook-plasma");
+        const smashActive = burstAge >= 0 && burstAge < 0.48 && !view.reducedMotion && burstTint[0] > 1.2;
         if (burstAge >= 0 && burstAge < 0.42 && !view.reducedMotion) {
           const frame = Math.min(sparksAtlas.frameCount - 1, Math.floor((burstAge / 0.42) * sparksAtlas.frameCount));
           const scale = 0.85 + burstAge * 1.35;
@@ -793,6 +917,14 @@ export function buildWorld(options: WorldOptions): World {
           sparksHandle.setUniform?.("alpha", Math.max(0, 1 - burstAge / 0.42));
         } else {
           sparksHandle.setVisible(false);
+        }
+        if (smashActive) {
+          const smScale = 1.0 + burstAge * 1.85;
+          smashSparksFb.setVisible(true).setPosition(burstX, 1.65, -0.5).setScale(smScale);
+          smashPlasmaFb.setVisible(true).setPosition(burstX, 1.55, -0.6).setScale(smScale * 1.15);
+        } else {
+          smashSparksFb.setVisible(false);
+          smashPlasmaFb.setVisible(false);
         }
 
         /* particles + shards: per-frame movers in the player frame */
@@ -863,6 +995,10 @@ export function buildWorld(options: WorldOptions): World {
         if (on) node("shield").setPosition(0, -50, -60);
         node("sparks-burst").setVisible(on);
         if (on) node("sparks-burst").setPosition(0, -50, -60);
+        node("smash-flipbook-sparks").setVisible(on);
+        if (on) node("smash-flipbook-sparks").setPosition(0, -50, -60);
+        node("smash-flipbook-plasma").setVisible(on);
+        if (on) node("smash-flipbook-plasma").setPosition(0, -50, -60);
         for (let i = 0; i < CONFIG.GATES; i++) {
           const h = node(`op-label-${i}`).setVisible(on);
           if (on) h.setPosition(0, -50, -60);

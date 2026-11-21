@@ -80,7 +80,7 @@ describe("Saltwind Highway GU47 look table (WP-32)", () => {
     expect(lookFor("halo", "original")).toBe(ORIGINAL_LOOKS.halo);
     expect(lookFor("halo")).toBe(LOOKS.halo);
     expect(ORIGINAL_LOOKS.sunbreak!.row).toBeNull();
-    expect(outputFor("gu47")).toEqual({ maxDpr: 2, pixelRatio: { max: 2 }, output: { toneMapping: "aces", dither: true } });
+    expect(outputFor("gu47")).toEqual({ maxDpr: 2, pixelRatio: { max: 2 }, output: { toneMapping: "agx", dither: true } });
     expect(outputFor("original").output.dither).toBe(false);
     expect(outputFor("original").pixelRatio).toBe(1);
   });
@@ -90,7 +90,7 @@ describe("Saltwind Highway GU47 look table (WP-32)", () => {
       const all = nodes(buildWorld(i, "gu47").scene);
       const lightsOf = all.filter((n) => n.kind === "light");
       const sun = lightsOf.find((n) => n.name === "sun")!;
-      expect(sun.shadow).toMatchObject({ cascades: 1, maxDistance: 75, filter: "pcss" });
+      expect(sun.shadow).toMatchObject({ cascades: 1, maxDistance: 75, filter: "pcss", softness: 1.4, fit: { extent: [26, 16], depth: 48 } });
       expect(lightsOf.filter((n) => n.shadow && n.shadow !== false).length).toBe(1);
       expect(lightsOf.some((n) => n.light === "ambient")).toBe(false);
       const env = all.find((n) => n.kind === "environment")!;

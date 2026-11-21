@@ -5,8 +5,12 @@
  * star meter, toasts, result card, Siege Map / Player Studio / Trajectory
  * Range overlays, pause veil). Gameplay truth stays in the sim + scene.
  */
+import { HUD_THEMES } from "@aura3d/engine/game";
 import { AMMO, type AmmoId } from "./ammo";
 import { CHAPTERS, LEVELS, isLevelUnlocked, totalStars, type LevelSpec } from "./levels";
+
+/** Crisp SVG raider crest replacing the raw boar emoji in the target-pip counter. */
+const RAIDER_CREST_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5 14c0-4.2 3.1-7.4 7-7.4s7 3.2 7 7.4c0 3-2.5 5.4-7 5.4S5 17 5 14Z" fill="#7a4c32" stroke="#3d2a17" stroke-width="1.5"/><path d="M4.5 13.5 2.4 10.6l2.8.8M19.5 13.5l2.1-2.9-2.8.8" fill="none" stroke="#f7ecd4" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="12" cy="14.7" rx="3.4" ry="2.2" fill="#d99a74" stroke="#3d2a17" stroke-width="1.2"/><circle cx="10.8" cy="14.7" r="0.7" fill="#3d2a17"/><circle cx="13.2" cy="14.7" r="0.7" fill="#3d2a17"/><circle cx="9.2" cy="11.1" r="1.05" fill="#fff7e8"/><circle cx="14.8" cy="11.1" r="1.05" fill="#fff7e8"/></svg>`;
 
 export type ModeId = "siege" | "map" | "studio" | "range";
 
@@ -21,6 +25,7 @@ export interface HudActions {
   onFlagColor(color: string): void;
   onRangeShot(ammo: AmmoId, powerPct: number, angleDeg: number): void;
   onMuteToggle(): boolean;
+  onQuickPan?(): void;
 }
 
 export interface HudState {
@@ -83,29 +88,41 @@ export class SiegeHud {
   private destroyed = false;
   private muteBtn!: HTMLButtonElement;
   private coach!: HTMLElement;
+  private aimBadge!: HTMLElement;
+  private panBtn!: HTMLButtonElement;
   /** Last written HUD fragments: `update()` touches the DOM only when one changes. */
   private written = { score: "", rating: -1, levelTag: "", pips: "", dock: "", ability: "" };
 
   constructor(container: HTMLElement, actions: HudActions) {
     this.actions = actions;
     this.root = el("div", "ss-hud");
+    for (const [k, v] of Object.entries(HUD_THEMES.storybook)) {
+      this.root.style.setProperty(k, v);
+    }
     container.appendChild(this.root);
     this.build();
   }
 
   private build(): void {
-    // ---------------- topbar: shared shell contract ------------------------
-    const topbar = el("div", "ss-topbar");
-    const brand = el("div", "ss-brand", `<span class="ss-brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 1v14" stroke="currentColor" stroke-width="1.6"/><path d="M4 2h9l-3 3 3 3H4z" fill="currentColor"/></svg></span> Slingshot Siege`);
+    // ---------------- topbar: shared quickbar contract + compact mobile labels ------------------------
+    const topbar = el("div", "aura3d-top-bar ss-topbar");
+    const brand = el("div", "ss-brand", `<span class="ss-brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 1v14" stroke="currentColor" stroke-width="1.6"/><path d="M4 2h9l-3 3 3 3H4z" fill="currentColor"/></svg></span><span class="ss-brand-text">Slingshot Siege</span>`);
     const tabs = el("div", "ss-tabs");
-    const tabDefs: readonly [ModeId, string][] = [["siege", "Siege"], ["map", "Siege Map"], ["studio", "Player Studio"], ["range", "Trajectory Range"]];
-    for (const [id, label] of tabDefs) {
-      const btn = el("button", "ss-tab", label);
+    const tabDefs: readonly [ModeId, string, string][] = [
+      ["siege", "Siege", "Play"],
+      ["map", "Siege Map", "Map"],
+      ["studio", "Player Studio", "Paint"],
+      ["range", "Trajectory Range", "Lab"]
+    ];
+    for (const [id, label, shortLabel] of tabDefs) {
+      const btn = el("button", "ss-tab", `<span class="ss-tab-full">${label}</span><span class="ss-tab-short">${shortLabel}</span>`);
+      btn.type = "button";
       btn.dataset.mode = id;
       btn.addEventListener("click", () => this.actions.onModeChange(id));
       tabs.appendChild(btn);
     }
     const mute = el("button", "ss-topbar-btn", "🔊");
+    mute.type = "button";
     mute.title = "Mute sound";
     mute.setAttribute("aria-label", "Mute sound");
     mute.addEventListener("click", () => this.setMuted(this.actions.onMuteToggle()));
@@ -134,16 +151,24 @@ export class SiegeHud {
     this.abilityBtn.addEventListener("click", () => this.actions.onFireAbility());
 
     const utility = el("div", "ss-utility");
+    const panBtn = el("button", "ss-utility-btn ss-pan-btn", "Fort");
+    panBtn.type = "button";
+    panBtn.title = "Pan between Fort and Sling";
+    panBtn.addEventListener("click", () => this.actions.onQuickPan?.());
+    this.panBtn = panBtn;
     const resetBtn = el("button", "ss-utility-btn", "↺");
+    resetBtn.type = "button";
     resetBtn.title = "Reset level";
     resetBtn.addEventListener("click", () => this.actions.onReset());
     const pauseBtn = el("button", "ss-utility-btn", "⏸");
+    pauseBtn.type = "button";
     pauseBtn.title = "Pause";
     pauseBtn.addEventListener("click", () => this.actions.onPause(true));
-    utility.append(resetBtn, pauseBtn);
+    utility.append(panBtn, resetBtn, pauseBtn);
 
     this.shotMeter = el("div", "ss-shot-meter");
-    hud.append(scoreCard, this.levelTag, this.gullPips, this.ammoDock, this.abilityBtn, utility, this.shotMeter);
+    this.aimBadge = el("div", "ss-aim-badge ss-hidden");
+    hud.append(scoreCard, this.levelTag, this.gullPips, this.ammoDock, this.abilityBtn, utility, this.shotMeter, this.aimBadge);
     this.root.appendChild(hud);
 
     // ---------------- feedback layers ----------------------------------------
@@ -165,8 +190,8 @@ export class SiegeHud {
 
     // ---------------- first-level coach -----------------------------------------
     this.coach = el("div", "ss-coach ss-hidden");
-    this.coach.innerHTML = `<b>Drag the pouch back</b> and release to launch.
-      <span>Keys: W/S or ↑/↓ aim up and down, A/D or ←/→ set power, Space launches, Space again fires the ammo power.</span>`;
+    this.coach.innerHTML = `<b>Drag pouch back</b> &amp; release to fire
+      <span class="ss-coach-keys">W/S aim · A/D power · Space launch &amp; ability</span>`;
     this.root.appendChild(this.coach);
 
     // ---------------- pause veil -----------------------------------------------
@@ -221,7 +246,7 @@ export class SiegeHud {
       this.gullPips.innerHTML = "";
       for (let i = 0; i < state.gullsTotal; i += 1) {
         const alive = i < state.gullsLeft;
-        const pip = el("span", `ss-gull-pip ${alive ? "alive" : "down"}`, alive ? "🐗" : "✕");
+        const pip = el("span", `ss-gull-pip ${alive ? "alive" : "down"}`, alive ? RAIDER_CREST_SVG : "✕");
         pip.title = alive ? "Raider still standing" : "Raider squashed";
         this.gullPips.appendChild(pip);
       }
@@ -291,16 +316,29 @@ export class SiegeHud {
     this.pauseVeil.classList.toggle("ss-hidden", !paused);
   }
 
-  setShotMeter(pct: number): void {
-    this.shotMeter.style.setProperty("--pull", `${Math.min(1, pct) * 100}%`);
-    this.shotMeter.classList.toggle("active", pct > 0.01);
+  setShotMeter(pct: number, angleDeg?: number, screenPct?: { x: number; y: number }): void {
+    const clamped = Math.max(0, Math.min(1, pct));
+    this.shotMeter.style.setProperty("--pull", `${clamped * 100}%`);
+    this.shotMeter.classList.toggle("active", clamped > 0.01);
+    if (clamped > 0.04 && angleDeg !== undefined && screenPct) {
+      this.aimBadge.textContent = `${Math.round(angleDeg)}° · ${Math.round(clamped * 100)}%`;
+      this.aimBadge.style.left = `${Math.max(12, Math.min(86, screenPct.x))}%`;
+      this.aimBadge.style.top = `${Math.max(16, Math.min(74, screenPct.y - 9))}%`;
+      this.aimBadge.classList.remove("ss-hidden");
+    } else {
+      this.aimBadge.classList.add("ss-hidden");
+    }
+  }
+
+  setPanLabel(lookingAtFort: boolean): void {
+    this.panBtn.textContent = lookingAtFort ? "Sling" : "Fort";
   }
 
   showResult(opts: { won: boolean; stars: number; score: number; bonus: number; levelName: string; hasNext: boolean }): void {
     const { won, stars, score, bonus, levelName, hasNext } = opts;
     this.resultCard.className = "ss-result in";
     this.resultCard.innerHTML = `<div class="ss-result-card ${won ? "won" : "lost"}">
-      <div class="ss-result-title">${won ? "FORTRESS CLEARED!" : "GULLS SURVIVE…"}</div>
+      <div class="ss-result-title">${won ? "FORTRESS CLEARED!" : "RAIDERS SURVIVE…"}</div>
       <div class="ss-result-level">${levelName}</div>
       <div class="ss-result-stars">${[0, 1, 2].map((i) => `<span class="ss-star ${i < stars ? "lit" : ""}">★</span>`).join("")}</div>
       <div class="ss-result-score">${score.toLocaleString()}</div>

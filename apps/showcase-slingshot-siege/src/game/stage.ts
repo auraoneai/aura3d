@@ -87,6 +87,8 @@ import {
   coastalSeaMaterial,
   elasticBandMaterial,
   masonryPlumeMaterial,
+  SIEGE_DUST_ATLAS,
+  SIEGE_SPARKS_ATLAS,
   trajectoryRibbonMaterial
 } from "./shaders";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
@@ -351,8 +353,9 @@ export function sunShadow(row: Pick<ChapterLook, "shadowSoftness">): AuraDirecti
     bias: 0.002,
     normalBias: 2.2,
     lightSize: row.shadowSoftness,
-    maxDistance: 42
-    // 5.7.0 reads `shadow.fit`; this game shipped while it was ignored, so it is not passed and the camera-fit shadows it shipped with stay (ISLAND_SHADOW_FIT is the box to adopt after a real-GPU look pass).
+    softness: Number((row.shadowSoftness * 1.8).toFixed(2)),
+    maxDistance: 42,
+    fit: ISLAND_SHADOW_FIT
   };
 }
 
@@ -387,7 +390,12 @@ export function chapterLookNode(row: ChapterLook): StageNode {
 
 export function chapterSkyNode(row: ChapterLook): StageNode {
   const { model: skyModel, ...spec } = row.sky as { model: string } & Record<string, unknown>;
-  const options = { name: `siege sky ch${row.chapter}`, captureEnvironment: false, affectsFog: row.skyFog, ...spec };
+  const options = {
+    name: `siege sky ch${row.chapter}`,
+    captureEnvironment: false,
+    affectsFog: row.skyFog,
+    ...spec
+  };
   return skyModel === "preetham"
     ? sky.preetham(options as unknown as Parameters<typeof sky.preetham>[0])
     : sky.gradient(options as unknown as Parameters<typeof sky.gradient>[0]);
@@ -787,19 +795,46 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     );
   }
 
-  // Pooled 8x4 RGBA8 flipbook cards (`createFlipbookAtlas("dust")` masonry plumes & `createFlipbookAtlas("sparks")` blasts).
+  // Pooled 8x4 RGBA8 flipbook bursts (`@aura3d/engine/game` `createFlipbookAtlas("dust" | "sparks")` + live `effects.flipbook({ texture })`).
   for (let i = 0; i < POOL.plumes; i += 1) {
     nodes.push(
-      primitives.plane({ name: plumeNodeId(i), material: masonryPlumeMaterial(0), castShadow: false, receiveShadow: false })
-        .position(0, -120, 0).scale(1.1).runtime({ id: plumeNodeId(i), tags: ["vfx"] })
+      effects
+        .flipbook({
+          name: plumeNodeId(i),
+          texture: SIEGE_DUST_ATLAS.texture,
+          spriteColumns: SIEGE_DUST_ATLAS.columns,
+          spriteRows: SIEGE_DUST_ATLAS.rows,
+          frameRate: 26,
+          size: 1.45,
+          color: "#f1e4c6",
+          intensity: 0.92,
+          loop: true
+        })
+        .position(0, -120, 0)
+        .runtime({ id: plumeNodeId(i), tags: ["vfx"] })
     );
   }
   for (let i = 0; i < POOL.blasts; i += 1) {
     nodes.push(
-      primitives.plane({ name: blastNodeId(i), material: blastSparksMaterial(0), castShadow: false, receiveShadow: false })
-        .position(0, -120, 0).scale(1.5).runtime({ id: blastNodeId(i), tags: ["vfx"] })
+      effects
+        .flipbook({
+          name: blastNodeId(i),
+          texture: SIEGE_SPARKS_ATLAS.texture,
+          spriteColumns: SIEGE_SPARKS_ATLAS.columns,
+          spriteRows: SIEGE_SPARKS_ATLAS.rows,
+          frameRate: 34,
+          size: 1.75,
+          color: "#ffc96a",
+          intensity: 1.25,
+          blend: "additive",
+          loop: true
+        })
+        .position(0, -120, 0)
+        .runtime({ id: blastNodeId(i), tags: ["vfx"] })
     );
   }
+  void masonryPlumeMaterial;
+  void blastSparksMaterial;
 
   // ------------------------------------------------------- windmill rigs ----
   const hubSpec = mergeRawMeshes([latheMesh([[0, -0.6], [0.75, -0.5], [0.75, 0.5], [0, 0.6]], 12)]);

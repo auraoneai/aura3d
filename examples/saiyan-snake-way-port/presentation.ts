@@ -4,6 +4,7 @@
  * Without this the runner, its run cycle and the chase camera advance on some frames and stand still on
  * others (visible as shaking and bouncing on a high-refresh display).
  */
+import { createSnapshotInterpolator, mixNumber as mix, type FixedStepPresenter } from "@aura3d/engine/game";
 import type { V3 } from "./road";
 
 /** The part of the run state the renderer blends. */
@@ -18,18 +19,28 @@ export interface PresentSample {
 export const sampleOf = (S: PresentSample): PresentSample => ({ phase: S.phase, s: S.s, laneX: S.laneX, y: S.y, laneVel: S.laneVel });
 
 /** Largest per-step travel still blended; anything bigger is a restart or a phase jump and snaps. */
-const SNAP_DISTANCE = 45;
-
-const mix = (a: number, b: number, k: number): number => a + (b - a) * k;
+export const SNAP_DISTANCE = 45;
 
 /**
- * `prev` and `cur` blended `t` (0..1) of the way, for `createRenderInterpolator` from `@aura3d/engine/game`.
- * Snaps to `cur` on a phase change, a restart or a jump, so those never smear across frames.
+ * `prev` and `cur` blended `t` (0..1) of the way, for `createSnapshotInterpolator` / `createRenderInterpolator`
+ * from `@aura3d/engine/game`. Snaps to `cur` on a phase change, a restart or a jump, so those never smear across frames.
  */
 export function blendSamples(prev: PresentSample, cur: PresentSample, t: number): PresentSample {
   const ds = cur.s - prev.s;
   if (prev.phase !== cur.phase || ds < 0 || ds > SNAP_DISTANCE) return cur;
   return { phase: cur.phase, s: mix(prev.s, cur.s, t), laneX: mix(prev.laneX, cur.laneX, t), y: mix(prev.y, cur.y, t), laneVel: mix(prev.laneVel, cur.laneVel, t) };
+}
+
+/** 5.7.2 fixed-step presenter backed by `createSnapshotInterpolator` with phase/distance snap rules. */
+export function createSerpentPresenter(getState: () => PresentSample): FixedStepPresenter<PresentSample> {
+  return createSnapshotInterpolator<PresentSample>({
+    snapshot: () => sampleOf(getState()),
+    blend: blendSamples,
+    snap: (prev, cur) => {
+      const ds = cur.s - prev.s;
+      return prev.phase !== cur.phase || ds < 0 || ds > SNAP_DISTANCE;
+    }
+  });
 }
 
 /** `S` with the blended fields drawn instead of the simulated ones. */

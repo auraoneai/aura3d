@@ -14,6 +14,7 @@
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
+import { HUD_THEMES } from "@aura3d/engine/game";
 import { controllerInput, type ControllerParams } from "./replay";
 import { autoplayRequested, createAutoplayDriver } from "./autoplay";
 import {
@@ -22,7 +23,7 @@ import {
 } from "./sim";
 import { createTramPresenter, viewOf } from "./presentation";
 import { TrainSound, diffCues, type AudioState } from "./audio";
-import { LOOK, TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
+import { CINEMA_WARM_LUT, LOOK, TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
 import { createLoadingProgress } from "../shared/loading-progress";
 import { labAppOptions, labRenderWorker, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import "../../apps/showcase-port-shared/hud-tokens.css";
@@ -31,6 +32,11 @@ import { preloadFigureDrivers } from "./figures";
 
 /* GU47 LT-17: the railway-enamel HUD (enamel.css) dresses the band look; ?look=original keeps today's HUD. */
 if (LOOK === "bands") document.documentElement.classList.add("enamel");
+if (LOOK === "bands") {
+  for (const [k, v] of Object.entries(HUD_THEMES.tabletop)) {
+    document.documentElement.style.setProperty(k, v);
+  }
+}
 
 /** Loaded at boot with `fetch`: the example dev server serves `.json` as application/json, which module imports reject. */
 let data: SimData;
@@ -88,6 +94,9 @@ let ridersKey = "";
 let legElapsed = 0;
 let trackedLeg = -1;
 let wasEnroute = false;
+/** Seconds elapsed since first throttle / movement input; desktop `#status` keybind strip fades out cleanly after 5 s. */
+let throttleHintAge = -1;
+const STATUS_FADE_SECONDS = 5;
 const NOMINAL_CRUISE_MPS = 13.2;
 if (readStore(MUTE_KEY) === "1") sound.setMuted(true);
 if (readStore(HUD_KEY) === "large") document.documentElement.classList.add("hud-large");
@@ -228,7 +237,10 @@ function updateHud(): void {
   const here = towns[sim.leg]!, next = towns[(sim.leg + 1) % towns.length]!;
   const legLen = data.route.legs[sim.leg]!.length;
   $("line-code").textContent = `LL-0${sim.leg + 1}`;
-  $("station").textContent = sim.phase === "enroute" ? `${here.name} → ${next.name}` : here.name;
+  const compactTop = media("(max-width: 760px)");
+  $("station").textContent = sim.phase === "enroute"
+    ? (compactTop ? `→ ${next.name}` : `${here.name} → ${next.name}`)
+    : here.name;
   $("next").textContent = next.name;
   $("clock").textContent = sim.timeOfDay;
   $("speed").textContent = String(Math.round(Math.abs(sim.speed) * 3.6));
@@ -253,6 +265,7 @@ function updateHud(): void {
   if (promptEl.dataset.k !== promptHtml) { promptEl.dataset.k = promptHtml; promptEl.innerHTML = promptHtml; }
   promptEl.classList.toggle("hidden", titleMode);
   $("message").textContent = touchText(complete ? `Service complete (${sim.attempt.grade}). Press R for a new service.` : (phaseMessage[sim.phase] ?? sim.phase));
+  $("status").classList.toggle("faded", !titleMode && !complete && throttleHintAge >= STATUS_FADE_SECONDS);
   updateRiders();
   updateResults();
 }
@@ -427,7 +440,11 @@ const loop = createFixedStepLoop({
   render: (dt) => {
     if (titleMode || !flag("manual")) {
       seconds += dt;
-      if (!titleMode) updateScheduleClock(dt);
+      if (!titleMode) {
+        updateScheduleClock(dt);
+        if (throttleHintAge < 0 && (keys.has("KeyW") || keys.has("ArrowUp") || sim.speed > 0.5)) throttleHintAge = 0;
+        else if (throttleHintAge >= 0 && throttleHintAge < STATUS_FADE_SECONDS) throttleHintAge += dt;
+      }
     }
     render(!titleMode && !flag("manual"));
     if (abandonFrames > 0) abandonFrames--;
@@ -649,8 +666,16 @@ async function boot(): Promise<void> {
     // Async frame mode is only needed when live station reflection probes are explicitly enabled (`?probes=1`).
     ...(USE_PROBES && lab.renderer ? { frameMode: "async" as const } : {}),
     quality: "auto",
-    // WP-24: AgX filmic tone mapping + dither for the twilight band look (with cinema-warm 3D LUT in S10b colorGrade).
-    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? (world.look === "bands" ? "agx" : "none"), exposure: Number(params.get("ev") ?? 1), dither: world.look === "bands", ...lab.output },
+    // 5.7.2: AgX filmic tone mapping + zero-asset cinema-warm strip LUT (`@aura3d/engine/game`).
+    output: {
+      toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? (world.look === "bands" ? "agx" : "none"),
+      exposure: Number(params.get("ev") ?? 1),
+      dither: world.look === "bands",
+      ...(world.look === "bands" && !(params.get("fx") ?? "").split(",").includes("nolut")
+        ? { lut: { texture: CINEMA_WARM_LUT.texture, size: CINEMA_WARM_LUT.size, intensity: 0.24 } }
+        : {}),
+      ...lab.output
+    },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: sim.timeOfDay === "night" ? world.nightScene : world.scene
   });

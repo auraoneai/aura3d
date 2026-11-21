@@ -44,8 +44,8 @@ export const THEMES: readonly ThemeDef[] = [
     exposureEv: -0.15,
     palette: {
       sky: "#4a7ab5", horizon: "#6da0d6",
-      meadow: "#58a75c", road: "#3a3f46", shoulder: "#6fbf6e", water: "#3f8fd2",
-      railbed: "#5c564e", lava: "#ff6a2a", crust: "#4a3a33", accent: "#ffd166",
+      meadow: "#58a75c", road: "#292d34", shoulder: "#6fbf6e", water: "#2b6fa8",
+      railbed: "#48423b", lava: "#ff6a2a", crust: "#4a3a33", accent: "#ffd166",
       dressingA: "#3e8e4f", dressingB: "#8a5a3b"
     },
     laneWeights: [34, 40, 0, 14, 8, 0],
@@ -60,8 +60,8 @@ export const THEMES: readonly ThemeDef[] = [
     exposureEv: -0.15,
     palette: {
       sky: "#4f6d92", horizon: "#7391b5",
-      meadow: "#7ba05b", road: "#40444c", shoulder: "#8f8f98", water: "#5b7f9e",
-      railbed: "#6e6a63", lava: "#ff6a2a", crust: "#4a3a33", accent: "#f2c94c",
+      meadow: "#7ba05b", road: "#2d3138", shoulder: "#8f8f98", water: "#42637e",
+      railbed: "#54504a", lava: "#ff6a2a", crust: "#4a3a33", accent: "#f2c94c",
       dressingA: "#8d97a3", dressingB: "#5e6773"
     },
     laneWeights: [22, 30, 26, 6, 12, 0],
@@ -76,8 +76,8 @@ export const THEMES: readonly ThemeDef[] = [
     exposureEv: -0.15,
     palette: {
       sky: "#4d7bb0", horizon: "#76a2d1",
-      meadow: "#7caa54", road: "#4a423c", shoulder: "#97b765", water: "#4e8fb8",
-      railbed: "#5c5044", lava: "#ff6a2a", crust: "#4a3a33", accent: "#ffb347",
+      meadow: "#7caa54", road: "#36302b", shoulder: "#97b765", water: "#386f94",
+      railbed: "#463c32", lava: "#ff6a2a", crust: "#4a3a33", accent: "#ffb347",
       dressingA: "#4f7d3a", dressingB: "#c98a5a"
     },
     laneWeights: [26, 22, 0, 38, 8, 0],
@@ -92,8 +92,8 @@ export const THEMES: readonly ThemeDef[] = [
     exposureEv: -0.15,
     palette: {
       sky: "#283852", horizon: "#4a5d7a",
-      meadow: "#4e5548", road: "#2c2724", shoulder: "#6b5346", water: "#402d26",
-      railbed: "#3a2e28", lava: "#ff5a1f", crust: "#352520", accent: "#ff9c41",
+      meadow: "#4e5548", road: "#201c19", shoulder: "#6b5346", water: "#2e201b",
+      railbed: "#2b211c", lava: "#ff5a1f", crust: "#352520", accent: "#ff9c41",
       dressingA: "#6e3b26", dressingB: "#2c1e18"
     },
     laneWeights: [16, 26, 0, 0, 24, 32],
@@ -108,8 +108,8 @@ export const THEMES: readonly ThemeDef[] = [
     exposureEv: -0.15,
     palette: {
       sky: "#1d2c52", horizon: "#31497d",
-      meadow: "#3f5a52", road: "#221d33", shoulder: "#342b52", water: "#2a3f66",
-      railbed: "#241f38", lava: "#ff4fd8", crust: "#2c2038", accent: "#37f5ff",
+      meadow: "#3f5a52", road: "#181426", shoulder: "#342b52", water: "#1e2f4f",
+      railbed: "#1b172b", lava: "#ff4fd8", crust: "#2c2038", accent: "#37f5ff",
       dressingA: "#37f5ff", dressingB: "#ff4fd8"
     },
     laneWeights: [14, 34, 16, 12, 20, 0],
@@ -124,8 +124,8 @@ export const THEMES: readonly ThemeDef[] = [
     exposureEv: -0.15,
     palette: {
       sky: "#5282c2", horizon: "#7caae3",
-      meadow: "#8fd67c", road: "#7a6cc9", shoulder: "#ffd9ec", water: "#67d6e8",
-      railbed: "#a08ecb", lava: "#ff8a5c", crust: "#5b4a8f", accent: "#ffe14f",
+      meadow: "#8fd67c", road: "#5c4fa6", shoulder: "#ffd9ec", water: "#4aaec2",
+      railbed: "#8270ad", lava: "#ff8a5c", crust: "#5b4a8f", accent: "#ffe14f",
       dressingA: "#ff9ed2", dressingB: "#7ce8c9"
     },
     laneWeights: [18, 24, 10, 20, 12, 14],

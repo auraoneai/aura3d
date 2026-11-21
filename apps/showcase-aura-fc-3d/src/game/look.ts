@@ -219,9 +219,22 @@ export function usesOriginalBase(mode: FcLookMode): boolean {
  * lights the bowl), the venue grade, a rim on the night venues, textured turf, weather, lens flares on the far banks,
  * the venue vignette / grain / chromatic aberration, and no Glacier dome cutting through the far touchline.
  */
+export interface FcSkyGradient {
+  readonly zenith: string;
+  readonly mid?: { readonly color: string; readonly blend: readonly [number, number] };
+  readonly horizon: string;
+  readonly ground: string;
+  readonly zenithBlend?: readonly [number, number];
+  readonly haze?: { readonly color: string; readonly intensity: number; readonly falloff: number };
+}
+
 export interface FcHybridLayer {
   /** Sky colour that replaces the look's drawn HDRI sky (the HDRI keeps lighting the scene); undefined = the look sky. */
   readonly background?: string;
+  /** Aura3D 5.7.2 stylized sky.gradient for night venues (replaces flat solid hex sky; HDRI keeps lighting the bowl). */
+  readonly skyGradient?: FcSkyGradient;
+  /** Aura3D 5.7.2 zero-asset grading LUT preset (`createGradingLut`, enabled by default). */
+  readonly lutPreset: "cinema-warm" | "broadcast-crisp" | "cyber-neon";
   readonly exposureEv: number;
   /** Multiplier on the 4.6.2 tower-spot intensity. */
   readonly floodScale: number;
@@ -263,42 +276,73 @@ export interface FcHybridLayer {
   readonly ssr?: { readonly intensity: number; readonly roughness: number; readonly maxDistance: number } | null;
 }
 
-/** Phase 4: the night key (one direction for the four flood venues: the far-right main-stand bank). */
+/** Phase 4 + 5.7.2: the night key (one direction for the four flood venues: the far-right main-stand bank). */
 // The interior-industrial key sits at azimuth 20 (camera side), so its shadows fell behind the players and never read;
 // azimuth 125 puts it on the far-right flood bank (look basis: x = sin az, z = cos az, camera on +z).
-const NIGHT_KEY = { elevationDeg: 32, azimuthDeg: 125, intensity: 3.2, softness: 1 } as const;
+const NIGHT_KEY = { elevationDeg: 32, azimuthDeg: 125, intensity: 3.2, softness: 1.5 } as const;
 
 export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   munich: {
-    // phase 4 + WP-04 floodlight AgX calibration (crisp far-pushed linear stadium fog, zero white haze, matte turf SSR <= 0.10)
-    key: NIGHT_KEY, fogScale: 0.16, fogRange: { near: 195, far: 560 }, ssr: { intensity: 0.08, roughness: 0.34, maxDistance: 24 },
-    background: "#0a1422", exposureEv: 0.12, floodScale: 1.34,
+    // phase 4 + 5.7.2 floodlight AgX calibration (crisp far-pushed linear stadium fog, stylized storm-navy sky, wet turf)
+    key: NIGHT_KEY, fogScale: 0.16, fogRange: { near: 195, far: 560 }, ssr: { intensity: 0.08, roughness: 0.32, maxDistance: 24 },
+    background: "#0a1422",
+    skyGradient: {
+      zenith: "#07101f",
+      mid: { color: "#12243e", blend: [0.02, 0.22] },
+      horizon: "#233c5e",
+      ground: "#09111c",
+      zenithBlend: [0.16, 0.56],
+      haze: { color: "#3b5f8c", intensity: 0.28, falloff: 7.5 }
+    },
+    lutPreset: "broadcast-crisp",
+    exposureEv: 0.12, floodScale: 1.34,
     grade: { contrast: 1.12, saturation: 1.02, temperature: -0.02, tint: 0 },
     rim: { color: "#8fc8ff", intensity: 0.42, azimuthDeg: 200 }, flares: true, weather: "rain",
-    surface: "grass", turfRoughness: 0.42, pools: 0.18, coneIntensity: 0.26, mirror: null,
+    surface: "grass", turfRoughness: 0.32, pools: 0.18, coneIntensity: 0.3, mirror: null,
     bloom: { intensity: 0.3, threshold: 0.84 }, vignette: 0.26, grain: 0, chromaticAberration: 0
   },
   kyoto: {
-    // phase 4 + WP-04 floodlight AgX calibration (matte turf SSR <= 0.10, roughness <= 0.35)
-    key: NIGHT_KEY, fogScale: 0.15, fogRange: { near: 190, far: 550 }, ssr: { intensity: 0.08, roughness: 0.34, maxDistance: 24 },
-    background: "#120814", exposureEv: 0.12, floodScale: 1.34,
+    // phase 4 + 5.7.2 plum-indigo lantern night calibration (wet turf roughness 0.32, SSR <= 0.10)
+    key: NIGHT_KEY, fogScale: 0.15, fogRange: { near: 190, far: 550 }, ssr: { intensity: 0.08, roughness: 0.32, maxDistance: 24 },
+    background: "#120814",
+    skyGradient: {
+      zenith: "#0e0618",
+      mid: { color: "#281338", blend: [0.02, 0.22] },
+      horizon: "#4a1e4b",
+      ground: "#100814",
+      zenithBlend: [0.16, 0.54],
+      haze: { color: "#7a3062", intensity: 0.3, falloff: 7.0 }
+    },
+    lutPreset: "cyber-neon",
+    exposureEv: 0.12, floodScale: 1.34,
     grade: { contrast: 1.09, saturation: 1.1, temperature: 0.05, tint: 0.12 },
     rim: { color: "#ff8fbd", intensity: 0.36, azimuthDeg: 160 }, flares: true, weather: "drizzle",
-    surface: "grass", turfRoughness: 0.44, pools: 0.16, coneIntensity: 0.24, mirror: null,
+    surface: "grass", turfRoughness: 0.32, pools: 0.16, coneIntensity: 0.28, mirror: null,
     bloom: { intensity: 0.3, threshold: 0.82 }, vignette: 0.26, grain: 0, chromaticAberration: 0.0015
   },
   favela: {
-    // phase 4 + WP-04 sodium cage calibration
+    // phase 4 + 5.7.2 sodium cage calibration (warm dusk-amber sky gradient)
     key: NIGHT_KEY, fogScale: 0.14, fogRange: { near: 185, far: 540 }, ssr: null,
-    background: "#140d07", exposureEv: 0.1, floodScale: 1.32,
+    background: "#140d07",
+    skyGradient: {
+      zenith: "#100a0a",
+      mid: { color: "#2b1912", blend: [0.02, 0.22] },
+      horizon: "#522f1c",
+      ground: "#140c08",
+      zenithBlend: [0.16, 0.54],
+      haze: { color: "#8c5328", intensity: 0.26, falloff: 7.5 }
+    },
+    lutPreset: "cinema-warm",
+    exposureEv: 0.1, floodScale: 1.32,
     grade: { contrast: 1.1, saturation: 1.06, temperature: 0.25, tint: -0.05 },
     rim: { color: "#ffc27a", intensity: 0.72, azimuthDeg: 190 }, flares: true, weather: "dust",
-    surface: "dirt", turfRoughness: 0.88, pools: 0.18, coneIntensity: 0.26, mirror: null,
+    surface: "dirt", turfRoughness: 0.88, pools: 0.18, coneIntensity: 0.28, mirror: null,
     bloom: { intensity: 0.28, threshold: 0.84 }, vignette: 0.26, grain: 0.05, chromaticAberration: 0
   },
   lagos: {
-    // phase 4
-    key: { intensity: 3.0, softness: 1 }, fogScale: 0.10, fogRange: { near: 215, far: 620 }, ssr: null,
+    // phase 4 + 5.7.2
+    key: { intensity: 3.0, softness: 1.5 }, fogScale: 0.10, fogRange: { near: 215, far: 620 }, ssr: null,
+    lutPreset: "cinema-warm",
     background: "#d08a55", exposureEv: -0.45, floodScale: 1,
     grade: { contrast: 1.26, saturation: 1.06, temperature: 0.12, tint: 0 },
     rim: null, flares: false, weather: "none",
@@ -308,8 +352,9 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   // Round 1: the 1024 mirror drew a broken reflection (upside-down gantry, an oversized player at the wrong place, the
   // lower half of the frame only), so the hybrid Uyuni is a pale-dawn grade on the salt instead.
   uyuni: {
-    // phase 4 (subtle glazed crust SSR <= 0.10 so pitch lines never bleed onto kits)
-    key: { elevationDeg: 26, azimuthDeg: 115, intensity: 3.2, softness: 1 }, fogScale: 0.08, fogRange: { near: 225, far: 650 }, ssr: { intensity: 0.10, roughness: 0.30, maxDistance: 24 },
+    // phase 4 + 5.7.2 (subtle glazed crust SSR <= 0.10 so pitch lines never bleed onto kits)
+    key: { elevationDeg: 26, azimuthDeg: 115, intensity: 3.2, softness: 1.5 }, fogScale: 0.08, fogRange: { near: 225, far: 650 }, ssr: { intensity: 0.10, roughness: 0.30, maxDistance: 24 },
+    lutPreset: "broadcast-crisp",
     background: "#d9b8b8", exposureEv: -0.66, floodScale: 1,
     grade: { contrast: 1.3, saturation: 1.15, temperature: 0.16, tint: 0.04 },
     rim: null, flares: false, weather: "none",
@@ -319,12 +364,22 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
     bloom: { intensity: 0.06, threshold: 0.97 }, vignette: 0.28, grain: 0, chromaticAberration: 0
   },
   glacier: {
-    // phase 4 + WP-04 polar floodlight calibration (SSR <= 0.10)
+    // phase 4 + 5.7.2 polar aurora-teal night calibration (SSR <= 0.10)
     key: NIGHT_KEY, fogScale: 0.15, fogRange: { near: 195, far: 560 }, ssr: { intensity: 0.10, roughness: 0.30, maxDistance: 24 },
-    background: "#050b14", exposureEv: 0.1, floodScale: 1.15,
+    background: "#050b14",
+    skyGradient: {
+      zenith: "#040b18",
+      mid: { color: "#0b2434", blend: [0.02, 0.24] },
+      horizon: "#164652",
+      ground: "#071018",
+      zenithBlend: [0.18, 0.56],
+      haze: { color: "#369492", intensity: 0.28, falloff: 7.5 }
+    },
+    lutPreset: "cyber-neon",
+    exposureEv: 0.1, floodScale: 1.15,
     grade: { contrast: 1.08, saturation: 1.0, temperature: -0.18, tint: -0.03 },
     rim: { color: "#7fe8c9", intensity: 0.82, azimuthDeg: 170 }, flares: true, weather: "snow",
-    surface: "ice", turfRoughness: 0.3, pools: 0.08, coneIntensity: 0.26, mirror: null,
+    surface: "ice", turfRoughness: 0.3, pools: 0.08, coneIntensity: 0.28, mirror: null,
     bloom: { intensity: 0.26, threshold: 0.84 }, vignette: 0.26, grain: 0, chromaticAberration: 0,
     hideDome: true
   }

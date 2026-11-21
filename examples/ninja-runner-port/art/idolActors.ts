@@ -38,14 +38,19 @@ export function buildIdolActorNode(slot: number, id: CharacterId, castShadow: bo
   const key = idolKeyFor(id, variant);
   slotKey.set(slot, key);
   slotChar.set(slot, id);
+  // R23 clone vs hero hierarchy: spectral translucency (`opacity: 0.72`, cyan rim `#51dfff`) on clones; sumi-ink Fresnel rim on hero/rivals.
+  const materialOverrides = variant === "clone"
+    ? [{ target: "*", opacity: 0.72, rim: { color: "#51dfff", power: 2.2, intensity: 0.95 } }]
+    : [{ target: "*", rim: { color: "#1b2236", power: 2.6, intensity: 0.55 } }];
   return model(IDOL_ASSETS[key]!, {
     name: nodeId(slot),
     role: slot === 0 ? "primaryCharacter" : "setDressing",
     scaleMode: "world",
-    castShadow,
+    castShadow: variant === "clone" ? false : castShadow,
     receiveShadow: true,
     visible: false,
-    position: [0, -500, 0]
+    position: [0, -500, 0],
+    materialOverrides
   }).runtime({ id: nodeId(slot) }) as unknown as AuraNodeBuilder<AuraSceneNode>;
 }
 

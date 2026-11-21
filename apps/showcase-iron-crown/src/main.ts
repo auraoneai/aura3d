@@ -10,14 +10,21 @@ import {
   type GameCombatWorldSnapshot,
   type GameInputController
 } from "@aura3d/engine";
-import { createGame, sfxUrl, warmPrograms } from "@aura3d/engine/game";
+import {
+  createAutoplayHarness,
+  createGame,
+  createGradingLut,
+  createImpactRig,
+  createSnapshotInterpolator,
+  mixNumber,
+  sfxUrl,
+  warmPrograms
+} from "@aura3d/engine/game";
 import { createFreezeFrame, leaseSafeWarmApp, swapVenue } from "./game/venueSwap";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { labAppOptions, parseLabFlags, resolveLabBackend } from "../../showcase-port-shared/lab-flags";
 import { createWorkerRendererWorker } from "@aura3d/engine/worker";
-import { createImpactRig } from "../../showcase-port-shared/feel";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
-import { createGradingLut } from "../../showcase-port-shared/vfx-pack";
 import { assets } from "./aura-assets";
 import {
   createCpuBrain,
@@ -477,12 +484,13 @@ const activeSlashArcs: Record<"p1" | "p2" | "parry", TimedWorldVfx> = {
   parry: { timer: 0, duration: 0.18, at: [0, -40, 0], yaw: 0, tilt: 0, scale: 1 }
 };
 const activeFlipbooks = {
-  sparks: { timer: 0, duration: 0.24, at: [0, -40, 0] as [number, number, number] },
-  dust: { timer: 0, duration: 0.26, at: [0, -40, 0] as [number, number, number] }
+  sparks: { timer: 0, duration: 0.24, at: [0, -40, 0] as [number, number, number], yaw: 0 },
+  dust: { timer: 0, duration: 0.26, at: [0, -40, 0] as [number, number, number], yaw: 0 },
+  ripple: { timer: 0, duration: 0.22, at: [0, -40, 0] as [number, number, number], yaw: 0 }
 };
-const fighterFlashTimer: Record<"player" | "rival", { timer: number; color: string; peak: number }> = {
-  player: { timer: 0, color: "#ffd76a", peak: 0 },
-  rival: { timer: 0, color: "#ffd76a", peak: 0 }
+const fighterFlashTimer: Record<"player" | "rival", { timer: number; duration: number; color: string; peak: number }> = {
+  player: { timer: 0, duration: 0.04, color: "#ffd76a", peak: 0 },
+  rival: { timer: 0, duration: 0.04, color: "#ffd76a", peak: 0 }
 };
 let spawnRingsParked: boolean | null = null;
 
@@ -498,18 +506,20 @@ function triggerSlashArc(slot: "p1" | "p2" | "parry", at: readonly number[], fac
   };
 }
 
-function triggerFlipbook(slot: "sparks" | "dust", at: readonly number[], duration = 0.24): void {
-  if (!vfxLive || (slot === "sparks" && reducedFlash)) return;
+function triggerFlipbook(slot: "sparks" | "dust" | "ripple", at: readonly number[], duration = 0.24, dirX = 0): void {
+  if (!vfxLive || ((slot === "sparks" || slot === "ripple") && reducedFlash)) return;
   activeFlipbooks[slot] = {
     timer: duration,
     duration,
-    at: [at[0] ?? 0, at[1] ?? 0.9, (at[2] ?? 0) + 0.14]
+    at: [(at[0] ?? 0) + dirX * 0.18, at[1] ?? 0.9, (at[2] ?? 0) + 0.14],
+    yaw: dirX < 0 ? Math.PI * 0.12 : dirX > 0 ? -Math.PI * 0.12 : 0
   };
 }
 
-function triggerFighterFlash(id: "player" | "rival", color: string, peak = 0.85, duration = 0.11): void {
+/** 1–2 frame crisp rim-only hit flash (never washes out the full body diffuse). */
+function triggerFighterFlash(id: "player" | "rival", color: string, peak = 0.72, duration = 0.036): void {
   if (reducedFlash) return;
-  fighterFlashTimer[id] = { timer: duration, color, peak };
+  fighterFlashTimer[id] = { timer: duration, duration, color, peak };
 }
 
 function updateCombatVisualOverlays(realDt: number, hideSpawnRings: boolean): void {
@@ -539,16 +549,17 @@ function updateCombatVisualOverlays(realDt: number, hideSpawnRings: boolean): vo
     }
   }
 
-  for (const slot of ["sparks", "dust"] as const) {
+  for (const slot of ["sparks", "dust", "ripple"] as const) {
     const entry = activeFlipbooks[slot];
     const handle = app.nodes.get(FLIPBOOK_VFX_IDS[slot]) as (AuraRuntimeNodeHandle & { setUniform?(name: string, value: number): void }) | undefined;
     if (!handle) continue;
     if (entry.timer > 0) {
       entry.timer = Math.max(0, entry.timer - realDt);
       const progress = 1 - entry.timer / Math.max(0.01, entry.duration);
-      const baseScale = slot === "sparks" ? 0.95 : 1.15;
-      const s = baseScale * (0.78 + 0.45 * progress);
+      const baseScale = slot === "sparks" ? 0.88 : slot === "ripple" ? 1.08 : 1.12;
+      const s = baseScale * (0.76 + 0.48 * progress);
       handle.setPosition(entry.at[0], entry.timer > 0 ? entry.at[1] : -40, entry.at[2]);
+      handle.setRotation(0, entry.yaw, 0);
       handle.setScale([s, s, 1]);
       handle.setUniform?.("progress", progress);
     }
@@ -558,11 +569,15 @@ function updateCombatVisualOverlays(realDt: number, hideSpawnRings: boolean): vo
     const flash = fighterFlashTimer[id];
     if (flash.timer <= 0) continue;
     flash.timer = Math.max(0, flash.timer - realDt);
-    const intensity = flash.timer > 0 ? flash.peak * (flash.timer / 0.12) : 0;
-    for (const flashId of [id, idolBodyId(id), `${id}-torso-mesh`, `${id}-head-mesh`, `${id}-weapon-mesh`]) {
-      const handle = app.nodes.get(flashId) as (AuraRuntimeNodeHandle & { materials?: { setEmissive(target: string, color: string, intensity: number): void } }) | undefined;
-      handle?.materials?.setEmissive?.("*", flash.color, intensity);
-    }
+    const t = flash.timer > 0 ? flash.timer / Math.max(0.016, flash.duration) : 0;
+    const rimIntensity = t > 0 ? Math.min(0.95, flash.peak * t) : 0;
+    // Rim-only 1–2 frame hit flash: leaves diffuse untouched while popping the fighter's silhouette edge.
+    const rimId = id === "player" ? RIM_IDS.p1 : RIM_IDS.p2;
+    const rimHandle = app.nodes.get(rimId) as AuraRuntimeNodeHandle | undefined;
+    const baseRim = state ? stageLook(state.config.stage.id).backRim.intensity : 16;
+    rimHandle?.setLight?.({ intensity: baseRim + rimIntensity * 22 });
+    const bodyHandle = app.nodes.get(idolBodyId(id)) as (AuraRuntimeNodeHandle & { materials?: { setEmissive(target: string, color: string, intensity: number): void } }) | undefined;
+    bodyHandle?.materials?.setEmissive?.("*", flash.color, rimIntensity * 0.26);
   }
 }
 
@@ -764,12 +779,13 @@ const hud = createHud(document, {
 
 function setAutopilot(next: boolean): void {
   autoDemo = next;
+  autoplayHarness.enabled = next;
   hud.setAutopilotButton(next);
   if (state) {
     hud.setModeLabel(`${modeLabel(state.config.mode)} · ${state.config.stage.label.toUpperCase()}${autoDemo ? " · AUTO" : ""}`);
   }
   // Turned on while a result card waits for a click: autoplay takes the card's primary action after the usual hold.
-  if (next && state?.phase === "boutEnd" && resultPrimary && !autoplayAdvanceTimer.pending) scheduleAutoplayAdvance(resultPrimary);
+  if (next && state?.phase === "boutEnd" && resultPrimary) scheduleAutoplayAdvance(resultPrimary);
 }
 
 /** The fight hint plus the autoplay key while it is free (O by default). */
@@ -1017,6 +1033,7 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
     { id: "rival", position: [...RIVAL_START] }
   ]);
   bindAnimations();
+  fighterPresenter.reset();
   syncNodes();
   hud.setNames(config.p1.name, config.cpu.name);
   hud.setPortraits(config.p1.id, config.cpu.id);
@@ -1486,11 +1503,20 @@ function handleEvents(): void {
       if (attacker.attack) attacker.attack.connected = true;
       const isSpecialHit = Boolean(ev.moveId?.includes("special"));
       const isHeavyHit = Boolean(ev.moveId?.includes("heavy") || ev.moveId?.includes("throw"));
+      const hitDir = facingTo(attacker, target);
+      const targetAttack = target.attack;
+      const targetHold = targetAttack ? (PROCEDURAL_CLIP_HOLD[targetAttack.kind] ?? 0.5) : 0.5;
+      const wasCounter = Boolean(targetAttack && target.clipTime < targetHold * 0.42);
+      const wasPunish = Boolean(targetAttack && target.clipTime >= targetHold * 0.55 && !targetAttack.connected);
       runtimeEffects.hitSpark(ev.position, { ownerId: ev.attackerId, intensity: 1.05 });
-      fxBurst("ic-forge-spark", ev.position);
-      triggerFlipbook("sparks", ev.position, isSpecialHit ? 0.3 : 0.22);
-      triggerSlashArc(attacker.side === "p1" ? "p1" : "p2", ev.position, facingTo(attacker, target), isSpecialHit ? 1.7 : isHeavyHit ? 1.38 : 1.05, isHeavyHit ? -0.32 : 0.18, isSpecialHit ? 0.22 : 0.15);
-      triggerFighterFlash(target.nodeId, isSpecialHit ? "#ffe08a" : "#ffb36b", isSpecialHit ? 1.15 : isHeavyHit ? 0.92 : 0.65);
+      fxBurst("ic-forge-spark", [ev.position[0] + hitDir * 0.16, ev.position[1], ev.position[2]]);
+      triggerFlipbook("sparks", ev.position, isSpecialHit ? 0.28 : 0.2, hitDir);
+      triggerSlashArc(attacker.side === "p1" ? "p1" : "p2", ev.position, hitDir, isSpecialHit ? 1.7 : isHeavyHit ? 1.38 : 1.05, isHeavyHit ? -0.32 : 0.18, isSpecialHit ? 0.22 : 0.15);
+      triggerFighterFlash(target.nodeId, isSpecialHit ? "#ffe08a" : "#ffb36b", isSpecialHit ? 0.95 : isHeavyHit ? 0.78 : 0.58, 0.036);
+      if (state.phase === "fight" && attacker.side === "p1") {
+        if (wasCounter) hud.announce("COUNTER!", isHeavyHit ? "heavy interrupt" : "startup beat", "pop");
+        else if (wasPunish) hud.announce("PUNISH!", "recovery caught", "pop");
+      }
       impactRig.trigger({
         freezeSeconds: isSpecialHit ? 0.088 : isHeavyHit ? 0.092 : 0.046,
         trauma: isSpecialHit ? 0.56 : isHeavyHit ? 0.46 : 0.22,
@@ -1518,11 +1544,16 @@ function handleEvents(): void {
     }
     if (ev.type === "blocked" && target) {
       lastStunFromHit[target.nodeId] = false;
+      const blockDir = facingTo(target, attacker);
       runtimeEffects.blockSpark(ev.position, { ownerId: ev.attackerId, intensity: 0.7 });
       fxBurst("ic-guard-ember", ev.position);
-      triggerFlipbook("sparks", ev.position, 0.22);
-      triggerSlashArc("parry", ev.position, facingTo(target, attacker), 1.32, 0.05, 0.18);
-      triggerFighterFlash(target.nodeId, "#6ee7ff", 0.78, 0.1);
+      triggerFlipbook("ripple", ev.position, 0.22, -blockDir);
+      triggerSlashArc("parry", ev.position, blockDir, 1.32, 0.05, 0.18);
+      triggerFighterFlash(target.nodeId, "#6ee7ff", 0.65, 0.034);
+      const tGuardSnap = actorSnap(target.nodeId);
+      if (tGuardSnap && (tGuardSnap.guard ?? 100) <= 12 && state.phase === "fight") {
+        hud.announce("GUARD BREAK", "stagger open!", "pop");
+      }
       impactRig.trigger({ freezeSeconds: 0.056, trauma: 0.28, fovKickDeg: -0.9 });
       director.impact(0.16, 0.12);
       fightingGame.juice.fire("blocked");
@@ -1574,16 +1605,54 @@ function onKnockout(winner: "p1" | "cpu"): void {
 
 // The result card shows 1.6 s after the bout ends. A new bout cancels it (audit IC-04).
 const boutResultTimer = createBoutResultTimer();
-// Autoplay leaves the result card after AUTOPLAY_RESULT_MS; a new bout (or a click on the card) cancels it.
+// Autoplay harness (`@aura3d/engine/game`) owns the results hold -> next-bout restart loop.
 const autoplayAdvanceTimer = createBoutResultTimer();
 /** The primary action of the result card on screen, if any. */
 let resultPrimary: (() => void) | null = null;
+const autoplayHarness = createAutoplayHarness({
+  enabled: autoDemo,
+  restartDelay: AUTOPLAY_RESULT_MS / 1000,
+  isFinished: () => Boolean(state && state.phase === "boutEnd" && resultPrimary),
+  onRestart: () => {
+    const run = resultPrimary;
+    resultPrimary = null;
+    autoplayAdvanceTimer.cancel();
+    run?.();
+  }
+});
 
 function scheduleAutoplayAdvance(run: () => void): void {
-  autoplayAdvanceTimer.schedule(() => {
-    if (autoDemo && state.phase === "boutEnd") run();
-  }, AUTOPLAY_RESULT_MS);
+  resultPrimary = run;
+  autoplayHarness.reset();
 }
+
+/** Fixed-step render snapshot interpolator (`@aura3d/engine/game`) for silky 120/144 Hz fighter positions. */
+interface FighterRenderSnap {
+  p1x: number;
+  p1y: number;
+  p2x: number;
+  p2y: number;
+}
+const fighterPresenter = createSnapshotInterpolator<FighterRenderSnap>({
+  create: () => ({ p1x: PLAYER_START[0], p1y: 0, p2x: RIVAL_START[0], p2y: 0 }),
+  snapshot: (out) => {
+    const s = out ?? { p1x: 0, p1y: 0, p2x: 0, p2y: 0 };
+    s.p1x = P1?.body.position[0] ?? PLAYER_START[0];
+    s.p1y = P1?.body.position[1] ?? 0;
+    s.p2x = CPU?.body.position[0] ?? RIVAL_START[0];
+    s.p2y = CPU?.body.position[1] ?? 0;
+    return s;
+  },
+  blend: (a, b, t, out) => {
+    const s = out ?? { p1x: 0, p1y: 0, p2x: 0, p2y: 0 };
+    s.p1x = mixNumber(a.p1x, b.p1x, t);
+    s.p1y = mixNumber(a.p1y, b.p1y, t);
+    s.p2x = mixNumber(a.p2x, b.p2x, t);
+    s.p2y = mixNumber(a.p2y, b.p2y, t);
+    return s;
+  },
+  snap: (a, b) => Math.abs(b.p1x - a.p1x) > 2.4 || Math.abs(b.p2x - a.p2x) > 2.4
+});
 
 /** Show the result card; under autoplay its primary action runs by itself after the hold. */
 function showResultCard(spec: Parameters<typeof hud.showResult>[0]): void {
@@ -1871,16 +1940,19 @@ function updateAttackLayer(f: FighterRuntime, dt: number): void {
   }
 }
 
-function syncNodes(): void {
+function syncNodes(renderAlpha = 1): void {
   const lookup = (nodeId: string) => app.nodes.get(nodeId) as AuraRuntimeNodeHandle | undefined;
   const timeSec = elapsedMs / 1000;
+  const shown = fighterPresenter.present(renderAlpha, state?.phase === "fight" || state?.phase === "attract");
   for (const f of [P1, CPU]) {
     const foe = f === P1 ? CPU : P1;
     const asnap = actorSnap(f.nodeId);
     const facing = asnap?.facing ?? (f === P1 ? 1 : -1);
+    const rx = f === P1 ? shown.p1x : shown.p2x;
+    const ry = f === P1 ? shown.p1y : shown.p2y;
     const node = lookup(f.nodeId);
     node
-      ?.setPosition(f.body.position[0], f.body.position[1], f.body.position[2])
+      ?.setPosition(rx, ry, f.body.position[2])
       .setRotation(0, fighterFacingYaw(facing), 0);
 
     const clip = desiredClip(f);
@@ -2235,8 +2307,10 @@ app.onFrame(({ dt }) => {
     enforceFighterSeparation();
     syncActors();
     resolveThrowTech();
+    fighterPresenter.afterStep();
   }
 
+  autoplayHarness.tick(dt);
   runtimeEffects.update(simDt);
   feel.update(dt * 1000);
   director.update(simDt, [
@@ -2250,7 +2324,7 @@ app.onFrame(({ dt }) => {
   syncAnim(CPU, cClip, simDt);
   updateAttackLayer(P1, simDt);
   updateAttackLayer(CPU, simDt);
-  syncNodes();
+  syncNodes(impactFrame.simDt === 0 ? 1 : Math.min(1, dt * 60));
   updateCombatVisualOverlays(dt, s.phase === "fight" || s.phase === "ko" || s.phase === "boutEnd");
   updateStageLights(dt);
 

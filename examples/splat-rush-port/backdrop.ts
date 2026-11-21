@@ -71,7 +71,7 @@ export const BACKDROP_KEY_ID = "backdrop-key";
  * same sun the toon shaders use (direction from `look.ts`, golden-stage colour and intensity scaled to the PBR path),
  * plus the rose bounce; CR-L3: the sky fill comes from the kloppenheim_06 IBL (background off).
  */
-export function backdropLightRig(look: SplatLook) {
+export function backdropLightRig(look: SplatLook, ballZ = 0) {
   if (look.backdropLights === "original" || !look.toon || !look.sky) {
     return [
       lights.hemisphere({ name: "backdrop-hemisphere", skyColor: "#ffffff", groundColor: "#7788aa", intensity: 1.15 }),
@@ -90,7 +90,15 @@ export function backdropLightRig(look: SplatLook) {
     lights.directional({
       name: "backdrop-key", position: [d[0] * SUN_DISTANCE, d[1] * SUN_DISTANCE, d[2] * SUN_DISTANCE], target: [0, 0, 0],
       intensity: BACKDROP_KEY_SCALE * golden.sunIntensity, color: golden.sunColor,
-      shadow: { cascades: 1, maxDistance: 160, mapSize: 1024, filter: "pcf", bias: 0.0015 }
+      shadow: {
+        cascades: 1,
+        maxDistance: 160,
+        mapSize: 1024,
+        filter: "pcf",
+        bias: 0.0015,
+        softness: 1.8,
+        fit: { center: [0, 0, ballZ - 12], extent: 16, depth: 45 }
+      }
     }).runtime({ id: BACKDROP_KEY_ID }),
     lights.directional({ name: "backdrop-bounce", position: [b[0] * SUN_DISTANCE, b[1] * SUN_DISTANCE, b[2] * SUN_DISTANCE], target: [0, 0, 0], intensity: BACKDROP_KEY_SCALE * look.toon.bounceIntensity, color: golden.bounce })
   ];
@@ -100,12 +108,12 @@ export function backdropLightRig(look: SplatLook) {
 export const BACKDROP_KEY_SCALE = 3.2;
 
 /** Scene nodes (models) plus the light rig the models need. `look` defaults to the 4.6.0 rig (tests). */
-export function addBackdrop(builder: Scene, look: SplatLook = LOOKS.original): void {
+export function addBackdrop(builder: Scene, look: SplatLook = LOOKS.original, ballZ = 0): void {
   const env = look.environment;
   builder.add(env.kind === "hdri"
     ? environments.hdri({ name: "backdrop-environment", texture: hdriAsset(env.id), intensity: env.intensity, rotation: (env.rotationDeg * Math.PI) / 180, background: false })
     : environments.neutral({ name: "backdrop-environment", intensity: env.intensity }));
-  for (const light of backdropLightRig(look)) builder.add(light);
+  for (const light of backdropLightRig(look, ballZ)) builder.add(light);
   const shadows = look.backdropLights === "from-toon";
   for (const p of PIECES) {
     const island = p.kind !== "balloon";

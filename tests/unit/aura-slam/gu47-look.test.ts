@@ -66,7 +66,7 @@ describe("GU47 TT-L1: venue light table", () => {
   it("the World Tour scene mounts no ambient, hemisphere or point light, and exactly one shadowed light (the key)", () => {
     for (const venue of VENUE_LOOK_ORDER) {
       const lights = sceneNodes(venue).filter((n) => n.kind === "light");
-      expect(lights.map((l) => l.light).sort(), venue).toEqual(["directional", "spot", "spot", "spot", "spot"]);
+      expect(lights.map((l) => l.light).sort(), venue).toEqual(["directional", "directional", "spot", "spot", "spot", "spot"]);
       expect(lights.filter((l) => l.shadow === true || (typeof l.shadow === "object" && l.shadow !== null)).map((l) => l.name), venue).toEqual([VENUE_LIGHT_IDS.key]);
     }
   });
@@ -79,12 +79,13 @@ describe("GU47 TT-L1: venue light table", () => {
 describe("GU47 TT-L2: PCSS key fitted to the court", () => {
   it("the key casts with PCSS, a 2048 map and the court fit; the light size is the venue's", () => {
     for (const venue of VENUE_LOOK_ORDER) {
-      const key = sceneLights(venue)[0]!.toJSON() as { shadow?: { filter?: string; mapSize?: number; lightSize?: number; fit?: { center: number[]; extent: number } } };
+      const key = sceneLights(venue)[0]!.toJSON() as { shadow?: { filter?: string; mapSize?: number; lightSize?: number; softness?: number; fit?: { center: number[]; extent: number; depth?: number } } };
       expect(key.shadow?.filter, venue).toBe("pcss");
       expect(key.shadow?.mapSize).toBe(SUN_SHADOW_MAP_SIZE);
-      // 5.7.0 reads `shadow.fit`; the game keeps the camera-fit shadows it shipped with, so it passes no box.
-      expect(key.shadow?.fit).toBeUndefined();
+      expect(key.shadow?.fit, venue).toEqual(SUN_SHADOW_FIT);
       expect(SUN_SHADOW_FIT.extent).toBe(22);
+      expect(SUN_SHADOW_FIT.depth).toBe(64);
+      expect(key.shadow?.softness, venue).toBe(venue === "moon" ? 0.5 : 1.8);
       expect(key.shadow?.lightSize).toBe((VENUE_LOOKS[venue].sun ?? VENUE_LOOKS[venue].nightKey)!.lightSize);
     }
   });

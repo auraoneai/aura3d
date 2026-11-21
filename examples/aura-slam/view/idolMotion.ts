@@ -14,12 +14,12 @@
 import type { PoseResult } from "../contract";
 import {
   blendHumanoidPoses,
+  createHumanoidAnimator,
   createHumanoidDriver,
-  createMotionAnimator,
-  humanoidLocomotionTime as locomotionTime,
+  humanoidLocomotionTime,
   readIdolSkeleton,
   sampleHumanoidClip,
-  type HumanoidAnimator as MotionAnimator,
+  type HumanoidAnimator,
   type HumanoidClip,
   type HumanoidDriver,
   type HumanoidPoseInput,
@@ -110,7 +110,7 @@ export function serveWindupProgress(s: ServeClock | undefined): number {
 }
 
 export interface AthleteMotionState {
-  readonly animator: MotionAnimator<string>;
+  readonly animator: HumanoidAnimator<string>;
   distance: number;
   lastX: number | null;
   lastY: number | null;
@@ -125,7 +125,7 @@ export interface AthleteMotionState {
 }
 
 export const createAthleteMotionState = (): AthleteMotionState => ({
-  animator: createMotionAnimator(MOTION_CLIPS as Record<string, HumanoidClip>), distance: 0, lastX: null, lastY: null, stillFor: 0, cheerLeft: 0, lastPointsWon: null, clip: "", clipTime: 0, clock: 0
+  animator: createHumanoidAnimator(MOTION_CLIPS as Record<string, HumanoidClip>), distance: 0, lastX: null, lastY: null, stillFor: 0, cheerLeft: 0, lastPointsWon: null, clip: "", clipTime: 0, clock: 0
 });
 
 export interface MotionFrameInput {
@@ -201,7 +201,7 @@ export function athleteMotionFrame(st: AthleteMotionState, driver: HumanoidDrive
     const w = clamp01((move - 0.05) * 1.6);
     if (w > 0) {
       const locoClip = MOTION_CLIPS[loco] as HumanoidClip;
-      time = locomotionTime(locoClip, st.distance, hipWorld);
+      time = humanoidLocomotionTime(locoClip, st.distance, hipWorld);
       pose = blendHumanoidPoses(stand, sampleHumanoidClip(locoClip, time), w);
       key = w > 0.5 ? loco : standing;
     } else {
